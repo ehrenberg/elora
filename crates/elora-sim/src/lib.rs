@@ -8,6 +8,8 @@ pub mod character;
 pub mod collision;
 pub mod input;
 pub mod math;
+#[cfg(feature = "serde")]
+pub mod replay;
 pub mod tuning;
 pub mod world;
 

@@ -118,8 +118,9 @@ impl App {
                 Err(e) => format!("Fehler: {e:#}"),
             },
             debug_ui::Action::Respawn => {
+                let msg = self.sandbox.stop_recording("Respawn").unwrap_or_default();
                 self.sandbox.respawn();
-                String::new()
+                msg
             }
         };
     }
@@ -151,6 +152,15 @@ impl App {
             self.fps = self.fps * 0.95 + (1.0 / elapsed.as_secs_f32()) * 0.05;
         }
         self.sandbox.poll_reload();
+        if self
+            .sandbox
+            .recording
+            .as_ref()
+            .is_some_and(|r| r.tuning != self.sandbox.world.tuning)
+            && let Some(msg) = self.sandbox.stop_recording("Tuning geändert")
+        {
+            self.status = msg;
+        }
         self.sandbox.advance(elapsed, &self.controls);
 
         let Some(gfx) = &mut self.gfx else { return };
@@ -202,7 +212,18 @@ impl App {
         match code {
             KeyCode::Escape if self.cursor_grabbed => self.set_cursor_grab(false),
             KeyCode::Escape => event_loop.exit(),
-            KeyCode::KeyR => self.sandbox.respawn(),
+            KeyCode::KeyR => {
+                if let Some(msg) = self.sandbox.stop_recording("Respawn") {
+                    self.status = msg;
+                }
+                self.sandbox.respawn();
+            }
+            KeyCode::F5 => {
+                self.status = self.sandbox.stop_recording("F5").unwrap_or_else(|| {
+                    self.sandbox.start_recording();
+                    "Aufzeichnung läuft … (F5 beendet)".into()
+                });
+            }
             KeyCode::F1 => self.show_panel = !self.show_panel,
             _ => {}
         }

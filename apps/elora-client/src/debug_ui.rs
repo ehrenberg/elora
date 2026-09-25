@@ -118,6 +118,12 @@ fn state(ui: &mut egui::Ui, cx: &Context<'_>) {
             );
             row("Hook", hook);
             row("Karte", s.map_path.display().to_string());
+            row(
+                "Aufzeichnung",
+                s.recording
+                    .as_ref()
+                    .map_or_else(|| "aus (F5)".into(), |r| format!("● {} Ticks", r.len())),
+            );
         });
     if let Some(err) = &s.reload_error {
         ui.colored_label(egui::Color32::LIGHT_RED, format!("Karte ungültig: {err}"));
@@ -326,6 +332,7 @@ fn help(ui: &mut egui::Ui) {
             ui.label("Leertaste – springen / Doppelsprung");
             ui.label("Rechte Maustaste – Hook (halten)");
             ui.label("R – Respawn · F1 – Panel ein/aus");
+            ui.label("F5 – Aufzeichnung starten/beenden (→ Golden-Test)");
             ui.label("Esc – Maus freigeben · erneut Esc – beenden");
             ui.label("Karte speichern → wird automatisch neu geladen");
         });

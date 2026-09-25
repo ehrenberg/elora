@@ -7,7 +7,7 @@ Ein 2D-Multiplayer-Arena-Shooter nach dem Vorbild von Teeworlds. Elora ist zugle
 Voraussetzungen: [rustup](https://rustup.rs) (die Version wird über `rust-toolchain.toml` automatisch installiert), `cargo-deny` und `cargo-nextest`.
 
 ```sh
-cargo run --bin elora     # Client / Sandbox starten
+cargo run --bin elora     # Client / Sandbox starten (Steuerung: docs/07-m1-plan.md)
 cargo xtask check         # alle Prüfungen: fmt, clippy, Tests, Lizenzen
 cargo xtask fmt           # Code formatieren
 ```

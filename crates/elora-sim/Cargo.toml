@@ -8,11 +8,16 @@ license.workspace = true
 publish.workspace = true
 
 [features]
-# Serialisierung von Tuning und Eingaben (z. B. tuning.toml, E-046)
-serde = ["dep:serde"]
+# Serialisierung von Tuning und Eingaben (tuning.toml, E-046) sowie Aufzeichnungen (M1.6)
+serde = ["dep:serde", "dep:toml"]
 
 [dependencies]
 serde = { workspace = true, optional = true }
+toml = { workspace = true, optional = true }
+
+[[test]]
+name = "golden"
+required-features = ["serde"]
 
 [lints]
 workspace = true

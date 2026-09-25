@@ -6,6 +6,7 @@ use std::time::Duration;
 
 use anyhow::Context as _;
 use elora_map::{EntityKind, Map};
+use elora_sim::replay::Recording;
 use elora_sim::{CharacterCore, TICKS_PER_SECOND, Tuning, Vec2, World};
 
 use crate::controls::Controls;
@@ -26,7 +27,15 @@ pub struct Sandbox {
     watcher: Option<MapWatcher>,
     /// Ergebnis des letzten Hot-Reloads (Fehlertext bei ungültiger Karte).
     pub reload_error: Option<String>,
+    /// Laufende Eingabe-Aufzeichnung (M1.6).
+    pub recording: Option<Recording>,
 }
+
+/// Ablage der Aufzeichnungen: jede wird dort zum Golden-Test von `elora-sim`.
+pub const RECORDINGS_DIR: &str = concat!(
+    env!("CARGO_MANIFEST_DIR"),
+    "/../../crates/elora-sim/tests/recordings"
+);
 
 impl Sandbox {
     pub fn load(map_path: &Path, tuning: Tuning) -> anyhow::Result<Self> {
@@ -46,6 +55,7 @@ impl Sandbox {
             accumulator: Duration::ZERO,
             watcher,
             reload_error: None,
+            recording: None,
         })
     }
 
@@ -62,6 +72,7 @@ impl Sandbox {
         }
         match load_map(&self.map_path) {
             Ok(map) => {
+                self.stop_recording("Karte geändert");
                 self.world.collision = map.collision();
                 self.map = map;
                 self.reload_error = None;
@@ -72,6 +83,41 @@ impl Sandbox {
                 self.reload_error = Some(format!("{e:#}"));
             }
         }
+    }
+
+    /// Startet eine Aufzeichnung ab dem Spawnpunkt (Figur wird zurückgesetzt).
+    pub fn start_recording(&mut self) {
+        self.respawn();
+        let spawn = self.character().pos;
+        self.recording = Some(Recording::new(
+            &self.world.collision,
+            spawn,
+            self.world.tuning.clone(),
+        ));
+    }
+
+    /// Beendet die Aufzeichnung und speichert sie. Liefert eine Statusmeldung.
+    pub fn stop_recording(&mut self, reason: &str) -> Option<String> {
+        let rec = self.recording.take()?;
+        if rec.is_empty() {
+            return Some("Aufzeichnung leer – verworfen".into());
+        }
+        let secs = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map_or(0, |d| d.as_secs());
+        let path = Path::new(RECORDINGS_DIR).join(format!("rec-{secs}.erec.toml"));
+        let result = rec
+            .to_toml()
+            .map_err(anyhow::Error::from)
+            .and_then(|text| std::fs::write(&path, text).map_err(anyhow::Error::from));
+        Some(match result {
+            Ok(()) => format!(
+                "Aufzeichnung ({reason}): {} Ticks → {} (Golden mit ELORA_BLESS=1 erzeugen)",
+                rec.len(),
+                path.file_name().unwrap_or_default().to_string_lossy()
+            ),
+            Err(e) => format!("Aufzeichnung nicht gespeichert: {e:#}"),
+        })
     }
 
     /// Setzt die Figur auf den Spawnpunkt zurück.
@@ -93,7 +139,11 @@ impl Sandbox {
                 break;
             }
             self.prev = self.character().clone();
-            self.world.step(&[controls.player_input()]);
+            let input = controls.player_input();
+            if let Some(rec) = &mut self.recording {
+                rec.push(&input);
+            }
+            self.world.step(&[input]);
             if self.character().death {
                 self.respawn();
             }

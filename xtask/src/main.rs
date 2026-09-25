@@ -42,6 +42,7 @@ fn check() -> Result<(), String> {
                 "clippy",
                 "--workspace",
                 "--all-targets",
+                "--all-features",
                 "--",
                 "-D",
                 "warnings",
@@ -49,7 +50,13 @@ fn check() -> Result<(), String> {
         ),
         (
             "Tests",
-            &["nextest", "run", "--workspace", "--no-tests=pass"],
+            &[
+                "nextest",
+                "run",
+                "--workspace",
+                "--all-features",
+                "--no-tests=pass",
+            ],
         ),
         (
             "Lizenzen & Advisories",
