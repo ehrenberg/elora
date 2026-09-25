@@ -5,6 +5,6 @@ fn main() {
         "Elora {} – {} Ticks/s, Tile-Größe {}",
         env!("CARGO_PKG_VERSION"),
         elora_sim::TICKS_PER_SECOND,
-        elora_map::TILE_SIZE,
+        elora_sim::TILE_SIZE,
     );
 }

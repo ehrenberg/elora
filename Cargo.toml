@@ -21,6 +21,8 @@ elora-map = { path = "crates/elora-map" }
 elora-render = { path = "crates/elora-render" }
 
 serde = { version = "1.0.229", features = ["derive"] }
+toml = "1.1.6"
+thiserror = "2.0.21"
 
 [workspace.lints.rust]
 unsafe_code = "deny"

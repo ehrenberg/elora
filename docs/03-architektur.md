@@ -34,7 +34,7 @@ elora/
 │   ├── elora-client/       # M1  das Spiel (Fenster, Loop, Prediction, UI); in M1 = Sandbox
 │   └── elora-server/       #     dedizierter Server ohne Grafik
 ├── assets/                 # eigene Grafiken, Sounds, Schriften (E-006)
-├── maps/                   # Karten im Textformat (E-017)
+├── maps/                   # Karten im Textformat (E-017), z. B. sandbox.emap.toml
 ├── xtask/                  # Entwicklungsaufgaben: `cargo xtask check` (E-039)
 ├── tools/                  # Hilfsprogramme (Asset-Pipeline, Map-Konverter, …)
 ├── docs/
