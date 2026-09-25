@@ -23,6 +23,16 @@ impl Tile {
     }
 }
 
+/// Treffer eines Linien-Tests.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct LineHit {
+    /// Erster fester Punkt.
+    pub pos: Vec2,
+    /// Letzter freier Punkt davor.
+    pub before: Vec2,
+    pub tile: Tile,
+}
+
 /// Kollisionsraster der Welt. Alles außerhalb gilt als [`Tile::Solid`] (E-024).
 #[derive(Debug, Clone)]
 pub struct Collision {
@@ -142,16 +152,55 @@ impl Collision {
         death
     }
 
+    /// Bewegt einen Punkt um `vel`; an Wänden wird die Geschwindigkeit mit
+    /// `elasticity` gespiegelt. Liefert die Anzahl der Abpraller.
+    pub fn move_point(&self, pos: &mut Vec2, vel: &mut Vec2, elasticity: f32) -> u32 {
+        let p = *pos;
+        let v = *vel;
+        if !self.is_solid(p + v) {
+            *pos = p + v;
+            return 0;
+        }
+        let mut bounces = 0;
+        if self.is_solid(Vec2::new(p.x + v.x, p.y)) {
+            vel.x *= -elasticity;
+            bounces += 1;
+        }
+        if self.is_solid(Vec2::new(p.x, p.y + v.y)) {
+            vel.y *= -elasticity;
+            bounces += 1;
+        }
+        if bounces == 0 {
+            *vel *= -elasticity;
+        }
+        bounces
+    }
+
     /// Tastet die Strecke `from`–`to` ab. Liefert beim ersten festen Punkt
     /// dessen Position und Tile-Art.
     pub fn intersect_line(&self, from: Vec2, to: Vec2) -> Option<(Vec2, Tile)> {
+        self.intersect_line_detail(from, to)
+            .map(|h| (h.pos, h.tile))
+    }
+
+    /// Wie [`Self::intersect_line`], zusätzlich mit dem letzten freien Punkt davor.
+    pub fn intersect_line_detail(&self, from: Vec2, to: Vec2) -> Option<LineHit> {
         let end = from.distance(to) as i32 + 1;
         let inv = 1.0 / end as f32;
-        (0..=end).find_map(|i| {
+        let mut last = from;
+        for i in 0..=end {
             let p = from.lerp(to, i as f32 * inv);
             let tile = self.tile_at(p);
-            tile.is_solid().then_some((p, tile))
-        })
+            if tile.is_solid() {
+                return Some(LineHit {
+                    pos: p,
+                    before: last,
+                    tile,
+                });
+            }
+            last = p;
+        }
+        None
     }
 }
 

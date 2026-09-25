@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use elora_sim::Tile;
+use elora_sim::{DummyPattern, Tile};
 use serde::Deserialize;
 
 use crate::{Entity, EntityKind, MAX_SIZE, Map, TEXT_FORMAT_VERSION};
@@ -81,6 +81,10 @@ fn symbol_by_name(name: &str) -> Option<Symbol> {
         "armor" => Symbol::Entity(EntityKind::Armor),
         "laser" => Symbol::Entity(EntityKind::Laser),
         "grenade" => Symbol::Entity(EntityKind::Grenade),
+        "dummy" => Symbol::Entity(EntityKind::Dummy(DummyPattern::Stand)),
+        "dummy_walk" => Symbol::Entity(EntityKind::Dummy(DummyPattern::Walk)),
+        "dummy_jump" => Symbol::Entity(EntityKind::Dummy(DummyPattern::Jump)),
+        "dummy_walk_jump" => Symbol::Entity(EntityKind::Dummy(DummyPattern::WalkJump)),
         _ => return None,
     })
 }
@@ -101,6 +105,10 @@ fn default_legend() -> HashMap<char, Symbol> {
         ('a', "armor"),
         ('L', "laser"),
         ('G', "grenade"),
+        ('D', "dummy"),
+        ('W', "dummy_walk"),
+        ('J', "dummy_jump"),
+        ('X', "dummy_walk_jump"),
     ]
     .into_iter()
     .map(|(c, n)| (c, symbol_by_name(n).expect("Standard-Legende ist gültig")))
@@ -303,6 +311,21 @@ mod tests {
             parse_text_map(&bad),
             Err(MapError::UnknownLegendValue { .. })
         ));
+    }
+
+    #[test]
+    fn dummy_symbols() {
+        let m = parse_text_map(&map("#######\n#SDWJX#\n#######\n")).unwrap();
+        let kinds: Vec<_> = m.entities.iter().map(|e| e.kind).collect();
+        assert_eq!(
+            kinds[1..],
+            [
+                EntityKind::Dummy(DummyPattern::Stand),
+                EntityKind::Dummy(DummyPattern::Walk),
+                EntityKind::Dummy(DummyPattern::Jump),
+                EntityKind::Dummy(DummyPattern::WalkJump),
+            ]
+        );
     }
 
     #[test]

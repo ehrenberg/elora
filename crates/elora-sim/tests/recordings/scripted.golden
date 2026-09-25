@@ -1,61 +1,122 @@
-tick 25: pos (313.0, 686.0) vel (3.5351563, 0.0) hook Grabbed (273.0, 644.0) sprung 2
-tick 50: pos (330.0, 686.0) vel (-2.9140625, 0.0) hook Grabbed (273.0, 644.0) sprung 2
-tick 75: pos (239.0, 746.0) vel (-2.4453125, 7.5) hook Idle (241.0, 738.0) sprung 2
-tick 100: pos (46.0, 761.0) vel (0.0, -12.144531) hook Grabbed (31.0, 657.0) sprung 2
-tick 125: pos (46.0, 595.0) vel (0.0, 2.6523438) hook Idle (46.0, 592.0) sprung 2
-tick 150: pos (46.0, 826.0) vel (0.0, 15.152344) hook Retracted (81.0, 364.0) sprung 2
-tick 175: pos (48.0, 766.0) vel (1.6015625, -7.1015625) hook Retracted (81.0, 364.0) sprung 0
-tick 200: pos (173.0, 588.0) vel (3.1914063, -9.71875) hook Grabbed (31.0, 495.0) sprung 0
-tick 225: pos (103.0, 416.0) vel (-6.1210938, 4.1875) hook Grabbed (31.0, 495.0) sprung 2
-tick 250: pos (46.0, 676.0) vel (-0.265625, 12.449219) hook Idle (46.0, 664.0) sprung 2
-tick 275: pos (127.0, 846.0) vel (3.6171875, -11.21875) hook Grabbed (267.0, 671.0) sprung 2
-tick 300: pos (136.0, 566.0) vel (4.5, -4.03125) hook Grabbed (267.0, 671.0) sprung 2
-tick 325: pos (46.0, 507.0) vel (0.0, -11.433594) hook Grabbed (31.0, 474.0) sprung 2
-tick 350: pos (51.0, 485.0) vel (3.203125, 9.738281) hook Grabbed (31.0, 474.0) sprung 2
-tick 375: pos (169.0, 577.0) vel (5.0, 5.5) hook Idle (164.0, 571.0) sprung 2
-tick 400: pos (389.0, 519.0) vel (10.5, -9.6015625) hook Retracted (471.0, 345.0) sprung 0
-tick 425: pos (572.0, 335.0) vel (3.96875, -6.5) hook Idle (568.0, 341.0) sprung 2
-tick 450: pos (521.0, 190.0) vel (-7.0429688, -11.691406) hook Grabbed (536.0, 31.0) sprung 2
-tick 475: pos (476.0, 46.0) vel (5.3554688, 0.0) hook Grabbed (536.0, 31.0) sprung 2
-tick 500: pos (440.0, 153.0) vel (0.875, 3.9960938) hook Grabbed (544.0, 31.0) sprung 2
-tick 525: pos (594.0, 61.0) vel (2.7148438, -0.4140625) hook Grabbed (544.0, 31.0) sprung 2
-tick 550: pos (626.0, 82.0) vel (5.0, 5.5703125) hook Idle (621.0, 76.0) sprung 2
-tick 575: pos (706.0, 46.0) vel (-0.14453125, 0.0) hook Grabbed (563.0, 31.0) sprung 2
-tick 600: pos (509.0, 63.0) vel (-0.51171875, -4.3789063) hook Grabbed (563.0, 31.0) sprung 2
-tick 625: pos (451.0, 46.0) vel (-1.953125, -6.2460938) hook Grabbed (507.0, 31.0) sprung 2
-tick 650: pos (466.0, 46.0) vel (2.9804688, 0.0) hook Grabbed (507.0, 31.0) sprung 2
-tick 675: pos (400.0, 116.0) vel (-3.3164063, 8.0) hook Idle (403.0, 108.0) sprung 2
-tick 700: pos (417.0, 81.0) vel (5.0, 5.5) hook Grabbed (409.0, 31.0) sprung 2
-tick 725: pos (465.0, 52.0) vel (5.0, 2.1210938) hook Idle (460.0, 50.0) sprung 2
-tick 750: pos (565.0, 46.0) vel (1.1367188, 0.0234375) hook Grabbed (471.0, 31.0) sprung 2
-tick 775: pos (433.0, 51.0) vel (5.2421875, -4.984375) hook Grabbed (471.0, 31.0) sprung 2
-tick 800: pos (403.0, 156.0) vel (-4.1640625, 0.25) hook Grabbed (457.0, 31.0) sprung 2
-tick 825: pos (376.0, 50.0) vel (5.2695313, 0.15625) hook Grabbed (457.0, 31.0) sprung 2
-tick 850: pos (386.0, 142.0) vel (-3.1523438, 9.5) hook Idle (389.0, 133.0) sprung 2
-tick 875: pos (215.0, 393.0) vel (-10.5390625, 0.47265625) hook Grabbed (31.0, 131.0) sprung 2
-tick 900: pos (176.0, 114.0) vel (-0.0390625, -12.9296875) hook Grabbed (31.0, 131.0) sprung 2
-tick 925: pos (296.0, 60.0) vel (5.0, -5.796875) hook Grabbed (268.0, 31.0) sprung 2
-tick 950: pos (251.0, 69.0) vel (-0.3046875, -3.921875) hook Grabbed (268.0, 31.0) sprung 2
-tick 975: pos (166.0, 138.0) vel (-5.0, 8.578125) hook Idle (171.0, 129.0) sprung 2
-tick 1000: pos (46.0, 47.0) vel (0.0, 0.5) hook Grabbed (47.0, 31.0) sprung 2
-tick 1025: pos (46.0, 54.0) vel (0.0, 2.5) hook Idle (46.0, 52.0) sprung 2
-tick 1050: pos (105.0, 46.0) vel (5.5625, 0.5) hook Grabbed (88.0, 31.0) sprung 2
-tick 1075: pos (137.0, 51.0) vel (1.7695313, 0.2421875) hook Grabbed (88.0, 31.0) sprung 2
-tick 1100: pos (226.0, 125.0) vel (4.1445313, -1.28125) hook Grabbed (183.0, 31.0) sprung 2
-tick 1125: pos (168.0, 84.0) vel (-1.2382813, -1.7304688) hook Grabbed (183.0, 31.0) sprung 2
-tick 1150: pos (84.0, 88.0) vel (-5.0, 5.578125) hook Idle (89.0, 82.0) sprung 2
-tick 1175: pos (46.0, 394.0) vel (0.0, 18.078125) hook Retracted (431.0, 70.0) sprung 2
-tick 1200: pos (46.0, 873.0) vel (0.0, -12.6015625) hook Retracted (431.0, 70.0) sprung 1
-tick 1225: pos (76.0, 653.0) vel (5.0, -4.5) hook Retracted (32.0, 330.0) sprung 2
-tick 1250: pos (155.0, 706.0) vel (4.8046875, 8.0) hook Retracted (32.0, 330.0) sprung 2
-tick 1275: pos (296.0, 817.0) vel (7.1992188, -10.1015625) hook Idle (289.0, 827.0) sprung 0
-tick 1300: pos (147.0, 718.0) vel (-12.378906, 4.7851563) hook Grabbed (31.0, 678.0) sprung 2
-tick 1325: pos (46.0, 636.0) vel (0.0, -6.7070313) hook Idle (46.0, 643.0) sprung 2
-tick 1350: pos (46.0, 630.0) vel (0.0, 5.7929688) hook Retracted (91.0, 217.0) sprung 2
-tick 1375: pos (46.0, 913.0) vel (0.0, 0.0) hook Retracted (91.0, 217.0) sprung 0
-tick 1400: pos (79.0, 732.0) vel (2.8515625, -4.9921875) hook Grabbed (31.0, 723.0) sprung 0
-tick 1425: pos (96.0, 722.0) vel (0.01953125, 11.433594) hook Grabbed (31.0, 723.0) sprung 2
-tick 1450: pos (122.0, 696.0) vel (5.0, -4.53125) hook Idle (117.0, 701.0) sprung 2
-tick 1475: pos (172.0, 708.0) vel (3.2226563, 1.65625) hook Grabbed (184.0, 662.0) sprung 2
-tick 1500: pos (129.0, 667.0) vel (0.64453125, -3.4726563) hook Grabbed (184.0, 662.0) sprung 2
-ende tick 1500: pos (129.0, 667.0) vel (0.64453125, -3.4726563) hook Grabbed (184.0, 662.0) sprung 2
+tick 25: projektile 0 laser 0
+  p0: pos (313.0, 686.0) vel (3.5351563, 0.0) hook Grabbed (273.0, 644.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 50: projektile 0 laser 0
+  p0: pos (330.0, 686.0) vel (-2.9140625, 0.0) hook Grabbed (273.0, 644.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 75: projektile 0 laser 0
+  p0: pos (239.0, 746.0) vel (-2.4453125, 7.5) hook Idle (241.0, 738.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 100: projektile 0 laser 0
+  p0: pos (46.0, 761.0) vel (0.0, -12.144531) hook Grabbed (31.0, 657.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 125: projektile 0 laser 0
+  p0: pos (46.0, 595.0) vel (0.0, 2.6523438) hook Idle (46.0, 592.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 150: projektile 0 laser 0
+  p0: pos (46.0, 826.0) vel (0.0, 15.152344) hook Retracted (81.0, 364.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 175: projektile 0 laser 0
+  p0: pos (48.0, 766.0) vel (1.6015625, -7.1015625) hook Retracted (81.0, 364.0) sprung 0 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 200: projektile 0 laser 0
+  p0: pos (173.0, 588.0) vel (3.1914063, -9.71875) hook Grabbed (31.0, 495.0) sprung 0 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 225: projektile 0 laser 0
+  p0: pos (103.0, 416.0) vel (-6.1210938, 4.1875) hook Grabbed (31.0, 495.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 250: projektile 0 laser 0
+  p0: pos (46.0, 676.0) vel (-0.265625, 12.449219) hook Idle (46.0, 664.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 275: projektile 0 laser 0
+  p0: pos (127.0, 846.0) vel (3.6171875, -11.21875) hook Grabbed (267.0, 671.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 300: projektile 0 laser 0
+  p0: pos (136.0, 566.0) vel (4.5, -4.03125) hook Grabbed (267.0, 671.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 325: projektile 0 laser 0
+  p0: pos (46.0, 507.0) vel (0.0, -11.433594) hook Grabbed (31.0, 474.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 350: projektile 0 laser 0
+  p0: pos (51.0, 485.0) vel (3.203125, 9.738281) hook Grabbed (31.0, 474.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 375: projektile 0 laser 0
+  p0: pos (169.0, 577.0) vel (5.0, 5.5) hook Idle (164.0, 571.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 400: projektile 0 laser 0
+  p0: pos (389.0, 519.0) vel (10.5, -9.6015625) hook Retracted (471.0, 345.0) sprung 0 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 425: projektile 0 laser 0
+  p0: pos (572.0, 335.0) vel (3.96875, -6.5) hook Idle (568.0, 341.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 450: projektile 0 laser 0
+  p0: pos (521.0, 190.0) vel (-7.0429688, -11.691406) hook Grabbed (536.0, 31.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 475: projektile 0 laser 0
+  p0: pos (476.0, 46.0) vel (5.3554688, 0.0) hook Grabbed (536.0, 31.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 500: projektile 0 laser 0
+  p0: pos (440.0, 153.0) vel (0.875, 3.9960938) hook Grabbed (544.0, 31.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 525: projektile 0 laser 0
+  p0: pos (594.0, 61.0) vel (2.7148438, -0.4140625) hook Grabbed (544.0, 31.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 550: projektile 0 laser 0
+  p0: pos (626.0, 82.0) vel (5.0, 5.5703125) hook Idle (621.0, 76.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 575: projektile 0 laser 0
+  p0: pos (706.0, 46.0) vel (-0.14453125, 0.0) hook Grabbed (563.0, 31.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 600: projektile 0 laser 0
+  p0: pos (509.0, 63.0) vel (-0.51171875, -4.3789063) hook Grabbed (563.0, 31.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 625: projektile 0 laser 0
+  p0: pos (451.0, 46.0) vel (-1.953125, -6.2460938) hook Grabbed (507.0, 31.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 650: projektile 0 laser 0
+  p0: pos (466.0, 46.0) vel (2.9804688, 0.0) hook Grabbed (507.0, 31.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 675: projektile 0 laser 0
+  p0: pos (400.0, 116.0) vel (-3.3164063, 8.0) hook Idle (403.0, 108.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 700: projektile 0 laser 0
+  p0: pos (417.0, 81.0) vel (5.0, 5.5) hook Grabbed (409.0, 31.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 725: projektile 0 laser 0
+  p0: pos (465.0, 52.0) vel (5.0, 2.1210938) hook Idle (460.0, 50.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 750: projektile 0 laser 0
+  p0: pos (565.0, 46.0) vel (1.1367188, 0.0234375) hook Grabbed (471.0, 31.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 775: projektile 0 laser 0
+  p0: pos (433.0, 51.0) vel (5.2421875, -4.984375) hook Grabbed (471.0, 31.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 800: projektile 0 laser 0
+  p0: pos (403.0, 156.0) vel (-4.1640625, 0.25) hook Grabbed (457.0, 31.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 825: projektile 0 laser 0
+  p0: pos (376.0, 50.0) vel (5.2695313, 0.15625) hook Grabbed (457.0, 31.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 850: projektile 0 laser 0
+  p0: pos (386.0, 142.0) vel (-3.1523438, 9.5) hook Idle (389.0, 133.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 875: projektile 0 laser 0
+  p0: pos (215.0, 393.0) vel (-10.5390625, 0.47265625) hook Grabbed (31.0, 131.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 900: projektile 0 laser 0
+  p0: pos (176.0, 114.0) vel (-0.0390625, -12.9296875) hook Grabbed (31.0, 131.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 925: projektile 0 laser 0
+  p0: pos (296.0, 60.0) vel (5.0, -5.796875) hook Grabbed (268.0, 31.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 950: projektile 0 laser 0
+  p0: pos (251.0, 69.0) vel (-0.3046875, -3.921875) hook Grabbed (268.0, 31.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 975: projektile 0 laser 0
+  p0: pos (166.0, 138.0) vel (-5.0, 8.578125) hook Idle (171.0, 129.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 1000: projektile 0 laser 0
+  p0: pos (46.0, 47.0) vel (0.0, 0.5) hook Grabbed (47.0, 31.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 1025: projektile 0 laser 0
+  p0: pos (46.0, 54.0) vel (0.0, 2.5) hook Idle (46.0, 52.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 1050: projektile 0 laser 0
+  p0: pos (105.0, 46.0) vel (5.5625, 0.5) hook Grabbed (88.0, 31.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 1075: projektile 0 laser 0
+  p0: pos (137.0, 51.0) vel (1.7695313, 0.2421875) hook Grabbed (88.0, 31.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 1100: projektile 0 laser 0
+  p0: pos (226.0, 125.0) vel (4.1445313, -1.28125) hook Grabbed (183.0, 31.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 1125: projektile 0 laser 0
+  p0: pos (168.0, 84.0) vel (-1.2382813, -1.7304688) hook Grabbed (183.0, 31.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 1150: projektile 0 laser 0
+  p0: pos (84.0, 88.0) vel (-5.0, 5.578125) hook Idle (89.0, 82.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 1175: projektile 0 laser 0
+  p0: pos (46.0, 394.0) vel (0.0, 18.078125) hook Retracted (431.0, 70.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 1200: projektile 0 laser 0
+  p0: pos (46.0, 873.0) vel (0.0, -12.6015625) hook Retracted (431.0, 70.0) sprung 1 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 1225: projektile 0 laser 0
+  p0: pos (76.0, 653.0) vel (5.0, -4.5) hook Retracted (32.0, 330.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 1250: projektile 0 laser 0
+  p0: pos (155.0, 706.0) vel (4.8046875, 8.0) hook Retracted (32.0, 330.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 1275: projektile 0 laser 0
+  p0: pos (296.0, 817.0) vel (7.1992188, -10.1015625) hook Idle (289.0, 827.0) sprung 0 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 1300: projektile 0 laser 0
+  p0: pos (147.0, 718.0) vel (-12.378906, 4.7851563) hook Grabbed (31.0, 678.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 1325: projektile 0 laser 0
+  p0: pos (46.0, 636.0) vel (0.0, -6.7070313) hook Idle (46.0, 643.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 1350: projektile 0 laser 0
+  p0: pos (46.0, 630.0) vel (0.0, 5.7929688) hook Retracted (91.0, 217.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 1375: projektile 0 laser 0
+  p0: pos (46.0, 913.0) vel (0.0, 0.0) hook Retracted (91.0, 217.0) sprung 0 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 1400: projektile 0 laser 0
+  p0: pos (79.0, 732.0) vel (2.8515625, -4.9921875) hook Grabbed (31.0, 723.0) sprung 0 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 1425: projektile 0 laser 0
+  p0: pos (96.0, 722.0) vel (0.01953125, 11.433594) hook Grabbed (31.0, 723.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 1450: projektile 0 laser 0
+  p0: pos (122.0, 696.0) vel (5.0, -4.53125) hook Idle (117.0, 701.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 1475: projektile 0 laser 0
+  p0: pos (172.0, 708.0) vel (3.2226563, 1.65625) hook Grabbed (184.0, 662.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 1500: projektile 0 laser 0
+  p0: pos (129.0, 667.0) vel (0.64453125, -3.4726563) hook Grabbed (184.0, 662.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+ende tick 1500: projektile 0 laser 0
+  p0: pos (129.0, 667.0) vel (0.64453125, -3.4726563) hook Grabbed (184.0, 662.0) sprung 2 hp 10 rüstung 0 waffe Hammer munition [None, None, None]

@@ -1,4 +1,4 @@
-//! Elora-Client. In M1 ist er die Physik-Sandbox (E-013).
+//! Elora-Client. Bis M3 ist er die Sandbox (E-013): Bewegung, Waffen, Dummies.
 //!
 //! Aufruf: `elora [karte.emap.toml]` (Standard: `maps/sandbox.emap.toml`)
 
@@ -6,6 +6,7 @@ mod controls;
 mod debug_ui;
 mod draw;
 mod gui;
+mod hud;
 mod sandbox;
 mod settings;
 
@@ -64,6 +65,7 @@ struct App {
     controls: Controls,
     view: ViewSettings,
     batch: ShapeBatch,
+    effects: draw::Effects,
     last_frame: Instant,
     fps: f32,
     cursor_grabbed: bool,
@@ -82,6 +84,7 @@ impl App {
             controls,
             view: file.view.into(),
             batch: ShapeBatch::default(),
+            effects: draw::Effects::default(),
             last_frame: Instant::now(),
             fps: 0.0,
             cursor_grabbed: false,
@@ -119,7 +122,7 @@ impl App {
             },
             debug_ui::Action::Respawn => {
                 let msg = self.sandbox.stop_recording("Respawn").unwrap_or_default();
-                self.sandbox.respawn();
+                self.sandbox.spawn_now();
                 msg
             }
         };
@@ -161,7 +164,9 @@ impl App {
         {
             self.status = msg;
         }
-        self.sandbox.advance(elapsed, &self.controls);
+        self.sandbox.advance(elapsed, &mut self.controls);
+        let events = self.sandbox.take_events();
+        self.effects.update(elapsed.as_secs_f32(), &events);
 
         let Some(gfx) = &mut self.gfx else { return };
         let camera = Camera::new(self.sandbox.render_pos(), &self.view, gfx.renderer.aspect());
@@ -171,6 +176,7 @@ impl App {
             &self.sandbox,
             &camera,
             self.controls.mouse_pos,
+            &self.effects,
         );
 
         let Some(mut frame) = gfx.renderer.begin_frame() else {
@@ -180,19 +186,22 @@ impl App {
             .draw_shapes(&mut frame, &camera, &self.batch, draw::BACKGROUND);
 
         let mut action = None;
-        if self.show_panel {
-            let mut cx = debug_ui::Context {
-                sandbox: &mut self.sandbox,
-                view: &mut self.view,
-                controls: &mut self.controls,
-                fps: self.fps,
-                status: &self.status,
-                cursor_grabbed: self.cursor_grabbed,
-            };
-            gfx.gui.draw(&gfx.window, &gfx.renderer, &mut frame, |ui| {
+        let show_panel = self.show_panel;
+        let mut cx = debug_ui::Context {
+            sandbox: &mut self.sandbox,
+            view: &mut self.view,
+            controls: &mut self.controls,
+            fps: self.fps,
+            status: &self.status,
+            cursor_grabbed: self.cursor_grabbed,
+        };
+        gfx.gui.draw(&gfx.window, &gfx.renderer, &mut frame, |ui| {
+            let max = cx.sandbox.world.tuning.max_health;
+            hud::hud(ui, cx.sandbox.character(), max);
+            if show_panel {
                 action = action.or(debug_ui::panel(ui, &mut cx));
-            });
-        }
+            }
+        });
         gfx.renderer.end_frame(frame);
         if let Some(action) = action {
             self.apply(action);
@@ -216,7 +225,7 @@ impl App {
                 if let Some(msg) = self.sandbox.stop_recording("Respawn") {
                     self.status = msg;
                 }
-                self.sandbox.respawn();
+                self.sandbox.spawn_now();
             }
             KeyCode::F5 => {
                 self.status = self.sandbox.stop_recording("F5").unwrap_or_else(|| {
@@ -293,6 +302,13 @@ impl ApplicationHandler for App {
                 {
                     self.set_cursor_grab(true);
                 }
+            }
+            WindowEvent::MouseWheel { delta, .. } if self.cursor_grabbed => {
+                let notches = match delta {
+                    winit::event::MouseScrollDelta::LineDelta(_, y) => y.round() as i32,
+                    winit::event::MouseScrollDelta::PixelDelta(p) => (p.y / 40.0).round() as i32,
+                };
+                self.controls.mouse_wheel(notches);
             }
             WindowEvent::RedrawRequested => self.redraw(),
             _ => {}

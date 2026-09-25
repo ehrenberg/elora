@@ -1,13 +1,14 @@
-//! Physik-Sandbox (M1): eine Figur auf einer Textkarte, fester Tick, Interpolation.
+//! Sandbox (M1/M2): Elora, Dummies und Pickups auf einer Textkarte, fester Tick,
+//! Interpolation, Hot-Reload und Aufzeichnung.
 
 use std::path::{Path, PathBuf};
 use std::sync::mpsc;
 use std::time::Duration;
 
 use anyhow::Context as _;
-use elora_map::{EntityKind, Map};
+use elora_map::Map;
 use elora_sim::replay::Recording;
-use elora_sim::{CharacterCore, TICKS_PER_SECOND, Tuning, Vec2, World};
+use elora_sim::{CharacterCore, Event, PlayerInput, TICKS_PER_SECOND, Tuning, Vec2, World};
 
 use crate::controls::Controls;
 
@@ -15,57 +16,80 @@ pub const TICK: Duration = Duration::from_micros(1_000_000 / TICKS_PER_SECOND as
 /// Schutz gegen Aufholspiralen nach Hängern.
 const MAX_TICKS_PER_FRAME: u32 = 10;
 
-#[derive(Debug)]
-pub struct Sandbox {
-    pub map_path: PathBuf,
-    pub map: Map,
-    pub world: World,
-    pub player: usize,
-    /// Zustand vor dem letzten Tick (für Interpolation).
-    pub prev: CharacterCore,
-    accumulator: Duration,
-    watcher: Option<MapWatcher>,
-    /// Ergebnis des letzten Hot-Reloads (Fehlertext bei ungültiger Karte).
-    pub reload_error: Option<String>,
-    /// Laufende Eingabe-Aufzeichnung (M1.6).
-    pub recording: Option<Recording>,
-}
-
 /// Ablage der Aufzeichnungen: jede wird dort zum Golden-Test von `elora-sim`.
 pub const RECORDINGS_DIR: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../crates/elora-sim/tests/recordings"
 );
 
+#[derive(Debug)]
+pub struct Sandbox {
+    pub map_path: PathBuf,
+    pub map: Map,
+    pub world: World,
+    /// Slot des menschlichen Spielers.
+    pub player: usize,
+    /// Figuren vor dem letzten Tick (für Interpolation), Index = Slot.
+    pub prev: Vec<Option<CharacterCore>>,
+    /// Letzte bekannte Position von Elora (Kamera bleibt dort, solange sie tot ist).
+    last_pos: Vec2,
+    accumulator: Duration,
+    watcher: Option<MapWatcher>,
+    /// Ergebnis des letzten Hot-Reloads (Fehlertext bei ungültiger Karte).
+    pub reload_error: Option<String>,
+    /// Laufende Eingabe-Aufzeichnung (M1.6).
+    pub recording: Option<Recording>,
+    /// Ereignisse seit dem letzten Abholen (für Effekte).
+    pending_events: Vec<Event>,
+}
+
 impl Sandbox {
     pub fn load(map_path: &Path, tuning: Tuning) -> anyhow::Result<Self> {
         let map = load_map(map_path)?;
-        let mut world = World::new(tuning, map.collision());
-        let player = world.spawn(spawn_point(&map));
-        let prev = world.characters[player].clone().expect("gerade gespawnt");
+        let (world, player) = fresh_world(&map, tuning);
         let watcher = MapWatcher::new(map_path)
             .inspect_err(|e| tracing::warn!("Hot-Reload nicht verfügbar: {e:#}"))
             .ok();
-        Ok(Self {
+        let mut s = Self {
             map_path: map_path.to_path_buf(),
             map,
             world,
             player,
-            prev,
+            prev: Vec::new(),
+            last_pos: Vec2::ZERO,
             accumulator: Duration::ZERO,
             watcher,
             reload_error: None,
             recording: None,
-        })
+            pending_events: Vec::new(),
+        };
+        s.sync_prev();
+        Ok(s)
     }
 
-    pub fn character(&self) -> &CharacterCore {
-        self.world.characters[self.player]
-            .as_ref()
-            .expect("Spieler existiert")
+    /// Elora, falls sie lebt.
+    pub fn character(&self) -> Option<&elora_sim::Character> {
+        self.world.character(self.player)
     }
 
-    /// Lädt die Karte neu, wenn sich die Datei geändert hat. Elora behält ihre Position.
+    fn sync_prev(&mut self) {
+        self.prev = self
+            .world
+            .players
+            .iter()
+            .map(|p| {
+                p.as_ref()
+                    .and_then(|p| p.character.as_ref())
+                    .map(|c| c.core.clone())
+            })
+            .collect();
+        if let Some(c) = self.character() {
+            self.last_pos = c.core.pos;
+        }
+    }
+
+    /// Lädt die Karte neu, wenn sich die Datei geändert hat. Elora behält ihren
+    /// Zustand; Pickups und Dummies kommen aus der neuen Karte.
     pub fn poll_reload(&mut self) {
         if !self.watcher.as_ref().is_some_and(MapWatcher::changed) {
             return;
@@ -73,9 +97,16 @@ impl Sandbox {
         match load_map(&self.map_path) {
             Ok(map) => {
                 self.stop_recording("Karte geändert");
-                self.world.collision = map.collision();
+                let elora = self.character().cloned();
+                let (mut world, player) = fresh_world(&map, self.world.tuning.clone());
+                if let Some(p) = world.players[player].as_mut() {
+                    p.character = elora;
+                }
+                self.world = world;
+                self.player = player;
                 self.map = map;
                 self.reload_error = None;
+                self.sync_prev();
                 tracing::info!("Karte neu geladen");
             }
             Err(e) => {
@@ -85,15 +116,14 @@ impl Sandbox {
         }
     }
 
-    /// Startet eine Aufzeichnung ab dem Spawnpunkt (Figur wird zurückgesetzt).
+    /// Startet eine Aufzeichnung mit frischer Welt aus der Karte (Dummies und
+    /// Pickups im Ausgangszustand).
     pub fn start_recording(&mut self) {
-        self.respawn();
-        let spawn = self.character().pos;
-        self.recording = Some(Recording::new(
-            &self.world.collision,
-            spawn,
-            self.world.tuning.clone(),
-        ));
+        let (world, player) = fresh_world(&self.map, self.world.tuning.clone());
+        self.world = world;
+        self.player = player;
+        self.sync_prev();
+        self.recording = Some(Recording::new(&self.world));
     }
 
     /// Beendet die Aufzeichnung und speichert sie. Liefert eine Statusmeldung.
@@ -120,15 +150,15 @@ impl Sandbox {
         })
     }
 
-    /// Setzt die Figur auf den Spawnpunkt zurück.
-    pub fn respawn(&mut self) {
-        let core = CharacterCore::new(spawn_point(&self.map));
-        self.prev = core.clone();
-        self.world.characters[self.player] = Some(core);
+    /// Setzt Elora sofort an den besten Spawnpunkt (Taste R).
+    pub fn spawn_now(&mut self) {
+        let pos = self.world.best_spawn().unwrap_or(self.last_pos);
+        self.world.spawn_character(self.player, pos);
+        self.sync_prev();
     }
 
     /// Lässt die Simulation um die vergangene Echtzeit laufen.
-    pub fn advance(&mut self, elapsed: Duration, controls: &Controls) {
+    pub fn advance(&mut self, elapsed: Duration, controls: &mut Controls) {
         self.accumulator += elapsed;
         let mut ticks = 0;
         while self.accumulator >= TICK {
@@ -138,16 +168,25 @@ impl Sandbox {
                 self.accumulator = Duration::ZERO;
                 break;
             }
-            self.prev = self.character().clone();
+            self.sync_prev();
             let input = controls.player_input();
             if let Some(rec) = &mut self.recording {
                 rec.push(&input);
             }
-            self.world.step(&[input]);
-            if self.character().death {
-                self.respawn();
+            let mut inputs = vec![PlayerInput::default(); self.world.players.len()];
+            inputs[self.player] = input;
+            self.world.step(&inputs);
+            self.pending_events
+                .extend(self.world.events.iter().cloned());
+            if let Some(c) = self.character() {
+                self.last_pos = c.core.pos;
             }
         }
+    }
+
+    /// Ereignisse seit dem letzten Aufruf.
+    pub fn take_events(&mut self) -> Vec<Event> {
+        std::mem::take(&mut self.pending_events)
     }
 
     /// Anteil des aktuellen Ticks (0..1) für die Interpolation.
@@ -155,28 +194,37 @@ impl Sandbox {
         self.accumulator.as_secs_f32() / TICK.as_secs_f32()
     }
 
-    /// Interpolierte Position der Figur.
-    pub fn render_pos(&self) -> Vec2 {
-        self.prev.pos.lerp(self.character().pos, self.alpha())
+    /// Kern der Figur in Slot `i`: (aktuell, vor dem letzten Tick).
+    pub fn cores(&self, i: usize) -> Option<(&CharacterCore, &CharacterCore)> {
+        let cur = &self.world.character(i)?.core;
+        let prev = self.prev.get(i).and_then(Option::as_ref).unwrap_or(cur);
+        Some((cur, prev))
     }
+
+    /// Kamera-Position: interpolierte Position von Elora, sonst die letzte bekannte.
+    pub fn render_pos(&self) -> Vec2 {
+        self.cores(self.player)
+            .map_or(self.last_pos, |(cur, prev)| {
+                prev.pos.lerp(cur.pos, self.alpha())
+            })
+    }
+}
+
+/// Welt aus der Karte plus menschlicher Spieler am besten Spawnpunkt.
+fn fresh_world(map: &Map, tuning: Tuning) -> (World, usize) {
+    let mut world = map.world(tuning);
+    let player = world.join();
+    if let Some(pos) = world.best_spawn() {
+        world.spawn_character(player, pos);
+    }
+    world.events.clear();
+    (world, player)
 }
 
 pub fn load_map(path: &Path) -> anyhow::Result<Map> {
     let src = std::fs::read_to_string(path)
         .with_context(|| format!("Karte {} nicht lesbar", path.display()))?;
     elora_map::parse_text_map(&src).with_context(|| format!("Karte {}", path.display()))
-}
-
-fn spawn_point(map: &Map) -> Vec2 {
-    [
-        EntityKind::Spawn,
-        EntityKind::SpawnRed,
-        EntityKind::SpawnBlue,
-    ]
-    .into_iter()
-    .find_map(|k| map.entities_of(k).next())
-    .map(elora_map::Entity::pos)
-    .expect("validierte Karte hat einen Spawn")
 }
 
 /// Beobachtet die Kartendatei. Beobachtet wird das Verzeichnis, weil viele Editoren

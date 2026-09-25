@@ -18,7 +18,7 @@ Die ganze Datei ist gültiges **TOML**. Metadaten stehen als normale Schlüssel 
 - Ablage: `maps/`
 - Parser: Crate `toml` + `serde` in `elora-map`
 
-### Beispiel: Sandbox-Karte
+### Beispiel: Sandbox-Karte (Stand M1; die aktuelle Datei `maps/sandbox.emap.toml` enthält zusätzlich Dummies)
 
 ```toml
 # Elora-Karte
@@ -81,6 +81,10 @@ Eine Entity belegt ihr Feld und macht es zu **Luft**. Sie sitzt in der Mitte des
 | `a` | Rüstung (Armor) | |
 | `L` | Laser | E-016 |
 | `G` | Granatwerfer | E-016 |
+| `D` | Trainings-Dummy, steht | nur Sandbox (E-053, E-054) |
+| `W` | Trainings-Dummy, läuft hin und her | nur Sandbox |
+| `J` | Trainings-Dummy, springt | nur Sandbox |
+| `X` | Trainings-Dummy, läuft + springt | nur Sandbox |
 
 Die Regel für Zeichen: **Satzzeichen sind Tiles, Buchstaben sind Entities.** So bleibt die Legende auch mit neuen Einträgen übersichtlich.
 

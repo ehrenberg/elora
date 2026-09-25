@@ -42,7 +42,7 @@ fn run(w: &mut World, input: PlayerInput, ticks: u32) {
 }
 
 fn core(w: &World) -> &elora_sim::CharacterCore {
-    w.characters[0].as_ref().unwrap()
+    w.core(0).expect("Figur 0 lebt")
 }
 
 /// Lässt die Figur landen und zur Ruhe kommen.
@@ -235,15 +235,25 @@ fn unhookable_makes_hook_retract() {
 }
 
 #[test]
-fn death_tile_is_detected() {
+fn death_tile_kills() {
     let mut w = world(&["#.....#", "#.....#", "#.....#", "#^^^^^#", "#######"]);
     w.spawn(tile_center(3, 1));
     let mut died = false;
     for _ in 0..30 {
         w.step(&[PlayerInput::default()]);
-        died |= core(&w).death;
+        died |= w.events.iter().any(|e| {
+            matches!(
+                e,
+                elora_sim::Event::Death {
+                    player: 0,
+                    cause: elora_sim::DeathCause::World,
+                    ..
+                }
+            )
+        });
     }
     assert!(died);
+    assert!(w.character(0).is_none());
 }
 
 #[test]
@@ -284,6 +294,7 @@ fn simulation_is_deterministic() {
         target_y: -((t * 13) % 150) - 1,
         jump: t % 23 < 5,
         hook: t % 40 > 12,
+        ..PlayerInput::default()
     };
     let simulate = || {
         let mut w = arena();

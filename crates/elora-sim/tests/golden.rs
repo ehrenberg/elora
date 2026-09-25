@@ -10,7 +10,9 @@
 use std::path::{Path, PathBuf};
 
 use elora_sim::replay::Recording;
-use elora_sim::{Collision, PlayerInput, Tile, Tuning, Vec2};
+use elora_sim::{
+    Collision, DummyPattern, PickupKind, PlayerInput, Tile, Tuning, Vec2, Weapon, World,
+};
 
 fn recordings_dir() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/recordings")
@@ -31,6 +33,8 @@ fn check_golden(name: &str, actual: &str) {
         panic!("{} fehlt – mit ELORA_BLESS=1 erzeugen", path.display());
     });
     if expected != actual {
+        // Zum Vergleichen: tatsächliches Protokoll neben die Golden-Datei legen
+        let _ = std::fs::write(path.with_extension("actual"), actual);
         let first = expected
             .lines()
             .zip(actual.lines())
@@ -62,7 +66,10 @@ fn scripted() -> Recording {
         })
         .collect();
     let col = Collision::new(60, 30, tiles);
-    let mut rec = Recording::new(&col, Vec2::new(200.0, 800.0), Tuning::default());
+    let mut world = World::new(Tuning::default(), col);
+    world.spawn_points.push(Vec2::new(200.0, 800.0));
+    world.spawn(Vec2::new(200.0, 800.0));
+    let mut rec = Recording::new(&world);
     for t in 0..1500_i32 {
         rec.push(&PlayerInput {
             direction: [1, 1, 0, -1, -1, 0][usize::try_from(t / 29 % 6).unwrap()],
@@ -70,9 +77,86 @@ fn scripted() -> Recording {
             target_y: -((t * 13) % 300) - 1,
             jump: t % 23 < 5 || t % 71 == 3,
             hook: t % 60 > 15,
+            ..PlayerInput::default()
         });
     }
     rec
+}
+
+/// Festes Kampf-Szenario (M2.9): Pickups einsammeln, Waffen wechseln, auf alle
+/// Dummy-Arten schießen, Rocket-Jumps, Tod und Respawn.
+fn scripted_combat() -> Recording {
+    let (w, h) = (50, 20);
+    let mut tiles = vec![Tile::Air; w * h];
+    for x in 0..w {
+        tiles[x] = Tile::Solid;
+        tiles[18 * w + x] = Tile::Solid;
+        tiles[19 * w + x] = Tile::Solid;
+    }
+    for y in 0..h {
+        tiles[y * w] = Tile::Solid;
+        tiles[y * w + w - 1] = Tile::Solid;
+    }
+    for x in 30..40 {
+        tiles[12 * w + x] = Tile::Solid;
+    }
+    let tile = |x: i32, y: i32| Vec2::new(x as f32 * 32.0 + 16.0, y as f32 * 32.0 + 16.0);
+    let mut world = World::new(Tuning::default(), Collision::new(w, h, tiles));
+    world.spawn_points.push(tile(3, 17));
+    world.spawn_points.push(tile(46, 17));
+    // Elora zuerst (Slot 0), Pickups direkt neben ihr, Dummies weiter rechts
+    world.spawn(tile(3, 17));
+    world.add_pickup(PickupKind::Weapon(Weapon::Grenade), tile(5, 17));
+    world.add_pickup(PickupKind::Weapon(Weapon::Laser), tile(6, 17));
+    world.add_pickup(PickupKind::Armor, tile(7, 17));
+    world.add_dummy(tile(18, 17), DummyPattern::Stand);
+    world.add_dummy(tile(24, 17), DummyPattern::Walk);
+    world.add_dummy(tile(35, 11), DummyPattern::Jump);
+    world.add_dummy(tile(42, 17), DummyPattern::WalkJump);
+    let mut rec = Recording::new(&world);
+    let mut fire = 0u8;
+    for t in 0..3000_i32 {
+        let phase = t / 250;
+        // Feuertaste: alle 20 Ticks drücken, 10 Ticks halten
+        if t % 10 == 0 {
+            fire = fire.wrapping_add(1) & 0x3f;
+        }
+        // Phasen: 0 Waffen holen, 1 Granate, 2 Laser, 3 Rocket-Jumps, 4 Hammer im Lauf,
+        // danach Laser/Granate im Wechsel mit Hook
+        let weapon: u8 = match phase {
+            0 | 2 | 5 | 7 | 9 | 11 => 3,
+            1 | 3 | 6 | 8 | 10 => 2,
+            _ => 1,
+        };
+        let rocket = phase == 3;
+        rec.push(&PlayerInput {
+            direction: match phase {
+                0 => i8::from(t < 60),
+                4 => 1,
+                5 | 9 => -1,
+                _ => 0,
+            },
+            target_x: if rocket { 0 } else { 400 - (t * 7 % 80) },
+            target_y: if rocket { 100 } else { -((t * 11) % 60) - 10 },
+            jump: if rocket {
+                t % 60 < 2
+            } else {
+                phase > 0 && t % 97 < 3
+            },
+            hook: phase >= 6 && t % 70 > 40,
+            fire: if phase == 0 { 0 } else { fire },
+            wanted_weapon: if t % 250 == 1 { weapon } else { 0 },
+            ..PlayerInput::default()
+        });
+    }
+    rec
+}
+
+#[test]
+fn scripted_combat_matches_golden() {
+    let log = scripted_combat().replay().unwrap();
+    assert!(log.contains("tot seit"), "Szenario soll Tode enthalten");
+    check_golden("scripted-combat", &log);
 }
 
 #[test]

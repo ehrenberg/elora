@@ -5,7 +5,9 @@
 
 mod text;
 
-use elora_sim::{Collision, TILE_SIZE, Tile, Vec2};
+use elora_sim::{
+    Collision, DummyPattern, PickupKind, TILE_SIZE, Tile, Tuning, Vec2, Weapon, World,
+};
 
 pub use text::{MapError, parse_text_map};
 
@@ -26,6 +28,8 @@ pub enum EntityKind {
     Armor,
     Laser,
     Grenade,
+    /// Trainings-Dummy (E-053, E-054), nur für die Sandbox.
+    Dummy(DummyPattern),
 }
 
 /// Ein Entity, sitzt in der Mitte seines Tiles.
@@ -75,6 +79,29 @@ impl Map {
     /// Kollisionsraster für die Simulation.
     pub fn collision(&self) -> Collision {
         Collision::new(self.width, self.height, self.tiles.clone())
+    }
+
+    /// Welt mit Spawnpunkten, Pickups und Dummies dieser Karte (ohne Spieler).
+    pub fn world(&self, tuning: Tuning) -> World {
+        let mut world = World::new(tuning, self.collision());
+        for e in &self.entities {
+            let pos = e.pos();
+            match e.kind {
+                EntityKind::Spawn | EntityKind::SpawnRed | EntityKind::SpawnBlue => {
+                    world.spawn_points.push(pos);
+                }
+                EntityKind::Health => world.add_pickup(PickupKind::Health, pos),
+                EntityKind::Armor => world.add_pickup(PickupKind::Armor, pos),
+                EntityKind::Laser => world.add_pickup(PickupKind::Weapon(Weapon::Laser), pos),
+                EntityKind::Grenade => world.add_pickup(PickupKind::Weapon(Weapon::Grenade), pos),
+                EntityKind::Dummy(pattern) => {
+                    world.add_dummy(pos, pattern);
+                }
+                // Flaggen folgen mit den Spielmodi (M4)
+                EntityKind::FlagRed | EntityKind::FlagBlue => {}
+            }
+        }
+        world
     }
 
     pub fn entities_of(&self, kind: EntityKind) -> impl Iterator<Item = &Entity> {

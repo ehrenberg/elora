@@ -56,6 +56,12 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-047 | 2026-09-25 | Schriften | egui-Standardschriften (`epaint_default_fonts`, OFL-1.1 + Ubuntu Font Licence) **nicht** verwenden; stattdessen **Inter** (UI) und **JetBrains Mono** (Monospace), beide OFL-1.1, als Assets in `assets/fonts/` | Entscheidung Projektinhaber; keine Sonderlizenzen in Crate-Abhängigkeiten |
 | E-048 | 2026-09-25 | Advisories | „unmaintained“-Meldungen von cargo-deny nur als **Warnung** (`-W unmaintained`), Sicherheitslücken bleiben Fehler. Anlass: `ttf-parser` (RUSTSEC-2026-0192, indirekt über egui) | Entscheidung Projektinhaber |
 | E-049 | 2026-09-25 | M1 Abnahme | Physik-Sandbox abgenommen: Bewegungsgefühl „perfekt“, Tuning-Startwerte (E-023) bleiben unverändert | Entscheidung Projektinhaber |
+| E-050 | 2026-09-25 | M2-Plan | Plan aus [`08-m2-plan.md`](08-m2-plan.md) inkl. technischer Festlegungen umsetzen | Entscheidung Projektinhaber |
+| E-051 | 2026-09-25 | Waffenwahl (D-M2-01/02) | Tasten **1 Hammer, 2 Granate, 3 Laser**; Mausrad blättert in dieser Reihenfolge | Entscheidung Projektinhaber |
+| E-052 | 2026-09-25 | Laser-Knockback (D-M2-03) | **Ja, leicht**: Stoß in Schussrichtung, Startwert **2** (Tuning-Regler) – Abweichung vom Original (0) | Entscheidung Projektinhaber |
+| E-053 | 2026-09-25 | Trainings-Dummies (D-M2-04) | Dummies **aus der Karte** mit **Bewegungsmustern**: Stehen, Hin-und-her-Laufen, Springen, Laufen + Springen | Entscheidung Projektinhaber |
+| E-054 | 2026-09-25 | Dummy-Kartenzeichen | Ein Zeichen pro Muster: `D` steht, `W` läuft, `J` springt, `X` läuft + springt (Erweiterung von E-024) | Entscheidung Projektinhaber |
+| E-055 | 2026-09-25 | Kill-Taste (D-M2-05) | Erst in **M4** mit den Spielregeln | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 

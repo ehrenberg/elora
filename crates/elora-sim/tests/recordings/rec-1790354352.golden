@@ -1,0 +1,40 @@
+tick 25: projektile 0 laser 0
+  p0: pos (176.0, 337.0) vel (0.0, 0.0) hook Idle (176.0, 337.0) sprung 0 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 50: projektile 0 laser 0
+  p0: pos (176.0, 337.0) vel (0.0, 0.0) hook Idle (176.0, 337.0) sprung 0 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 75: projektile 0 laser 0
+  p0: pos (257.0, 315.0) vel (9.3671875, -9.355469) hook Grabbed (209.0, 159.0) sprung 0 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 100: projektile 0 laser 0
+  p0: pos (246.0, 59.0) vel (-13.433594, -2.765625) hook Grabbed (209.0, 159.0) sprung 0 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 125: projektile 0 laser 0
+  p0: pos (297.0, 116.0) vel (10.5, 1.5) hook Idle (286.0, 115.0) sprung 0 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 150: projektile 0 laser 0
+  p0: pos (550.0, 316.0) vel (10.5, 14.0) hook Retracted (598.0, 159.0) sprung 0 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 175: projektile 0 laser 0
+  p0: tot seit 165
+tick 200: projektile 0 laser 0
+  p0: tot seit 165
+tick 225: projektile 0 laser 0
+  p0: tot seit 165
+tick 250: projektile 0 laser 0
+  p0: tot seit 165
+tick 275: projektile 0 laser 0
+  p0: tot seit 165
+tick 300: projektile 0 laser 0
+  p0: tot seit 165
+tick 325: projektile 0 laser 0
+  p0: pos (176.0, 337.0) vel (0.0, 0.0) hook Idle (176.0, 337.0) sprung 0 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 350: projektile 0 laser 0
+  p0: pos (176.0, 337.0) vel (0.0, 0.0) hook Idle (176.0, 337.0) sprung 0 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 375: projektile 0 laser 0
+  p0: pos (176.0, 337.0) vel (0.0, 0.0) hook Idle (176.0, 337.0) sprung 0 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 400: projektile 0 laser 0
+  p0: pos (176.0, 337.0) vel (0.0, 0.0) hook Idle (176.0, 337.0) sprung 0 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 425: projektile 0 laser 0
+  p0: pos (176.0, 337.0) vel (0.0, 0.0) hook Idle (176.0, 337.0) sprung 0 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 450: projektile 0 laser 0
+  p0: pos (176.0, 337.0) vel (0.0, 0.0) hook Idle (176.0, 337.0) sprung 0 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+tick 475: projektile 0 laser 0
+  p0: pos (176.0, 337.0) vel (0.0, 0.0) hook Idle (176.0, 337.0) sprung 0 hp 10 rüstung 0 waffe Hammer munition [None, None, None]
+ende tick 491: projektile 0 laser 0
+  p0: pos (176.0, 337.0) vel (0.0, 0.0) hook Idle (176.0, 337.0) sprung 0 hp 10 rüstung 0 waffe Hammer munition [None, None, None]

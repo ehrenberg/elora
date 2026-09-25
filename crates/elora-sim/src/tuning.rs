@@ -2,8 +2,8 @@
 //!
 //! Alle Werte gelten pro Tick bei [`crate::TICKS_PER_SECOND`].
 
-/// Bewegungs- und Hook-Tuning. Die Defaults sind die angenommenen Startwerte
-/// T-02 bis T-17.
+/// Bewegungs-, Hook- und Waffen-Tuning. Die Defaults sind die angenommenen
+/// Startwerte T-02 bis T-30 sowie E-052.
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "serde", serde(default))]
@@ -48,6 +48,55 @@ pub struct Tuning {
     pub player_collision: bool,
     /// Spieler können einander hooken
     pub player_hooking: bool,
+
+    /// T-18: Hammer-Schaden
+    pub hammer_damage: i32,
+    /// T-18: Hammer-Feuerverzögerung (ms)
+    pub hammer_fire_delay: u32,
+    /// T-19: Stärke des Hammer-Knockbacks (Original: 10)
+    pub hammer_knockback: f32,
+    /// T-20: Laser-Schaden
+    pub laser_damage: i32,
+    /// T-20: Laser-Feuerverzögerung (ms)
+    pub laser_fire_delay: u32,
+    /// T-21: Laser-Reichweite
+    pub laser_reach: f32,
+    /// T-22: Verzögerung bis zum Abprall (ms)
+    pub laser_bounce_delay: u32,
+    /// T-22: Anzahl Abpraller
+    pub laser_bounce_num: u32,
+    /// Reichweitenverlust pro Abprall
+    pub laser_bounce_cost: f32,
+    /// E-052: Laser-Knockback in Schussrichtung (Original: 0)
+    pub laser_knockback: f32,
+    /// T-23: maximaler Granaten-Schaden (Explosionsmitte)
+    pub grenade_damage: i32,
+    /// T-23: Granaten-Feuerverzögerung (ms)
+    pub grenade_fire_delay: u32,
+    /// T-24: Granaten-Geschwindigkeit
+    pub grenade_speed: f32,
+    /// T-24: Krümmung der Flugbahn
+    pub grenade_curvature: f32,
+    /// T-24: Lebensdauer (s)
+    pub grenade_lifetime: f32,
+    /// T-25: Explosionsradius
+    pub explosion_radius: f32,
+    /// T-25: innerer Radius mit vollem Schaden
+    pub explosion_inner_radius: f32,
+    /// T-25: maximale Explosionskraft
+    pub explosion_max_force: f32,
+    /// T-27: maximale Munition
+    pub max_ammo: i32,
+    /// T-28: maximale Lebenspunkte
+    pub max_health: i32,
+    /// T-28: maximale Rüstung
+    pub max_armor: i32,
+    /// T-29: Respawn-Zeit der Pickups (s)
+    pub pickup_respawn: f32,
+    /// T-30: Mindestzeit bis zum Respawn nach dem Tod (s)
+    pub respawn_delay: f32,
+    /// Automatischer Respawn ohne Klick (s, Original: 3)
+    pub auto_respawn: f32,
 }
 
 impl Default for Tuning {
@@ -73,6 +122,41 @@ impl Default for Tuning {
             player_hook_force: 1.5,
             player_collision: true,
             player_hooking: true,
+            hammer_damage: 3,
+            hammer_fire_delay: 125,
+            hammer_knockback: 11.0,
+            laser_damage: 5,
+            laser_fire_delay: 750,
+            laser_reach: 850.0,
+            laser_bounce_delay: 150,
+            laser_bounce_num: 1,
+            laser_bounce_cost: 0.0,
+            laser_knockback: 2.0,
+            grenade_damage: 6,
+            grenade_fire_delay: 500,
+            grenade_speed: 1050.0,
+            grenade_curvature: 7.0,
+            grenade_lifetime: 2.0,
+            explosion_radius: 135.0,
+            explosion_inner_radius: 48.0,
+            explosion_max_force: 12.5,
+            max_ammo: 10,
+            max_health: 10,
+            max_armor: 10,
+            pickup_respawn: 15.0,
+            respawn_delay: 0.5,
+            auto_respawn: 3.0,
         }
     }
+}
+
+/// Wandelt Millisekunden wie im Original ganzzahlig in Ticks um.
+pub fn ms_to_ticks(ms: u32) -> u32 {
+    ms * crate::TICKS_PER_SECOND / 1000
+}
+
+/// Wandelt Sekunden in Ticks um (abgerundet, negative Werte = 0).
+#[allow(clippy::cast_sign_loss)] // durch `max(0.0)` ausgeschlossen
+pub fn secs_to_ticks(secs: f32) -> u64 {
+    (secs.max(0.0) * crate::TICKS_PER_SECOND as f32) as u64
 }

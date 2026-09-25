@@ -8,10 +8,11 @@ use std::fmt::Write as _;
 
 use serde::{Deserialize, Serialize};
 
-use crate::{CharacterCore, Collision, PlayerInput, Tile, Tuning, Vec2, World};
+use crate::player::Controller;
+use crate::{Collision, DummyPattern, PickupKind, PlayerInput, Tile, Tuning, Vec2, World};
 
 /// Formatversion von `.erec.toml`.
-pub const RECORDING_FORMAT: u32 = 1;
+pub const RECORDING_FORMAT: u32 = 2;
 
 /// Alle wie viele Ticks der Zustand protokolliert wird.
 const DUMP_INTERVAL: u64 = 25;
@@ -19,12 +20,59 @@ const DUMP_INTERVAL: u64 = 25;
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Recording {
     pub format: u32,
-    pub spawn: [f32; 2],
     /// Kollisionsraster: `.` Luft, `#` Wand, `%` unhookable, `^` Tod.
     pub tiles: String,
-    /// Eingaben, eine Zeile pro Tick: `richtung ziel_x ziel_y sprung hook`.
+    /// Spawnpunkte für den Respawn menschlicher Spieler.
+    pub spawn_points: Vec<[f32; 2]>,
+    /// Spieler-Slots in Reihenfolge; `dummy = None` ist der aufgezeichnete Mensch.
+    pub players: Vec<RecordedPlayer>,
+    pub pickups: Vec<RecordedPickup>,
+    /// Eingaben des Menschen, eine Zeile pro Tick:
+    /// `richtung ziel_x ziel_y sprung hook feuer waffe nächste vorige`.
     pub inputs: String,
     pub tuning: Tuning,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct RecordedPlayer {
+    pub pos: [f32; 2],
+    pub dummy: Option<DummyPattern>,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct RecordedPickup {
+    pub kind: PickupKind,
+    pub pos: [f32; 2],
+}
+
+/// Formatversion 1 (M1): ein Spieler ohne Waffen, Eingaben mit 5 Feldern.
+#[derive(Debug, Deserialize)]
+struct RecordingV1 {
+    spawn: [f32; 2],
+    tiles: String,
+    inputs: String,
+    tuning: Tuning,
+}
+
+impl From<RecordingV1> for Recording {
+    fn from(v1: RecordingV1) -> Self {
+        let mut inputs = String::with_capacity(v1.inputs.len() * 2);
+        for line in v1.inputs.lines() {
+            let _ = writeln!(inputs, "{line} 0 0 0 0");
+        }
+        Self {
+            format: RECORDING_FORMAT,
+            tiles: v1.tiles,
+            spawn_points: vec![v1.spawn],
+            players: vec![RecordedPlayer {
+                pos: v1.spawn,
+                dummy: None,
+            }],
+            pickups: Vec::new(),
+            inputs,
+            tuning: v1.tuning,
+        }
+    }
 }
 
 /// Fehler beim Lesen einer Aufzeichnung.
@@ -40,8 +88,11 @@ impl std::fmt::Display for RecordingError {
 impl std::error::Error for RecordingError {}
 
 impl Recording {
-    /// Beginnt eine Aufzeichnung für die aktuelle Welt.
-    pub fn new(collision: &Collision, spawn: Vec2, tuning: Tuning) -> Self {
+    /// Beginnt eine Aufzeichnung für den Zustand von `world`. Erwartet eine
+    /// frische Welt (alle Figuren lebend an ihrer Startposition, Pickups verfügbar,
+    /// keine Projektile) mit genau einem menschlichen Spieler.
+    pub fn new(world: &World) -> Self {
+        let collision = &world.collision;
         let mut tiles = String::new();
         for y in 0..collision.height() {
             for x in 0..collision.width() {
@@ -55,24 +106,53 @@ impl Recording {
             }
             tiles.push('\n');
         }
+        let players = world
+            .players
+            .iter()
+            .flatten()
+            .filter_map(|p| {
+                let c = p.character.as_ref()?;
+                let dummy = match &p.controller {
+                    Controller::Human => None,
+                    Controller::Dummy { pattern, .. } => Some(*pattern),
+                };
+                Some(RecordedPlayer {
+                    pos: [c.core.pos.x, c.core.pos.y],
+                    dummy,
+                })
+            })
+            .collect();
         Self {
             format: RECORDING_FORMAT,
-            spawn: [spawn.x, spawn.y],
             tiles,
+            spawn_points: world.spawn_points.iter().map(|p| [p.x, p.y]).collect(),
+            players,
+            pickups: world
+                .pickups
+                .iter()
+                .map(|p| RecordedPickup {
+                    kind: p.kind,
+                    pos: [p.pos.x, p.pos.y],
+                })
+                .collect(),
             inputs: String::new(),
-            tuning,
+            tuning: world.tuning.clone(),
         }
     }
 
     pub fn push(&mut self, input: &PlayerInput) {
         let _ = writeln!(
             self.inputs,
-            "{} {} {} {} {}",
+            "{} {} {} {} {} {} {} {} {}",
             input.direction,
             input.target_x,
             input.target_y,
             u8::from(input.jump),
             u8::from(input.hook),
+            input.fire,
+            input.wanted_weapon,
+            input.next_weapon,
+            input.prev_weapon,
         );
     }
 
@@ -87,14 +167,15 @@ impl Recording {
     /// # Errors
     /// Wenn `src` kein gültiges TOML einer Aufzeichnung ist.
     pub fn from_toml(src: &str) -> Result<Self, RecordingError> {
-        let rec: Self = toml::from_str(src).map_err(|e| RecordingError(e.to_string()))?;
-        if rec.format != RECORDING_FORMAT {
-            return Err(RecordingError(format!(
-                "Formatversion {} nicht unterstützt",
-                rec.format
-            )));
+        let err = |e: toml::de::Error| RecordingError(e.to_string());
+        let value: toml::Table = toml::from_str(src).map_err(err)?;
+        match value.get("format").and_then(toml::Value::as_integer) {
+            Some(1) => Ok(toml::from_str::<RecordingV1>(src).map_err(err)?.into()),
+            Some(2) => toml::from_str(src).map_err(err),
+            other => Err(RecordingError(format!(
+                "Formatversion {other:?} nicht unterstützt"
+            ))),
         }
-        Ok(rec)
     }
 
     /// # Errors
@@ -138,61 +219,114 @@ impl Recording {
                     .map(str::parse)
                     .collect::<Result<_, _>>()
                     .map_err(|_| err())?;
-                let [direction, target_x, target_y, jump, hook] = f[..] else {
+                let [
+                    direction,
+                    target_x,
+                    target_y,
+                    jump,
+                    hook,
+                    fire,
+                    wanted,
+                    next,
+                    prev,
+                ] = f[..]
+                else {
                     return Err(err());
                 };
+                let byte = |v: i32| u8::try_from(v).map_err(|_| err());
                 Ok(PlayerInput {
                     direction: i8::try_from(direction).map_err(|_| err())?,
                     target_x,
                     target_y,
                     jump: jump != 0,
                     hook: hook != 0,
+                    fire: byte(fire)?,
+                    wanted_weapon: byte(wanted)?,
+                    next_weapon: byte(next)?,
+                    prev_weapon: byte(prev)?,
                 })
             })
             .collect()
+    }
+
+    /// Baut die Welt zum Start der Aufzeichnung.
+    ///
+    /// # Errors
+    /// Bei ungültigem Raster.
+    pub fn world(&self) -> Result<(World, usize), RecordingError> {
+        let v = |p: [f32; 2]| Vec2::new(p[0], p[1]);
+        let mut world = World::new(self.tuning.clone(), self.collision()?);
+        world.spawn_points = self.spawn_points.iter().copied().map(v).collect();
+        let mut human = None;
+        for p in &self.players {
+            match p.dummy {
+                Some(pattern) => {
+                    world.add_dummy(v(p.pos), pattern);
+                }
+                None => human = Some(world.spawn(v(p.pos))),
+            }
+        }
+        for p in &self.pickups {
+            world.add_pickup(p.kind, v(p.pos));
+        }
+        let human = human.ok_or_else(|| RecordingError("kein menschlicher Spieler".into()))?;
+        Ok((world, human))
     }
 
     /// Spielt die Aufzeichnung ab und liefert das Zustandsprotokoll.
     ///
     /// # Errors
     /// Bei ungültigem Raster oder ungültigen Eingabezeilen.
-    ///
-    /// # Panics
-    /// Nie im Normalbetrieb: Der Spieler-Slot wird hier selbst angelegt.
     pub fn replay(&self) -> Result<String, RecordingError> {
-        let mut world = World::new(self.tuning.clone(), self.collision()?);
-        let player = world.spawn(Vec2::new(self.spawn[0], self.spawn[1]));
+        let (mut world, human) = self.world()?;
+        let mut inputs = vec![PlayerInput::default(); world.players.len()];
         let mut log = String::new();
         for input in self.parse_inputs()? {
-            world.step(&[input]);
-            let core = world.characters[player]
-                .as_ref()
-                .expect("Spieler existiert");
+            inputs[human] = input;
+            world.step(&inputs);
             if world.tick.is_multiple_of(DUMP_INTERVAL) {
-                dump(&mut log, world.tick, core);
-            }
-            // wie in der Sandbox: Tod → Respawn am Startpunkt
-            if core.death {
-                world.characters[player] =
-                    Some(CharacterCore::new(Vec2::new(self.spawn[0], self.spawn[1])));
+                dump(&mut log, &world);
             }
         }
-        let core = world.characters[player]
-            .as_ref()
-            .expect("Spieler existiert");
         let _ = write!(log, "ende ");
-        dump(&mut log, world.tick, core);
+        dump(&mut log, &world);
         Ok(log)
     }
 }
 
-/// Eine Zeile Zustand. `{:?}` gibt f32 verlustfrei aus.
-fn dump(log: &mut String, tick: u64, c: &CharacterCore) {
+/// Zustand aller Slots. `{:?}` gibt f32 verlustfrei aus.
+fn dump(log: &mut String, world: &World) {
     let _ = writeln!(
         log,
-        "tick {tick}: pos ({:?}, {:?}) vel ({:?}, {:?}) hook {:?} ({:?}, {:?}) sprung {}",
-        c.pos.x, c.pos.y, c.vel.x, c.vel.y, c.hook_state, c.hook_pos.x, c.hook_pos.y, c.jumped
+        "tick {}: projektile {} laser {}",
+        world.tick,
+        world.projectiles.len(),
+        world.lasers.len()
     );
+    for (i, p) in world.players.iter().enumerate() {
+        let Some(p) = p else { continue };
+        let Some(ch) = &p.character else {
+            let _ = writeln!(log, "  p{i}: tot seit {}", p.die_tick);
+            continue;
+        };
+        let c = &ch.core;
+        let _ = writeln!(
+            log,
+            "  p{i}: pos ({:?}, {:?}) vel ({:?}, {:?}) hook {:?} ({:?}, {:?}) sprung {} hp {} rüstung {} waffe {:?} munition {:?}",
+            c.pos.x,
+            c.pos.y,
+            c.vel.x,
+            c.vel.y,
+            c.hook_state,
+            c.hook_pos.x,
+            c.hook_pos.y,
+            c.jumped,
+            ch.health,
+            ch.armor,
+            ch.arsenal.active,
+            ch.arsenal.slots.iter().map(|s| s.ammo).collect::<Vec<_>>(),
+        );
+    }
 }
 
 #[cfg(test)]
@@ -206,10 +340,13 @@ mod tests {
             t[4] = Tile::Air;
             t
         });
-        let mut rec = Recording::new(&col, Vec2::new(48.0, 48.0), Tuning::default());
+        let mut world = World::new(Tuning::default(), col);
+        world.spawn(Vec2::new(48.0, 48.0));
+        let mut rec = Recording::new(&world);
         rec.push(&PlayerInput {
             direction: 1,
             jump: true,
+            fire: 1,
             ..PlayerInput::default()
         });
         rec.push(&PlayerInput::default());
