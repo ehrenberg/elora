@@ -1,0 +1,12 @@
+# Dokumentation – Elora
+
+Elora ist ein 2D-Multiplayer-Arena-Shooter nach dem Vorbild von Teeworlds. „Elora“ ist zugleich der Name der spielbaren Figur.
+
+| Dokument | Inhalt |
+|---|---|
+| [01-analyse-teeworlds.md](01-analyse-teeworlds.md) | Analyse des Originals: Physik, Hook, Waffen, Modi, Netzwerk, Maps, Grafik |
+| [02-entscheidungen.md](02-entscheidungen.md) | Entscheidungslog: getroffene und offene Entscheidungen |
+| [03-architektur.md](03-architektur.md) | Architektur & Code-Struktur (Rust-Workspace, Standards, Tick-Modell) |
+| [04-tuning.md](04-tuning.md) | Tuning-Vorschlag: Physik-, Hook- und Waffenwerte für Elora im Vergleich zum Original |
+| [05-kartenformat.md](05-kartenformat.md) | Kartenformat: TOML-Datei mit ASCII-Raster, Legende, Regeln |
+| [06-roadmap.md](06-roadmap.md) | Roadmap: Meilensteine M0–M8 bis Release 1 |

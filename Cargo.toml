@@ -1,0 +1,45 @@
+[workspace]
+resolver = "3"
+members = [
+    "crates/elora-sim",
+    "crates/elora-map",
+    "crates/elora-render",
+    "apps/elora-client",
+    "xtask",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.98"
+license = "GPL-3.0-only"
+publish = false
+
+[workspace.dependencies]
+elora-sim = { path = "crates/elora-sim" }
+elora-map = { path = "crates/elora-map" }
+elora-render = { path = "crates/elora-render" }
+
+[workspace.lints.rust]
+unsafe_code = "deny"
+missing_debug_implementations = "warn"
+
+[workspace.lints.clippy]
+all = { level = "warn", priority = -1 }
+pedantic = { level = "warn", priority = -1 }
+module_name_repetitions = "allow"
+must_use_candidate = "allow"
+# Physik-Code rechnet bewusst mit f32 <-> Ganzzahl (Quantisierung, E-021)
+cast_possible_truncation = "allow"
+cast_precision_loss = "allow"
+
+[profile.dev]
+# Simulation und Renderer sind auch im Debug-Build flüssig
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
