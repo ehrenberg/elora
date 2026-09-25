@@ -40,7 +40,7 @@ M0 Setup ─► M1 Physik-Sandbox ─► M2 Kampf lokal ─► M3 Netzwerk ─�
 
 **Abnahme:** `cargo build` und `cargo xtask check` laufen fehlerfrei.
 
-**Stand 2026-09-25:** umgesetzt, `cargo xtask check` grün (fmt, clippy, nextest, deny). Wartet auf Abnahme durch den Projektinhaber.
+**Stand 2026-09-25:** umgesetzt, `cargo xtask check` grün (fmt, clippy, nextest, deny). **Abgenommen** (E-042).
 
 ## M1 – Physik-Sandbox (E-013)
 

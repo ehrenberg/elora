@@ -78,6 +78,8 @@ Zustände: `Idle → Flying → Grabbed (an Wand oder Spieler) → Retracted`.
 - Player-Hook hat ein Zeitlimit: `SERVER_TICK_SPEED + SERVER_TICK_SPEED/5` = 60 Ticks = **1,2 s**, danach löst er sich.
 - Kraftverteilung beim Player-Hook: der gehookte Spieler bekommt `Dir * Accel * 1.5`, der hookende weniger.
 - Loslassen der Hook-Taste = Hook zurück.
+- **Eigenheit Reichweite:** In dem Tick, in dem der Hook die `HookLength` überschreitet, wird er gekappt und geht in `Retract` – eine Wand an diesem letzten, gekappten Stück wird **nicht** gegriffen (Spieler schon). Effektive Wand-Reichweite = letzter voller Flugschritt: `PHYS_SIZE·1,5 + n·HookFireSpeed ≤ HookLength` → Original **362** (42 + 4·80) statt 380. Außerdem bleibt die sichtbare Hook-Position dann auf dem letzten Flugschritt.
+- Hook-Zug an der Wand: nach oben voll, nach unten nur 30 %; horizontal 95 % in Laufrichtung, sonst 75 %. Kein Zug unter 46 Einheiten Abstand.
 
 ## 6. Waffen
 

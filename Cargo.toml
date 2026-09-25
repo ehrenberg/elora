@@ -20,6 +20,8 @@ elora-sim = { path = "crates/elora-sim" }
 elora-map = { path = "crates/elora-map" }
 elora-render = { path = "crates/elora-render" }
 
+serde = { version = "1.0.229", features = ["derive"] }
+
 [workspace.lints.rust]
 unsafe_code = "deny"
 missing_debug_implementations = "warn"

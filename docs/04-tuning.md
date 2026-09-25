@@ -45,6 +45,8 @@ E-015 verlangt eine Abweichung, aber nur „etwas“. Deshalb gilt:
 | T-16 | Player-Hook-Dauer | 60 Ticks (1,2 s) | **55 Ticks (1,1 s)** | −8 % | Eine etwas kürzere Kontrolle über Gegner macht das Spiel weniger frustrierend. | ✅ |
 | T-17 | Player-Hook-Kraftfaktor | 1.5 | **1.5** | – | Bleibt | ✅ |
 
+> **Hinweis zu T-12/T-13 (Erkenntnis aus M1.1):** Die *effektive* Wand-Reichweite ergibt sich aus den Flugschritten (siehe Analyse §5): Elora **382** (42 + 4·85), Original **362** (42 + 4·80) – also +5,5 %. Spieler werden bis zur vollen Länge (400) getroffen.
+
 ## D. Waffen (E-016: Hammer, Laser, Granate)
 
 | # | Wert | Original | Vorschlag | Begründung | Entscheidung |
