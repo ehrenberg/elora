@@ -54,6 +54,8 @@ M0 Setup ─► M1 Physik-Sandbox ─► M2 Kampf lokal ─► M3 Netzwerk ─�
 
 **Abnahme:** Der Projektinhaber spielt die Sandbox und bestätigt das Bewegungsgefühl, eventuell nach Nach-Tuning.
 
+**Stand 2026-09-25:** **Abgenommen** (E-049).
+
 ## M2 – Kampf lokal
 
 - Zielen per Maus, Waffenwechsel

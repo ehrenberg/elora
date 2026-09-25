@@ -1,6 +1,6 @@
 # M1 – Physik-Sandbox: Umsetzungsplan
 
-Status: **angenommen** (E-043–E-046) · Grundlage: [`06-roadmap.md`](06-roadmap.md) M1, E-013
+Status: **abgeschlossen** (E-049) · angenommen (E-043–E-046) · Grundlage: [`06-roadmap.md`](06-roadmap.md) M1, E-013
 
 ## Ziel
 
@@ -16,7 +16,7 @@ Elora läuft, springt, macht den Doppelsprung und hookt auf der Testkarte. Alle 
 | M1.4 ✅ | Game-Loop & Eingabe | `elora-client` | Fester Tick mit 50 TPS und Akkumulator, Interpolation zwischen Ticks, Tastenbelegung (D-05), Mauszielen, Kamera (D-01) | Die Sandbox ist spielbar |
 | M1.5 ✅ | Debug-Werkzeuge | `elora-client` | egui-Panel: alle Tuning-Werte als Regler, Anzeige von Geschwindigkeit, Bodenkontakt und Hook-Zustand, Hot-Reload der Karte, Taste für Reset/Respawn, Speichern des Tunings (D-03) | Manuell |
 | M1.6 ✅ | Determinismus | `elora-sim` | Input-Aufzeichnung → Golden-Datei mit dem End-Zustand, Test im `cargo xtask check` | Test grün |
-| M1.7 | Abnahme | – | Du spielst die Sandbox, eventuell mit Nach-Tuning. Die finalen Werte kommen in `04-tuning.md`. | Deine Abnahme |
+| M1.7 ✅ | Abnahme | – | Du spielst die Sandbox, eventuell mit Nach-Tuning. Die finalen Werte kommen in `04-tuning.md`. | Deine Abnahme |
 
 Nach jedem Schritt: `cargo xtask check` grün, dann ein Commit.
 

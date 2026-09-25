@@ -55,6 +55,7 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-046 | 2026-09-25 | Tuning speichern (D-03) | Sandbox speichert Werte in **`tuning.toml`**, wird beim Start geladen; Defaults bleiben im Code | Entscheidung Projektinhaber |
 | E-047 | 2026-09-25 | Schriften | egui-Standardschriften (`epaint_default_fonts`, OFL-1.1 + Ubuntu Font Licence) **nicht** verwenden; stattdessen **Inter** (UI) und **JetBrains Mono** (Monospace), beide OFL-1.1, als Assets in `assets/fonts/` | Entscheidung Projektinhaber; keine Sonderlizenzen in Crate-Abhängigkeiten |
 | E-048 | 2026-09-25 | Advisories | „unmaintained“-Meldungen von cargo-deny nur als **Warnung** (`-W unmaintained`), Sicherheitslücken bleiben Fehler. Anlass: `ttf-parser` (RUSTSEC-2026-0192, indirekt über egui) | Entscheidung Projektinhaber |
+| E-049 | 2026-09-25 | M1 Abnahme | Physik-Sandbox abgenommen: Bewegungsgefühl „perfekt“, Tuning-Startwerte (E-023) bleiben unverändert | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 

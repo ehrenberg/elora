@@ -99,6 +99,14 @@ Jeder Spieler hat immer **Hammer** und **Pistole**. Weitere Waffen per Pickup. M
 - **Hammer-Knockback:** `(0, -1) + normalize(Dir + (0, -1.1)) · 10` – schleudert immer leicht nach oben. Trifft nur bei freier Sichtlinie.
 - **Eigenschaden:** `max(1, Dmg / 2)` – für alle Waffen, vor Rüstungsberechnung.
 - **Pickups:** Respawn 15 s (Ninja 90 s, erstes Spawnen ebenfalls nach 90 s).
+- **Feuerlogik (`CCharacter::FireWeapon`):** Hammer und Pistole feuern nur pro Klick; Shotgun, Granate und Laser sind **Dauerfeuer**, solange die Taste gehalten wird. Ohne Munition: 125 ms Sperre + „Klick“-Sound. Feuerverzögerung (`Firedelay`) als Reload-Timer in Ticks. Waffenwechsel erst, wenn der Reload-Timer abgelaufen ist.
+- **Hammer:** Treffer-Mittelpunkt = Spieler + Zielrichtung · 21 (0,75 · 28), Radius 14 + 28 (Körper des Ziels) = 42. Nur bei freier Sichtlinie. **Nach einem Treffer** Sperre von **1/3 s** statt 125 ms. Knockback `(0,−1) + normalize(Dir + (0,−1,1)) · 10`.
+- **Projektile (Granate):** Position analytisch aus Startpunkt, Richtung (auf 0,01 gerundet), Speed und Curvature: `y = y0 + v·t + Curvature/10000 · t²` (t in s · Speed). Pro Tick Linien-Test gegen Wände und Spieler (Radius 6 + 28), **nie der eigene Schütze**. Granate explodiert bei Wand, Spieler oder Ablauf der Lebenszeit.
+- **Laser:** Sofort-Strahl der Länge `LaserReach`; an Wänden Abprall nach `LaserBounceDelay` ms, jeder Abschnitt verbraucht Reichweite. Trifft den ersten Spieler auf der Strecke (nie den Schützen). **Kein Knockback** (Kraft 0).
+- **Schaden (`TakeDamage`):** Kraft wird immer addiert (auch bei Friendly Fire). Eigenschaden `max(1, Dmg/2)`. Mit Rüstung: bei Dmg > 1 geht 1 Punkt auf HP, der Rest zuerst auf die Rüstung, Überschuss auf HP. HP ≤ 0 → Tod.
+- **Tod/Respawn:** Respawn frühestens nach 0,5 s; Spawnpunkt nach Abstand zu anderen Spielern gewählt.
+- **Pickups:** Aufnahme, wenn ein Spieler näher als 20 + 28 Einheiten ist. Herz/Schild +1 (nur wenn < 10). Waffe: volle Munition (10), nur wenn nicht vorhanden oder nicht voll.
+- **Startausrüstung im Original:** Hammer + Pistole (10 Schuss), aktive Waffe Pistole.
 - **Velocity Ramp:** `1 / Curvature^((v - Start) / Range)`.
 - Waffenwechsel per Mausrad / Zahlentasten; kurze Wechselzeit.
 

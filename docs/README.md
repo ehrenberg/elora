@@ -11,3 +11,4 @@ Elora ist ein 2D-Multiplayer-Arena-Shooter nach dem Vorbild von Teeworlds. „El
 | [05-kartenformat.md](05-kartenformat.md) | Kartenformat: TOML-Datei mit ASCII-Raster, Legende, Regeln |
 | [06-roadmap.md](06-roadmap.md) | Roadmap: Meilensteine M0–M8 bis Release 1 |
 | [07-m1-plan.md](07-m1-plan.md) | Umsetzungsplan M1 – Physik-Sandbox |
+| [08-m2-plan.md](08-m2-plan.md) | Umsetzungsplan M2 – Kampf lokal |
