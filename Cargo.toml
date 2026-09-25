@@ -23,6 +23,18 @@ elora-render = { path = "crates/elora-render" }
 serde = { version = "1.0.229", features = ["derive"] }
 toml = "1.1.6"
 thiserror = "2.0.21"
+anyhow = "1.0.104"
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.23", features = ["env-filter"] }
+wgpu = "30.0.1"
+winit = "0.30.13"
+lyon = "1.0.19"
+bytemuck = { version = "1.25.2", features = ["derive"] }
+pollster = "1.0.1"
+notify = "8.2.0"
+egui = { version = "0.36.2", default-features = false }
+egui-wgpu = { version = "0.36.2", default-features = false }
+egui-winit = { version = "0.36.2", default-features = false, features = ["wayland", "x11"] }
 
 [workspace.lints.rust]
 unsafe_code = "deny"
@@ -33,6 +45,8 @@ all = { level = "warn", priority = -1 }
 pedantic = { level = "warn", priority = -1 }
 module_name_repetitions = "allow"
 must_use_candidate = "allow"
+# Farben als 0xRRGGBB sind lesbarer ohne Trennzeichen
+unreadable_literal = "allow"
 # Physik-Code rechnet bewusst mit f32 <-> Ganzzahl (Quantisierung, E-021)
 cast_possible_truncation = "allow"
 cast_precision_loss = "allow"

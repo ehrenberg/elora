@@ -138,7 +138,11 @@ Community-Modi (nicht Vanilla): **DDRace** (kooperatives Parkour, Freeze-Tiles),
 | Scoreboard | Tab |
 | Kill | K (konfigurierbar) |
 
-Die Kamera folgt dem Spieler und verschiebt sich Richtung Mauszeiger (dynamische Kamera).
+**Kamera und Maus (0.7, Quellcode `camera.cpp`/`controls.cpp`):**
+- **Statische Kamera (Standard, `cl_dynamic_camera 0`):** Kamera-Mitte = exakt die (interpolierte) Spielerposition.
+- **Dynamische Kamera:** Versatz Richtung Maus = `max(Mausdistanz − 300, 0) · 0,6`.
+- **Maus:** relativ (Cursor gefangen), rohe Maus-Deltas × `inp_mousesens/100` werden **direkt in Welteinheiten** addiert. Das Fadenkreuz ist auf **400 Einheiten** um den Spieler begrenzt (statisch; dynamisch 1000). Der Zielvektor `TargetX/Y` = Fadenkreuz relativ zum Spieler (ganzzahlig).
+- **Sichtbereich:** Fläche 1150 × 1000 Einheiten², max. 1500 × 1050 (`CalcScreenParams`).
 
 ## 10. Netzwerk
 

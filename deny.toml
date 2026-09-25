@@ -5,6 +5,8 @@ all-features = true
 
 [advisories]
 version = 2
+# „unmaintained“-Meldungen werden von `cargo xtask check` per `-W unmaintained`
+# nur als Warnung ausgegeben (E-048).
 yanked = "deny"
 
 [licenses]

@@ -51,7 +51,11 @@ fn check() -> Result<(), String> {
             "Tests",
             &["nextest", "run", "--workspace", "--no-tests=pass"],
         ),
-        ("Lizenzen & Advisories", &["deny", "check"]),
+        (
+            "Lizenzen & Advisories",
+            // „unmaintained“ nur als Warnung, echte Sicherheitslücken bleiben Fehler (E-048)
+            &["deny", "check", "-W", "unmaintained"],
+        ),
     ];
     for (name, args) in steps {
         println!("==> {name}");

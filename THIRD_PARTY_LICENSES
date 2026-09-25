@@ -48,3 +48,17 @@ check the individual libraries.
 
 With that being said, contact us if there is anything you want to do
 that the license does not permit.
+
+------------------------------------------------------------------------
+Schriften (assets/fonts/, E-047)
+------------------------------------------------------------------------
+Inter 4.1 – https://github.com/rsms/inter
+  Copyright (c) 2016 The Inter Project Authors
+  SIL Open Font License 1.1, vollständiger Text: assets/fonts/Inter-OFL.txt
+
+JetBrains Mono 2.304 – https://github.com/JetBrains/JetBrainsMono
+  Copyright 2020 The JetBrains Mono Project Authors
+  SIL Open Font License 1.1, vollständiger Text: assets/fonts/JetBrainsMono-OFL.txt
+
+Die Schriften sind unverändert und werden als eigenständige Schriftdateien
+mitgeliefert; sie stehen nicht unter GPL-3.0 bzw. CC-BY-SA 4.0.
