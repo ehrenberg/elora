@@ -24,7 +24,7 @@ pub use dummy::DummyPattern;
 pub use event::{DeathCause, Event, PickupKind};
 pub use input::PlayerInput;
 pub use math::Vec2;
-pub use player::{Character, Controller, Player};
+pub use player::{Character, Controller, Player, Team};
 pub use tuning::Tuning;
 pub use weapon::Weapon;
 pub use world::World;

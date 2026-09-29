@@ -105,3 +105,44 @@ impl Pickup {
         self.respawn_tick.is_none()
     }
 }
+
+/// Flagge eines Teams (CTF, Referenz: `CFlag`).
+#[derive(Debug, Clone, PartialEq)]
+pub struct Flag {
+    pub team: crate::Team,
+    pub stand: Vec2,
+    pub pos: Vec2,
+    pub vel: Vec2,
+    pub carrier: Option<usize>,
+    pub at_stand: bool,
+    pub drop_tick: u64,
+    pub grab_tick: u64,
+}
+
+impl Flag {
+    /// Kollisionsgröße (Original: 14).
+    pub const PHYS_SIZE: f32 = 14.0;
+    /// Rückkehr nach so vielen Sekunden am Boden (Original: 30).
+    pub const RETURN_SECS: u64 = 30;
+
+    pub fn new(team: crate::Team, stand: Vec2) -> Self {
+        Self {
+            team,
+            stand,
+            pos: stand,
+            vel: Vec2::ZERO,
+            carrier: None,
+            at_stand: true,
+            drop_tick: 0,
+            grab_tick: 0,
+        }
+    }
+
+    pub fn reset(&mut self) {
+        self.carrier = None;
+        self.at_stand = true;
+        self.pos = self.stand;
+        self.vel = Vec2::ZERO;
+        self.grab_tick = 0;
+    }
+}

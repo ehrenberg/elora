@@ -87,9 +87,9 @@ impl Map {
         for e in &self.entities {
             let pos = e.pos();
             match e.kind {
-                EntityKind::Spawn | EntityKind::SpawnRed | EntityKind::SpawnBlue => {
-                    world.spawn_points.push(pos);
-                }
+                EntityKind::Spawn => world.spawn_points.push(pos),
+                EntityKind::SpawnRed => world.team_spawns[0].push(pos),
+                EntityKind::SpawnBlue => world.team_spawns[1].push(pos),
                 EntityKind::Health => world.add_pickup(PickupKind::Health, pos),
                 EntityKind::Armor => world.add_pickup(PickupKind::Armor, pos),
                 EntityKind::Laser => world.add_pickup(PickupKind::Weapon(Weapon::Laser), pos),
@@ -97,8 +97,9 @@ impl Map {
                 EntityKind::Dummy(pattern) => {
                     world.add_dummy(pos, pattern);
                 }
-                // Flaggen folgen mit den Spielmodi (M4)
-                EntityKind::FlagRed | EntityKind::FlagBlue => {}
+                // Flaggen legt das Regelwerk im CTF-Modus an (elora-game)
+                EntityKind::FlagRed => world.flag_stands[0] = Some(pos),
+                EntityKind::FlagBlue => world.flag_stands[1] = Some(pos),
             }
         }
         world

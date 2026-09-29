@@ -11,7 +11,7 @@
     clippy::cast_possible_truncation
 )]
 
-use elora_sim::{DeathCause, Event, PickupKind, PlayerInput, Tuning, Vec2, Weapon};
+use elora_sim::{DeathCause, Event, PickupKind, PlayerInput, Team, Tuning, Vec2, Weapon};
 
 use crate::PROTOCOL_VERSION;
 use crate::codec::{DecodeError, DecodeResult, Reader, Writer};
@@ -143,6 +143,25 @@ fn get_weapon(r: &mut Reader<'_>) -> DecodeResult<Weapon> {
         .ok_or(DecodeError::Invalid("Waffe"))
 }
 
+pub(crate) fn team_code(t: Team) -> u8 {
+    match t {
+        Team::None => 0,
+        Team::Red => 1,
+        Team::Blue => 2,
+        Team::Spectator => 3,
+    }
+}
+
+pub(crate) fn team_from(c: u8) -> DecodeResult<Team> {
+    Ok(match c {
+        0 => Team::None,
+        1 => Team::Red,
+        2 => Team::Blue,
+        3 => Team::Spectator,
+        _ => return Err(DecodeError::Invalid("Team")),
+    })
+}
+
 fn put_pickup(w: &mut Writer, k: PickupKind) {
     match k {
         PickupKind::Health => w.u8(0),
@@ -223,6 +242,8 @@ fn put_event(w: &mut Writer, e: &Event) {
             put_opt(w, killer);
             match cause {
                 DeathCause::World => w.u8(0xff),
+                DeathCause::Suicide => w.u8(0xfe),
+                DeathCause::Game => w.u8(0xfd),
                 DeathCause::Weapon(x) => put_weapon(w, x),
             }
             put_vec(w, pos);
@@ -243,6 +264,50 @@ fn put_event(w: &mut Writer, e: &Event) {
             put_pickup(w, kind);
             put_vec(w, pos);
         }
+        Event::FlagGrab { .. }
+        | Event::FlagDrop { .. }
+        | Event::FlagReturn { .. }
+        | Event::FlagCapture { .. } => {
+            put_flag_event(w, e);
+        }
+    }
+}
+
+/// Flaggen-Ereignisse (CTF).
+fn put_flag_event(w: &mut Writer, e: &Event) {
+    match *e {
+        Event::FlagGrab {
+            team,
+            player,
+            from_stand,
+        } => {
+            w.u8(11);
+            w.u8(team_code(team));
+            w.uvar(player as u64);
+            w.bool(from_stand);
+        }
+        Event::FlagDrop { team, player, pos } => {
+            w.u8(12);
+            w.u8(team_code(team));
+            w.uvar(player as u64);
+            put_vec(w, pos);
+        }
+        Event::FlagReturn { team, player } => {
+            w.u8(13);
+            w.u8(team_code(team));
+            put_opt(w, player);
+        }
+        Event::FlagCapture {
+            team,
+            player,
+            ticks,
+        } => {
+            w.u8(14);
+            w.u8(team_code(team));
+            w.uvar(player as u64);
+            w.uvar(ticks);
+        }
+        _ => {}
     }
 }
 
@@ -281,6 +346,8 @@ fn get_event(r: &mut Reader<'_>) -> DecodeResult<Event> {
             let (player, killer) = (player(r)?, get_opt(r)?);
             let cause = match r.u8()? {
                 0xff => DeathCause::World,
+                0xfe => DeathCause::Suicide,
+                0xfd => DeathCause::Game,
                 x => DeathCause::Weapon(
                     Weapon::ALL
                         .get(usize::from(x))
@@ -307,6 +374,25 @@ fn get_event(r: &mut Reader<'_>) -> DecodeResult<Event> {
         10 => Event::PickupRespawn {
             kind: get_pickup(r)?,
             pos: get_vec(r)?,
+        },
+        11 => Event::FlagGrab {
+            team: team_from(r.u8()?)?,
+            player: player(r)?,
+            from_stand: r.bool()?,
+        },
+        12 => Event::FlagDrop {
+            team: team_from(r.u8()?)?,
+            player: player(r)?,
+            pos: get_vec(r)?,
+        },
+        13 => Event::FlagReturn {
+            team: team_from(r.u8()?)?,
+            player: get_opt(r)?,
+        },
+        14 => Event::FlagCapture {
+            team: team_from(r.u8()?)?,
+            player: player(r)?,
+            ticks: r.uvar()?,
         },
         _ => return Err(DecodeError::Invalid("Ereignis")),
     })

@@ -11,11 +11,11 @@ use crate::TICKS_PER_SECOND;
 use crate::character::{CharacterCore, PHYS_SIZE};
 use crate::collision::Collision;
 use crate::dummy::{DummyBrain, DummyPattern};
-use crate::entities::{Laser, Pickup, Projectile};
+use crate::entities::{Flag, Laser, Pickup, Projectile};
 use crate::event::{DeathCause, Event, PickupKind};
 use crate::input::{PlayerInput, count_presses};
 use crate::math::Vec2;
-use crate::player::{Character, Controller, Player};
+use crate::player::{Character, Controller, Player, Team};
 use crate::tuning::{Tuning, ms_to_ticks, secs_to_ticks};
 use crate::weapon::Weapon;
 
@@ -30,7 +30,10 @@ const PROJECTILE_RADIUS: f32 = 6.0;
 /// Aufnahme-Radius eines Pickups (Original: 20, effektiv < 40 durch `ClosestEntity`).
 const PICKUP_RADIUS: f32 = 20.0;
 
+/// Die Schalter (`friendly_fire`, `pickups_enabled`, `paused`, `prediction`) sind
+/// unabhängige Welt-Einstellungen, keine Zustandsmaschine.
 #[derive(Debug, Clone)]
+#[allow(clippy::struct_excessive_bools)]
 pub struct World {
     pub tuning: Tuning,
     pub collision: Collision,
@@ -40,8 +43,20 @@ pub struct World {
     pub projectiles: Vec<Projectile>,
     pub lasers: Vec<Laser>,
     pub pickups: Vec<Pickup>,
-    /// Spawnpunkte für menschliche Spieler.
+    /// Neutrale Spawnpunkte für menschliche Spieler.
     pub spawn_points: Vec<Vec2>,
+    /// Team-Spawnpunkte (Rot, Blau).
+    pub team_spawns: [Vec<Vec2>; 2],
+    /// Flaggen (CTF); leer = kein CTF.
+    pub flags: Vec<Flag>,
+    /// Flaggenstände aus der Karte (Rot, Blau) – die Regeln legen daraus Flaggen an.
+    pub flag_stands: [Option<Vec2>; 2],
+    /// Schaden an Teammitgliedern (E-069). Aus: nur Rückstoß wie im Original.
+    pub friendly_fire: bool,
+    /// Pickups aktiv (Instagib schaltet sie ab, E-026).
+    pub pickups_enabled: bool,
+    /// Eingefroren (Countdown): Figuren und Objekte stehen, Zeiten laufen mit.
+    pub paused: bool,
     /// Ereignisse des letzten Ticks.
     pub events: Vec<Event>,
     /// Client-Vorhersage (E-057): Kräfte wirken, aber kein Schaden, kein Tod, keine
@@ -60,6 +75,12 @@ impl World {
             lasers: Vec::new(),
             pickups: Vec::new(),
             spawn_points: Vec::new(),
+            team_spawns: [Vec::new(), Vec::new()],
+            flags: Vec::new(),
+            flag_stands: [None, None],
+            friendly_fire: true,
+            pickups_enabled: true,
+            paused: false,
             events: Vec::new(),
             prediction: false,
         }
@@ -154,6 +175,10 @@ impl World {
     /// gelten als leere Eingabe. Dummies erzeugen ihre Eingaben selbst.
     pub fn step(&mut self, inputs: &[PlayerInput]) {
         self.events.clear();
+        if self.paused {
+            self.step_paused(inputs);
+            return;
+        }
         self.apply_inputs(inputs);
 
         self.tick += 1;
@@ -161,8 +186,90 @@ impl World {
         self.tick_lasers();
         self.tick_pickups();
         self.tick_characters();
+        self.tick_flags_physics();
         self.tick_characters_deferred();
         self.tick_respawns();
+        self.tick_flags_rules();
+    }
+
+    /// Eingefrorener Tick (wie `TickPaused` im Original): Eingaben merken, alle
+    /// Zeitstempel mitschieben, nichts bewegen.
+    fn step_paused(&mut self, inputs: &[PlayerInput]) {
+        for (i, p) in self.players.iter_mut().enumerate() {
+            let Some(p) = p else { continue };
+            if matches!(p.controller, Controller::Human) {
+                p.prev_input = p.input;
+                p.input = inputs.get(i).copied().unwrap_or_default();
+            }
+            p.die_tick += 1;
+            p.respawn_tick += 1;
+        }
+        for pr in &mut self.projectiles {
+            pr.start_tick += 1;
+        }
+        for l in &mut self.lasers {
+            l.start_tick += 1;
+            l.eval_tick += 1;
+        }
+        for pk in &mut self.pickups {
+            if let Some(t) = &mut pk.respawn_tick {
+                *t += 1;
+            }
+        }
+        for f in &mut self.flags {
+            f.drop_tick += 1;
+            if f.grab_tick != 0 {
+                f.grab_tick += 1;
+            }
+        }
+        self.tick += 1;
+    }
+
+    /// Team eines Slots.
+    pub fn team(&self, i: usize) -> Team {
+        self.player(i).map_or(Team::None, |p| p.team)
+    }
+
+    /// Neue Runde/neues Match: Schüsse weg, Pickups und Flaggen zurück, alle Figuren
+    /// (außer Zuschauern und gesperrten) sofort neu am Spawnpunkt.
+    pub fn reset_round(&mut self) {
+        self.projectiles.clear();
+        self.lasers.clear();
+        for pk in &mut self.pickups {
+            pk.respawn_tick = None;
+        }
+        for f in &mut self.flags {
+            f.reset();
+        }
+        for p in self.players.iter_mut().flatten() {
+            p.character = None;
+            p.spawning = false;
+        }
+        for i in 0..self.players.len() {
+            let Some(p) = &self.players[i] else { continue };
+            if p.team == Team::Spectator || p.respawn_disabled {
+                continue;
+            }
+            let pos = match &p.controller {
+                Controller::Dummy { home, .. } => Some(*home),
+                _ => self.best_spawn_for(p.team),
+            };
+            if let Some(pos) = pos {
+                self.spawn_character(i, pos);
+            }
+        }
+    }
+
+    /// Selbstmord (`kill`, E-055): wie im Original 3 s bis zum Respawn.
+    pub fn kill(&mut self, i: usize) {
+        if self.character(i).is_none() {
+            return;
+        }
+        self.die(i, Some(i), DeathCause::Suicide);
+        let tick = self.tick;
+        if let Some(p) = self.players.get_mut(i).and_then(Option::as_mut) {
+            p.respawn_tick = tick + 3 * u64::from(TICKS_PER_SECOND);
+        }
     }
 
     // ---------------------------------------------------------------- Eingaben
@@ -514,6 +621,17 @@ impl World {
         if prediction {
             return false;
         }
+        // Friendly Fire (E-069): ausgeschaltet → nur Rückstoß wie im Original
+        if !self.friendly_fire
+            && let Some(f) = from
+            && f != i
+            && self.team(f).is_mate(self.team(i))
+        {
+            return false;
+        }
+        let Some(ch) = self.character_mut(i) else {
+            return false;
+        };
         // Eigenschaden halbiert (T-26)
         let mut dmg = if from == Some(i) {
             (damage / 2).max(1)
@@ -567,12 +685,25 @@ impl World {
             cause,
             pos: ch.core.pos,
         });
+        // getragene Flagge fällt
+        for f in &mut self.flags {
+            if f.carrier == Some(i) {
+                f.carrier = None;
+                f.vel = Vec2::ZERO;
+                f.drop_tick = tick;
+                self.events.push(Event::FlagDrop {
+                    team: f.team,
+                    player: i,
+                    pos: f.pos,
+                });
+            }
+        }
     }
 
     // ---------------------------------------------------------------- Pickups
 
     fn tick_pickups(&mut self) {
-        if self.prediction {
+        if self.prediction || !self.pickups_enabled {
             return;
         }
         for k in 0..self.pickups.len() {
@@ -684,7 +815,7 @@ impl World {
             let Some(p) = self.players[i].as_mut() else {
                 continue;
             };
-            if p.character.is_some() {
+            if p.character.is_some() || p.team == Team::Spectator || p.respawn_disabled {
                 continue;
             }
             if p.die_tick + auto <= self.tick {
@@ -693,10 +824,11 @@ impl World {
             if !p.spawning || p.respawn_tick > self.tick {
                 continue;
             }
-            let pos = match &p.controller {
-                Controller::Dummy { home, .. } => Some(*home),
-                Controller::Human | Controller::Remote => self.best_spawn(),
+            let (home, team) = match &p.controller {
+                Controller::Dummy { home, .. } => (Some(*home), p.team),
+                Controller::Human | Controller::Remote => (None, p.team),
             };
+            let pos = home.or_else(|| self.best_spawn_for(team));
             if let Some(pos) = pos {
                 self.spawn_character(i, pos);
             }
@@ -706,6 +838,31 @@ impl World {
     /// Spawnpunkt mit dem geringsten „Gefahrenwert“ (Summe 1/Abstand zu allen
     /// Figuren), freie Nachbarposition wie im Original (`EvaluateSpawnType`).
     pub fn best_spawn(&self) -> Option<Vec2> {
+        self.best_spawn_for(Team::None)
+    }
+
+    /// Wie im Original (`CanSpawn`): Teams zuerst eigene Spawnpunkte, dann neutrale,
+    /// dann gegnerische; ohne Team alle. Teammitglieder zählen halb als Gefahr.
+    pub fn best_spawn_for(&self, team: Team) -> Option<Vec2> {
+        match team.index() {
+            Some(t) => self
+                .eval_spawns(&self.team_spawns[t], team)
+                .or_else(|| self.eval_spawns(&self.spawn_points, team))
+                .or_else(|| self.eval_spawns(&self.team_spawns[1 - t], team))
+                .map(|(_, p)| p),
+            None => [
+                &self.spawn_points,
+                &self.team_spawns[0],
+                &self.team_spawns[1],
+            ]
+            .into_iter()
+            .filter_map(|pts| self.eval_spawns(pts, team))
+            .min_by(|a, b| a.0.total_cmp(&b.0))
+            .map(|(_, p)| p),
+        }
+    }
+
+    fn eval_spawns(&self, points: &[Vec2], team: Team) -> Option<(f32, Vec2)> {
         const OFFSETS: [Vec2; 5] = [
             Vec2::new(0.0, 0.0),
             Vec2::new(-32.0, 0.0),
@@ -713,12 +870,17 @@ impl World {
             Vec2::new(32.0, 0.0),
             Vec2::new(0.0, 32.0),
         ];
-        let alive: Vec<Vec2> = self.positions().into_iter().flatten().collect();
+        let alive: Vec<(Vec2, Team)> = self
+            .players
+            .iter()
+            .flatten()
+            .filter_map(|p| Some((p.character.as_ref()?.core.pos, p.team)))
+            .collect();
         let mut best: Option<(f32, Vec2)> = None;
-        for &sp in &self.spawn_points {
+        for &sp in points {
             let near: Vec<Vec2> = alive
                 .iter()
-                .copied()
+                .map(|a| a.0)
                 .filter(|p| p.distance(sp) < 64.0 + PHYS_SIZE)
                 .collect();
             let free = OFFSETS.iter().map(|&o| sp + o).find(|&pos| {
@@ -728,16 +890,121 @@ impl World {
             let Some(pos) = free else { continue };
             let score: f32 = alive
                 .iter()
-                .map(|&c| {
+                .map(|&(c, t)| {
+                    let modifier = if team.is_mate(t) { 0.5 } else { 1.0 };
                     let d = c.distance(pos);
-                    if d == 0.0 { 1_000_000_000.0 } else { 1.0 / d }
+                    modifier * if d == 0.0 { 1_000_000_000.0 } else { 1.0 / d }
                 })
                 .sum();
             if best.is_none_or(|(s, _)| s > score) {
                 best = Some((score, pos));
             }
         }
-        best.map(|(_, p)| p)
+        best
+    }
+
+    // ---------------------------------------------------------------- Flaggen (CTF)
+
+    /// Physik (wie `CFlag::TickDefered`): folgt dem Träger, fällt sonst, kehrt nach
+    /// 30 s oder auf Todes-Tiles zurück.
+    fn tick_flags_physics(&mut self) {
+        let tick = self.tick;
+        let gravity = self.tuning.gravity;
+        let return_after = Flag::RETURN_SECS * u64::from(TICKS_PER_SECOND);
+        for k in 0..self.flags.len() {
+            let carrier_pos = self.flags[k]
+                .carrier
+                .and_then(|c| self.core(c))
+                .map(|c| c.pos);
+            let f = &mut self.flags[k];
+            if let Some(p) = carrier_pos {
+                f.pos = p;
+                continue;
+            }
+            if self.prediction {
+                continue;
+            }
+            let on_death = self.collision.tile_at(f.pos) == crate::Tile::Death;
+            if on_death || (!f.at_stand && tick > f.drop_tick + return_after) {
+                f.reset();
+                self.events.push(Event::FlagReturn {
+                    team: f.team,
+                    player: None,
+                });
+                continue;
+            }
+            if !f.at_stand {
+                f.vel.y += gravity;
+                let size = Vec2::new(Flag::PHYS_SIZE, Flag::PHYS_SIZE);
+                self.collision.move_box(&mut f.pos, &mut f.vel, size, 0.5);
+            }
+        }
+    }
+
+    /// Aufnehmen, Zurückbringen, Erobern (wie `CGameControllerCTF::Tick`).
+    fn tick_flags_rules(&mut self) {
+        if self.prediction || self.flags.len() != 2 {
+            return;
+        }
+        let reach = Flag::PHYS_SIZE + PHYS_SIZE;
+        for k in 0..2 {
+            let other = 1 - k;
+            if let Some(carrier) = self.flags[k].carrier {
+                // Eroberung: Träger an der eigenen Flagge, die am Stand ist
+                if self.flags[other].at_stand
+                    && self.flags[k].pos.distance(self.flags[other].pos) < reach
+                {
+                    let ticks = self.tick.saturating_sub(self.flags[k].grab_tick);
+                    let team = self.flags[k].team;
+                    self.events.push(Event::FlagCapture {
+                        team,
+                        player: carrier,
+                        ticks,
+                    });
+                    self.flags[0].reset();
+                    self.flags[1].reset();
+                }
+                continue;
+            }
+            let f = self.flags[k].clone();
+            let touching: Vec<(usize, Team)> = self
+                .players
+                .iter()
+                .enumerate()
+                .filter_map(|(i, p)| {
+                    let p = p.as_ref()?;
+                    let c = p.character.as_ref()?;
+                    let near = c.core.pos.distance(f.pos) < reach;
+                    let visible = self.collision.intersect_line(f.pos, c.core.pos).is_none();
+                    (near && visible && p.team.index().is_some()).then_some((i, p.team))
+                })
+                .collect();
+            for (i, team) in touching {
+                if team == f.team {
+                    if !f.at_stand {
+                        self.flags[k].reset();
+                        self.events.push(Event::FlagReturn {
+                            team: f.team,
+                            player: Some(i),
+                        });
+                    }
+                } else {
+                    let from_stand = f.at_stand;
+                    let flag = &mut self.flags[k];
+                    flag.carrier = Some(i);
+                    if from_stand {
+                        flag.grab_tick = self.tick;
+                    }
+                    flag.at_stand = false;
+                    self.events.push(Event::FlagGrab {
+                        team: f.team,
+                        player: i,
+                        from_stand,
+                    });
+                    break;
+                }
+            }
+        }
     }
 
     /// Nur für Tests und Werkzeuge: Kern einer lebenden Figur.

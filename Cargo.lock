@@ -618,6 +618,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "elora-game"
+version = "0.1.0"
+dependencies = [
+ "elora-sim",
+ "serde",
+]
+
+[[package]]
 name = "elora-map"
 version = "0.1.0"
 dependencies = [

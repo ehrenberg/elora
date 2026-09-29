@@ -9,6 +9,10 @@ pub enum DeathCause {
     Weapon(Weapon),
     /// Todes-Tile
     World,
+    /// Selbstmord-Befehl (`kill`, E-055)
+    Suicide,
+    /// Durch das Spiel entfernt (Team-Wechsel, Neustart) – wird nicht gewertet.
+    Game,
 }
 
 /// Art eines Pickups.
@@ -73,6 +77,29 @@ pub enum Event {
         player: usize,
         kind: PickupKind,
         pos: Vec2,
+    },
+    /// Flagge von `team` aufgenommen (`from_stand`: vom Stand, nicht vom Boden).
+    FlagGrab {
+        team: crate::Team,
+        player: usize,
+        from_stand: bool,
+    },
+    /// Flagge von `team` fallen gelassen (Träger gestorben).
+    FlagDrop {
+        team: crate::Team,
+        player: usize,
+        pos: Vec2,
+    },
+    /// Flagge von `team` zurück am Stand (`player`: vom eigenen Team berührt, sonst Zeit/Todes-Tile).
+    FlagReturn {
+        team: crate::Team,
+        player: Option<usize>,
+    },
+    /// Flagge von `team` erobert durch `player` nach `ticks` Ticks.
+    FlagCapture {
+        team: crate::Team,
+        player: usize,
+        ticks: u64,
     },
     /// Pickup ist wieder verfügbar.
     PickupRespawn {

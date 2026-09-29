@@ -1,0 +1,15 @@
+[package]
+name = "elora-game"
+description = "Spielregeln von Elora: Modi, Punkte, Runden, Teams (M4)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+elora-sim = { workspace = true, features = ["serde"] }
+serde.workspace = true
+
+[lints]
+workspace = true

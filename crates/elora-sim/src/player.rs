@@ -27,6 +27,44 @@ impl Character {
     }
 }
 
+/// Team eines Spielers.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub enum Team {
+    /// Kein Team (DM, LMS, Sandbox).
+    #[default]
+    None,
+    Red,
+    Blue,
+    /// Zuschauer: spawnt nie.
+    Spectator,
+}
+
+impl Team {
+    /// Index 0 (Rot) bzw. 1 (Blau) für Team-Tabellen.
+    pub fn index(self) -> Option<usize> {
+        match self {
+            Self::Red => Some(0),
+            Self::Blue => Some(1),
+            Self::None | Self::Spectator => None,
+        }
+    }
+
+    #[must_use]
+    pub fn other(self) -> Self {
+        match self {
+            Self::Red => Self::Blue,
+            Self::Blue => Self::Red,
+            t => t,
+        }
+    }
+
+    /// Gleiches (echtes) Team?
+    pub fn is_mate(self, other: Self) -> bool {
+        self.index().is_some() && self == other
+    }
+}
+
 /// Wer steuert einen Slot?
 #[derive(Debug, Clone, PartialEq)]
 pub enum Controller {
@@ -57,6 +95,9 @@ pub struct Player {
     pub respawn_tick: u64,
     /// Respawn angefordert (Feuertaste oder Auto-Respawn).
     pub spawning: bool,
+    pub team: Team,
+    /// Kein Respawn (Survival-Modi während einer Runde).
+    pub respawn_disabled: bool,
 }
 
 impl Player {
@@ -69,6 +110,8 @@ impl Player {
             die_tick: 0,
             respawn_tick: 0,
             spawning: true,
+            team: Team::None,
+            respawn_disabled: false,
         }
     }
 
