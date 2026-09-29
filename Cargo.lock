@@ -690,6 +690,7 @@ dependencies = [
  "elora-sim",
  "lyon",
  "thiserror 2.0.21",
+ "usvg",
  "wgpu",
 ]
 

@@ -11,6 +11,7 @@ publish.workspace = true
 elora-sim.workspace = true
 wgpu.workspace = true
 lyon.workspace = true
+usvg.workspace = true
 bytemuck.workspace = true
 thiserror.workspace = true
 

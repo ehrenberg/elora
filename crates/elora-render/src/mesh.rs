@@ -9,8 +9,8 @@ use elora_sim::Vec2;
 use lyon::math::point;
 use lyon::path::Path;
 use lyon::tessellation::{
-    BuffersBuilder, FillOptions, FillTessellator, FillVertex, LineCap, LineJoin, StrokeOptions,
-    StrokeTessellator, StrokeVertex, VertexBuffers,
+    BuffersBuilder, FillOptions, FillRule, FillTessellator, FillVertex, LineCap, LineJoin,
+    StrokeOptions, StrokeTessellator, StrokeVertex, VertexBuffers,
 };
 
 use crate::Color;
@@ -281,9 +281,13 @@ impl MeshBuilder {
     }
 
     pub fn fill_path(&mut self, path: &Path, paint: Paint) -> &mut Self {
+        self.fill_path_with_rule(path, paint, FillRule::NonZero)
+    }
+
+    pub fn fill_path_with_rule(&mut self, path: &Path, paint: Paint, rule: FillRule) -> &mut Self {
         let _ = self.fill.tessellate_path(
             path,
-            &FillOptions::tolerance(self.tolerance),
+            &FillOptions::tolerance(self.tolerance).with_fill_rule(rule),
             &mut BuffersBuilder::new(&mut self.geometry, |v: FillVertex| {
                 paint.vertex(v.position().to_array())
             }),

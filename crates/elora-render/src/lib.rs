@@ -9,6 +9,7 @@
 mod camera;
 mod mesh;
 mod shapes;
+mod svg;
 
 use std::sync::Arc;
 
@@ -17,6 +18,7 @@ pub use camera::{Camera, ViewSettings};
 pub use lyon::path::Path;
 pub use mesh::{Affine, Mesh, MeshBuilder, Paint, Tint, ellipse, lerp_color, rounded_rect, shade};
 pub use shapes::{Color, ShapeBatch};
+pub use svg::{SvgAsset, SvgError};
 pub use wgpu;
 
 use shapes::Vertex;
