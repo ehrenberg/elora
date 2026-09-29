@@ -39,6 +39,8 @@ lyon = "1.0.19"
 bytemuck = { version = "1.25.2", features = ["derive"] }
 pollster = "1.0.1"
 notify = "8.2.0"
+resvg = { version = "0.48.1", default-features = false, features = ["text"] }
+usvg = { version = "0.48.1", default-features = false }
 snow = { version = "0.10.0", default-features = false, features = ["default-resolver", "use-chacha20poly1305", "use-blake2", "use-curve25519", "use-getrandom"] }
 egui = { version = "0.36.2", default-features = false }
 egui-wgpu = { version = "0.36.2", default-features = false }

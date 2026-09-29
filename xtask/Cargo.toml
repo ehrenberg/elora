@@ -11,6 +11,7 @@ publish.workspace = true
 elora-sim.workspace = true
 elora-map.workspace = true
 elora-protocol.workspace = true
+resvg.workspace = true
 
 [lints]
 workspace = true

@@ -15,6 +15,8 @@ Befehle:
   fmt            Code formatieren
   train-huffman  Huffman-Tabelle aus synthetischem Verkehr erzeugen (E-063)
   net-stats      Nachrichtengrößen für 8/16/64 Spieler messen
+  svg-preview <eingabe.svg> <ausgabe.png> [breite]
+                 SVG rastern (Entwürfe prüfen, M5)
   help           Diese Hilfe
 ";
 
@@ -24,6 +26,10 @@ fn main() -> ExitCode {
         Some("check") => check(),
         Some("fmt") => cargo(&["fmt", "--all"]),
         Some("train-huffman") => train_huffman(),
+        Some("svg-preview") => {
+            let args: Vec<String> = std::env::args().skip(2).collect();
+            svg_preview(&args)
+        }
         Some("net-stats") => {
             net_stats();
             Ok(())
@@ -162,4 +168,45 @@ fn net_stats() {
             (sp / orig - 1.0) * 100.0
         );
     }
+}
+
+/// Rastert ein SVG zu PNG (resvg), Breite optional (Höhe proportional).
+fn svg_preview(args: &[String]) -> Result<(), String> {
+    let [input, output, rest @ ..] = args else {
+        return Err(
+            "Verwendung: cargo xtask svg-preview <eingabe.svg> <ausgabe.png> [breite]".into(),
+        );
+    };
+    let data = std::fs::read(input).map_err(|e| format!("{input}: {e}"))?;
+    let mut opt = resvg::usvg::Options::default();
+    // eigene Schrift statt Systemschriften (reproduzierbar)
+    if let Ok(font) = std::fs::read("assets/fonts/Inter-Regular.ttf") {
+        opt.fontdb_mut().load_font_data(font);
+    }
+    opt.font_family = "Inter".into();
+    let tree = resvg::usvg::Tree::from_data(&data, &opt).map_err(|e| format!("{input}: {e}"))?;
+    let size = tree.size();
+    let width: f32 = match rest.first() {
+        Some(w) => w
+            .parse()
+            .map_err(|_| "Breite muss eine Zahl sein".to_string())?,
+        None => size.width(),
+    };
+    let scale = width / size.width();
+    #[allow(clippy::cast_sign_loss)]
+    let (w, h) = (
+        (size.width() * scale).ceil() as u32,
+        (size.height() * scale).ceil() as u32,
+    );
+    let mut pixmap = resvg::tiny_skia::Pixmap::new(w, h).ok_or("ungültige Größe")?;
+    resvg::render(
+        &tree,
+        resvg::tiny_skia::Transform::from_scale(scale, scale),
+        &mut pixmap.as_mut(),
+    );
+    pixmap
+        .save_png(output)
+        .map_err(|e| format!("{output}: {e}"))?;
+    println!("{output} ({w}×{h})");
+    Ok(())
 }

@@ -1,6 +1,6 @@
 # M4 – Spielmodi: Umsetzungsplan
 
-Status: **angenommen** (E-066–E-079) · Grundlage: [`06-roadmap.md`](06-roadmap.md) M4, E-014, E-026, E-055, Analyse §8
+Status: **abgeschlossen** (E-092) · angenommen (E-066–E-079) · Grundlage: [`06-roadmap.md`](06-roadmap.md) M4, E-014, E-026, E-055, Analyse §8
 
 ## Ziel
 
@@ -19,7 +19,7 @@ DM, TDM, CTF, LMS, LTS und Instagib sind auf dem Server spielbar – mit Teams, 
 | M4.7 ✅ | Server-Integration | `elora-server` | Modus und Regeln in `server.toml`/Kommandozeile, Spielzustand und Punkte im Snapshot, Kartenrotation | Integrationstest |
 | M4.8 ✅ | Chat & Befehle | Protokoll, Server, Client | Chat und Team-Chat, `kill` (E-055), Team wählen/Zuschauer, Server-Konsole (D-M4-07) | Tests |
 | M4.9 ✅ | Anzeige | Client | Scoreboard (Tab), Killfeed, Chat-Fenster, Rundenende-/Sieger-Anzeige, Timer, Flaggenanzeige – als Platzhalter (finales HUD in M5) | Sichtprüfung |
-| M4.10 | Abnahme | – | Playtest aller Modi | Deine Abnahme |
+| M4.10 ✅ | Abnahme | – | Playtest aller Modi | Deine Abnahme |
 
 ## Technische Festlegungen (Vorschlag)
 

@@ -1,6 +1,6 @@
 # M5 – Look & Sound: Umsetzungsplan
 
-Status: **Entscheidungen getroffen (E-080–E-091), Plan wartet auf Freigabe** · Grundlage: [`06-roadmap.md`](06-roadmap.md) M5, E-006, E-027, E-029, E-030, E-031, E-032, E-033
+Status: **angenommen** (E-080–E-093), in Umsetzung · Grundlage: [`06-roadmap.md`](06-roadmap.md) M5, E-006, E-027, E-029, E-030, E-031, E-032, E-033
 
 ## Ziel
 

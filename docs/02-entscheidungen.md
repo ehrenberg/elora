@@ -98,6 +98,8 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-089 | 2026-09-29 | Welt-Optik Textkarten (D-M5-08) | **Schlicht:** einfarbige Tiles mit Kontur, Verlaufs-Hintergrund; Aufwand in M6 | Entscheidung Projektinhaber |
 | E-090 | 2026-09-29 | HUD (D-M5-09) | **Modern, am Fadenkreuz:** Leben/Rüstung/Munition als Balken bzw. Ringe am Fadenkreuz oder unten mittig; genaue Form im Entwurf | Entscheidung Projektinhaber |
 | E-091 | 2026-09-29 | Emotes (D-M5-10) | **Emote-Rad mit 8 eigenen Emoticons** (Taste E halten, Maus wählt) + automatische Augen-Ausdrücke | Entscheidung Projektinhaber |
+| E-092 | 2026-09-29 | M4 Abnahme | Spielmodi „vorerst abgeschlossen“ | Entscheidung Projektinhaber |
+| E-093 | 2026-09-29 | M5-Plan | Plan aus [`11-m5-plan.md`](11-m5-plan.md) umsetzen | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 
