@@ -170,6 +170,52 @@ impl ShapeBatch {
         mesh.emit(transform, tint, &mut self.geometry);
     }
 
+    /// Dreiecke als SVG im Weltausschnitt `min..max` – zur Sichtprüfung ohne Fenster
+    /// (z. B. mit `cargo xtask svg-preview` rastern).
+    pub fn debug_svg(&self, min: Vec2, max: Vec2, background: Color) -> String {
+        use std::fmt::Write as _;
+        let size = max - min;
+        let hex = |c: [f32; 4]| {
+            #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
+            // auf 0..=255 begrenzt
+            let b = |v: f32| (v.clamp(0.0, 1.0) * 255.0).round() as u8;
+            format!("#{:02x}{:02x}{:02x}", b(c[0]), b(c[1]), b(c[2]))
+        };
+        let mut out = format!(
+            r#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="{} {} {} {}" shape-rendering="crispEdges">"#,
+            min.x, min.y, size.x, size.y
+        );
+        let _ = write!(
+            out,
+            r#"<rect x="{}" y="{}" width="{}" height="{}" fill="{}"/>"#,
+            min.x,
+            min.y,
+            size.x,
+            size.y,
+            hex(background.0)
+        );
+        let v = &self.geometry.vertices;
+        for tri in self.geometry.indices.as_chunks::<3>().0 {
+            let [a, b, c] = tri.map(|i| v[i as usize]);
+            let _ = write!(
+                out,
+                r#"<path d="M{},{}L{},{}L{},{}Z" fill="{}" fill-opacity="{:.3}" stroke="{}" stroke-opacity="{:.3}" stroke-width="0.15"/>"#,
+                a.pos[0],
+                a.pos[1],
+                b.pos[0],
+                b.pos[1],
+                c.pos[0],
+                c.pos[1],
+                hex(a.color),
+                a.color[3],
+                hex(a.color),
+                a.color[3]
+            );
+        }
+        out.push_str("</svg>");
+        out
+    }
+
     /// Anzahl Dreiecke im Batch (Statistik).
     pub fn triangle_count(&self) -> usize {
         self.geometry.indices.len() / 3

@@ -1,7 +1,9 @@
-//! Platzhalter-Darstellung für die Sandbox (E-043): einfache Vektorformen.
-//! Die finale Optik folgt in M5.
+//! Darstellung der Szene. Die Figur ist final (M5.3, [`crate::figure`]); Welt,
+//! Waffen und Effekte sind noch Platzhalter (E-043) und folgen in M5.5/M5.6.
 
 use elora_client::scene::Scene;
+
+use crate::figure::{FigureArt, Figures, tint_for};
 use elora_render::{Camera, Color, ShapeBatch};
 use elora_sim::Team;
 use elora_sim::{
@@ -144,7 +146,7 @@ pub fn scene(
     tuning: &Tuning,
     camera: &Camera,
     mouse_pos: Vec2,
-    effects: &Effects,
+    (effects, figures, art): (&Effects, &Figures, &FigureArt),
 ) {
     tiles(batch, collision, camera);
     spawns_and_pickups(batch, scene);
@@ -176,12 +178,15 @@ pub fn scene(
         };
         let r = PHYS_SIZE / 2.0;
         weapon(batch, pos, aim, c.ch.arsenal.active);
-        batch.fill_circle(pos, r + 1.5, OUTLINE);
-        batch.fill_circle(pos, r, body);
-        batch.fill_circle(pos + aim * (r * 0.5), 3.5, OUTLINE);
+        figures.draw(batch, art, c, aim, &tint_for(body));
         if c.local && c.team.index().is_some() {
-            // eigene Figur im Team: gelber Ring zur Unterscheidung
-            batch.stroke_circle(pos, r + 4.0, 2.0, ELORA);
+            // eigene Figur im Team: gelber Ring am Boden zur Unterscheidung
+            batch.stroke_line(
+                pos + Vec2::new(-r, r + 3.0),
+                pos + Vec2::new(r, r + 3.0),
+                2.0,
+                ELORA,
+            );
         }
         if !c.local {
             health_bar(batch, pos, c.ch.health, c.ch.armor, tuning.max_health);

@@ -7,6 +7,7 @@ mod connection;
 mod controls;
 mod debug_ui;
 mod draw;
+mod figure;
 mod game_ui;
 mod gui;
 mod hosting;
@@ -110,6 +111,8 @@ struct App {
     view: ViewSettings,
     batch: ShapeBatch,
     effects: draw::Effects,
+    figures: figure::Figures,
+    figure_art: figure::FigureArt,
     last_frame: Instant,
     fps: f32,
     cursor_grabbed: bool,
@@ -140,6 +143,8 @@ impl App {
             view: file.view.into(),
             batch: ShapeBatch::default(),
             effects: draw::Effects::default(),
+            figures: figure::Figures::default(),
+            figure_art: figure::FigureArt::load(),
             last_frame: Instant::now(),
             fps: 0.0,
             cursor_grabbed: false,
@@ -440,6 +445,8 @@ impl App {
             return;
         };
         self.effects.update(elapsed.as_secs_f32(), &events);
+        self.figures
+            .update(elapsed.as_secs_f32(), &scene, &collision);
         let (names, teams, view, local_slot, tick, vote) = self.game_info(now);
 
         let Some(gfx) = &mut self.gfx else { return };
@@ -452,7 +459,7 @@ impl App {
             &tuning,
             &camera,
             self.controls.mouse_pos,
-            &self.effects,
+            (&self.effects, &self.figures, &self.figure_art),
         );
 
         let Some(mut frame) = gfx.renderer.begin_frame() else {
