@@ -15,3 +15,4 @@ Elora ist ein 2D-Multiplayer-Arena-Shooter nach dem Vorbild von Teeworlds. „El
 | [09-m3-plan.md](09-m3-plan.md) | Umsetzungsplan M3 – Netzwerk |
 | [10-m4-plan.md](10-m4-plan.md) | Umsetzungsplan M4 – Spielmodi |
 | [11-m5-plan.md](11-m5-plan.md) | Umsetzungsplan M5 – Look & Sound |
+| [12-m7-plan.md](12-m7-plan.md) | Umsetzungsplan M7 – Menüs & Infrastruktur (vor M6, E-111) |
