@@ -21,6 +21,7 @@ mod items;
 mod lang;
 mod menu;
 mod menu_browser;
+mod menu_pause;
 mod menu_settings;
 mod sandbox;
 mod settings;
@@ -708,7 +709,7 @@ impl App {
         self.build_batch(&scene, &collision, &tuning, &camera);
         let screen = self.build_hud(&scene, &tuning, &info);
         let pause_action = if self.menu.paused {
-            self.draw_pause(dt)
+            self.draw_pause(dt, &info)
         } else {
             None
         };

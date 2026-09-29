@@ -114,8 +114,28 @@ impl App {
     }
 
     /// Pause-Menü in den HUD-Batch zeichnen (über dem Spiel).
-    pub(crate) fn draw_pause(&mut self, dt: f32) -> Option<MenuAction> {
+    pub(crate) fn draw_pause(&mut self, dt: f32, info: &crate::FrameInfo) -> Option<MenuAction> {
         let (screen, s) = self.menu_ctx_parts();
+        let graphics_before = self.settings.graphics;
+        let language_before = self.settings.language;
+        let audio_device = self.sounds.has_device();
+        let team = info
+            .local
+            .and_then(|l| info.teams.get(&l).copied())
+            .unwrap_or_default();
+        let server_line = match &info.view {
+            Some(v) if self.online.is_some() => format!("{} · {}", self.net.address, v.title()),
+            _ => self.lang.t("pause.training").to_owned(),
+        };
+        let p = crate::menu_pause::PauseCtx {
+            online: self.online.is_some(),
+            team_mode: info.view.as_ref().is_some_and(|v| v.mode.teams()),
+            team,
+            names: &info.names,
+            local: info.local,
+            vote: info.vote.as_ref(),
+            server_line,
+        };
         let cx = MenuCtx {
             font: self.hud.font(),
             lang: &self.lang,
@@ -128,7 +148,26 @@ impl App {
             s,
             dt,
         };
-        self.menu.draw_pause(&mut self.hud_batch, &cx)
+        let mut edit = SettingsEdit {
+            name: &mut self.net.name,
+            skin: &mut self.net.skin,
+            graphics: &mut self.settings.graphics,
+            audio: &mut self.sounds.settings,
+            effects: &mut self.effects.settings,
+            sensitivity: &mut self.controls.sensitivity,
+            language: &mut self.settings.language,
+            bindings: &mut self.settings.bindings,
+            capture: &mut self.bind_capture,
+            master_url: &mut self.settings.master_url,
+            audio_device,
+        };
+        let (action, changed) = self
+            .menu
+            .draw_pause(&mut self.hud_batch, &cx, &p, &mut edit);
+        if changed {
+            self.settings_changed(graphics_before, language_before);
+        }
+        action
     }
 
     /// Geänderte Einstellungen sofort anwenden und speichern.
@@ -198,6 +237,20 @@ impl App {
                 self.save_settings();
             }
             MenuAction::SettingsChanged => self.save_settings(),
+            MenuAction::SetTeam(team) => self.apply(Action::SetTeam(team)),
+            MenuAction::Kill => {
+                self.apply(Action::Kill);
+                self.apply_menu(MenuAction::Resume);
+            }
+            MenuAction::CallVote(kind) => {
+                self.apply(Action::CallVote(kind));
+                self.apply_menu(MenuAction::Resume);
+            }
+            MenuAction::Vote(yes) => self.apply(Action::Vote(yes)),
+            MenuAction::Respawn => {
+                self.apply(Action::Respawn);
+                self.apply_menu(MenuAction::Resume);
+            }
             MenuAction::Resume => {
                 self.menu.paused = false;
                 self.set_cursor_grab(true);

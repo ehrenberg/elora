@@ -38,6 +38,12 @@ pub enum MenuAction {
     ToggleFavorite(String),
     /// Einstellungen wurden außerhalb der Einstellungsseiten geändert (speichern).
     SettingsChanged,
+    /// Pause-Menü im Spiel (M7.9).
+    SetTeam(Team),
+    Kill,
+    CallVote(elora_protocol::VoteKind),
+    Vote(bool),
+    Respawn,
     Resume,
     ToMenu,
     Quit,
@@ -98,6 +104,7 @@ pub struct Menu {
     pub create: CreateForm,
     /// Pause-Menü im Spiel offen.
     pub paused: bool,
+    pub pause: crate::menu_pause::PauseState,
     /// „Beenden“ gewählt; die App beendet sich beim nächsten Durchlauf.
     pub quit: bool,
     /// Einstellungen geändert, Speichern wartet auf das Loslassen der Maus.
@@ -167,8 +174,14 @@ impl Menu {
         (action, changed)
     }
 
-    /// Pause-Menü über dem Spiel.
-    pub fn draw_pause(&mut self, batch: &mut ShapeBatch, cx: &MenuCtx<'_>) -> Option<MenuAction> {
+    /// Pause-Menü über dem Spiel (M7.9); liefert eine Aktion und ob Einstellungen geändert wurden.
+    pub fn draw_pause(
+        &mut self,
+        batch: &mut ShapeBatch,
+        cx: &MenuCtx<'_>,
+        p: &crate::menu_pause::PauseCtx<'_>,
+        edit: &mut SettingsEdit<'_>,
+    ) -> (Option<MenuAction>, bool) {
         let s = cx.s;
         batch.fill_rect(
             Vec2::default(),
@@ -183,39 +196,36 @@ impl Menu {
             s,
         };
         ui.begin(cx.dt);
-        let w = 260.0 * s;
-        let h = 220.0 * s;
-        let card = Rect::new((cx.screen.x - w) / 2.0, (cx.screen.y - h) / 2.0, w, h);
-        ui.card(card);
-        let lang = cx.lang;
-        ui.label(
-            lang.t("menu.paused"),
-            Vec2::new(card.center().x, card.min.y + 30.0 * s),
-            20.0,
-            TEXT,
-            Align::Center,
-        );
         let mut action = None;
-        let items = [
-            ("menu.resume", GREEN, MenuAction::Resume),
-            ("menu.to_menu", ORANGE, MenuAction::ToMenu),
-            ("menu.quit", GRAY, MenuAction::Quit),
-        ];
-        for (i, (key, color, act)) in items.into_iter().enumerate() {
-            #[allow(clippy::cast_precision_loss)]
-            let r = Rect::new(
-                card.min.x + 30.0 * s,
-                card.min.y + (62.0 + i as f32 * 48.0) * s,
-                w - 60.0 * s,
-                34.0 * s,
+        let mut changed = false;
+        if self.pause.settings_open {
+            let w = 760.0 * s;
+            let area = Rect::new(
+                (cx.screen.x - w) / 2.0,
+                50.0 * s,
+                w,
+                cx.screen.y - 100.0 * s,
             );
-            if ui.button(key, r, lang.t(key), color) {
-                action = Some(act);
+            changed = settings_page(&mut ui, cx, area, &mut self.settings_tab, edit);
+            let back = Rect::new(
+                area.min.x + 8.0 * s,
+                area.min.y + 224.0 * s,
+                170.0 * s,
+                32.0 * s,
+            );
+            if ui.button("pause_back", back, cx.lang.t("pause.back"), GRAY) {
+                self.pause.settings_open = false;
             }
+        } else {
+            let w = 660.0 * s;
+            let h = 360.0 * s;
+            let card = Rect::new((cx.screen.x - w) / 2.0, (cx.screen.y - h) / 2.0, w, h);
+            ui.card(card);
+            action = crate::menu_pause::content(&mut ui, cx, p, &mut self.pause, card);
         }
         ui.end();
         self.input.next_frame();
-        action
+        (action, changed)
     }
 }
 
@@ -667,32 +677,49 @@ mod tests {
                 dt: 0.016,
             };
             let mut batch = ShapeBatch::default();
+            let mut player = "Elora".to_owned();
+            let mut skin = Skin::default();
+            let mut graphics = crate::settings::GraphicsSettings::default();
+            let mut audio = elora_audio::AudioSettings::default();
+            let mut effects = crate::effects::EffectSettings::default();
+            let mut sens = 100.0;
+            let mut language = Language::De;
+            let mut bindings = crate::bindings::Bindings::default();
+            let mut capture = None;
+            let mut master = String::new();
+            let mut edit = SettingsEdit {
+                name: &mut player,
+                skin: &mut skin,
+                graphics: &mut graphics,
+                audio: &mut audio,
+                effects: &mut effects,
+                sensitivity: &mut sens,
+                language: &mut language,
+                bindings: &mut bindings,
+                capture: &mut capture,
+                master_url: &mut master,
+                audio_device: true,
+            };
             if name == "pause" {
                 batch.fill_rect(Vec2::default(), cx.screen, Color::hex(0x8fb8d9));
-                menu.draw_pause(&mut batch, &cx);
-            } else {
-                let mut name = "Elora".to_owned();
-                let mut skin = Skin::default();
-                let mut graphics = crate::settings::GraphicsSettings::default();
-                let mut audio = elora_audio::AudioSettings::default();
-                let mut effects = crate::effects::EffectSettings::default();
-                let mut sens = 100.0;
-                let mut language = Language::De;
-                let mut bindings = crate::bindings::Bindings::default();
-                let mut capture = None;
-                let mut edit = SettingsEdit {
-                    name: &mut name,
-                    skin: &mut skin,
-                    graphics: &mut graphics,
-                    audio: &mut audio,
-                    effects: &mut effects,
-                    sensitivity: &mut sens,
-                    language: &mut language,
-                    bindings: &mut bindings,
-                    capture: &mut capture,
-                    master_url: &mut String::new(),
-                    audio_device: true,
+                let names: std::collections::BTreeMap<usize, String> = [
+                    (0, "Elora".to_owned()),
+                    (1, "Nimbus".to_owned()),
+                    (2, "Pip".to_owned()),
+                ]
+                .into_iter()
+                .collect();
+                let p = crate::menu_pause::PauseCtx {
+                    online: true,
+                    team_mode: true,
+                    team: Team::Red,
+                    names: &names,
+                    local: Some(0),
+                    vote: None,
+                    server_line: "127.0.0.1:8303 · CTF".into(),
                 };
+                menu.draw_pause(&mut batch, &cx, &p, &mut edit);
+            } else {
                 menu.draw_main(&mut batch, &cx, &mut edit);
             }
             let svg = batch.debug_svg(Vec2::default(), cx.screen, Color::hex(0x8fb8d9));

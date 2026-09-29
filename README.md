@@ -141,7 +141,7 @@ Standardbelegung; alles außer Esc und F1 lässt sich unter *Einstellungen → S
 | Rechte Maustaste (halten) | Hook |
 | Linke Maustaste | schießen (Granate/Laser: gedrückt halten = Dauerfeuer) |
 | 1 / 2 / 3, Mausrad | Hammer / Granate / Laser |
-| Esc | Pause-Menü (Fortsetzen, Hauptmenü, Beenden) |
+| Esc | Pause-Menü: Team, Abstimmungen, Einstellungen, Hauptmenü, Beenden |
 | F1 | Debug-Panel ein/aus (auch im Menü) |
 | R | Respawn (nur Sandbox ohne Modus) |
 | K | Selbstmord (`kill`) |
@@ -153,7 +153,7 @@ Standardbelegung; alles außer Esc und F1 lässt sich unter *Einstellungen → S
 
 Nach dem Tod: Feuertaste = Respawn (frühestens nach 0,5 s, TDM 3 s), sonst automatisch nach 3 s. In LMS/LTS kein Respawn bis zur nächsten Runde.
 
-Team wählen, zuschauen und Abstimmungen (Karte, Modus, Kick, Zuschauer) starten: `Esc` → Panel *Spiel*.
+Team wählen, zuschauen und Abstimmungen (Karte, Modus, Kick, Zuschauer) starten: `Esc` → Pause-Menü.
 
 ## Dateien im Arbeitsverzeichnis
 
