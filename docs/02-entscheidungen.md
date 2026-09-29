@@ -72,6 +72,20 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-063 | 2026-09-29 | Kompression (D-M3-07) | „Bessere Methode als Original, sonst Huffman“ → **feldweises Delta mit Änderungsmaske + kompakte Zahlen, danach statischer Huffman mit auf eigenem Verkehr trainierter Tabelle** (Begründung: siehe `09-m3-plan.md`) | Entscheidung Projektinhaber, Methode von Claude ausgearbeitet |
 | E-064 | 2026-09-29 | M3-Plan | Plan aus [`09-m3-plan.md`](09-m3-plan.md) mit obigen Antworten umsetzen | Entscheidung Projektinhaber |
 | E-065 | 2026-09-29 | M3 Abnahme | Netzwerk abgenommen („erst mal alles super“) | Entscheidung Projektinhaber |
+| E-066 | 2026-09-29 | Siegbedingung (D-M4-01) | **Wie Original:** Score-Limit 20, kein Zeitlimit, Sudden Death bei Gleichstand (CTF siehe E-067) | Entscheidung Projektinhaber |
+| E-067 | 2026-09-29 | CTF-Wertung (D-M4-02) | Einzelpunkte wie Original (Träger +5, Aufnehmen/Zurückbringen/Träger töten +1, Kills wie DM); **Teamwertung = Eroberungen, Standard-Limit 5** (statt Rohwert 100/Eroberung) | Entscheidung Projektinhaber |
+| E-068 | 2026-09-29 | Aufwärmen (D-M4-03) | **10 s Aufwärmen nach Kartenwechsel** (Punkte zählen nicht), dann **3 s Countdown** (Welt eingefroren); Countdown auch vor jedem weiteren Match/jeder Runde | Entscheidung Projektinhaber |
+| E-069 | 2026-09-29 | Friendly Fire (D-M4-04) | **An:** Schaden und Rückstoß an Teammitgliedern, Teamkill −1 (Server-Einstellung, abschaltbar) | Entscheidung Projektinhaber |
+| E-070 | 2026-09-29 | TDM-Respawn (D-M4-05) | frühestens nach **3 s** (wie Original) | Entscheidung Projektinhaber (Teil der Antwort zu D-M4-04) |
+| E-071 | 2026-09-29 | Startausrüstung LMS/LTS (D-M4-06) | **Nur Hammer + Pickups** wie in allen Modi (E-025) | Entscheidung Projektinhaber |
+| E-072 | 2026-09-29 | Konsole (D-M4-07, O-20) | **Server-Konsole** (Terminal) **+ Abstimmungen**; Remote-Konsole später | Entscheidung Projektinhaber |
+| E-073 | 2026-09-29 | Team-Wahl (D-M4-08) | **Wie Original:** Beitritt ins kleinere Team, Wechsel und Zuschauen möglich, automatischer Ausgleich nach 1 min | Entscheidung Projektinhaber |
+| E-074 | 2026-09-29 | Rotation (D-M4-09) | **Wie Original:** Kartenliste, Matches pro Karte, Teamtausch nach jedem Match | Entscheidung Projektinhaber |
+| E-075 | 2026-09-29 | Sandbox-Modi (D-M4-10) | Spielmodi **in der Sandbox wählbar**, Dummies bekommen Teams | Entscheidung Projektinhaber |
+| E-076 | 2026-09-29 | Instagib (D-M4-11) | **Schalter für alle Modi** (iDM, iTDM, iCTF, iLMS, iLTS) | Entscheidung Projektinhaber |
+| E-077 | 2026-09-29 | Abstimmungen | Über **Karte, Modus, Kick (5 min Sperre), Zuschauer**; Ablauf wie Original (25 s) | Entscheidung Projektinhaber |
+| E-078 | 2026-09-29 | Tasten (D-M4-12) | **T** Chat, **Y** Team-Chat, **Tab** Scoreboard, **F3/F4** Ja/Nein, **K** kill; Abstimmungen und Team-Wahl im Panel | Entscheidung Projektinhaber |
+| E-079 | 2026-09-29 | M4-Plan | Plan aus [`10-m4-plan.md`](10-m4-plan.md) mit obigen Antworten umsetzen | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 
@@ -124,7 +138,8 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 - [ ] **O-17 Server-Browser / Master-Server**
 - [ ] **O-18 Demos / Replays**
 - [x] ~~O-19 Skins-System~~ → E-029
-- [ ] **O-20 Konsole / Remote-Console**
+- [x] ~~O-20 Konsole~~ → E-072 (Remote-Konsole später → O-45)
+- [ ] **O-45 Remote-Konsole** (Admin-Befehle aus dem Client mit Passwort)
 - [x] ~~O-42 Netzwerk-Zielwerte~~ → E-059
 - [ ] **O-43 Release-Karten** (Anzahl, Modi)
 - [ ] **O-44 Vertrieb** (itch.io, Steam, Flathub, Website …)
