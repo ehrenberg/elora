@@ -187,6 +187,7 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 - [x] ~~O-19 Skins-System~~ → E-029
 - [x] ~~O-20 Konsole~~ → E-072 (Remote-Konsole später → O-45)
 - [ ] **O-45 Remote-Konsole** (Admin-Befehle aus dem Client mit Passwort) – später (E-119)
+- [ ] **O-48 Übersetzte Server-Meldungen** (Server schickt Nachrichten-Codes mit Parametern statt fertiger deutscher Texte, damit der Client sie übersetzt)
 - [ ] **O-47 Betrieb des Master-Servers** (wer betreibt ihn, unter welcher Adresse; Standard-URL im Client) – vor dem ersten öffentlichen Test
 - [x] ~~O-42 Netzwerk-Zielwerte~~ → E-059
 - [ ] **O-43 Release-Karten** (Anzahl, Modi)

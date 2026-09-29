@@ -1,0 +1,35 @@
+# Elora – English texts (E-114). Keys per section; placeholders in {curly braces}.
+# Every language must have the same keys and placeholders (test in lang.rs).
+
+[hud]
+dead = "Dead – press fire to respawn (automatic after 3 s)"
+score_line = "Score {mine} · Best {top}"
+goal = "Goal: {n} {unit}"
+unit_points = "points"
+unit_captures = "captures"
+sudden_death = "SUDDEN DEATH"
+red = "Red {n}"
+blue = "{n} Blue"
+warmup = "Warmup · {s} s"
+waiting = "Waiting for players …"
+countdown = "Starting in {s}"
+round_over = "Round over"
+match_over = "Match over"
+
+[game]
+vote_title = "Vote: {text}"
+vote_info = "Yes {yes} · No {no} · {voters} players · {secs} s left  —  F3 yes, F4 no"
+death_zone = "death zone"
+suicide = "kill"
+chat_all = "All: "
+chat_team = "Team: "
+team_red = "Team Red"
+team_blue = "Team Blue"
+spectators = "Spectators"
+players = "Players"
+col_name = "Name"
+col_score = "Score"
+col_kills = "Kills"
+col_deaths = "Deaths"
+scoreboard_title = "{mode} – Scores"
+slot = "Slot {n}"

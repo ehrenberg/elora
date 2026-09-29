@@ -15,6 +15,7 @@ use elora_sim::{DeathCause, Team, Vec2, Weapon};
 
 use crate::draw::team_color;
 use crate::items::ItemArt;
+use crate::lang::Lang;
 
 /// Wie lange Chat-Zeilen ohne offenes Chat-Fenster sichtbar sind.
 const FADE: Duration = Duration::from_secs(10);
@@ -42,6 +43,7 @@ pub fn record_kills(
     names: &BTreeMap<usize, String>,
     teams: &BTreeMap<usize, Team>,
     now: Instant,
+    lang: &Lang,
 ) {
     for e in events {
         if let elora_sim::Event::Death {
@@ -56,7 +58,7 @@ pub fn record_kills(
                 let name = names
                     .get(&i)
                     .cloned()
-                    .unwrap_or_else(|| format!("Slot {i}"));
+                    .unwrap_or_else(|| lang.f("game.slot", &[("n", &i)]));
                 (name, teams.get(&i).copied().unwrap_or_default())
             };
             feed.push_back(KillEntry {
@@ -92,6 +94,7 @@ pub struct GameUi<'a> {
     pub killfeed: &'a VecDeque<KillEntry>,
     /// Laufzeit in s (blinkender Cursor).
     pub time: f32,
+    pub lang: &'a Lang,
 }
 
 /// Namensfarbe: Teamfarbe in Team-Modi, sonst weiß.
@@ -123,7 +126,7 @@ pub fn draw(
     g: &GameUi<'_>,
 ) {
     if let Some(v) = g.vote {
-        vote(batch, font, screen, s, v);
+        vote(batch, font, screen, s, v, g.lang);
     }
     killfeed(batch, font, items, screen, s, g);
     chat(batch, font, screen, s, g);
@@ -135,11 +138,16 @@ pub fn draw(
 }
 
 /// Abstimmung unter der Statusanzeige.
-fn vote(batch: &mut ShapeBatch, font: &Font, screen: Vec2, s: f32, v: &VoteInfo) {
-    let title = format!("Abstimmung: {}", v.description);
-    let info = format!(
-        "Ja {} · Nein {} · {} Spieler · noch {} s  —  F3 Ja, F4 Nein",
-        v.yes, v.no, v.voters, v.seconds_left
+fn vote(batch: &mut ShapeBatch, font: &Font, screen: Vec2, s: f32, v: &VoteInfo, lang: &Lang) {
+    let title = lang.f("game.vote_title", &[("text", &v.description)]);
+    let info = lang.f(
+        "game.vote_info",
+        &[
+            ("yes", &v.yes),
+            ("no", &v.no),
+            ("voters", &v.voters),
+            ("secs", &v.seconds_left),
+        ],
     );
     let w = font
         .width(&title, 15.0 * s)
@@ -197,8 +205,8 @@ fn killfeed(
         #[allow(clippy::cast_precision_loss)]
         let y = 12.0 * s + n as f32 * (row + 4.0 * s);
         let cause_text = match k.cause {
-            DeathCause::World => Some("Todeszone"),
-            DeathCause::Suicide => Some("kill"),
+            DeathCause::World => Some(g.lang.t("game.death_zone")),
+            DeathCause::Suicide => Some(g.lang.t("game.suicide")),
             _ => None,
         };
         let middle = cause_text.map_or(icon, |t| font.width(t, 12.0 * s) + 12.0 * s);
@@ -282,7 +290,11 @@ fn chat(batch: &mut ShapeBatch, font: &Font, screen: Vec2, s: f32, g: &GameUi<'_
     let x = top.x + 12.0 * s;
     let mut y = bottom - 8.0 * s - line_h / 2.0;
     if open {
-        let label = if g.input.team { "Team: " } else { "Alle: " };
+        let label = g.lang.t(if g.input.team {
+            "game.chat_team"
+        } else {
+            "game.chat_all"
+        });
         let lw = font.width(label, size);
         font.draw_centered(batch, label, Vec2::new(x, y), size, TEXT_DIM, Align::Left);
         let text = fit(font, &g.input.text, size, width - lw - 36.0 * s);
@@ -311,18 +323,21 @@ fn chat(batch: &mut ShapeBatch, font: &Font, screen: Vec2, s: f32, g: &GameUi<'_
     }
 }
 
-type Column<'a> = (Option<Team>, &'a str, Vec<(usize, elora_game::Stats)>);
+type Column = (Option<Team>, String, Vec<(usize, elora_game::Stats)>);
 
 /// Spalten des Scoreboards: je Team (bzw. alle Spieler) und Zuschauer, sortiert nach Punkten.
-fn columns<'a>(g: &GameUi<'_>, view: &GameView) -> Vec<Column<'a>> {
+fn columns(g: &GameUi<'_>, view: &GameView) -> Vec<Column> {
     let groups: Vec<(Option<Team>, &str)> = if view.mode.teams() {
         vec![
-            (Some(Team::Red), "Team Rot"),
-            (Some(Team::Blue), "Team Blau"),
-            (Some(Team::Spectator), "Zuschauer"),
+            (Some(Team::Red), "game.team_red"),
+            (Some(Team::Blue), "game.team_blue"),
+            (Some(Team::Spectator), "game.spectators"),
         ]
     } else {
-        vec![(None, "Spieler"), (Some(Team::Spectator), "Zuschauer")]
+        vec![
+            (None, "game.players"),
+            (Some(Team::Spectator), "game.spectators"),
+        ]
     };
     groups
         .into_iter()
@@ -344,7 +359,7 @@ fn columns<'a>(g: &GameUi<'_>, view: &GameView) -> Vec<Column<'a>> {
                 return None;
             }
             rows.sort_by_key(|r| std::cmp::Reverse(r.1.score));
-            Some((team, title, rows))
+            Some((team, g.lang.t(title).to_owned(), rows))
         })
         .collect()
 }
@@ -376,85 +391,113 @@ fn scoreboard(
     );
     font.draw_centered(
         batch,
-        &format!("{} – Punkte", view.title()),
+        &g.lang
+            .f("game.scoreboard_title", &[("mode", &view.title())]),
         Vec2::new(screen.x / 2.0, top.y + 24.0 * s),
         20.0 * s,
         TEXT,
         Align::Center,
     );
-    let size = 14.0 * s;
-    for (ci, (team, title, rows)) in columns.iter().enumerate() {
+    for (ci, column) in columns.iter().enumerate() {
         #[allow(clippy::cast_precision_loss)]
         let x0 = top.x + 12.0 * s + ci as f32 * col_w;
-        let mut y = top.y + 58.0 * s;
-        let head = match team.and_then(Team::index) {
-            Some(t) => format!("{title} · {}", view.team_score[t]),
-            None => (*title).to_owned(),
-        };
-        let head_color = team.map_or(TEXT, name_color);
-        font.draw_centered(
+        scoreboard_column(
             batch,
-            &head,
-            Vec2::new(x0 + 8.0 * s, y),
-            16.0 * s,
-            head_color,
-            Align::Left,
+            font,
+            g,
+            view,
+            Vec2::new(x0, top.y + 58.0 * s),
+            s,
+            column,
         );
-        y += row_h;
-        let cols = [x0 + 190.0 * s, x0 + 250.0 * s, x0 + 305.0 * s];
+    }
+}
+
+/// Eine Spalte des Scoreboards ab `origin` (Kopfzeile, Überschriften, Zeilen).
+fn scoreboard_column(
+    batch: &mut ShapeBatch,
+    font: &Font,
+    g: &GameUi<'_>,
+    view: &GameView,
+    origin: Vec2,
+    s: f32,
+    (team, title, rows): &Column,
+) {
+    let (x0, mut y) = (origin.x, origin.y);
+    let col_w = 330.0 * s;
+    let row_h = 24.0 * s;
+    let size = 14.0 * s;
+    let head = match team.and_then(Team::index) {
+        Some(t) => format!("{title} · {}", view.team_score[t]),
+        None => title.clone(),
+    };
+    let head_color = team.map_or(TEXT, name_color);
+    font.draw_centered(
+        batch,
+        &head,
+        Vec2::new(x0 + 8.0 * s, y),
+        16.0 * s,
+        head_color,
+        Align::Left,
+    );
+    y += row_h;
+    let cols = [x0 + 190.0 * s, x0 + 250.0 * s, x0 + 305.0 * s];
+    font.draw_centered(
+        batch,
+        g.lang.t("game.col_name"),
+        Vec2::new(x0 + 8.0 * s, y),
+        11.0 * s,
+        TEXT_DIM,
+        Align::Left,
+    );
+    for (label, cx) in ["game.col_score", "game.col_kills", "game.col_deaths"]
+        .map(|k| g.lang.t(k))
+        .iter()
+        .zip(cols)
+    {
         font.draw_centered(
             batch,
-            "Name",
-            Vec2::new(x0 + 8.0 * s, y),
+            label,
+            Vec2::new(cx, y),
             11.0 * s,
             TEXT_DIM,
-            Align::Left,
+            Align::Right,
         );
-        for (label, cx) in ["Punkte", "Kills", "Tode"].iter().zip(cols) {
-            font.draw_centered(
-                batch,
-                label,
-                Vec2::new(cx, y),
-                11.0 * s,
-                TEXT_DIM,
-                Align::Right,
+    }
+    for (n, (i, st)) in rows.iter().enumerate() {
+        y += row_h;
+        if n % 2 == 0 {
+            batch.fill_rounded_rect(
+                Vec2::new(x0, y - row_h / 2.0),
+                Vec2::new(x0 + col_w - 12.0 * s, y + row_h / 2.0),
+                6.0 * s,
+                ROW,
             );
         }
-        for (n, (i, st)) in rows.iter().enumerate() {
-            y += row_h;
-            if n % 2 == 0 {
-                batch.fill_rounded_rect(
-                    Vec2::new(x0, y - row_h / 2.0),
-                    Vec2::new(x0 + col_w - 12.0 * s, y + row_h / 2.0),
-                    6.0 * s,
-                    ROW,
-                );
-            }
-            let name = g
-                .names
-                .get(i)
-                .cloned()
-                .unwrap_or_else(|| format!("Slot {i}"));
-            let color = if Some(*i) == g.local { OWN } else { TEXT };
-            let name = fit(font, &name, size, 170.0 * s);
-            font.draw_centered(
-                batch,
-                &name,
-                Vec2::new(x0 + 8.0 * s, y),
-                size,
-                color,
-                Align::Left,
-            );
-            for (v, cx) in [
-                st.score.to_string(),
-                st.kills.to_string(),
-                st.deaths.to_string(),
-            ]
-            .iter()
-            .zip(cols)
-            {
-                font.draw_centered(batch, v, Vec2::new(cx, y), size, color, Align::Right);
-            }
+        let name = g
+            .names
+            .get(i)
+            .cloned()
+            .unwrap_or_else(|| g.lang.f("game.slot", &[("n", i)]));
+        let color = if Some(*i) == g.local { OWN } else { TEXT };
+        let name = fit(font, &name, size, 170.0 * s);
+        font.draw_centered(
+            batch,
+            &name,
+            Vec2::new(x0 + 8.0 * s, y),
+            size,
+            color,
+            Align::Left,
+        );
+        for (v, cx) in [
+            st.score.to_string(),
+            st.kills.to_string(),
+            st.deaths.to_string(),
+        ]
+        .iter()
+        .zip(cols)
+        {
+            font.draw_centered(batch, v, Vec2::new(cx, y), size, color, Align::Right);
         }
     }
 }
@@ -568,6 +611,7 @@ mod tests {
                 vote: Some(&vote),
                 killfeed: &killfeed,
                 time: 0.0,
+                lang: &Lang::new(crate::lang::Language::De),
             },
         );
         let svg = batch.debug_svg(

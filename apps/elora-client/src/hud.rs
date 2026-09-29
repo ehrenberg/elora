@@ -13,6 +13,7 @@ use elora_render::{Align, Color, Font, ShapeBatch};
 use elora_sim::{Character, TICKS_PER_SECOND, Team, Vec2, Weapon};
 
 use crate::items::ItemArt;
+use crate::lang::Lang;
 
 const PANEL: Color = Color::rgba(0.118, 0.165, 0.212, 0.6);
 const EMPTY: Color = Color::rgba(1.0, 1.0, 1.0, 0.2);
@@ -32,6 +33,9 @@ pub struct HudInfo<'a> {
     pub view: Option<&'a GameView>,
     pub tick: u64,
     pub local: Option<usize>,
+    pub lang: &'a Lang,
+    /// UI-Skalierung aus den Einstellungen (E-120).
+    pub ui_scale: f32,
 }
 
 #[derive(Debug)]
@@ -56,12 +60,12 @@ impl Hud {
 
     /// Zeichnet das HUD für eine Fläche von `screen` Pixeln.
     pub fn draw(&self, batch: &mut ShapeBatch, items: &ItemArt, screen: Vec2, info: &HudInfo<'_>) {
-        let s = scale(screen);
+        let s = scale(screen, info.ui_scale);
         if let Some(ch) = info.character {
             self.bar(batch, items, screen, s, ch, info.max_health);
         } else {
             let pos = Vec2::new(screen.x / 2.0, screen.y - 40.0 * s);
-            let text = "Tot – Feuertaste zum Respawn (sonst automatisch nach 3 s)";
+            let text = info.lang.t("hud.dead");
             let w = self.font.width(text, 16.0 * s) + 28.0 * s;
             batch.fill_rounded_rect(
                 pos - Vec2::new(w / 2.0, 18.0 * s),
@@ -144,7 +148,8 @@ impl Hud {
         view: &GameView,
         info: &HudInfo<'_>,
     ) {
-        let title = format!("{} · {}", view.title(), phase_text(view, info.tick));
+        let lang = info.lang;
+        let title = format!("{} · {}", view.title(), phase_text(view, info.tick, lang));
         let mut lines: Vec<(String, f32, Color)> = vec![(title, 16.0, TEXT)];
         if view.mode.teams() {
             // Teamstand als eigene Zeile, farbig gezeichnet unten
@@ -152,22 +157,30 @@ impl Hud {
         } else if let Some(me) = info.local {
             let mine = view.stats.get(&me).map_or(0, |st| st.score);
             let top = view.stats.values().map(|st| st.score).max().unwrap_or(0);
-            lines.push((format!("Punkte {mine} · Bester {top}"), 14.0, TEXT_DIM));
+            lines.push((
+                lang.f("hud.score_line", &[("mine", &mine), ("top", &top)]),
+                14.0,
+                TEXT_DIM,
+            ));
         }
         if view.score_limit > 0 {
-            let unit = if view.mode == Mode::Ctf {
-                "Eroberungen"
+            let unit = lang.t(if view.mode == Mode::Ctf {
+                "hud.unit_captures"
             } else {
-                "Punkte"
-            };
-            lines.push((format!("Ziel: {} {unit}", view.score_limit), 12.0, TEXT_DIM));
+                "hud.unit_points"
+            });
+            lines.push((
+                lang.f("hud.goal", &[("n", &view.score_limit), ("unit", &unit)]),
+                12.0,
+                TEXT_DIM,
+            ));
         }
         if view.sudden_death {
-            lines.push(("SUDDEN DEATH".into(), 14.0, SUDDEN_DEATH));
+            lines.push((lang.t("hud.sudden_death").to_owned(), 14.0, SUDDEN_DEATH));
         }
 
-        let red = format!("Rot {}", view.team_score[0]);
-        let blue = format!("{} Blau", view.team_score[1]);
+        let red = lang.f("hud.red", &[("n", &view.team_score[0])]);
+        let blue = lang.f("hud.blue", &[("n", &view.team_score[1])]);
         let team_width = self.font.width(&format!("{red} : {blue}"), 20.0 * s);
         let mut width = lines
             .iter()
@@ -220,9 +233,9 @@ impl Hud {
     }
 }
 
-/// Skalierung der Spiel-UI: 1 bei 720 Pixeln Fensterhöhe.
-pub fn scale(screen: Vec2) -> f32 {
-    (screen.y / 720.0).clamp(0.6, 3.0)
+/// Skalierung der Spiel-UI: 1 bei 720 Pixeln Fensterhöhe, mal UI-Skalierung (E-120).
+pub fn scale(screen: Vec2, ui_scale: f32) -> f32 {
+    (screen.y / 720.0).clamp(0.6, 3.0) * ui_scale
 }
 
 fn secs_left(until: u64, tick: u64) -> u64 {
@@ -236,11 +249,11 @@ pub fn clock(secs: u64) -> String {
 }
 
 /// Phase bzw. Timer als Text.
-fn phase_text(view: &GameView, tick: u64) -> String {
+fn phase_text(view: &GameView, tick: u64, lang: &Lang) -> String {
     match view.phase {
-        Phase::Warmup { until: Some(t) } => format!("Aufwärmen · {} s", secs_left(t, tick)),
-        Phase::Warmup { until: None } => "Warte auf Spieler …".into(),
-        Phase::Countdown { until } => format!("Start in {}", secs_left(until, tick)),
+        Phase::Warmup { until: Some(t) } => lang.f("hud.warmup", &[("s", &secs_left(t, tick))]),
+        Phase::Warmup { until: None } => lang.t("hud.waiting").to_owned(),
+        Phase::Countdown { until } => lang.f("hud.countdown", &[("s", &secs_left(until, tick))]),
         Phase::Running => {
             let elapsed = tick.saturating_sub(view.match_start_tick) / u64::from(TICKS_PER_SECOND);
             if view.time_limit > 0 {
@@ -249,8 +262,8 @@ fn phase_text(view: &GameView, tick: u64) -> String {
                 clock(elapsed)
             }
         }
-        Phase::RoundOver { .. } => "Runde vorbei".into(),
-        Phase::MatchOver { .. } => "Match vorbei".into(),
+        Phase::RoundOver { .. } => lang.t("hud.round_over").to_owned(),
+        Phase::MatchOver { .. } => lang.t("hud.match_over").to_owned(),
     }
 }
 
@@ -338,6 +351,8 @@ mod tests {
                     view: Some(&view),
                     tick: 96 * 50,
                     local: Some(0),
+                    lang: &Lang::new(crate::lang::Language::De),
+                    ui_scale: 1.0,
                 },
             );
             let svg = batch.debug_svg(
@@ -369,6 +384,8 @@ mod tests {
                 view: None,
                 tick: 0,
                 local: None,
+                lang: &Lang::new(crate::lang::Language::De),
+                ui_scale: 1.0,
             },
         );
         assert!(batch.triangle_count() > 100);

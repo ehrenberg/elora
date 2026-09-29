@@ -139,7 +139,8 @@ Team wählen, zuschauen und Abstimmungen (Karte, Modus, Kick, Zuschauer) starten
 
 | Datei | Zweck | im Git |
 |---|---|---|
-| `tuning.toml` | gespeicherte Regler-Werte der Sandbox, Effekt-Schalter und Lautstärke (Panel → *Speichern*) | nein, lokal |
+| `settings.toml` | Spieler-Einstellungen: Name, Skin, Sprache, Grafik, Ton, Effekte, Maus, Favoriten – **im Benutzerverzeichnis** (Linux `~/.config/elora/`, Windows `%APPDATA%\Elora\`, macOS `~/Library/Application Support/Elora/`), beim Beenden gespeichert | nein, lokal |
+| `tuning.toml` | Entwickler-Tuning der Sandbox: Physik und Sichtbereich (Panel → *Speichern*) | nein, lokal |
 | `server.toml` | vom Client geschriebene Server-Konfiguration | nein |
 | `server_key.toml` | geheimer Server-Schlüssel – nicht weitergeben | nein |
 | `known_servers.toml` | bekannte Server-Schlüssel des Clients | nein |

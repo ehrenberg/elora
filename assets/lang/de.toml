@@ -1,0 +1,35 @@
+# Elora – deutsche Texte (E-114). Schlüssel je Abschnitt; Platzhalter in {geschweiften Klammern}.
+# Jede Sprache muss dieselben Schlüssel und Platzhalter haben (Test in lang.rs).
+
+[hud]
+dead = "Tot – Feuertaste zum Respawn (sonst automatisch nach 3 s)"
+score_line = "Punkte {mine} · Bester {top}"
+goal = "Ziel: {n} {unit}"
+unit_points = "Punkte"
+unit_captures = "Eroberungen"
+sudden_death = "SUDDEN DEATH"
+red = "Rot {n}"
+blue = "{n} Blau"
+warmup = "Aufwärmen · {s} s"
+waiting = "Warte auf Spieler …"
+countdown = "Start in {s}"
+round_over = "Runde vorbei"
+match_over = "Match vorbei"
+
+[game]
+vote_title = "Abstimmung: {text}"
+vote_info = "Ja {yes} · Nein {no} · {voters} Spieler · noch {secs} s  —  F3 Ja, F4 Nein"
+death_zone = "Todeszone"
+suicide = "kill"
+chat_all = "Alle: "
+chat_team = "Team: "
+team_red = "Team Rot"
+team_blue = "Team Blau"
+spectators = "Zuschauer"
+players = "Spieler"
+col_name = "Name"
+col_score = "Punkte"
+col_kills = "Kills"
+col_deaths = "Tode"
+scoreboard_title = "{mode} – Punkte"
+slot = "Slot {n}"

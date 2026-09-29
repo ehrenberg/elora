@@ -15,10 +15,12 @@ mod gui;
 mod hosting;
 mod hud;
 mod items;
+mod lang;
 mod sandbox;
 mod settings;
 mod skins;
 mod sound;
+mod tuning_file;
 mod ui;
 
 use std::collections::VecDeque;
@@ -44,7 +46,8 @@ use controls::Controls;
 use debug_ui::{Action, KeyWarning, NetUi, OnlineView};
 use gui::Gui;
 use sandbox::Sandbox;
-use settings::{TUNING_FILE, TuningFile};
+use settings::Settings;
+use tuning_file::{TUNING_FILE, TuningFile};
 
 const DEFAULT_MAP: &str = "maps/sandbox.emap.toml";
 
@@ -66,6 +69,10 @@ fn main() -> anyhow::Result<()> {
         .find(|a| a.ends_with(".emap.toml"))
         .map_or_else(|| PathBuf::from(DEFAULT_MAP), PathBuf::from);
     let file = TuningFile::load(Path::new(TUNING_FILE))?;
+    let settings = Settings::load(&settings::settings_path()).unwrap_or_else(|e| {
+        tracing::warn!("{e:#} – Standard-Einstellungen");
+        Settings::default()
+    });
     let mut sandbox = Sandbox::load(&map_path, file.physics.clone())?;
     if let Some(i) = args.iter().position(|a| a == "--mode") {
         let name = args
@@ -85,7 +92,7 @@ fn main() -> anyhow::Result<()> {
 
     let event_loop = EventLoop::new().context("Event-Loop konnte nicht erstellt werden")?;
     event_loop.set_control_flow(ControlFlow::Poll);
-    let mut app = App::new(sandbox, &file);
+    let mut app = App::new(sandbox, &file, settings);
     if let Some(address) = connect {
         app.net.address = address;
         app.connect();
@@ -149,13 +156,18 @@ struct App {
     chat_input: game_ui::ChatInput,
     scoreboard: bool,
     killfeed: VecDeque<game_ui::KillEntry>,
+    /// Spieler-Einstellungen (`settings.toml`, E-116) und Sprache (E-114).
+    settings: Settings,
+    lang: lang::Lang,
 }
 
 impl App {
-    fn new(sandbox: Sandbox, file: &TuningFile) -> Self {
+    fn new(sandbox: Sandbox, file: &TuningFile, settings: Settings) -> Self {
         let mut controls = Controls::default();
-        controls.sensitivity = file.input.mouse_sensitivity;
+        controls.sensitivity = settings.input.mouse_sensitivity;
         let mut net = NetUi::default();
+        net.name.clone_from(&settings.player.name);
+        net.skin = settings.player.skin();
         if let Some(r) = &sandbox.rules {
             net.sandbox_mode = Some(r.cfg.mode);
             net.sandbox_instagib = r.cfg.instagib;
@@ -172,9 +184,9 @@ impl App {
             hud_batch: ShapeBatch::default(),
             hud: hud::Hud::new(),
             emotes: emotes::Emotes::new(),
-            sounds: sound::Sounds::new(file.audio),
+            sounds: sound::Sounds::new(settings.audio),
             chat_heard: None,
-            effects: effects::Effects::with_settings(file.effects),
+            effects: effects::Effects::with_settings(settings.effects),
             figures: figure::Figures::default(),
             figure_art: figure::FigureArt::load(),
             item_art: items::ItemArt::load(),
@@ -188,6 +200,23 @@ impl App {
             chat_input: game_ui::ChatInput::default(),
             scoreboard: false,
             killfeed: VecDeque::new(),
+            lang: lang::Lang::new(settings.language),
+            settings,
+        }
+    }
+
+    /// Aktuelle Werte aus Spiel und Panel in die Einstellungen übernehmen und speichern.
+    fn save_settings(&mut self) {
+        let s = &mut self.settings;
+        s.player.name.clone_from(&self.net.name);
+        s.player.set_skin(self.net.skin);
+        s.input.mouse_sensitivity = self.controls.sensitivity;
+        s.effects = self.effects.settings;
+        s.audio = self.sounds.settings;
+        let path = settings::settings_path();
+        match s.save(&path) {
+            Ok(()) => tracing::info!("Einstellungen gespeichert: {}", path.display()),
+            Err(e) => tracing::warn!("{e:#}"),
         }
     }
 
@@ -195,11 +224,6 @@ impl App {
         TuningFile {
             physics: self.sandbox.world.tuning.clone(),
             view: self.view.into(),
-            input: settings::InputFile {
-                mouse_sensitivity: self.controls.sensitivity,
-            },
-            effects: self.effects.settings,
-            audio: self.sounds.settings,
         }
     }
 
@@ -240,9 +264,6 @@ impl App {
                     Ok(f) => {
                         self.sandbox.world.tuning = f.physics;
                         self.view = f.view.into();
-                        self.controls.sensitivity = f.input.mouse_sensitivity;
-                        self.effects.settings = f.effects;
-                        self.sounds.settings = f.audio;
                         format!("Geladen aus {TUNING_FILE}")
                     }
                     Err(e) => format!("Fehler: {e:#}"),
@@ -573,6 +594,8 @@ impl App {
                 view: info.view.as_ref(),
                 tick: info.tick,
                 local: info.local,
+                lang: &self.lang,
+                ui_scale: self.settings.graphics.ui_scale(),
             },
         );
         game_ui::draw(
@@ -580,7 +603,7 @@ impl App {
             self.hud.font(),
             &self.item_art,
             screen,
-            hud::scale(screen),
+            hud::scale(screen, self.settings.graphics.ui_scale()),
             &game_ui::GameUi {
                 view: info.view.as_ref(),
                 names: &info.names,
@@ -592,12 +615,17 @@ impl App {
                 vote: info.vote.as_ref(),
                 killfeed: &self.killfeed,
                 time: self.figures.time(),
+                lang: &self.lang,
             },
         );
         if self.emotes.wheel_open {
             let selected = emotes::selection(self.controls.mouse_pos);
-            self.emotes
-                .draw_wheel(&mut self.hud_batch, screen, hud::scale(screen), selected);
+            self.emotes.draw_wheel(
+                &mut self.hud_batch,
+                screen,
+                hud::scale(screen, self.settings.graphics.ui_scale()),
+                selected,
+            );
         }
         screen
     }
@@ -620,7 +648,14 @@ impl App {
         };
         self.update_looks(elapsed.as_secs_f32(), &scene, &collision, &events);
         let info = self.game_info(now);
-        game_ui::record_kills(&mut self.killfeed, &events, &info.names, &info.teams, now);
+        game_ui::record_kills(
+            &mut self.killfeed,
+            &events,
+            &info.names,
+            &info.teams,
+            now,
+            &self.lang,
+        );
 
         let Some(aspect) = self.gfx.as_ref().map(|g| g.renderer.aspect()) else {
             return;
@@ -792,14 +827,22 @@ impl ApplicationHandler for App {
         if self.gfx.is_some() {
             return;
         }
+        let graphics = self.settings.graphics;
         let attrs = Window::default_attributes()
             .with_title("Elora")
-            .with_inner_size(LogicalSize::new(1280.0, 720.0));
+            .with_inner_size(LogicalSize::new(1280.0, 720.0))
+            .with_fullscreen(
+                graphics
+                    .fullscreen
+                    .then_some(winit::window::Fullscreen::Borderless(None)),
+            );
         let result = (|| {
             let window = Arc::new(event_loop.create_window(attrs)?);
             let size = window.inner_size();
-            let renderer =
+            let mut renderer =
                 pollster::block_on(Renderer::new(window.clone(), size.width, size.height))?;
+            renderer.set_vsync(graphics.vsync);
+            renderer.set_msaa(graphics.msaa);
             let gui = Gui::new(&window, &renderer);
             anyhow::Ok(Gfx {
                 window,
@@ -878,6 +921,7 @@ impl ApplicationHandler for App {
     }
 
     fn exiting(&mut self, _: &ActiveEventLoop) {
+        self.save_settings();
         // Verbindung sauber beenden; Server stoppt je nach Einstellung (Hosting::drop)
         self.online = None;
         std::thread::sleep(Duration::from_millis(20));

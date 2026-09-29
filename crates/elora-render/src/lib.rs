@@ -66,8 +66,10 @@ pub struct Renderer {
     /// brauchen eigene Puffer, weil beide im selben Frame beschrieben werden.
     world: Layer,
     overlay: Layer,
-    /// Abtastungen je Pixel (1 = kein MSAA).
+    /// Abtastungen je Pixel (1 = kein MSAA) und höchste mögliche Stufe.
     samples: u32,
+    max_samples: u32,
+    layout: wgpu::BindGroupLayout,
     /// Mehrfach abgetastetes Ziel, wird in die Surface aufgelöst.
     msaa: Option<wgpu::TextureView>,
 }
@@ -125,7 +127,7 @@ impl Renderer {
         config.present_mode = wgpu::PresentMode::AutoVsync;
         surface.configure(&device, &config);
 
-        let samples = if adapter
+        let max_samples = if adapter
             .get_texture_format_features(config.format)
             .flags
             .sample_count_supported(MSAA_SAMPLES)
@@ -134,7 +136,9 @@ impl Renderer {
         } else {
             1
         };
-        let (pipeline, layout) = create_pipeline(&device, config.format, samples);
+        let samples = max_samples;
+        let layout = create_layout(&device);
+        let pipeline = create_pipeline(&device, config.format, samples, &layout);
         let world = Layer::new(&device, &layout, "world");
         let overlay = Layer::new(&device, &layout, "overlay");
         let msaa = create_msaa(&device, &config, samples);
@@ -148,8 +152,34 @@ impl Renderer {
             world,
             overlay,
             samples,
+            max_samples,
+            layout,
             msaa,
         })
+    }
+
+    /// Bildsynchronisation an/aus (E-120).
+    pub fn set_vsync(&mut self, on: bool) {
+        let mode = if on {
+            wgpu::PresentMode::AutoVsync
+        } else {
+            wgpu::PresentMode::AutoNoVsync
+        };
+        if self.config.present_mode != mode {
+            self.config.present_mode = mode;
+            self.surface.configure(&self.device, &self.config);
+        }
+    }
+
+    /// Kantenglättung an/aus (E-120); an = 4× MSAA, falls die Grafikkarte es kann.
+    pub fn set_msaa(&mut self, on: bool) {
+        let samples = if on { self.max_samples } else { 1 };
+        if samples != self.samples {
+            self.samples = samples;
+            self.pipeline =
+                create_pipeline(&self.device, self.config.format, samples, &self.layout);
+            self.msaa = create_msaa(&self.device, &self.config, samples);
+        }
     }
 
     /// MSAA-Stufe (1 = aus).
@@ -297,13 +327,8 @@ impl Renderer {
 }
 
 /// Pipeline für farbige Formen samt Uniform-Buffer für den Sichtbereich.
-fn create_pipeline(
-    device: &wgpu::Device,
-    format: wgpu::TextureFormat,
-    samples: u32,
-) -> (wgpu::RenderPipeline, wgpu::BindGroupLayout) {
-    let shader = device.create_shader_module(wgpu::include_wgsl!("shader.wgsl"));
-    let layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+fn create_layout(device: &wgpu::Device) -> wgpu::BindGroupLayout {
+    device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
         label: Some("view"),
         entries: &[wgpu::BindGroupLayoutEntry {
             binding: 0,
@@ -315,13 +340,23 @@ fn create_pipeline(
             },
             count: None,
         }],
-    });
+    })
+}
+
+/// Pipeline für farbige Formen mit `samples` Abtastungen je Pixel.
+fn create_pipeline(
+    device: &wgpu::Device,
+    format: wgpu::TextureFormat,
+    samples: u32,
+    layout: &wgpu::BindGroupLayout,
+) -> wgpu::RenderPipeline {
+    let shader = device.create_shader_module(wgpu::include_wgsl!("shader.wgsl"));
     let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
         label: Some("shapes"),
-        bind_group_layouts: &[Some(&layout)],
+        bind_group_layouts: &[Some(layout)],
         immediate_size: 0,
     });
-    let pipeline = device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+    device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
         label: Some("shapes"),
         layout: Some(&pipeline_layout),
         vertex: wgpu::VertexState {
@@ -352,8 +387,7 @@ fn create_pipeline(
         }),
         multiview_mask: None,
         cache: None,
-    });
-    (pipeline, layout)
+    })
 }
 
 /// Puffer für einen Zeichendurchgang: Sichtbereich, Vertices, Indizes.
