@@ -62,6 +62,7 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-053 | 2026-09-25 | Trainings-Dummies (D-M2-04) | Dummies **aus der Karte** mit **Bewegungsmustern**: Stehen, Hin-und-her-Laufen, Springen, Laufen + Springen | Entscheidung Projektinhaber |
 | E-054 | 2026-09-25 | Dummy-Kartenzeichen | Ein Zeichen pro Muster: `D` steht, `W` läuft, `J` springt, `X` läuft + springt (Erweiterung von E-024) | Entscheidung Projektinhaber |
 | E-055 | 2026-09-25 | Kill-Taste (D-M2-05) | Erst in **M4** mit den Spielregeln | Entscheidung Projektinhaber |
+| E-056 | 2026-09-29 | M2 Abnahme | Kampf lokal freigegeben („weiter gehts“); Respawn-Verhalten wie im Original (frühestens 0,5 s per Klick, sonst 3 s) bleibt, da kein Einwand | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 

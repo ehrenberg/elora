@@ -1,6 +1,6 @@
 # M2 – Kampf lokal: Umsetzungsplan
 
-Status: **angenommen** (E-050–E-055) · Grundlage: [`06-roadmap.md`](06-roadmap.md) M2, E-016, E-023, E-025
+Status: **abgeschlossen** (E-056) · angenommen (E-050–E-055) · Grundlage: [`06-roadmap.md`](06-roadmap.md) M2, E-016, E-023, E-025
 
 ## Ziel
 
@@ -19,7 +19,7 @@ In der Sandbox lassen sich Hammer, Laser und Granate benutzen, gegen Trainings-D
 | M2.7 ✅ | Trainings-Dummies | `elora-sim` + Client | Ziele zum Testen, keine Bots (E-035), siehe D-M2-04 | Manuell |
 | M2.8 ✅ | Darstellung & HUD | Client | Platzhalter für Projektile, Laserstrahl, Explosion, Pickups, Waffe in der Hand; HUD mit HP, Rüstung, Munition und aktiver Waffe; Debug-Panel um die Waffenwerte erweitert | Sichtprüfung |
 | M2.9 ✅ | Determinismus | `elora-sim` | Aufzeichnung und Golden-Tests um Feuer und Waffenwahl erweitert (Formatversion 2) | Tests grün |
-| M2.10 | Abnahme | – | Du spielst die Sandbox | Deine Abnahme |
+| M2.10 ✅ | Abnahme | – | Du spielst die Sandbox | Deine Abnahme |
 
 Nach jedem Schritt: `cargo xtask check` grün, dann ein Commit.
 

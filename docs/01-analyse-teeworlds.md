@@ -154,12 +154,17 @@ Community-Modi (nicht Vanilla): **DDRace** (kooperatives Parkour, Freeze-Tiles),
 
 ## 10. Netzwerk
 
-- **Client-Server**, autoritativer Server, eigenes Protokoll über **UDP**.
-- Server simuliert mit 50 TPS, sendet **Snapshots** (standardmäßig jeden 2. Tick → 25 Hz), **delta-komprimiert** gegen zuletzt bestätigten Snapshot.
-- Client sendet Inputs (Richtung, Zielpunkt, Sprung, Feuer, Hook, Waffenwahl) pro Tick.
-- **Client-Prediction** der eigenen Figur (und in DDNet auch anderer), Interpolation fremder Objekte.
-- **Master-Server** für Server-Liste, Server-Browser im Client.
-- Demo-Aufnahmen (Replays) über aufgezeichnete Snapshots.
+- **Client-Server**, autoritativer Server, eigenes Protokoll über **UDP** (Standard-Port 8303).
+- Server simuliert mit 50 TPS und sendet **Snapshots** standardmäßig **jeden 2. Tick (25 Hz)**; `sv_high_bandwidth 1` (nur LAN) sendet jeden Tick. Snapshots sind **delta-komprimiert** gegen den zuletzt bestätigten Snapshot, mit CRC; max. 900 Byte pro Paketteil, größere Snapshots werden aufgeteilt.
+- **Pakete:** max. 1400 Byte. Kopf mit Flags (Control, Resend, Compression, Connless), Ack-Nummer (10-Bit-Sequenz) und Anzahl Chunks. Chunks sind *vital* (zuverlässig, werden bis zur Bestätigung erneut gesendet) oder *nicht vital*. Kompression: Huffman mit fester Häufigkeitstabelle, Ganzzahlen als variable Länge.
+- **Verbindung (0.7):** Token-Handshake gegen gefälschte Absender, danach Connect/Accept, Keepalive, Timeout; Close mit Grund.
+- **Spielerzahl:** `sv_max_clients` Standard **8**, technisches Maximum 64.
+- **Eingaben:** Der Client sendet pro Tick seine Eingabe mit Ziel-Tick (`PredTick`). Der Server meldet zurück, wie viel Zeit bis zur Verarbeitung blieb (`INPUTTIMING`); der Client regelt seine Vorhersagezeit so, dass Eingaben knapp (Marge 10 ms) vor ihrem Tick ankommen.
+- **Vorhersage (Prediction, 0.7 `OnPredict`):** Der Client rechnet vom letzten Snapshot bis zum Vorhersage-Tick vorwärts – **nur Bewegung/Hook** (`CCharacterCore`), mit den eigenen gepufferten Eingaben. Andere Spieler werden ohne Eingaben mitsimuliert (für Kollision/Hook), aber standardmäßig **interpoliert dargestellt** (`cl_predict_players 0`). **Waffen und Projektile werden nicht vorhergesagt** (`cl_predict_projectiles 0`): Schüsse erscheinen, wenn der Server sie bestätigt.
+- **Keine Lag-Kompensation:** Der Server wertet Treffer mit seinen aktuellen Positionen aus (kein Zurückspulen).
+- **Interpolation:** Fremde Objekte werden zwischen den zwei letzten Snapshots interpoliert.
+- **Master-Server** für die Server-Liste, Server-Browser im Client (M7).
+- **Demos** über aufgezeichnete Snapshots (O-18).
 
 ## 11. Karten & Editor
 
