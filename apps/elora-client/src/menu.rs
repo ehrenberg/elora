@@ -654,11 +654,16 @@ mod tests {
             ("erstellen", Page::Create),
             ("einstellungen", Page::Settings),
             ("grafik", Page::Settings),
+            ("steuerung", Page::Settings),
             ("pause", Page::Play),
         ] {
             let mut menu = Menu {
                 page,
-                settings_tab: if name == "grafik" { 2 } else { 0 },
+                settings_tab: match name {
+                    "grafik" => 2,
+                    "steuerung" => 1,
+                    _ => 0,
+                },
                 address: "127.0.0.1:8303".into(),
                 selected_favorite: Some(0),
                 ..Menu::default()
@@ -687,6 +692,8 @@ mod tests {
                 let mut effects = crate::effects::EffectSettings::default();
                 let mut sens = 100.0;
                 let mut language = Language::De;
+                let mut bindings = crate::bindings::Bindings::default();
+                let mut capture = None;
                 let mut edit = SettingsEdit {
                     name: &mut name,
                     skin: &mut skin,
@@ -695,6 +702,8 @@ mod tests {
                     effects: &mut effects,
                     sensitivity: &mut sens,
                     language: &mut language,
+                    bindings: &mut bindings,
+                    capture: &mut capture,
                     audio_device: true,
                 };
                 menu.draw_main(&mut batch, &cx, &mut edit);

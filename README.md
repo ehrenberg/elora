@@ -122,6 +122,8 @@ oder im Client: `Esc` → Panel *Netzwerk* → Adresse eintragen → *Verbinden*
 
 ### Steuerung
 
+Standardbelegung; alles außer Esc und F1 lässt sich unter *Einstellungen → Steuerung* umbelegen.
+
 | Taste | Aktion |
 |---|---|
 | A / D | laufen |

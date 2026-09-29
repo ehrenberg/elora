@@ -34,6 +34,13 @@ pub const SAND: Color = Color::hex(0xe0c89a);
 pub const LOGO: Color = Color::hex(0xe8a53a);
 const WHITE: Color = Color::rgb(1.0, 1.0, 1.0);
 
+/// Lesbare Schriftfarbe auf `bg`: dunkel auf hellen Farben (z. B. Sand), sonst weiß.
+pub fn on_color(bg: Color) -> Color {
+    let [r, g, b, _] = bg.0;
+    let luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+    if luminance > 0.7 { TEXT } else { WHITE }
+}
+
 /// Achsenparalleles Rechteck in Bildschirm-Pixeln.
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct Rect {
@@ -260,12 +267,12 @@ impl Ui<'_> {
         let c = if hot { shade(color, 0.1) } else { color };
         self.pill(r, c, pressed);
         let y = if pressed { 2.0 * self.s } else { 0.0 };
-        let size = (r.h() / self.s * 0.46).clamp(9.0, 18.0);
+        let size = (r.h() / self.s * 0.46).clamp(10.0, 18.0);
         self.label(
             label,
             r.center() + Vec2::new(0.0, y),
             size,
-            WHITE,
+            on_color(color),
             Align::Center,
         );
         clicked

@@ -74,6 +74,8 @@ impl App {
             effects: &mut self.effects.settings,
             sensitivity: &mut self.controls.sensitivity,
             language: &mut self.settings.language,
+            bindings: &mut self.settings.bindings,
+            capture: &mut self.bind_capture,
             audio_device,
         };
         let (action, changed) = self.menu.draw_main(&mut self.hud_batch, &cx, &mut edit);

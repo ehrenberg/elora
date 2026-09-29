@@ -1,9 +1,9 @@
-//! Eingabe: Tasten und Maus → [`PlayerInput`] (Standardbelegung E-043, E-051).
+//! Eingabe: belegte Aktionen und Maus → [`PlayerInput`] (Belegung siehe [`crate::bindings`]).
 
 use elora_sim::input::INPUT_STATE_MASK;
 use elora_sim::{PlayerInput, Vec2};
-use winit::event::{ElementState, MouseButton};
-use winit::keyboard::KeyCode;
+
+use crate::bindings::GameAction;
 
 /// Maximale Entfernung des Fadenkreuzes bei statischer Kamera (Original: 400).
 pub const MOUSE_MAX_DISTANCE: f32 = 400.0;
@@ -51,44 +51,30 @@ fn bump(counter: &mut u8) {
 }
 
 impl Controls {
-    /// Verarbeitet eine Taste. Liefert `true`, wenn sie zur Spielsteuerung gehört.
-    pub fn key(&mut self, code: KeyCode, state: ElementState) -> bool {
-        let down = state.is_pressed();
-        match code {
-            KeyCode::KeyA => self.left = down,
-            KeyCode::KeyD => self.right = down,
-            KeyCode::Space => self.jump = down,
+    /// Spielsteuerung für eine belegte Aktion (M7.5). Liefert `true`, wenn sie zur
+    /// Figur gehört (Bewegung, Hook, Waffen); Chat, Emotes usw. behandelt die App.
+    pub fn action(&mut self, action: GameAction, down: bool) -> bool {
+        match action {
+            GameAction::Left => self.left = down,
+            GameAction::Right => self.right = down,
+            GameAction::Jump => self.jump = down,
+            GameAction::Hook => self.hook = down,
+            GameAction::Fire => {
+                if down != self.fire_held() {
+                    bump(&mut self.fire);
+                }
+            }
             // E-051: 1 Hammer, 2 Granate, 3 Laser
-            KeyCode::Digit1 if down => self.wanted_weapon = 1,
-            KeyCode::Digit2 if down => self.wanted_weapon = 2,
-            KeyCode::Digit3 if down => self.wanted_weapon = 3,
-            KeyCode::Digit1 | KeyCode::Digit2 | KeyCode::Digit3 => {}
+            GameAction::Hammer if down => self.wanted_weapon = 1,
+            GameAction::Grenade if down => self.wanted_weapon = 2,
+            GameAction::Laser if down => self.wanted_weapon = 3,
+            GameAction::Hammer | GameAction::Grenade | GameAction::Laser => {}
+            // Zähler wie im Original: jede Zustandsänderung +1
+            GameAction::NextWeapon => bump(&mut self.next_weapon),
+            GameAction::PrevWeapon => bump(&mut self.prev_weapon),
             _ => return false,
         }
         true
-    }
-
-    pub fn mouse_button(&mut self, button: MouseButton, state: ElementState) {
-        let down = state.is_pressed();
-        match button {
-            MouseButton::Left if down != self.fire_held() => bump(&mut self.fire),
-            MouseButton::Right => self.hook = down,
-            _ => {}
-        }
-    }
-
-    /// Mausrad: hoch = vorige Waffe, runter = nächste (Original-Belegung).
-    pub fn mouse_wheel(&mut self, notches: i32) {
-        let counter = if notches > 0 {
-            &mut self.prev_weapon
-        } else {
-            &mut self.next_weapon
-        };
-        for _ in 0..notches.unsigned_abs().min(8) {
-            // Drücken + Loslassen
-            bump(counter);
-            bump(counter);
-        }
     }
 
     /// Rohe Maus-Bewegung: wird direkt in Welteinheiten addiert (wie im Original).

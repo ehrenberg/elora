@@ -132,6 +132,7 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-123 | 2026-09-30 | Menü-Design (D-M7-01) | **2–3 Entwürfe als Bild** (Hauptmenü, Server-Browser, Einstellungsseite) vor der Umsetzung | Entscheidung Projektinhaber |
 | E-124 | 2026-09-30 | M7-Plan | Plan aus [`12-m7-plan.md`](12-m7-plan.md) freigegeben, Umsetzung beginnt mit M7.0 (Entwürfe) | Entscheidung Projektinhaber |
 | E-125 | 2026-09-30 | Menü-Stil (M7.0) | **Aufbau von C „Leiste oben“** (Reiterleiste oben, Startseite mit „Schnell spielen“, Einstellungen mit Seitenleiste) **in den Farben und Formen von B „Hell & weich“** (cremefarbene Karten, weicher Schatten, farbige Pillen-Knöpfe) | Entscheidung Projektinhaber |
+| E-126 | 2026-09-30 | M7.0–M7.4 | Menü, Einstellungen und Sprache im Test „sieht gut aus“ – weiter mit M7.5 | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 

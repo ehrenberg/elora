@@ -9,12 +9,16 @@ use elora_protocol::Skin;
 use elora_render::{Align, Color};
 use elora_sim::{Team, Vec2};
 
+use crate::bindings::{Bindings, GameAction};
 use crate::effects::EffectSettings;
 use crate::lang::Language;
 use crate::menu::MenuCtx;
 use crate::settings::GraphicsSettings;
 use crate::skins::{BODY, EYES};
-use crate::ui::{BLUE, ORANGE, Rect, TEXT_DIM, Ui};
+use crate::ui::{BLUE, ORANGE, Rect, SAND, TEXT, TEXT_DIM, Ui};
+
+/// Rot für doppelt belegte Tasten.
+const CONFLICT: Color = Color::hex(0xd94a4a);
 
 /// Was die Einstellungsseiten bearbeiten (Verweise in die App).
 pub struct SettingsEdit<'a> {
@@ -26,6 +30,9 @@ pub struct SettingsEdit<'a> {
     /// Maus-Empfindlichkeit in Prozent.
     pub sensitivity: &'a mut f32,
     pub language: &'a mut Language,
+    pub bindings: &'a mut Bindings,
+    /// Aktion, die gerade auf eine neue Taste wartet.
+    pub capture: &'a mut Option<GameAction>,
     /// Audiogerät vorhanden?
     pub audio_device: bool,
 }
@@ -120,20 +127,93 @@ fn controls(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, page: Rect, edit: &mut SettingsEd
         TEXT_DIM,
         Align::Left,
     );
-    let changed = ui.slider(
+    let mut changed = ui.slider(
         "sens",
         Rect::new(x, y + 10.0 * s, 300.0 * s, 24.0 * s),
         edit.sensitivity,
         10.0,
         400.0,
     );
+    changed |= binding_list(
+        ui,
+        cx,
+        Vec2::new(x, y + 48.0 * s),
+        page.w() - 40.0 * s,
+        edit,
+    );
+    changed
+}
+
+/// Belegung in zwei Spalten; Klick auf eine Taste wartet auf die neue.
+fn binding_list(
+    ui: &mut Ui<'_>,
+    cx: &MenuCtx<'_>,
+    origin: Vec2,
+    width: f32,
+    edit: &mut SettingsEdit<'_>,
+) -> bool {
+    let s = cx.s;
+    let lang = cx.lang;
+    let row = 26.0 * s;
+    let col_w = width / 2.0;
+    let half = GameAction::ALL.len().div_ceil(2);
+    let mut changed = false;
+    for (i, action) in GameAction::ALL.iter().enumerate() {
+        let (col, line) = (i / half, i % half);
+        #[allow(clippy::cast_precision_loss)]
+        let pos = origin + Vec2::new(col as f32 * col_w, line as f32 * row);
+        let conflict = edit.bindings.conflict(*action);
+        let label = lang.t(&format!("bind.{}", action.name())).to_owned();
+        let label_color = if conflict { CONFLICT } else { TEXT };
+        ui.label(
+            &label,
+            pos + Vec2::new(0.0, 10.0 * s),
+            11.0,
+            label_color,
+            Align::Left,
+        );
+        let waiting = *edit.capture == Some(*action);
+        let key = if waiting {
+            "…".to_owned()
+        } else {
+            edit.bindings.trigger(*action).label(lang)
+        };
+        let color = if waiting {
+            ORANGE
+        } else if conflict {
+            CONFLICT
+        } else {
+            SAND
+        };
+        let btn = Rect::new(pos.x + col_w * 0.52, pos.y - s, col_w * 0.42, 22.0 * s);
+        if ui.button(&format!("bind_{}", action.name()), btn, &key, color) {
+            *edit.capture = Some(*action);
+        }
+    }
+    #[allow(clippy::cast_precision_loss)]
+    let y = origin.y + half as f32 * row + 8.0 * s;
+    let hint = if edit.capture.is_some() {
+        lang.t("bind.press")
+    } else if GameAction::ALL.iter().any(|a| edit.bindings.conflict(*a)) {
+        lang.t("bind.conflict")
+    } else {
+        lang.t("bind.fixed")
+    };
     ui.label(
-        lang.t("settings.bindings_soon"),
-        Vec2::new(x, y + 60.0 * s),
+        hint,
+        Vec2::new(origin.x, y + 10.0 * s),
         11.0,
         TEXT_DIM,
         Align::Left,
     );
+    let reset = lang.t("bind.reset");
+    let w = ui.text_width(reset, 11.0) + 30.0 * s;
+    let r = Rect::new(origin.x + width - w, y, w, 22.0 * s);
+    if ui.button("bind_reset", r, reset, SAND) {
+        *edit.bindings = Bindings::default();
+        *edit.capture = None;
+        changed = true;
+    }
     changed
 }
 

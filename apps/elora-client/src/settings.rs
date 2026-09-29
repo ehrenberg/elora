@@ -49,6 +49,8 @@ pub struct Settings {
     pub audio: elora_audio::AudioSettings,
     pub effects: EffectSettings,
     pub input: InputSettings,
+    /// Tastenbelegung (E-117).
+    pub bindings: crate::bindings::Bindings,
     /// Gespeicherte Server (Adresse:Port).
     pub favorites: Vec<String>,
     /// Zuletzt verbundener Server („Schnell spielen“).
@@ -64,6 +66,7 @@ impl Default for Settings {
             audio: elora_audio::AudioSettings::default(),
             effects: EffectSettings::default(),
             input: InputSettings::default(),
+            bindings: crate::bindings::Bindings::default(),
             favorites: Vec::new(),
             last_server: None,
         }

@@ -4,6 +4,7 @@
 //! (Standardkarte: `maps/sandbox.emap.toml`)
 
 mod app_menu;
+mod bindings;
 mod connection;
 mod controls;
 mod debug_ui;
@@ -39,11 +40,12 @@ use elora_render::{Camera, Renderer, ShapeBatch, ViewSettings};
 use elora_sim::{Collision, Event, Tuning, Vec2};
 use winit::application::ApplicationHandler;
 use winit::dpi::LogicalSize;
-use winit::event::{DeviceEvent, DeviceId, ElementState, KeyEvent, WindowEvent};
+use winit::event::{DeviceEvent, DeviceId, KeyEvent, WindowEvent};
 use winit::event_loop::{ActiveEventLoop, ControlFlow, EventLoop};
 use winit::keyboard::{KeyCode, PhysicalKey};
 use winit::window::{CursorGrabMode, Window, WindowId};
 
+use bindings::{GameAction, Trigger};
 use connection::{Connection, KNOWN_SERVERS_FILE, KnownServers};
 use controls::Controls;
 use debug_ui::{Action, KeyWarning, NetUi, OnlineView};
@@ -184,6 +186,8 @@ struct App {
     menu: menu::Menu,
     /// Kartennamen für „Server erstellen“.
     maps: Vec<String>,
+    /// Aktion, die gerade neu belegt wird (nächste Taste zählt).
+    bind_capture: Option<GameAction>,
 }
 
 impl App {
@@ -230,6 +234,7 @@ impl App {
             screen: Screen::Menu,
             menu: menu::Menu::default(),
             maps: app_menu::map_names(),
+            bind_capture: None,
         }
     }
 
@@ -811,67 +816,110 @@ impl App {
         let PhysicalKey::Code(code) = event.physical_key else {
             return;
         };
+        let pressed = event.state.is_pressed();
+        if self.bind_capture.is_some() {
+            self.capture_trigger(Trigger::Key(code), pressed);
+            return;
+        }
         if self.menu_active() {
-            if code == KeyCode::F1 && event.state.is_pressed() && !event.repeat {
+            if code == KeyCode::F1 && pressed && !event.repeat {
                 self.show_panel = !self.show_panel;
             } else {
                 self.menu_key(code, event);
             }
             return;
         }
-        // Scoreboard solange Tab gehalten wird (E-078)
-        if code == KeyCode::Tab {
-            self.scoreboard = event.state.is_pressed();
-            return;
-        }
         if self.chat_input.open {
             self.chat_key(code, event); // Tastatur gehört dem Chat-Feld
             return;
         }
-        // Emote-Rad solange E gehalten wird (E-091); beim Loslassen wählen
-        if code == KeyCode::KeyE {
-            if event.state.is_pressed() {
-                self.emotes.wheel_open = true;
-            } else if std::mem::take(&mut self.emotes.wheel_open)
-                && let Some(e) = emotes::selection(self.controls.mouse_pos)
-            {
-                self.send_emote(e);
+        let unbound = self
+            .settings
+            .bindings
+            .actions(Trigger::Key(code))
+            .is_empty();
+        let online = self.online.is_some();
+        if pressed && !event.repeat {
+            match code {
+                KeyCode::Escape => return self.toggle_pause(),
+                KeyCode::F1 => {
+                    self.show_panel = !self.show_panel;
+                    return;
+                }
+                KeyCode::KeyR if unbound && !online => return self.apply(Action::Respawn),
+                KeyCode::F5 if unbound && !online => {
+                    self.status = if self.sandbox.rules.is_some() {
+                        "Aufzeichnung nur ohne Spielmodus (Golden-Tests = reine Simulation)".into()
+                    } else {
+                        self.sandbox.stop_recording("F5").unwrap_or_else(|| {
+                            self.sandbox.start_recording();
+                            "Aufzeichnung läuft … (F5 beendet)".into()
+                        })
+                    };
+                    return;
+                }
+                _ => {}
             }
-            return;
         }
-        if self.controls.key(code, event.state)
-            || event.state != ElementState::Pressed
-            || event.repeat
-        {
+        if !event.repeat {
+            self.trigger(Trigger::Key(code), pressed);
+        }
+    }
+
+    /// Alle Aktionen, die `t` auslöst (Tastenbelegung, M7.5).
+    fn trigger(&mut self, t: Trigger, down: bool) {
+        for action in self.settings.bindings.actions(t) {
+            self.game_action(action, down);
+        }
+    }
+
+    /// Eine belegte Aktion im Spiel.
+    fn game_action(&mut self, action: GameAction, down: bool) {
+        if self.controls.action(action, down) {
             return;
         }
         let online = self.online.is_some();
-        match code {
-            KeyCode::Escape => self.toggle_pause(),
-            KeyCode::KeyR if !online => self.apply(Action::Respawn),
-            KeyCode::F5 if !online && self.sandbox.rules.is_some() => {
-                self.status =
-                    "Aufzeichnung nur ohne Spielmodus (Golden-Tests = reine Simulation)".into();
+        match action {
+            // Scoreboard solange gehalten (E-078)
+            GameAction::Scoreboard => self.scoreboard = down,
+            // Emote-Rad solange gehalten (E-091); beim Loslassen wählen
+            GameAction::Emote => {
+                if down {
+                    self.emotes.wheel_open = true;
+                } else if std::mem::take(&mut self.emotes.wheel_open)
+                    && let Some(e) = emotes::selection(self.controls.mouse_pos)
+                {
+                    self.send_emote(e);
+                }
             }
-            KeyCode::F5 if !online => {
-                self.status = self.sandbox.stop_recording("F5").unwrap_or_else(|| {
-                    self.sandbox.start_recording();
-                    "Aufzeichnung läuft … (F5 beendet)".into()
-                });
-            }
-            KeyCode::F1 => self.show_panel = !self.show_panel,
-            KeyCode::KeyT | KeyCode::KeyY if online => {
+            GameAction::Chat | GameAction::TeamChat if down && online => {
                 self.controls.release_all();
                 self.chat_input = game_ui::ChatInput {
                     open: true,
-                    team: code == KeyCode::KeyY,
+                    team: action == GameAction::TeamChat,
                     text: String::new(),
                 };
             }
-            KeyCode::KeyK => self.apply(Action::Kill),
-            KeyCode::F3 => self.apply(Action::Vote(true)),
-            KeyCode::F4 => self.apply(Action::Vote(false)),
+            GameAction::Kill if down => self.apply(Action::Kill),
+            GameAction::VoteYes if down => self.apply(Action::Vote(true)),
+            GameAction::VoteNo if down => self.apply(Action::Vote(false)),
             _ => {}
+        }
+    }
+
+    /// Neu belegen: nächste Taste/Maustaste/Radrichtung übernehmen, Esc bricht ab.
+    fn capture_trigger(&mut self, t: Trigger, pressed: bool) {
+        if !pressed {
+            return;
+        }
+        let Some(action) = self.bind_capture else {
+            return;
+        };
+        if t == Trigger::Key(KeyCode::Escape) {
+            self.bind_capture = None;
+        } else if self.settings.bindings.set(action, t) {
+            self.bind_capture = None;
+            self.save_settings();
         }
     }
 }
@@ -949,15 +997,29 @@ impl ApplicationHandler for App {
             }
             WindowEvent::KeyboardInput { event, .. } => self.key(&event),
             WindowEvent::MouseInput { state, button, .. } => {
-                if self.menu_active() {
+                if self.bind_capture.is_some() {
+                    self.capture_trigger(Trigger::Mouse(button), state.is_pressed());
+                } else if self.menu_active() {
                     self.menu_mouse_button(button, state);
                 } else if self.cursor_grabbed {
-                    self.controls.mouse_button(button, state);
+                    self.trigger(Trigger::Mouse(button), state.is_pressed());
                 } else if state.is_pressed()
                     && !self.gfx.as_ref().is_some_and(|g| g.gui.wants_pointer())
                 {
                     self.set_cursor_grab(true);
                 }
+            }
+            WindowEvent::MouseWheel { delta, .. } if self.bind_capture.is_some() => {
+                let up = match delta {
+                    winit::event::MouseScrollDelta::LineDelta(_, y) => y > 0.0,
+                    winit::event::MouseScrollDelta::PixelDelta(p) => p.y > 0.0,
+                };
+                let t = if up {
+                    Trigger::WheelUp
+                } else {
+                    Trigger::WheelDown
+                };
+                self.capture_trigger(t, true);
             }
             WindowEvent::MouseWheel { delta, .. } if self.menu_active() => self.menu_wheel(delta),
             WindowEvent::MouseWheel { delta, .. } if self.cursor_grabbed => {
@@ -965,7 +1027,16 @@ impl ApplicationHandler for App {
                     winit::event::MouseScrollDelta::LineDelta(_, y) => y.round() as i32,
                     winit::event::MouseScrollDelta::PixelDelta(p) => (p.y / 40.0).round() as i32,
                 };
-                self.controls.mouse_wheel(notches);
+                let t = if notches > 0 {
+                    Trigger::WheelUp
+                } else {
+                    Trigger::WheelDown
+                };
+                // je Raste Drücken + Loslassen
+                for _ in 0..notches.unsigned_abs().min(8) {
+                    self.trigger(t, true);
+                    self.trigger(t, false);
+                }
             }
             WindowEvent::RedrawRequested => self.redraw(),
             _ => {}
