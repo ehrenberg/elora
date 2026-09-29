@@ -112,6 +112,41 @@ impl ShapeBatch {
         ]);
     }
 
+    /// Rechteck mit senkrechtem Verlauf von `top` nach `bottom`.
+    ///
+    /// # Panics
+    /// Bei mehr als `u32::MAX` Vertices in einem Batch.
+    pub fn fill_rect_vgradient(&mut self, min: Vec2, max: Vec2, top: Color, bottom: Color) {
+        let base = u32::try_from(self.geometry.vertices.len()).expect("zu viele Vertices");
+        let (t, b) = (top.0, bottom.0);
+        self.geometry.vertices.extend_from_slice(&[
+            Vertex {
+                pos: [min.x, min.y],
+                color: t,
+            },
+            Vertex {
+                pos: [max.x, min.y],
+                color: t,
+            },
+            Vertex {
+                pos: [max.x, max.y],
+                color: b,
+            },
+            Vertex {
+                pos: [min.x, max.y],
+                color: b,
+            },
+        ]);
+        self.geometry.indices.extend_from_slice(&[
+            base,
+            base + 1,
+            base + 2,
+            base,
+            base + 2,
+            base + 3,
+        ]);
+    }
+
     pub fn fill_circle(&mut self, center: Vec2, radius: f32, color: Color) {
         let options = FillOptions::tolerance(self.tolerance);
         let c = color.0;

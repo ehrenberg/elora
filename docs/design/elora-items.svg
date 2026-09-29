@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1260" height="860" viewBox="0 0 1260 860" font-family="Inter">
+<rect width="1260" height="860" fill="#8fb8d9"/>
+<text x="30" y="44" font-size="28" fill="#1e2a36" font-weight="bold">Pickups, Waffen, Flaggen – zwei Stile (M5.5)</text>
+<text x="30" y="70" font-size="15" fill="#1e2a36">Gezeigt ×2.5 der Spielgröße. Waffen-Pickups zeigen dieselbe Grafik wie die Waffe in der Hand.</text>
+<rect x="15" y="90" width="1230" height="360" rx="16" fill="#ffffff" opacity="0.35"/>
+<text x="35" y="126" font-size="24" fill="#1e2a36" font-weight="bold">A – Rund</text>
+<text x="35" y="152" font-size="16" fill="#1e2a36">weiche Formen und Glanzlichter, passend zu Elora</text>
+<g transform="translate(90,290) scale(2.5)"><path d="M 0,9 C -13,1 -13,-10 -5.5,-10 C -2.5,-10 0,-7.5 0,-5 C 0,-7.5 2.5,-10 5.5,-10 C 13,-10 13,1 0,9 Z"
+        fill="#e05a7a" stroke="#2b2b2b" stroke-width="1.6" stroke-linejoin="round"/>
+        <ellipse cx="-5" cy="-5.5" rx="2.6" ry="1.8" fill="#ffffff" opacity="0.8"/></g>
+<text x="90" y="360" font-size="15" text-anchor="middle" fill="#1e2a36">Leben</text>
+<g transform="translate(210,290) scale(2.5)"><path d="M -9,-10 L 9,-10 L 9,-1 C 9,5 4,9 0,11 C -4,9 -9,5 -9,-1 Z" fill="#e0b85a" stroke="#2b2b2b" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M -5,-6.5 L 5,-6.5 L 5,-1 C 5,3 2.5,5.5 0,7 C -2.5,5.5 -5,3 -5,-1 Z" fill="#f3d990"/></g>
+<text x="210" y="360" font-size="15" text-anchor="middle" fill="#1e2a36">Rüstung</text>
+<g transform="translate(320,290) scale(2.5)"><rect x="-2" y="-2" width="26" height="4" rx="2" fill="#8a6a4a" stroke="#2b2b2b" stroke-width="1.2"/>
+        <rect x="22" y="-9" width="12" height="18" rx="4" fill="#c8ced6" stroke="#2b2b2b" stroke-width="1.6"/>
+        <rect x="24" y="-7" width="3" height="14" rx="1.5" fill="#eef1f4"/></g>
+<text x="365" y="360" font-size="15" text-anchor="middle" fill="#1e2a36">Hammer</text>
+<g transform="translate(480,290) scale(2.5)"><rect x="0" y="-5.5" width="30" height="11" rx="5.5" fill="#6fbf4f" stroke="#2b2b2b" stroke-width="1.6"/>
+        <rect x="27" y="-3.5" width="11" height="7" rx="2" fill="#3f5a36" stroke="#2b2b2b" stroke-width="1.2"/>
+        <circle cx="9" cy="3" r="5" fill="#4f9a38" stroke="#2b2b2b" stroke-width="1.4"/>
+        <rect x="4" y="-3.5" width="18" height="2" rx="1" fill="#a6dc8c"/></g>
+<text x="525" y="360" font-size="15" text-anchor="middle" fill="#1e2a36">Granate</text>
+<g transform="translate(660,290) scale(2.5)"><rect x="0" y="-4" width="34" height="8" rx="4" fill="#e8f4f8" stroke="#2b2b2b" stroke-width="1.6"/>
+        <rect x="4" y="-1.2" width="24" height="2.4" rx="1.2" fill="#5ad0e0"/>
+        <circle cx="37" cy="0" r="3.2" fill="#5ad0e0" stroke="#2b2b2b" stroke-width="1.2"/>
+        <circle cx="37" cy="0" r="1.4" fill="#ffffff"/></g>
+<text x="705" y="360" font-size="15" text-anchor="middle" fill="#1e2a36">Laser</text>
+<g transform="translate(880,310) scale(2.5)"><line x1="0" y1="14" x2="0" y2="-38" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="0" cy="-39" r="2.6" fill="#e8e8e8" stroke="#2b2b2b" stroke-width="1.2"/>
+        <path d="M 1.5,-36 C 12,-40 20,-30 32,-30 C 24,-24 12,-20 1.5,-16 Z" fill="#e0574f" stroke="#2b2b2b" stroke-width="1.6" stroke-linejoin="round"/></g>
+<g transform="translate(990,310) scale(2.5)"><line x1="0" y1="14" x2="0" y2="-38" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+        <circle cx="0" cy="-39" r="2.6" fill="#e8e8e8" stroke="#2b2b2b" stroke-width="1.2"/>
+        <path d="M 1.5,-36 C 12,-40 20,-30 32,-30 C 24,-24 12,-20 1.5,-16 Z" fill="#4f86e0" stroke="#2b2b2b" stroke-width="1.6" stroke-linejoin="round"/></g>
+<text x="955" y="360" font-size="15" text-anchor="middle" fill="#1e2a36">Flaggen</text>
+<g transform="translate(1120,355.0) scale(0.8999999999999999)">
+  
+  <g id="foot-back">
+    <ellipse id="tint-3" cx="-20" cy="-8" rx="14" ry="8" fill="#d9a43a" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse id="tint-3" cx="22" cy="-8" rx="14" ry="8" fill="#d9a43a" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path id="tint-2" d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#f2c14e" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path id="tint-2-l45" d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#f8dd9e"/>
+  </g>
+  <g id="eyes">
+    <ellipse id="tint-1" cx="2" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <ellipse id="tint-1-b" cx="26" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    <path d="M 10,-41 Q 16,-36 22,-41" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</g>
+<g transform="translate(1125.0,325.0) scale(2.5)"><rect x="0" y="-4" width="34" height="8" rx="4" fill="#e8f4f8" stroke="#2b2b2b" stroke-width="1.6"/>
+        <rect x="4" y="-1.2" width="24" height="2.4" rx="1.2" fill="#5ad0e0"/>
+        <circle cx="37" cy="0" r="3.2" fill="#5ad0e0" stroke="#2b2b2b" stroke-width="1.2"/>
+        <circle cx="37" cy="0" r="1.4" fill="#ffffff"/></g>
+<line x1="1050" y1="355.0" x2="1230" y2="355.0" stroke="#5b6b7c" stroke-width="6"/>
+<text x="1140" y="390" font-size="13" text-anchor="middle" fill="#1e2a36">Größenvergleich</text>
+<rect x="15" y="475" width="1230" height="360" rx="16" fill="#ffffff" opacity="0.35"/>
+<text x="35" y="511" font-size="24" fill="#1e2a36" font-weight="bold">B – Kantig</text>
+<text x="35" y="537" font-size="16" fill="#1e2a36">klare Kanten und Facetten, Kontrast zur runden Figur</text>
+<g transform="translate(90,675) scale(2.5)"><rect x="-11" y="-11" width="22" height="22" rx="5" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.6"/>
+        <path d="M -3,-7 H 3 V -3 H 7 V 3 H 3 V 7 H -3 V 3 H -7 V -3 H -3 Z" fill="#e05a7a"/></g>
+<text x="90" y="745" font-size="15" text-anchor="middle" fill="#1e2a36">Leben</text>
+<g transform="translate(210,675) scale(2.5)"><path d="M 0,-12 L 10,-6 L 10,6 L 0,12 L -10,6 L -10,-6 Z" fill="#e0b85a" stroke="#2b2b2b" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M 0,-12 L 0,0 L 10,-6 Z" fill="#f3d990"/><path d="M 0,0 L -10,6 L 0,12 Z" fill="#b8913c"/></g>
+<text x="210" y="745" font-size="15" text-anchor="middle" fill="#1e2a36">Rüstung</text>
+<g transform="translate(320,675) scale(2.5)"><rect x="-2" y="-2" width="26" height="4" fill="#8a6a4a" stroke="#2b2b2b" stroke-width="1.2"/>
+        <path d="M 21,-10 L 32,-8 L 35,0 L 32,8 L 21,10 Z" fill="#c8ced6" stroke="#2b2b2b" stroke-width="1.6" stroke-linejoin="round"/></g>
+<text x="365" y="745" font-size="15" text-anchor="middle" fill="#1e2a36">Hammer</text>
+<g transform="translate(480,675) scale(2.5)"><path d="M 0,-6 L 26,-6 L 30,-3 L 38,-3 L 38,3 L 30,3 L 26,6 L 0,6 Z" fill="#6fbf4f" stroke="#2b2b2b" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M 6,6 L 14,6 L 12,11 L 7,11 Z" fill="#4f9a38" stroke="#2b2b2b" stroke-width="1.2" stroke-linejoin="round"/></g>
+<text x="525" y="745" font-size="15" text-anchor="middle" fill="#1e2a36">Granate</text>
+<g transform="translate(660,675) scale(2.5)"><path d="M 0,-4 L 30,-4 L 38,0 L 30,4 L 0,4 Z" fill="#e8f4f8" stroke="#2b2b2b" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M 8,-4 L 14,-9 L 18,-9 L 16,-4 Z" fill="#5ad0e0" stroke="#2b2b2b" stroke-width="1.2" stroke-linejoin="round"/>
+        <line x1="3" y1="0" x2="30" y2="0" stroke="#5ad0e0" stroke-width="2"/></g>
+<text x="705" y="745" font-size="15" text-anchor="middle" fill="#1e2a36">Laser</text>
+<g transform="translate(880,695) scale(2.5)"><line x1="0" y1="14" x2="0" y2="-38" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+        <path d="M 1.5,-37 H 30 L 24,-28 L 30,-19 H 1.5 Z" fill="#e0574f" stroke="#2b2b2b" stroke-width="1.6" stroke-linejoin="round"/>
+        <circle cx="12" cy="-28" r="4" fill="#ffffff" opacity="0.85"/></g>
+<g transform="translate(990,695) scale(2.5)"><line x1="0" y1="14" x2="0" y2="-38" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+        <path d="M 1.5,-37 H 30 L 24,-28 L 30,-19 H 1.5 Z" fill="#4f86e0" stroke="#2b2b2b" stroke-width="1.6" stroke-linejoin="round"/>
+        <circle cx="12" cy="-28" r="4" fill="#ffffff" opacity="0.85"/></g>
+<text x="955" y="745" font-size="15" text-anchor="middle" fill="#1e2a36">Flaggen</text>
+<g transform="translate(1120,740.0) scale(0.8999999999999999)">
+  
+  <g id="foot-back">
+    <ellipse id="tint-3" cx="-20" cy="-8" rx="14" ry="8" fill="#d9a43a" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse id="tint-3" cx="22" cy="-8" rx="14" ry="8" fill="#d9a43a" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path id="tint-2" d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#f2c14e" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path id="tint-2-l45" d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#f8dd9e"/>
+  </g>
+  <g id="eyes">
+    <ellipse id="tint-1" cx="2" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <ellipse id="tint-1-b" cx="26" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    <path d="M 10,-41 Q 16,-36 22,-41" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</g>
+<g transform="translate(1125.0,710.0) scale(2.5)"><path d="M 0,-4 L 30,-4 L 38,0 L 30,4 L 0,4 Z" fill="#e8f4f8" stroke="#2b2b2b" stroke-width="1.6" stroke-linejoin="round"/>
+        <path d="M 8,-4 L 14,-9 L 18,-9 L 16,-4 Z" fill="#5ad0e0" stroke="#2b2b2b" stroke-width="1.2" stroke-linejoin="round"/>
+        <line x1="3" y1="0" x2="30" y2="0" stroke="#5ad0e0" stroke-width="2"/></g>
+<line x1="1050" y1="740.0" x2="1230" y2="740.0" stroke="#5b6b7c" stroke-width="6"/>
+<text x="1140" y="775" font-size="13" text-anchor="middle" fill="#1e2a36">Größenvergleich</text>
+</svg>

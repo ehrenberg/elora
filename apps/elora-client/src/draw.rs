@@ -28,9 +28,16 @@ use elora_sim::{
 };
 
 pub const BACKGROUND: Color = Color::hex(0x8fb8d9);
+const SKY_TOP: Color = Color::hex(0xa9cde8);
+const SKY_BOTTOM: Color = Color::hex(0x7ea8cb);
 const SOLID: Color = Color::hex(0x5b6b7c);
+const SOLID_EDGE: Color = Color::hex(0x2f3944);
 const UNHOOKABLE: Color = Color::hex(0x3a4450);
+const UNHOOKABLE_EDGE: Color = Color::hex(0x1c2229);
 const DEATH: Color = Color::hex(0xc94f4f);
+const DEATH_EDGE: Color = Color::hex(0x7c2a2a);
+/// Breite der Tile-Kontur in Welteinheiten.
+const EDGE_WIDTH: f32 = 3.0;
 const ELORA: Color = Color::hex(0xf2c14e);
 /// Andere menschliche Spieler (online, ohne Team).
 const OTHER: Color = Color::hex(0x7ccf8a);
@@ -171,6 +178,7 @@ pub fn scene(
         skins,
         own_skin,
     } = *looks;
+    sky(batch, camera);
     tiles(batch, collision, camera);
     spawns_and_pickups(batch, scene);
 
@@ -304,6 +312,23 @@ fn health_bar(batch: &mut ShapeBatch, pos: Vec2, health: i32, armor: i32, max: i
     }
 }
 
+/// Himmel: senkrechter Verlauf über den sichtbaren Bereich (E-089).
+fn sky(batch: &mut ShapeBatch, camera: &Camera) {
+    let tl = camera.top_left();
+    batch.fill_rect_vgradient(tl, tl + camera.size, SKY_TOP, SKY_BOTTOM);
+}
+
+/// Füllung und Kontur je Tile-Art.
+fn tile_colors(t: Tile) -> Option<(Color, Color)> {
+    match t {
+        Tile::Air => None,
+        Tile::Solid => Some((SOLID, SOLID_EDGE)),
+        Tile::Unhookable => Some((UNHOOKABLE, UNHOOKABLE_EDGE)),
+        Tile::Death => Some((DEATH, DEATH_EDGE)),
+    }
+}
+
+/// Tiles einfarbig mit Kontur an allen Kanten zu anderen Tile-Arten (E-089).
 fn tiles(batch: &mut ShapeBatch, col: &Collision, camera: &Camera) {
     let ts = TILE_SIZE as f32;
     let tl = camera.top_left();
@@ -314,14 +339,26 @@ fn tiles(batch: &mut ShapeBatch, col: &Collision, camera: &Camera) {
     let y1 = (br.y / ts).ceil() as i32 + 1;
     for ty in y0..=y1 {
         for tx in x0..=x1 {
-            let color = match col.tile(tx, ty) {
-                Tile::Air => continue,
-                Tile::Solid => SOLID,
-                Tile::Unhookable => UNHOOKABLE,
-                Tile::Death => DEATH,
+            let tile = col.tile(tx, ty);
+            let Some((fill, edge)) = tile_colors(tile) else {
+                continue;
             };
             let min = Vec2::new(tx as f32 * ts, ty as f32 * ts);
-            batch.fill_rect(min, min + Vec2::new(ts, ts), color);
+            let max = min + Vec2::new(ts, ts);
+            batch.fill_rect(min, max, fill);
+            let w = EDGE_WIDTH;
+            // (Nachbar, Streifen innerhalb des Tiles)
+            let edges = [
+                ((tx, ty - 1), min, Vec2::new(max.x, min.y + w)),
+                ((tx, ty + 1), Vec2::new(min.x, max.y - w), max),
+                ((tx - 1, ty), min, Vec2::new(min.x + w, max.y)),
+                ((tx + 1, ty), Vec2::new(max.x - w, min.y), max),
+            ];
+            for ((nx, ny), a, b) in edges {
+                if col.tile(nx, ny) != tile {
+                    batch.fill_rect(a, b, edge);
+                }
+            }
         }
     }
 }
@@ -359,5 +396,41 @@ fn spawns_and_pickups(batch: &mut ShapeBatch, scene: &Scene) {
                 weapon(batch, p - Vec2::new(18.0, 0.0), Vec2::new(1.0, 0.0), w);
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Kartenausschnitt zur Sichtprüfung: `cargo test -p elora-client --bin elora world_sheet -- --ignored`,
+    /// danach `cargo xtask svg-preview target/world.svg target/world.png 1200`.
+    #[test]
+    #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
+    fn world_sheet() {
+        let map =
+            elora_map::parse_text_map(include_str!("../../../maps/sandbox.emap.toml")).unwrap();
+        let world = map.world(Tuning::default());
+        let col = map.collision();
+        let camera = Camera {
+            center: Vec2::new(600.0, 420.0),
+            size: Vec2::new(1200.0, 440.0),
+        };
+        let scene = Scene {
+            pickups: world.pickups.iter().map(|p| (p.kind, p.pos)).collect(),
+            spawns: world.spawn_points.clone(),
+            ..Scene::default()
+        };
+        let mut batch = ShapeBatch::default();
+        sky(&mut batch, &camera);
+        tiles(&mut batch, &col, &camera);
+        spawns_and_pickups(&mut batch, &scene);
+        let tl = camera.top_left();
+        let svg = batch.debug_svg(tl, tl + camera.size, BACKGROUND);
+        std::fs::write(
+            concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/world.svg"),
+            svg,
+        )
+        .unwrap();
     }
 }

@@ -79,6 +79,8 @@ Elora bekommt ihr eigenes Aussehen im Flat-/Vektorstil (E-030), mit Animationen,
 
 - **M5.4 Skins:** `Skin { body, feet, eyes }` (Palettennummern) im Protokoll (Version 2): in `Join`, neue Nachricht `SetSkin`, in `PlayerInfo` an alle; ungültige Nummern werden beim Dekodieren abgelehnt. Palette im Client (`skins.rs`), Auswahl im Debug-Panel unter „Aussehen“ (wie der Name noch nicht gespeichert – Profil folgt mit dem Menü in M7). Dummies behalten ihre eigene Körperfarbe. Integrationstest: Skin wird beim Beitritt und bei Änderung an alle übertragen.
 
+- **M5.5 Welt (Teil 1):** Himmel als senkrechter Verlauf über den sichtbaren Bereich, Tiles einfarbig mit 3 Einheiten Kontur an jeder Kante zu einer anderen Tile-Art (E-089). Sichtprüfung per `cargo test -p elora-client --bin elora world_sheet -- --ignored`. Entwurfsblatt für Pickups, Waffen und Flaggen: `docs/design/elora-items.png` (Stil A rund, Stil B kantig) – wartet auf Auswahl.
+
 ## Voraussetzungen vom Projektinhaber
 
 - Für Recraft: ein API-Schlüssel (als Umgebungsvariable `RECRAFT_API_KEY`), erst wenn ein Motiv die API braucht.
