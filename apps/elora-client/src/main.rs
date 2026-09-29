@@ -12,6 +12,7 @@ mod game_ui;
 mod gui;
 mod hosting;
 mod hud;
+mod items;
 mod sandbox;
 mod settings;
 mod skins;
@@ -114,6 +115,7 @@ struct App {
     effects: draw::Effects,
     figures: figure::Figures,
     figure_art: figure::FigureArt,
+    item_art: items::ItemArt,
     /// Leere Skin-Tabelle für die Sandbox.
     no_skins: std::collections::BTreeMap<usize, elora_protocol::Skin>,
     last_frame: Instant,
@@ -148,6 +150,7 @@ impl App {
             effects: draw::Effects::default(),
             figures: figure::Figures::default(),
             figure_art: figure::FigureArt::load(),
+            item_art: items::ItemArt::load(),
             no_skins: std::collections::BTreeMap::new(),
             last_frame: Instant::now(),
             fps: 0.0,
@@ -456,6 +459,36 @@ impl App {
         }
     }
 
+    /// Welt, Figuren und Effekte des Frames in `self.batch` sammeln.
+    fn build_batch(
+        &mut self,
+        scene: &Scene,
+        collision: &Collision,
+        tuning: &Tuning,
+        camera: &Camera,
+    ) {
+        self.batch.clear();
+        draw::scene(
+            &mut self.batch,
+            scene,
+            collision,
+            tuning,
+            camera,
+            self.controls.mouse_pos,
+            &draw::Looks {
+                effects: &self.effects,
+                figures: &self.figures,
+                art: &self.figure_art,
+                items: &self.item_art,
+                skins: self
+                    .online
+                    .as_ref()
+                    .map_or(&self.no_skins, |o| &o.client.skins),
+                own_skin: self.net.skin,
+            },
+        );
+    }
+
     fn redraw(&mut self) {
         let now = Instant::now();
         let elapsed = self.frame_time(now);
@@ -467,27 +500,12 @@ impl App {
         self.update_looks(elapsed.as_secs_f32(), &scene, &collision, &events);
         let (names, teams, view, local_slot, tick, vote) = self.game_info(now);
 
+        let Some(aspect) = self.gfx.as_ref().map(|g| g.renderer.aspect()) else {
+            return;
+        };
+        let camera = Camera::new(scene.camera, &self.view, aspect);
+        self.build_batch(&scene, &collision, &tuning, &camera);
         let Some(gfx) = &mut self.gfx else { return };
-        let camera = Camera::new(scene.camera, &self.view, gfx.renderer.aspect());
-        self.batch.clear();
-        draw::scene(
-            &mut self.batch,
-            &scene,
-            &collision,
-            &tuning,
-            &camera,
-            self.controls.mouse_pos,
-            &draw::Looks {
-                effects: &self.effects,
-                figures: &self.figures,
-                art: &self.figure_art,
-                skins: self
-                    .online
-                    .as_ref()
-                    .map_or(&self.no_skins, |o| &o.client.skins),
-                own_skin: self.net.skin,
-            },
-        );
 
         let Some(mut frame) = gfx.renderer.begin_frame() else {
             return;

@@ -1,6 +1,6 @@
 # M5 – Look & Sound: Umsetzungsplan
 
-Status: **angenommen** (E-080–E-100), in Umsetzung · Grundlage: [`06-roadmap.md`](06-roadmap.md) M5, E-006, E-027, E-029, E-030, E-031, E-032, E-033
+Status: **angenommen** (E-080–E-101), in Umsetzung · Grundlage: [`06-roadmap.md`](06-roadmap.md) M5, E-006, E-027, E-029, E-030, E-031, E-032, E-033
 
 ## Ziel
 
@@ -28,7 +28,7 @@ Elora bekommt ihr eigenes Aussehen im Flat-/Vektorstil (E-030), mit Animationen,
 | M5.2 ✅ | Vektor-Assets | `elora-render` + `assets/` | Laden des Quellformats (D-M5-02), Farbschlüssel für die Einfärbung | Tests |
 | M5.3 | Elora-Figur | Client | Figur aus Teilen (D-M5-03), Augen folgen dem Ziel, Füße laufen, Squash & Stretch (Sprung, Landung, Hook), Waffe in der Hand, Emotes | Sichtprüfung |
 | M5.4 ✅ | Skins | Client + Protokoll | Skin-Teile und Farben (D-M5-04), Auswahl im Client, Übertragung an andere Spieler | Tests + Sichtprüfung |
-| M5.5 | Welt-Optik | Client | Tiles mit Kanten und Ecken statt Rechtecken, Hintergrund, Pickups, Flaggen, Waffen als Grafik (D-M5-08) | Sichtprüfung |
+| M5.5 ✅ | Welt-Optik | Client | Tiles mit Kanten und Ecken statt Rechtecken, Hintergrund, Pickups, Flaggen, Waffen als Grafik (D-M5-08) | Sichtprüfung |
 | M5.6 | Effekte | Client | Partikel-System: Rauch, Explosionen, Treffer, Tod, Staub, Sprungwolken, Laserstrahl (D-M5-07) | Sichtprüfung |
 | M5.7 | Audio | `elora-audio` (neu) | kira-Anbindung, Sounds aus Ereignissen, Lautstärke nach Entfernung + Stereo, Lautstärke-Regler (D-M5-05, D-M5-06) | Tests (Zuordnung Ereignis → Sound), Hörprobe |
 | M5.8 | Finales HUD | Client | Eigene Spiel-UI (E-031) statt egui-Platzhalter: Leben, Rüstung, Munition, Waffen, Timer, Punkte, Killfeed, Chat, Scoreboard (D-M5-09) | Sichtprüfung |
@@ -79,7 +79,9 @@ Elora bekommt ihr eigenes Aussehen im Flat-/Vektorstil (E-030), mit Animationen,
 
 - **M5.4 Skins:** `Skin { body, feet, eyes }` (Palettennummern) im Protokoll (Version 2): in `Join`, neue Nachricht `SetSkin`, in `PlayerInfo` an alle; ungültige Nummern werden beim Dekodieren abgelehnt. Palette im Client (`skins.rs`), Auswahl im Debug-Panel unter „Aussehen“ (wie der Name noch nicht gespeichert – Profil folgt mit dem Menü in M7). Dummies behalten ihre eigene Körperfarbe. Integrationstest: Skin wird beim Beitritt und bei Änderung an alle übertragen.
 
-- **M5.5 Welt (Teil 1):** Himmel als senkrechter Verlauf über den sichtbaren Bereich, Tiles einfarbig mit 3 Einheiten Kontur an jeder Kante zu einer anderen Tile-Art (E-089). Sichtprüfung per `cargo test -p elora-client --bin elora world_sheet -- --ignored`. Entwurfsblatt für Pickups, Waffen und Flaggen: `docs/design/elora-items.png` (Stil A rund, Stil B kantig) – wartet auf Auswahl.
+- **M5.5 Welt (Teil 1):** Himmel als senkrechter Verlauf über den sichtbaren Bereich, Tiles einfarbig mit 3 Einheiten Kontur an jeder Kante zu einer anderen Tile-Art (E-089). Sichtprüfung per `cargo test -p elora-client --bin elora world_sheet -- --ignored`. Entwurfsblatt für Pickups, Waffen und Flaggen: `docs/design/elora-items.png` (Stil A rund, Stil B kantig) → Stil A gewählt (E-101).
+
+- **M5.5 Welt (Teil 2):** Assets `assets/items/*.svg` (Welteinheiten; Waffen mit Ursprung am Griff, Flagge mit Teilen `pole`/`cloth` und Teamfarbe als `tint-1`). Waffe in der Hand zeigt in Zielrichtung, nach links gespiegelt; Pickups schweben (2.5 Einheiten, 0.6 Hz, Phase nach Position); Flaggentuch weht per Scherung um die Befestigung. Gesamtbild `docs/design/elora-welt.png`. Offen: Hammer-Schwung beim Schlag (mit den Effekten in M5.6).
 
 ## Voraussetzungen vom Projektinhaber
 

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="300" viewBox="-4 -43 40 60">
+  <!-- Flagge (E-101, Stil A). Welteinheiten, Ursprung = Flaggen-Position (Mitte der Figur-Hitbox).
+       Teile: pole (fest), cloth (weht, Befestigung bei x=1.5). tint-1 = Teamfarbe. -->
+  <g id="pole">
+    <line x1="0" y1="14" x2="0" y2="-38" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="0" cy="-39" r="2.6" fill="#e8e8e8" stroke="#2b2b2b" stroke-width="1.2"/>
+  </g>
+  <g id="cloth">
+    <path id="tint-1" d="M 1.5,-36 C 12,-40 20,-30 32,-30 C 24,-24 12,-20 1.5,-16 Z" fill="#e0574f" stroke="#2b2b2b" stroke-width="1.6" stroke-linejoin="round"/>
+  </g>
+</svg>

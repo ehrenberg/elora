@@ -108,6 +108,11 @@ impl Figures {
         }
     }
 
+    /// Laufzeit der Darstellung in Sekunden (für Animationen).
+    pub fn time(&self) -> f32 {
+        self.time
+    }
+
     /// Zeichnet eine Figur; `aim` ist die normierte Blickrichtung.
     pub fn draw(
         &self,

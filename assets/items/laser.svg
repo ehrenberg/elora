@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="210" height="60" viewBox="-1 -6 42 12">
+  <!-- Laser (E-101, Stil A). Welteinheiten, Ursprung = Griff, zeigt nach +x. -->
+  <rect x="0" y="-4" width="34" height="8" rx="4" fill="#e8f4f8" stroke="#2b2b2b" stroke-width="1.6"/>
+  <rect x="4" y="-1.2" width="24" height="2.4" rx="1.2" fill="#5ad0e0"/>
+  <circle cx="37" cy="0" r="3.2" fill="#5ad0e0" stroke="#2b2b2b" stroke-width="1.2"/>
+  <circle cx="37" cy="0" r="1.4" fill="#ffffff"/>
+</svg>

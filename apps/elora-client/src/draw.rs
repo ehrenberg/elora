@@ -8,6 +8,7 @@ use std::collections::BTreeMap;
 use elora_protocol::Skin;
 
 use crate::figure::{FigureArt, Figures};
+use crate::items::ItemArt;
 use crate::skins;
 
 /// Alles, was neben der Szene zum Zeichnen der Figuren und Effekte gebraucht wird.
@@ -16,6 +17,7 @@ pub struct Looks<'a> {
     pub effects: &'a Effects,
     pub figures: &'a Figures,
     pub art: &'a FigureArt,
+    pub items: &'a ItemArt,
     /// Skins der anderen Slots (online).
     pub skins: &'a BTreeMap<usize, Skin>,
     /// Eigener Skin (sofort sichtbar, ohne Umweg über den Server).
@@ -23,9 +25,7 @@ pub struct Looks<'a> {
 }
 use elora_render::{Camera, Color, ShapeBatch};
 use elora_sim::Team;
-use elora_sim::{
-    Collision, Event, HookState, PHYS_SIZE, PickupKind, TILE_SIZE, Tile, Tuning, Vec2, Weapon,
-};
+use elora_sim::{Collision, Event, HookState, PHYS_SIZE, TILE_SIZE, Tile, Tuning, Vec2, Weapon};
 
 pub const BACKGROUND: Color = Color::hex(0x8fb8d9);
 const SKY_TOP: Color = Color::hex(0xa9cde8);
@@ -175,12 +175,14 @@ pub fn scene(
         effects,
         figures,
         art,
+        items,
         skins,
         own_skin,
     } = *looks;
+    let time = figures.time();
     sky(batch, camera);
     tiles(batch, collision, camera);
-    spawns_and_pickups(batch, scene);
+    spawns_and_pickups(batch, scene, items, time);
 
     for c in &scene.chars {
         let pos = c.pos();
@@ -206,7 +208,6 @@ pub fn scene(
             skins.get(&c.slot).copied().unwrap_or_default()
         };
         let r = PHYS_SIZE / 2.0;
-        weapon(batch, pos, aim, c.ch.arsenal.active);
         figures.draw(
             batch,
             art,
@@ -214,6 +215,7 @@ pub fn scene(
             aim,
             &skins::tint(skin, c.team, c.dummy, team_color),
         );
+        items.draw_weapon(batch, pos, aim, c.ch.arsenal.active);
         if c.local && c.team.index().is_some() {
             // eigene Figur im Team: gelber Ring am Boden zur Unterscheidung
             batch.stroke_line(
@@ -232,7 +234,7 @@ pub fn scene(
         if !f.at_stand {
             batch.stroke_circle(f.stand, 16.0, 2.0, team_color(f.team));
         }
-        flag(batch, f.pos, team_color(f.team));
+        items.draw_flag(batch, f.pos, team_color(f.team), time);
     }
 
     for &p in &scene.projectiles {
@@ -268,31 +270,6 @@ pub fn team_color(t: Team) -> Color {
         Team::Red => RED,
         Team::Blue => BLUE,
         _ => OTHER,
-    }
-}
-
-/// Flagge: Stange und Wimpel, Fuß bei `pos`.
-fn flag(batch: &mut ShapeBatch, pos: Vec2, color: Color) {
-    let foot = pos + Vec2::new(0.0, 14.0);
-    let top = foot + Vec2::new(0.0, -52.0);
-    batch.stroke_line(foot, top, 4.0, OUTLINE);
-    batch.fill_polygon(
-        &[top, top + Vec2::new(30.0, 10.0), top + Vec2::new(0.0, 22.0)],
-        color,
-    );
-}
-
-fn weapon(batch: &mut ShapeBatch, pos: Vec2, aim: Vec2, w: Weapon) {
-    let side = Vec2::new(-aim.y, aim.x);
-    match w {
-        Weapon::Hammer => {
-            let handle_end = pos + aim * 26.0;
-            batch.stroke_line(pos + aim * 8.0, handle_end, 4.0, OUTLINE);
-            let head = [handle_end + side * 9.0, handle_end - side * 9.0];
-            batch.stroke_line(head[0], head[1], 9.0, HAMMER);
-        }
-        Weapon::Grenade => batch.stroke_line(pos + aim * 6.0, pos + aim * 34.0, 9.0, GRENADE),
-        Weapon::Laser => batch.stroke_line(pos + aim * 6.0, pos + aim * 38.0, 6.0, LASER),
     }
 }
 
@@ -363,45 +340,20 @@ fn tiles(batch: &mut ShapeBatch, col: &Collision, camera: &Camera) {
     }
 }
 
-fn spawns_and_pickups(batch: &mut ShapeBatch, scene: &Scene) {
+fn spawns_and_pickups(batch: &mut ShapeBatch, scene: &Scene, items: &ItemArt, time: f32) {
     for &sp in &scene.spawns {
         batch.stroke_circle(sp, 10.0, 2.0, SPAWN);
     }
     for &(kind, p) in &scene.pickups {
-        match kind {
-            PickupKind::Health => {
-                batch.fill_circle(p + Vec2::new(-4.5, -3.0), 6.0, HEALTH);
-                batch.fill_circle(p + Vec2::new(4.5, -3.0), 6.0, HEALTH);
-                batch.fill_polygon(
-                    &[
-                        p + Vec2::new(-10.5, -1.0),
-                        p + Vec2::new(10.5, -1.0),
-                        p + Vec2::new(0.0, 10.0),
-                    ],
-                    HEALTH,
-                );
-            }
-            PickupKind::Armor => batch.fill_polygon(
-                &[
-                    p + Vec2::new(-9.0, -9.0),
-                    p + Vec2::new(9.0, -9.0),
-                    p + Vec2::new(9.0, 1.0),
-                    p + Vec2::new(0.0, 10.0),
-                    p + Vec2::new(-9.0, 1.0),
-                ],
-                ARMOR,
-            ),
-            PickupKind::Weapon(w) => {
-                batch.stroke_circle(p, 13.0, 2.0, weapon_color(w));
-                weapon(batch, p - Vec2::new(18.0, 0.0), Vec2::new(1.0, 0.0), w);
-            }
-        }
+        items.draw_pickup(batch, p, kind, time);
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use elora_client::scene::{SceneChar, SceneFlag};
+    use elora_sim::Character;
 
     /// Kartenausschnitt zur Sichtprüfung: `cargo test -p elora-client --bin elora world_sheet -- --ignored`,
     /// danach `cargo xtask svg-preview target/world.svg target/world.png 1200`.
@@ -416,15 +368,70 @@ mod tests {
             center: Vec2::new(600.0, 420.0),
             size: Vec2::new(1200.0, 440.0),
         };
+        // (Position, Waffe, Zielwinkel in 1/256 rad, Team)
+        let chars = [
+            (Vec2::new(250.0, 530.0), Weapon::Hammer, 0, Team::None),
+            (Vec2::new(420.0, 530.0), Weapon::Grenade, -100, Team::Red),
+            (Vec2::new(900.0, 434.0), Weapon::Laser, 804, Team::Blue),
+        ];
+        let chars = chars
+            .iter()
+            .enumerate()
+            .map(|(slot, &(pos, w, angle, team))| {
+                let mut ch = Character::spawn(pos, 10);
+                ch.arsenal.give(w, 10, 10);
+                ch.arsenal.active = w;
+                ch.core.angle = angle;
+                SceneChar {
+                    slot,
+                    prev: ch.core.clone(),
+                    ch,
+                    alpha: 1.0,
+                    dummy: false,
+                    local: false,
+                    team,
+                }
+            })
+            .collect();
         let scene = Scene {
             pickups: world.pickups.iter().map(|p| (p.kind, p.pos)).collect(),
             spawns: world.spawn_points.clone(),
+            chars,
+            flags: vec![
+                SceneFlag {
+                    team: Team::Red,
+                    pos: Vec2::new(560.0, 530.0),
+                    at_stand: true,
+                    stand: Vec2::new(560.0, 530.0),
+                },
+                SceneFlag {
+                    team: Team::Blue,
+                    pos: Vec2::new(1040.0, 434.0),
+                    at_stand: true,
+                    stand: Vec2::new(1040.0, 434.0),
+                },
+            ],
             ..Scene::default()
         };
+        let mut figures = Figures::default();
+        figures.update(0.01, &scene, &col);
         let mut batch = ShapeBatch::default();
-        sky(&mut batch, &camera);
-        tiles(&mut batch, &col, &camera);
-        spawns_and_pickups(&mut batch, &scene);
+        super::scene(
+            &mut batch,
+            &scene,
+            &col,
+            &Tuning::default(),
+            &camera,
+            Vec2::new(1.0, 0.0),
+            &Looks {
+                effects: &Effects::default(),
+                figures: &figures,
+                art: &FigureArt::load(),
+                items: &ItemArt::load(),
+                skins: &BTreeMap::new(),
+                own_skin: Skin::default(),
+            },
+        );
         let tl = camera.top_left();
         let svg = batch.debug_svg(tl, tl + camera.size, BACKGROUND);
         std::fs::write(
