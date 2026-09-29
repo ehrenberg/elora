@@ -7,6 +7,7 @@ mod connection;
 mod controls;
 mod debug_ui;
 mod draw;
+mod effects;
 mod figure;
 mod game_ui;
 mod gui;
@@ -112,7 +113,7 @@ struct App {
     controls: Controls,
     view: ViewSettings,
     batch: ShapeBatch,
-    effects: draw::Effects,
+    effects: effects::Effects,
     figures: figure::Figures,
     figure_art: figure::FigureArt,
     item_art: items::ItemArt,
@@ -147,7 +148,7 @@ impl App {
             controls,
             view: file.view.into(),
             batch: ShapeBatch::default(),
-            effects: draw::Effects::default(),
+            effects: effects::Effects::with_settings(file.effects),
             figures: figure::Figures::default(),
             figure_art: figure::FigureArt::load(),
             item_art: items::ItemArt::load(),
@@ -171,6 +172,7 @@ impl App {
             input: settings::InputFile {
                 mouse_sensitivity: self.controls.sensitivity,
             },
+            effects: self.effects.settings,
         }
     }
 
@@ -212,6 +214,7 @@ impl App {
                         self.sandbox.world.tuning = f.physics;
                         self.view = f.view.into();
                         self.controls.sensitivity = f.input.mouse_sensitivity;
+                        self.effects.settings = f.effects;
                         format!("Geladen aus {TUNING_FILE}")
                     }
                     Err(e) => format!("Fehler: {e:#}"),
@@ -451,8 +454,21 @@ impl App {
 
     /// Effekte und Figuren-Animationen fortschreiben, eigenen Skin abgleichen.
     fn update_looks(&mut self, dt: f32, scene: &Scene, collision: &Collision, events: &[Event]) {
-        self.effects.update(dt, events);
-        self.figures.update(dt, scene, collision);
+        self.figures.update(dt, scene, collision, events);
+        let skins = self
+            .online
+            .as_ref()
+            .map_or(&self.no_skins, |o| &o.client.skins);
+        let own = self.net.skin;
+        self.effects
+            .update(dt, events, scene, self.figures.landings(), |c| {
+                let skin = if c.local {
+                    own
+                } else {
+                    skins.get(&c.slot).copied().unwrap_or_default()
+                };
+                skins::tint(skin, c.team, c.dummy, draw::team_color).colors[figure::KEY_BODY]
+            });
         if let Some(o) = &mut self.online {
             // schickt nur bei Änderung eine Nachricht
             o.client.set_skin(self.net.skin);
@@ -503,7 +519,11 @@ impl App {
         let Some(aspect) = self.gfx.as_ref().map(|g| g.renderer.aspect()) else {
             return;
         };
-        let camera = Camera::new(scene.camera, &self.view, aspect);
+        let camera = Camera::new(
+            scene.camera + self.effects.camera_offset(),
+            &self.view,
+            aspect,
+        );
         self.build_batch(&scene, &collision, &tuning, &camera);
         let Some(gfx) = &mut self.gfx else { return };
 
@@ -539,6 +559,7 @@ impl App {
             online: online_view,
             net: &mut self.net,
             view: &mut self.view,
+            effects: &mut self.effects.settings,
             controls: &mut self.controls,
             fps: self.fps,
             status: &self.status,

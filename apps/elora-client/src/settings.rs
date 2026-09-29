@@ -18,6 +18,7 @@ pub struct TuningFile {
     pub physics: Tuning,
     pub view: ViewFile,
     pub input: InputFile,
+    pub effects: crate::effects::EffectSettings,
 }
 
 /// Sichtbereich (E-045).

@@ -12,7 +12,7 @@ use std::collections::HashMap;
 
 use elora_client::scene::{Scene, SceneChar};
 use elora_render::{Affine, Mesh, ShapeBatch, SvgAsset, Tint};
-use elora_sim::{Collision, HookState, PHYS_SIZE, Vec2};
+use elora_sim::{Collision, Event, HookState, PHYS_SIZE, Vec2, Weapon};
 
 /// Welteinheiten je Asset-Einheit (sichtbarer Körper ≈ 36, E-087).
 const SCALE: f32 = 0.36;
@@ -27,6 +27,9 @@ const SPRING_DAMPING: f32 = 0.35;
 /// Anstoß der Feder je Welteinheit/Tick Fallgeschwindigkeit bei der Landung.
 const LANDING_KICK: f32 = 0.28;
 const JUMP_KICK: f32 = 3.0;
+/// Hammer-Schwung: Dauer (s) und Ausholwinkel (rad).
+const SWING_TIME: f32 = 0.14;
+const SWING_ANGLE: f32 = 1.4;
 
 /// Farbschlüssel im Asset (E-095).
 pub const KEY_EYES: usize = 0;
@@ -71,6 +74,17 @@ struct Anim {
     /// Auslenkung der Feder: > 0 gestreckt, < 0 gestaucht.
     squash: f32,
     squash_vel: f32,
+    /// Hammer-Schwung: 1 = gerade ausgeholt, 0 = fertig.
+    swing: f32,
+}
+
+/// Landung einer Figur im letzten Frame (für Staub, M5.6).
+#[derive(Debug, Clone, Copy)]
+pub struct Landing {
+    /// Bodenkontakt (Hitbox-Unterkante).
+    pub pos: Vec2,
+    /// Stärke nach Fallgeschwindigkeit, etwa 0..2.
+    pub strength: f32,
 }
 
 /// Animationszustände aller sichtbaren Figuren.
@@ -78,12 +92,14 @@ struct Anim {
 pub struct Figures {
     anims: HashMap<usize, Anim>,
     time: f32,
+    landings: Vec<Landing>,
 }
 
 impl Figures {
-    pub fn update(&mut self, dt: f32, scene: &Scene, collision: &Collision) {
+    pub fn update(&mut self, dt: f32, scene: &Scene, collision: &Collision, events: &[Event]) {
         let dt = dt.min(0.05);
         self.time += dt;
+        self.landings.clear();
         self.anims
             .retain(|slot, _| scene.chars.iter().any(|c| c.slot == *slot));
         for c in &scene.chars {
@@ -96,6 +112,10 @@ impl Figures {
             if grounded && !a.grounded {
                 // Landung: je schneller der Fall, desto stärker gestaucht
                 a.squash_vel -= a.vel_y.clamp(0.0, 25.0) * LANDING_KICK;
+                self.landings.push(Landing {
+                    pos: c.pos() + Vec2::new(0.0, PHYS_SIZE / 2.0),
+                    strength: a.vel_y.clamp(0.0, 25.0) / 12.0,
+                });
             } else if !grounded && a.grounded && core.vel.y < 0.0 {
                 a.squash_vel += JUMP_KICK;
             }
@@ -105,7 +125,31 @@ impl Figures {
             let accel = -omega * omega * a.squash - 2.0 * SPRING_DAMPING * omega * a.squash_vel;
             a.squash_vel += accel * dt;
             a.squash += a.squash_vel * dt;
+            a.swing = (a.swing - dt / SWING_TIME).max(0.0);
         }
+        for e in events {
+            if let Event::Fire {
+                player,
+                weapon: Weapon::Hammer,
+                ..
+            } = *e
+                && let Some(a) = self.anims.get_mut(&player)
+            {
+                a.swing = 1.0;
+            }
+        }
+    }
+
+    /// Winkel, um den die Waffe von `slot` gerade aus der Zielrichtung gedreht ist
+    /// (Hammer-Schwung: holt nach hinten oben aus und schlägt zum Ziel).
+    pub fn weapon_swing(&self, slot: usize, facing: f32) -> f32 {
+        let s = self.anims.get(&slot).map_or(0.0, |a| a.swing);
+        -facing * SWING_ANGLE * s * s
+    }
+
+    /// Landungen des letzten [`Figures::update`].
+    pub fn landings(&self) -> &[Landing] {
+        &self.landings
     }
 
     /// Laufzeit der Darstellung in Sekunden (für Animationen).

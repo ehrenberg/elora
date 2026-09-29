@@ -68,10 +68,13 @@ impl ItemArt {
 
     /// Waffe in der Hand: zeigt in Zielrichtung; nach links gespiegelt, damit
     /// Glanzlichter oben bleiben.
-    pub fn draw_weapon(&self, batch: &mut ShapeBatch, pos: Vec2, aim: Vec2, w: Weapon) {
+    /// `swing`: zusätzliche Drehung (rad) für den Hammer-Schwung.
+    pub fn draw_weapon(&self, batch: &mut ShapeBatch, pos: Vec2, aim: Vec2, swing: f32, w: Weapon) {
         let flip = if aim.x < 0.0 { -1.0 } else { 1.0 };
-        let t = Affine::translate(pos + aim * GRIP)
-            .then(Affine::rotate(aim.y.atan2(aim.x)))
+        let angle = aim.y.atan2(aim.x) + swing;
+        let dir = Vec2::new(angle.cos(), angle.sin());
+        let t = Affine::translate(pos + dir * GRIP)
+            .then(Affine::rotate(angle))
             .then(Affine::scale(1.0, flip));
         batch.draw_mesh(self.weapon_mesh(w), &t, &Tint::default());
     }

@@ -29,7 +29,7 @@ Elora bekommt ihr eigenes Aussehen im Flat-/Vektorstil (E-030), mit Animationen,
 | M5.3 | Elora-Figur | Client | Figur aus Teilen (D-M5-03), Augen folgen dem Ziel, Füße laufen, Squash & Stretch (Sprung, Landung, Hook), Waffe in der Hand, Emotes | Sichtprüfung |
 | M5.4 ✅ | Skins | Client + Protokoll | Skin-Teile und Farben (D-M5-04), Auswahl im Client, Übertragung an andere Spieler | Tests + Sichtprüfung |
 | M5.5 ✅ | Welt-Optik | Client | Tiles mit Kanten und Ecken statt Rechtecken, Hintergrund, Pickups, Flaggen, Waffen als Grafik (D-M5-08) | Sichtprüfung |
-| M5.6 | Effekte | Client | Partikel-System: Rauch, Explosionen, Treffer, Tod, Staub, Sprungwolken, Laserstrahl (D-M5-07) | Sichtprüfung |
+| M5.6 ✅ | Effekte | Client | Partikel-System: Rauch, Explosionen, Treffer, Tod, Staub, Sprungwolken, Laserstrahl (D-M5-07) | Sichtprüfung |
 | M5.7 | Audio | `elora-audio` (neu) | kira-Anbindung, Sounds aus Ereignissen, Lautstärke nach Entfernung + Stereo, Lautstärke-Regler (D-M5-05, D-M5-06) | Tests (Zuordnung Ereignis → Sound), Hörprobe |
 | M5.8 | Finales HUD | Client | Eigene Spiel-UI (E-031) statt egui-Platzhalter: Leben, Rüstung, Munition, Waffen, Timer, Punkte, Killfeed, Chat, Scoreboard (D-M5-09) | Sichtprüfung |
 | M5.9 | Emotes | Client + Protokoll | Emote-Rad und Emoticons über dem Kopf, übertragen an alle (D-M5-10) | Test + Sichtprüfung |
@@ -81,7 +81,9 @@ Elora bekommt ihr eigenes Aussehen im Flat-/Vektorstil (E-030), mit Animationen,
 
 - **M5.5 Welt (Teil 1):** Himmel als senkrechter Verlauf über den sichtbaren Bereich, Tiles einfarbig mit 3 Einheiten Kontur an jeder Kante zu einer anderen Tile-Art (E-089). Sichtprüfung per `cargo test -p elora-client --bin elora world_sheet -- --ignored`. Entwurfsblatt für Pickups, Waffen und Flaggen: `docs/design/elora-items.png` (Stil A rund, Stil B kantig) → Stil A gewählt (E-101).
 
-- **M5.5 Welt (Teil 2):** Assets `assets/items/*.svg` (Welteinheiten; Waffen mit Ursprung am Griff, Flagge mit Teilen `pole`/`cloth` und Teamfarbe als `tint-1`). Waffe in der Hand zeigt in Zielrichtung, nach links gespiegelt; Pickups schweben (2.5 Einheiten, 0.6 Hz, Phase nach Position); Flaggentuch weht per Scherung um die Befestigung. Gesamtbild `docs/design/elora-welt.png`. Offen: Hammer-Schwung beim Schlag (mit den Effekten in M5.6).
+- **M5.5 Welt (Teil 2):** Assets `assets/items/*.svg` (Welteinheiten; Waffen mit Ursprung am Griff, Flagge mit Teilen `pole`/`cloth` und Teamfarbe als `tint-1`). Waffe in der Hand zeigt in Zielrichtung, nach links gespiegelt; Pickups schweben (2.5 Einheiten, 0.6 Hz, Phase nach Position); Flaggentuch weht per Scherung um die Befestigung. Gesamtbild `docs/design/elora-welt.png`. Hammer-Schwung beim Schlag: holt 1.4 rad nach hinten oben aus und schlägt in 0.14 s zum Ziel.
+
+- **M5.6 Effekte:** eigenes Partikelsystem (`effects.rs`, ein gecachter Kreis je Partikel). Explosion: Blitz, Rauch über den Explosionsradius, Funken; Hammer-Treffer: Funkenstern; Laser-Abprall: cyan Funken; Schaden: Tropfen in Körperfarbe; Tod: Spritzer in Körperfarbe mit Schwerkraft; Spawn/Pickup: Glitzern; Bodensprung: Staub; Luftsprung: Wolkenring; Landung: Staub nach Fallgeschwindigkeit; Granate: Rauchspur. Kamera-Wackeln bei Explosionen in der Nähe (bis 500 Einheiten) und eigenem Schaden; Treffer-Marker (X am Fadenkreuz) bei eigenem Treffer. Beide abschaltbar im Panel unter „Effekte“, gespeichert in `tuning.toml` unter `[effects]` (E-088). Momentaufnahmen `docs/design/elora-effekte.png` (Explosion, Tod, Hammer, Spawn nach 0.03/0.12/0.3 s).
 
 ## Voraussetzungen vom Projektinhaber
 

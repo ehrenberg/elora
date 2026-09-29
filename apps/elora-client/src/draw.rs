@@ -7,6 +7,7 @@ use std::collections::BTreeMap;
 
 use elora_protocol::Skin;
 
+use crate::effects::Effects;
 use crate::figure::{FigureArt, Figures};
 use crate::items::ItemArt;
 use crate::skins;
@@ -25,7 +26,7 @@ pub struct Looks<'a> {
 }
 use elora_render::{Camera, Color, ShapeBatch};
 use elora_sim::Team;
-use elora_sim::{Collision, Event, HookState, PHYS_SIZE, TILE_SIZE, Tile, Tuning, Vec2, Weapon};
+use elora_sim::{Collision, HookState, PHYS_SIZE, TILE_SIZE, Tile, Tuning, Vec2, Weapon};
 
 pub const BACKGROUND: Color = Color::hex(0x8fb8d9);
 const SKY_TOP: Color = Color::hex(0xa9cde8);
@@ -58,106 +59,6 @@ pub fn weapon_color(w: Weapon) -> Color {
         Weapon::Hammer => HAMMER,
         Weapon::Grenade => GRENADE,
         Weapon::Laser => LASER,
-    }
-}
-
-/// Kurzlebige Effekte aus Simulations-Ereignissen.
-#[derive(Debug, Default)]
-pub struct Effects {
-    list: Vec<Effect>,
-}
-
-#[derive(Debug)]
-struct Effect {
-    kind: EffectKind,
-    pos: Vec2,
-    /// Alter in Sekunden.
-    age: f32,
-}
-
-#[derive(Debug, Clone, Copy)]
-enum EffectKind {
-    Explosion,
-    HammerHit,
-    Death,
-    Spawn,
-}
-
-impl EffectKind {
-    fn lifetime(self) -> f32 {
-        match self {
-            Self::Explosion => 0.35,
-            Self::HammerHit => 0.15,
-            Self::Death => 0.5,
-            Self::Spawn => 0.3,
-        }
-    }
-}
-
-impl Effects {
-    pub fn update(&mut self, dt: f32, events: &[Event]) {
-        for e in &mut self.list {
-            e.age += dt;
-        }
-        self.list.retain(|e| e.age < e.kind.lifetime());
-        for event in events {
-            let (kind, pos) = match *event {
-                Event::Explosion { pos, .. } => (EffectKind::Explosion, pos),
-                Event::HammerHit { pos, .. } => (EffectKind::HammerHit, pos),
-                Event::Death { pos, .. } => (EffectKind::Death, pos),
-                Event::Spawn { pos, .. } => (EffectKind::Spawn, pos),
-                _ => continue,
-            };
-            self.list.push(Effect {
-                kind,
-                pos,
-                age: 0.0,
-            });
-        }
-    }
-
-    fn draw(&self, batch: &mut ShapeBatch, explosion_radius: f32) {
-        for e in &self.list {
-            let t = e.age / e.kind.lifetime();
-            let fade = 1.0 - t;
-            match e.kind {
-                EffectKind::Explosion => {
-                    batch.fill_circle(
-                        e.pos,
-                        explosion_radius * (0.3 + 0.7 * t),
-                        Color::rgba(1.0, 0.75, 0.3, 0.45 * fade),
-                    );
-                    batch.fill_circle(
-                        e.pos,
-                        explosion_radius * 0.35 * (1.0 - t * 0.5),
-                        Color::rgba(1.0, 0.95, 0.7, 0.8 * fade),
-                    );
-                }
-                EffectKind::HammerHit => {
-                    batch.stroke_circle(
-                        e.pos,
-                        10.0 + 20.0 * t,
-                        3.0,
-                        Color::rgba(1.0, 1.0, 1.0, fade),
-                    );
-                }
-                EffectKind::Death => {
-                    for k in 0..8 {
-                        let a = k as f32 * std::f32::consts::TAU / 8.0;
-                        let p = e.pos + Vec2::new(a.cos(), a.sin()) * (10.0 + 50.0 * t);
-                        batch.fill_circle(p, 5.0 * fade, Color::rgba(0.9, 0.3, 0.3, fade));
-                    }
-                }
-                EffectKind::Spawn => {
-                    batch.stroke_circle(
-                        e.pos,
-                        40.0 * (1.0 - t),
-                        3.0,
-                        Color::rgba(1.0, 1.0, 1.0, fade),
-                    );
-                }
-            }
-        }
     }
 }
 
@@ -215,7 +116,9 @@ pub fn scene(
             aim,
             &skins::tint(skin, c.team, c.dummy, team_color),
         );
-        items.draw_weapon(batch, pos, aim, c.ch.arsenal.active);
+        let facing = if aim.x < 0.0 { -1.0 } else { 1.0 };
+        let swing = figures.weapon_swing(c.slot, facing);
+        items.draw_weapon(batch, pos, aim, swing, c.ch.arsenal.active);
         if c.local && c.team.index().is_some() {
             // eigene Figur im Team: gelber Ring am Boden zur Unterscheidung
             batch.stroke_line(
@@ -255,13 +158,14 @@ pub fn scene(
             Color::rgba(0.9, 1.0, 1.0, l.fade),
         );
     }
-    effects.draw(batch, tuning.explosion_radius);
+    effects.draw(batch);
 
     // Fadenkreuz
     if let Some(local) = scene.local() {
         let c = local.pos() + mouse_pos;
         batch.stroke_circle(c, 8.0, 2.0, CURSOR);
         batch.fill_circle(c, 1.5, CURSOR);
+        effects.draw_hit_marker(batch, c);
     }
 }
 
@@ -414,7 +318,7 @@ mod tests {
             ..Scene::default()
         };
         let mut figures = Figures::default();
-        figures.update(0.01, &scene, &col);
+        figures.update(0.01, &scene, &col, &[]);
         let mut batch = ShapeBatch::default();
         super::scene(
             &mut batch,

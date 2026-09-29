@@ -117,6 +117,7 @@ pub struct Context<'a> {
     pub online: Option<OnlineView<'a>>,
     pub net: &'a mut NetUi,
     pub view: &'a mut ViewSettings,
+    pub effects: &'a mut crate::effects::EffectSettings,
     pub controls: &'a mut Controls,
     pub fps: f32,
     pub status: &'a str,
@@ -165,6 +166,13 @@ pub fn panel(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
                     .show(ui, |ui| {
                         crate::skins::picker(ui, &mut cx.net.skin);
                         ui.small("In Team-Modi trägt der Körper die Teamfarbe.");
+                    });
+                egui::CollapsingHeader::new("Effekte")
+                    .default_open(false)
+                    .show(ui, |ui| {
+                        ui.checkbox(&mut cx.effects.camera_shake, "Kamera-Wackeln");
+                        ui.checkbox(&mut cx.effects.hit_marker, "Treffer-Marker");
+                        ui.small("„Speichern“ legt die Schalter in tuning.toml ab.");
                     });
                 view(ui, cx.view);
                 egui::CollapsingHeader::new("Eingabe")
