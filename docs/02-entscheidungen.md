@@ -118,6 +118,18 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-109 | 2026-09-30 | Sounds (M5.7) | Stand „erst einmal in Ordnung“ – M5.7 abgeschlossen. **Neue Sounds besorgt der Projektinhaber künftig selbst** (Ablauf in README „Sounds austauschen“) | Entscheidung Projektinhaber |
 | E-110 | 2026-09-30 | M5 Abnahme | **M5 abgeschlossen** (Look im Playtest abgenommen, Sounds vorerst in Ordnung). Playtest-Aufzeichnung `rec-1790721458` als Golden-Regressionstest übernommen | Entscheidung Projektinhaber |
 | E-111 | 2026-09-30 | Reihenfolge M6/M7 | **M7 (Menüs & Infrastruktur) vor M6 (Karten & Editor)**; Nummern bleiben, Reihenfolge M5 → M7 → M6 → M8 | Entscheidung Projektinhaber |
+| E-112 | 2026-09-30 | Internet-Serverliste (D-M7-03, O-17) | **HTTP/JSON-Master** wie DDNet: Server melden sich per HTTP an, Client holt die Liste als JSON und fragt jeden Server selbst (Ping, Infos) | Entscheidung Projektinhaber |
+| E-113 | 2026-09-30 | Start (D-M7-02) | **Hauptmenü über einem ruhigen, gezeichneten Bild** | Entscheidung Projektinhaber |
+| E-114 | 2026-09-30 | Sprache (D-M7-10) | **Deutsch + Englisch**, umschaltbar; Texte in einer Übersetzungsdatei je Sprache | Entscheidung Projektinhaber |
+| E-115 | 2026-09-30 | Demos (D-M7-08, O-18) | **Später** (nach Release 1) | Entscheidung Projektinhaber |
+| E-116 | 2026-09-30 | Einstellungsdatei (D-M7-04) | **`settings.toml` im Benutzerverzeichnis** (Linux `~/.config/elora`, sonst der übliche Ort je System) für Spieler, Skin, Steuerung, Grafik, Ton, Sprache, Favoriten; `tuning.toml` bleibt Entwickler-Tuning | Entscheidung Projektinhaber |
+| E-117 | 2026-09-30 | Tastenbelegung (D-M7-05) | **Eine Taste je Aktion** | Entscheidung Projektinhaber |
+| E-118 | 2026-09-30 | Server-Passwort (D-M7-07) | **Nein** für Release 1 | Entscheidung Projektinhaber |
+| E-119 | 2026-09-30 | Remote-Konsole (D-M7-11, O-45) | **Später** | Entscheidung Projektinhaber |
+| E-120 | 2026-09-30 | Grafik-Einstellungen (D-M7-06) | **Fenster/Vollbild, VSync, Kantenglättung (MSAA), UI-Skalierung** | Entscheidung Projektinhaber |
+| E-121 | 2026-09-30 | Menümusik (D-M7-09) | **Abspielen vorbereiten:** Datei in `assets/music/` läuft im Menü in Schleife mit eigener Lautstärke; ohne Datei still. Musik liefert der Projektinhaber (E-109) | Entscheidung Projektinhaber |
+| E-122 | 2026-09-30 | Hosten (D-M7-12) | **„Server erstellen“ im Menü** (Name, Karte, Modus, Spieler), startet `elora-server` im Hintergrund und verbindet | Entscheidung Projektinhaber |
+| E-123 | 2026-09-30 | Menü-Design (D-M7-01) | **2–3 Entwürfe als Bild** (Hauptmenü, Server-Browser, Einstellungsseite) vor der Umsetzung | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 
@@ -168,11 +180,12 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 - [x] ~~O-16 Map-Editor~~ → E-028 (Zeitpunkt → Meilensteine O-21)
 
 ### Features / Infrastruktur
-- [ ] **O-17 Server-Browser / Master-Server**
-- [ ] **O-18 Demos / Replays**
+- [x] ~~O-17 Server-Browser / Master-Server~~ → E-112 (Betrieb des Masters → O-47)
+- [x] ~~O-18 Demos / Replays~~ → E-115 (später)
 - [x] ~~O-19 Skins-System~~ → E-029
 - [x] ~~O-20 Konsole~~ → E-072 (Remote-Konsole später → O-45)
-- [ ] **O-45 Remote-Konsole** (Admin-Befehle aus dem Client mit Passwort)
+- [ ] **O-45 Remote-Konsole** (Admin-Befehle aus dem Client mit Passwort) – später (E-119)
+- [ ] **O-47 Betrieb des Master-Servers** (wer betreibt ihn, unter welcher Adresse; Standard-URL im Client) – vor dem ersten öffentlichen Test
 - [x] ~~O-42 Netzwerk-Zielwerte~~ → E-059
 - [ ] **O-43 Release-Karten** (Anzahl, Modi)
 - [ ] **O-44 Vertrieb** (itch.io, Steam, Flathub, Website …)
