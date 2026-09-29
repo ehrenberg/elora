@@ -338,6 +338,14 @@ mod tests {
     }
 
     #[test]
+    fn ctf_test_map_is_valid() {
+        let src = include_str!("../../../maps/ctf-test.emap.toml");
+        let m = parse_text_map(src).unwrap();
+        let modes = m.supported_modes();
+        assert!(modes.ctf && modes.team);
+    }
+
+    #[test]
     fn sandbox_map_is_valid() {
         let src = include_str!("../../../maps/sandbox.emap.toml");
         let m = parse_text_map(src).unwrap();

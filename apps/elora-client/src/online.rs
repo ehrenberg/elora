@@ -179,6 +179,20 @@ impl OnlineClient {
         self.snapshots.back()?.game_view()
     }
 
+    /// Teams aller Slots laut neuestem Snapshot.
+    pub fn teams(&self) -> BTreeMap<usize, Team> {
+        let (Some(t), Some(s)) = (&self.template, self.snapshots.back()) else {
+            return BTreeMap::new();
+        };
+        let mut w = t.clone();
+        s.apply_to(&mut w, None);
+        w.players
+            .iter()
+            .enumerate()
+            .filter_map(|(i, p)| Some((i, p.as_ref()?.team)))
+            .collect()
+    }
+
     /// Team eines Slots laut neuestem Snapshot.
     pub fn team_of(&self, slot: usize) -> Team {
         let (Some(t), Some(s)) = (&self.template, self.snapshots.back()) else {
@@ -518,6 +532,7 @@ impl OnlineClient {
                 alpha,
                 dummy: is_dummy(b, i),
                 local: false,
+                team: wb.team(i),
             });
         }
         scene.add_shots(&wb, alpha, |owner| owner != slot);
@@ -537,6 +552,7 @@ impl OnlineClient {
                     alpha: pred_alpha,
                     dummy: false,
                     local: true,
+                    team: pred.team(slot),
                 });
             }
             scene.add_shots(pred, pred_alpha, |owner| owner == slot);
@@ -554,6 +570,8 @@ impl OnlineClient {
         let mut wl = template.clone();
         latest.apply_to(&mut wl, None);
         scene.add_pickups(&wl);
+        scene.add_flags(&wb);
+        scene.add_flags(&wb);
         Some(scene)
     }
 

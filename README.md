@@ -2,7 +2,7 @@
 
 Ein 2D-Multiplayer-Arena-Shooter nach dem Vorbild von [Teeworlds](https://teeworlds.com) – eigene Figur, eigener Stil, gleiches Spielgefühl. Elora ist zugleich der Name der spielbaren Figur.
 
-**Stand:** M0–M3 abgeschlossen (Bewegung, Hook, Waffen, Dummies, Netzwerk), M4 (Spielmodi) in Arbeit. Grafik ist noch Platzhalter (M5). Siehe [Roadmap](docs/06-roadmap.md).
+**Stand:** M0–M3 abgeschlossen (Bewegung, Hook, Waffen, Dummies, Netzwerk), M4 (Spielmodi DM/TDM/CTF/LMS/LTS/Instagib) wartet auf Abnahme. Grafik ist noch Platzhalter (M5). Siehe [Roadmap](docs/06-roadmap.md).
 
 ## Einrichtung unter Arch Linux
 
@@ -47,7 +47,10 @@ Alle Befehle werden aus dem Projektordner ausgeführt (Karten liegen in `maps/`)
 ```sh
 cargo run --bin elora                               # Standardkarte maps/sandbox.emap.toml
 cargo run --bin elora -- maps/eigene.emap.toml      # andere Karte
+cargo run --bin elora -- maps/ctf-test.emap.toml --mode ctf   # Spielmodus gegen Dummies
 ```
+
+Spielmodi in der Sandbox: `--mode dm|tdm|ctf|lms|lts` (optional `--instagib`) oder im Panel unter *Spiel → Modus*. CTF braucht eine Karte mit Flaggen, z. B. `maps/ctf-test.emap.toml`.
 
 Die Sandbox dient zum Tunen und Testen: Dummies, Pickups, Live-Regler für alle Werte, Hot-Reload der Karte.
 
@@ -71,7 +74,17 @@ cargo run --bin elora-server -- --config server.toml
 | `--high-bandwidth` | aus | Snapshots mit 50 statt 25 Hz (nur LAN) |
 | `--key-file` | `server_key.toml` | dauerhafter Server-Schlüssel (wird beim ersten Start erzeugt) |
 | `--tuning` | – | Tuning-Datei (Abschnitt `[physics]` wie `tuning.toml`) |
+| `--mode` | dm | Spielmodus: `dm`, `tdm`, `ctf`, `lms`, `lts` |
+| `--instagib` | aus | nur Laser, ein Treffer tötet (für alle Modi) |
+| `--score-limit` | 20 (CTF: 5 Eroberungen) | Siegpunkte, 0 = aus |
+| `--time-limit` | 0 | Zeitlimit in Minuten, 0 = aus |
+| `--no-friendly-fire` | an | kein Schaden an Teammitgliedern (Rückstoß bleibt) |
+| `--no-votes` | an | Abstimmungen abschalten |
 | `--config` | – | alle Optionen aus einer TOML-Datei; weitere Optionen überschreiben sie |
+
+Weitere Einstellungen nur in der Konfigurationsdatei: `rotation = ["sandbox", "ctf-test"]` (Kartenrotation), `maps_dir`, und ein Abschnitt `[rules]` (`warmup_secs`, `countdown_secs`, `tdm_respawn_secs`, `team_balance_secs`, `match_swap`, `matches_per_map`).
+
+**Konsole:** Im Terminal des Servers Befehle eintippen – `help` zeigt alle: `status`, `mode ctf`, `instagib on`, `scorelimit 10`, `timelimit 5`, `friendlyfire off`, `restart`, `map <name>`, `maps`, `kick <slot>`, `ban <slot>`, `spectate <slot>`, `say <text>`, `vote cancel`, `quit`.
 
 Beenden: `quit` + Enter oder Strg+C. Log-Ausgabe steuern: `RUST_LOG=debug cargo run --bin elora-server`.
 
@@ -100,10 +113,16 @@ oder im Client: `Esc` → Panel *Netzwerk* → Adresse eintragen → *Verbinden*
 | 1 / 2 / 3, Mausrad | Hammer / Granate / Laser |
 | Esc | Maus freigeben (Panel bedienen); erneut Esc = beenden |
 | F1 | Debug-Panel ein/aus |
-| R | Respawn (nur Sandbox) |
+| R | Respawn (nur Sandbox ohne Modus) |
+| K | Selbstmord (`kill`) |
+| T / Y | Chat / Team-Chat (Enter senden, Esc abbrechen; online) |
+| Tab (halten) | Scoreboard |
+| F3 / F4 | Ja / Nein bei Abstimmungen |
 | F5 | Aufzeichnung starten/beenden (nur Sandbox, siehe unten) |
 
-Nach dem Tod: Feuertaste = Respawn (frühestens nach 0,5 s), sonst automatisch nach 3 s.
+Nach dem Tod: Feuertaste = Respawn (frühestens nach 0,5 s, TDM 3 s), sonst automatisch nach 3 s. In LMS/LTS kein Respawn bis zur nächsten Runde.
+
+Team wählen, zuschauen und Abstimmungen (Karte, Modus, Kick, Zuschauer) starten: `Esc` → Panel *Spiel*.
 
 ## Dateien im Arbeitsverzeichnis
 
@@ -146,6 +165,7 @@ crates/elora-map       Kartenformat und Aufbau der Welt aus einer Karte
 crates/elora-render    wgpu-2D-Renderer (lyon-Tessellierung), Kamera
 crates/elora-protocol  Nachrichten, Delta-Snapshots, Huffman
 crates/elora-net       UDP-Transport: Handshake, Verschlüsselung, Zuverlässigkeit, Simulator
+crates/elora-game      Spielregeln: Modi, Punkte, Runden, Teams, Flaggen
 apps/elora-client      das Spiel (Sandbox + Online)
 apps/elora-server      dedizierter Server
 xtask                  Entwicklungsbefehle (cargo xtask …)

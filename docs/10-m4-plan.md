@@ -18,7 +18,7 @@ DM, TDM, CTF, LMS, LTS und Instagib sind auf dem Server spielbar – mit Teams, 
 | M4.6 ✅ | Instagib | `elora-game` | nur Laser, unendliche Munition, 1 Treffer = Tod, keine Pickups (E-026) | Tests |
 | M4.7 ✅ | Server-Integration | `elora-server` | Modus und Regeln in `server.toml`/Kommandozeile, Spielzustand und Punkte im Snapshot, Kartenrotation | Integrationstest |
 | M4.8 ✅ | Chat & Befehle | Protokoll, Server, Client | Chat und Team-Chat, `kill` (E-055), Team wählen/Zuschauer, Server-Konsole (D-M4-07) | Tests |
-| M4.9 | Anzeige | Client | Scoreboard (Tab), Killfeed, Chat-Fenster, Rundenende-/Sieger-Anzeige, Timer, Flaggenanzeige – als Platzhalter (finales HUD in M5) | Sichtprüfung |
+| M4.9 ✅ | Anzeige | Client | Scoreboard (Tab), Killfeed, Chat-Fenster, Rundenende-/Sieger-Anzeige, Timer, Flaggenanzeige – als Platzhalter (finales HUD in M5) | Sichtprüfung |
 | M4.10 | Abnahme | – | Playtest aller Modi | Deine Abnahme |
 
 ## Technische Festlegungen (Vorschlag)
@@ -51,4 +51,13 @@ DM, TDM, CTF, LMS, LTS und Instagib sind auf dem Server spielbar – mit Teams, 
 - **Abstimmungen (E-077):** Dauer 25 s; angenommen sofort, wenn mehr als die Hälfte der Spieler Ja stimmt, abgelehnt sofort bei mindestens der Hälfte Nein, sonst nach Ablauf angenommen bei mehr Ja als Nein. Kick sperrt die Adresse 5 min. Eine Abstimmung gleichzeitig.
 - **Instagib (E-076):** Spawn nur mit Laser (unbegrenzte Munition), ein Treffer tötet, keine Pickups.
 - **Sandbox (E-075):** Modus im Panel wählbar; Aufzeichnungen (F5) nur ohne Modus, damit Golden-Tests reine Simulation bleiben.
+
+## Umsetzungsnotizen (Stand 2026-09-29)
+
+- **Testkarte:** `maps/ctf-test.emap.toml` mit Team-Spawns, Flaggen, Pickups und Dummies. Sandbox: `cargo run --bin elora -- maps/ctf-test.emap.toml --mode ctf`; Server: `cargo run --bin elora-server -- --map maps/ctf-test.emap.toml --mode ctf`.
+- **Dummies zählen als Spieler** (Teams, „genug Spieler“, Punkte) – auf Test-Servern praktisch, auf echten Karten gibt es keine Dummies.
+- **Anzeigen (Platzhalter bis M5):** Statusleiste (Modus, Timer, Phase, Teampunkte bzw. eigene Punkte, Ziel, Sudden Death), Abstimmungsbanner, Killfeed, Chat mit Hinweisen, Scoreboard (Tab), Teamfarben (eigene Figur mit gelbem Ring), Flaggen mit Stand-Markierung.
+- **Konsole und Abstimmungen:** siehe README.
+- **Nicht per Maus durchgeklickt:** Chat-Eingabe, Abstimmungs-Dialog und Team-Buttons im Fenster (die Logik dahinter ist durch Integrationstests abgedeckt).
+- **Huffman-Tabelle** wurde noch auf dem Snapshot-Format vor M4 trainiert; sie funktioniert weiter (bei Bedarf wird unkomprimiert gesendet). Neu trainieren mit `cargo xtask train-huffman`, sobald echte Spieldaten vorliegen.
 

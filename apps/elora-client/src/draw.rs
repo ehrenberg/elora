@@ -3,6 +3,7 @@
 
 use elora_client::scene::Scene;
 use elora_render::{Camera, Color, ShapeBatch};
+use elora_sim::Team;
 use elora_sim::{
     Collision, Event, HookState, PHYS_SIZE, PickupKind, TILE_SIZE, Tile, Tuning, Vec2, Weapon,
 };
@@ -13,8 +14,10 @@ const UNHOOKABLE: Color = Color::hex(0x3a4450);
 const DEATH: Color = Color::hex(0xc94f4f);
 const ELORA: Color = Color::hex(0xf2c14e);
 const DUMMY: Color = Color::hex(0xb59fd6);
-/// Andere menschliche Spieler (online).
+/// Andere menschliche Spieler (online, ohne Team).
 const OTHER: Color = Color::hex(0x7ccf8a);
+pub const RED: Color = Color::hex(0xe0574f);
+pub const BLUE: Color = Color::hex(0x4f86e0);
 const OUTLINE: Color = Color::hex(0x2b2b2b);
 const HOOK: Color = Color::hex(0xe8e8e8);
 const CURSOR: Color = Color::hex(0xffffff);
@@ -164,21 +167,32 @@ pub fn scene(
             let a = core.angle as f32 / 256.0;
             Vec2::new(a.cos(), a.sin())
         };
-        let body = if c.dummy {
-            DUMMY
-        } else if c.local {
-            ELORA
-        } else {
-            OTHER
+        let body = match c.team {
+            Team::Red => RED,
+            Team::Blue => BLUE,
+            _ if c.dummy => DUMMY,
+            _ if c.local => ELORA,
+            _ => OTHER,
         };
         let r = PHYS_SIZE / 2.0;
         weapon(batch, pos, aim, c.ch.arsenal.active);
         batch.fill_circle(pos, r + 1.5, OUTLINE);
         batch.fill_circle(pos, r, body);
         batch.fill_circle(pos + aim * (r * 0.5), 3.5, OUTLINE);
+        if c.local && c.team.index().is_some() {
+            // eigene Figur im Team: gelber Ring zur Unterscheidung
+            batch.stroke_circle(pos, r + 4.0, 2.0, ELORA);
+        }
         if !c.local {
             health_bar(batch, pos, c.ch.health, c.ch.armor, tuning.max_health);
         }
+    }
+
+    for f in &scene.flags {
+        if !f.at_stand {
+            batch.stroke_circle(f.stand, 16.0, 2.0, team_color(f.team));
+        }
+        flag(batch, f.pos, team_color(f.team));
     }
 
     for &p in &scene.projectiles {
@@ -207,6 +221,25 @@ pub fn scene(
         batch.stroke_circle(c, 8.0, 2.0, CURSOR);
         batch.fill_circle(c, 1.5, CURSOR);
     }
+}
+
+pub fn team_color(t: Team) -> Color {
+    match t {
+        Team::Red => RED,
+        Team::Blue => BLUE,
+        _ => OTHER,
+    }
+}
+
+/// Flagge: Stange und Wimpel, Fuß bei `pos`.
+fn flag(batch: &mut ShapeBatch, pos: Vec2, color: Color) {
+    let foot = pos + Vec2::new(0.0, 14.0);
+    let top = foot + Vec2::new(0.0, -52.0);
+    batch.stroke_line(foot, top, 4.0, OUTLINE);
+    batch.fill_polygon(
+        &[top, top + Vec2::new(30.0, 10.0), top + Vec2::new(0.0, 22.0)],
+        color,
+    );
 }
 
 fn weapon(batch: &mut ShapeBatch, pos: Vec2, aim: Vec2, w: Weapon) {

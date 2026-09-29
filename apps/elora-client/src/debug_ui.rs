@@ -5,17 +5,26 @@ use std::ops::RangeInclusive;
 use std::time::Duration;
 
 use elora_client::online::OnlineClient;
+use elora_game::{Mode, RulesConfig};
 use elora_net::{Conditions, Stats};
+use elora_protocol::VoteKind;
 use elora_render::ViewSettings;
-use elora_sim::{HookState, TICKS_PER_SECOND, TILE_SIZE, Tuning};
+use elora_sim::{HookState, TICKS_PER_SECOND, TILE_SIZE, Team, Tuning};
+use std::collections::BTreeMap;
 
 use crate::controls::Controls;
 use crate::hosting::{Hosting, available_maps};
 use crate::sandbox::Sandbox;
 
 /// Aktion, die das Panel ausgelöst hat.
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Action {
+    SetTeam(Team),
+    Kill,
+    CallVote(VoteKind),
+    Vote(bool),
+    /// Spielmodus der Sandbox (E-075); `None` = ohne Regeln.
+    SandboxMode(Option<RulesConfig>),
     Save,
     Load,
     Respawn,
@@ -47,6 +56,15 @@ pub struct NetUi {
     pub show_host: bool,
     pub hosting: Hosting,
     pub key_warning: Option<KeyWarning>,
+    /// Abstimmung vorbereiten: 0 Karte, 1 Modus, 2 Kick, 3 Zuschauer.
+    pub vote_kind: u8,
+    pub vote_map: String,
+    pub vote_mode: Mode,
+    pub vote_instagib: bool,
+    pub vote_target: Option<usize>,
+    /// Modus der Sandbox (Auswahl im Panel).
+    pub sandbox_mode: Option<Mode>,
+    pub sandbox_instagib: bool,
 }
 
 impl Default for NetUi {
@@ -60,6 +78,13 @@ impl Default for NetUi {
             show_host: false,
             hosting: Hosting::default(),
             key_warning: None,
+            vote_kind: 0,
+            vote_map: "sandbox".into(),
+            vote_mode: Mode::Dm,
+            vote_instagib: false,
+            vote_target: None,
+            sandbox_mode: None,
+            sandbox_instagib: false,
         }
     }
 }
@@ -93,6 +118,12 @@ pub struct Context<'a> {
     pub fps: f32,
     pub status: &'a str,
     pub cursor_grabbed: bool,
+    /// Namen und eigener Slot (für den Spiel-Abschnitt).
+    pub names: &'a BTreeMap<usize, String>,
+    pub local: Option<usize>,
+    /// Modus mit Teams aktiv?
+    pub team_mode: bool,
+    pub vote_running: bool,
 }
 
 pub fn panel(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
@@ -115,10 +146,12 @@ pub fn panel(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
                 ui.separator();
                 action = network(ui, cx);
                 ui.separator();
+                action = action.take().or(game_section(ui, cx));
+                ui.separator();
                 if let Some(sandbox) = cx.sandbox.as_deref_mut() {
                     state(ui, sandbox, cx.fps);
                     ui.separator();
-                    action = action.or(buttons(ui, cx.status));
+                    action = action.take().or(buttons(ui, cx.status));
                     ui.separator();
                     tuning(ui, &mut sandbox.world.tuning);
                 } else if !cx.status.is_empty() {
@@ -141,10 +174,10 @@ pub fn panel(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
             });
         });
     if cx.net.show_host {
-        action = action.or(host_window(ui.ctx(), cx.net));
+        action = action.take().or(host_window(ui.ctx(), cx.net));
     }
     if let Some(w) = cx.net.key_warning.clone() {
-        action = action.or(key_warning_window(ui.ctx(), cx.net, &w));
+        action = action.take().or(key_warning_window(ui.ctx(), cx.net, &w));
     }
     action
 }
@@ -196,6 +229,150 @@ fn network(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
                 ui.small(&cx.net.hosting.status);
             }
         });
+    action
+}
+
+fn game_section(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
+    let mut action = None;
+    egui::CollapsingHeader::new("Spiel")
+        .default_open(true)
+        .show(ui, |ui| {
+            let online = cx.online.is_some();
+            if !online {
+                action = sandbox_mode(ui, cx.net);
+            }
+            action = action.take().or(team_buttons(ui, cx.team_mode));
+            if online {
+                action = action.take().or(vote_ui(ui, cx));
+            }
+        });
+    action
+}
+
+/// Spielmodus der Sandbox (E-075).
+fn sandbox_mode(ui: &mut egui::Ui, net: &mut NetUi) -> Option<Action> {
+    let mut action = None;
+    ui.horizontal(|ui| {
+        ui.label("Modus");
+        let label = net.sandbox_mode.map_or("aus (freies Spiel)", Mode::name);
+        egui::ComboBox::from_id_salt("sbmode")
+            .selected_text(label)
+            .show_ui(ui, |ui| {
+                ui.selectable_value(&mut net.sandbox_mode, None, "aus (freies Spiel)");
+                for m in Mode::ALL {
+                    ui.selectable_value(&mut net.sandbox_mode, Some(m), m.name());
+                }
+            });
+        ui.checkbox(&mut net.sandbox_instagib, "Instagib");
+        if ui.button("Starten").clicked() {
+            let cfg = net.sandbox_mode.map(|mode| RulesConfig {
+                mode,
+                instagib: net.sandbox_instagib,
+                warmup_secs: 0,
+                ..RulesConfig::default()
+            });
+            action = Some(Action::SandboxMode(cfg));
+        }
+    });
+    ui.small("CTF braucht eine Karte mit Flaggen, z. B. maps/ctf-test.emap.toml");
+    action
+}
+
+fn team_buttons(ui: &mut egui::Ui, team_mode: bool) -> Option<Action> {
+    let mut action = None;
+    ui.horizontal(|ui| {
+        if team_mode {
+            if ui.button("Rot").clicked() {
+                action = Some(Action::SetTeam(Team::Red));
+            }
+            if ui.button("Blau").clicked() {
+                action = Some(Action::SetTeam(Team::Blue));
+            }
+        } else if ui.button("Mitspielen").clicked() {
+            action = Some(Action::SetTeam(Team::None));
+        }
+        if ui.button("Zuschauen").clicked() {
+            action = Some(Action::SetTeam(Team::Spectator));
+        }
+        if ui.button("kill (K)").clicked() {
+            action = Some(Action::Kill);
+        }
+    });
+    action
+}
+
+/// Abstimmung starten und abstimmen (E-077).
+fn vote_ui(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
+    let mut action = None;
+    ui.label("Abstimmung (E-077):");
+    if cx.vote_running {
+        ui.horizontal(|ui| {
+            if ui.button("Ja (F3)").clicked() {
+                action = Some(Action::Vote(true));
+            }
+            if ui.button("Nein (F4)").clicked() {
+                action = Some(Action::Vote(false));
+            }
+        });
+    }
+    let net = &mut *cx.net;
+    ui.horizontal(|ui| {
+        for (k, label) in ["Karte", "Modus", "Kick", "Zuschauer"].iter().enumerate() {
+            ui.selectable_value(&mut net.vote_kind, k as u8, *label);
+        }
+    });
+    match net.vote_kind {
+        0 => {
+            ui.horizontal(|ui| {
+                ui.label("Karte");
+                ui.add(egui::TextEdit::singleline(&mut net.vote_map).desired_width(140.0));
+            });
+        }
+        1 => {
+            ui.horizontal(|ui| {
+                egui::ComboBox::from_id_salt("vmode")
+                    .selected_text(net.vote_mode.name())
+                    .show_ui(ui, |ui| {
+                        for m in Mode::ALL {
+                            ui.selectable_value(&mut net.vote_mode, m, m.name());
+                        }
+                    });
+                ui.checkbox(&mut net.vote_instagib, "Instagib");
+            });
+        }
+        _ => {
+            let label = net
+                .vote_target
+                .and_then(|t| cx.names.get(&t))
+                .cloned()
+                .unwrap_or_else(|| "Spieler wählen".into());
+            egui::ComboBox::from_id_salt("vtarget")
+                .selected_text(label)
+                .show_ui(ui, |ui| {
+                    for (i, n) in cx.names {
+                        if Some(*i) != cx.local {
+                            ui.selectable_value(&mut net.vote_target, Some(*i), n);
+                        }
+                    }
+                });
+        }
+    }
+    if ui
+        .add_enabled(!cx.vote_running, egui::Button::new("Abstimmung starten"))
+        .clicked()
+    {
+        let slot = |t: Option<usize>| t.and_then(|t| u32::try_from(t).ok());
+        let kind = match net.vote_kind {
+            0 => Some(VoteKind::Map(net.vote_map.trim().to_owned())),
+            1 => Some(VoteKind::Mode {
+                mode: net.vote_mode,
+                instagib: net.vote_instagib,
+            }),
+            2 => slot(net.vote_target).map(VoteKind::Kick),
+            _ => slot(net.vote_target).map(VoteKind::Spectate),
+        };
+        action = kind.map(Action::CallVote);
+    }
     action
 }
 
@@ -759,6 +936,8 @@ fn help(ui: &mut egui::Ui) {
             ui.label("R – Respawn · F1 – Panel ein/aus");
             ui.label("Linke Maustaste – schießen · 1/2/3 oder Mausrad – Waffe");
             ui.label("F5 – Aufzeichnung starten/beenden (→ Golden-Test)");
+            ui.label("T – Chat · Y – Team-Chat · Tab – Punkte · K – kill");
+            ui.label("F3 / F4 – Ja / Nein bei Abstimmungen");
             ui.label("Esc – Maus freigeben · erneut Esc – beenden");
             ui.label("Karte speichern → wird automatisch neu geladen");
         });

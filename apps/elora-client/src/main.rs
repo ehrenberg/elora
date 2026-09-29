@@ -1,18 +1,20 @@
 //! Elora-Client: lokale Sandbox (M1/M2) oder online mit einem Server (M3).
 //!
-//! Aufruf: `elora [karte.emap.toml] [--connect adresse:port]`
+//! Aufruf: `elora [karte.emap.toml] [--mode dm|tdm|ctf|lms|lts] [--instagib] [--connect adresse:port]`
 //! (Standardkarte: `maps/sandbox.emap.toml`)
 
 mod connection;
 mod controls;
 mod debug_ui;
 mod draw;
+mod game_ui;
 mod gui;
 mod hosting;
 mod hud;
 mod sandbox;
 mod settings;
 
+use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -57,7 +59,21 @@ fn main() -> anyhow::Result<()> {
         .find(|a| a.ends_with(".emap.toml"))
         .map_or_else(|| PathBuf::from(DEFAULT_MAP), PathBuf::from);
     let file = TuningFile::load(Path::new(TUNING_FILE))?;
-    let sandbox = Sandbox::load(&map_path, file.physics.clone())?;
+    let mut sandbox = Sandbox::load(&map_path, file.physics.clone())?;
+    if let Some(i) = args.iter().position(|a| a == "--mode") {
+        let name = args
+            .get(i + 1)
+            .context("--mode erwartet dm, tdm, ctf, lms oder lts")?;
+        let mode =
+            elora_game::Mode::parse(name).with_context(|| format!("unbekannter Modus `{name}`"))?;
+        let instagib = args.iter().any(|a| a == "--instagib");
+        sandbox.set_mode(Some(elora_game::RulesConfig {
+            mode,
+            instagib,
+            warmup_secs: 0,
+            ..elora_game::RulesConfig::default()
+        }));
+    }
     tracing::info!(map = %map_path.display(), "Karte geladen");
 
     let event_loop = EventLoop::new().context("Event-Loop konnte nicht erstellt werden")?;
@@ -100,18 +116,26 @@ struct App {
     show_panel: bool,
     status: String,
     error: Option<anyhow::Error>,
+    chat_input: game_ui::ChatInput,
+    scoreboard: bool,
+    killfeed: VecDeque<game_ui::KillEntry>,
 }
 
 impl App {
     fn new(sandbox: Sandbox, file: &TuningFile) -> Self {
         let mut controls = Controls::default();
         controls.sensitivity = file.input.mouse_sensitivity;
+        let mut net = NetUi::default();
+        if let Some(r) = &sandbox.rules {
+            net.sandbox_mode = Some(r.cfg.mode);
+            net.sandbox_instagib = r.cfg.instagib;
+        }
         Self {
             gfx: None,
             sandbox,
             online: None,
             known: KnownServers::load(Path::new(KNOWN_SERVERS_FILE)),
-            net: NetUi::default(),
+            net,
             controls,
             view: file.view.into(),
             batch: ShapeBatch::default(),
@@ -122,6 +146,9 @@ impl App {
             show_panel: true,
             status: String::new(),
             error: None,
+            chat_input: game_ui::ChatInput::default(),
+            scoreboard: false,
+            killfeed: VecDeque::new(),
         }
     }
 
@@ -212,6 +239,31 @@ impl App {
                     self.connect();
                 }
             }
+            Action::SetTeam(team) => match &mut self.online {
+                Some(o) => o.client.set_team(team),
+                None => self.sandbox.set_team(team),
+            },
+            Action::Kill => match &mut self.online {
+                Some(o) => o.client.kill(),
+                None => self.sandbox.kill(),
+            },
+            Action::CallVote(kind) => {
+                if let Some(o) = &mut self.online {
+                    o.client.call_vote(kind);
+                }
+            }
+            Action::Vote(yes) => {
+                if let Some(o) = &mut self.online {
+                    o.client.vote(yes);
+                }
+            }
+            Action::SandboxMode(cfg) => {
+                self.status = cfg.as_ref().map_or_else(
+                    || "Freies Spiel".into(),
+                    |c| format!("Modus: {}", c.title()),
+                );
+                self.sandbox.set_mode(cfg);
+            }
             Action::ApplyConditions => {
                 if let Some(o) = &self.online {
                     o.conn.set_conditions(self.net.conditions());
@@ -291,6 +343,90 @@ impl App {
         }
     }
 
+    /// Simulation bzw. Online-Client vorantreiben; liefert, was zu zeichnen ist.
+    fn advance(
+        &mut self,
+        now: Instant,
+        elapsed: Duration,
+    ) -> Option<(Scene, Collision, Tuning, Vec<elora_sim::Event>)> {
+        Some(if self.online.is_some() {
+            self.update_online(now);
+            let o = self.online.as_mut()?;
+            match (
+                o.client.scene(now),
+                o.client.map.as_ref(),
+                o.client.tuning(),
+            ) {
+                (Some(scene), Some(map), Some(t)) => {
+                    (scene, map.collision(), t.clone(), o.client.take_events())
+                }
+                _ => (
+                    Scene::default(),
+                    Collision::new(1, 1, vec![elora_sim::Tile::Air]),
+                    Tuning::default(),
+                    Vec::new(),
+                ),
+            }
+        } else {
+            self.sandbox.poll_reload();
+            if self
+                .sandbox
+                .recording
+                .as_ref()
+                .is_some_and(|r| r.tuning != self.sandbox.world.tuning)
+                && let Some(msg) = self.sandbox.stop_recording("Tuning geändert")
+            {
+                self.status = msg;
+            }
+            self.sandbox.advance(elapsed, &mut self.controls);
+            (
+                self.sandbox.scene(),
+                self.sandbox.world.collision.clone(),
+                self.sandbox.world.tuning.clone(),
+                self.sandbox.take_events(),
+            )
+        })
+    }
+
+    /// Namen, Teams, Spielzustand, eigener Slot, Tick und Abstimmung.
+    #[allow(clippy::type_complexity)]
+    fn game_info(
+        &self,
+        now: Instant,
+    ) -> (
+        std::collections::BTreeMap<usize, String>,
+        std::collections::BTreeMap<usize, elora_sim::Team>,
+        Option<elora_protocol::GameView>,
+        Option<usize>,
+        u64,
+        Option<elora_protocol::VoteInfo>,
+    ) {
+        match &self.online {
+            Some(o) => (
+                o.client.names.clone(),
+                o.client.teams(),
+                o.client.game(),
+                o.client.slot,
+                o.client.server_tick(now).unwrap_or(0),
+                o.client.vote.clone(),
+            ),
+            None => (
+                self.sandbox.names(),
+                self.sandbox
+                    .world
+                    .players
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(i, p)| Some((i, p.as_ref()?.team)))
+                    .collect(),
+                self.sandbox.game(),
+                Some(self.sandbox.player),
+                self.sandbox.world.tick,
+                None,
+            ),
+        }
+    }
+
     fn redraw(&mut self) {
         let now = Instant::now();
         let elapsed = now - self.last_frame;
@@ -300,47 +436,11 @@ impl App {
         }
 
         // Szene aus Sandbox oder Online-Spiel
-        let (scene, collision, tuning, events): (Scene, Collision, Tuning, _) =
-            if self.online.is_some() {
-                self.update_online(now);
-                match &mut self.online {
-                    Some(o) => match (
-                        o.client.scene(now),
-                        o.client.map.as_ref(),
-                        o.client.tuning(),
-                    ) {
-                        (Some(scene), Some(map), Some(t)) => {
-                            (scene, map.collision(), t.clone(), o.client.take_events())
-                        }
-                        _ => (
-                            Scene::default(),
-                            Collision::new(1, 1, vec![elora_sim::Tile::Air]),
-                            Tuning::default(),
-                            Vec::new(),
-                        ),
-                    },
-                    None => return,
-                }
-            } else {
-                self.sandbox.poll_reload();
-                if self
-                    .sandbox
-                    .recording
-                    .as_ref()
-                    .is_some_and(|r| r.tuning != self.sandbox.world.tuning)
-                    && let Some(msg) = self.sandbox.stop_recording("Tuning geändert")
-                {
-                    self.status = msg;
-                }
-                self.sandbox.advance(elapsed, &mut self.controls);
-                (
-                    self.sandbox.scene(),
-                    self.sandbox.world.collision.clone(),
-                    self.sandbox.world.tuning.clone(),
-                    self.sandbox.take_events(),
-                )
-            };
+        let Some((scene, collision, tuning, events)) = self.advance(now, elapsed) else {
+            return;
+        };
         self.effects.update(elapsed.as_secs_f32(), &events);
+        let (names, teams, view, local_slot, tick, vote) = self.game_info(now);
 
         let Some(gfx) = &mut self.gfx else { return };
         let camera = Camera::new(scene.camera, &self.view, gfx.renderer.aspect());
@@ -361,7 +461,15 @@ impl App {
         gfx.renderer
             .draw_shapes(&mut frame, &camera, &self.batch, draw::BACKGROUND);
 
+        // Spielinformationen für Anzeigen und Panel
+        game_ui::record_kills(&mut self.killfeed, &events, &names, now);
+        let chat: Vec<elora_client::online::ChatLine> = match &self.online {
+            Some(o) => o.client.chat.iter().cloned().collect(),
+            None => self.sandbox.notices.iter().cloned().collect(),
+        };
+
         let mut action = None;
+        let mut ui_action = None;
         let show_panel = self.show_panel;
         let online_view = self.online.as_ref().map(|o| OnlineView {
             client: &o.client,
@@ -369,6 +477,7 @@ impl App {
             server: o.conn.server,
         });
         let is_online = online_view.is_some();
+        let team_mode = view.as_ref().is_some_and(|v| v.mode.teams());
         let mut cx = debug_ui::Context {
             sandbox: if is_online {
                 None
@@ -382,17 +491,44 @@ impl App {
             fps: self.fps,
             status: &self.status,
             cursor_grabbed: self.cursor_grabbed,
+            names: &names,
+            local: local_slot,
+            team_mode,
+            vote_running: vote.is_some(),
         };
         let local = scene.local().map(|c| c.ch.clone());
+        let mut game = game_ui::GameUi {
+            view: view.as_ref(),
+            names: &names,
+            teams: &teams,
+            local: local_slot,
+            tick,
+            chat,
+            input: &mut self.chat_input,
+            scoreboard: self.scoreboard,
+            vote: vote.as_ref(),
+            killfeed: &self.killfeed,
+        };
         gfx.gui.draw(&gfx.window, &gfx.renderer, &mut frame, |ui| {
             hud::hud(ui, local.as_ref(), tuning.max_health);
+            ui_action = ui_action.take().or(game_ui::draw(ui, &mut game));
             if show_panel || cx.net.key_warning.is_some() {
-                action = action.or(debug_ui::panel(ui, &mut cx));
+                action = action.take().or(debug_ui::panel(ui, &mut cx));
             }
         });
         gfx.renderer.end_frame(frame);
         if let Some(action) = action {
             self.apply(action);
+        }
+        match ui_action {
+            Some(game_ui::UiAction::SendChat { team, text }) => {
+                if let Some(o) = &mut self.online {
+                    o.client.send_chat(team, &text);
+                }
+                self.chat_input.open = false;
+            }
+            Some(game_ui::UiAction::CloseChat) => self.chat_input.open = false,
+            None => {}
         }
     }
 
@@ -400,6 +536,14 @@ impl App {
         let PhysicalKey::Code(code) = event.physical_key else {
             return;
         };
+        // Scoreboard solange Tab gehalten wird (E-078)
+        if code == KeyCode::Tab {
+            self.scoreboard = event.state.is_pressed();
+            return;
+        }
+        if self.chat_input.open {
+            return; // Tastatur gehört dem Chat-Feld
+        }
         if self.controls.key(code, event.state)
             || event.state != ElementState::Pressed
             || event.repeat
@@ -411,6 +555,10 @@ impl App {
             KeyCode::Escape if self.cursor_grabbed => self.set_cursor_grab(false),
             KeyCode::Escape => event_loop.exit(),
             KeyCode::KeyR if !online => self.apply(Action::Respawn),
+            KeyCode::F5 if !online && self.sandbox.rules.is_some() => {
+                self.status =
+                    "Aufzeichnung nur ohne Spielmodus (Golden-Tests = reine Simulation)".into();
+            }
             KeyCode::F5 if !online => {
                 self.status = self.sandbox.stop_recording("F5").unwrap_or_else(|| {
                     self.sandbox.start_recording();
@@ -418,6 +566,17 @@ impl App {
                 });
             }
             KeyCode::F1 => self.show_panel = !self.show_panel,
+            KeyCode::KeyT | KeyCode::KeyY if online => {
+                self.controls.release_all();
+                self.chat_input = game_ui::ChatInput {
+                    open: true,
+                    team: code == KeyCode::KeyY,
+                    text: String::new(),
+                };
+            }
+            KeyCode::KeyK => self.apply(Action::Kill),
+            KeyCode::F3 => self.apply(Action::Vote(true)),
+            KeyCode::F4 => self.apply(Action::Vote(false)),
             _ => {}
         }
     }
@@ -457,8 +616,9 @@ impl ApplicationHandler for App {
     }
 
     fn window_event(&mut self, event_loop: &ActiveEventLoop, _: WindowId, event: WindowEvent) {
-        // Solange die Maus frei ist, bekommt das Panel die Eingaben zuerst
-        if !self.cursor_grabbed
+        // Solange die Maus frei ist (oder der Chat offen), bekommt egui die Eingaben zuerst
+        let to_gui = !self.cursor_grabbed || self.chat_input.open;
+        if to_gui
             && let Some(gfx) = &mut self.gfx
             && gfx.gui.on_window_event(&gfx.window, &event)
             && !matches!(

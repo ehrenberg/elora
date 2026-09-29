@@ -6,8 +6,11 @@ use std::sync::mpsc;
 use std::time::Duration;
 
 use anyhow::Context as _;
+use elora_client::online::ChatLine;
 use elora_client::scene::{Scene, SceneChar};
+use elora_game::{GameEvent, Rules, RulesConfig, Winner};
 use elora_map::Map;
+use elora_protocol::GameView;
 use elora_sim::replay::Recording;
 use elora_sim::{
     CharacterCore, Controller, Event, PlayerInput, TICKS_PER_SECOND, Tuning, Vec2, World,
@@ -44,6 +47,10 @@ pub struct Sandbox {
     pub recording: Option<Recording>,
     /// Ereignisse seit dem letzten Abholen (für Effekte).
     pending_events: Vec<Event>,
+    /// Spielmodus in der Sandbox (E-075); `None` = freies Spiel ohne Regeln.
+    pub rules: Option<Rules>,
+    /// Hinweise der Regeln (Rundenende usw.).
+    pub notices: std::collections::VecDeque<ChatLine>,
 }
 
 impl Sandbox {
@@ -65,6 +72,8 @@ impl Sandbox {
             reload_error: None,
             recording: None,
             pending_events: Vec::new(),
+            rules: None,
+            notices: std::collections::VecDeque::new(),
         };
         s.sync_prev();
         Ok(s)
@@ -109,6 +118,9 @@ impl Sandbox {
                 self.player = player;
                 self.map = map;
                 self.reload_error = None;
+                if let Some(cfg) = self.rules.as_ref().map(|r| r.cfg.clone()) {
+                    self.rules = Some(Rules::new(cfg, &mut self.world, false));
+                }
                 self.sync_prev();
                 tracing::info!("Karte neu geladen");
             }
@@ -116,6 +128,112 @@ impl Sandbox {
                 tracing::warn!("Karte ungültig: {e:#}");
                 self.reload_error = Some(format!("{e:#}"));
             }
+        }
+    }
+
+    /// Spielmodus setzen oder abschalten (E-075). Startet ein neues Match mit Countdown.
+    pub fn set_mode(&mut self, cfg: Option<RulesConfig>) {
+        self.stop_recording("Modus");
+        let tuning = self
+            .rules
+            .as_ref()
+            .map_or_else(|| self.world.tuning.clone(), |_| self.base_tuning());
+        let (mut world, player) = fresh_world(&self.map, tuning);
+        self.rules = cfg.map(|c| Rules::new(c, &mut world, false));
+        self.world = world;
+        self.player = player;
+        self.sync_prev();
+    }
+
+    /// Tuning ohne Instagib-Anpassungen (Regler im Panel).
+    fn base_tuning(&self) -> Tuning {
+        let mut t = self.world.tuning.clone();
+        if self.rules.as_ref().is_some_and(|r| r.cfg.instagib) {
+            t.laser_damage = Tuning::default().laser_damage;
+        }
+        t
+    }
+
+    /// Namen der Slots (Sandbox: Elora und Dummies).
+    pub fn names(&self) -> std::collections::BTreeMap<usize, String> {
+        self.world
+            .players
+            .iter()
+            .enumerate()
+            .filter_map(|(i, p)| {
+                p.as_ref()?;
+                Some((
+                    i,
+                    if i == self.player {
+                        "Elora".to_owned()
+                    } else {
+                        format!("Dummy {i}")
+                    },
+                ))
+            })
+            .collect()
+    }
+
+    /// Spielzustand für die Anzeige.
+    pub fn game(&self) -> Option<GameView> {
+        let r = self.rules.as_ref()?;
+        elora_protocol::Snapshot::from_world(&self.world)
+            .with_rules(&self.world, r)
+            .game_view()
+    }
+
+    /// `kill` (Taste K, E-078).
+    pub fn kill(&mut self) {
+        match &self.rules {
+            Some(r) => r.kill(&mut self.world, self.player),
+            None => self.world.kill(self.player),
+        }
+    }
+
+    /// Team wechseln.
+    pub fn set_team(&mut self, team: elora_sim::Team) {
+        if let Some(r) = &mut self.rules {
+            r.set_team(&mut self.world, self.player, team);
+        }
+    }
+
+    fn notice(&mut self, text: String) {
+        self.notices.push_back(ChatLine {
+            from: None,
+            team: false,
+            text,
+            at: std::time::Instant::now(),
+        });
+        while self.notices.len() > 50 {
+            self.notices.pop_front();
+        }
+    }
+
+    fn rule_events(&mut self) {
+        let Some(r) = &mut self.rules else { return };
+        let events = r.take_events();
+        let title = r.cfg.title();
+        let names = self.names();
+        let name = |w: Winner| match w {
+            Winner::Player(i) => names.get(&i).cloned().unwrap_or_default(),
+            Winner::Team(elora_sim::Team::Red) => "Team Rot".into(),
+            Winner::Team(elora_sim::Team::Blue) => "Team Blau".into(),
+            _ => "niemand".into(),
+        };
+        for e in events {
+            let text = match e {
+                GameEvent::MatchStarted => format!("{title} – Match beginnt"),
+                GameEvent::RoundOver(Winner::Draw) => "Unentschieden".into(),
+                GameEvent::RoundOver(w) => format!("{} gewinnt die Runde", name(w)),
+                GameEvent::MatchOver(w) => format!("{} gewinnt das Match!", name(w)),
+                GameEvent::SuddenDeath => "Gleichstand – Sudden Death!".into(),
+                GameEvent::TeamChanged { player, .. } => format!(
+                    "{} wechselt zum Ausgleich",
+                    names.get(&player).cloned().unwrap_or_default()
+                ),
+                GameEvent::RoundStarted | GameEvent::NextMap => continue,
+            };
+            self.notice(text);
         }
     }
 
@@ -179,6 +297,10 @@ impl Sandbox {
             let mut inputs = vec![PlayerInput::default(); self.world.players.len()];
             inputs[self.player] = input;
             self.world.step(&inputs);
+            if let Some(r) = &mut self.rules {
+                r.update(&mut self.world);
+            }
+            self.rule_events();
             self.pending_events
                 .extend(self.world.events.iter().cloned());
             if let Some(c) = self.character() {
@@ -227,10 +349,12 @@ impl Sandbox {
                 alpha,
                 dummy: matches!(p.controller, Controller::Dummy { .. }),
                 local: i == self.player,
+                team: p.team,
             });
         }
         scene.add_shots(&self.world, alpha, |_| true);
         scene.add_pickups(&self.world);
+        scene.add_flags(&self.world);
         scene
     }
 

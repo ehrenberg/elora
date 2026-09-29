@@ -1,7 +1,7 @@
 //! Was gezeichnet wird – unabhängig davon, ob die Daten aus der lokalen Sandbox
 //! oder aus Snapshots und Vorhersage (online) stammen.
 
-use elora_sim::{Character, CharacterCore, PickupKind, TICKS_PER_SECOND, Vec2, World};
+use elora_sim::{Character, CharacterCore, PickupKind, TICKS_PER_SECOND, Team, Vec2, World};
 
 /// Eine Figur mit Zustand vor und nach dem aktuellen Tick.
 #[derive(Debug, Clone)]
@@ -15,6 +15,7 @@ pub struct SceneChar {
     pub alpha: f32,
     pub dummy: bool,
     pub local: bool,
+    pub team: Team,
 }
 
 impl SceneChar {
@@ -36,8 +37,18 @@ pub struct SceneLaser {
     pub fade: f32,
 }
 
+/// Eine Flagge (CTF).
+#[derive(Debug, Clone, Copy)]
+pub struct SceneFlag {
+    pub team: Team,
+    pub pos: Vec2,
+    pub at_stand: bool,
+    pub stand: Vec2,
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct Scene {
+    pub flags: Vec<SceneFlag>,
     pub chars: Vec<SceneChar>,
     pub projectiles: Vec<Vec2>,
     pub lasers: Vec<SceneLaser>,
@@ -69,6 +80,22 @@ impl Scene {
                 from: l.from,
                 to: l.pos,
                 fade,
+            });
+        }
+    }
+
+    /// Flaggen; getragene Flaggen hängen am (gezeichneten) Träger.
+    pub fn add_flags(&mut self, world: &World) {
+        for f in &world.flags {
+            let pos = f
+                .carrier
+                .and_then(|c| self.chars.iter().find(|ch| ch.slot == c))
+                .map_or(f.pos, |c| c.pos() + Vec2::new(-10.0, -24.0));
+            self.flags.push(SceneFlag {
+                team: f.team,
+                pos,
+                at_stand: f.at_stand,
+                stand: f.stand,
             });
         }
     }
