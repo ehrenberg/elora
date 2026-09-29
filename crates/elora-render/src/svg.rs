@@ -13,7 +13,9 @@
 //!   `-d<prozent>` abgedunkelt, z. B. `tint-2-l45` (Bauchfleck, E-097).
 //!   Mehrere Formen: `tint-2`, `tint-2-a`, `tint-2-l45-b` – alles nach dem
 //!   Muster wird ignoriert. Die Farbe in der Datei bleibt die Vorschaufarbe.
-//! - **Konturen** behalten ihre Farbe und werden immer mit runden Ecken gezeichnet.
+//! - **Konturen** behalten ihre Farbe und werden immer mit runden Ecken gezeichnet –
+//!   außer bei Formen ohne Füllung: dort färbt der Farbschlüssel die Kontur
+//!   (z. B. Augen als Linien `> <`).
 //! - Nicht unterstützt: radiale Verläufe, Muster, Bilder, Text, Filter.
 
 use elora_sim::Vec2;
@@ -193,10 +195,17 @@ fn add_path(
         .map(|s| -> Result<_, SvgError> {
             // Breite mit der mittleren Skalierung der Transformation
             let scale = (t.sx * t.sy - t.kx * t.ky).abs().sqrt();
-            Ok((
-                s.width().get() * scale,
-                paint(s.paint(), s.opacity().get() * opacity, &t)?,
-            ))
+            let alpha = s.opacity().get() * opacity;
+            // Formen ohne Füllung: der Farbschlüssel färbt die Kontur
+            let paint = match key {
+                Some(k) if p.fill().is_none() => Paint::Key {
+                    slot: k.slot,
+                    shade: k.shade,
+                    alpha,
+                },
+                _ => paint(s.paint(), alpha, &t)?,
+            };
+            Ok((s.width().get() * scale, paint))
         })
         .transpose()?;
     let fill_first = p.paint_order() == usvg::PaintOrder::FillAndStroke;
@@ -366,6 +375,23 @@ mod tests {
             !has([242.0 / 255.0, 193.0 / 255.0, 78.0 / 255.0, 1.0]),
             "Vorschaufarbe ersetzt"
         );
+    }
+
+    #[test]
+    fn key_tints_stroke_of_unfilled_shape() {
+        let svg = r##"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">
+  <path id="tint-1" d="M 1,1 L 9,9" fill="none" stroke="#2b2b2b" stroke-width="2"/></svg>"##;
+        let asset = SvgAsset::load(svg.as_bytes(), 0.25).expect("lesbar");
+        let v = emitted(
+            asset.part("").unwrap(),
+            &Tint::new(vec![Color::rgb(0.0, 1.0, 0.0)]),
+        );
+        let green = |c: [f32; 4]| {
+            c.iter()
+                .zip([0.0, 1.0, 0.0, 1.0])
+                .all(|(a, b)| (a - b).abs() < 1e-6)
+        };
+        assert!(!v.is_empty() && v.iter().all(|x| green(x.color)));
     }
 
     #[test]

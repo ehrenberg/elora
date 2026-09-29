@@ -104,6 +104,8 @@ pub struct OnlineClient {
     pub chat: VecDeque<ChatLine>,
     /// Laufende Abstimmung.
     pub vote: Option<VoteInfo>,
+    /// Empfangene Emotes, abgeholt mit [`OnlineClient::take_emotes`].
+    emotes: Vec<(usize, u8)>,
 }
 
 impl OnlineClient {
@@ -137,6 +139,7 @@ impl OnlineClient {
             skins: BTreeMap::new(),
             chat: VecDeque::new(),
             vote: None,
+            emotes: Vec::new(),
         }
     }
 
@@ -157,6 +160,16 @@ impl OnlineClient {
 
     pub fn kill(&mut self) {
         self.send(&ClientMsg::Kill);
+    }
+
+    /// Emote senden (Nummer `0..EMOTES`); angezeigt wird es, wenn der Server es verteilt.
+    pub fn emote(&mut self, emote: u8) {
+        self.send(&ClientMsg::Emote(emote));
+    }
+
+    /// Seit dem letzten Aufruf empfangene Emotes (Slot, Nummer).
+    pub fn take_emotes(&mut self) -> Vec<(usize, u8)> {
+        std::mem::take(&mut self.emotes)
     }
 
     pub fn call_vote(&mut self, kind: VoteKind) {
@@ -321,6 +334,7 @@ impl OnlineClient {
             }
             ServerMsg::Vote(v) => self.vote = v,
             ServerMsg::Notice(text) => self.push_chat(None, false, text, at),
+            ServerMsg::Emote { slot, emote } => self.emotes.push((slot as usize, emote)),
             ServerMsg::Snapshot {
                 tick,
                 base,

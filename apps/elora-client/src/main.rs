@@ -8,6 +8,7 @@ mod controls;
 mod debug_ui;
 mod draw;
 mod effects;
+mod emotes;
 mod figure;
 mod game_ui;
 mod gui;
@@ -116,6 +117,7 @@ struct App {
     /// HUD in Bildschirm-Pixeln (M5.8).
     hud_batch: ShapeBatch,
     hud: hud::Hud,
+    emotes: emotes::Emotes,
     effects: effects::Effects,
     figures: figure::Figures,
     figure_art: figure::FigureArt,
@@ -153,6 +155,7 @@ impl App {
             batch: ShapeBatch::default(),
             hud_batch: ShapeBatch::default(),
             hud: hud::Hud::new(),
+            emotes: emotes::Emotes::new(),
             effects: effects::Effects::with_settings(file.effects),
             figures: figure::Figures::default(),
             figure_art: figure::FigureArt::load(),
@@ -460,6 +463,12 @@ impl App {
     /// Effekte und Figuren-Animationen fortschreiben, eigenen Skin abgleichen.
     fn update_looks(&mut self, dt: f32, scene: &Scene, collision: &Collision, events: &[Event]) {
         self.figures.update(dt, scene, collision, events);
+        self.emotes.update(dt);
+        if let Some(o) = &mut self.online {
+            for (slot, emote) in o.client.take_emotes() {
+                self.emotes.show(slot, emote);
+            }
+        }
         let skins = self
             .online
             .as_ref()
@@ -501,6 +510,7 @@ impl App {
                 figures: &self.figures,
                 art: &self.figure_art,
                 items: &self.item_art,
+                emotes: &self.emotes,
                 skins: self
                     .online
                     .as_ref()
@@ -535,7 +545,20 @@ impl App {
                 local,
             },
         );
+        if self.emotes.wheel_open {
+            let selected = emotes::selection(self.controls.mouse_pos);
+            self.emotes
+                .draw_wheel(&mut self.hud_batch, screen, hud::scale(screen), selected);
+        }
         screen
+    }
+
+    /// Emote zeigen: online über den Server, in der Sandbox direkt.
+    fn send_emote(&mut self, emote: u8) {
+        match &mut self.online {
+            Some(o) => o.client.emote(emote),
+            None => self.emotes.show(self.sandbox.player, emote),
+        }
     }
 
     fn redraw(&mut self) {
@@ -653,6 +676,17 @@ impl App {
         }
         if self.chat_input.open {
             return; // Tastatur gehört dem Chat-Feld
+        }
+        // Emote-Rad solange E gehalten wird (E-091); beim Loslassen wählen
+        if code == KeyCode::KeyE {
+            if event.state.is_pressed() {
+                self.emotes.wheel_open = true;
+            } else if std::mem::take(&mut self.emotes.wheel_open)
+                && let Some(e) = emotes::selection(self.controls.mouse_pos)
+            {
+                self.send_emote(e);
+            }
+            return;
         }
         if self.controls.key(code, event.state)
             || event.state != ElementState::Pressed

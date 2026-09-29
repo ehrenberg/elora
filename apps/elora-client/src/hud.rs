@@ -51,7 +51,7 @@ impl Hud {
 
     /// Zeichnet das HUD für eine Fläche von `screen` Pixeln.
     pub fn draw(&self, batch: &mut ShapeBatch, items: &ItemArt, screen: Vec2, info: &HudInfo<'_>) {
-        let s = (screen.y / 720.0).clamp(0.6, 3.0);
+        let s = scale(screen);
         if let Some(ch) = info.character {
             self.bar(batch, items, screen, s, ch, info.max_health);
         } else {
@@ -213,6 +213,11 @@ impl Hud {
             y += h;
         }
     }
+}
+
+/// Skalierung der Spiel-UI: 1 bei 720 Pixeln Fensterhöhe.
+pub fn scale(screen: Vec2) -> f32 {
+    (screen.y / 720.0).clamp(0.6, 3.0)
 }
 
 fn secs_left(until: u64, tick: u64) -> u64 {

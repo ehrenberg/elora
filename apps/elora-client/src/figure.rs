@@ -41,6 +41,8 @@ pub const KEY_FEET: usize = 2;
 pub struct FigureArt {
     body: Mesh,
     eyes: Mesh,
+    eyes_pain: Mesh,
+    eyes_happy: Mesh,
     foot_back: Mesh,
     foot_front: Mesh,
 }
@@ -57,18 +59,50 @@ impl FigureArt {
                 .cloned()
                 .unwrap_or_else(|| panic!("Teil `{n}` fehlt in elora.svg"))
         };
+        let expression = |data: &[u8], name: &str| {
+            SvgAsset::load(data, 0.3)
+                .ok()
+                .and_then(|a| a.part("eyes").cloned())
+                .unwrap_or_else(|| panic!("assets/elora/{name}: Teil `eyes` fehlt"))
+        };
         Self {
             body: part("body"),
             eyes: part("eyes"),
+            eyes_pain: expression(
+                include_bytes!("../../../assets/elora/eyes-pain.svg"),
+                "eyes-pain.svg",
+            ),
+            eyes_happy: expression(
+                include_bytes!("../../../assets/elora/eyes-happy.svg"),
+                "eyes-happy.svg",
+            ),
             foot_back: part("foot-back"),
             foot_front: part("foot-front"),
         }
     }
 }
 
+/// Automatischer Augen-Ausdruck (E-104).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+enum Expression {
+    #[default]
+    Normal,
+    /// Nach erlittenem Schaden.
+    Pain,
+    /// Nach einem Kill.
+    Happy,
+}
+
+/// Wie lange die Ausdrücke anhalten (s).
+const PAIN_TIME: f32 = 0.45;
+const HAPPY_TIME: f32 = 1.2;
+
 /// Animationszustand einer Figur.
 #[derive(Debug, Clone, Copy, Default)]
 struct Anim {
+    expression: Expression,
+    /// Restdauer des Ausdrucks (s).
+    expression_left: f32,
     grounded: bool,
     vel_y: f32,
     /// Auslenkung der Feder: > 0 gestreckt, < 0 gestaucht.
@@ -126,17 +160,42 @@ impl Figures {
             a.squash_vel += accel * dt;
             a.squash += a.squash_vel * dt;
             a.swing = (a.swing - dt / SWING_TIME).max(0.0);
+            a.expression_left -= dt;
+            if a.expression_left <= 0.0 {
+                a.expression = Expression::Normal;
+            }
         }
         for e in events {
-            if let Event::Fire {
-                player,
-                weapon: Weapon::Hammer,
-                ..
-            } = *e
-                && let Some(a) = self.anims.get_mut(&player)
-            {
-                a.swing = 1.0;
+            match *e {
+                Event::Fire {
+                    player,
+                    weapon: Weapon::Hammer,
+                    ..
+                } => {
+                    if let Some(a) = self.anims.get_mut(&player) {
+                        a.swing = 1.0;
+                    }
+                }
+                Event::Damage { player, .. } => self.express(player, Expression::Pain, PAIN_TIME),
+                Event::Death {
+                    player,
+                    killer: Some(killer),
+                    ..
+                } if killer != player => self.express(killer, Expression::Happy, HAPPY_TIME),
+                _ => {}
             }
+        }
+    }
+
+    /// Ausdruck setzen; Freude wird von kurzem Schmerz nicht sofort überschrieben,
+    /// Schmerz aber von Freude.
+    fn express(&mut self, slot: usize, expression: Expression, time: f32) {
+        if let Some(a) = self.anims.get_mut(&slot) {
+            if a.expression == Expression::Happy && expression == Expression::Pain {
+                return;
+            }
+            a.expression = expression;
+            a.expression_left = time;
         }
     }
 
@@ -210,12 +269,16 @@ impl Figures {
         let look = Vec2::new(aim.x * facing, aim.y) * EYES_LOOK;
         #[allow(clippy::cast_precision_loss)]
         let t = self.time + c.slot as f32 * 1.37;
-        let blink = if t % 4.3 > 4.18 { 0.15 } else { 1.0 };
+        let (mesh, blink) = match state.expression {
+            Expression::Normal => (&art.eyes, if t % 4.3 > 4.18 { 0.15 } else { 1.0 }),
+            Expression::Pain => (&art.eyes_pain, 1.0),
+            Expression::Happy => (&art.eyes_happy, 1.0),
+        };
         let eyes = root
             .then(Affine::translate(EYES_CENTER + look))
             .then(Affine::scale(1.0, blink))
             .then(Affine::translate(-EYES_CENTER));
-        batch.draw_mesh(&art.eyes, &eyes, tint);
+        batch.draw_mesh(mesh, &eyes, tint);
     }
 }
 
@@ -229,6 +292,7 @@ mod tests {
     /// danach `cargo xtask svg-preview target/figure-poses.svg target/figure-poses.png 1200`.
     #[test]
     #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
+    #[allow(clippy::too_many_lines)] // eine Pose je Zeile
     fn pose_sheet() {
         let art = FigureArt::load();
         let mut figures = Figures::default();
@@ -267,6 +331,20 @@ mod tests {
                 -0.35,
                 Vec2::new(1.0, 0.0),
             ),
+            (
+                "Schmerz",
+                Vec2::new(0.0, 0.0),
+                true,
+                0.0,
+                Vec2::new(1.0, 0.0),
+            ),
+            (
+                "Freude",
+                Vec2::new(0.0, 0.0),
+                true,
+                0.0,
+                Vec2::new(-1.0, 0.0),
+            ),
         ];
         let tint = crate::skins::tint(elora_protocol::Skin::default(), Team::None, false, |_| {
             Color::hex(0)
@@ -290,6 +368,12 @@ mod tests {
                 Anim {
                     grounded: *grounded,
                     squash: *squash,
+                    expression: match i {
+                        7 => Expression::Pain,
+                        8 => Expression::Happy,
+                        _ => Expression::Normal,
+                    },
+                    expression_left: 1.0,
                     ..Anim::default()
                 },
             );
@@ -308,12 +392,12 @@ mod tests {
         }
         batch.fill_rect(
             Vec2::new(0.0, ground),
-            Vec2::new(460.0, ground + 12.0),
+            Vec2::new(580.0, ground + 12.0),
             Color::hex(0x5b6b7c),
         );
         let svg = batch.debug_svg(
             Vec2::new(0.0, 30.0),
-            Vec2::new(460.0, 115.0),
+            Vec2::new(580.0, 115.0),
             Color::hex(0x8fb8d9),
         );
         std::fs::write(
@@ -326,7 +410,14 @@ mod tests {
     #[test]
     fn asset_has_all_parts() {
         let art = FigureArt::load();
-        for m in [&art.body, &art.eyes, &art.foot_back, &art.foot_front] {
+        for m in [
+            &art.body,
+            &art.eyes,
+            &art.eyes_pain,
+            &art.eyes_happy,
+            &art.foot_back,
+            &art.foot_front,
+        ] {
             assert!(!m.is_empty());
         }
         // Füße berühren den Boden (Ursprung), Körper steht darüber

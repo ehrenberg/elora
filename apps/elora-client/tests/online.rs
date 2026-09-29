@@ -221,6 +221,28 @@ fn skins_are_shared_and_updated() {
 }
 
 #[test]
+fn emotes_reach_everyone_with_spam_protection() {
+    let mut g = Game::new(lag(20));
+    g.join("A");
+    g.join("B");
+    g.run(1000, false);
+    for p in &mut g.players {
+        p.online.take_emotes();
+    }
+    let slot_a = g.players[0].online.slot.unwrap();
+    g.players[0].online.emote(1);
+    g.players[0].online.emote(2); // zu schnell hintereinander → verworfen
+    g.run(300, false);
+    for p in &mut g.players {
+        assert_eq!(p.online.take_emotes(), vec![(slot_a, 1)]);
+    }
+    g.run(800, false);
+    g.players[0].online.emote(6);
+    g.run(300, false);
+    assert_eq!(g.players[1].online.take_emotes(), vec![(slot_a, 6)]);
+}
+
+#[test]
 fn survives_loss_and_jitter() {
     let bad = Conditions {
         latency: Duration::from_millis(40),

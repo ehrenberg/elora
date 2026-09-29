@@ -8,6 +8,7 @@ use std::collections::BTreeMap;
 use elora_protocol::Skin;
 
 use crate::effects::Effects;
+use crate::emotes::Emotes;
 use crate::figure::{FigureArt, Figures};
 use crate::items::ItemArt;
 use crate::skins;
@@ -19,6 +20,7 @@ pub struct Looks<'a> {
     pub figures: &'a Figures,
     pub art: &'a FigureArt,
     pub items: &'a ItemArt,
+    pub emotes: &'a Emotes,
     /// Skins der anderen Slots (online).
     pub skins: &'a BTreeMap<usize, Skin>,
     /// Eigener Skin (sofort sichtbar, ohne Umweg über den Server).
@@ -66,6 +68,7 @@ pub fn scene(
         figures,
         art,
         items,
+        emotes,
         skins,
         own_skin,
     } = *looks;
@@ -148,6 +151,7 @@ pub fn scene(
         );
     }
     effects.draw(batch);
+    emotes.draw(batch, scene);
 
     // Fadenkreuz
     if let Some(local) = scene.local() {
@@ -322,6 +326,7 @@ mod tests {
                 figures: &figures,
                 art: &FigureArt::load(),
                 items: &ItemArt::load(),
+                emotes: &Emotes::new(),
                 skins: &BTreeMap::new(),
                 own_skin: Skin::default(),
             },

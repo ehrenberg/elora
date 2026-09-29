@@ -28,6 +28,8 @@ const HISTORY: usize = 100;
 const MAX_INPUT_AHEAD: u64 = 2 * TICKS_PER_SECOND as u64;
 /// Spam-Schutz: Mindestabstand zwischen zwei Chat-Nachrichten.
 const CHAT_INTERVAL: Duration = Duration::from_millis(700);
+/// Mindestabstand zwischen zwei Emotes eines Spielers (Spam-Schutz).
+const EMOTE_INTERVAL: Duration = Duration::from_millis(1000);
 /// Sperre nach einem Kick per Abstimmung (E-077).
 const KICK_BAN: Duration = Duration::from_mins(5);
 
@@ -48,6 +50,7 @@ struct Client {
     acked: Option<u64>,
     events: Vec<Event>,
     last_chat: Option<Instant>,
+    last_emote: Option<Instant>,
     ip: Option<IpAddr>,
 }
 
@@ -62,6 +65,7 @@ impl Client {
             acked: None,
             events: Vec::new(),
             last_chat: None,
+            last_emote: None,
             ip,
         }
     }
@@ -300,6 +304,36 @@ impl<S: Socket> GameServer<S> {
         self.endpoint.send(id, &vote.encode(), true);
     }
 
+    /// Emote verteilen, höchstens eins je [`EMOTE_INTERVAL`].
+    fn on_emote(&mut self, id: u32, emote: u8, now: Instant) {
+        let Some(client) = self.clients.get_mut(&id) else {
+            return;
+        };
+        let Some(slot) = client.slot else { return };
+        if client.last_emote.is_some_and(|t| now - t < EMOTE_INTERVAL) {
+            return;
+        }
+        client.last_emote = Some(now);
+        self.broadcast(&ServerMsg::Emote {
+            slot: u32::try_from(slot).unwrap_or(0),
+            emote,
+        });
+    }
+
+    fn on_set_skin(&mut self, id: u32, skin: Skin) {
+        let Some(client) = self.clients.get_mut(&id) else {
+            return;
+        };
+        let Some(slot) = client.slot else { return };
+        client.skin = skin;
+        let info = ServerMsg::PlayerInfo {
+            slot: u32::try_from(slot).unwrap_or(0),
+            name: Some(client.name.clone()),
+            skin,
+        };
+        self.broadcast(&info);
+    }
+
     fn message(&mut self, id: u32, msg: ClientMsg, now: Instant) {
         let Some(client) = self.clients.get_mut(&id) else {
             return;
@@ -341,16 +375,8 @@ impl<S: Socket> GameServer<S> {
                 self.notice(&format!("{name} ist beigetreten"));
             }
             ClientMsg::Input { ack, inputs } => self.on_input(id, ack, inputs, now),
-            ClientMsg::SetSkin(skin) => {
-                let Some(slot) = slot else { return };
-                client.skin = skin;
-                let info = ServerMsg::PlayerInfo {
-                    slot: u32::try_from(slot).unwrap_or(0),
-                    name: Some(client.name.clone()),
-                    skin,
-                };
-                self.broadcast(&info);
-            }
+            ClientMsg::Emote(emote) => self.on_emote(id, emote, now),
+            ClientMsg::SetSkin(skin) => self.on_set_skin(id, skin),
             ClientMsg::Leave => self.endpoint.disconnect(id, "Verlassen", now),
             ClientMsg::Chat { team, text } => {
                 let Some(slot) = slot else { return };

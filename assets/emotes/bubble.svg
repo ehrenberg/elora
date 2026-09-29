@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="150" viewBox="-12 -30 24 30">
+  <!-- Sprechblase der Emotes (E-103). Welteinheiten, Ursprung = Spitze. -->
+  <path d="M -12,-25 Q -12,-29 -8,-29 H 8 Q 12,-29 12,-25 V -9 Q 12,-5 8,-5 H 3 L 0,0 L -3,-5 H -8 Q -12,-5 -12,-9 Z" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.4" stroke-linejoin="round"/>
+</svg>

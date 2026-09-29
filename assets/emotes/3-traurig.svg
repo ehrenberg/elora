@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="150" viewBox="-12 -30 24 30">
+  <!-- Emote Traurig (E-103). Welteinheiten, Ursprung = Spitze der Blase; y von -30 bis 0. -->
+  <g transform="translate(0,-15)">
+    <circle cx="-4" cy="-3" r="1.4" fill="#2b2b2b"/>
+    <circle cx="4" cy="-3" r="1.4" fill="#2b2b2b"/>
+    <path d="M -4,5 Q 0,1.5 4,5" fill="none" stroke="#2b2b2b" stroke-width="1.4" stroke-linecap="round"/>
+    <path d="M -5,0 Q -6.5,3 -5,4 Q -3.5,3 -5,0 Z" fill="#5aaee8"/>
+  </g>
+</svg>

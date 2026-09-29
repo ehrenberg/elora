@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="150" viewBox="-12 -30 24 30">
+  <!-- Emote GG (E-103). Welteinheiten, Ursprung = Spitze der Blase; y von -30 bis 0. -->
+  <g transform="translate(0,-15)">
+    <path d="M -1.9999999999999996,-3.2 A 3.4,4.2 0 1 0 -1.3999999999999995,1 V -0.4 H -3.9999999999999996" fill="none" stroke="#2b2b2b" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M -1.9999999999999996,-3.2 A 3.4,4.2 0 1 0 -1.3999999999999995,1 V -0.4 H -3.9999999999999996" fill="none" stroke="#6cbf4a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 6.0,-3.2 A 3.4,4.2 0 1 0 6.6,1 V -0.4 H 4.0" fill="none" stroke="#2b2b2b" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 6.0,-3.2 A 3.4,4.2 0 1 0 6.6,1 V -0.4 H 4.0" fill="none" stroke="#6cbf4a" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+</svg>

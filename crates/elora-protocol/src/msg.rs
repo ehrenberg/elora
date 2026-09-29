@@ -90,6 +90,9 @@ impl Skin {
     }
 }
 
+/// Anzahl der Emotes (E-091, E-103); Nummern `0..EMOTES`.
+pub const EMOTES: u8 = 8;
+
 /// Maximale Länge einer Chat-Nachricht (Zeichen).
 pub const MAX_CHAT: usize = 200;
 
@@ -117,6 +120,8 @@ pub enum ClientMsg {
     Vote(bool),
     /// Skin im laufenden Spiel ändern.
     SetSkin(Skin),
+    /// Emote zeigen (Nummer `0..EMOTES`).
+    Emote(u8),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -162,6 +167,20 @@ pub enum ServerMsg {
     Vote(Option<VoteInfo>),
     /// Hinweis des Servers (Rundenende, Abstimmung angenommen, …).
     Notice(String),
+    /// Spieler in `slot` zeigt ein Emote.
+    Emote {
+        slot: u32,
+        emote: u8,
+    },
+}
+
+fn emote(r: &mut Reader<'_>) -> DecodeResult<u8> {
+    let e = r.u8()?;
+    if e < EMOTES {
+        Ok(e)
+    } else {
+        Err(DecodeError::Invalid("Emote"))
+    }
 }
 
 fn put_input(w: &mut Writer, i: &PlayerInput) {
@@ -604,6 +623,10 @@ impl ClientMsg {
                 w.u8(8);
                 skin.put(&mut w);
             }
+            Self::Emote(e) => {
+                w.u8(9);
+                w.u8(*e);
+            }
         }
         w.into_bytes()
     }
@@ -658,6 +681,7 @@ impl ClientMsg {
             }),
             7 => Self::Vote(r.bool()?),
             8 => Self::SetSkin(Skin::get(&mut r)?),
+            9 => Self::Emote(emote(&mut r)?),
             _ => return Err(DecodeError::Invalid("Nachricht")),
         };
         r.finish()?;
@@ -771,6 +795,11 @@ impl ServerMsg {
                 w.u8(8);
                 w.str(t);
             }
+            Self::Emote { slot, emote } => {
+                w.u8(9);
+                w.uvar(u64::from(*slot));
+                w.u8(*emote);
+            }
         }
         w.into_bytes()
     }
@@ -851,6 +880,10 @@ impl ServerMsg {
                 None
             }),
             8 => Self::Notice(r.str(MAX_TEXT)?.to_owned()),
+            9 => Self::Emote {
+                slot: r.uint("Slot")?,
+                emote: emote(&mut r)?,
+            },
             _ => return Err(DecodeError::Invalid("Nachricht")),
         };
         r.finish()?;
@@ -884,6 +917,7 @@ mod tests {
                 },
             },
             ClientMsg::SetSkin(Skin::default()),
+            ClientMsg::Emote(7),
             ClientMsg::Input {
                 ack: Some(1234),
                 inputs: vec![(100, input), (101, PlayerInput::default()), (102, input)],
@@ -1006,6 +1040,7 @@ mod tests {
             })),
             ServerMsg::Vote(None),
             ServerMsg::Notice("Rot gewinnt".into()),
+            ServerMsg::Emote { slot: 3, emote: 5 },
         ] {
             assert_eq!(ServerMsg::decode(&m.encode()).unwrap(), m);
         }
@@ -1022,6 +1057,10 @@ mod tests {
         bytes[5] = 4; // ZigZag 2
         assert!(ClientMsg::decode_raw(&bytes).is_err());
         assert!(ClientMsg::decode(&[9]).is_err());
+        assert!(
+            ClientMsg::decode_raw(&[9, EMOTES]).is_err(),
+            "Emote außerhalb"
+        );
         // Palettennummern außerhalb der Palette
         for skin in [[16, 0, 0], [0, 16, 0], [0, 0, 8]] {
             let mut bytes = ClientMsg::SetSkin(Skin::default()).encode_raw();

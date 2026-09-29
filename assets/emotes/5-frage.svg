@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="150" viewBox="-12 -30 24 30">
+  <!-- Emote Frage (E-103). Welteinheiten, Ursprung = Spitze der Blase; y von -30 bis 0. -->
+  <g transform="translate(0,-15)">
+    <path d="M -3.5,-5 Q -3.5,-9 0,-9 Q 4,-9 4,-5.5 Q 4,-3 0.5,-1.5 V 1.5" fill="none" stroke="#6a78e0" stroke-width="2.6" stroke-linecap="round"/>
+    <circle cx="0.5" cy="6" r="1.8" fill="#6a78e0"/>
+  </g>
+</svg>

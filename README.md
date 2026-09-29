@@ -2,7 +2,7 @@
 
 Ein 2D-Multiplayer-Arena-Shooter nach dem Vorbild von [Teeworlds](https://teeworlds.com) – eigene Figur, eigener Stil, gleiches Spielgefühl. Elora ist zugleich der Name der spielbaren Figur.
 
-**Stand:** M0–M4 abgeschlossen (Bewegung, Hook, Waffen, Dummies, Netzwerk, Spielmodi), M5 (Look & Sound) in Arbeit. Grafik ist noch Platzhalter (M5). Siehe [Roadmap](docs/06-roadmap.md).
+**Stand:** M0–M4 abgeschlossen (Bewegung, Hook, Waffen, Dummies, Netzwerk, Spielmodi), M5 (Look & Sound) in Arbeit: Figur, Skins, Welt, Effekte, HUD und Emotes stehen, Sound folgt. Siehe [Roadmap](docs/06-roadmap.md).
 
 ## Einrichtung unter Arch Linux
 
@@ -117,6 +117,7 @@ oder im Client: `Esc` → Panel *Netzwerk* → Adresse eintragen → *Verbinden*
 | K | Selbstmord (`kill`) |
 | T / Y | Chat / Team-Chat (Enter senden, Esc abbrechen; online) |
 | Tab (halten) | Scoreboard |
+| E (halten) | Emote-Rad: Maus in Richtung des Emotes, loslassen zeigt es |
 | F3 / F4 | Ja / Nein bei Abstimmungen |
 | F5 | Aufzeichnung starten/beenden (nur Sandbox, siehe unten) |
 
@@ -128,7 +129,7 @@ Team wählen, zuschauen und Abstimmungen (Karte, Modus, Kick, Zuschauer) starten
 
 | Datei | Zweck | im Git |
 |---|---|---|
-| `tuning.toml` | gespeicherte Regler-Werte der Sandbox (Panel → *Speichern*) | nein, lokal |
+| `tuning.toml` | gespeicherte Regler-Werte der Sandbox und Effekt-Schalter (Panel → *Speichern*) | nein, lokal |
 | `server.toml` | vom Client geschriebene Server-Konfiguration | nein |
 | `server_key.toml` | geheimer Server-Schlüssel – nicht weitergeben | nein |
 | `known_servers.toml` | bekannte Server-Schlüssel des Clients | nein |

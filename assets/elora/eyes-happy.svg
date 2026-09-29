@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="300" viewBox="-60 -140 120 150">
+  <!-- Augen „Freude“ (E-104): wie `eyes` in elora.svg, gleiche Koordinaten. tint-1 = Augenfarbe. -->
+  <g id="eyes">
+    <path id="tint-1" d="M -5,-60 Q 2,-74 9,-60" fill="none" stroke="#2b2b2b" stroke-width="4.5" stroke-linecap="round"/>
+    <path id="tint-1-b" d="M 19,-60 Q 26,-74 33,-60" fill="none" stroke="#2b2b2b" stroke-width="4.5" stroke-linecap="round"/>
+    <path d="M 7,-44 Q 16,-32 25,-44 Z" fill="#e05a7a" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round"/>
+  </g>
+</svg>

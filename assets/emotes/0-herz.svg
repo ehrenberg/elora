@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="150" viewBox="-12 -30 24 30">
+  <!-- Emote Herz (E-103). Welteinheiten, Ursprung = Spitze der Blase; y von -30 bis 0. -->
+  <g transform="translate(0,-15)">
+    <path d="M 0,6 C -9,0 -9,-8 -4,-8 C -2,-8 0,-6 0,-4.5 C 0,-6 2,-8 4,-8 C 9,-8 9,0 0,6 Z" fill="#e05a7a" stroke="#2b2b2b" stroke-width="1"/>
+  </g>
+</svg>

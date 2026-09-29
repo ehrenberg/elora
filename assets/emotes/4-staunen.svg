@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="150" viewBox="-12 -30 24 30">
+  <!-- Emote Staunen (E-103). Welteinheiten, Ursprung = Spitze der Blase; y von -30 bis 0. -->
+  <g transform="translate(0,-15)">
+    <path d="M 0,-9 V 1" fill="none" stroke="#e0b85a" stroke-width="3.2" stroke-linecap="round"/>
+    <circle cx="0" cy="6" r="1.8" fill="#e0b85a"/>
+  </g>
+</svg>
