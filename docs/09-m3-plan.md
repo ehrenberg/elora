@@ -1,6 +1,6 @@
 # M3 – Netzwerk: Umsetzungsplan
 
-Status: **angenommen** (E-057–E-064) · Grundlage: [`06-roadmap.md`](06-roadmap.md) M3, E-008, E-012, Analyse §10
+Status: **abgeschlossen** (E-065) · angenommen (E-057–E-064) · Grundlage: [`06-roadmap.md`](06-roadmap.md) M3, E-008, E-012, Analyse §10
 
 ## Ziel
 
@@ -19,7 +19,7 @@ Ein dedizierter Server, mehrere Clients über UDP. Die eigene Bewegung fühlt si
 | M3.7 ✅ | Client: Vorhersage | `elora-client` | Eingaben puffern und mit Ziel-Tick senden, Vorhersagezeit regeln (wie `INPUTTIMING`), vom Snapshot vorwärts rechnen, Korrektur bei Abweichung (siehe D-M3-03) | Test: Vorhersage = Server bei verlustfreier Leitung |
 | M3.8 ✅ | Lokal hosten | `elora-client` | „Server starten“ aus dem Client (siehe D-M3-06), dann automatisch verbinden | Manuell |
 | M3.9 ✅ | Debug & Messwerte | `elora-client` | Panel: Ping, Paketverlust, Bandbreite, Vorhersage-Ticks, Korrekturen; Netzwerk-Simulator-Regler | Sichtprüfung |
-| M3.10 | Abnahme | – | 2–8 Spieler im LAN, Test mit 100 ms simuliertem Ping | Deine Abnahme |
+| M3.10 ✅ | Abnahme | – | 2–8 Spieler im LAN, Test mit 100 ms simuliertem Ping | Deine Abnahme |
 
 ## Technische Festlegungen (Vorschlag)
 

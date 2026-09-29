@@ -125,11 +125,22 @@ Jeder Spieler hat immer **Hammer** und **Pistole**. Weitere Waffen per Pickup. M
 | **DM** | Deathmatch, jeder gegen jeden |
 | **TDM** | Team-Deathmatch, Rot vs. Blau |
 | **CTF** | Capture the Flag – Flagge des Gegners zur eigenen Basis bringen |
-| **LMS** (0.7) | Last Man Standing |
-| **LTS** (0.7) | Last Team Standing |
+| **LMS** (0.7) | Last Man Standing – kein Respawn in der Runde, Letzter gewinnt |
+| **LTS** (0.7) | Last Team Standing – wie LMS mit Teams |
 
-Einstellbar: Score-Limit, Zeitlimit, Warmup, Team-Balance, Friendly Fire.
 Community-Modi (nicht Vanilla): **DDRace** (kooperatives Parkour, Freeze-Tiles), **Instagib** (Varianten iDM/iTDM/iCTF: nur Laser, ein Treffer tötet; ob in 0.7 Vanilla enthalten, ist noch zu prüfen), zCatch, Race.
+
+**Regeln im Detail (Quellcode `gamecontroller.cpp`, `gamemodes/*.cpp`, `entities/flag.cpp`, 0.7):**
+
+- **Punkte:** Kill +1; Selbstmord/Todes-Tile −1; Teamkill −1 (nur Teammodi). TDM: Teampunkt ± wie Spielerpunkt.
+- **Siegbedingung:** `sv_scorelimit` (Standard **20**, 0 = aus) oder `sv_timelimit` (Minuten, Standard 0 = aus). Bei Gleichstand am Limit: **Sudden Death** (nächster Punkt entscheidet).
+- **Spielzustände:** Aufwärmen (`sv_warmup`, Standard 0 s; „Spiel-Warmup“ unbegrenzt, solange zu wenige Spieler: DM < 2, Teams: ein Team leer), Countdown (`sv_countdown`, Standard 0; Survival-Modi immer 3 s), laufend, pausiert, **Rundenende 5 s**, **Match-Ende 10 s**, dann nächstes Match (Teams tauschen: `sv_match_swap 1`; Kartenrotation `sv_maprotation`, `sv_matches_per_map 1`).
+- **Friendly Fire:** `sv_teamdamage 0` – kein Schaden an Teammitgliedern, **der Rückstoß wirkt trotzdem**; Eigenschaden bleibt.
+- **Respawn:** TDM mindestens **3 s** (`sv_respawn_delay_tdm`); nach `kill` (Selbstmord-Befehl) 3 s; sonst 0,5 s (siehe §7).
+- **Teams:** automatischer Ausgleich nach `sv_teambalance_time` (1 min) bei ungleichen Teams; Zuschauer möglich.
+- **CTF:** Flagge (Radius 14) wird von einem Gegner aufgenommen, wenn er sie berührt (14 + 28) und freie Sichtlinie hat. **Eroberung:** Träger berührt die eigene Flagge, während diese am Stand ist → Team +1 Eroberung, Träger +5 Punkte. Stirbt der Träger, fällt die Flagge (Gravitation, prallt mit 0,5 ab; Mörder +1). Eigenes Team berührt die fallengelassene Flagge → zurück zum Stand (+1). Ohne Berührung nach **30 s** oder auf Todes-Tile zurück. Aufnehmen vom Stand +1 Punkt.
+- **LMS/LTS:** kein Respawn während der Runde; Startausrüstung **+5 Rüstung, Shotgun, Granate (10), Laser (5)**; Runde endet, wenn ≤ 1 Spieler bzw. 1 Team übrig; Sieger +1. Zeitlimit: alle Überlebenden +1.
+- **Chat:** allgemein und Team-Chat, Spam-Schutz.
 
 ## 9. Steuerung (Default)
 

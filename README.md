@@ -2,7 +2,7 @@
 
 Ein 2D-Multiplayer-Arena-Shooter nach dem Vorbild von [Teeworlds](https://teeworlds.com) – eigene Figur, eigener Stil, gleiches Spielgefühl. Elora ist zugleich der Name der spielbaren Figur.
 
-**Stand:** M0–M2 abgeschlossen (Bewegung, Hook, Waffen, Dummies), M3 (Netzwerk) wartet auf Abnahme. Grafik ist noch Platzhalter (M5). Siehe [Roadmap](docs/06-roadmap.md).
+**Stand:** M0–M3 abgeschlossen (Bewegung, Hook, Waffen, Dummies, Netzwerk), M4 (Spielmodi) in Arbeit. Grafik ist noch Platzhalter (M5). Siehe [Roadmap](docs/06-roadmap.md).
 
 ## Einrichtung unter Arch Linux
 
@@ -134,7 +134,7 @@ ELORA_BLESS=1 cargo nextest run -p elora-sim --all-features
 **Netzwerk-Kompression:**
 
 ```sh
-cargo xtask net-stats        # Nachrichtengrößen für 8/16/64 Spieler messen
+cargo xtaska net-stats        # Nachrichtengrößen für 8/16/64 Spieler messen
 cargo xtask train-huffman    # Huffman-Tabelle neu trainieren (nach Änderungen am Snapshot-Format)
 ```
 
