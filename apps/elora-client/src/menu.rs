@@ -13,10 +13,10 @@ use elora_sim::{Team, Vec2};
 
 use crate::figure::FigureArt;
 use crate::lang::Lang;
+use crate::menu_browser::BrowserEdit;
 use crate::menu_settings::SettingsEdit;
 use crate::ui::{
-    self, BLUE, FieldEvent, GRAY, GREEN, LOGO, ORANGE, Rect, TEXT, TEXT_DIM, Ui, UiInput, UiState,
-    VIOLET,
+    self, BLUE, GRAY, GREEN, LOGO, ORANGE, Rect, TEXT, TEXT_DIM, Ui, UiInput, UiState, VIOLET,
 };
 
 /// Seiten des Hauptmenüs.
@@ -36,6 +36,8 @@ pub enum MenuAction {
     /// Server mit den Werten aus [`CreateForm`] starten und verbinden.
     Host,
     ToggleFavorite(String),
+    /// Einstellungen wurden außerhalb der Einstellungsseiten geändert (speichern).
+    SettingsChanged,
     Resume,
     ToMenu,
     Quit,
@@ -89,7 +91,10 @@ pub struct Menu {
     pub ui: UiState,
     pub input: UiInput,
     pub address: String,
-    pub selected_favorite: Option<usize>,
+    /// Server-Browser (M7.7) und zuletzt geladener Reiter.
+    pub browser: crate::browser::Browser,
+    pub browser_loaded: Option<crate::browser::Tab>,
+    pub master_input: String,
     pub create: CreateForm,
     /// Pause-Menü im Spiel offen.
     pub paused: bool,
@@ -130,14 +135,17 @@ impl Menu {
         );
         let mut changed = false;
         let page_action = match self.page {
-            Page::Play => play_page(
-                &mut ui,
-                cx,
-                content,
-                edit.name,
-                &mut self.address,
-                &mut self.selected_favorite,
-            ),
+            Page::Play => {
+                self.browser.poll(std::time::Instant::now());
+                let mut be = BrowserEdit {
+                    browser: &mut self.browser,
+                    loaded: &mut self.browser_loaded,
+                    address: &mut self.address,
+                    master_url: edit.master_url,
+                    master_input: &mut self.master_input,
+                };
+                play_page(&mut ui, cx, content, edit.name, &mut be)
+            }
             Page::Create => create_page(&mut ui, cx, content, &mut self.create),
             Page::Settings => {
                 changed = settings_page(&mut ui, cx, content, &mut self.settings_tab, edit);
@@ -311,18 +319,16 @@ fn top_bar(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, page: &mut Page) -> Option<MenuAct
     None
 }
 
-/// „Spielen“: Begrüßung und „Schnell spielen“ links, Direkt-Verbinden und Favoriten rechts.
+/// „Spielen“: Begrüßung und „Schnell spielen“ links, Server-Browser rechts (M7.7).
 fn play_page(
     ui: &mut Ui<'_>,
     cx: &MenuCtx<'_>,
     area: Rect,
     name: &str,
-    address: &mut String,
-    selected: &mut Option<usize>,
+    browser: &mut BrowserEdit<'_>,
 ) -> Option<MenuAction> {
     let s = cx.s;
     let lang = cx.lang;
-    let mut action = None;
     ui.label(
         lang.t("menu.welcome"),
         Vec2::new(area.min.x + 12.0 * s, area.min.y + 30.0 * s),
@@ -337,109 +343,14 @@ fn play_page(
         TEXT,
         Align::Left,
     );
-
-    action = quick_card(ui, cx, area).or(action);
-    let w = 380.0 * s;
+    let quick = quick_card(ui, cx, area);
     let card = Rect::new(
         area.min.x + 330.0 * s,
         area.min.y + 8.0 * s,
-        w.min(area.w() - 340.0 * s),
-        300.0 * s,
+        area.w() - 340.0 * s,
+        area.h() - 16.0 * s,
     );
-    ui.card(card);
-    let x = card.min.x + 18.0 * s;
-    ui.label(
-        lang.t("menu.address"),
-        Vec2::new(x, card.min.y + 22.0 * s),
-        11.0,
-        TEXT_DIM,
-        Align::Left,
-    );
-    let field = Rect::new(x, card.min.y + 34.0 * s, card.w() - 150.0 * s, 30.0 * s);
-    let submitted = ui.text_field("address", field, address, 64, lang.t("menu.address_hint"))
-        == FieldEvent::Submitted;
-    let btn = Rect::new(
-        field.max.x + 10.0 * s,
-        field.min.y,
-        card.max.x - field.max.x - 28.0 * s,
-        30.0 * s,
-    );
-    if (ui.button("connect", btn, lang.t("menu.connect"), GREEN) || submitted)
-        && !address.trim().is_empty()
-    {
-        action = Some(MenuAction::Connect(address.trim().to_owned()));
-    }
-    let fav = cx.favorites.iter().any(|f| f == address.trim());
-    let fav_label = lang.t(if fav {
-        "menu.remove_favorite"
-    } else {
-        "menu.add_favorite"
-    });
-    let fav_btn = Rect::new(
-        x,
-        field.max.y + 10.0 * s,
-        ui.text_width(fav_label, 11.0) + 30.0 * s,
-        24.0 * s,
-    );
-    if ui.button("fav", fav_btn, fav_label, ui::SAND) && !address.trim().is_empty() {
-        action = Some(MenuAction::ToggleFavorite(address.trim().to_owned()));
-    }
-
-    ui.label(
-        lang.t("menu.favorites"),
-        Vec2::new(x, fav_btn.max.y + 22.0 * s),
-        13.0,
-        TEXT,
-        Align::Left,
-    );
-    let list = Rect::new(
-        x,
-        fav_btn.max.y + 34.0 * s,
-        card.w() - 36.0 * s,
-        card.max.y - fav_btn.max.y - 44.0 * s,
-    );
-    action = favorites_list(ui, cx, list, address, selected).or(action);
-    ui.label(
-        lang.t("menu.browser_soon"),
-        Vec2::new(card.min.x, card.max.y + 22.0 * s),
-        11.0,
-        TEXT_DIM,
-        Align::Left,
-    );
-    action
-}
-
-/// Favoritenliste: Klick übernimmt die Adresse, Doppelklick verbindet.
-fn favorites_list(
-    ui: &mut Ui<'_>,
-    cx: &MenuCtx<'_>,
-    list: Rect,
-    address: &mut String,
-    selected: &mut Option<usize>,
-) -> Option<MenuAction> {
-    let s = cx.s;
-    let lang = cx.lang;
-    let mut action = None;
-    if cx.favorites.is_empty() {
-        ui.label(
-            lang.t("menu.no_favorites"),
-            list.min + Vec2::new(8.0, 34.0) * s,
-            11.0,
-            TEXT_DIM,
-            Align::Left,
-        );
-    } else {
-        let rows: Vec<Vec<String>> = cx.favorites.iter().map(|f| vec![f.clone()]).collect();
-        let cols = [(8.0, lang.t("menu.address"))];
-        if let Some((i, double)) = ui.list("favorites", list, &cols, &rows, *selected) {
-            *selected = Some(i);
-            address.clone_from(&cx.favorites[i]);
-            if double {
-                action = Some(MenuAction::Connect(cx.favorites[i].clone()));
-            }
-        }
-    }
-    action
+    crate::menu_browser::card(ui, cx, card, browser).or(quick)
 }
 
 /// Karte „Schnell spielen“: letzter Server mit „Los!“.
@@ -643,6 +554,7 @@ mod tests {
     /// danach je Seite `cargo xtask svg-preview target/menu-<seite>.svg target/menu-<seite>.png 1280`.
     #[test]
     #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
+    #[allow(clippy::too_many_lines)] // Beispieldaten für alle Seiten
     fn menu_sheet() {
         let font = Font::new(include_bytes!("../../../assets/fonts/Inter-Regular.ttf")).unwrap();
         let lang = Lang::new(Language::De);
@@ -657,15 +569,89 @@ mod tests {
             ("steuerung", Page::Settings),
             ("pause", Page::Play),
         ] {
+            let mut browser = crate::browser::Browser::default();
+            browser.tab = crate::browser::Tab::Favorites;
+            let info = |name: &str,
+                        map: &str,
+                        mode: &str,
+                        clients: u32,
+                        players: Vec<elora_protocol::InfoPlayer>| {
+                elora_protocol::ServerInfo {
+                    version: elora_protocol::PROTOCOL_VERSION,
+                    name: name.into(),
+                    map: map.into(),
+                    mode: mode.into(),
+                    clients,
+                    max_clients: 8,
+                    players,
+                }
+            };
+            let p = |name: &str, score: i32, team: Team, dummy: bool| elora_protocol::InfoPlayer {
+                name: name.into(),
+                score,
+                team,
+                dummy,
+            };
+            let entries = [
+                (
+                    "127.0.0.1:8303",
+                    info(
+                        "Eloras Wiese",
+                        "ctf-test",
+                        "CTF",
+                        5,
+                        vec![
+                            p("Nimbus", 12, Team::Red, false),
+                            p("Pip", 7, Team::Blue, false),
+                            p("Tropf", 4, Team::Red, false),
+                            p("Kiesel", 3, Team::Blue, false),
+                            p("Moos", 1, Team::Red, false),
+                            p("Dummy 6", 0, Team::Blue, true),
+                        ],
+                    ),
+                    24,
+                ),
+                (
+                    "192.168.0.20:8303",
+                    info(
+                        "Tropfen-Arena",
+                        "sandbox",
+                        "DM",
+                        3,
+                        vec![p("Elora", 9, Team::None, false)],
+                    ),
+                    41,
+                ),
+                (
+                    "10.0.0.5:8304",
+                    info("Nachtschicht", "sandbox", "iDM", 8, vec![]),
+                    63,
+                ),
+            ];
+            for (a, i, ping) in entries {
+                browser.insert(crate::browser::Entry {
+                    addr: a.parse().unwrap(),
+                    state: crate::browser::State::Online {
+                        info: i,
+                        ping: std::time::Duration::from_millis(ping),
+                    },
+                });
+            }
+            browser.insert(crate::browser::Entry {
+                addr: "10.0.0.9:8303".parse().unwrap(),
+                state: crate::browser::State::Unreachable,
+            });
+            browser.selected = Some("127.0.0.1:8303".parse().unwrap());
             let mut menu = Menu {
                 page,
+                browser,
+                browser_loaded: Some(crate::browser::Tab::Favorites),
                 settings_tab: match name {
                     "grafik" => 2,
                     "steuerung" => 1,
                     _ => 0,
                 },
                 address: "127.0.0.1:8303".into(),
-                selected_favorite: Some(0),
                 ..Menu::default()
             };
             let cx = MenuCtx {
@@ -704,6 +690,7 @@ mod tests {
                     language: &mut language,
                     bindings: &mut bindings,
                     capture: &mut capture,
+                    master_url: &mut String::new(),
                     audio_device: true,
                 };
                 menu.draw_main(&mut batch, &cx, &mut edit);

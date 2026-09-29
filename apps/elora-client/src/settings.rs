@@ -55,6 +55,8 @@ pub struct Settings {
     pub favorites: Vec<String>,
     /// Zuletzt verbundener Server („Schnell spielen“).
     pub last_server: Option<String>,
+    /// Master-Server für die Internet-Liste (HTTPS, E-112/E-127); leer = keiner (O-47).
+    pub master_url: String,
 }
 
 impl Default for Settings {
@@ -69,6 +71,7 @@ impl Default for Settings {
             bindings: crate::bindings::Bindings::default(),
             favorites: Vec::new(),
             last_server: None,
+            master_url: String::new(),
         }
     }
 }

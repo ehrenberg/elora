@@ -56,7 +56,7 @@ Alle Befehle werden aus dem Projektordner ausgeführt (Karten liegen in `maps/`)
 cargo run --bin elora                               # startet ins Hauptmenü
 ```
 
-Im Hauptmenü: **Spielen** (Direkt-Verbinden, Favoriten, „Schnell spielen“ = letzter Server), **Training** (Sandbox), **Server erstellen** (startet einen eigenen Server und verbindet), **Einstellungen**, **Beenden**. Im Spiel öffnet Esc das Pause-Menü.
+Im Hauptmenü: **Spielen** (Server-Browser mit Internet – braucht eine Master-Adresse –, LAN und Favoriten; Direkt-Verbinden; „Schnell spielen“ = letzter Server), **Training** (Sandbox), **Server erstellen** (startet einen eigenen Server und verbindet), **Einstellungen**, **Beenden**. Im Spiel öffnet Esc das Pause-Menü.
 
 ### Sandbox direkt starten (Entwicklung)
 

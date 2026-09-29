@@ -35,6 +35,7 @@ elora-protocol.workspace = true
 elora-net.workspace = true
 elora-server = { path = "../elora-server" }
 elora-game.workspace = true
+elora-master = { workspace = true, features = ["client"] }
 
 [lints]
 workspace = true

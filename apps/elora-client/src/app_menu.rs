@@ -76,6 +76,7 @@ impl App {
             language: &mut self.settings.language,
             bindings: &mut self.settings.bindings,
             capture: &mut self.bind_capture,
+            master_url: &mut self.settings.master_url,
             audio_device,
         };
         let (action, changed) = self.menu.draw_main(&mut self.hud_batch, &cx, &mut edit);
@@ -196,6 +197,7 @@ impl App {
                 self.settings.toggle_favorite(&address);
                 self.save_settings();
             }
+            MenuAction::SettingsChanged => self.save_settings(),
             MenuAction::Resume => {
                 self.menu.paused = false;
                 self.set_cursor_grab(true);

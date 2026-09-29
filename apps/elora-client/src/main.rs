@@ -5,6 +5,7 @@
 
 mod app_menu;
 mod bindings;
+mod browser;
 mod connection;
 mod controls;
 mod debug_ui;
@@ -19,6 +20,7 @@ mod hud;
 mod items;
 mod lang;
 mod menu;
+mod menu_browser;
 mod menu_settings;
 mod sandbox;
 mod settings;

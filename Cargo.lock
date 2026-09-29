@@ -738,6 +738,7 @@ dependencies = [
  "elora-audio",
  "elora-game",
  "elora-map",
+ "elora-master",
  "elora-net",
  "elora-protocol",
  "elora-render",

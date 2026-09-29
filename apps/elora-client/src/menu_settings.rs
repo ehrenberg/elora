@@ -33,6 +33,8 @@ pub struct SettingsEdit<'a> {
     pub bindings: &'a mut Bindings,
     /// Aktion, die gerade auf eine neue Taste wartet.
     pub capture: &'a mut Option<GameAction>,
+    /// Master-Server für die Internet-Liste (im Browser eingetragen).
+    pub master_url: &'a mut String,
     /// Audiogerät vorhanden?
     pub audio_device: bool,
 }
