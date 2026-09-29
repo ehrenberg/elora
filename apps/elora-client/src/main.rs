@@ -105,6 +105,17 @@ struct Online {
     conn: Connection,
 }
 
+/// Spielinformationen eines Frames für HUD, Anzeigen und Panel.
+struct FrameInfo {
+    names: std::collections::BTreeMap<usize, String>,
+    teams: std::collections::BTreeMap<usize, elora_sim::Team>,
+    view: Option<elora_protocol::GameView>,
+    local: Option<usize>,
+    tick: u64,
+    vote: Option<elora_protocol::VoteInfo>,
+    chat: Vec<elora_client::online::ChatLine>,
+}
+
 struct App {
     gfx: Option<Gfx>,
     sandbox: Sandbox,
@@ -411,42 +422,34 @@ impl App {
         })
     }
 
-    /// Namen, Teams, Spielzustand, eigener Slot, Tick und Abstimmung.
-    #[allow(clippy::type_complexity)]
-    fn game_info(
-        &self,
-        now: Instant,
-    ) -> (
-        std::collections::BTreeMap<usize, String>,
-        std::collections::BTreeMap<usize, elora_sim::Team>,
-        Option<elora_protocol::GameView>,
-        Option<usize>,
-        u64,
-        Option<elora_protocol::VoteInfo>,
-    ) {
+    /// Namen, Teams, Spielzustand, eigener Slot, Tick, Abstimmung und Chat des Frames.
+    fn game_info(&self, now: Instant) -> FrameInfo {
         match &self.online {
-            Some(o) => (
-                o.client.names.clone(),
-                o.client.teams(),
-                o.client.game(),
-                o.client.slot,
-                o.client.server_tick(now).unwrap_or(0),
-                o.client.vote.clone(),
-            ),
-            None => (
-                self.sandbox.names(),
-                self.sandbox
+            Some(o) => FrameInfo {
+                names: o.client.names.clone(),
+                teams: o.client.teams(),
+                view: o.client.game(),
+                local: o.client.slot,
+                tick: o.client.server_tick(now).unwrap_or(0),
+                vote: o.client.vote.clone(),
+                chat: o.client.chat.iter().cloned().collect(),
+            },
+            None => FrameInfo {
+                names: self.sandbox.names(),
+                teams: self
+                    .sandbox
                     .world
                     .players
                     .iter()
                     .enumerate()
                     .filter_map(|(i, p)| Some((i, p.as_ref()?.team)))
                     .collect(),
-                self.sandbox.game(),
-                Some(self.sandbox.player),
-                self.sandbox.world.tick,
-                None,
-            ),
+                view: self.sandbox.game(),
+                local: Some(self.sandbox.player),
+                tick: self.sandbox.world.tick,
+                vote: None,
+                chat: self.sandbox.notices.iter().cloned().collect(),
+            },
         }
     }
 
@@ -521,14 +524,7 @@ impl App {
     }
 
     /// HUD des Frames in `self.hud_batch` sammeln; liefert die Bildschirmgröße.
-    fn build_hud(
-        &mut self,
-        scene: &Scene,
-        tuning: &Tuning,
-        view: Option<&elora_protocol::GameView>,
-        tick: u64,
-        local: Option<usize>,
-    ) -> Vec2 {
+    fn build_hud(&mut self, scene: &Scene, tuning: &Tuning, info: &FrameInfo) -> Vec2 {
         let size = self.gfx.as_ref().map_or((1, 1), |g| g.renderer.size());
         #[allow(clippy::cast_precision_loss)]
         let screen = Vec2::new(size.0 as f32, size.1 as f32);
@@ -540,9 +536,28 @@ impl App {
             &hud::HudInfo {
                 character: scene.local().map(|c| &c.ch),
                 max_health: tuning.max_health,
-                view,
-                tick,
-                local,
+                view: info.view.as_ref(),
+                tick: info.tick,
+                local: info.local,
+            },
+        );
+        game_ui::draw(
+            &mut self.hud_batch,
+            self.hud.font(),
+            &self.item_art,
+            screen,
+            hud::scale(screen),
+            &game_ui::GameUi {
+                view: info.view.as_ref(),
+                names: &info.names,
+                teams: &info.teams,
+                local: info.local,
+                chat: &info.chat,
+                input: &self.chat_input,
+                scoreboard: self.scoreboard,
+                vote: info.vote.as_ref(),
+                killfeed: &self.killfeed,
+                time: self.figures.time(),
             },
         );
         if self.emotes.wheel_open {
@@ -570,7 +585,8 @@ impl App {
             return;
         };
         self.update_looks(elapsed.as_secs_f32(), &scene, &collision, &events);
-        let (names, teams, view, local_slot, tick, vote) = self.game_info(now);
+        let info = self.game_info(now);
+        game_ui::record_kills(&mut self.killfeed, &events, &info.names, &info.teams, now);
 
         let Some(aspect) = self.gfx.as_ref().map(|g| g.renderer.aspect()) else {
             return;
@@ -581,7 +597,7 @@ impl App {
             aspect,
         );
         self.build_batch(&scene, &collision, &tuning, &camera);
-        let screen = self.build_hud(&scene, &tuning, view.as_ref(), tick, local_slot);
+        let screen = self.build_hud(&scene, &tuning, &info);
         let Some(gfx) = &mut self.gfx else { return };
 
         let Some(mut frame) = gfx.renderer.begin_frame() else {
@@ -596,15 +612,8 @@ impl App {
         gfx.renderer
             .draw_overlay(&mut frame, &screen_camera, &self.hud_batch);
 
-        // Spielinformationen für Anzeigen und Panel
-        game_ui::record_kills(&mut self.killfeed, &events, &names, now);
-        let chat: Vec<elora_client::online::ChatLine> = match &self.online {
-            Some(o) => o.client.chat.iter().cloned().collect(),
-            None => self.sandbox.notices.iter().cloned().collect(),
-        };
-
+        // Debug-Panel (egui, E-031)
         let mut action = None;
-        let mut ui_action = None;
         let show_panel = self.show_panel;
         let online_view = self.online.as_ref().map(|o| OnlineView {
             client: &o.client,
@@ -612,7 +621,7 @@ impl App {
             server: o.conn.server,
         });
         let is_online = online_view.is_some();
-        let team_mode = view.as_ref().is_some_and(|v| v.mode.teams());
+        let team_mode = info.view.as_ref().is_some_and(|v| v.mode.teams());
         let mut cx = debug_ui::Context {
             sandbox: if is_online {
                 None
@@ -627,24 +636,12 @@ impl App {
             fps: self.fps,
             status: &self.status,
             cursor_grabbed: self.cursor_grabbed,
-            names: &names,
-            local: local_slot,
+            names: &info.names,
+            local: info.local,
             team_mode,
-            vote_running: vote.is_some(),
-        };
-        let mut game = game_ui::GameUi {
-            view: view.as_ref(),
-            names: &names,
-            teams: &teams,
-            local: local_slot,
-            chat,
-            input: &mut self.chat_input,
-            scoreboard: self.scoreboard,
-            vote: vote.as_ref(),
-            killfeed: &self.killfeed,
+            vote_running: info.vote.is_some(),
         };
         gfx.gui.draw(&gfx.window, &gfx.renderer, &mut frame, |ui| {
-            ui_action = ui_action.take().or(game_ui::draw(ui, &mut game));
             if show_panel || cx.net.key_warning.is_some() {
                 action = action.take().or(debug_ui::panel(ui, &mut cx));
             }
@@ -653,15 +650,39 @@ impl App {
         if let Some(action) = action {
             self.apply(action);
         }
-        match ui_action {
-            Some(game_ui::UiAction::SendChat { team, text }) => {
-                if let Some(o) = &mut self.online {
-                    o.client.send_chat(team, &text);
+    }
+
+    /// Tastatur bei offenem Chat: Enter sendet, Esc bricht ab, Rücktaste löscht.
+    fn chat_key(&mut self, code: KeyCode, event: &KeyEvent) {
+        if !event.state.is_pressed() {
+            return;
+        }
+        match code {
+            KeyCode::Enter | KeyCode::NumpadEnter => {
+                let text = std::mem::take(&mut self.chat_input.text);
+                if !text.trim().is_empty()
+                    && let Some(o) = &mut self.online
+                {
+                    o.client.send_chat(self.chat_input.team, &text);
                 }
                 self.chat_input.open = false;
             }
-            Some(game_ui::UiAction::CloseChat) => self.chat_input.open = false,
-            None => {}
+            KeyCode::Escape => {
+                self.chat_input.text.clear();
+                self.chat_input.open = false;
+            }
+            KeyCode::Backspace => {
+                self.chat_input.text.pop();
+            }
+            _ => {
+                if let Some(text) = &event.text {
+                    for c in text.chars().filter(|c| !c.is_control()) {
+                        if self.chat_input.text.chars().count() < elora_protocol::msg::MAX_CHAT {
+                            self.chat_input.text.push(c);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -675,7 +696,8 @@ impl App {
             return;
         }
         if self.chat_input.open {
-            return; // Tastatur gehört dem Chat-Feld
+            self.chat_key(code, event); // Tastatur gehört dem Chat-Feld
+            return;
         }
         // Emote-Rad solange E gehalten wird (E-091); beim Loslassen wählen
         if code == KeyCode::KeyE {
@@ -760,8 +782,8 @@ impl ApplicationHandler for App {
     }
 
     fn window_event(&mut self, event_loop: &ActiveEventLoop, _: WindowId, event: WindowEvent) {
-        // Solange die Maus frei ist (oder der Chat offen), bekommt egui die Eingaben zuerst
-        let to_gui = !self.cursor_grabbed || self.chat_input.open;
+        // Solange die Maus frei ist, bekommt egui (Debug-Panel) die Eingaben zuerst
+        let to_gui = !self.cursor_grabbed;
         if to_gui
             && let Some(gfx) = &mut self.gfx
             && gfx.gui.on_window_event(&gfx.window, &event)

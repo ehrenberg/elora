@@ -49,6 +49,11 @@ impl Hud {
         }
     }
 
+    /// Schrift der Spiel-UI (auch für die Spielanzeigen).
+    pub fn font(&self) -> &Font {
+        &self.font
+    }
+
     /// Zeichnet das HUD für eine Fläche von `screen` Pixeln.
     pub fn draw(&self, batch: &mut ShapeBatch, items: &ItemArt, screen: Vec2, info: &HudInfo<'_>) {
         let s = scale(screen);
