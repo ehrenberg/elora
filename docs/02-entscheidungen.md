@@ -104,6 +104,9 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-095 | 2026-09-29 | Skin-Teile (O-46) | Färbbar sind **Augen, Körper, Füße** – **nur Farben**, keine Form-Varianten je Teil | Entscheidung Projektinhaber |
 | E-096 | 2026-09-29 | Farbwahl (O-46) | **Feste Palette** je Teil, keine freien Regler; Farben der Palette als Entwurf zur Freigabe | Entscheidung Projektinhaber |
 | E-097 | 2026-09-29 | Bauchfleck (O-46) | Kein eigenes Teil – **hellere Abstufung der Körperfarbe** | Entscheidung Projektinhaber |
+| E-098 | 2026-09-29 | Skin-Palette | Entwurf [`design/elora-palette.png`](design/elora-palette.png) freigegeben: 16 Farben für Körper und Füße, 8 für Augen | Entscheidung Projektinhaber |
+| E-099 | 2026-09-29 | Skins in Team-Modi | Körper in **Teamfarbe**, Füße und Augen behalten die Farben des Spielers | Entscheidung Projektinhaber |
+| E-100 | 2026-09-29 | Huffman-Tabelle | Neu trainierte Tabelle (Commit `3a550bc`) wird behalten | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 

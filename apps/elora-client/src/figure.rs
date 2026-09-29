@@ -11,7 +11,7 @@
 use std::collections::HashMap;
 
 use elora_client::scene::{Scene, SceneChar};
-use elora_render::{Affine, Color, Mesh, ShapeBatch, SvgAsset, Tint};
+use elora_render::{Affine, Mesh, ShapeBatch, SvgAsset, Tint};
 use elora_sim::{Collision, HookState, PHYS_SIZE, Vec2};
 
 /// Welteinheiten je Asset-Einheit (sichtbarer Körper ≈ 36, E-087).
@@ -170,18 +170,10 @@ impl Figures {
     }
 }
 
-/// Farben einer Figur aus der Körperfarbe (bis zu den Skins in M5.4).
-pub fn tint_for(body: Color) -> Tint {
-    let mut colors = vec![Color::hex(0x2b2b2b); 3];
-    colors[KEY_EYES] = Color::hex(0x2b2b2b);
-    colors[KEY_BODY] = body;
-    colors[KEY_FEET] = elora_render::shade(body, -0.12);
-    Tint::new(colors)
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
+    use elora_render::Color;
     use elora_sim::{Character, Team};
 
     /// Posenblatt zur Sichtprüfung: `cargo test -p elora-client --bin elora pose_sheet -- --ignored`,
@@ -227,7 +219,9 @@ mod tests {
                 Vec2::new(1.0, 0.0),
             ),
         ];
-        let tint = tint_for(Color::hex(0xf2c14e));
+        let tint = crate::skins::tint(elora_protocol::Skin::default(), Team::None, false, |_| {
+            Color::hex(0)
+        });
         for (i, (_, vel, grounded, squash, aim)) in poses.iter().enumerate() {
             #[allow(clippy::cast_precision_loss)]
             let x = 40.0 + i as f32 * 60.0 + if i == 3 { 7.0 } else { 0.0 };

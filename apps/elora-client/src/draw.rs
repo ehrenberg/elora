@@ -3,7 +3,24 @@
 
 use elora_client::scene::Scene;
 
-use crate::figure::{FigureArt, Figures, tint_for};
+use std::collections::BTreeMap;
+
+use elora_protocol::Skin;
+
+use crate::figure::{FigureArt, Figures};
+use crate::skins;
+
+/// Alles, was neben der Szene zum Zeichnen der Figuren und Effekte gebraucht wird.
+#[derive(Debug, Clone, Copy)]
+pub struct Looks<'a> {
+    pub effects: &'a Effects,
+    pub figures: &'a Figures,
+    pub art: &'a FigureArt,
+    /// Skins der anderen Slots (online).
+    pub skins: &'a BTreeMap<usize, Skin>,
+    /// Eigener Skin (sofort sichtbar, ohne Umweg über den Server).
+    pub own_skin: Skin,
+}
 use elora_render::{Camera, Color, ShapeBatch};
 use elora_sim::Team;
 use elora_sim::{
@@ -15,7 +32,6 @@ const SOLID: Color = Color::hex(0x5b6b7c);
 const UNHOOKABLE: Color = Color::hex(0x3a4450);
 const DEATH: Color = Color::hex(0xc94f4f);
 const ELORA: Color = Color::hex(0xf2c14e);
-const DUMMY: Color = Color::hex(0xb59fd6);
 /// Andere menschliche Spieler (online, ohne Team).
 const OTHER: Color = Color::hex(0x7ccf8a);
 pub const RED: Color = Color::hex(0xe0574f);
@@ -146,8 +162,15 @@ pub fn scene(
     tuning: &Tuning,
     camera: &Camera,
     mouse_pos: Vec2,
-    (effects, figures, art): (&Effects, &Figures, &FigureArt),
+    looks: &Looks<'_>,
 ) {
+    let Looks {
+        effects,
+        figures,
+        art,
+        skins,
+        own_skin,
+    } = *looks;
     tiles(batch, collision, camera);
     spawns_and_pickups(batch, scene);
 
@@ -169,16 +192,20 @@ pub fn scene(
             let a = core.angle as f32 / 256.0;
             Vec2::new(a.cos(), a.sin())
         };
-        let body = match c.team {
-            Team::Red => RED,
-            Team::Blue => BLUE,
-            _ if c.dummy => DUMMY,
-            _ if c.local => ELORA,
-            _ => OTHER,
+        let skin = if c.local {
+            own_skin
+        } else {
+            skins.get(&c.slot).copied().unwrap_or_default()
         };
         let r = PHYS_SIZE / 2.0;
         weapon(batch, pos, aim, c.ch.arsenal.active);
-        figures.draw(batch, art, c, aim, &tint_for(body));
+        figures.draw(
+            batch,
+            art,
+            c,
+            aim,
+            &skins::tint(skin, c.team, c.dummy, team_color),
+        );
         if c.local && c.team.index().is_some() {
             // eigene Figur im Team: gelber Ring am Boden zur Unterscheidung
             batch.stroke_line(

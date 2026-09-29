@@ -14,6 +14,7 @@ mod hosting;
 mod hud;
 mod sandbox;
 mod settings;
+mod skins;
 
 use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
@@ -25,7 +26,7 @@ use elora_client::online::{OnlineClient, Status};
 use elora_client::scene::Scene;
 use elora_net::{ClientEvent, DisconnectReason};
 use elora_render::{Camera, Renderer, ShapeBatch, ViewSettings};
-use elora_sim::{Collision, Tuning};
+use elora_sim::{Collision, Event, Tuning};
 use winit::application::ApplicationHandler;
 use winit::dpi::LogicalSize;
 use winit::event::{DeviceEvent, DeviceId, ElementState, KeyEvent, WindowEvent};
@@ -113,6 +114,8 @@ struct App {
     effects: draw::Effects,
     figures: figure::Figures,
     figure_art: figure::FigureArt,
+    /// Leere Skin-Tabelle für die Sandbox.
+    no_skins: std::collections::BTreeMap<usize, elora_protocol::Skin>,
     last_frame: Instant,
     fps: f32,
     cursor_grabbed: bool,
@@ -145,6 +148,7 @@ impl App {
             effects: draw::Effects::default(),
             figures: figure::Figures::default(),
             figure_art: figure::FigureArt::load(),
+            no_skins: std::collections::BTreeMap::new(),
             last_frame: Instant::now(),
             fps: 0.0,
             cursor_grabbed: false,
@@ -182,7 +186,7 @@ impl App {
         match Connection::open(&address, expected, self.net.conditions()) {
             Ok(conn) => {
                 self.status = format!("Verbinde mit {} …", conn.server);
-                let client = OnlineClient::new(&self.net.name, Instant::now());
+                let client = OnlineClient::new(&self.net.name, self.net.skin, Instant::now());
                 self.online = Some(Online { client, conn });
                 self.sandbox.stop_recording("Online");
             }
@@ -432,21 +436,35 @@ impl App {
         }
     }
 
-    fn redraw(&mut self) {
-        let now = Instant::now();
+    /// Zeit seit dem letzten Frame; aktualisiert die FPS-Anzeige.
+    fn frame_time(&mut self, now: Instant) -> Duration {
         let elapsed = now - self.last_frame;
         self.last_frame = now;
         if elapsed.as_secs_f32() > 0.0 {
             self.fps = self.fps * 0.95 + (1.0 / elapsed.as_secs_f32()) * 0.05;
         }
+        elapsed
+    }
+
+    /// Effekte und Figuren-Animationen fortschreiben, eigenen Skin abgleichen.
+    fn update_looks(&mut self, dt: f32, scene: &Scene, collision: &Collision, events: &[Event]) {
+        self.effects.update(dt, events);
+        self.figures.update(dt, scene, collision);
+        if let Some(o) = &mut self.online {
+            // schickt nur bei Änderung eine Nachricht
+            o.client.set_skin(self.net.skin);
+        }
+    }
+
+    fn redraw(&mut self) {
+        let now = Instant::now();
+        let elapsed = self.frame_time(now);
 
         // Szene aus Sandbox oder Online-Spiel
         let Some((scene, collision, tuning, events)) = self.advance(now, elapsed) else {
             return;
         };
-        self.effects.update(elapsed.as_secs_f32(), &events);
-        self.figures
-            .update(elapsed.as_secs_f32(), &scene, &collision);
+        self.update_looks(elapsed.as_secs_f32(), &scene, &collision, &events);
         let (names, teams, view, local_slot, tick, vote) = self.game_info(now);
 
         let Some(gfx) = &mut self.gfx else { return };
@@ -459,7 +477,16 @@ impl App {
             &tuning,
             &camera,
             self.controls.mouse_pos,
-            (&self.effects, &self.figures, &self.figure_art),
+            &draw::Looks {
+                effects: &self.effects,
+                figures: &self.figures,
+                art: &self.figure_art,
+                skins: self
+                    .online
+                    .as_ref()
+                    .map_or(&self.no_skins, |o| &o.client.skins),
+                own_skin: self.net.skin,
+            },
         );
 
         let Some(mut frame) = gfx.renderer.begin_frame() else {

@@ -49,6 +49,8 @@ pub struct KeyWarning {
 pub struct NetUi {
     pub address: String,
     pub name: String,
+    /// Eigener Skin (M5.4).
+    pub skin: elora_protocol::Skin,
     /// Simulator (ausgehende Pakete dieses Clients).
     pub latency_ms: f32,
     pub jitter_ms: f32,
@@ -72,6 +74,7 @@ impl Default for NetUi {
         Self {
             address: "127.0.0.1:8303".into(),
             name: "Elora".into(),
+            skin: elora_protocol::Skin::default(),
             latency_ms: 0.0,
             jitter_ms: 0.0,
             loss_pct: 0.0,
@@ -157,6 +160,12 @@ pub fn panel(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
                 } else if !cx.status.is_empty() {
                     ui.small(cx.status);
                 }
+                egui::CollapsingHeader::new("Aussehen")
+                    .default_open(false)
+                    .show(ui, |ui| {
+                        crate::skins::picker(ui, &mut cx.net.skin);
+                        ui.small("In Team-Modi trägt der Körper die Teamfarbe.");
+                    });
                 view(ui, cx.view);
                 egui::CollapsingHeader::new("Eingabe")
                     .default_open(false)

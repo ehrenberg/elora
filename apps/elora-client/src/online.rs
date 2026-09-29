@@ -11,7 +11,7 @@ use elora_map::Map;
 use elora_protocol::codec::Reader;
 use elora_protocol::snapshot::is_dummy;
 use elora_protocol::{
-    ClientMsg, GameView, PROTOCOL_VERSION, ServerMsg, Snapshot, VoteInfo, VoteKind,
+    ClientMsg, GameView, PROTOCOL_VERSION, ServerMsg, Skin, Snapshot, VoteInfo, VoteKind,
 };
 use elora_sim::{Event, PlayerInput, TICKS_PER_SECOND, Team, Tuning, World};
 
@@ -68,6 +68,7 @@ pub struct NetInfo {
 #[derive(Debug)]
 pub struct OnlineClient {
     name: String,
+    skin: Skin,
     pub status: Status,
     pub slot: Option<usize>,
     pub map: Option<Map>,
@@ -97,6 +98,8 @@ pub struct OnlineClient {
     pub info: NetInfo,
     /// Namen der Slots.
     pub names: BTreeMap<usize, String>,
+    /// Skins der Slots (E-095).
+    pub skins: BTreeMap<usize, Skin>,
     /// Chat-Verlauf inkl. Server-Hinweise, neueste zuletzt.
     pub chat: VecDeque<ChatLine>,
     /// Laufende Abstimmung.
@@ -104,9 +107,10 @@ pub struct OnlineClient {
 }
 
 impl OnlineClient {
-    pub fn new(name: &str, now: Instant) -> Self {
+    pub fn new(name: &str, skin: Skin, now: Instant) -> Self {
         Self {
             name: name.to_owned(),
+            skin,
             status: Status::Connecting,
             slot: None,
             map: None,
@@ -130,6 +134,7 @@ impl OnlineClient {
             outgoing: Vec::new(),
             info: NetInfo::default(),
             names: BTreeMap::new(),
+            skins: BTreeMap::new(),
             chat: VecDeque::new(),
             vote: None,
         }
@@ -223,8 +228,19 @@ impl OnlineClient {
         let msg = ClientMsg::Join {
             version: PROTOCOL_VERSION,
             name: self.name.clone(),
+            skin: self.skin,
         };
         self.outgoing.push((msg.encode(), true));
+    }
+
+    /// Eigenen Skin ändern; wird sofort an den Server geschickt.
+    pub fn set_skin(&mut self, skin: Skin) {
+        if skin != self.skin {
+            self.skin = skin;
+            if self.slot.is_some() {
+                self.send(&ClientMsg::SetSkin(skin));
+            }
+        }
     }
 
     pub fn on_disconnected(&mut self, reason: String) {
@@ -293,14 +309,16 @@ impl OnlineClient {
                     at,
                 );
             }
-            ServerMsg::PlayerInfo { slot, name } => match name {
-                Some(n) => {
-                    self.names.insert(slot as usize, n);
+            ServerMsg::PlayerInfo { slot, name, skin } => {
+                let slot = slot as usize;
+                if let Some(n) = name {
+                    self.names.insert(slot, n);
+                    self.skins.insert(slot, skin);
+                } else {
+                    self.names.remove(&slot);
+                    self.skins.remove(&slot);
                 }
-                None => {
-                    self.names.remove(&(slot as usize));
-                }
-            },
+            }
             ServerMsg::Vote(v) => self.vote = v,
             ServerMsg::Notice(text) => self.push_chat(None, false, text, at),
             ServerMsg::Snapshot {

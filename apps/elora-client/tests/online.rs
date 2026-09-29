@@ -5,6 +5,7 @@ use std::time::{Duration, Instant};
 
 use elora_client::online::{OnlineClient, Status};
 use elora_net::{ClientEndpoint, ClientEvent, Conditions, Keypair, MemNetwork, MemSocket};
+use elora_protocol::Skin;
 use elora_server::{GameServer, MapEntry, ServerConfig};
 use elora_sim::{PlayerInput, Tuning};
 
@@ -57,13 +58,17 @@ impl Game {
     }
 
     fn join(&mut self, name: &str) -> usize {
+        self.join_with(name, Skin::default())
+    }
+
+    fn join_with(&mut self, name: &str, skin: Skin) -> usize {
         let i = self.players.len();
         let sock = self
             .net
             .socket(addr(9000 + i as u16), self.conditions, 50 + i as u64);
         self.players.push(Player {
             endpoint: ClientEndpoint::connect(sock, addr(8303), None, self.now),
-            online: OnlineClient::new(name, self.now),
+            online: OnlineClient::new(name, skin, self.now),
             input: PlayerInput::default(),
         });
         i
@@ -177,6 +182,41 @@ fn two_players_see_each_other() {
             scene.chars.iter().any(|c| c.dummy),
             "Dummies der Karte sichtbar"
         );
+    }
+}
+
+#[test]
+fn skins_are_shared_and_updated() {
+    let a = Skin {
+        body: 7,
+        feet: 6,
+        eyes: 1,
+    };
+    let mut g = Game::new(lag(20));
+    g.join_with("A", a);
+    g.join("B");
+    g.run(1000, false);
+    let slot_a = g.players[0].online.slot.unwrap();
+    let slot_b = g.players[1].online.slot.unwrap();
+    assert_eq!(
+        g.players[1].online.skins.get(&slot_a),
+        Some(&a),
+        "B kennt Skin von A"
+    );
+    assert_eq!(
+        g.players[0].online.skins.get(&slot_b),
+        Some(&Skin::default()),
+        "A kennt Skin von B (beigetreten nach A)"
+    );
+    let changed = Skin {
+        body: 4,
+        feet: 13,
+        eyes: 3,
+    };
+    g.players[0].online.set_skin(changed);
+    g.run(300, false);
+    for p in &g.players {
+        assert_eq!(p.online.skins.get(&slot_a), Some(&changed));
     }
 }
 

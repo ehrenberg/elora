@@ -14,7 +14,7 @@ use std::time::{Duration, Instant};
 use elora_game::{GameEvent, Rules, RulesConfig, Winner};
 use elora_net::{DisconnectReason, Keypair, ServerEndpoint, ServerEvent, Socket};
 use elora_protocol::msg::MAX_CHAT;
-use elora_protocol::{ClientMsg, PROTOCOL_VERSION, ServerMsg, Snapshot};
+use elora_protocol::{ClientMsg, PROTOCOL_VERSION, ServerMsg, Skin, Snapshot};
 use elora_sim::{Controller, Event, PlayerInput, TICKS_PER_SECOND, Team, Tuning, World};
 
 pub use config::ServerConfig;
@@ -42,6 +42,7 @@ pub struct MapEntry {
 struct Client {
     slot: Option<usize>,
     name: String,
+    skin: Skin,
     inputs: BTreeMap<u64, PlayerInput>,
     last_input: PlayerInput,
     acked: Option<u64>,
@@ -55,6 +56,7 @@ impl Client {
         Self {
             slot: None,
             name: String::new(),
+            skin: Skin::default(),
             inputs: BTreeMap::new(),
             last_input: PlayerInput::default(),
             acked: None,
@@ -208,6 +210,14 @@ impl<S: Socket> GameServer<S> {
         }
     }
 
+    /// Skin eines Slots; Dummies und unbekannte Slots: Standard.
+    fn skin_of(&self, slot: usize) -> Skin {
+        self.clients
+            .values()
+            .find(|c| c.slot == Some(slot))
+            .map_or_else(Skin::default, |c| c.skin)
+    }
+
     fn client_by_slot(&self, slot: usize) -> Option<u32> {
         self.clients
             .iter()
@@ -236,7 +246,11 @@ impl<S: Socket> GameServer<S> {
                         self.world.remove(slot);
                         self.rules.on_leave(slot);
                         let slot = u32::try_from(slot).unwrap_or(0);
-                        self.broadcast(&ServerMsg::PlayerInfo { slot, name: None });
+                        self.broadcast(&ServerMsg::PlayerInfo {
+                            slot,
+                            name: None,
+                            skin: Skin::default(),
+                        });
                         self.notice(&format!("{} hat das Spiel verlassen", c.name));
                     }
                     if let Some(v) = &mut self.vote {
@@ -273,6 +287,7 @@ impl<S: Socket> GameServer<S> {
                 let msg = ServerMsg::PlayerInfo {
                     slot: u32::try_from(i).unwrap_or(0),
                     name: Some(self.name_of(i)),
+                    skin: self.skin_of(i),
                 };
                 self.endpoint.send(id, &msg.encode(), true);
             }
@@ -291,7 +306,11 @@ impl<S: Socket> GameServer<S> {
         };
         let slot = client.slot;
         match msg {
-            ClientMsg::Join { version, name } => {
+            ClientMsg::Join {
+                version,
+                name,
+                skin,
+            } => {
                 if version != PROTOCOL_VERSION {
                     self.endpoint.disconnect(id, "Falsche Spielversion", now);
                     return;
@@ -310,16 +329,28 @@ impl<S: Socket> GameServer<S> {
                 let client = self.clients.get_mut(&id).expect("vorhanden");
                 client.slot = Some(slot);
                 client.name.clone_from(&name);
+                client.skin = skin;
                 tracing::info!(id, slot, %name, "beigetreten");
                 self.welcome(id);
                 let info = ServerMsg::PlayerInfo {
                     slot: u32::try_from(slot).unwrap_or(0),
                     name: Some(name.clone()),
+                    skin,
                 };
                 self.broadcast(&info);
                 self.notice(&format!("{name} ist beigetreten"));
             }
             ClientMsg::Input { ack, inputs } => self.on_input(id, ack, inputs, now),
+            ClientMsg::SetSkin(skin) => {
+                let Some(slot) = slot else { return };
+                client.skin = skin;
+                let info = ServerMsg::PlayerInfo {
+                    slot: u32::try_from(slot).unwrap_or(0),
+                    name: Some(client.name.clone()),
+                    skin,
+                };
+                self.broadcast(&info);
+            }
             ClientMsg::Leave => self.endpoint.disconnect(id, "Verlassen", now),
             ClientMsg::Chat { team, text } => {
                 let Some(slot) = slot else { return };

@@ -49,6 +49,47 @@ pub struct VoteInfo {
     pub seconds_left: u32,
 }
 
+/// Aussehen eines Spielers (E-095, E-096): Palettennummern je Teil.
+/// Die Farben selbst kennt nur der Client.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
+pub struct Skin {
+    pub body: u8,
+    pub feet: u8,
+    pub eyes: u8,
+}
+
+impl Skin {
+    /// Farben für Körper und Füße.
+    pub const BODY_COLORS: u8 = 16;
+    /// Farben für die Augen.
+    pub const EYE_COLORS: u8 = 8;
+
+    pub fn is_valid(self) -> bool {
+        self.body < Self::BODY_COLORS
+            && self.feet < Self::BODY_COLORS
+            && self.eyes < Self::EYE_COLORS
+    }
+
+    fn put(self, w: &mut Writer) {
+        w.u8(self.body);
+        w.u8(self.feet);
+        w.u8(self.eyes);
+    }
+
+    fn get(r: &mut Reader<'_>) -> DecodeResult<Self> {
+        let skin = Self {
+            body: r.u8()?,
+            feet: r.u8()?,
+            eyes: r.u8()?,
+        };
+        if skin.is_valid() {
+            Ok(skin)
+        } else {
+            Err(DecodeError::Invalid("Skin"))
+        }
+    }
+}
+
 /// Maximale Länge einer Chat-Nachricht (Zeichen).
 pub const MAX_CHAT: usize = 200;
 
@@ -57,6 +98,7 @@ pub enum ClientMsg {
     Join {
         version: u32,
         name: String,
+        skin: Skin,
     },
     /// Eingaben mit ihrem Ziel-Tick, neueste zuletzt. `ack` = Tick des zuletzt
     /// vollständig empfangenen Snapshots (Basis für das nächste Delta).
@@ -73,6 +115,8 @@ pub enum ClientMsg {
     Kill,
     CallVote(VoteKind),
     Vote(bool),
+    /// Skin im laufenden Spiel ändern.
+    SetSkin(Skin),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -108,10 +152,11 @@ pub enum ServerMsg {
         team: bool,
         text: String,
     },
-    /// Name eines Slots; `None` = Spieler hat verlassen.
+    /// Name und Skin eines Slots; `name = None`: Spieler hat verlassen.
     PlayerInfo {
         slot: u32,
         name: Option<String>,
+        skin: Skin,
     },
     /// Stand der Abstimmung; `None` = keine.
     Vote(Option<VoteInfo>),
@@ -496,10 +541,15 @@ impl ClientMsg {
     pub fn encode_raw(&self) -> Vec<u8> {
         let mut w = Writer::new();
         match self {
-            Self::Join { version, name } => {
+            Self::Join {
+                version,
+                name,
+                skin,
+            } => {
                 w.u8(0);
                 w.uvar(u64::from(*version));
                 w.str(name);
+                skin.put(&mut w);
             }
             Self::Input { ack, inputs } => {
                 w.u8(1);
@@ -550,6 +600,10 @@ impl ClientMsg {
                 w.u8(7);
                 w.bool(*yes);
             }
+            Self::SetSkin(skin) => {
+                w.u8(8);
+                skin.put(&mut w);
+            }
         }
         w.into_bytes()
     }
@@ -560,7 +614,12 @@ impl ClientMsg {
             0 => {
                 let version = r.uint("Version")?;
                 let name = r.str(MAX_NAME)?.to_owned();
-                Self::Join { version, name }
+                let skin = Skin::get(&mut r)?;
+                Self::Join {
+                    version,
+                    name,
+                    skin,
+                }
             }
             1 => {
                 let ack = r.uvar()?.checked_sub(1);
@@ -598,6 +657,7 @@ impl ClientMsg {
                 _ => return Err(DecodeError::Invalid("Abstimmung")),
             }),
             7 => Self::Vote(r.bool()?),
+            8 => Self::SetSkin(Skin::get(&mut r)?),
             _ => return Err(DecodeError::Invalid("Nachricht")),
         };
         r.finish()?;
@@ -687,13 +747,14 @@ impl ServerMsg {
                 w.bool(*team);
                 w.str(text);
             }
-            Self::PlayerInfo { slot, name } => {
+            Self::PlayerInfo { slot, name, skin } => {
                 w.u8(6);
                 w.uvar(u64::from(*slot));
                 w.bool(name.is_some());
                 if let Some(n) = name {
                     w.str(n);
                 }
+                skin.put(&mut w);
             }
             Self::Vote(v) => {
                 w.u8(7);
@@ -775,7 +836,8 @@ impl ServerMsg {
                 } else {
                     None
                 };
-                Self::PlayerInfo { slot, name }
+                let skin = Skin::get(&mut r)?;
+                Self::PlayerInfo { slot, name, skin }
             }
             7 => Self::Vote(if r.bool()? {
                 Some(VoteInfo {
@@ -815,7 +877,13 @@ mod tests {
             ClientMsg::Join {
                 version: PROTOCOL_VERSION,
                 name: "Elora".into(),
+                skin: Skin {
+                    body: 15,
+                    feet: 3,
+                    eyes: 7,
+                },
             },
+            ClientMsg::SetSkin(Skin::default()),
             ClientMsg::Input {
                 ack: Some(1234),
                 inputs: vec![(100, input), (101, PlayerInput::default()), (102, input)],
@@ -918,10 +986,16 @@ mod tests {
             ServerMsg::PlayerInfo {
                 slot: 4,
                 name: Some("Elora".into()),
+                skin: Skin {
+                    body: 2,
+                    feet: 5,
+                    eyes: 1,
+                },
             },
             ServerMsg::PlayerInfo {
                 slot: 4,
                 name: None,
+                skin: Skin::default(),
             },
             ServerMsg::Vote(Some(VoteInfo {
                 description: "Karte: sandbox".into(),
@@ -948,6 +1022,12 @@ mod tests {
         bytes[5] = 4; // ZigZag 2
         assert!(ClientMsg::decode_raw(&bytes).is_err());
         assert!(ClientMsg::decode(&[9]).is_err());
+        // Palettennummern außerhalb der Palette
+        for skin in [[16, 0, 0], [0, 16, 0], [0, 0, 8]] {
+            let mut bytes = ClientMsg::SetSkin(Skin::default()).encode_raw();
+            bytes[1..4].copy_from_slice(&skin);
+            assert!(ClientMsg::decode_raw(&bytes).is_err(), "{skin:?}");
+        }
         assert!(ServerMsg::decode(&[]).is_err());
     }
 }
