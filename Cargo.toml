@@ -4,6 +4,7 @@ members = [
     "crates/elora-sim",
     "crates/elora-map",
     "crates/elora-render",
+    "crates/elora-protocol",
     "apps/elora-client",
     "xtask",
 ]
@@ -19,6 +20,7 @@ publish = false
 elora-sim = { path = "crates/elora-sim" }
 elora-map = { path = "crates/elora-map" }
 elora-render = { path = "crates/elora-render" }
+elora-protocol = { path = "crates/elora-protocol" }
 
 serde = { version = "1.0.229", features = ["derive"] }
 toml = "1.1.6"

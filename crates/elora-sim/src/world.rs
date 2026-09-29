@@ -44,6 +44,9 @@ pub struct World {
     pub spawn_points: Vec<Vec2>,
     /// Ereignisse des letzten Ticks.
     pub events: Vec<Event>,
+    /// Client-Vorhersage (E-057): Kräfte wirken, aber kein Schaden, kein Tod, keine
+    /// Pickups und kein Respawn – das entscheidet allein der Server.
+    pub prediction: bool,
 }
 
 impl World {
@@ -58,6 +61,7 @@ impl World {
             pickups: Vec::new(),
             spawn_points: Vec::new(),
             events: Vec::new(),
+            prediction: false,
         }
     }
 
@@ -169,6 +173,7 @@ impl World {
                 continue;
             };
             let mut input = match &mut p.controller {
+                Controller::Remote => continue,
                 Controller::Human => inputs.get(i).copied().unwrap_or_default(),
                 Controller::Dummy { pattern, brain, .. } => match &p.character {
                     Some(c) => brain.input(*pattern, &c.core, &self.collision, self.tick),
@@ -498,10 +503,14 @@ impl World {
         from: Option<usize>,
         weapon: Weapon,
     ) -> bool {
+        let prediction = self.prediction;
         let Some(ch) = self.character_mut(i) else {
             return false;
         };
         ch.core.vel += force;
+        if prediction {
+            return false;
+        }
         // Eigenschaden halbiert (T-26)
         let mut dmg = if from == Some(i) {
             (damage / 2).max(1)
@@ -560,6 +569,9 @@ impl World {
     // ---------------------------------------------------------------- Pickups
 
     fn tick_pickups(&mut self) {
+        if self.prediction {
+            return;
+        }
         for k in 0..self.pickups.len() {
             let pk = self.pickups[k].clone();
             if let Some(t) = pk.respawn_tick {
@@ -619,12 +631,13 @@ impl World {
             let Some(p) = self.players[i].as_mut() else {
                 continue;
             };
+            let remote = matches!(p.controller, Controller::Remote);
             let input = p.input;
             let Some(ch) = p.character.as_mut() else {
                 continue;
             };
             ch.core.tick(
-                &input,
+                (!remote).then_some(&input),
                 &self.tuning,
                 &self.collision,
                 i,
@@ -634,7 +647,7 @@ impl World {
             // Waffen: Reload herunterzählen, sonst Dauerfeuer
             let ready = ch.arsenal.reload_timer == 0;
             ch.arsenal.reload_timer = ch.arsenal.reload_timer.saturating_sub(1);
-            if ready {
+            if ready && !remote {
                 self.fire_weapon(i, 0);
             }
         }
@@ -653,13 +666,16 @@ impl World {
             };
             ch.core
                 .apply_drag_and_move(&self.tuning, &self.collision, i, &positions);
-            if ch.core.death {
+            if ch.core.death && !self.prediction {
                 self.die(i, None, DeathCause::World);
             }
         }
     }
 
     fn tick_respawns(&mut self) {
+        if self.prediction {
+            return;
+        }
         let auto = secs_to_ticks(self.tuning.auto_respawn);
         for i in 0..self.players.len() {
             let Some(p) = self.players[i].as_mut() else {
@@ -676,7 +692,7 @@ impl World {
             }
             let pos = match &p.controller {
                 Controller::Dummy { home, .. } => Some(*home),
-                Controller::Human => self.best_spawn(),
+                Controller::Human | Controller::Remote => self.best_spawn(),
             };
             if let Some(pos) = pos {
                 self.spawn_character(i, pos);

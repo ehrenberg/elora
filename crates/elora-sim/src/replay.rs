@@ -113,7 +113,7 @@ impl Recording {
             .filter_map(|p| {
                 let c = p.character.as_ref()?;
                 let dummy = match &p.controller {
-                    Controller::Human => None,
+                    Controller::Human | Controller::Remote => None,
                     Controller::Dummy { pattern, .. } => Some(*pattern),
                 };
                 Some(RecordedPlayer {

@@ -4,6 +4,10 @@ use crate::event::PickupKind;
 use crate::math::{Vec2, round_to_int};
 use crate::tuning::Tuning;
 
+/// Eindeutiger Schlüssel eines Schusses: Schütze und Tick (höchstens ein Schuss pro
+/// Spieler und Tick). Auf Server und Client-Vorhersage identisch.
+pub type ShotKey = (usize, u64);
+
 /// Granate (Referenz: `CProjectile`). Die Flugbahn wird analytisch aus Start,
 /// Richtung und Zeit berechnet – kein Aufsummieren von Rundungsfehlern.
 #[derive(Debug, Clone, PartialEq)]
@@ -19,6 +23,10 @@ pub struct Projectile {
 }
 
 impl Projectile {
+    pub fn key(&self) -> ShotKey {
+        (self.owner, self.start_tick)
+    }
+
     pub fn new(
         owner: usize,
         pos: Vec2,
@@ -61,9 +69,15 @@ pub struct Laser {
     pub bounces: u32,
     /// Tick des letzten Abschnitts.
     pub eval_tick: u64,
+    /// Tick des Schusses; zusammen mit `owner` eindeutig.
+    pub start_tick: u64,
 }
 
 impl Laser {
+    pub fn key(&self) -> ShotKey {
+        (self.owner, self.start_tick)
+    }
+
     pub fn new(owner: usize, pos: Vec2, dir: Vec2, energy: f32, tick: u64) -> Self {
         Self {
             owner,
@@ -73,6 +87,7 @@ impl Laser {
             energy,
             bounces: 0,
             eval_tick: tick,
+            start_tick: tick,
         }
     }
 }

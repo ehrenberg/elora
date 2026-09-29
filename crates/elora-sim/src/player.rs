@@ -32,6 +32,9 @@ impl Character {
 pub enum Controller {
     /// Eingaben kommen von außen (`World::step`).
     Human,
+    /// Fremde Figur in der Client-Vorhersage: wird ohne Eingaben weitergerechnet
+    /// (wie `Tick(false)` im Original), feuert nicht.
+    Remote,
     /// Trainings-Dummy mit festem Bewegungsmuster (E-053); respawnt an `home`.
     Dummy {
         pattern: DummyPattern,

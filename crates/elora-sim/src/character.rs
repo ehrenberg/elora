@@ -81,9 +81,12 @@ impl CharacterCore {
     /// `None` = kein Spieler); der eigene Eintrag wird über `self_index` übersprungen.
     /// Hook-Kräfte auf andere Figuren werden in `drag_out` addiert.
     #[allow(clippy::too_many_lines)] // bewusst nah an der Referenz gehalten
+    /// `input = None`: ohne Eingabe weiterrechnen (wie `Tick(false)` im Original:
+    /// Laufrichtung bleibt, Sprung und Hook ändern sich nicht). Für fremde
+    /// Figuren in der Client-Vorhersage.
     pub(crate) fn tick(
         &mut self,
-        input: &PlayerInput,
+        input: Option<&PlayerInput>,
         tuning: &Tuning,
         col: &Collision,
         self_index: usize,
@@ -92,8 +95,6 @@ impl CharacterCore {
     ) {
         self.triggered_events = 0;
         let grounded = self.is_grounded(col);
-        let target = Vec2::new(input.target_x as f32, input.target_y as f32);
-        let target_dir = target.normalize();
 
         self.vel.y += tuning.gravity;
 
@@ -112,35 +113,39 @@ impl CharacterCore {
         };
 
         // Eingabe
-        self.direction = input.direction.signum();
-        self.angle = (target.angle() * 256.0) as i32;
+        if let Some(input) = input {
+            let target = Vec2::new(input.target_x as f32, input.target_y as f32);
+            let target_dir = target.normalize();
+            self.direction = input.direction.signum();
+            self.angle = (target.angle() * 256.0) as i32;
 
-        if input.jump {
-            if self.jumped & 1 == 0 {
-                if grounded {
-                    self.triggered_events |= events::GROUND_JUMP;
-                    self.vel.y = -tuning.ground_jump_impulse;
-                    self.jumped |= 1;
-                } else if self.jumped & 2 == 0 {
-                    self.triggered_events |= events::AIR_JUMP;
-                    self.vel.y = -tuning.air_jump_impulse;
-                    self.jumped |= 3;
+            if input.jump {
+                if self.jumped & 1 == 0 {
+                    if grounded {
+                        self.triggered_events |= events::GROUND_JUMP;
+                        self.vel.y = -tuning.ground_jump_impulse;
+                        self.jumped |= 1;
+                    } else if self.jumped & 2 == 0 {
+                        self.triggered_events |= events::AIR_JUMP;
+                        self.vel.y = -tuning.air_jump_impulse;
+                        self.jumped |= 3;
+                    }
                 }
+            } else {
+                self.jumped &= !1;
             }
-        } else {
-            self.jumped &= !1;
-        }
 
-        if input.hook {
-            if self.hook_state == HookState::Idle {
-                self.hook_state = HookState::Flying;
-                self.hook_pos = self.pos + target_dir * PHYS_SIZE * 1.5;
-                self.hook_dir = target_dir;
-                self.hooked_player = None;
-                self.hook_tick = 0;
+            if input.hook {
+                if self.hook_state == HookState::Idle {
+                    self.hook_state = HookState::Flying;
+                    self.hook_pos = self.pos + target_dir * PHYS_SIZE * 1.5;
+                    self.hook_dir = target_dir;
+                    self.hooked_player = None;
+                    self.hook_tick = 0;
+                }
+            } else {
+                self.release_hook(HookState::Idle);
             }
-        } else {
-            self.release_hook(HookState::Idle);
         }
 
         // Laufen

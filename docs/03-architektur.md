@@ -26,7 +26,7 @@ elora/
 │   ├── elora-input/        #     Eingabeabbildung (Tasten → Spieler-Input), konfigurierbar
 │   ├── elora-audio/        #     Sound-Ausgabe (kira, E-032)
 │   ├── elora-ui/           #     eigene Spiel-UI: Hauptmenü, Server-Browser, HUD (E-031)
-│   ├── elora-protocol/     #     Netzwerknachrichten, Serialisierung, Snapshot/Delta
+│   ├── elora-protocol/     # M3  Netzwerknachrichten, Serialisierung, Snapshot/Delta (E-063)
 │   ├── elora-net/          #     UDP-Transport, Verbindungen, Zuverlässigkeitsschicht
 │   ├── elora-game/         #     Spielmodi und Regeln (DM, TDM, CTF, LMS, LTS, Instagib), serverseitig
 │   └── elora-editor/       #     Karten-Editor (E-028), wird vom Client eingebunden

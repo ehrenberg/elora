@@ -507,6 +507,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "elora-protocol"
+version = "0.1.0"
+dependencies = [
+ "elora-sim",
+ "thiserror 2.0.21",
+ "toml",
+]
+
+[[package]]
 name = "elora-render"
 version = "0.1.0"
 dependencies = [
