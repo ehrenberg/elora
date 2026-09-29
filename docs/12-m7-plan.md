@@ -34,7 +34,7 @@ Ein neuer Spieler startet Elora, findet ohne Hilfe einen Server und kann spielen
 | # | Schritt | Crate | Inhalt | Prüfung |
 |---|---|---|---|---|
 | M7.0 ✅ | Entwürfe | – | 2–3 Menü-Entwürfe als Bild (E-123) | Deine Auswahl |
-| M7.1 | UI-Toolkit | Client (`ui/`) | Knopf, Schalter, Schieberegler, Textfeld, Liste mit Auswahl und Scrollen, Reiter, Tastatur-/Maus-Fokus; im HUD-Stil, skaliert mit der Fensterhöhe | Tests + Sichtprüfung |
+| M7.1 ✅ | UI-Toolkit | Client (`ui/`) | Knopf, Schalter, Schieberegler, Textfeld, Liste mit Auswahl und Scrollen, Reiter, Tastatur-/Maus-Fokus; im HUD-Stil, skaliert mit der Fensterhöhe | Tests + Sichtprüfung |
 | M7.2 | Einstellungen & Sprache | Client | `settings.toml` im Benutzerverzeichnis (E-116): Spieler, Skin, Steuerung, Grafik, Ton, Sprache, Favoriten; Übersetzungsdateien Deutsch/Englisch (E-114) | Tests |
 | M7.3 | Hauptmenü & Ablauf | Client | Hauptmenü über ruhigem Bild (E-113), Zustände Menü ↔ Spiel ↔ Ingame-Menü, Menümusik vorbereitet (E-121), „Server erstellen“ (E-122), Training (Sandbox) | Sichtprüfung |
 | M7.4 | Einstellungsseiten | Client | Spieler & Skin (Vorschau der Figur), Steuerung, Grafik (E-120: Fenster/Vollbild, VSync, MSAA, UI-Skalierung), Ton, Sprache | Sichtprüfung |
@@ -77,3 +77,4 @@ Ein neuer Spieler startet Elora, findet ohne Hilfe einen Server und kann spielen
 ## Umsetzungsstand
 
 - **M7.0 Entwürfe:** `docs/design/elora-menue.png` (A/B/C); gewählt (E-125): Aufbau von C in Farben und Formen von B → `docs/design/elora-menue-gewaehlt.png`. Generator `tools/design/elora_menu.py`.
+- **M7.1 UI-Toolkit:** `apps/elora-client/src/ui.rs`, Sofortmodus mit Kennungen je Widget; Zustand (Fokus, gedrücktes Widget, Scroll) in `UiState`, Eingaben je Frame in `UiInput`. Widgets: Karte, Beschriftung, Pillen-Knopf (Schatten, Umriss, Hover heller, gedrückt rutscht er auf den Schatten), Reiter (waagerecht und als Seitenleiste), Schalter, Schieberegler, Textfeld (Fokus, Cursor, Umlaute, Rücktaste/Entf/Pfeile/Pos1/Ende, Enter, Esc, Höchstlänge), Farbfelder, Liste mit Spalten, Auswahl, Doppelklick, Mausrad und Laufleiste. Thema nach E-125. Galerie `docs/design/elora-ui-toolkit.png`.

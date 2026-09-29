@@ -19,6 +19,7 @@ mod sandbox;
 mod settings;
 mod skins;
 mod sound;
+mod ui;
 
 use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
