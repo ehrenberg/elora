@@ -5,7 +5,7 @@ use std::time::{Duration, Instant};
 
 use elora_client::online::{OnlineClient, Status};
 use elora_net::{ClientEndpoint, ClientEvent, Conditions, Keypair, MemNetwork, MemSocket};
-use elora_server::{GameServer, ServerConfig};
+use elora_server::{GameServer, MapEntry, ServerConfig};
 use elora_sim::{PlayerInput, Tuning};
 
 const MAP: &str = include_str!("../../../maps/sandbox.emap.toml");
@@ -38,8 +38,10 @@ impl Game {
             net.socket(addr(8303), conditions, 1),
             Keypair::generate(),
             &cfg,
-            "sandbox",
-            MAP.to_owned(),
+            vec![MapEntry {
+                name: "sandbox".into(),
+                source: MAP.to_owned(),
+            }],
             Tuning::default(),
             now,
         )
@@ -208,4 +210,111 @@ fn survives_loss_and_jitter() {
     );
     assert_eq!(p.online.status, Status::Playing);
     assert!(p.online.latest_snapshot_tick().unwrap() > 200);
+}
+
+impl Game {
+    /// Führt eine Aktion am Online-Client aus und lässt die Zeit laufen.
+    fn act(&mut self, i: usize, ms: u64, f: impl FnOnce(&mut OnlineClient)) {
+        f(&mut self.players[i].online);
+        self.run(ms, false);
+    }
+}
+
+fn chat_texts(o: &OnlineClient) -> Vec<String> {
+    o.chat.iter().map(|c| c.text.clone()).collect()
+}
+
+#[test]
+fn names_chat_and_team_chat() {
+    let mut g = Game::new(Conditions::default());
+    g.server.set_rules(elora_game::RulesConfig {
+        mode: elora_game::Mode::Tdm,
+        ..elora_game::RulesConfig::default()
+    });
+    g.join("Anna");
+    g.join("Ben");
+    g.join("Cleo");
+    g.run(500, false);
+    let names: Vec<String> = g.players[0].online.names.values().cloned().collect();
+    assert!(
+        names.contains(&"Ben".to_owned()) && names.contains(&"Cleo".to_owned()),
+        "{names:?}"
+    );
+
+    g.act(0, 100, |o| o.send_chat(false, "hallo alle"));
+    // Spam-Schutz: zweite Nachricht innerhalb von 0,7 s wird verworfen
+    g.act(0, 800, |o| o.send_chat(false, "zu schnell"));
+    for p in &g.players {
+        assert!(chat_texts(&p.online).contains(&"hallo alle".to_owned()));
+        assert!(!chat_texts(&p.online).contains(&"zu schnell".to_owned()));
+    }
+    // Team-Chat: nur Spieler im gleichen Team
+    let anna_slot = g.players[0].online.slot.unwrap();
+    let anna_team = g.players[0].online.team_of(anna_slot);
+    g.act(0, 200, |o| o.send_chat(true, "nur Team"));
+    for p in &g.players {
+        let same = p.online.team_of(p.online.slot.unwrap()) == anna_team;
+        assert_eq!(chat_texts(&p.online).contains(&"nur Team".to_owned()), same);
+    }
+}
+
+#[test]
+fn vote_changes_mode() {
+    let mut g = Game::new(Conditions::default());
+    g.join("A");
+    g.join("B");
+    g.run(500, false);
+    g.act(0, 100, |o| {
+        o.call_vote(elora_protocol::VoteKind::Mode {
+            mode: elora_game::Mode::Ctf,
+            instagib: true,
+        });
+    });
+    assert!(g.players[1].online.vote.is_some(), "Abstimmung sichtbar");
+    g.act(1, 300, |o| o.vote(true));
+    assert_eq!(g.server.rules.cfg.title(), "iCTF");
+    let view = g.players[0].online.game().unwrap();
+    assert_eq!(view.title(), "iCTF");
+    assert!(g.players[0].online.vote.is_none());
+}
+
+#[test]
+fn kill_and_spectate() {
+    let mut g = Game::new(Conditions::default());
+    g.join("A");
+    g.run(500, false);
+    let slot = g.players[0].online.slot.unwrap();
+    assert!(g.server.world.character(slot).is_some());
+    g.act(0, 100, OnlineClient::kill);
+    assert!(g.server.world.character(slot).is_none(), "kill");
+    g.act(0, 100, |o| o.set_team(elora_sim::Team::Spectator));
+    g.run(4000, false);
+    assert!(
+        g.server.world.character(slot).is_none(),
+        "Zuschauer spawnt nicht"
+    );
+    assert_eq!(
+        g.players[0].online.team_of(slot),
+        elora_sim::Team::Spectator
+    );
+}
+
+#[test]
+fn console_commands() {
+    let mut g = Game::new(Conditions::default());
+    g.join("Konsole");
+    g.run(300, false);
+    let now = g.now;
+    assert!(g.server.command("mode tdm", now).contains("TDM"));
+    assert!(g.server.command("status", now).contains("Konsole"));
+    assert!(g.server.command("instagib on", now).contains("iTDM"));
+    assert!(g.server.command("map sandbox", now).contains("sandbox"));
+    assert!(g.server.command("gibtsnicht", now).contains("Unbekannt"));
+    g.run(300, false);
+    assert_eq!(
+        g.players[0].online.status,
+        Status::Playing,
+        "nach Kartenwechsel weiter verbunden"
+    );
+    assert!(g.players[0].online.latest_snapshot_tick().is_some());
 }

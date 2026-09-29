@@ -16,8 +16,8 @@ DM, TDM, CTF, LMS, LTS und Instagib sind auf dem Server spielbar – mit Teams, 
 | M4.4 ✅ | CTF | `elora-game` | Flaggen mit Physik (fallen, abprallen, 30 s-Rückkehr), Aufnehmen, Zurückbringen, Erobern | Tests |
 | M4.5 ✅ | LMS / LTS | `elora-game` | kein Respawn in der Runde, Startausrüstung, Rundensieg | Tests |
 | M4.6 ✅ | Instagib | `elora-game` | nur Laser, unendliche Munition, 1 Treffer = Tod, keine Pickups (E-026) | Tests |
-| M4.7 | Server-Integration | `elora-server` | Modus und Regeln in `server.toml`/Kommandozeile, Spielzustand und Punkte im Snapshot, Kartenrotation | Integrationstest |
-| M4.8 | Chat & Befehle | Protokoll, Server, Client | Chat und Team-Chat, `kill` (E-055), Team wählen/Zuschauer, Server-Konsole (D-M4-07) | Tests |
+| M4.7 ✅ | Server-Integration | `elora-server` | Modus und Regeln in `server.toml`/Kommandozeile, Spielzustand und Punkte im Snapshot, Kartenrotation | Integrationstest |
+| M4.8 ✅ | Chat & Befehle | Protokoll, Server, Client | Chat und Team-Chat, `kill` (E-055), Team wählen/Zuschauer, Server-Konsole (D-M4-07) | Tests |
 | M4.9 | Anzeige | Client | Scoreboard (Tab), Killfeed, Chat-Fenster, Rundenende-/Sieger-Anzeige, Timer, Flaggenanzeige – als Platzhalter (finales HUD in M5) | Sichtprüfung |
 | M4.10 | Abnahme | – | Playtest aller Modi | Deine Abnahme |
 

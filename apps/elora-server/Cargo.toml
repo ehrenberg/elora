@@ -20,6 +20,7 @@ elora-sim = { workspace = true, features = ["serde"] }
 elora-map.workspace = true
 elora-protocol.workspace = true
 elora-net.workspace = true
+elora-game.workspace = true
 anyhow.workspace = true
 serde.workspace = true
 toml.workspace = true

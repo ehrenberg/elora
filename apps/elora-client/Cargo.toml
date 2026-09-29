@@ -33,6 +33,7 @@ toml.workspace = true
 elora-protocol.workspace = true
 elora-net.workspace = true
 elora-server = { path = "../elora-server" }
+elora-game.workspace = true
 
 [lints]
 workspace = true

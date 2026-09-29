@@ -26,6 +26,32 @@ const MAX_MAP: usize = 4 * 1024 * 1024;
 pub const MAX_INPUTS: usize = 8;
 const MAX_EVENTS: usize = 1024;
 
+/// Gegenstand einer Abstimmung (E-077).
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum VoteKind {
+    Map(String),
+    Mode {
+        mode: elora_game::Mode,
+        instagib: bool,
+    },
+    Kick(u32),
+    Spectate(u32),
+}
+
+/// Laufende Abstimmung.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct VoteInfo {
+    pub description: String,
+    pub yes: u32,
+    pub no: u32,
+    pub voters: u32,
+    /// Restzeit in Sekunden.
+    pub seconds_left: u32,
+}
+
+/// Maximale Länge einer Chat-Nachricht (Zeichen).
+pub const MAX_CHAT: usize = 200;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum ClientMsg {
     Join {
@@ -39,6 +65,14 @@ pub enum ClientMsg {
         inputs: Vec<(u64, PlayerInput)>,
     },
     Leave,
+    Chat {
+        team: bool,
+        text: String,
+    },
+    SetTeam(Team),
+    Kill,
+    CallVote(VoteKind),
+    Vote(bool),
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -68,6 +102,21 @@ pub enum ServerMsg {
     Kick {
         reason: String,
     },
+    /// Chat; `from = None`: Server.
+    Chat {
+        from: Option<u32>,
+        team: bool,
+        text: String,
+    },
+    /// Name eines Slots; `None` = Spieler hat verlassen.
+    PlayerInfo {
+        slot: u32,
+        name: Option<String>,
+    },
+    /// Stand der Abstimmung; `None` = keine.
+    Vote(Option<VoteInfo>),
+    /// Hinweis des Servers (Rundenende, Abstimmung angenommen, …).
+    Notice(String),
 }
 
 fn put_input(w: &mut Writer, i: &PlayerInput) {
@@ -465,6 +514,42 @@ impl ClientMsg {
                 }
             }
             Self::Leave => w.u8(2),
+            Self::Chat { team, text } => {
+                w.u8(3);
+                w.bool(*team);
+                w.str(text);
+            }
+            Self::SetTeam(t) => {
+                w.u8(4);
+                w.u8(team_code(*t));
+            }
+            Self::Kill => w.u8(5),
+            Self::CallVote(v) => {
+                w.u8(6);
+                match v {
+                    VoteKind::Map(m) => {
+                        w.u8(0);
+                        w.str(m);
+                    }
+                    VoteKind::Mode { mode, instagib } => {
+                        w.u8(1);
+                        w.u8(mode.index());
+                        w.bool(*instagib);
+                    }
+                    VoteKind::Kick(s) => {
+                        w.u8(2);
+                        w.uvar(u64::from(*s));
+                    }
+                    VoteKind::Spectate(s) => {
+                        w.u8(3);
+                        w.uvar(u64::from(*s));
+                    }
+                }
+            }
+            Self::Vote(yes) => {
+                w.u8(7);
+                w.bool(*yes);
+            }
         }
         w.into_bytes()
     }
@@ -495,6 +580,24 @@ impl ClientMsg {
                 Self::Input { ack, inputs }
             }
             2 => Self::Leave,
+            3 => Self::Chat {
+                team: r.bool()?,
+                text: r.str(MAX_CHAT * 4)?.to_owned(),
+            },
+            4 => Self::SetTeam(team_from(r.u8()?)?),
+            5 => Self::Kill,
+            6 => Self::CallVote(match r.u8()? {
+                0 => VoteKind::Map(r.str(MAX_NAME * 4)?.to_owned()),
+                1 => VoteKind::Mode {
+                    mode: elora_game::Mode::from_index(r.u8()?)
+                        .ok_or(DecodeError::Invalid("Modus"))?,
+                    instagib: r.bool()?,
+                },
+                2 => VoteKind::Kick(r.uint("Slot")?),
+                3 => VoteKind::Spectate(r.uint("Slot")?),
+                _ => return Err(DecodeError::Invalid("Abstimmung")),
+            }),
+            7 => Self::Vote(r.bool()?),
             _ => return Err(DecodeError::Invalid("Nachricht")),
         };
         r.finish()?;
@@ -578,6 +681,35 @@ impl ServerMsg {
                 w.u8(4);
                 w.str(reason);
             }
+            Self::Chat { from, team, text } => {
+                w.u8(5);
+                w.uvar(from.map_or(0, |f| u64::from(f) + 1));
+                w.bool(*team);
+                w.str(text);
+            }
+            Self::PlayerInfo { slot, name } => {
+                w.u8(6);
+                w.uvar(u64::from(*slot));
+                w.bool(name.is_some());
+                if let Some(n) = name {
+                    w.str(n);
+                }
+            }
+            Self::Vote(v) => {
+                w.u8(7);
+                w.bool(v.is_some());
+                if let Some(v) = v {
+                    w.str(&v.description);
+                    w.uvar(u64::from(v.yes));
+                    w.uvar(u64::from(v.no));
+                    w.uvar(u64::from(v.voters));
+                    w.uvar(u64::from(v.seconds_left));
+                }
+            }
+            Self::Notice(t) => {
+                w.u8(8);
+                w.str(t);
+            }
         }
         w.into_bytes()
     }
@@ -631,6 +763,32 @@ impl ServerMsg {
             4 => Self::Kick {
                 reason: r.str(MAX_TEXT)?.to_owned(),
             },
+            5 => Self::Chat {
+                from: r.uint::<u32>("Slot")?.checked_sub(1),
+                team: r.bool()?,
+                text: r.str(MAX_CHAT * 4)?.to_owned(),
+            },
+            6 => {
+                let slot = r.uint("Slot")?;
+                let name = if r.bool()? {
+                    Some(r.str(MAX_NAME * 4)?.to_owned())
+                } else {
+                    None
+                };
+                Self::PlayerInfo { slot, name }
+            }
+            7 => Self::Vote(if r.bool()? {
+                Some(VoteInfo {
+                    description: r.str(MAX_TEXT)?.to_owned(),
+                    yes: r.uint("Stimmen")?,
+                    no: r.uint("Stimmen")?,
+                    voters: r.uint("Stimmen")?,
+                    seconds_left: r.uint("Zeit")?,
+                })
+            } else {
+                None
+            }),
+            8 => Self::Notice(r.str(MAX_TEXT)?.to_owned()),
             _ => return Err(DecodeError::Invalid("Nachricht")),
         };
         r.finish()?;
@@ -667,6 +825,19 @@ mod tests {
                 inputs: vec![],
             },
             ClientMsg::Leave,
+            ClientMsg::Chat {
+                team: true,
+                text: "hallo Team".into(),
+            },
+            ClientMsg::SetTeam(Team::Spectator),
+            ClientMsg::Kill,
+            ClientMsg::CallVote(VoteKind::Map("sandbox".into())),
+            ClientMsg::CallVote(VoteKind::Mode {
+                mode: elora_game::Mode::Ctf,
+                instagib: true,
+            }),
+            ClientMsg::CallVote(VoteKind::Kick(3)),
+            ClientMsg::Vote(false),
         ] {
             assert_eq!(ClientMsg::decode(&m.encode()).unwrap(), m);
         }
@@ -734,6 +905,33 @@ mod tests {
             ServerMsg::Kick {
                 reason: "Server voll".into(),
             },
+            ServerMsg::Chat {
+                from: Some(2),
+                team: false,
+                text: "gg".into(),
+            },
+            ServerMsg::Chat {
+                from: None,
+                team: false,
+                text: "Server".into(),
+            },
+            ServerMsg::PlayerInfo {
+                slot: 4,
+                name: Some("Elora".into()),
+            },
+            ServerMsg::PlayerInfo {
+                slot: 4,
+                name: None,
+            },
+            ServerMsg::Vote(Some(VoteInfo {
+                description: "Karte: sandbox".into(),
+                yes: 2,
+                no: 1,
+                voters: 5,
+                seconds_left: 20,
+            })),
+            ServerMsg::Vote(None),
+            ServerMsg::Notice("Rot gewinnt".into()),
         ] {
             assert_eq!(ServerMsg::decode(&m.encode()).unwrap(), m);
         }

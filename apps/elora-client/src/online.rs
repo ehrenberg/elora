@@ -10,8 +10,10 @@ use std::time::{Duration, Instant};
 use elora_map::Map;
 use elora_protocol::codec::Reader;
 use elora_protocol::snapshot::is_dummy;
-use elora_protocol::{ClientMsg, PROTOCOL_VERSION, ServerMsg, Snapshot};
-use elora_sim::{Event, PlayerInput, TICKS_PER_SECOND, Tuning, World};
+use elora_protocol::{
+    ClientMsg, GameView, PROTOCOL_VERSION, ServerMsg, Snapshot, VoteInfo, VoteKind,
+};
+use elora_sim::{Event, PlayerInput, TICKS_PER_SECOND, Team, Tuning, World};
 
 use crate::scene::{Scene, SceneChar};
 
@@ -24,6 +26,19 @@ const SNAPSHOT_HISTORY: usize = 64;
 const INPUT_REDUNDANCY: u64 = 4;
 /// Zeitfenster für die Schätzung der Server-Zeit (Minimum = schnellstes Paket).
 const OFFSET_WINDOW: usize = 50;
+
+/// Eine Zeile im Chat-Verlauf.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ChatLine {
+    /// `None` = Server/Hinweis.
+    pub from: Option<String>,
+    pub team: bool,
+    pub text: String,
+    pub at: Instant,
+}
+
+/// Länge des Chat-Verlaufs.
+const CHAT_HISTORY: usize = 50;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Status {
@@ -80,6 +95,12 @@ pub struct OnlineClient {
     predicted_events_upto: u64,
     outgoing: Vec<(Vec<u8>, bool)>,
     pub info: NetInfo,
+    /// Namen der Slots.
+    pub names: BTreeMap<usize, String>,
+    /// Chat-Verlauf inkl. Server-Hinweise, neueste zuletzt.
+    pub chat: VecDeque<ChatLine>,
+    /// Laufende Abstimmung.
+    pub vote: Option<VoteInfo>,
 }
 
 impl OnlineClient {
@@ -108,7 +129,70 @@ impl OnlineClient {
             predicted_events_upto: 0,
             outgoing: Vec::new(),
             info: NetInfo::default(),
+            names: BTreeMap::new(),
+            chat: VecDeque::new(),
+            vote: None,
         }
+    }
+
+    fn send(&mut self, msg: &ClientMsg) {
+        self.outgoing.push((msg.encode(), true));
+    }
+
+    pub fn send_chat(&mut self, team: bool, text: &str) {
+        self.send(&ClientMsg::Chat {
+            team,
+            text: text.to_owned(),
+        });
+    }
+
+    pub fn set_team(&mut self, team: Team) {
+        self.send(&ClientMsg::SetTeam(team));
+    }
+
+    pub fn kill(&mut self) {
+        self.send(&ClientMsg::Kill);
+    }
+
+    pub fn call_vote(&mut self, kind: VoteKind) {
+        self.send(&ClientMsg::CallVote(kind));
+    }
+
+    pub fn vote(&mut self, yes: bool) {
+        self.send(&ClientMsg::Vote(yes));
+    }
+
+    fn push_chat(&mut self, from: Option<String>, team: bool, text: String, at: Instant) {
+        self.chat.push_back(ChatLine {
+            from,
+            team,
+            text,
+            at,
+        });
+        while self.chat.len() > CHAT_HISTORY {
+            self.chat.pop_front();
+        }
+    }
+
+    /// Spielzustand aus dem neuesten Snapshot (Scoreboard, Timer).
+    pub fn game(&self) -> Option<GameView> {
+        self.snapshots.back()?.game_view()
+    }
+
+    /// Team eines Slots laut neuestem Snapshot.
+    pub fn team_of(&self, slot: usize) -> Team {
+        let (Some(t), Some(s)) = (&self.template, self.snapshots.back()) else {
+            return Team::None;
+        };
+        let mut w = t.clone();
+        s.apply_to(&mut w, None);
+        w.team(slot)
+    }
+
+    /// Aktueller Server-Tick (geschätzt, für Timer).
+    pub fn server_tick(&self, now: Instant) -> Option<u64> {
+        #[allow(clippy::cast_sign_loss)] // durch max(0) ausgeschlossen
+        self.arrival_tick(now).map(|t| t.max(0.0) as u64)
     }
 
     fn secs(&self, t: Instant) -> f64 {
@@ -157,20 +241,54 @@ impl OnlineClient {
                 map_source,
                 tuning,
                 high_bandwidth,
-            } => match elora_map::parse_text_map(&map_source) {
-                Ok(map) => {
-                    self.template = Some(map.world(tuning));
-                    self.map = Some(map);
-                    self.map_name = map_name;
-                    self.slot = Some(slot as usize);
-                    self.high_bandwidth = high_bandwidth;
-                    self.last_input_tick = tick;
-                    self.status = Status::Playing;
+            } => {
+                // auch nach einem Kartenwechsel: Zustand der alten Karte verwerfen
+                match elora_map::parse_text_map(&map_source) {
+                    Ok(map) => {
+                        self.template = Some(map.world(tuning));
+                        self.map = Some(map);
+                        self.map_name = map_name;
+                        self.slot = Some(slot as usize);
+                        self.high_bandwidth = high_bandwidth;
+                        self.last_input_tick = tick;
+                        self.snapshots.clear();
+                        self.inputs.clear();
+                        self.pred = None;
+                        self.pred_prev = None;
+                        self.pred_history.clear();
+                        self.names.clear();
+                        self.status = Status::Playing;
+                    }
+                    Err(e) => {
+                        self.status =
+                            Status::Disconnected(format!("Karte vom Server ungültig: {e}"));
+                    }
                 }
-                Err(e) => {
-                    self.status = Status::Disconnected(format!("Karte vom Server ungültig: {e}"));
+            }
+            ServerMsg::Chat { from, team, text } => {
+                let from = from.map(|f| {
+                    self.names
+                        .get(&(f as usize))
+                        .cloned()
+                        .unwrap_or_else(|| format!("Spieler {f}"))
+                });
+                self.push_chat(
+                    Some(from.unwrap_or_else(|| "Server".into())),
+                    team,
+                    text,
+                    at,
+                );
+            }
+            ServerMsg::PlayerInfo { slot, name } => match name {
+                Some(n) => {
+                    self.names.insert(slot as usize, n);
+                }
+                None => {
+                    self.names.remove(&(slot as usize));
                 }
             },
+            ServerMsg::Vote(v) => self.vote = v,
+            ServerMsg::Notice(text) => self.push_chat(None, false, text, at),
             ServerMsg::Snapshot {
                 tick,
                 base,

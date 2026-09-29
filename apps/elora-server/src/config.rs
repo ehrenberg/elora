@@ -4,6 +4,7 @@ use std::net::SocketAddr;
 use std::path::{Path, PathBuf};
 
 use anyhow::Context as _;
+use elora_game::{Mode, RulesConfig};
 use elora_net::Keypair;
 use serde::{Deserialize, Serialize};
 
@@ -30,6 +31,14 @@ pub struct ServerConfig {
     pub key_file: PathBuf,
     /// Optionale Tuning-Datei (Format wie `tuning.toml` des Clients, Abschnitt `[physics]`).
     pub tuning: Option<PathBuf>,
+    /// Kartenrotation (Namen ohne `.emap.toml` aus `maps_dir`); leer = nur `map` (E-074).
+    pub rotation: Vec<String>,
+    /// Verzeichnis mit Karten für Rotation und Abstimmungen.
+    pub maps_dir: PathBuf,
+    /// Abstimmungen erlauben (E-077).
+    pub votes: bool,
+    /// Spielregeln (E-066 bis E-078).
+    pub rules: RulesConfig,
 }
 
 impl Default for ServerConfig {
@@ -43,6 +52,10 @@ impl Default for ServerConfig {
             high_bandwidth: false,
             key_file: PathBuf::from("server_key.toml"),
             tuning: None,
+            rotation: Vec::new(),
+            maps_dir: PathBuf::from("maps"),
+            votes: true,
+            rules: RulesConfig::default(),
         }
     }
 }
@@ -85,6 +98,21 @@ impl ServerConfig {
                 "--high-bandwidth" => self.high_bandwidth = true,
                 "--key-file" => self.key_file = PathBuf::from(value()?),
                 "--tuning" => self.tuning = Some(PathBuf::from(value()?)),
+                "--mode" => {
+                    let v = value()?;
+                    self.rules.mode = Mode::parse(v).with_context(|| {
+                        format!("unbekannter Modus `{v}` (dm, tdm, ctf, lms, lts)")
+                    })?;
+                }
+                "--instagib" => self.rules.instagib = true,
+                "--score-limit" => {
+                    self.rules.score_limit = Some(value()?.parse().context("--score-limit")?);
+                }
+                "--time-limit" => {
+                    self.rules.time_limit = value()?.parse().context("--time-limit")?;
+                }
+                "--no-friendly-fire" => self.rules.friendly_fire = false,
+                "--no-votes" => self.votes = false,
                 "--config" => {
                     value()?; // bereits in main ausgewertet
                 }

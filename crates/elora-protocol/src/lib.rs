@@ -9,8 +9,8 @@ mod huffman_table;
 pub mod msg;
 pub mod snapshot;
 
-pub use msg::{ClientMsg, ServerMsg};
-pub use snapshot::Snapshot;
+pub use msg::{ClientMsg, ServerMsg, VoteInfo, VoteKind};
+pub use snapshot::{GameView, Snapshot};
 
 /// Version des Spielprotokolls; Client und Server müssen übereinstimmen.
 pub const PROTOCOL_VERSION: u32 = 1;

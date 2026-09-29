@@ -602,6 +602,7 @@ dependencies = [
  "egui",
  "egui-wgpu",
  "egui-winit",
+ "elora-game",
  "elora-map",
  "elora-net",
  "elora-protocol",
@@ -648,6 +649,7 @@ dependencies = [
 name = "elora-protocol"
 version = "0.1.0"
 dependencies = [
+ "elora-game",
  "elora-sim",
  "thiserror 2.0.21",
  "toml",
@@ -669,6 +671,7 @@ name = "elora-server"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "elora-game",
  "elora-map",
  "elora-net",
  "elora-protocol",
