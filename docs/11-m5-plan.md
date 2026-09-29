@@ -1,6 +1,6 @@
 # M5 – Look & Sound: Umsetzungsplan
 
-Status: **Vorschlag, wartet auf Entscheidung** · Grundlage: [`06-roadmap.md`](06-roadmap.md) M5, E-006, E-027, E-029, E-030, E-031, E-032, E-033
+Status: **Entscheidungen getroffen (E-080–E-091), Plan wartet auf Freigabe** · Grundlage: [`06-roadmap.md`](06-roadmap.md) M5, E-006, E-027, E-029, E-030, E-031, E-032, E-033
 
 ## Ziel
 
@@ -44,16 +44,33 @@ Elora bekommt ihr eigenes Aussehen im Flat-/Vektorstil (E-030), mit Animationen,
 
 ## Entscheidungen zu M5
 
-| # | Frage |
-|---|---|
-| D-M5-01 | Wer erstellt Grafik und Sound? |
-| D-M5-02 | Quellformat der Vektorgrafiken (O-40) |
-| D-M5-03 | Elora: Grundform, Größe, Charakter |
-| D-M5-04 | Skin-System im Detail (O-39) |
-| D-M5-05 | Herkunft der Sounds |
-| D-M5-06 | Musik |
-| D-M5-07 | Umfang der Effekte (z. B. Kamera-Wackeln, Treffer-Marker) |
-| D-M5-08 | Optik von Tiles und Hintergrund bei Textkarten |
-| D-M5-09 | HUD-Stil |
-| D-M5-10 | Emotes |
-| D-M5-11 | Reihenfolge: Look zuerst oder Sound zuerst? |
+| # | Frage | Entscheidung |
+|---|---|---|
+| D-M5-01 | Wer erstellt Grafik? | E-080: Claude erzeugt SVG + Vektor-Bild-API für aufwendige Motive, Freigabe per Screenshot |
+| – | Bild-API | E-084: Recraft (SVG), Schlüssel nur als Umgebungsvariable |
+| D-M5-02 | Quellformat | SVG |
+| D-M5-03 | Elora-Form | E-085: Tropfenform mit starkem Squash & Stretch |
+| – | Darstellungsgröße | E-087: sichtbarer Körper ≈ 36 (Hitbox 28) |
+| D-M5-04 | Skins | E-086: nur Farben + wenige Teile, keine Community-Skins (Details O-46) |
+| D-M5-05 | Sounds | E-081: prozedural generiert + CC0 gemischt |
+| D-M5-06 | Musik | E-082: nur Menü (M7) |
+| D-M5-07 | Zusatz-Effekte | E-088: Kamera-Wackeln, Treffer-Marker (abschaltbar) |
+| D-M5-08 | Tiles/Hintergrund | E-089: schlicht |
+| D-M5-09 | HUD | E-090: modern, am Fadenkreuz |
+| D-M5-10 | Emotes | E-091: Emote-Rad mit 8 eigenen Emoticons |
+| D-M5-11 | Reihenfolge | E-083: erst Look, dann Sound |
+
+## Angepasste Schritte
+
+- **M5.2 Vektor-Assets:** SVG laden (`usvg`, Apache-2.0/MIT) → lyon-Tessellierung; Farbschlüssel für die Einfärbung. Werkzeug `cargo xtask svg-preview` rastert SVGs zu PNG (für meine Selbstprüfung und deine Freigabe). Recraft-Anbindung als `xtask`-Befehl, nur mit gesetztem `RECRAFT_API_KEY`; erzeugte SVGs werden bereinigt und mit Quelle in `assets/SOURCES.md` vermerkt.
+- **M5.3 Elora:** zuerst **3 Entwürfe der Tropfenform** als Bild zur Auswahl.
+- **M5.4 Skins:** feste Auswahl (O-46 wird mit den Entwürfen entschieden); übertragen werden nur Nummern und Farben.
+- **M5.5 Welt:** schlicht (E-089).
+- **M5.7 Audio:** prozeduraler Generator (sfxr-artig, Parameter als Dateien in `assets/sounds/`) für UI/einfache Effekte; CC0-Sounds mit Quellenliste in `assets/SOURCES.md`.
+- **M5.8 HUD:** 2–3 Entwürfe am Fadenkreuz zur Auswahl.
+- **M5.9 Emotes:** 8 eigene Emoticons, Emote-Rad mit Taste E.
+
+## Voraussetzungen vom Projektinhaber
+
+- Für Recraft: ein API-Schlüssel (als Umgebungsvariable `RECRAFT_API_KEY`), erst wenn ein Motiv die API braucht.
+

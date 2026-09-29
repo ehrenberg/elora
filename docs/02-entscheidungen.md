@@ -86,6 +86,18 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-077 | 2026-09-29 | Abstimmungen | Über **Karte, Modus, Kick (5 min Sperre), Zuschauer**; Ablauf wie Original (25 s) | Entscheidung Projektinhaber |
 | E-078 | 2026-09-29 | Tasten (D-M4-12) | **T** Chat, **Y** Team-Chat, **Tab** Scoreboard, **F3/F4** Ja/Nein, **K** kill; Abstimmungen und Team-Wahl im Panel | Entscheidung Projektinhaber |
 | E-079 | 2026-09-29 | M4-Plan | Plan aus [`10-m4-plan.md`](10-m4-plan.md) mit obigen Antworten umsetzen | Entscheidung Projektinhaber |
+| E-080 | 2026-09-29 | Grafik-Erstellung (D-M5-01) | **Claude erzeugt SVG** (mit Selbstprüfung am gerenderten Bild) **+ externe Vektor-Bild-API** für aufwendige Motive; Freigabe per Screenshot durch den Projektinhaber | Entscheidung Projektinhaber |
+| E-081 | 2026-09-29 | Sounds (D-M5-05) | **Prozedural generiert + CC0 gemischt** (generiert für UI/einfache Effekte, CC0 z. B. für Explosion/Treffer; Quellenliste) | Entscheidung Projektinhaber |
+| E-082 | 2026-09-29 | Musik (D-M5-06) | **Nur im Menü**, kommt mit M7 | Entscheidung Projektinhaber |
+| E-083 | 2026-09-29 | Reihenfolge M5 (D-M5-11) | **Erst Look, dann Sound** | Entscheidung Projektinhaber |
+| E-084 | 2026-09-29 | Bild-API | **Recraft** (SVG-Ausgabe); API-Schlüssel nur als Umgebungsvariable, nie im Repo; Nutzungsbedingungen vor dem ersten Einsatz prüfen | Entscheidung Projektinhaber |
+| E-085 | 2026-09-29 | Elora-Form (D-M5-03) | **Tropfenform** – nach oben spitz, starkes Squash & Stretch beim Springen/Landen | Entscheidung Projektinhaber |
+| E-086 | 2026-09-29 | Skins (D-M5-04, O-39) | **Nur Farben + wenige Teile** aus fester Auswahl (z. B. Körperfarbe, Muster, Augenform), **keine Community-Skins** – ersetzt den Community-Teil von E-029 | Entscheidung Projektinhaber |
+| E-087 | 2026-09-29 | Darstellungsgröße | **Etwas kleiner als Original:** sichtbarer Körper ≈ 36 Einheiten (Hitbox 28) | Entscheidung Projektinhaber |
+| E-088 | 2026-09-29 | Zusatz-Effekte (D-M5-07) | **Kamera-Wackeln** (nahe Explosionen, eigener Schaden) und **Treffer-Marker** beim Treffen anderer – beides abschaltbar; genaue Form im Entwurf | Entscheidung Projektinhaber |
+| E-089 | 2026-09-29 | Welt-Optik Textkarten (D-M5-08) | **Schlicht:** einfarbige Tiles mit Kontur, Verlaufs-Hintergrund; Aufwand in M6 | Entscheidung Projektinhaber |
+| E-090 | 2026-09-29 | HUD (D-M5-09) | **Modern, am Fadenkreuz:** Leben/Rüstung/Munition als Balken bzw. Ringe am Fadenkreuz oder unten mittig; genaue Form im Entwurf | Entscheidung Projektinhaber |
+| E-091 | 2026-09-29 | Emotes (D-M5-10) | **Emote-Rad mit 8 eigenen Emoticons** (Taste E halten, Maus wählt) + automatische Augen-Ausdrücke | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 
@@ -111,7 +123,7 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 - [x] ~~O-26 Audio-Bibliothek~~ → E-032
 - [x] ~~O-27 UI-Lösung~~ → E-031
 - [x] ~~O-38 Vektor-Pipeline~~ → E-033
-- [ ] **O-40 Vektor-Quellformat** (SVG, eigenes Format, …) und Werkzeug zum Erstellen
+- [x] ~~O-40 Vektor-Quellformat~~ → SVG (E-080, E-084)
 - [x] ~~O-09 Netzwerk-Transport~~ → E-012
 - [x] ~~O-28 Physik-Arithmetik~~ → E-021
 - [x] ~~O-29 Rust-Workspace-Struktur~~ → E-019
@@ -129,7 +141,8 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 - [x] ~~O-32 Physikwerte im Einzelnen~~ → E-023
 - [x] ~~O-33 Syntax des Karten-Textformats~~ → E-024
 - [x] ~~O-34 Elora als Figur~~ → E-029
-- [ ] **O-39 Skin-Aufbau im Detail** (Teile, Einfärbung, Format, Verteilung von Community-Skins)
+- [x] ~~O-39 Skin-Aufbau~~ → E-086 (Details → O-46)
+- [ ] **O-46 Skin-Auswahl im Detail** (welche Teile, wie viele Varianten, Farbwahl frei/Palette)
 - [x] ~~O-35 Startausrüstung~~ → E-025
 - [x] ~~O-15 Bots~~ → E-035
 - [x] ~~O-16 Map-Editor~~ → E-028 (Zeitpunkt → Meilensteine O-21)
