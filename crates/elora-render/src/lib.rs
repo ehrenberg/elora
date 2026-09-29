@@ -1,15 +1,21 @@
 //! 2D-Renderer von Elora auf Basis von wgpu (E-011).
 //!
 //! Formen werden zur Laufzeit per lyon tesselliert (E-033) und in einem Draw-Call
-//! pro Frame gezeichnet. Weitere Pässe (z. B. egui) können sich über
+//! pro Frame gezeichnet. Wiederkehrende Formen (Figur, Pickups) liegen als
+//! gecachte [`Mesh`]es vor und werden nur noch transformiert (M5.1). Kanten werden
+//! per MSAA geglättet. Weitere Pässe (z. B. egui) können sich über
 //! [`Frame`] einklinken.
 
 mod camera;
+mod mesh;
 mod shapes;
 
 use std::sync::Arc;
 
 pub use camera::{Camera, ViewSettings};
+/// Pfade für [`MeshBuilder`].
+pub use lyon::path::Path;
+pub use mesh::{Affine, Mesh, MeshBuilder, Paint, Tint, ellipse, lerp_color, rounded_rect, shade};
 pub use shapes::{Color, ShapeBatch};
 pub use wgpu;
 
@@ -56,6 +62,10 @@ pub struct Renderer {
     view_bind_group: wgpu::BindGroup,
     vertex_buffer: wgpu::Buffer,
     index_buffer: wgpu::Buffer,
+    /// Abtastungen je Pixel (1 = kein MSAA).
+    samples: u32,
+    /// Mehrfach abgetastetes Ziel, wird in die Surface aufgelöst.
+    msaa: Option<wgpu::TextureView>,
 }
 
 /// Ein laufender Frame: Ziel-Textur und Command-Encoder.
@@ -67,6 +77,9 @@ pub struct Frame {
 }
 
 const INITIAL_VERTICES: u64 = 16 * 1024;
+
+/// Gewünschte MSAA-Stufe; fällt auf 1 zurück, wenn das Format sie nicht kann.
+const MSAA_SAMPLES: u32 = 4;
 
 impl Renderer {
     /// Initialisiert wgpu für `window` mit der Anfangsgröße in Pixeln.
@@ -108,7 +121,18 @@ impl Renderer {
         config.present_mode = wgpu::PresentMode::AutoVsync;
         surface.configure(&device, &config);
 
-        let (pipeline, view_buffer, view_bind_group) = create_pipeline(&device, config.format);
+        let samples = if adapter
+            .get_texture_format_features(config.format)
+            .flags
+            .sample_count_supported(MSAA_SAMPLES)
+        {
+            MSAA_SAMPLES
+        } else {
+            1
+        };
+        let (pipeline, view_buffer, view_bind_group) =
+            create_pipeline(&device, config.format, samples);
+        let msaa = create_msaa(&device, &config, samples);
 
         let vertex_buffer = create_buffer(
             &device,
@@ -133,7 +157,14 @@ impl Renderer {
             view_bind_group,
             vertex_buffer,
             index_buffer,
+            samples,
+            msaa,
         })
+    }
+
+    /// MSAA-Stufe (1 = aus).
+    pub fn msaa_samples(&self) -> u32 {
+        self.samples
     }
 
     pub fn device(&self) -> &wgpu::Device {
@@ -165,6 +196,7 @@ impl Renderer {
         self.config.width = width;
         self.config.height = height;
         self.surface.configure(&self.device, &self.config);
+        self.msaa = create_msaa(&self.device, &self.config, self.samples);
     }
 
     /// Beginnt einen Frame. `None`, wenn gerade nicht gezeichnet werden kann
@@ -235,12 +267,17 @@ impl Renderer {
             .begin_render_pass(&wgpu::RenderPassDescriptor {
                 label: Some("shapes"),
                 color_attachments: &[Some(wgpu::RenderPassColorAttachment {
-                    view: &frame.view,
+                    view: self.msaa.as_ref().unwrap_or(&frame.view),
                     depth_slice: None,
-                    resolve_target: None,
+                    resolve_target: self.msaa.as_ref().map(|_| &frame.view),
                     ops: wgpu::Operations {
                         load: wgpu::LoadOp::Clear(wgpu::Color { r, g, b, a }),
-                        store: wgpu::StoreOp::Store,
+                        // Das MSAA-Ziel wird nach dem Auflösen nicht mehr gebraucht
+                        store: if self.msaa.is_some() {
+                            wgpu::StoreOp::Discard
+                        } else {
+                            wgpu::StoreOp::Store
+                        },
                     },
                 })],
                 depth_stencil_attachment: None,
@@ -269,6 +306,7 @@ impl Renderer {
 fn create_pipeline(
     device: &wgpu::Device,
     format: wgpu::TextureFormat,
+    samples: u32,
 ) -> (wgpu::RenderPipeline, wgpu::Buffer, wgpu::BindGroup) {
     let shader = device.create_shader_module(wgpu::include_wgsl!("shader.wgsl"));
     let view_buffer = device.create_buffer(&wgpu::BufferDescriptor {
@@ -318,7 +356,10 @@ fn create_pipeline(
         },
         primitive: wgpu::PrimitiveState::default(),
         depth_stencil: None,
-        multisample: wgpu::MultisampleState::default(),
+        multisample: wgpu::MultisampleState {
+            count: samples,
+            ..Default::default()
+        },
         fragment: Some(wgpu::FragmentState {
             module: &shader,
             entry_point: Some("fs_main"),
@@ -333,6 +374,32 @@ fn create_pipeline(
         cache: None,
     });
     (pipeline, view_buffer, view_bind_group)
+}
+
+/// MSAA-Ziel in Surface-Größe; `None` ohne MSAA.
+fn create_msaa(
+    device: &wgpu::Device,
+    config: &wgpu::SurfaceConfiguration,
+    samples: u32,
+) -> Option<wgpu::TextureView> {
+    (samples > 1).then(|| {
+        device
+            .create_texture(&wgpu::TextureDescriptor {
+                label: Some("msaa"),
+                size: wgpu::Extent3d {
+                    width: config.width,
+                    height: config.height,
+                    depth_or_array_layers: 1,
+                },
+                mip_level_count: 1,
+                sample_count: samples,
+                dimension: wgpu::TextureDimension::D2,
+                format: config.format,
+                usage: wgpu::TextureUsages::RENDER_ATTACHMENT,
+                view_formats: &[],
+            })
+            .create_view(&wgpu::TextureViewDescriptor::default())
+    })
 }
 
 fn create_buffer(

@@ -162,6 +162,19 @@ impl ShapeBatch {
         );
     }
 
+    /// Gecachtes Mesh transformiert und eingefärbt anhängen.
+    ///
+    /// # Panics
+    /// Bei mehr als `u32::MAX` Vertices in einem Batch.
+    pub fn draw_mesh(&mut self, mesh: &crate::Mesh, transform: &crate::Affine, tint: &crate::Tint) {
+        mesh.emit(transform, tint, &mut self.geometry);
+    }
+
+    /// Anzahl Dreiecke im Batch (Statistik).
+    pub fn triangle_count(&self) -> usize {
+        self.geometry.indices.len() / 3
+    }
+
     pub fn stroke_line(&mut self, from: Vec2, to: Vec2, width: f32, color: Color) {
         self.stroke_polyline(&[from, to], width, color);
     }

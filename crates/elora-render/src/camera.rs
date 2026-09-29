@@ -58,6 +58,15 @@ impl Camera {
         }
     }
 
+    /// Zoom um `factor` (> 1 = näher heran, weniger sichtbar). Reine Darstellung.
+    #[must_use]
+    pub fn zoomed(self, factor: f32) -> Self {
+        Self {
+            size: self.size / factor.max(0.05),
+            ..self
+        }
+    }
+
     /// Obere linke Ecke.
     pub fn top_left(&self) -> Vec2 {
         self.center - self.size * 0.5
@@ -83,6 +92,14 @@ mod tests {
     fn view_area_matches_original_for_4_3() {
         let s = ViewSettings::default().view_size(4.0 / 3.0);
         assert!((s.x * s.y - 1_150_000.0).abs() < 1.0);
+    }
+
+    #[test]
+    fn zoom_keeps_center() {
+        let c = Camera::new(Vec2::new(100.0, 50.0), &ViewSettings::default(), 16.0 / 9.0);
+        let z = c.zoomed(2.0);
+        assert_eq!(z.center, c.center);
+        assert!((z.size.x * 2.0 - c.size.x).abs() < 1e-3);
     }
 
     #[test]

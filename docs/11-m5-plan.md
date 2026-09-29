@@ -24,7 +24,7 @@ Elora bekommt ihr eigenes Aussehen im Flat-/Vektorstil (E-030), mit Animationen,
 
 | # | Schritt | Crate | Inhalt | Prüfung |
 |---|---|---|---|---|
-| M5.1 | Vektor-Renderer | `elora-render` | Transformationen (Verschieben, Drehen, Skalieren, Verformen), Verläufe, Antialiasing (MSAA), Formen-Cache (einmal tesselliert, oft gezeichnet), Kamera-Zoom | Sichtprüfung, Benchmark |
+| M5.1 ✅ | Vektor-Renderer | `elora-render` | Transformationen (Verschieben, Drehen, Skalieren, Verformen), Verläufe, Antialiasing (MSAA), Formen-Cache (einmal tesselliert, oft gezeichnet), Kamera-Zoom | Sichtprüfung, Benchmark |
 | M5.2 | Vektor-Assets | `elora-render` + `assets/` | Laden des Quellformats (D-M5-02), Farbschlüssel für die Einfärbung | Tests |
 | M5.3 | Elora-Figur | Client | Figur aus Teilen (D-M5-03), Augen folgen dem Ziel, Füße laufen, Squash & Stretch (Sprung, Landung, Hook), Waffe in der Hand, Emotes | Sichtprüfung |
 | M5.4 | Skins | Client + Protokoll | Skin-Teile und Farben (D-M5-04), Auswahl im Client, Übertragung an andere Spieler | Tests + Sichtprüfung |
@@ -70,6 +70,11 @@ Elora bekommt ihr eigenes Aussehen im Flat-/Vektorstil (E-030), mit Animationen,
 - **M5.7 Audio:** prozeduraler Generator (sfxr-artig, Parameter als Dateien in `assets/sounds/`) für UI/einfache Effekte; CC0-Sounds mit Quellenliste in `assets/SOURCES.md`.
 - **M5.8 HUD:** 2–3 Entwürfe am Fadenkreuz zur Auswahl.
 - **M5.9 Emotes:** 8 eigene Emoticons, Emote-Rad mit Taste E.
+
+## Umsetzungsstand
+
+- **M5.1 Vektor-Renderer:** `Mesh` (einmal tesselliert, lokale Koordinaten) + `Affine` (Verschieben, Drehen, Skalieren/Verformen) + `Paint` (Farbe, linearer Verlauf, Farbschlüssel mit Aufhellung) + `Tint` (Skin-Farben, Deckkraft). 4× MSAA mit Rückfall auf 1, wenn das Format es nicht kann. `Camera::zoomed`. Benchmark `cargo run --release -p elora-render --example bench_meshes`: 64 Figuren (je 316 Dreiecke) + 2000 Partikel = 34 224 Dreiecke, CPU-Aufbau ≈ 0,09 ms/Frame.
+- **M5.3 Elora:** Entwurf B „Wirbel“ gewählt (E-094); Entwurfsblatt `docs/design/elora-entwuerfe.png`, Generator `tools/design/elora_entwuerfe.py`.
 
 ## Voraussetzungen vom Projektinhaber
 
