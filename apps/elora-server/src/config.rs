@@ -39,6 +39,9 @@ pub struct ServerConfig {
     pub votes: bool,
     /// Spielregeln (E-066 bis E-078).
     pub rules: RulesConfig,
+    /// Master-Server, bei denen sich der Server anmeldet (HTTPS-Adressen, E-112/E-127);
+    /// leer = nicht in der Internet-Liste, nur LAN und Direkt-Verbinden.
+    pub masters: Vec<String>,
 }
 
 impl Default for ServerConfig {
@@ -56,6 +59,7 @@ impl Default for ServerConfig {
             maps_dir: PathBuf::from("maps"),
             votes: true,
             rules: RulesConfig::default(),
+            masters: Vec::new(),
         }
     }
 }
@@ -113,6 +117,7 @@ impl ServerConfig {
                 }
                 "--no-friendly-fire" => self.rules.friendly_fire = false,
                 "--no-votes" => self.votes = false,
+                "--master" => self.masters.push(value()?.clone()),
                 "--config" => {
                     value()?; // bereits in main ausgewertet
                 }

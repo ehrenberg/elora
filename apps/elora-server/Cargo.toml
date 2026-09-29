@@ -21,6 +21,7 @@ elora-map.workspace = true
 elora-protocol.workspace = true
 elora-net.workspace = true
 elora-game.workspace = true
+elora-master = { workspace = true, features = ["client"] }
 anyhow.workspace = true
 serde.workspace = true
 toml.workspace = true

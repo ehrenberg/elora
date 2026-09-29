@@ -98,6 +98,7 @@ cargo run --bin elora-server -- --config server.toml
 | `--time-limit` | 0 | Zeitlimit in Minuten, 0 = aus |
 | `--no-friendly-fire` | an | kein Schaden an Teammitgliedern (Rückstoß bleibt) |
 | `--no-votes` | an | Abstimmungen abschalten |
+| `--master` | – | beim Master-Server anmelden (Internet-Liste), z. B. `--master https://master.example.org`; mehrfach möglich |
 | `--config` | – | alle Optionen aus einer TOML-Datei; weitere Optionen überschreiben sie |
 
 Weitere Einstellungen nur in der Konfigurationsdatei: `rotation = ["sandbox", "ctf-test"]` (Kartenrotation), `maps_dir`, und ein Abschnitt `[rules]` (`warmup_secs`, `countdown_secs`, `tdm_respawn_secs`, `team_balance_secs`, `match_swap`, `matches_per_map`).
@@ -112,9 +113,18 @@ Beenden: `quit` + Enter oder Strg+C. Log-Ausgabe steuern: `RUST_LOG=debug cargo 
 cargo run --bin elora -- --connect 127.0.0.1:8303
 ```
 
-oder im Client: `Esc` → Panel *Netzwerk* → Adresse eintragen → *Verbinden*. *Trennen* führt zurück in die Sandbox.
+oder im Hauptmenü unter *Spielen* (Adresse, Favoriten). Für Entwickler zusätzlich im Debug-Panel (F1) → *Netzwerk*.
 
-**Aus dem Client hosten:** `Esc` → *Netzwerk* → *Server einrichten …* → Name, Port, Karte, Spielerzahl, 50 Hz, „weiterlaufen lassen“ → *Starten und verbinden*. Der Client schreibt `server.toml` und startet `elora-server` als eigenen Prozess (vorher einmal `cargo build`).
+**Aus dem Client hosten:** Hauptmenü → *Server erstellen* (Name, Karte, Modus, Instagib, Spieler) → *Server starten*. Der Client schreibt `server.toml` und startet `elora-server` als eigenen Prozess (vorher einmal `cargo build`). Mehr Optionen im Debug-Panel → *Netzwerk* → *Server einrichten …*.
+
+**Master-Server (Internet-Liste):**
+
+```sh
+cargo run --bin elora-master -- --bind 0.0.0.0:8300                # HTTP auf Port 8300
+cargo run --bin elora-master -- --bind 127.0.0.1:8300 --behind-proxy   # hinter Reverse-Proxy
+```
+
+Spielserver melden sich mit `--master <URL>` (oder `masters = ["…"]` in `server.toml`) alle 20 s an; der Master listet sie erst, wenn er sie selbst per UDP erreicht, und entfernt sie nach 60 s ohne Anmeldung. Öffentlich den Master hinter einem Reverse-Proxy mit HTTPS betreiben (z. B. Caddy: `reverse_proxy 127.0.0.1:8300`) und `--behind-proxy` setzen. Schnittstelle: `GET /servers`, `POST /register` (JSON).
 
 **Firewall:** Für Spieler aus dem LAN/Internet muss der UDP-Port (Standard 8303) freigegeben sein, z. B. `sudo ufw allow 8303/udp` bzw. `sudo firewall-cmd --add-port=8303/udp`.
 

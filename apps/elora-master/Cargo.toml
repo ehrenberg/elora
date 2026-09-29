@@ -1,0 +1,38 @@
+[package]
+name = "elora-master"
+description = "Elora – Master-Server für die Internet-Serverliste (HTTP/JSON, E-112)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[lib]
+name = "elora_master"
+path = "src/lib.rs"
+
+[[bin]]
+name = "elora-master"
+path = "src/main.rs"
+required-features = ["server"]
+
+[features]
+default = ["server"]
+# HTTPS-Client für Spiel-Client und Spiel-Server (Anmelden, Liste holen, E-127)
+client = ["dep:ureq"]
+# Der Master-Dienst selbst
+server = ["dep:tiny_http", "dep:tracing-subscriber"]
+
+[dependencies]
+elora-net.workspace = true
+elora-protocol.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+anyhow.workspace = true
+tracing.workspace = true
+ureq = { workspace = true, optional = true }
+tiny_http = { workspace = true, optional = true }
+tracing-subscriber = { workspace = true, optional = true }
+
+[lints]
+workspace = true

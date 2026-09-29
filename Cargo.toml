@@ -10,6 +10,7 @@ members = [
     "crates/elora-audio",
     "apps/elora-client",
     "apps/elora-server",
+    "apps/elora-master",
     "xtask",
 ]
 
@@ -31,6 +32,10 @@ elora-game = { path = "crates/elora-game" }
 
 serde = { version = "1.0.229", features = ["derive"] }
 toml = "1.1.6"
+serde_json = "1.0.145"
+ureq = { version = "3.4.2", default-features = false, features = ["rustls"] }
+tiny_http = "0.12.0"
+elora-master = { path = "apps/elora-master", default-features = false }
 kira = { version = "0.12.5", default-features = false, features = ["cpal"] }
 thiserror = "2.0.21"
 anyhow = "1.0.104"

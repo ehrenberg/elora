@@ -20,6 +20,33 @@ struct TuningFile {
     physics: Tuning,
 }
 
+/// Beim Master anmelden und die Anmeldung regelmäßig erneuern (eigener Thread, E-112).
+fn register_loop(master: String, port: u16) {
+    let spawned = std::thread::Builder::new()
+        .name("master".into())
+        .spawn(move || {
+            let mut last_ok: Option<bool> = None;
+            loop {
+                let result =
+                    elora_master::client::register(&master, port, elora_protocol::PROTOCOL_VERSION);
+                // nur Wechsel melden, nicht alle 20 s dasselbe
+                let ok = result.as_ref().is_ok_and(|r| r.ok);
+                if last_ok != Some(ok) {
+                    match &result {
+                        Ok(r) if r.ok => tracing::info!(%master, "beim Master angemeldet"),
+                        Ok(r) => tracing::warn!(%master, reason = %r.message, "Master lehnt ab"),
+                        Err(e) => tracing::warn!(%master, "{e:#}"),
+                    }
+                    last_ok = Some(ok);
+                }
+                std::thread::sleep(elora_master::REGISTER_INTERVAL);
+            }
+        });
+    if let Err(e) = spawned {
+        tracing::warn!("Anmeldung beim Master nicht gestartet: {e}");
+    }
+}
+
 fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt()
         .with_env_filter(
@@ -63,6 +90,9 @@ fn main() -> anyhow::Result<()> {
     );
 
     tracing::info!(maps = %server.map_names().join(", "), mode = %server.rules.cfg.title(), "`help` zeigt die Konsolenbefehle");
+    for master in cfg.masters.clone() {
+        register_loop(master, cfg.port);
+    }
 
     let commands = console_input()?;
     'run: loop {
