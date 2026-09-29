@@ -100,6 +100,10 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-091 | 2026-09-29 | Emotes (D-M5-10) | **Emote-Rad mit 8 eigenen Emoticons** (Taste E halten, Maus wählt) + automatische Augen-Ausdrücke | Entscheidung Projektinhaber |
 | E-092 | 2026-09-29 | M4 Abnahme | Spielmodi „vorerst abgeschlossen“ | Entscheidung Projektinhaber |
 | E-093 | 2026-09-29 | M5-Plan | Plan aus [`11-m5-plan.md`](11-m5-plan.md) umsetzen | Entscheidung Projektinhaber |
+| E-094 | 2026-09-29 | Elora-Entwurf (M5.3) | **Entwurf B „Wirbel“:** Tropfen mit zur Seite geneigter Spitze, heller Bauchfleck, kleine Augen mit Lächeln ([`design/elora-entwuerfe.png`](design/elora-entwuerfe.png)) | Entscheidung Projektinhaber |
+| E-095 | 2026-09-29 | Skin-Teile (O-46) | Färbbar sind **Augen, Körper, Füße** – **nur Farben**, keine Form-Varianten je Teil | Entscheidung Projektinhaber |
+| E-096 | 2026-09-29 | Farbwahl (O-46) | **Feste Palette** je Teil, keine freien Regler; Farben der Palette als Entwurf zur Freigabe | Entscheidung Projektinhaber |
+| E-097 | 2026-09-29 | Bauchfleck (O-46) | Kein eigenes Teil – **hellere Abstufung der Körperfarbe** | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 
@@ -144,7 +148,7 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 - [x] ~~O-33 Syntax des Karten-Textformats~~ → E-024
 - [x] ~~O-34 Elora als Figur~~ → E-029
 - [x] ~~O-39 Skin-Aufbau~~ → E-086 (Details → O-46)
-- [ ] **O-46 Skin-Auswahl im Detail** (welche Teile, wie viele Varianten, Farbwahl frei/Palette)
+- [x] ~~O-46 Skin-Auswahl im Detail~~ → E-095, E-096, E-097
 - [x] ~~O-35 Startausrüstung~~ → E-025
 - [x] ~~O-15 Bots~~ → E-035
 - [x] ~~O-16 Map-Editor~~ → E-028 (Zeitpunkt → Meilensteine O-21)
