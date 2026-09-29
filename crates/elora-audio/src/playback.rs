@@ -58,10 +58,13 @@ impl Audio {
         let sounds = bank
             .sounds
             .iter()
-            .map(|(s, def)| (*s, to_data(&def.render())))
+            .map(|(s, src)| (*s, to_data(&src.samples())))
             .collect();
         for s in bank.missing() {
-            tracing::warn!("Sound `{}` fehlt in sounds.toml", s.name());
+            tracing::warn!(
+                "Sound `{}` fehlt (weder sounds.toml noch Tondatei)",
+                s.name()
+            );
         }
         Self {
             manager,

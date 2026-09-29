@@ -18,7 +18,9 @@ Befehle:
   svg-preview <eingabe.svg> <ausgabe.png> [breite]
                  SVG rastern (Entwürfe prüfen, M5)
   sound-preview [name …]
-                 Sounds aus assets/sounds/sounds.toml als WAV nach target/sounds/ (Hörprobe, M5.7)
+                 Sounds (prozedural + Dateien) als WAV nach target/sounds/ (Hörprobe, M5.7)
+  sound-import <name> <eingabe> [start_s] [länge_s]
+                 Tondatei per ffmpeg nach assets/sounds/files/<name>.wav (Quelle in assets/SOURCES.md eintragen!)
   help           Diese Hilfe
 ";
 
@@ -31,6 +33,10 @@ fn main() -> ExitCode {
         Some("svg-preview") => {
             let args: Vec<String> = std::env::args().skip(2).collect();
             svg_preview(&args)
+        }
+        Some("sound-import") => {
+            let args: Vec<String> = std::env::args().skip(2).collect();
+            sound_import(&args)
         }
         Some("sound-preview") => {
             let args: Vec<String> = std::env::args().skip(2).collect();
@@ -177,30 +183,123 @@ fn net_stats() {
 }
 
 /// Rastert ein SVG zu PNG (resvg), Breite optional (Höhe proportional).
-/// Schreibt alle (oder die genannten) Sounds als WAV nach `target/sounds/`.
-fn sound_preview(names: &[String]) -> Result<(), String> {
+/// Bank wie im Spiel, aber frisch von der Platte (Änderungen ohne Neubau hörbar).
+fn load_bank() -> Result<elora_audio::Bank, String> {
     let src = std::fs::read_to_string("assets/sounds/sounds.toml")
         .map_err(|e| format!("assets/sounds/sounds.toml: {e}"))?;
-    let bank = elora_audio::Bank::parse(&src).map_err(|e| e.to_string())?;
+    let mut bank = elora_audio::Bank::parse(&src).map_err(|e| e.to_string())?;
+    let dir = std::path::Path::new(SOUND_FILES);
+    let mut files: Vec<_> = std::fs::read_dir(dir)
+        .map_err(|e| format!("{SOUND_FILES}: {e}"))?
+        .filter_map(Result::ok)
+        .map(|e| e.path())
+        .filter(|p| p.extension().is_some_and(|x| x == "wav"))
+        .collect();
+    files.sort();
+    for path in files {
+        let name = path
+            .file_stem()
+            .and_then(|n| n.to_str())
+            .unwrap_or_default()
+            .to_owned();
+        let data = std::fs::read(&path).map_err(|e| format!("{}: {e}", path.display()))?;
+        bank.add_file(&name, &data).map_err(|e| e.to_string())?;
+    }
+    Ok(bank)
+}
+
+const SOUND_FILES: &str = "assets/sounds/files";
+
+/// Schreibt alle (oder die genannten) Sounds als WAV nach `target/sounds/`.
+fn sound_preview(names: &[String]) -> Result<(), String> {
+    let bank = load_bank()?;
     let dir = std::path::Path::new("target/sounds");
     std::fs::create_dir_all(dir).map_err(|e| format!("{}: {e}", dir.display()))?;
     let mut count = 0;
-    for (sound, def) in &bank.sounds {
+    for (sound, src) in &bank.sounds {
         if !names.is_empty() && !names.iter().any(|n| n == sound.name()) {
             continue;
         }
         let path = dir.join(format!("{}.wav", sound.name()));
-        std::fs::write(&path, elora_audio::wav(&def.render()))
+        std::fs::write(&path, elora_audio::wav(&src.samples()))
             .map_err(|e| format!("{}: {e}", path.display()))?;
-        println!("{} ({:.2} s)", path.display(), def.duration());
+        let kind = if src.is_file() { "Datei" } else { "prozedural" };
+        println!("{} ({:.2} s, {kind})", path.display(), src.duration());
         count += 1;
     }
     for s in bank.missing() {
-        println!("fehlt in sounds.toml: {}", s.name());
+        println!("fehlt: {}", s.name());
     }
     if count == 0 {
         return Err("keine passenden Sounds".into());
     }
+    Ok(())
+}
+
+/// `sound-import <name> <eingabe> [start_s] [länge_s]`: Tondatei (jedes Format, das
+/// ffmpeg liest) nach `assets/sounds/files/<name>.wav` – Mono, 44,1 kHz, 16 Bit,
+/// Stille am Anfang entfernt, 15 ms Ausblenden am Ende, Spitze auf −1 dB.
+fn sound_import(args: &[String]) -> Result<(), String> {
+    let usage = "Verwendung: cargo xtask sound-import <name> <eingabe> [start_s] [länge_s]";
+    let (Some(name), Some(input)) = (args.first(), args.get(1)) else {
+        return Err(usage.into());
+    };
+    if elora_audio::Sound::from_name(name).is_none() {
+        return Err(format!(
+            "unbekannter Sound `{name}` (siehe crates/elora-audio/src/cues.rs)"
+        ));
+    }
+    let mut cmd = std::process::Command::new("ffmpeg");
+    cmd.args(["-v", "error"]);
+    if let Some(start) = args.get(2) {
+        cmd.args(["-ss", start]);
+    }
+    cmd.args(["-i", input]);
+    if let Some(len) = args.get(3) {
+        cmd.args(["-t", len]);
+    }
+    cmd.args(["-ac", "1", "-ar", "44100", "-f", "f32le", "-"]);
+    let out = cmd
+        .output()
+        .map_err(|e| format!("ffmpeg nicht startbar: {e}"))?;
+    if !out.status.success() {
+        return Err(format!("ffmpeg: {}", String::from_utf8_lossy(&out.stderr)));
+    }
+    let mut samples: Vec<f32> = out
+        .stdout
+        .as_chunks::<4>()
+        .0
+        .iter()
+        .map(|b| f32::from_le_bytes(*b))
+        .collect();
+    // Stille am Anfang entfernen (Sounds sollen sofort einsetzen)
+    let first = samples.iter().position(|s| s.abs() > 0.01).unwrap_or(0);
+    samples.drain(..first);
+    let fade = elora_audio::SAMPLE_RATE as usize * 15 / 1000; // 15 ms
+    let len = samples.len();
+    for (i, s) in samples
+        .iter_mut()
+        .enumerate()
+        .skip(len.saturating_sub(fade))
+    {
+        #[allow(clippy::cast_precision_loss)]
+        let t = (len - i) as f32 / fade as f32;
+        *s *= t;
+    }
+    let peak = samples.iter().fold(0.0_f32, |m, s| m.max(s.abs()));
+    if peak <= 0.0 {
+        return Err("Eingabe ist stumm".into());
+    }
+    let target = 0.89; // −1 dBFS
+    for s in &mut samples {
+        *s *= target / peak;
+    }
+    let path = std::path::Path::new(SOUND_FILES).join(format!("{name}.wav"));
+    std::fs::write(&path, elora_audio::wav(&samples))
+        .map_err(|e| format!("{}: {e}", path.display()))?;
+    #[allow(clippy::cast_precision_loss)]
+    let secs = samples.len() as f32 / elora_audio::SAMPLE_RATE as f32;
+    println!("{} ({secs:.2} s)", path.display());
     Ok(())
 }
 

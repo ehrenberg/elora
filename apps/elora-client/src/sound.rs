@@ -23,9 +23,9 @@ pub struct Sounds {
 
 impl Sounds {
     /// # Panics
-    /// Wenn die eingebettete `sounds.toml` fehlerhaft ist (wird von Tests abgedeckt).
+    /// Wenn `sounds.toml` oder eine Tondatei fehlerhaft ist (wird von Tests abgedeckt).
     pub fn new(settings: AudioSettings) -> Self {
-        let bank = Bank::parse(elora_audio::SOUNDS_TOML).expect("assets/sounds/sounds.toml gültig");
+        let bank = Bank::load().expect("assets/sounds: sounds.toml und Tondateien gültig");
         Self {
             audio: Audio::new(&bank),
             settings,
