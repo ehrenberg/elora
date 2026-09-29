@@ -14,7 +14,9 @@ use std::time::{Duration, Instant};
 use elora_game::{GameEvent, Rules, RulesConfig, Winner};
 use elora_net::{DisconnectReason, Keypair, ServerEndpoint, ServerEvent, Socket};
 use elora_protocol::msg::MAX_CHAT;
-use elora_protocol::{ClientMsg, PROTOCOL_VERSION, ServerMsg, Skin, Snapshot};
+use elora_protocol::{
+    ClientMsg, InfoPlayer, PROTOCOL_VERSION, ServerInfo, ServerMsg, Skin, Snapshot,
+};
 use elora_sim::{Controller, Event, PlayerInput, TICKS_PER_SECOND, Team, Tuning, World};
 
 pub use config::ServerConfig;
@@ -28,6 +30,8 @@ const HISTORY: usize = 100;
 const MAX_INPUT_AHEAD: u64 = 2 * TICKS_PER_SECOND as u64;
 /// Spam-Schutz: Mindestabstand zwischen zwei Chat-Nachrichten.
 const CHAT_INTERVAL: Duration = Duration::from_millis(700);
+/// So oft wird die Info für den Server-Browser erneuert.
+const INFO_INTERVAL: Duration = Duration::from_secs(1);
 /// Mindestabstand zwischen zwei Emotes eines Spielers (Spam-Schutz).
 const EMOTE_INTERVAL: Duration = Duration::from_millis(1000);
 /// Sperre nach einem Kick per Abstimmung (E-077).
@@ -91,6 +95,11 @@ pub struct GameServer<S: Socket> {
     bans: HashMap<IpAddr, Instant>,
     /// Ausgaben für die Konsole (z. B. Chat), vom Programm abzuholen.
     pub log: Vec<String>,
+    /// Anzeigename und Höchstzahl für den Server-Browser (M7.6).
+    name: String,
+    max_clients: usize,
+    /// Wann die Info für den Browser zuletzt erneuert wurde.
+    info_at: Option<Instant>,
 }
 
 impl<S: Socket> std::fmt::Debug for GameServer<S> {
@@ -148,6 +157,9 @@ impl<S: Socket> GameServer<S> {
             vote: None,
             bans: HashMap::new(),
             log: Vec::new(),
+            name: config.name.clone(),
+            max_clients: config.max_clients,
+            info_at: None,
         })
     }
 
@@ -177,7 +189,40 @@ impl<S: Socket> GameServer<S> {
             self.tick(now);
         }
         self.update_vote(now);
+        if self.info_at.is_none_or(|t| now - t >= INFO_INTERVAL) {
+            self.info_at = Some(now);
+            let info = self.server_info().encode();
+            self.endpoint.set_info(info);
+        }
         self.endpoint.flush(now);
+    }
+
+    /// Info für den Server-Browser: Name, Karte, Modus, Spieler (M7.6).
+    pub fn server_info(&self) -> ServerInfo {
+        let players = self
+            .world
+            .players
+            .iter()
+            .enumerate()
+            .filter_map(|(i, p)| {
+                let p = p.as_ref()?;
+                Some(InfoPlayer {
+                    name: self.name_of(i),
+                    score: self.rules.stats.get(&i).map_or(0, |s| s.score),
+                    team: p.team,
+                    dummy: matches!(p.controller, Controller::Dummy { .. }),
+                })
+            })
+            .collect();
+        ServerInfo {
+            version: PROTOCOL_VERSION,
+            name: self.name.clone(),
+            map: self.map_name.clone(),
+            mode: self.rules.cfg.title(),
+            clients: u32::try_from(self.player_count()).unwrap_or(u32::MAX),
+            max_clients: u32::try_from(self.max_clients).unwrap_or(u32::MAX),
+            players,
+        }
     }
 
     /// Nächster Zeitpunkt, zu dem ein Tick fällig ist.

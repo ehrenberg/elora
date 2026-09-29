@@ -103,6 +103,14 @@ impl UdpSocket {
         })
     }
 
+    /// Broadcast erlauben (LAN-Suche des Server-Browsers).
+    ///
+    /// # Errors
+    /// Wenn das Betriebssystem die Option ablehnt.
+    pub fn set_broadcast(&self, on: bool) -> io::Result<()> {
+        self.socket.set_broadcast(on)
+    }
+
     fn flush_delayed(&mut self, now: Instant) {
         for (data, addr) in self.conditioner.pop_ready(now) {
             let _ = self.socket.send_to(&data, addr);

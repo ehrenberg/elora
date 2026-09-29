@@ -6,9 +6,11 @@
 pub mod codec;
 pub mod huffman;
 mod huffman_table;
+pub mod info;
 pub mod msg;
 pub mod snapshot;
 
+pub use info::{InfoPlayer, ServerInfo};
 pub use msg::{ClientMsg, ServerMsg, Skin, VoteInfo, VoteKind};
 pub use snapshot::{GameView, Snapshot};
 

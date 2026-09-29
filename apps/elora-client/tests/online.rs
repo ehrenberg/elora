@@ -243,6 +243,39 @@ fn emotes_reach_everyone_with_spam_protection() {
 }
 
 #[test]
+fn info_query_lists_server_and_players() {
+    let mut g = Game::new(lag(20));
+    g.join("Nimbus");
+    // die Info wird einmal pro Sekunde erneuert
+    g.run(1200, false);
+    let mut probe = elora_net::InfoProbe::new(g.net.socket(addr(9500), lag(20), 99), 5);
+    probe.query(addr(8303), g.now);
+    let mut reply = None;
+    for _ in 0..200 {
+        g.run(4, false);
+        if let Some(r) = probe.poll(g.now).0.into_iter().next() {
+            reply = Some(r);
+            break;
+        }
+    }
+    let reply = reply.expect("Server antwortet");
+    assert!(
+        reply.ping >= Duration::from_millis(40),
+        "Ping {:?}",
+        reply.ping
+    );
+    let info = elora_protocol::ServerInfo::decode(&reply.data).unwrap();
+    assert!(info.compatible());
+    assert_eq!(info.map, "sandbox");
+    assert_eq!(info.clients, 1);
+    assert!(info.players.iter().any(|p| p.name == "Nimbus" && !p.dummy));
+    assert!(
+        info.players.iter().any(|p| p.dummy),
+        "Dummies der Karte stehen in der Liste"
+    );
+}
+
+#[test]
 fn survives_loss_and_jitter() {
     let bad = Conditions {
         latency: Duration::from_millis(40),

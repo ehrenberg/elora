@@ -21,21 +21,26 @@ use crate::socket::{MAX_DATAGRAM, Socket};
 
 pub const NOISE_PARAMS: &str = "Noise_XX_25519_ChaChaPoly_BLAKE2s";
 /// Kennung des Protokolls in der Token-Anfrage.
-const MAGIC: &[u8; 8] = b"ELORA\0\0\x01";
-const TOKEN_REQUEST_SIZE: usize = 512;
+pub(crate) const MAGIC: &[u8; 8] = b"ELORA\0\0\x01";
+pub(crate) const TOKEN_REQUEST_SIZE: usize = 512;
 const TIMEOUT: Duration = Duration::from_secs(10);
 const KEEPALIVE: Duration = Duration::from_millis(250);
 const HANDSHAKE_RESEND: Duration = Duration::from_millis(250);
 const MAX_PENDING: usize = 128;
 const TOKEN_BUCKET_SECS: u64 = 10;
 
-const P_TOKEN_REQUEST: u8 = 1;
-const P_TOKEN: u8 = 2;
+pub(crate) const P_TOKEN_REQUEST: u8 = 1;
+pub(crate) const P_TOKEN: u8 = 2;
 const P_HELLO: u8 = 3;
 const P_HELLO_REPLY: u8 = 4;
 const P_CONFIRM: u8 = 5;
 const P_DATA: u8 = 6;
 const P_REJECT: u8 = 7;
+/// Info-Abfrage ohne Verbindung (M7.6): `[8][Token 8][Nonce 4]` → `[9][Nonce 4][Info]`.
+pub(crate) const P_INFO_REQUEST: u8 = 8;
+pub(crate) const P_INFO: u8 = 9;
+/// Höchstens so viele Info-Antworten je IP-Adresse und Sekunde.
+const INFO_RATE: u32 = 20;
 
 /// Statischer Schlüssel eines Servers.
 #[derive(Clone, PartialEq, Eq)]
@@ -223,6 +228,10 @@ pub struct ServerEndpoint<S: Socket> {
     by_id: HashMap<u32, SocketAddr>,
     next_id: u32,
     buf: Vec<u8>,
+    /// Antwort auf Info-Abfragen (vom Spielserver gesetzt, für das Netz undurchsichtig).
+    info: Vec<u8>,
+    /// Rate-Grenze der Info-Antworten: IP → (Beginn der Sekunde, Anzahl).
+    info_rate: HashMap<std::net::IpAddr, (Instant, u32)>,
 }
 
 impl<S: Socket> std::fmt::Debug for ServerEndpoint<S> {
@@ -251,7 +260,40 @@ impl<S: Socket> ServerEndpoint<S> {
             by_id: HashMap::new(),
             next_id: 0,
             buf: vec![0; MAX_DATAGRAM],
+            info: Vec::new(),
+            info_rate: HashMap::new(),
         }
+    }
+
+    /// Setzt die Antwort auf Info-Abfragen (Server-Browser, M7.6). Zu große Daten
+    /// werden abgeschnitten, damit die Antwort in ein Datagramm passt.
+    pub fn set_info(&mut self, mut info: Vec<u8>) {
+        info.truncate(MAX_DATAGRAM - 16);
+        self.info = info;
+    }
+
+    /// Info-Anfrage beantworten, wenn das Token gültig ist und die Rate-Grenze passt.
+    fn handle_info_request(&mut self, p: &[u8], addr: SocketAddr, now: Instant) {
+        if p.len() != 13 || !self.token_valid(addr, &p[1..9]) {
+            return;
+        }
+        if self.info_rate.len() > 4096 {
+            self.info_rate
+                .retain(|_, (t, _)| now - *t < Duration::from_secs(1));
+        }
+        let entry = self.info_rate.entry(addr.ip()).or_insert((now, 0));
+        if now - entry.0 >= Duration::from_secs(1) {
+            *entry = (now, 0);
+        }
+        if entry.1 >= INFO_RATE {
+            return;
+        }
+        entry.1 += 1;
+        let mut out = Vec::with_capacity(5 + self.info.len());
+        out.push(P_INFO);
+        out.extend_from_slice(&p[9..13]);
+        out.extend_from_slice(&self.info);
+        self.socket.send_to(&out, addr, now);
     }
 
     pub fn socket_mut(&mut self) -> &mut S {
@@ -372,6 +414,7 @@ impl<S: Socket> ServerEndpoint<S> {
             }
             Some(P_HELLO) if p.len() > 9 => self.handle_hello(p, addr, now),
             Some(P_CONFIRM) => self.handle_confirm(p, addr, now, events),
+            Some(P_INFO_REQUEST) => self.handle_info_request(p, addr, now),
             Some(P_DATA) if p.len() > 9 => self.handle_data(p, addr, now, events),
             _ => {}
         }
