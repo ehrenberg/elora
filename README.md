@@ -2,7 +2,7 @@
 
 Ein 2D-Multiplayer-Arena-Shooter nach dem Vorbild von [Teeworlds](https://teeworlds.com) – eigene Figur, eigener Stil, gleiches Spielgefühl. Elora ist zugleich der Name der spielbaren Figur.
 
-**Stand:** M0–M4 abgeschlossen (Bewegung, Hook, Waffen, Dummies, Netzwerk, Spielmodi), M5 (Look & Sound) in Arbeit: Figur, Skins, Welt, Effekte, HUD und Emotes stehen, Sound folgt. Siehe [Roadmap](docs/06-roadmap.md).
+**Stand:** M0–M4 abgeschlossen (Bewegung, Hook, Waffen, Dummies, Netzwerk, Spielmodi), M5 (Look & Sound) in Arbeit: Figur, Skins, Welt, Effekte, HUD, Emotes und prozedurale Sounds stehen, Hörprobe offen. Siehe [Roadmap](docs/06-roadmap.md).
 
 ## Einrichtung unter Arch Linux
 
@@ -31,7 +31,17 @@ Fenster laufen unter Wayland und X11 (auf Desktop-Installationen meist schon vor
 
 Prüfen: `vulkaninfo --summary` (Paket `vulkan-tools`) sollte die Grafikkarte zeigen.
 
-### 3. Bauen
+### 3. Ton
+
+Die Tonausgabe läuft über ALSA (`alsa-lib`, auf Desktop-Installationen vorhanden; mit PipeWire zusätzlich `pipewire-alsa`):
+
+```sh
+sudo pacman -S --needed alsa-lib pipewire-alsa
+```
+
+Ohne Audiogerät startet das Spiel trotzdem – stumm, mit Hinweis im Panel unter *Ton*.
+
+### 4. Bauen
 
 ```sh
 git clone <repo-url> elora && cd elora
@@ -129,7 +139,7 @@ Team wählen, zuschauen und Abstimmungen (Karte, Modus, Kick, Zuschauer) starten
 
 | Datei | Zweck | im Git |
 |---|---|---|
-| `tuning.toml` | gespeicherte Regler-Werte der Sandbox und Effekt-Schalter (Panel → *Speichern*) | nein, lokal |
+| `tuning.toml` | gespeicherte Regler-Werte der Sandbox, Effekt-Schalter und Lautstärke (Panel → *Speichern*) | nein, lokal |
 | `server.toml` | vom Client geschriebene Server-Konfiguration | nein |
 | `server_key.toml` | geheimer Server-Schlüssel – nicht weitergeben | nein |
 | `known_servers.toml` | bekannte Server-Schlüssel des Clients | nein |
@@ -154,8 +164,10 @@ ELORA_BLESS=1 cargo nextest run -p elora-sim --all-features
 **Netzwerk-Kompression:**
 
 ```sh
-cargo xtaska net-stats        # Nachrichtengrößen für 8/16/64 Spieler messen
+cargo xtask net-stats         # Nachrichtengrößen für 8/16/64 Spieler messen
 cargo xtask train-huffman    # Huffman-Tabelle neu trainieren (nach Änderungen am Snapshot-Format)
+cargo xtask sound-preview    # alle Sounds als WAV nach target/sounds/ (Hörprobe; Parameter in assets/sounds/sounds.toml)
+cargo xtask svg-preview a.svg a.png 1200   # SVG rastern (Entwürfe, Assets)
 ```
 
 ### Projektstruktur

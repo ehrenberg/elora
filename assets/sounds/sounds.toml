@@ -1,0 +1,466 @@
+# Elora – Sound-Parameter für den prozeduralen Generator (M5.7, E-081, E-105).
+#
+# Je Sound ein Abschnitt `[name]` mit Gesamtlautstärke und einer oder mehreren
+# Schichten `[[name.layer]]`. Alle Felder siehe crates/elora-audio/src/synth.rs;
+# fehlende Felder haben Standardwerte. Zeiten in Sekunden, Frequenzen in Hz,
+# `slide` in Oktaven pro Sekunde.
+#
+# Hörprobe: cargo xtask sound-preview   (schreibt target/sounds/*.wav)
+
+# ── Waffen ───────────────────────────────────────────────────────────────
+
+[hammer_fire]          # Luftzug beim Ausholen
+volume = 0.5
+[[hammer_fire.layer]]
+wave = "noise"
+freq = 900
+slide = -1.5
+attack = 0.01
+sustain = 0.03
+decay = 0.08
+lowpass = 1800
+lowpass_sweep = 0.3
+
+[hammer_hit]           # dumpfer Schlag mit Klick
+volume = 0.7
+[[hammer_hit.layer]]
+wave = "sine"
+freq = 180
+slide = -4
+sustain = 0.02
+punch = 0.5
+decay = 0.12
+[[hammer_hit.layer]]
+wave = "noise"
+freq = 3000
+sustain = 0.01
+decay = 0.04
+lowpass = 4000
+volume = 0.4
+
+[grenade_fire]         # „Plopp“ des Werfers
+volume = 0.6
+[[grenade_fire.layer]]
+wave = "square"
+freq = 220
+slide = -2.5
+duty = 0.35
+sustain = 0.03
+decay = 0.15
+lowpass = 2000
+[[grenade_fire.layer]]
+wave = "noise"
+freq = 600
+sustain = 0.01
+decay = 0.08
+volume = 0.3
+
+[grenade_explode]      # Knall: Rauschen + tiefer Wumms
+volume = 0.8
+[[grenade_explode.layer]]
+wave = "noise"
+freq = 400
+slide = -1.0
+sustain = 0.05
+punch = 0.6
+decay = 0.7
+lowpass = 3000
+lowpass_sweep = 0.2
+[[grenade_explode.layer]]
+wave = "sine"
+freq = 70
+slide = -1.5
+sustain = 0.05
+punch = 0.4
+decay = 0.5
+volume = 0.9
+
+[laser_fire]           # heller Strahl, fallend
+volume = 0.45
+[[laser_fire.layer]]
+wave = "square"
+freq = 1200
+slide = -3
+duty = 0.3
+duty_sweep = 0.5
+sustain = 0.04
+decay = 0.12
+[[laser_fire.layer]]
+wave = "sine"
+freq = 2400
+slide = -4
+sustain = 0.02
+decay = 0.1
+volume = 0.3
+
+[laser_bounce]         # kurzes Pling an der Wand
+volume = 0.4
+[[laser_bounce.layer]]
+wave = "square"
+freq = 1800
+slide = -2
+sustain = 0.01
+decay = 0.06
+highpass = 600
+volume = 0.6
+
+[no_ammo]              # zwei trockene Klicks
+volume = 0.4
+[[no_ammo.layer]]
+wave = "square"
+freq = 200
+duty = 0.2
+sustain = 0.02
+decay = 0.03
+[[no_ammo.layer]]
+wave = "square"
+freq = 200
+duty = 0.2
+delay = 0.07
+sustain = 0.02
+decay = 0.03
+
+[weapon_switch]        # Klacken
+volume = 0.35
+[[weapon_switch.layer]]
+wave = "noise"
+freq = 5000
+sustain = 0.005
+decay = 0.03
+[[weapon_switch.layer]]
+wave = "square"
+freq = 900
+delay = 0.03
+sustain = 0.01
+decay = 0.03
+volume = 0.4
+
+# ── Hook ─────────────────────────────────────────────────────────────────
+
+[hook_fire]            # Kette schnellt hinaus
+volume = 0.35
+[[hook_fire.layer]]
+wave = "saw"
+freq = 600
+slide = 2.0
+sustain = 0.03
+decay = 0.08
+lowpass = 3000
+volume = 0.4
+[[hook_fire.layer]]
+wave = "noise"
+freq = 2000
+decay = 0.06
+volume = 0.2
+
+[hook_attach_ground]   # greift an der Wand
+volume = 0.45
+[[hook_attach_ground.layer]]
+wave = "noise"
+freq = 1500
+sustain = 0.005
+decay = 0.05
+lowpass = 5000
+[[hook_attach_ground.layer]]
+wave = "square"
+freq = 500
+slide = -3
+sustain = 0.01
+decay = 0.05
+volume = 0.5
+
+[hook_attach_player]   # weiches Zupacken an einer Figur
+volume = 0.45
+[[hook_attach_player.layer]]
+wave = "sine"
+freq = 300
+slide = -2
+sustain = 0.03
+punch = 0.4
+decay = 0.1
+[[hook_attach_player.layer]]
+wave = "noise"
+freq = 800
+decay = 0.05
+volume = 0.3
+
+[hook_no_attach]       # „Dunk“: kein Halt
+volume = 0.4
+[[hook_no_attach.layer]]
+wave = "square"
+freq = 180
+duty = 0.25
+sustain = 0.04
+decay = 0.06
+
+# ── Bewegung ─────────────────────────────────────────────────────────────
+
+[jump]                 # klassischer Sprung, steigend
+volume = 0.35
+[[jump.layer]]
+wave = "square"
+freq = 260
+slide = 2.2
+duty = 0.4
+sustain = 0.03
+decay = 0.1
+lowpass = 2500
+
+[air_jump]             # Plopp + Luftzug
+volume = 0.4
+[[air_jump.layer]]
+wave = "sine"
+freq = 500
+slide = 3
+sustain = 0.03
+decay = 0.14
+[[air_jump.layer]]
+wave = "noise"
+freq = 3000
+decay = 0.12
+lowpass = 2000
+volume = 0.25
+
+[land]                 # weiches Aufsetzen
+volume = 0.35
+[[land.layer]]
+wave = "noise"
+freq = 300
+sustain = 0.01
+decay = 0.08
+lowpass = 800
+[[land.layer]]
+wave = "sine"
+freq = 110
+slide = -3
+decay = 0.08
+volume = 0.5
+
+# ── Treffer, Tod, Spawn ──────────────────────────────────────────────────
+
+[pain_short]           # kurzes „Uff“
+volume = 0.45
+[[pain_short.layer]]
+wave = "square"
+freq = 420
+slide = -2.5
+duty = 0.3
+vibrato = 0.05
+vibrato_hz = 30
+sustain = 0.03
+decay = 0.1
+lowpass = 3000
+
+[pain_long]            # längeres Jammern
+volume = 0.5
+[[pain_long.layer]]
+wave = "saw"
+freq = 380
+slide = -1.8
+vibrato = 0.08
+vibrato_hz = 22
+sustain = 0.08
+decay = 0.2
+lowpass = 2500
+
+[death]                # „Blubb“ – Elora zerplatzt
+volume = 0.6
+[[death.layer]]
+wave = "square"
+freq = 500
+slide = -3
+duty = 0.4
+duty_sweep = -1
+vibrato = 0.1
+vibrato_hz = 12
+sustain = 0.1
+decay = 0.35
+[[death.layer]]
+wave = "noise"
+freq = 200
+decay = 0.3
+lowpass = 1500
+volume = 0.4
+
+[spawn]                # Glitzern, zwei Stufen
+volume = 0.4
+[[spawn.layer]]
+wave = "sine"
+freq = 440
+arp = 1.5
+arp_after = 0.06
+sustain = 0.12
+decay = 0.2
+[[spawn.layer]]
+wave = "sine"
+freq = 880
+delay = 0.06
+arp = 1.5
+arp_after = 0.06
+sustain = 0.08
+decay = 0.2
+volume = 0.4
+
+# ── Pickups ──────────────────────────────────────────────────────────────
+
+[pickup_health]        # Münz-artig, steigend
+volume = 0.4
+[[pickup_health.layer]]
+wave = "square"
+freq = 660
+arp = 1.335
+arp_after = 0.06
+sustain = 0.1
+decay = 0.15
+lowpass = 4000
+
+[pickup_armor]         # metallisch
+volume = 0.4
+[[pickup_armor.layer]]
+wave = "square"
+freq = 500
+arp = 1.26
+arp_after = 0.05
+duty = 0.25
+sustain = 0.1
+decay = 0.18
+[[pickup_armor.layer]]
+wave = "sine"
+freq = 1000
+delay = 0.05
+decay = 0.1
+volume = 0.3
+
+[pickup_weapon]        # Klack-klack beim Laden
+volume = 0.45
+[[pickup_weapon.layer]]
+wave = "saw"
+freq = 300
+slide = 1.5
+sustain = 0.05
+decay = 0.1
+lowpass = 2000
+[[pickup_weapon.layer]]
+wave = "square"
+freq = 150
+delay = 0.08
+sustain = 0.02
+decay = 0.1
+
+[pickup_respawn]       # leises Ding
+volume = 0.3
+[[pickup_respawn.layer]]
+wave = "sine"
+freq = 1200
+vibrato = 0.02
+sustain = 0.02
+decay = 0.2
+
+# ── Rückmeldung, Chat, Emote ─────────────────────────────────────────────
+
+[hit_confirm]          # Tick bei eigenem Treffer
+volume = 0.3
+[[hit_confirm.layer]]
+wave = "square"
+freq = 1500
+sustain = 0.01
+decay = 0.04
+[[hit_confirm.layer]]
+wave = "sine"
+freq = 2200
+decay = 0.05
+volume = 0.3
+
+[chat]                 # Bing-bong
+volume = 0.3
+[[chat.layer]]
+wave = "sine"
+freq = 900
+sustain = 0.02
+decay = 0.06
+[[chat.layer]]
+wave = "sine"
+freq = 1350
+delay = 0.07
+sustain = 0.02
+decay = 0.08
+
+[emote]                # Plopp der Blase
+volume = 0.4
+[[emote.layer]]
+wave = "sine"
+freq = 700
+slide = 2
+sustain = 0.02
+decay = 0.08
+
+# ── CTF ──────────────────────────────────────────────────────────────────
+
+[flag_grab_own]        # Alarm: eigene Flagge genommen
+volume = 0.45
+[[flag_grab_own.layer]]
+wave = "square"
+freq = 880
+sustain = 0.08
+decay = 0.05
+lowpass = 3000
+[[flag_grab_own.layer]]
+wave = "square"
+freq = 660
+delay = 0.15
+sustain = 0.08
+decay = 0.1
+lowpass = 3000
+
+[flag_grab_enemy]      # gegnerische Flagge geholt: steigend
+volume = 0.45
+[[flag_grab_enemy.layer]]
+wave = "square"
+freq = 523
+arp = 1.5
+arp_after = 0.08
+sustain = 0.14
+decay = 0.12
+lowpass = 3500
+
+[flag_drop]            # fallender Ton
+volume = 0.4
+[[flag_drop.layer]]
+wave = "triangle"
+freq = 400
+slide = -2
+sustain = 0.05
+decay = 0.2
+
+[flag_return]          # zweistufig abwärts
+volume = 0.4
+[[flag_return.layer]]
+wave = "sine"
+freq = 660
+arp = 0.75
+arp_after = 0.1
+sustain = 0.18
+decay = 0.2
+
+[flag_capture]         # Fanfare C–E–G
+volume = 0.5
+[[flag_capture.layer]]
+wave = "square"
+freq = 523
+sustain = 0.1
+decay = 0.02
+lowpass = 3500
+[[flag_capture.layer]]
+wave = "square"
+freq = 659
+delay = 0.12
+sustain = 0.1
+decay = 0.02
+lowpass = 3500
+[[flag_capture.layer]]
+wave = "square"
+freq = 784
+delay = 0.24
+sustain = 0.15
+decay = 0.3
+lowpass = 3500

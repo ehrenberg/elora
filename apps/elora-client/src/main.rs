@@ -18,6 +18,7 @@ mod items;
 mod sandbox;
 mod settings;
 mod skins;
+mod sound;
 
 use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
@@ -129,6 +130,9 @@ struct App {
     hud_batch: ShapeBatch,
     hud: hud::Hud,
     emotes: emotes::Emotes,
+    sounds: sound::Sounds,
+    /// Zeitpunkt der neuesten Chat-Zeile, für die schon ein Sound kam.
+    chat_heard: Option<Instant>,
     effects: effects::Effects,
     figures: figure::Figures,
     figure_art: figure::FigureArt,
@@ -167,6 +171,8 @@ impl App {
             hud_batch: ShapeBatch::default(),
             hud: hud::Hud::new(),
             emotes: emotes::Emotes::new(),
+            sounds: sound::Sounds::new(file.audio),
+            chat_heard: None,
             effects: effects::Effects::with_settings(file.effects),
             figures: figure::Figures::default(),
             figure_art: figure::FigureArt::load(),
@@ -192,6 +198,7 @@ impl App {
                 mouse_sensitivity: self.controls.sensitivity,
             },
             effects: self.effects.settings,
+            audio: self.sounds.settings,
         }
     }
 
@@ -234,6 +241,7 @@ impl App {
                         self.view = f.view.into();
                         self.controls.sensitivity = f.input.mouse_sensitivity;
                         self.effects.settings = f.effects;
+                        self.sounds.settings = f.audio;
                         format!("Geladen aus {TUNING_FILE}")
                     }
                     Err(e) => format!("Fehler: {e:#}"),
@@ -490,6 +498,31 @@ impl App {
             // schickt nur bei Änderung eine Nachricht
             o.client.set_skin(self.net.skin);
         }
+        self.play_sounds(scene, events);
+    }
+
+    /// Sounds des Frames: Ereignisse, Figuren, Landungen, neue Emotes und Chat-Zeilen.
+    fn play_sounds(&mut self, scene: &Scene, events: &[Event]) {
+        let mut extra: Vec<elora_audio::Cue> = self
+            .emotes
+            .take_new()
+            .into_iter()
+            .filter_map(|slot| scene.chars.iter().find(|c| c.slot == slot))
+            .map(|c| elora_audio::Cue::at(elora_audio::Sound::Emote, c.pos()))
+            .collect();
+        let newest_chat = match &self.online {
+            Some(o) => o.client.chat.back().map(|c| c.at),
+            None => self.sandbox.notices.back().map(|c| c.at),
+        };
+        if newest_chat.is_some() && newest_chat != self.chat_heard {
+            // erste Zeile nach dem Start nicht vertonen (z. B. Begrüßung beim Verbinden)
+            if self.chat_heard.is_some() {
+                extra.push(elora_audio::Cue::global(elora_audio::Sound::Chat));
+            }
+            self.chat_heard = newest_chat;
+        }
+        self.sounds
+            .update(scene, events, self.figures.landings(), &extra, scene.camera);
     }
 
     /// Welt, Figuren und Effekte des Frames in `self.batch` sammeln.
@@ -622,6 +655,7 @@ impl App {
         });
         let is_online = online_view.is_some();
         let team_mode = info.view.as_ref().is_some_and(|v| v.mode.teams());
+        let audio_device = self.sounds.has_device();
         let mut cx = debug_ui::Context {
             sandbox: if is_online {
                 None
@@ -632,6 +666,10 @@ impl App {
             net: &mut self.net,
             view: &mut self.view,
             effects: &mut self.effects.settings,
+            audio: debug_ui::AudioUi {
+                settings: &mut self.sounds.settings,
+                device: audio_device,
+            },
             controls: &mut self.controls,
             fps: self.fps,
             status: &self.status,

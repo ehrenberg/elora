@@ -19,6 +19,7 @@ pub struct TuningFile {
     pub view: ViewFile,
     pub input: InputFile,
     pub effects: crate::effects::EffectSettings,
+    pub audio: elora_audio::AudioSettings,
 }
 
 /// Sichtbereich (E-045).

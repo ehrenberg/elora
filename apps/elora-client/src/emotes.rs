@@ -38,6 +38,8 @@ pub struct Emotes {
     active: HashMap<usize, (u8, f32)>,
     /// Emote-Rad offen (Taste E gehalten).
     pub wheel_open: bool,
+    /// Seit dem letzten [`Emotes::take_new`] gezeigte Emotes (Slots, für den Sound).
+    new: Vec<usize>,
 }
 
 impl Emotes {
@@ -63,6 +65,7 @@ impl Emotes {
             ],
             active: HashMap::new(),
             wheel_open: false,
+            new: Vec::new(),
         }
     }
 
@@ -70,7 +73,13 @@ impl Emotes {
     pub fn show(&mut self, slot: usize, emote: u8) {
         if emote < EMOTES {
             self.active.insert(slot, (emote, 0.0));
+            self.new.push(slot);
         }
+    }
+
+    /// Slots, die seit dem letzten Aufruf ein Emote bekommen haben.
+    pub fn take_new(&mut self) -> Vec<usize> {
+        std::mem::take(&mut self.new)
     }
 
     pub fn update(&mut self, dt: f32) {

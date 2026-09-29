@@ -17,6 +17,8 @@ Befehle:
   net-stats      Nachrichtengrößen für 8/16/64 Spieler messen
   svg-preview <eingabe.svg> <ausgabe.png> [breite]
                  SVG rastern (Entwürfe prüfen, M5)
+  sound-preview [name …]
+                 Sounds aus assets/sounds/sounds.toml als WAV nach target/sounds/ (Hörprobe, M5.7)
   help           Diese Hilfe
 ";
 
@@ -29,6 +31,10 @@ fn main() -> ExitCode {
         Some("svg-preview") => {
             let args: Vec<String> = std::env::args().skip(2).collect();
             svg_preview(&args)
+        }
+        Some("sound-preview") => {
+            let args: Vec<String> = std::env::args().skip(2).collect();
+            sound_preview(&args)
         }
         Some("net-stats") => {
             net_stats();
@@ -171,6 +177,33 @@ fn net_stats() {
 }
 
 /// Rastert ein SVG zu PNG (resvg), Breite optional (Höhe proportional).
+/// Schreibt alle (oder die genannten) Sounds als WAV nach `target/sounds/`.
+fn sound_preview(names: &[String]) -> Result<(), String> {
+    let src = std::fs::read_to_string("assets/sounds/sounds.toml")
+        .map_err(|e| format!("assets/sounds/sounds.toml: {e}"))?;
+    let bank = elora_audio::Bank::parse(&src).map_err(|e| e.to_string())?;
+    let dir = std::path::Path::new("target/sounds");
+    std::fs::create_dir_all(dir).map_err(|e| format!("{}: {e}", dir.display()))?;
+    let mut count = 0;
+    for (sound, def) in &bank.sounds {
+        if !names.is_empty() && !names.iter().any(|n| n == sound.name()) {
+            continue;
+        }
+        let path = dir.join(format!("{}.wav", sound.name()));
+        std::fs::write(&path, elora_audio::wav(&def.render()))
+            .map_err(|e| format!("{}: {e}", path.display()))?;
+        println!("{} ({:.2} s)", path.display(), def.duration());
+        count += 1;
+    }
+    for s in bank.missing() {
+        println!("fehlt in sounds.toml: {}", s.name());
+    }
+    if count == 0 {
+        return Err("keine passenden Sounds".into());
+    }
+    Ok(())
+}
+
 fn svg_preview(args: &[String]) -> Result<(), String> {
     let [input, output, rest @ ..] = args else {
         return Err(

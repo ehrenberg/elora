@@ -12,6 +12,7 @@ elora-sim.workspace = true
 elora-map.workspace = true
 elora-protocol.workspace = true
 resvg.workspace = true
+elora-audio.workspace = true
 
 [lints]
 workspace = true

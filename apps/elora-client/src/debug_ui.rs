@@ -44,6 +44,13 @@ pub struct KeyWarning {
     pub got: String,
 }
 
+/// Ton im Panel: Einstellungen und ob ein Audiogerät gefunden wurde.
+#[derive(Debug)]
+pub struct AudioUi<'a> {
+    pub settings: &'a mut elora_audio::AudioSettings,
+    pub device: bool,
+}
+
 /// Netzwerk-Einstellungen im Panel.
 #[derive(Debug)]
 pub struct NetUi {
@@ -118,6 +125,7 @@ pub struct Context<'a> {
     pub net: &'a mut NetUi,
     pub view: &'a mut ViewSettings,
     pub effects: &'a mut crate::effects::EffectSettings,
+    pub audio: AudioUi<'a>,
     pub controls: &'a mut Controls,
     pub fps: f32,
     pub status: &'a str,
@@ -173,6 +181,19 @@ pub fn panel(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
                         ui.checkbox(&mut cx.effects.camera_shake, "Kamera-Wackeln");
                         ui.checkbox(&mut cx.effects.hit_marker, "Treffer-Marker");
                         ui.small("„Speichern“ legt die Schalter in tuning.toml ab.");
+                    });
+                egui::CollapsingHeader::new("Ton")
+                    .default_open(false)
+                    .show(ui, |ui| {
+                        if !cx.audio.device {
+                            ui.label("Kein Audiogerät gefunden – das Spiel bleibt stumm.");
+                        }
+                        ui.add(
+                            egui::Slider::new(&mut cx.audio.settings.volume, 0.0..=1.0)
+                                .text("Lautstärke"),
+                        );
+                        ui.checkbox(&mut cx.audio.settings.muted, "Stumm");
+                        ui.small("„Speichern“ legt die Werte in tuning.toml ab.");
                     });
                 view(ui, cx.view);
                 egui::CollapsingHeader::new("Eingabe")

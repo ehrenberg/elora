@@ -1,6 +1,6 @@
 # M5 – Look & Sound: Umsetzungsplan
 
-Status: **angenommen** (E-080–E-104), in Umsetzung · Grundlage: [`06-roadmap.md`](06-roadmap.md) M5, E-006, E-027, E-029, E-030, E-031, E-032, E-033
+Status: **angenommen** (E-080–E-105), in Umsetzung · Grundlage: [`06-roadmap.md`](06-roadmap.md) M5, E-006, E-027, E-029, E-030, E-031, E-032, E-033
 
 ## Ziel
 
@@ -89,6 +89,12 @@ Elora bekommt ihr eigenes Aussehen im Flat-/Vektorstil (E-030), mit Animationen,
 - **M5.8 HUD (Teil 2):** Abstimmung (unter der Statusanzeige), Killfeed (oben rechts, „Täter [Waffensymbol] Opfer“, Namen in Teamfarbe), Chat (unten links über der Leiste, Server-Hinweise gelb, offen mit Eingabezeile und blinkendem Cursor, lange Zeilen mit „…“ gekürzt) und Scoreboard (Mitte, Spalten je Team, eigene Zeile gelb) als eigene Spiel-UI. Die Chat-Eingabe läuft über die Tastatur des Clients (Enter senden, Esc abbrechen, Rücktaste); egui bleibt nur für das Debug-Panel (E-031). Bild `docs/design/elora-anzeigen-umgesetzt.png`.
 
 - **M5.9 Emotes (E-103, E-104):** Protokoll `ClientMsg::Emote(n)` / `ServerMsg::Emote { slot, emote }` (Nummern `0..8`, ungültige abgelehnt); Server verteilt an alle, höchstens ein Emote je Sekunde und Spieler (Spam-Schutz). Assets `assets/emotes/` (Blase + 8 Symbole; „GG“ und „Zzz“ als Pfade). Blase über dem Kopf: Aufpoppen 0.15 s, sichtbar 2 s, Ausblenden 0.3 s. Rad: E halten, Richtung der Maus wählt (Herz oben, im Uhrzeigersinn), Mitte = nichts; in der Sandbox direkt angezeigt. Augen reagieren automatisch (`eyes-pain.svg`, `eyes-happy.svg`): Schmerz 0.45 s bei Schaden, Freude 1.2 s nach einem Kill. Farbschlüssel färben nun auch Konturen von Formen ohne Füllung (Augen als Linien). Bild `docs/design/elora-emotes-umgesetzt.png`, Posenblatt mit Ausdrücken `docs/design/elora-posen.png`.
+
+- **M5.7 Audio (E-105):** Crate `elora-audio`.
+  - `synth`: Generator nach sfxr-Prinzip – Wellen Rechteck (mittelwertfrei), Säge, Sinus, Dreieck, Rauschen; Gleiten, Vibrato, Arpeggio, Wiederholung; Hüllkurve mit Punch; Tief-/Hochpass; Schichten mit Verzögerung; weiche Begrenzung. Parameter in `assets/sounds/sounds.toml` (31 Sounds), gleiche Parameter = gleicher Klang.
+  - `cues`: Zuordnung Ereignis → Sound: Waffen (Schuss/Treffer/Explosion/Abprall), keine Munition, Waffenwechsel, Hook (Abschuss, Wand, Figur, kein Halt), Sprung, Luftsprung, Landung, Schmerz kurz/lang (ab 3 Schaden), Tod, Spawn, Pickups, Pickup wieder da, Treffer-Bestätigung, Chat, Emote, CTF (eigene Flagge genommen, gegnerische geholt, fallen gelassen, zurück, erobert).
+  - Wiedergabe (Feature `playback`, kira + cpal/ALSA): räumlich bis 1400 Einheiten (linear leiser), Stereo nach seitlichem Abstand (±0.8), Gesamtlautstärke und Stumm im Panel unter *Ton*, gespeichert in `tuning.toml` unter `[audio]`. Ohne Audiogerät läuft das Spiel stumm.
+  - Hörprobe: `cargo xtask sound-preview` schreibt `target/sounds/*.wav`.
 
 ## Voraussetzungen vom Projektinhaber
 

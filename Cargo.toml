@@ -7,6 +7,7 @@ members = [
     "crates/elora-protocol",
     "crates/elora-net",
     "crates/elora-game",
+    "crates/elora-audio",
     "apps/elora-client",
     "apps/elora-server",
     "xtask",
@@ -23,12 +24,14 @@ publish = false
 elora-sim = { path = "crates/elora-sim" }
 elora-map = { path = "crates/elora-map" }
 elora-render = { path = "crates/elora-render" }
+elora-audio = { path = "crates/elora-audio", default-features = false }
 elora-protocol = { path = "crates/elora-protocol" }
 elora-net = { path = "crates/elora-net" }
 elora-game = { path = "crates/elora-game" }
 
 serde = { version = "1.0.229", features = ["derive"] }
 toml = "1.1.6"
+kira = { version = "0.12.5", default-features = false, features = ["cpal"] }
 thiserror = "2.0.21"
 anyhow = "1.0.104"
 tracing = "0.1.44"

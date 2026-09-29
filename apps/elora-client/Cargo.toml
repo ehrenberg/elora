@@ -19,6 +19,7 @@ path = "src/main.rs"
 elora-sim = { workspace = true, features = ["serde"] }
 elora-map.workspace = true
 elora-render.workspace = true
+elora-audio = { workspace = true, features = ["playback"] }
 winit.workspace = true
 pollster.workspace = true
 anyhow.workspace = true
