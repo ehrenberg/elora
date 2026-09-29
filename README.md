@@ -52,10 +52,18 @@ Alle Befehle werden aus dem Projektordner ausgeführt (Karten liegen in `maps/`)
 
 ## Spielen
 
-### Sandbox (lokal, ohne Netzwerk)
+```sh
+cargo run --bin elora                               # startet ins Hauptmenü
+```
+
+Im Hauptmenü: **Spielen** (Direkt-Verbinden, Favoriten, „Schnell spielen“ = letzter Server), **Training** (Sandbox), **Server erstellen** (startet einen eigenen Server und verbindet), **Einstellungen**, **Beenden**. Im Spiel öffnet Esc das Pause-Menü.
+
+### Sandbox direkt starten (Entwicklung)
+
+Mit einer Karte, `--mode` oder `--connect` auf der Kommandozeile geht es ohne Menü direkt ins Spiel, mit Debug-Panel:
 
 ```sh
-cargo run --bin elora                               # Standardkarte maps/sandbox.emap.toml
+cargo run --bin elora -- maps/sandbox.emap.toml     # Standardkarte
 cargo run --bin elora -- maps/eigene.emap.toml      # andere Karte
 cargo run --bin elora -- maps/ctf-test.emap.toml --mode ctf   # Spielmodus gegen Dummies
 ```
