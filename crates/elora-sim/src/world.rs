@@ -335,7 +335,7 @@ impl World {
             } else {
                 start
             };
-            self.events.push(Event::HammerHit { pos: hit });
+            self.events.push(Event::HammerHit { owner: i, pos: hit });
             let dir = if p.distance(pos) > 0.0 {
                 (p - pos).normalize()
             } else {
@@ -410,7 +410,10 @@ impl World {
             if l.bounces > self.tuning.laser_bounce_num {
                 l.energy = -1.0;
             }
-            self.events.push(Event::LaserBounce { pos: l.pos });
+            self.events.push(Event::LaserBounce {
+                owner: l.owner,
+                pos: l.pos,
+            });
         } else {
             l.from = l.pos;
             l.pos = to;
@@ -461,7 +464,7 @@ impl World {
     }
 
     fn explosion(&mut self, pos: Vec2, owner: usize, weapon: Weapon, max_damage: i32) {
-        self.events.push(Event::Explosion { pos });
+        self.events.push(Event::Explosion { owner, pos });
         let t = &self.tuning;
         let (radius, inner, max_force) = (
             t.explosion_radius,

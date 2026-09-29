@@ -37,15 +37,19 @@ pub enum Event {
         player: usize,
         weapon: Weapon,
     },
-    /// Hammer hat getroffen.
+    /// Hammer von `owner` hat getroffen.
     HammerHit {
+        owner: usize,
         pos: Vec2,
     },
-    /// Laser ist an einer Wand abgeprallt.
+    /// Laser von `owner` ist an einer Wand abgeprallt.
     LaserBounce {
+        owner: usize,
         pos: Vec2,
     },
+    /// Explosion einer Granate von `owner`.
     Explosion {
+        owner: usize,
         pos: Vec2,
     },
     /// Schaden erhalten (nach Rüstung).
@@ -75,4 +79,19 @@ pub enum Event {
         kind: PickupKind,
         pos: Vec2,
     },
+}
+
+impl Event {
+    /// Verursacher eines Schuss-Ereignisses (für die Client-Vorhersage, E-057).
+    pub fn shooter(&self) -> Option<usize> {
+        match *self {
+            Self::Fire { player, .. }
+            | Self::NoAmmo { player }
+            | Self::WeaponSwitch { player, .. } => Some(player),
+            Self::HammerHit { owner, .. }
+            | Self::LaserBounce { owner, .. }
+            | Self::Explosion { owner, .. } => Some(owner),
+            _ => None,
+        }
+    }
 }

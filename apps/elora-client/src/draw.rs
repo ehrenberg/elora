@@ -1,13 +1,11 @@
 //! Platzhalter-Darstellung für die Sandbox (E-043): einfache Vektorformen.
 //! Die finale Optik folgt in M5.
 
+use elora_client::scene::Scene;
 use elora_render::{Camera, Color, ShapeBatch};
 use elora_sim::{
-    Controller, Event, HookState, PHYS_SIZE, PickupKind, TICKS_PER_SECOND, TILE_SIZE, Tile, Vec2,
-    Weapon,
+    Collision, Event, HookState, PHYS_SIZE, PickupKind, TILE_SIZE, Tile, Tuning, Vec2, Weapon,
 };
-
-use crate::sandbox::Sandbox;
 
 pub const BACKGROUND: Color = Color::hex(0x8fb8d9);
 const SOLID: Color = Color::hex(0x5b6b7c);
@@ -15,6 +13,8 @@ const UNHOOKABLE: Color = Color::hex(0x3a4450);
 const DEATH: Color = Color::hex(0xc94f4f);
 const ELORA: Color = Color::hex(0xf2c14e);
 const DUMMY: Color = Color::hex(0xb59fd6);
+/// Andere menschliche Spieler (online).
+const OTHER: Color = Color::hex(0x7ccf8a);
 const OUTLINE: Color = Color::hex(0x2b2b2b);
 const HOOK: Color = Color::hex(0xe8e8e8);
 const CURSOR: Color = Color::hex(0xffffff);
@@ -74,8 +74,8 @@ impl Effects {
         self.list.retain(|e| e.age < e.kind.lifetime());
         for event in events {
             let (kind, pos) = match *event {
-                Event::Explosion { pos } => (EffectKind::Explosion, pos),
-                Event::HammerHit { pos } => (EffectKind::HammerHit, pos),
+                Event::Explosion { pos, .. } => (EffectKind::Explosion, pos),
+                Event::HammerHit { pos, .. } => (EffectKind::HammerHit, pos),
                 Event::Death { pos, .. } => (EffectKind::Death, pos),
                 Event::Spawn { pos, .. } => (EffectKind::Spawn, pos),
                 _ => continue,
@@ -134,64 +134,76 @@ impl Effects {
 }
 
 /// Zeichnet Karte, Pickups, Figuren, Projektile, Laser, Effekte und Fadenkreuz.
-pub fn sandbox(
+pub fn scene(
     batch: &mut ShapeBatch,
-    s: &Sandbox,
+    scene: &Scene,
+    collision: &Collision,
+    tuning: &Tuning,
     camera: &Camera,
     mouse_pos: Vec2,
     effects: &Effects,
 ) {
-    tiles(batch, s, camera);
-    spawns_and_pickups(batch, s);
-    let alpha = s.alpha();
+    tiles(batch, collision, camera);
+    spawns_and_pickups(batch, scene);
 
-    for (i, slot) in s.world.players.iter().enumerate() {
-        let Some(p) = slot else { continue };
-        let Some(ch) = &p.character else { continue };
-        let Some((cur, prev)) = s.cores(i) else {
-            continue;
-        };
-        let pos = prev.pos.lerp(cur.pos, alpha);
-
+    for c in &scene.chars {
+        let pos = c.pos();
+        let core = &c.ch.core;
         if matches!(
-            cur.hook_state,
+            core.hook_state,
             HookState::Flying | HookState::Grabbed | HookState::Retracting(_)
         ) {
-            let hook = prev.hook_pos.lerp(cur.hook_pos, alpha);
+            let hook = c.hook_pos();
             batch.stroke_line(pos, hook, 3.0, HOOK);
             batch.fill_circle(hook, 5.0, HOOK);
         }
-
         // Blickrichtung: Elora folgt der Maus direkt, andere dem Winkel aus der Simulation
-        let aim = if i == s.player {
+        let aim = if c.local {
             mouse_pos.normalize()
         } else {
-            let a = cur.angle as f32 / 256.0;
+            let a = core.angle as f32 / 256.0;
             Vec2::new(a.cos(), a.sin())
         };
-        let body = if matches!(p.controller, Controller::Human) {
+        let body = if c.dummy {
+            DUMMY
+        } else if c.local {
             ELORA
         } else {
-            DUMMY
+            OTHER
         };
         let r = PHYS_SIZE / 2.0;
-        weapon(batch, pos, aim, ch.arsenal.active);
+        weapon(batch, pos, aim, c.ch.arsenal.active);
         batch.fill_circle(pos, r + 1.5, OUTLINE);
         batch.fill_circle(pos, r, body);
         batch.fill_circle(pos + aim * (r * 0.5), 3.5, OUTLINE);
-
-        if i != s.player {
-            health_bar(batch, pos, ch.health, ch.armor, s.world.tuning.max_health);
+        if !c.local {
+            health_bar(batch, pos, c.ch.health, c.ch.armor, tuning.max_health);
         }
     }
 
-    projectiles(batch, s, alpha);
-    lasers(batch, s, alpha);
-    effects.draw(batch, s.world.tuning.explosion_radius);
+    for &p in &scene.projectiles {
+        batch.fill_circle(p, 7.0, OUTLINE);
+        batch.fill_circle(p, 5.5, GRENADE);
+    }
+    for l in &scene.lasers {
+        batch.stroke_line(
+            l.from,
+            l.to,
+            7.0 * l.fade,
+            Color::rgba(0.35, 0.8, 0.9, 0.6 * l.fade),
+        );
+        batch.stroke_line(
+            l.from,
+            l.to,
+            3.0 * l.fade,
+            Color::rgba(0.9, 1.0, 1.0, l.fade),
+        );
+    }
+    effects.draw(batch, tuning.explosion_radius);
 
     // Fadenkreuz
-    if s.character().is_some() {
-        let c = s.render_pos() + mouse_pos;
+    if let Some(local) = scene.local() {
+        let c = local.pos() + mouse_pos;
         batch.stroke_circle(c, 8.0, 2.0, CURSOR);
         batch.fill_circle(c, 1.5, CURSOR);
     }
@@ -227,33 +239,7 @@ fn health_bar(batch: &mut ShapeBatch, pos: Vec2, health: i32, armor: i32, max: i
     }
 }
 
-fn projectiles(batch: &mut ShapeBatch, s: &Sandbox, alpha: f32) {
-    let tps = TICKS_PER_SECOND as f32;
-    for pr in &s.world.projectiles {
-        let age = (s.world.tick - pr.start_tick) as f32;
-        let p = pr.pos_at((age - 1.0 + alpha).max(0.0) / tps, &s.world.tuning);
-        batch.fill_circle(p, 7.0, OUTLINE);
-        batch.fill_circle(p, 5.5, GRENADE);
-    }
-}
-
-fn lasers(batch: &mut ShapeBatch, s: &Sandbox, alpha: f32) {
-    // Sichtbar bis zum nächsten Abschnitt, dann ausblenden
-    let fade_ticks = (TICKS_PER_SECOND * s.world.tuning.laser_bounce_delay) as f32 / 1000.0 + 1.0;
-    for l in &s.world.lasers {
-        let age = (s.world.tick - l.eval_tick) as f32 + alpha;
-        let fade = (1.0 - age / fade_ticks).clamp(0.2, 1.0);
-        batch.stroke_line(
-            l.from,
-            l.pos,
-            7.0 * fade,
-            Color::rgba(0.35, 0.8, 0.9, 0.6 * fade),
-        );
-        batch.stroke_line(l.from, l.pos, 3.0 * fade, Color::rgba(0.9, 1.0, 1.0, fade));
-    }
-}
-
-fn tiles(batch: &mut ShapeBatch, s: &Sandbox, camera: &Camera) {
+fn tiles(batch: &mut ShapeBatch, col: &Collision, camera: &Camera) {
     let ts = TILE_SIZE as f32;
     let tl = camera.top_left();
     let br = tl + camera.size;
@@ -261,7 +247,6 @@ fn tiles(batch: &mut ShapeBatch, s: &Sandbox, camera: &Camera) {
     let y0 = (tl.y / ts).floor() as i32 - 1;
     let x1 = (br.x / ts).ceil() as i32 + 1;
     let y1 = (br.y / ts).ceil() as i32 + 1;
-    let col = &s.world.collision;
     for ty in y0..=y1 {
         for tx in x0..=x1 {
             let color = match col.tile(tx, ty) {
@@ -276,13 +261,12 @@ fn tiles(batch: &mut ShapeBatch, s: &Sandbox, camera: &Camera) {
     }
 }
 
-fn spawns_and_pickups(batch: &mut ShapeBatch, s: &Sandbox) {
-    for &sp in &s.world.spawn_points {
+fn spawns_and_pickups(batch: &mut ShapeBatch, scene: &Scene) {
+    for &sp in &scene.spawns {
         batch.stroke_circle(sp, 10.0, 2.0, SPAWN);
     }
-    for pk in s.world.pickups.iter().filter(|p| p.available()) {
-        let p = pk.pos;
-        match pk.kind {
+    for &(kind, p) in &scene.pickups {
+        match kind {
             PickupKind::Health => {
                 batch.fill_circle(p + Vec2::new(-4.5, -3.0), 6.0, HEALTH);
                 batch.fill_circle(p + Vec2::new(4.5, -3.0), 6.0, HEALTH);

@@ -603,7 +603,10 @@ dependencies = [
  "egui-wgpu",
  "egui-winit",
  "elora-map",
+ "elora-net",
+ "elora-protocol",
  "elora-render",
+ "elora-server",
  "elora-sim",
  "notify",
  "pollster",
@@ -651,6 +654,21 @@ dependencies = [
  "lyon",
  "thiserror 2.0.21",
  "wgpu",
+]
+
+[[package]]
+name = "elora-server"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+ "elora-map",
+ "elora-net",
+ "elora-protocol",
+ "elora-sim",
+ "serde",
+ "toml",
+ "tracing",
+ "tracing-subscriber",
 ]
 
 [[package]]
@@ -3483,6 +3501,11 @@ checksum = "e450f9b2ed1dff33c94c12589a87338689467b9c4f5d8a5710bd09a847d2c8a7"
 [[package]]
 name = "xtask"
 version = "0.1.0"
+dependencies = [
+ "elora-map",
+ "elora-protocol",
+ "elora-sim",
+]
 
 [[package]]
 name = "zerocopy"

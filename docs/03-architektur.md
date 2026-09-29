@@ -31,8 +31,8 @@ elora/
 │   ├── elora-game/         #     Spielmodi und Regeln (DM, TDM, CTF, LMS, LTS, Instagib), serverseitig
 │   └── elora-editor/       #     Karten-Editor (E-028), wird vom Client eingebunden
 ├── apps/
-│   ├── elora-client/       # M1  das Spiel (Fenster, Loop, Prediction, UI); in M1 = Sandbox
-│   └── elora-server/       #     dedizierter Server ohne Grafik
+│   ├── elora-client/       # M1  das Spiel: Sandbox + Online (lib: Online-Logik/Szene, bin: Fenster/UI)
+│   └── elora-server/       # M3  dedizierter Server (lib: Spielserver, bin: Programm)
 ├── assets/                 # eigene Grafiken, Sounds, Schriften (E-006)
 ├── maps/                   # Karten im Textformat (E-017), z. B. sandbox.emap.toml
 ├── xtask/                  # Entwicklungsaufgaben: `cargo xtask check` (E-039)

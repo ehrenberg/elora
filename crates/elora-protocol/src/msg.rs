@@ -185,16 +185,19 @@ fn put_event(w: &mut Writer, e: &Event) {
             w.uvar(player as u64);
             put_weapon(w, weapon);
         }
-        Event::HammerHit { pos } => {
+        Event::HammerHit { owner, pos } => {
             w.u8(3);
+            w.uvar(owner as u64);
             put_vec(w, pos);
         }
-        Event::LaserBounce { pos } => {
+        Event::LaserBounce { owner, pos } => {
             w.u8(4);
+            w.uvar(owner as u64);
             put_vec(w, pos);
         }
-        Event::Explosion { pos } => {
+        Event::Explosion { owner, pos } => {
             w.u8(5);
+            w.uvar(owner as u64);
             put_vec(w, pos);
         }
         Event::Damage {
@@ -256,9 +259,18 @@ fn get_event(r: &mut Reader<'_>) -> DecodeResult<Event> {
             player: player(r)?,
             weapon: get_weapon(r)?,
         },
-        3 => Event::HammerHit { pos: get_vec(r)? },
-        4 => Event::LaserBounce { pos: get_vec(r)? },
-        5 => Event::Explosion { pos: get_vec(r)? },
+        3 => Event::HammerHit {
+            owner: player(r)?,
+            pos: get_vec(r)?,
+        },
+        4 => Event::LaserBounce {
+            owner: player(r)?,
+            pos: get_vec(r)?,
+        },
+        5 => Event::Explosion {
+            owner: player(r)?,
+            pos: get_vec(r)?,
+        },
         6 => Event::Damage {
             player: player(r)?,
             from: get_opt(r)?,
@@ -300,8 +312,53 @@ fn get_event(r: &mut Reader<'_>) -> DecodeResult<Event> {
     })
 }
 
+/// Obergrenze einer entpackten Nachricht.
+const MAX_UNPACKED: usize = 8 * 1024 * 1024;
+const RAW: u8 = 0;
+const HUFFMAN: u8 = 1;
+
+/// Stufe 3 von E-063: Huffman, falls kleiner; 1 Byte Kennung vorneweg.
+pub fn pack(raw: Vec<u8>) -> Vec<u8> {
+    let packed = crate::huffman::game().encode(&raw);
+    let (flag, body) = if packed.len() < raw.len() {
+        (HUFFMAN, packed)
+    } else {
+        (RAW, raw)
+    };
+    let mut out = Vec::with_capacity(body.len() + 1);
+    out.push(flag);
+    out.extend_from_slice(&body);
+    out
+}
+
+/// Gegenstück zu [`pack`].
+///
+/// # Errors
+/// Bei unbekannter Kennung oder ungültigen Huffman-Daten.
+pub fn unpack(data: &[u8]) -> DecodeResult<std::borrow::Cow<'_, [u8]>> {
+    match data.split_first() {
+        Some((&RAW, body)) => Ok(std::borrow::Cow::Borrowed(body)),
+        Some((&HUFFMAN, body)) => Ok(std::borrow::Cow::Owned(
+            crate::huffman::game().decode(body, MAX_UNPACKED)?,
+        )),
+        _ => Err(DecodeError::Invalid("Kompression")),
+    }
+}
+
 impl ClientMsg {
+    /// Kodiert und komprimiert die Nachricht.
     pub fn encode(&self) -> Vec<u8> {
+        pack(self.encode_raw())
+    }
+
+    /// # Errors
+    /// Bei fehlerhaften Daten.
+    pub fn decode(data: &[u8]) -> DecodeResult<Self> {
+        Self::decode_raw(&unpack(data)?)
+    }
+
+    /// Kodiert ohne Kompression (für Messungen und Training).
+    pub fn encode_raw(&self) -> Vec<u8> {
         let mut w = Writer::new();
         match self {
             Self::Join { version, name } => {
@@ -326,9 +383,7 @@ impl ClientMsg {
         w.into_bytes()
     }
 
-    /// # Errors
-    /// Bei fehlerhaften Daten.
-    pub fn decode(data: &[u8]) -> DecodeResult<Self> {
+    fn decode_raw(data: &[u8]) -> DecodeResult<Self> {
         let mut r = Reader::new(data);
         let msg = match r.u8()? {
             0 => {
@@ -375,7 +430,19 @@ impl ServerMsg {
         }
     }
 
+    /// Kodiert und komprimiert die Nachricht.
     pub fn encode(&self) -> Vec<u8> {
+        pack(self.encode_raw())
+    }
+
+    /// # Errors
+    /// Bei fehlerhaften Daten oder falscher Protokollversion.
+    pub fn decode(data: &[u8]) -> DecodeResult<Self> {
+        Self::decode_raw(&unpack(data)?)
+    }
+
+    /// Kodiert ohne Kompression (für Messungen und Training).
+    pub fn encode_raw(&self) -> Vec<u8> {
         let mut w = Writer::new();
         match self {
             Self::Welcome {
@@ -429,9 +496,7 @@ impl ServerMsg {
         w.into_bytes()
     }
 
-    /// # Errors
-    /// Bei fehlerhaften Daten oder falscher Protokollversion.
-    pub fn decode(data: &[u8]) -> DecodeResult<Self> {
+    fn decode_raw(data: &[u8]) -> DecodeResult<Self> {
         let mut r = Reader::new(data);
         let msg = match r.u8()? {
             0 => {
@@ -525,6 +590,7 @@ mod tests {
     fn server_messages_roundtrip() {
         let events = vec![
             Event::Explosion {
+                owner: 1,
                 pos: Vec2::new(10.0, -20.0),
             },
             Event::Death {
@@ -593,10 +659,10 @@ mod tests {
             ack: None,
             inputs: vec![(1, PlayerInput::default())],
         }
-        .encode();
+        .encode_raw();
         // Richtung manipulieren (Position nach Tag, ack, Anzahl, first, offset)
         bytes[5] = 4; // ZigZag 2
-        assert!(ClientMsg::decode(&bytes).is_err());
+        assert!(ClientMsg::decode_raw(&bytes).is_err());
         assert!(ClientMsg::decode(&[9]).is_err());
         assert!(ServerMsg::decode(&[]).is_err());
     }

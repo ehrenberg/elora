@@ -7,3 +7,8 @@
 .claude/settings.local.json
 *.swp
 .DS_Store
+
+# Lokale Laufzeit-Dateien (Server-Schlüssel ist geheim)
+server_key.toml
+known_servers.toml
+server.toml

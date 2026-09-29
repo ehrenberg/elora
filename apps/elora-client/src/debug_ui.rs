@@ -1,11 +1,16 @@
-//! Debug-Panel der Sandbox (M1.5): Tuning-Regler, Zustandsanzeige, Speichern.
+//! Debug-Panel (M1.5, M2.8, M3.9): Tuning-Regler, Zustandsanzeige, Netzwerk.
 
+use std::net::SocketAddr;
 use std::ops::RangeInclusive;
+use std::time::Duration;
 
+use elora_client::online::OnlineClient;
+use elora_net::{Conditions, Stats};
 use elora_render::ViewSettings;
 use elora_sim::{HookState, TICKS_PER_SECOND, TILE_SIZE, Tuning};
 
 use crate::controls::Controls;
+use crate::hosting::{Hosting, available_maps};
 use crate::sandbox::Sandbox;
 
 /// Aktion, die das Panel ausgelöst hat.
@@ -14,11 +19,75 @@ pub enum Action {
     Save,
     Load,
     Respawn,
+    Connect,
+    Disconnect,
+    HostStart,
+    HostStop,
+    TrustNewKey,
+    ApplyConditions,
+}
+
+/// Warnung bei geändertem Server-Schlüssel (E-062).
+#[derive(Debug, Clone)]
+pub struct KeyWarning {
+    pub server: SocketAddr,
+    pub expected: String,
+    pub got: String,
+}
+
+/// Netzwerk-Einstellungen im Panel.
+#[derive(Debug)]
+pub struct NetUi {
+    pub address: String,
+    pub name: String,
+    /// Simulator (ausgehende Pakete dieses Clients).
+    pub latency_ms: f32,
+    pub jitter_ms: f32,
+    pub loss_pct: f32,
+    pub show_host: bool,
+    pub hosting: Hosting,
+    pub key_warning: Option<KeyWarning>,
+}
+
+impl Default for NetUi {
+    fn default() -> Self {
+        Self {
+            address: "127.0.0.1:8303".into(),
+            name: "Elora".into(),
+            latency_ms: 0.0,
+            jitter_ms: 0.0,
+            loss_pct: 0.0,
+            show_host: false,
+            hosting: Hosting::default(),
+            key_warning: None,
+        }
+    }
+}
+
+impl NetUi {
+    pub fn conditions(&self) -> Conditions {
+        Conditions {
+            latency: Duration::from_secs_f32(self.latency_ms.max(0.0) / 1000.0),
+            jitter: Duration::from_secs_f32(self.jitter_ms.max(0.0) / 1000.0),
+            loss: self.loss_pct.clamp(0.0, 100.0) / 100.0,
+            duplicate: 0.0,
+        }
+    }
+}
+
+/// Angaben zum Online-Spiel.
+pub struct OnlineView<'a> {
+    pub client: &'a OnlineClient,
+    pub stats: Option<Stats>,
+    pub server: SocketAddr,
 }
 
 /// Zustand, den das Panel anzeigen und ändern darf.
 pub struct Context<'a> {
-    pub sandbox: &'a mut Sandbox,
+    /// `None`, solange online gespielt wird.
+    pub sandbox: Option<&'a mut Sandbox>,
+    pub online: Option<OnlineView<'a>>,
+    pub net: &'a mut NetUi,
     pub view: &'a mut ViewSettings,
     pub controls: &'a mut Controls,
     pub fps: f32,
@@ -33,18 +102,28 @@ pub fn panel(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
         .resizable(true)
         .show(ui, |ui| {
             egui::ScrollArea::vertical().show(ui, |ui| {
-                ui.heading("Elora – Sandbox");
+                ui.heading(if cx.online.is_some() {
+                    "Elora – Online"
+                } else {
+                    "Elora – Sandbox"
+                });
                 if cx.cursor_grabbed {
                     ui.label("Esc: Maus freigeben, um das Panel zu bedienen");
                 } else {
                     ui.label("Ins Spielfeld klicken, um weiterzuspielen");
                 }
                 ui.separator();
-                state(ui, cx);
+                action = network(ui, cx);
                 ui.separator();
-                action = buttons(ui, cx.status);
-                ui.separator();
-                tuning(ui, &mut cx.sandbox.world.tuning);
+                if let Some(sandbox) = cx.sandbox.as_deref_mut() {
+                    state(ui, sandbox, cx.fps);
+                    ui.separator();
+                    action = action.or(buttons(ui, cx.status));
+                    ui.separator();
+                    tuning(ui, &mut sandbox.world.tuning);
+                } else if !cx.status.is_empty() {
+                    ui.small(cx.status);
+                }
                 view(ui, cx.view);
                 egui::CollapsingHeader::new("Eingabe")
                     .default_open(false)
@@ -61,11 +140,189 @@ pub fn panel(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
                 help(ui);
             });
         });
+    if cx.net.show_host {
+        action = action.or(host_window(ui.ctx(), cx.net));
+    }
+    if let Some(w) = cx.net.key_warning.clone() {
+        action = action.or(key_warning_window(ui.ctx(), cx.net, &w));
+    }
     action
 }
 
-fn state(ui: &mut egui::Ui, cx: &Context<'_>) {
-    let s = &*cx.sandbox;
+fn network(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
+    let mut action = None;
+    egui::CollapsingHeader::new("Netzwerk")
+        .default_open(true)
+        .show(ui, |ui| {
+            if let Some(o) = &cx.online {
+                online_state(ui, o);
+                if ui.button("Trennen (zurück zur Sandbox)").clicked() {
+                    action = Some(Action::Disconnect);
+                }
+                ui.label("Netzwerk-Simulator (ausgehend):");
+                let mut changed = false;
+                changed |= ui
+                    .add(
+                        egui::Slider::new(&mut cx.net.latency_ms, 0.0..=300.0)
+                            .text("Verzögerung ms"),
+                    )
+                    .changed();
+                changed |= ui
+                    .add(egui::Slider::new(&mut cx.net.jitter_ms, 0.0..=100.0).text("Jitter ms"))
+                    .changed();
+                changed |= ui
+                    .add(egui::Slider::new(&mut cx.net.loss_pct, 0.0..=50.0).text("Verlust %"))
+                    .changed();
+                if changed {
+                    action = Some(Action::ApplyConditions);
+                }
+            } else {
+                ui.horizontal(|ui| {
+                    ui.label("Name");
+                    ui.add(egui::TextEdit::singleline(&mut cx.net.name).desired_width(120.0));
+                });
+                ui.horizontal(|ui| {
+                    ui.label("Server");
+                    ui.add(egui::TextEdit::singleline(&mut cx.net.address).desired_width(150.0));
+                    if ui.button("Verbinden").clicked() {
+                        action = Some(Action::Connect);
+                    }
+                });
+                if ui.button("Server einrichten …").clicked() {
+                    cx.net.show_host = true;
+                }
+            }
+            if !cx.net.hosting.status.is_empty() {
+                ui.small(&cx.net.hosting.status);
+            }
+        });
+    action
+}
+
+fn online_state(ui: &mut egui::Ui, o: &OnlineView<'_>) {
+    let c = o.client;
+    let info = c.info;
+    egui::Grid::new("net")
+        .num_columns(2)
+        .striped(true)
+        .show(ui, |ui| {
+            let mut row = |k: &str, v: String| {
+                ui.label(k);
+                ui.monospace(v);
+                ui.end_row();
+            };
+            row("Server", o.server.to_string());
+            row("Status", format!("{:?}", c.status));
+            row("Karte / Slot", format!("{} / {:?}", c.map_name, c.slot));
+            row(
+                "Snapshots",
+                if c.high_bandwidth {
+                    "50 Hz".into()
+                } else {
+                    "25 Hz".into()
+                },
+            );
+            if let Some(s) = o.stats {
+                row("Ping", format!("{:.0} ms", s.rtt.as_secs_f64() * 1000.0));
+                row("Verlust", format!("{:.1} %", s.loss * 100.0));
+                row(
+                    "Gesendet / Empfangen",
+                    format!("{} / {} KiB", s.bytes_sent / 1024, s.bytes_received / 1024),
+                );
+            }
+            row("Vorhersage", format!("{} Ticks", info.prediction_ticks));
+            row("Vorlauf", format!("{:.0} ms", info.lead_ms));
+            row(
+                "Eingabe-Restzeit",
+                format!("{} ms", info.input_time_left_ms),
+            );
+            row("Snapshot-Größe", format!("{} B", info.snapshot_bytes));
+            row("Snapshot-Fehler", info.snapshot_errors.to_string());
+            row("Korrektur", format!("{:.1} E", info.correction));
+        });
+}
+
+fn host_window(ctx: &egui::Context, net: &mut NetUi) -> Option<Action> {
+    let mut action = None;
+    let mut open = true;
+    egui::Window::new("Server einrichten")
+        .open(&mut open)
+        .resizable(false)
+        .show(ctx, |ui| {
+            let running = net.hosting.is_running();
+            let c = &mut net.hosting.config;
+            egui::Grid::new("host").num_columns(2).show(ui, |ui| {
+                ui.label("Name");
+                ui.text_edit_singleline(&mut c.name);
+                ui.end_row();
+                ui.label("Port");
+                ui.add(egui::DragValue::new(&mut c.port).range(1024..=65535));
+                ui.end_row();
+                ui.label("Karte");
+                egui::ComboBox::from_id_salt("map")
+                    .selected_text(c.map.display().to_string())
+                    .show_ui(ui, |ui| {
+                        for m in available_maps() {
+                            let label = m.display().to_string();
+                            ui.selectable_value(&mut c.map, m, label);
+                        }
+                    });
+                ui.end_row();
+                ui.label("Max. Spieler");
+                ui.add(egui::Slider::new(
+                    &mut c.max_clients,
+                    1..=elora_server::config::MAX_CLIENTS,
+                ));
+                ui.end_row();
+                ui.label("Snapshots");
+                ui.checkbox(&mut c.high_bandwidth, "50 Hz (nur LAN)");
+                ui.end_row();
+            });
+            ui.checkbox(
+                &mut net.hosting.keep_running,
+                "Server beim Beenden des Clients weiterlaufen lassen",
+            );
+            ui.horizontal(|ui| {
+                let label = if running {
+                    "Neu starten und verbinden"
+                } else {
+                    "Starten und verbinden"
+                };
+                if ui.button(label).clicked() {
+                    action = Some(Action::HostStart);
+                }
+                if running && ui.button("Server stoppen").clicked() {
+                    action = Some(Action::HostStop);
+                }
+            });
+            ui.small("Die Einstellungen werden in server.toml gespeichert.");
+        });
+    if !open {
+        net.show_host = false;
+    }
+    action
+}
+
+fn key_warning_window(ctx: &egui::Context, net: &mut NetUi, w: &KeyWarning) -> Option<Action> {
+    let mut action = None;
+    egui::Window::new("Achtung: Server-Schlüssel geändert").collapsible(false).resizable(false).show(ctx, |ui| {
+        ui.label(format!("Der Server {} meldet einen anderen Schlüssel als beim letzten Mal.", w.server));
+        ui.label("Das kann ein neu eingerichteter Server sein – oder ein Angriff (jemand gibt sich als Server aus).");
+        ui.monospace(format!("bekannt: {}", &w.expected[..w.expected.len().min(32)]));
+        ui.monospace(format!("neu:     {}", &w.got[..w.got.len().min(32)]));
+        ui.horizontal(|ui| {
+            if ui.button("Neuem Schlüssel vertrauen und verbinden").clicked() {
+                action = Some(Action::TrustNewKey);
+            }
+            if ui.button("Abbrechen").clicked() {
+                net.key_warning = None;
+            }
+        });
+    });
+    action
+}
+
+fn state(ui: &mut egui::Ui, s: &Sandbox, fps: f32) {
     let tps = TICKS_PER_SECOND as f32;
     let tiles_per_s = |v: f32| v * tps / TILE_SIZE as f32;
     egui::Grid::new("state")
@@ -77,7 +334,7 @@ fn state(ui: &mut egui::Ui, cx: &Context<'_>) {
                 ui.monospace(v);
                 ui.end_row();
             };
-            row("FPS / Tick", format!("{:.0} / {}", cx.fps, s.world.tick));
+            row("FPS / Tick", format!("{:.0} / {}", fps, s.world.tick));
             if let Some(ch) = s.character() {
                 let c = &ch.core;
                 let hook = match c.hook_state {

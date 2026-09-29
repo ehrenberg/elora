@@ -282,6 +282,37 @@ impl Snapshot {
         }
     }
 
+    /// Nur für Vergleichsmessungen (`cargo xtask net-stats`): Delta wie im Original –
+    /// bei geänderten Objekten jedes Feld als Differenz, ohne Änderungsmaske.
+    #[doc(hidden)]
+    pub fn encode_delta_like_original(&self, base: Option<&Self>, w: &mut Writer) {
+        let empty = Self::default();
+        let base = base.unwrap_or(&empty);
+        for (kind, fields) in FIELDS.iter().copied().enumerate() {
+            let (cur, old) = (&self.objects[kind], &base.objects[kind]);
+            let removed: Vec<u64> = old
+                .keys()
+                .filter(|k| !cur.contains_key(k))
+                .copied()
+                .collect();
+            w.uvar(removed.len() as u64);
+            for k in removed {
+                w.uvar(k);
+            }
+            let changed: Vec<(&u64, &Vec<i64>)> =
+                cur.iter().filter(|(k, v)| old.get(k) != Some(v)).collect();
+            w.uvar(changed.len() as u64);
+            for (&k, v) in changed {
+                w.uvar(k);
+                let zero = vec![0; fields];
+                let prev = old.get(&k).unwrap_or(&zero);
+                for (a, b) in v.iter().zip(prev) {
+                    w.ivar(a.wrapping_sub(*b));
+                }
+            }
+        }
+    }
+
     /// Gegenstück zu [`Self::encode_delta`].
     ///
     /// # Errors

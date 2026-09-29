@@ -4,6 +4,8 @@
 //! `elora-net`.
 
 pub mod codec;
+pub mod huffman;
+mod huffman_table;
 pub mod msg;
 pub mod snapshot;
 

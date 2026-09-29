@@ -7,6 +7,7 @@ members = [
     "crates/elora-protocol",
     "crates/elora-net",
     "apps/elora-client",
+    "apps/elora-server",
     "xtask",
 ]
 

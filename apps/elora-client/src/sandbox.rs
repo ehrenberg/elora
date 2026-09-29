@@ -6,9 +6,12 @@ use std::sync::mpsc;
 use std::time::Duration;
 
 use anyhow::Context as _;
+use elora_client::scene::{Scene, SceneChar};
 use elora_map::Map;
 use elora_sim::replay::Recording;
-use elora_sim::{CharacterCore, Event, PlayerInput, TICKS_PER_SECOND, Tuning, Vec2, World};
+use elora_sim::{
+    CharacterCore, Controller, Event, PlayerInput, TICKS_PER_SECOND, Tuning, Vec2, World,
+};
 
 use crate::controls::Controls;
 
@@ -199,6 +202,36 @@ impl Sandbox {
         let cur = &self.world.character(i)?.core;
         let prev = self.prev.get(i).and_then(Option::as_ref).unwrap_or(cur);
         Some((cur, prev))
+    }
+
+    /// Was jetzt zu zeichnen ist.
+    pub fn scene(&self) -> Scene {
+        let alpha = self.alpha();
+        let mut scene = Scene {
+            camera: self.render_pos(),
+            ..Scene::default()
+        };
+        for (i, p) in self.world.players.iter().enumerate() {
+            let Some(p) = p else { continue };
+            let Some(ch) = &p.character else { continue };
+            let prev = self
+                .prev
+                .get(i)
+                .and_then(Option::as_ref)
+                .unwrap_or(&ch.core)
+                .clone();
+            scene.chars.push(SceneChar {
+                slot: i,
+                ch: ch.clone(),
+                prev,
+                alpha,
+                dummy: matches!(p.controller, Controller::Dummy { .. }),
+                local: i == self.player,
+            });
+        }
+        scene.add_shots(&self.world, alpha, |_| true);
+        scene.add_pickups(&self.world);
+        scene
     }
 
     /// Kamera-Position: interpolierte Position von Elora, sonst die letzte bekannte.
