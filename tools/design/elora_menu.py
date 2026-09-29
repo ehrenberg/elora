@@ -289,6 +289,91 @@ def sheet():
     return '\n'.join(out)
 
 
+# ── Gewählt (E-125): Aufbau von C in den Farben und Formen von B ────────
+def d_bar(ox, oy, active):
+    s = (f'<rect x="{ox}" y="{oy + 4}" width="{W}" height="36" {B_SHADOW}/>'
+         f'<rect x="{ox}" y="{oy}" width="{W}" height="36" fill="#fffaf0" stroke="#e7dcc8" stroke-width="1.5"/>')
+    s += text(ox + 14, oy + 24, 'Elora', 16, '#e8a53a', weight='bold')
+    x = ox + 72
+    colors = ['6cbf4a', '5aaee8', 'a77be0', 'f28c3a', '9aa4ae']
+    for i, t in enumerate(['Spielen', 'Training', 'Server erstellen', 'Einstellungen', 'Beenden']):
+        w = len(t) * 5.2 + 16
+        if i == active:
+            s += b_pill(x, oy + 7, w, t, colors[i], 22, 10)
+        else:
+            s += text(x + w / 2, oy + 22, t, 10, B_TEXT, 'middle')
+        x += w + 4
+    return s
+
+
+def d_main(ox, oy):
+    s = d_bar(ox, oy, 0)
+    s += text(ox + 26, oy + 86, 'Willkommen zurück,', 13, B_TEXT)
+    s += text(ox + 26, oy + 112, 'Elora!', 24, B_TEXT, weight='bold')
+    s += b_card(ox + 22, oy + 132, 200, 92)
+    s += text(ox + 38, oy + 156, 'Schnell spielen', 13, B_TEXT, weight='bold')
+    s += text(ox + 38, oy + 174, 'Tropfen-Arena · DM · 3/8', 10, '#8a7a66')
+    s += b_pill(ox + 38, oy + 186, 80, 'Los!', '6cbf4a')
+    return s
+
+
+def d_browser(ox, oy):
+    s = d_bar(ox, oy, 0)
+    s += b_card(ox + 14, oy + 46, W - 28, H - 58)
+    for i, (t, c) in enumerate([('Internet', '5aaee8'), ('LAN', 'e0c89a'), ('Favoriten', 'e0c89a')]):
+        s += b_pill(ox + 26 + i * 76, oy + 54, 68, t, c, 20, 10)
+    cols = [(26, 'Name'), (158, 'Karte'), (238, 'Modus'), (298, 'Spieler'), (368, 'Ping')]
+    for x, t in cols:
+        s += text(ox + x, oy + 90, t, 9, '#8a7a66')
+    for r, (n, m, g, p, ping) in enumerate(SERVERS[:4]):
+        y = oy + 96 + r * 21
+        if r == 1:
+            s += f'<rect x="{ox + 20}" y="{y}" width="{W - 40}" height="19" rx="9.5" fill="#f2c14e" fill-opacity="0.35"/>'
+        for (x, _), v in zip(cols, [n, m, g, p, f'{ping} ms']):
+            s += text(ox + x, y + 13, v, 10, B_TEXT)
+    s += b_pill(ox + W - 118, oy + H - 40, 92, 'Verbinden', '6cbf4a')
+    return s
+
+
+def d_settings(ox, oy):
+    s = d_bar(ox, oy, 3)
+    s += b_card(ox + 14, oy + 46, 108, H - 58)
+    for i, t in enumerate(['Spieler', 'Steuerung', 'Grafik', 'Ton', 'Sprache']):
+        y = oy + 58 + i * 28
+        if i == 0:
+            s += b_pill(ox + 22, y, 92, t, 'f28c3a', 22, 10)
+        else:
+            s += text(ox + 68, y + 15, t, 10, B_TEXT, 'middle')
+    s += b_card(ox + 130, oy + 46, W - 144, H - 58)
+    s += text(ox + 144, oy + 68, 'Name', 10, '#8a7a66')
+    s += f'<rect x="{ox + 144}" y="{oy + 74}" width="140" height="22" rx="11" fill="#ffffff" stroke="#e7dcc8"/>'
+    s += text(ox + 154, oy + 89, 'Elora', 11, B_TEXT)
+    for i, (lbl, cols, sel) in enumerate([('Körper', BODY, 7), ('Füße', BODY, 6), ('Augen', EYES, 1)]):
+        y = oy + 114 + i * 34
+        s += text(ox + 144, y, lbl, 10, '#8a7a66')
+        s += swatches(ox + 144, y + 5, cols, sel, 10, 2).replace('stroke="#ffffff" stroke-width="2"', 'stroke="#3b3024" stroke-width="2.5"')
+    s += f'<circle cx="{ox + 378}" cy="{oy + 160}" r="44" fill="#f2c14e" fill-opacity="0.2"/>'
+    s += elora(ox + 378, oy + 204, 0.62, body='5aaee8', feet='6a78e0', eyes='2e3f86')
+    return s
+
+
+def sheet_chosen():
+    SW = 30 + 3 * (W + 20) + 10
+    SH = 90 + H + 60
+    out = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{SW}" height="{SH}" viewBox="0 0 {SW} {SH}" font-family="Inter">',
+           f'<rect width="{SW}" height="{SH}" fill="#d8e3ec"/>',
+           text(30, 44, 'Menü – gewählter Stil (E-125)', 28, '#1e2a36', weight='bold'),
+           text(30, 70, 'Aufbau von C „Leiste oben“ in den Farben und Formen von B „Hell &amp; weich“.'.replace('&amp;', '&'), 15, '#1e2a36')]
+    for c, fn in enumerate([d_main, d_browser, d_settings]):
+        ox, oy = 30 + c * (W + 20), 100
+        out.append(background(ox, oy, 100 + c, figures=c == 0))
+        out.append(fn(ox, oy))
+    out.append('</svg>')
+    return '\n'.join(out)
+
+
 if __name__ == '__main__':
     with open('docs/design/elora-menue.svg', 'w') as fh:
         fh.write(sheet())
+    with open('docs/design/elora-menue-gewaehlt.svg', 'w') as fh:
+        fh.write(sheet_chosen())

@@ -1,6 +1,6 @@
 # M7 – Menüs & Infrastruktur: Umsetzungsplan
 
-Status: **angenommen** (E-112–E-124), in Umsetzung · Grundlage: [`06-roadmap.md`](06-roadmap.md) M7, E-031, E-082, E-111, O-17, O-18, O-45
+Status: **angenommen** (E-112–E-125), in Umsetzung · Grundlage: [`06-roadmap.md`](06-roadmap.md) M7, E-031, E-082, E-111, O-17, O-18, O-45
 
 ## Ziel
 
@@ -33,7 +33,7 @@ Ein neuer Spieler startet Elora, findet ohne Hilfe einen Server und kann spielen
 
 | # | Schritt | Crate | Inhalt | Prüfung |
 |---|---|---|---|---|
-| M7.0 | Entwürfe | – | 2–3 Menü-Entwürfe als Bild (E-123) | Deine Auswahl |
+| M7.0 ✅ | Entwürfe | – | 2–3 Menü-Entwürfe als Bild (E-123) | Deine Auswahl |
 | M7.1 | UI-Toolkit | Client (`ui/`) | Knopf, Schalter, Schieberegler, Textfeld, Liste mit Auswahl und Scrollen, Reiter, Tastatur-/Maus-Fokus; im HUD-Stil, skaliert mit der Fensterhöhe | Tests + Sichtprüfung |
 | M7.2 | Einstellungen & Sprache | Client | `settings.toml` im Benutzerverzeichnis (E-116): Spieler, Skin, Steuerung, Grafik, Ton, Sprache, Favoriten; Übersetzungsdateien Deutsch/Englisch (E-114) | Tests |
 | M7.3 | Hauptmenü & Ablauf | Client | Hauptmenü über ruhigem Bild (E-113), Zustände Menü ↔ Spiel ↔ Ingame-Menü, Menümusik vorbereitet (E-121), „Server erstellen“ (E-122), Training (Sandbox) | Sichtprüfung |
@@ -73,3 +73,7 @@ Ein neuer Spieler startet Elora, findet ohne Hilfe einen Server und kann spielen
 - **Benutzerverzeichnis:** `directories` (MIT/Apache-2.0) für den Ort von `settings.toml` je Betriebssystem.
 - **HTTP (E-112):** Client und Server als HTTP-Client (z. B. `ureq`, MIT/Apache-2.0, ohne TLS-Pflicht im LAN; für den öffentlichen Master TLS über `rustls`); Master als kleiner HTTP-Dienst (z. B. `tiny_http`, MIT/Apache-2.0). Endgültige Wahl nach Lizenz- und Abhängigkeitsprüfung.
 - **Vollbild/VSync/MSAA:** vorhanden (winit, wgpu).
+
+## Umsetzungsstand
+
+- **M7.0 Entwürfe:** `docs/design/elora-menue.png` (A/B/C); gewählt (E-125): Aufbau von C in Farben und Formen von B → `docs/design/elora-menue-gewaehlt.png`. Generator `tools/design/elora_menu.py`.
