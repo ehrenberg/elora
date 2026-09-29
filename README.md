@@ -2,7 +2,7 @@
 
 Ein 2D-Multiplayer-Arena-Shooter nach dem Vorbild von [Teeworlds](https://teeworlds.com) – eigene Figur, eigener Stil, gleiches Spielgefühl. Elora ist zugleich der Name der spielbaren Figur.
 
-**Stand:** M0–M4 abgeschlossen (Bewegung, Hook, Waffen, Dummies, Netzwerk, Spielmodi), M5 (Look & Sound) in Arbeit: Figur, Skins, Welt, Effekte, HUD, Emotes und Sounds stehen, Abnahme M5.10 offen. Siehe [Roadmap](docs/06-roadmap.md).
+**Stand:** M0–M5 abgeschlossen (Bewegung, Hook, Waffen, Dummies, Netzwerk, Spielmodi, Look & Sound). Als Nächstes M7 (Menüs & Infrastruktur, vor M6 laut E-111). Siehe [Roadmap](docs/06-roadmap.md).
 
 ## Einrichtung unter Arch Linux
 

@@ -14,8 +14,10 @@ Status: **angenommen** (E-037, 2026-09-25)
 ```
 M0 Setup ─► M1 Physik-Sandbox ─► M2 Kampf lokal ─► M3 Netzwerk ─► M4 Spielmodi
                                                                      │
-      M8 Release ◄─ M7 Menüs & Infrastruktur ◄─ M6 Karten & Editor ◄─ M5 Look & Sound
+      M8 Release ◄─ M6 Karten & Editor ◄─ M7 Menüs & Infrastruktur ◄─ M5 Look & Sound
 ```
+
+**Reihenfolge seit E-111:** M7 vor M6 (Nummern bleiben).
 
 | # | Meilenstein | Kern-Ergebnis | Offene Entscheidungen davor | Entscheidung |
 |---|---|---|---|---|
@@ -98,7 +100,9 @@ M0 Setup ─► M1 Physik-Sandbox ─► M2 Kampf lokal ─► M3 Netzwerk ─�
 
 **Abnahme:** Stil und Feedback sind abgenommen. Elora ist klar von einem Tee zu unterscheiden.
 
-## M6 – Karten & Editor (E-028)
+**Stand 2026-09-30:** **Abgeschlossen** (E-110), Plan und Umsetzung in [`11-m5-plan.md`](11-m5-plan.md).
+
+## M6 – Karten & Editor (E-028) – nach M7 (E-111)
 
 - Release-Kartenformat (O-37): Game-Layer, Grafik-Layer, Parallax, Quads, Animationen
 - Integrierter Editor (egui, E-031): Layer, Tiles, Entities, Testspielen direkt aus dem Editor
@@ -107,7 +111,7 @@ M0 Setup ─► M1 Physik-Sandbox ─► M2 Kampf lokal ─► M3 Netzwerk ─�
 
 **Abnahme:** Mit dem Editor lässt sich eine Karte von Grund auf bauen und spielen.
 
-## M7 – Menüs & Infrastruktur
+## M7 – Menüs & Infrastruktur – vor M6 (E-111)
 
 - Hauptmenü, Einstellungen (Grafik, Audio, Steuerung, Spieler und Skin), Tastenbelegung
 - Server-Browser: LAN plus Internet über einen Master-Server (O-17)
