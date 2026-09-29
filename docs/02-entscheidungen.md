@@ -63,6 +63,14 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-054 | 2026-09-25 | Dummy-Kartenzeichen | Ein Zeichen pro Muster: `D` steht, `W` läuft, `J` springt, `X` läuft + springt (Erweiterung von E-024) | Entscheidung Projektinhaber |
 | E-055 | 2026-09-25 | Kill-Taste (D-M2-05) | Erst in **M4** mit den Spielregeln | Entscheidung Projektinhaber |
 | E-056 | 2026-09-29 | M2 Abnahme | Kampf lokal freigegeben („weiter gehts“); Respawn-Verhalten wie im Original (frühestens 0,5 s per Klick, sonst 3 s) bleibt, da kein Einwand | Entscheidung Projektinhaber |
+| E-057 | 2026-09-29 | Vorhersage (D-M3-03) | Eigene Bewegung/Hook **und eigene Waffen** (Schüsse, Laserstrahl, Hammer-Effekt, Rückstoß) werden vorhergesagt; Schaden/Tod nur auf dem Server; andere Spieler interpoliert | Entscheidung Projektinhaber |
+| E-058 | 2026-09-29 | Lag-Kompensation (D-M3-04) | **Keine** – wie Original | Entscheidung Projektinhaber |
+| E-059 | 2026-09-29 | Kapazität (D-M3-01/02) | **Bis 64 Spieler** pro Server; Snapshots **25 Hz**, **50 Hz als LAN-Option** | Entscheidung Projektinhaber |
+| E-060 | 2026-09-29 | Lokal hosten (D-M3-06) | Server als **eigener Prozess**; **Einrichtung und Konfiguration des Servers aus dem Client heraus** (Dialog, startet den Prozess) | Entscheidung Projektinhaber |
+| E-061 | 2026-09-29 | Schutz (D-M3-05) | **Token-Handshake + Verschlüsselung** | Entscheidung Projektinhaber |
+| E-062 | 2026-09-29 | Server-Vertrauen | **Wie SSH (TOFU):** Client merkt sich den Server-Schlüssel beim ersten Verbinden und warnt bei Änderung; Umsetzung Noise-Protokoll `XX` (Crate `snow`, Apache-2.0/MIT) | Entscheidung Projektinhaber |
+| E-063 | 2026-09-29 | Kompression (D-M3-07) | „Bessere Methode als Original, sonst Huffman“ → **feldweises Delta mit Änderungsmaske + kompakte Zahlen, danach statischer Huffman mit auf eigenem Verkehr trainierter Tabelle** (Begründung: siehe `09-m3-plan.md`) | Entscheidung Projektinhaber, Methode von Claude ausgearbeitet |
+| E-064 | 2026-09-29 | M3-Plan | Plan aus [`09-m3-plan.md`](09-m3-plan.md) mit obigen Antworten umsetzen | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 
@@ -116,7 +124,7 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 - [ ] **O-18 Demos / Replays**
 - [x] ~~O-19 Skins-System~~ → E-029
 - [ ] **O-20 Konsole / Remote-Console**
-- [ ] **O-42 Netzwerk-Zielwerte** (max. Spieler, Snapshot-Rate, Bandbreite)
+- [x] ~~O-42 Netzwerk-Zielwerte~~ → E-059
 - [ ] **O-43 Release-Karten** (Anzahl, Modi)
 - [ ] **O-44 Vertrieb** (itch.io, Steam, Flathub, Website …)
 - [x] ~~O-21 Meilensteine~~ → E-037
