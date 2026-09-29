@@ -21,17 +21,17 @@ Anfang entfernt, Ende ausgeblendet, Spitze −1 dBFS, teils gekürzt).
 | `flag_return` | `jingles_STEEL09.ogg` | [Kenney – music-jingles](https://kenney.nl/assets/music-jingles) | Kenney (kenney.nl) | CC0 1.0 |
 | `grenade_explode` | `explosionCrunch_000.ogg` + `lowFrequency_explosion_000.ogg` (0–1,6 s, gemischt 1 : 0,9, Nachhall ausgeblendet) | [Kenney – sci-fi-sounds](https://kenney.nl/assets/sci-fi-sounds) | Kenney (kenney.nl) | CC0 1.0 |
 | `grenade_fire` | `impactSoft_heavy_000.ogg` | [Kenney – impact-sounds](https://kenney.nl/assets/impact-sounds) | Kenney (kenney.nl) | CC0 1.0 |
-| `hammer_fire` | `cloth2.ogg` | [Kenney – rpg-audio](https://kenney.nl/assets/rpg-audio) | Kenney (kenney.nl) | CC0 1.0 |
+| `hammer_fire` | `cloth3.ogg` (Tonhöhe ×0,6, Tiefpass 1,8 kHz, rückwärts anschwellend + kurzer Ausklang) | [Kenney – rpg-audio](https://kenney.nl/assets/rpg-audio) | Kenney (kenney.nl) | CC0 1.0 |
 | `hammer_hit` | `impactPunch_medium_000.ogg` | [Kenney – impact-sounds](https://kenney.nl/assets/impact-sounds) | Kenney (kenney.nl) | CC0 1.0 |
 | `hit_confirm` | `tick_002.ogg` | [Kenney – interface-sounds](https://kenney.nl/assets/interface-sounds) | Kenney (kenney.nl) | CC0 1.0 |
 | `hook_attach_ground` | `impactWood_light_000.ogg` | [Kenney – impact-sounds](https://kenney.nl/assets/impact-sounds) | Kenney (kenney.nl) | CC0 1.0 |
 | `hook_attach_player` | `impactSoft_medium_000.ogg` | [Kenney – impact-sounds](https://kenney.nl/assets/impact-sounds) | Kenney (kenney.nl) | CC0 1.0 |
 | `hook_fire` | `drawKnife1.ogg` | [Kenney – rpg-audio](https://kenney.nl/assets/rpg-audio) | Kenney (kenney.nl) | CC0 1.0 |
 | `hook_no_attach` | `impactMetal_light_000.ogg` | [Kenney – impact-sounds](https://kenney.nl/assets/impact-sounds) | Kenney (kenney.nl) | CC0 1.0 |
-| `jump` | `footstep_grass_000.ogg` | [Kenney – impact-sounds](https://kenney.nl/assets/impact-sounds) | Kenney (kenney.nl) | CC0 1.0 |
+| `jump` | `slime_000.ogg` (Tonhöhe ×1,8, 0,15 s) | [Kenney – sci-fi-sounds](https://kenney.nl/assets/sci-fi-sounds) | Kenney (kenney.nl) | CC0 1.0 |
 | `land` | `footstep_carpet_000.ogg` | [Kenney – impact-sounds](https://kenney.nl/assets/impact-sounds) | Kenney (kenney.nl) | CC0 1.0 |
 | `laser_bounce` | `glass_002.ogg` | [Kenney – interface-sounds](https://kenney.nl/assets/interface-sounds) | Kenney (kenney.nl) | CC0 1.0 |
-| `laser_fire` | `laserSmall_000.ogg` | [Kenney – sci-fi-sounds](https://kenney.nl/assets/sci-fi-sounds) | Kenney (kenney.nl) | CC0 1.0 |
+| `laser_fire` | `glass_004.ogg` (Tonhöhe ×0,7, kurzes Echo, 0,3 s) | [Kenney – interface-sounds](https://kenney.nl/assets/interface-sounds) | Kenney (kenney.nl) | CC0 1.0 |
 | `no_ammo` | `metalClick.ogg` | [Kenney – rpg-audio](https://kenney.nl/assets/rpg-audio) | Kenney (kenney.nl) | CC0 1.0 |
 | `pain_long` | `slime_001.ogg` | [Kenney – sci-fi-sounds](https://kenney.nl/assets/sci-fi-sounds) | Kenney (kenney.nl) | CC0 1.0 |
 | `pain_short` | `slime_000.ogg` | [Kenney – sci-fi-sounds](https://kenney.nl/assets/sci-fi-sounds) | Kenney (kenney.nl) | CC0 1.0 |

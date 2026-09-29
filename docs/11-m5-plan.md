@@ -1,6 +1,6 @@
 # M5 – Look & Sound: Umsetzungsplan
 
-Status: **angenommen** (E-080–E-107), in Umsetzung · Grundlage: [`06-roadmap.md`](06-roadmap.md) M5, E-006, E-027, E-029, E-030, E-031, E-032, E-033
+Status: **angenommen** (E-080–E-108), in Umsetzung · Grundlage: [`06-roadmap.md`](06-roadmap.md) M5, E-006, E-027, E-029, E-030, E-031, E-032, E-033
 
 ## Ziel
 
@@ -96,6 +96,7 @@ Elora bekommt ihr eigenes Aussehen im Flat-/Vektorstil (E-030), mit Animationen,
   - Wiedergabe (Feature `playback`, kira + cpal/ALSA): räumlich bis 1400 Einheiten (linear leiser), Stereo nach seitlichem Abstand (±0.8), Gesamtlautstärke und Stumm im Panel unter *Ton*, gespeichert in `tuning.toml` unter `[audio]`. Ohne Audiogerät läuft das Spiel stumm.
   - Hörprobe: `cargo xtask sound-preview` schreibt `target/sounds/*.wav`.
   - Hörprobe 1 (E-106): nur Spawn, Tod, Waffenwechsel und Waffen-Pickup bleiben prozedural. Die übrigen 27 sind jetzt **CC0-Tondateien** (E-107, Kenney, Stil organisch/weich) in `assets/sounds/files/`, Quellen in `assets/SOURCES.md`. Import mit `cargo xtask sound-import` (ffmpeg → Mono/44,1 kHz/16 Bit, eigene WAV-Lesung, keine zusätzliche Dekoder-Lizenz); `build.rs` bettet alle Dateien ein, eine Datei ersetzt den prozeduralen Sound gleichen Namens; Lautstärken im Abschnitt `[gain]` von `sounds.toml`.
+  - Hörprobe 2 (E-108, ohne Freesound): Explosion aus zwei Kenney-Explosionen gemischt; Hammer-Schwung, Laser und Sprung aus Kenney-Aufnahmen umgeformt (Tonhöhe, Filter, rückwärts anschwellend). Je drei Varianten, Alternativen per `target/sounds/alternativen/` zum Vergleich.
 
 ## Voraussetzungen vom Projektinhaber
 

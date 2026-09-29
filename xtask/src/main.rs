@@ -272,8 +272,13 @@ fn sound_import(args: &[String]) -> Result<(), String> {
         .iter()
         .map(|b| f32::from_le_bytes(*b))
         .collect();
-    // Stille am Anfang entfernen (Sounds sollen sofort einsetzen)
-    let first = samples.iter().position(|s| s.abs() > 0.01).unwrap_or(0);
+    // Stille am Anfang entfernen (Sounds sollen sofort einsetzen); Schwelle relativ zur
+    // Spitze, damit leise Aufnahmen und anschwellende Klänge erhalten bleiben
+    let raw_peak = samples.iter().fold(0.0_f32, |m, s| m.max(s.abs()));
+    let first = samples
+        .iter()
+        .position(|s| s.abs() > raw_peak * 0.01)
+        .unwrap_or(0);
     samples.drain(..first);
     let fade = elora_audio::SAMPLE_RATE as usize * 15 / 1000; // 15 ms
     let len = samples.len();
