@@ -17,7 +17,6 @@ pub enum Language {
     En,
 }
 
-#[allow(dead_code)] // Sprachauswahl in den Einstellungen (M7.4)
 impl Language {
     pub const ALL: [Self; 2] = [Self::De, Self::En];
 

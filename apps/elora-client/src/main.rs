@@ -18,6 +18,7 @@ mod hud;
 mod items;
 mod lang;
 mod menu;
+mod menu_settings;
 mod sandbox;
 mod settings;
 mod skins;

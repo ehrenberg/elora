@@ -8,7 +8,10 @@ use elora_sim::Vec2;
 use winit::event::{ElementState, KeyEvent, MouseButton, MouseScrollDelta};
 use winit::keyboard::KeyCode;
 
+use crate::lang::{Lang, Language};
 use crate::menu::{MenuAction, MenuCtx};
+use crate::menu_settings::SettingsEdit;
+use crate::settings::GraphicsSettings;
 use crate::ui::UiKey;
 use crate::{Action, App, Screen, draw, hosting, hud};
 
@@ -48,12 +51,13 @@ impl App {
         self.sounds.menu_music(true);
         let (screen, s) = self.menu_ctx_parts();
         self.hud_batch.clear();
+        let graphics_before = self.settings.graphics;
+        let language_before = self.settings.language;
+        let audio_device = self.sounds.has_device();
         let cx = MenuCtx {
             font: self.hud.font(),
             lang: &self.lang,
             art: &self.figure_art,
-            name: &self.net.name,
-            skin: self.net.skin,
             last_server: self.settings.last_server.as_deref(),
             favorites: &self.settings.favorites,
             maps: &self.maps,
@@ -62,7 +66,20 @@ impl App {
             s,
             dt,
         };
-        let action = self.menu.draw_main(&mut self.hud_batch, &cx);
+        let mut edit = SettingsEdit {
+            name: &mut self.net.name,
+            skin: &mut self.net.skin,
+            graphics: &mut self.settings.graphics,
+            audio: &mut self.sounds.settings,
+            effects: &mut self.effects.settings,
+            sensitivity: &mut self.controls.sensitivity,
+            language: &mut self.settings.language,
+            audio_device,
+        };
+        let (action, changed) = self.menu.draw_main(&mut self.hud_batch, &cx, &mut edit);
+        if changed {
+            self.settings_changed(graphics_before, language_before);
+        }
         let Some(gfx) = &mut self.gfx else { return };
         let Some(mut frame) = gfx.renderer.begin_frame() else {
             return;
@@ -87,6 +104,10 @@ impl App {
         if let Some(a) = action {
             self.apply_menu(a);
         }
+        if self.menu.save_pending && !self.menu.input.down {
+            self.menu.save_pending = false;
+            self.save_settings();
+        }
     }
 
     /// Pause-Menü in den HUD-Batch zeichnen (über dem Spiel).
@@ -96,8 +117,6 @@ impl App {
             font: self.hud.font(),
             lang: &self.lang,
             art: &self.figure_art,
-            name: &self.net.name,
-            skin: self.net.skin,
             last_server: None,
             favorites: &[],
             maps: &[],
@@ -107,6 +126,34 @@ impl App {
             dt,
         };
         self.menu.draw_pause(&mut self.hud_batch, &cx)
+    }
+
+    /// Geänderte Einstellungen sofort anwenden und speichern.
+    fn settings_changed(&mut self, graphics_before: GraphicsSettings, language_before: Language) {
+        let g = self.settings.graphics;
+        if self.settings.language != language_before {
+            self.lang = Lang::new(self.settings.language);
+        }
+        if let Some(gfx) = &mut self.gfx {
+            if g.fullscreen != graphics_before.fullscreen {
+                gfx.window.set_fullscreen(
+                    g.fullscreen
+                        .then_some(winit::window::Fullscreen::Borderless(None)),
+                );
+            }
+            if g.vsync != graphics_before.vsync {
+                gfx.renderer.set_vsync(g.vsync);
+            }
+            if g.msaa != graphics_before.msaa {
+                gfx.renderer.set_msaa(g.msaa);
+            }
+        }
+        // Regler nicht bei jeder Bewegung speichern – erst beim Loslassen
+        if self.menu.input.down {
+            self.menu.save_pending = true;
+        } else {
+            self.save_settings();
+        }
     }
 
     pub(crate) fn apply_menu(&mut self, action: MenuAction) {

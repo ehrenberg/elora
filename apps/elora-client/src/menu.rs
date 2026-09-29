@@ -13,6 +13,7 @@ use elora_sim::{Team, Vec2};
 
 use crate::figure::FigureArt;
 use crate::lang::Lang;
+use crate::menu_settings::SettingsEdit;
 use crate::ui::{
     self, BLUE, FieldEvent, GRAY, GREEN, LOGO, ORANGE, Rect, TEXT, TEXT_DIM, Ui, UiInput, UiState,
     VIOLET,
@@ -70,8 +71,6 @@ pub struct MenuCtx<'a> {
     pub font: &'a Font,
     pub lang: &'a Lang,
     pub art: &'a FigureArt,
-    pub name: &'a str,
-    pub skin: Skin,
     pub last_server: Option<&'a str>,
     pub favorites: &'a [String],
     /// Kartennamen für „Server erstellen“.
@@ -96,6 +95,8 @@ pub struct Menu {
     pub paused: bool,
     /// „Beenden“ gewählt; die App beendet sich beim nächsten Durchlauf.
     pub quit: bool,
+    /// Einstellungen geändert, Speichern wartet auf das Loslassen der Maus.
+    pub save_pending: bool,
     /// Letzter Klick (Zeit, Ort) für die Doppelklick-Erkennung.
     pub last_click: Option<(std::time::Instant, Vec2)>,
 }
@@ -103,9 +104,14 @@ pub struct Menu {
 const TAB_COLORS: [Color; 5] = [GREEN, BLUE, VIOLET, ORANGE, GRAY];
 
 impl Menu {
-    /// Hauptmenü zeichnen; liefert eine Aktion.
-    pub fn draw_main(&mut self, batch: &mut ShapeBatch, cx: &MenuCtx<'_>) -> Option<MenuAction> {
-        background(batch, cx);
+    /// Hauptmenü zeichnen; liefert eine Aktion und ob Einstellungen geändert wurden.
+    pub fn draw_main(
+        &mut self,
+        batch: &mut ShapeBatch,
+        cx: &MenuCtx<'_>,
+        edit: &mut SettingsEdit<'_>,
+    ) -> (Option<MenuAction>, bool) {
+        background(batch, cx, *edit.skin);
         let mut ui = Ui {
             batch,
             font: cx.font,
@@ -122,17 +128,19 @@ impl Menu {
             cx.screen.x - 36.0 * s,
             cx.screen.y - 82.0 * s,
         );
+        let mut changed = false;
         let page_action = match self.page {
             Page::Play => play_page(
                 &mut ui,
                 cx,
                 content,
+                edit.name,
                 &mut self.address,
                 &mut self.selected_favorite,
             ),
             Page::Create => create_page(&mut ui, cx, content, &mut self.create),
             Page::Settings => {
-                settings_page(&mut ui, cx, content, &mut self.settings_tab);
+                changed = settings_page(&mut ui, cx, content, &mut self.settings_tab, edit);
                 None
             }
         };
@@ -148,7 +156,7 @@ impl Menu {
         }
         ui.end();
         self.input.next_frame();
-        action
+        (action, changed)
     }
 
     /// Pause-Menü über dem Spiel.
@@ -204,7 +212,7 @@ impl Menu {
 }
 
 /// Ruhiges Hintergrundbild (E-113): Himmel, Wolken, Hügel, zwei Eloras.
-fn background(batch: &mut ShapeBatch, cx: &MenuCtx<'_>) {
+fn background(batch: &mut ShapeBatch, cx: &MenuCtx<'_>, skin: Skin) {
     let (w, h, s) = (cx.screen.x, cx.screen.y, cx.s);
     batch.fill_rect_vgradient(
         Vec2::default(),
@@ -230,7 +238,7 @@ fn background(batch: &mut ShapeBatch, cx: &MenuCtx<'_>) {
         440.0 * s,
         Color::hex(0x7aae6a),
     );
-    let tint = crate::skins::tint(cx.skin, Team::None, false, crate::draw::team_color);
+    let tint = crate::skins::tint(skin, Team::None, false, crate::draw::team_color);
     cx.art.draw_pose(
         batch,
         Vec2::new(w * 0.8, h - 40.0 * s),
@@ -308,6 +316,7 @@ fn play_page(
     ui: &mut Ui<'_>,
     cx: &MenuCtx<'_>,
     area: Rect,
+    name: &str,
     address: &mut String,
     selected: &mut Option<usize>,
 ) -> Option<MenuAction> {
@@ -322,7 +331,7 @@ fn play_page(
         Align::Left,
     );
     ui.label(
-        cx.name,
+        name,
         Vec2::new(area.min.x + 12.0 * s, area.min.y + 62.0 * s),
         30.0,
         TEXT,
@@ -586,8 +595,14 @@ fn create_page(
         .then_some(MenuAction::Host)
 }
 
-/// „Einstellungen“: Seitenleiste; die Seiten selbst folgen in M7.4.
-fn settings_page(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, area: Rect, tab: &mut usize) {
+/// „Einstellungen“: Seitenleiste links, Seite rechts ([`crate::menu_settings`]).
+fn settings_page(
+    ui: &mut Ui<'_>,
+    cx: &MenuCtx<'_>,
+    area: Rect,
+    tab: &mut usize,
+    edit: &mut SettingsEdit<'_>,
+) -> bool {
     let s = cx.s;
     let lang = cx.lang;
     let side = Rect::new(
@@ -607,7 +622,7 @@ fn settings_page(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, area: Rect, tab: &mut usize)
     if let Some(i) = ui.side_tabs("settings_tabs", side.shrink(12.0 * s), &items, *tab, ORANGE) {
         *tab = i;
     }
-    let page = Rect::new(side.max.x + 16.0 * s, side.min.y, 520.0 * s, 360.0 * s);
+    let page = Rect::new(side.max.x + 16.0 * s, side.min.y, 560.0 * s, 400.0 * s);
     ui.card(page);
     ui.label(
         items[*tab],
@@ -616,13 +631,7 @@ fn settings_page(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, area: Rect, tab: &mut usize)
         TEXT,
         Align::Left,
     );
-    ui.label(
-        lang.t("menu.settings_soon"),
-        page.min + Vec2::new(20.0, 56.0) * s,
-        11.0,
-        TEXT_DIM,
-        Align::Left,
-    );
+    crate::menu_settings::page(ui, cx, page, *tab, edit)
 }
 
 #[cfg(test)]
@@ -644,10 +653,12 @@ mod tests {
             ("spielen", Page::Play),
             ("erstellen", Page::Create),
             ("einstellungen", Page::Settings),
+            ("grafik", Page::Settings),
             ("pause", Page::Play),
         ] {
             let mut menu = Menu {
                 page,
+                settings_tab: if name == "grafik" { 2 } else { 0 },
                 address: "127.0.0.1:8303".into(),
                 selected_favorite: Some(0),
                 ..Menu::default()
@@ -656,8 +667,6 @@ mod tests {
                 font: &font,
                 lang: &lang,
                 art: &art,
-                name: "Elora",
-                skin: Skin::default(),
                 last_server: Some("127.0.0.1:8303"),
                 favorites: &favorites,
                 maps: &maps,
@@ -671,7 +680,24 @@ mod tests {
                 batch.fill_rect(Vec2::default(), cx.screen, Color::hex(0x8fb8d9));
                 menu.draw_pause(&mut batch, &cx);
             } else {
-                menu.draw_main(&mut batch, &cx);
+                let mut name = "Elora".to_owned();
+                let mut skin = Skin::default();
+                let mut graphics = crate::settings::GraphicsSettings::default();
+                let mut audio = elora_audio::AudioSettings::default();
+                let mut effects = crate::effects::EffectSettings::default();
+                let mut sens = 100.0;
+                let mut language = Language::De;
+                let mut edit = SettingsEdit {
+                    name: &mut name,
+                    skin: &mut skin,
+                    graphics: &mut graphics,
+                    audio: &mut audio,
+                    effects: &mut effects,
+                    sensitivity: &mut sens,
+                    language: &mut language,
+                    audio_device: true,
+                };
+                menu.draw_main(&mut batch, &cx, &mut edit);
             }
             let svg = batch.debug_svg(Vec2::default(), cx.screen, Color::hex(0x8fb8d9));
             std::fs::write(
