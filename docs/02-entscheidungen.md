@@ -115,6 +115,7 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-106 | 2026-09-30 | Hörprobe prozedurale Sounds | Behalten: `spawn`, `death`, `weapon_switch`, `pickup_weapon`. Alle anderen klingen „zu sehr nach Computersound“ → durch CC0-Sounds ersetzen, Ziel ist Atmosphäre | Entscheidung Projektinhaber |
 | E-107 | 2026-09-30 | CC0-Sounds | Quelle **Kenney** (Grundstock) **+ Freesound nur CC0** (Lücken; Freesound verworfen → E-108); Klangstil **organisch / weich** (Plopps, Glibber, Holz, Stoff, natürliche Schläge) | Entscheidung Projektinhaber |
 | E-108 | 2026-09-30 | Freesound | **Ohne Freesound** – nur Kenney-Pakete, Sounds dürfen bearbeitet und kombiniert werden. Hörprobe 2: Hammer soll nach Hammer-Schwung klingen, Granate nach Explosion, Laser organischer, Sprung passender; Rest in Ordnung | Entscheidung Projektinhaber |
+| E-109 | 2026-09-30 | Sounds (M5.7) | Stand „erst einmal in Ordnung“ – M5.7 abgeschlossen. **Neue Sounds besorgt der Projektinhaber künftig selbst** (Ablauf in README „Sounds austauschen“) | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 

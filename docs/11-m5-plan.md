@@ -1,6 +1,6 @@
 # M5 – Look & Sound: Umsetzungsplan
 
-Status: **angenommen** (E-080–E-108), in Umsetzung · Grundlage: [`06-roadmap.md`](06-roadmap.md) M5, E-006, E-027, E-029, E-030, E-031, E-032, E-033
+Status: **angenommen** (E-080–E-109), in Umsetzung · Grundlage: [`06-roadmap.md`](06-roadmap.md) M5, E-006, E-027, E-029, E-030, E-031, E-032, E-033
 
 ## Ziel
 
@@ -30,7 +30,7 @@ Elora bekommt ihr eigenes Aussehen im Flat-/Vektorstil (E-030), mit Animationen,
 | M5.4 ✅ | Skins | Client + Protokoll | Skin-Teile und Farben (D-M5-04), Auswahl im Client, Übertragung an andere Spieler | Tests + Sichtprüfung |
 | M5.5 ✅ | Welt-Optik | Client | Tiles mit Kanten und Ecken statt Rechtecken, Hintergrund, Pickups, Flaggen, Waffen als Grafik (D-M5-08) | Sichtprüfung |
 | M5.6 ✅ | Effekte | Client | Partikel-System: Rauch, Explosionen, Treffer, Tod, Staub, Sprungwolken, Laserstrahl (D-M5-07) | Sichtprüfung |
-| M5.7 | Audio | `elora-audio` (neu) | kira-Anbindung, Sounds aus Ereignissen, Lautstärke nach Entfernung + Stereo, Lautstärke-Regler (D-M5-05, D-M5-06) | Tests (Zuordnung Ereignis → Sound), Hörprobe |
+| M5.7 ✅ | Audio | `elora-audio` (neu) | kira-Anbindung, Sounds aus Ereignissen, Lautstärke nach Entfernung + Stereo, Lautstärke-Regler (D-M5-05, D-M5-06) | Tests (Zuordnung Ereignis → Sound), Hörprobe |
 | M5.8 ✅ | Finales HUD | Client | Eigene Spiel-UI (E-031) statt egui-Platzhalter: Leben, Rüstung, Munition, Waffen, Timer, Punkte, Killfeed, Chat, Scoreboard (D-M5-09) | Sichtprüfung |
 | M5.9 ✅ | Emotes | Client + Protokoll | Emote-Rad und Emoticons über dem Kopf, übertragen an alle (D-M5-10) | Test + Sichtprüfung |
 | M5.10 | Abnahme | – | Stil, Feedback, Klang | Deine Abnahme |

@@ -2,7 +2,7 @@
 
 Ein 2D-Multiplayer-Arena-Shooter nach dem Vorbild von [Teeworlds](https://teeworlds.com) – eigene Figur, eigener Stil, gleiches Spielgefühl. Elora ist zugleich der Name der spielbaren Figur.
 
-**Stand:** M0–M4 abgeschlossen (Bewegung, Hook, Waffen, Dummies, Netzwerk, Spielmodi), M5 (Look & Sound) in Arbeit: Figur, Skins, Welt, Effekte, HUD, Emotes und prozedurale Sounds stehen, Hörprobe offen. Siehe [Roadmap](docs/06-roadmap.md).
+**Stand:** M0–M4 abgeschlossen (Bewegung, Hook, Waffen, Dummies, Netzwerk, Spielmodi), M5 (Look & Sound) in Arbeit: Figur, Skins, Welt, Effekte, HUD, Emotes und Sounds stehen, Abnahme M5.10 offen. Siehe [Roadmap](docs/06-roadmap.md).
 
 ## Einrichtung unter Arch Linux
 
@@ -169,6 +169,23 @@ cargo xtask train-huffman    # Huffman-Tabelle neu trainieren (nach Änderungen 
 cargo xtask sound-preview    # alle Sounds als WAV nach target/sounds/ (Hörprobe; Parameter in assets/sounds/sounds.toml)
 cargo xtask svg-preview a.svg a.png 1200   # SVG rastern (Entwürfe, Assets)
 ```
+
+### Sounds austauschen
+
+Jeder Sound hat einen festen Namen (Liste: `cargo xtask sound-preview` oder `crates/elora-audio/src/cues.rs`, z. B. `jump`, `hammer_fire`, `grenade_explode`). Eine Datei `assets/sounds/files/<name>.wav` ersetzt den Klang gleichen Namens.
+
+1. Datei importieren – jedes Format, das ffmpeg liest; optional Start und Länge in Sekunden:
+   ```sh
+   cargo xtask sound-import jump ~/Downloads/boing.ogg          # ganze Datei
+   cargo xtask sound-import jump ~/Downloads/boing.ogg 0.1 0.3  # ab 0,1 s, 0,3 s lang
+   ```
+   Der Import wandelt nach Mono/44,1 kHz/16 Bit, entfernt Stille am Anfang, blendet das Ende aus und bringt die Spitze auf −1 dBFS. Längstens 2,5 s (Test).
+2. Lautstärke im Spiel: Abschnitt `[gain]` in `assets/sounds/sounds.toml` (1 = unverändert).
+3. Quelle und Lizenz in `assets/SOURCES.md` eintragen – nur CC0 oder mit GPL-3.0 verträgliche Lizenzen.
+4. Anhören: `cargo xtask sound-preview jump` (nach `target/sounds/`) oder im Spiel (`cargo run --bin elora`, eingebettet beim Bauen).
+5. `cargo xtask check`, dann committen.
+
+Zurück zum prozeduralen Klang: die Datei löschen (für die vier prozeduralen Sounds `spawn`, `death`, `weapon_switch`, `pickup_weapon` steht er in `sounds.toml`; für die anderen braucht es dann dort wieder einen Eintrag, sonst schlägt der Test fehl).
 
 ### Projektstruktur
 
