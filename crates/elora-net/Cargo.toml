@@ -1,0 +1,16 @@
+[package]
+name = "elora-net"
+description = "UDP-Transport von Elora: Handshake, Verschlüsselung, Zuverlässigkeit"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+snow.workspace = true
+thiserror.workspace = true
+tracing.workspace = true
+
+[lints]
+workspace = true

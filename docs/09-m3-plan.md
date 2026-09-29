@@ -11,8 +11,8 @@ Ein dedizierter Server, mehrere Clients über UDP. Die eigene Bewegung fühlt si
 | # | Schritt | Crate | Inhalt | Prüfung |
 |---|---|---|---|---|
 | M3.1 ✅ | Serialisierung | `elora-protocol` | Bit-/Byte-Packer mit variabler Ganzzahl-Länge, Nachrichten (Eingabe, Snapshot, Ereignisse, Verbindung), Versionsnummer | Unit-Tests: Rundlauf, fehlerhafte Pakete werden abgelehnt |
-| M3.2 | Transport | `elora-net` | UDP-Socket, Verbindungsaufbau mit Token (gegen gefälschte Absender), Keepalive, Timeout, Trennen mit Grund; zuverlässige und unzuverlässige Kanäle (Sequenz, Ack, Resend), Aufteilen großer Nachrichten | Tests über eine simulierte Leitung mit Verlust und Umordnung |
-| M3.3 | Netzwerk-Simulator | `elora-net` | Einstellbarer Ping, Jitter, Paketverlust, Umordnung, zwischen Socket und Transport geschaltet | Tests; Regler im Debug-Panel |
+| M3.2 ✅ | Transport | `elora-net` | UDP-Socket, Verbindungsaufbau mit Token (gegen gefälschte Absender), Keepalive, Timeout, Trennen mit Grund; zuverlässige und unzuverlässige Kanäle (Sequenz, Ack, Resend), Aufteilen großer Nachrichten | Tests über eine simulierte Leitung mit Verlust und Umordnung |
+| M3.3 ✅ | Netzwerk-Simulator | `elora-net` | Einstellbarer Ping, Jitter, Paketverlust, Umordnung, zwischen Socket und Transport geschaltet | Tests; Regler im Debug-Panel |
 | M3.4 ✅ | Snapshots | `elora-protocol` | Vollständiger Welt-Snapshot (Figuren, Projektile, Laser, Pickups, Spielerinfos), **Delta gegen den zuletzt bestätigten Snapshot**, CRC | Tests: Delta-Rundlauf bit-genau, Größenmessung |
 | M3.5 | Server | `apps/elora-server` | Dedizierter Server ohne Grafik: Karte laden, Spieler aufnehmen/entfernen, Eingaben pro Tick anwenden, Snapshots senden, Eingabe-Timing zurückmelden; Konfiguration per Datei/Kommandozeile | Headless-Integrationstest: Server + 2 Test-Clients |
 | M3.6 | Client: Verbindung & Interpolation | `elora-client` | Verbinden per IP:Port, Snapshots empfangen, fremde Figuren und Objekte zwischen Snapshots interpolieren | Manuell im LAN |

@@ -5,6 +5,7 @@ members = [
     "crates/elora-map",
     "crates/elora-render",
     "crates/elora-protocol",
+    "crates/elora-net",
     "apps/elora-client",
     "xtask",
 ]
@@ -21,6 +22,7 @@ elora-sim = { path = "crates/elora-sim" }
 elora-map = { path = "crates/elora-map" }
 elora-render = { path = "crates/elora-render" }
 elora-protocol = { path = "crates/elora-protocol" }
+elora-net = { path = "crates/elora-net" }
 
 serde = { version = "1.0.229", features = ["derive"] }
 toml = "1.1.6"
@@ -34,6 +36,7 @@ lyon = "1.0.19"
 bytemuck = { version = "1.25.2", features = ["derive"] }
 pollster = "1.0.1"
 notify = "8.2.0"
+snow = { version = "0.10.0", default-features = false, features = ["default-resolver", "use-chacha20poly1305", "use-blake2", "use-curve25519", "use-getrandom"] }
 egui = { version = "0.36.2", default-features = false }
 egui-wgpu = { version = "0.36.2", default-features = false }
 egui-winit = { version = "0.36.2", default-features = false, features = ["wayland", "x11"] }
