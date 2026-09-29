@@ -1,6 +1,6 @@
 # M5 – Look & Sound: Umsetzungsplan
 
-Status: **angenommen** (E-080–E-101), in Umsetzung · Grundlage: [`06-roadmap.md`](06-roadmap.md) M5, E-006, E-027, E-029, E-030, E-031, E-032, E-033
+Status: **angenommen** (E-080–E-104), in Umsetzung · Grundlage: [`06-roadmap.md`](06-roadmap.md) M5, E-006, E-027, E-029, E-030, E-031, E-032, E-033
 
 ## Ziel
 
@@ -84,6 +84,8 @@ Elora bekommt ihr eigenes Aussehen im Flat-/Vektorstil (E-030), mit Animationen,
 - **M5.5 Welt (Teil 2):** Assets `assets/items/*.svg` (Welteinheiten; Waffen mit Ursprung am Griff, Flagge mit Teilen `pole`/`cloth` und Teamfarbe als `tint-1`). Waffe in der Hand zeigt in Zielrichtung, nach links gespiegelt; Pickups schweben (2.5 Einheiten, 0.6 Hz, Phase nach Position); Flaggentuch weht per Scherung um die Befestigung. Gesamtbild `docs/design/elora-welt.png`. Hammer-Schwung beim Schlag: holt 1.4 rad nach hinten oben aus und schlägt in 0.14 s zum Ziel.
 
 - **M5.6 Effekte:** eigenes Partikelsystem (`effects.rs`, ein gecachter Kreis je Partikel). Explosion: Blitz, Rauch über den Explosionsradius, Funken; Hammer-Treffer: Funkenstern; Laser-Abprall: cyan Funken; Schaden: Tropfen in Körperfarbe; Tod: Spritzer in Körperfarbe mit Schwerkraft; Spawn/Pickup: Glitzern; Bodensprung: Staub; Luftsprung: Wolkenring; Landung: Staub nach Fallgeschwindigkeit; Granate: Rauchspur. Kamera-Wackeln bei Explosionen in der Nähe (bis 500 Einheiten) und eigenem Schaden; Treffer-Marker (X am Fadenkreuz) bei eigenem Treffer. Beide abschaltbar im Panel unter „Effekte“, gespeichert in `tuning.toml` unter `[effects]` (E-088). Momentaufnahmen `docs/design/elora-effekte.png` (Explosion, Tod, Hammer, Spawn nach 0.03/0.12/0.3 s).
+
+- **M5.8 HUD (Teil 1, E-102):** eigene Spiel-UI statt egui für HUD und Statusanzeige. Renderer: zweiter Zeichendurchgang (`draw_overlay`) in Bildschirm-Pixeln mit eigenen Puffern; Vektortext `Font` (ttf-parser → lyon, Glyphen gecacht, Inter). Unten mittig: Leben- und Rüstungsbalken, Waffenwahl mit Munition unter der aktiven Waffe, fehlende Waffen blass; oben mittig: Modus · Phase/Timer, Punkte bzw. Teamstand in Teamfarben, Ziel, Sudden Death. Skaliert mit der Fensterhöhe (Basis 720 px). Fadenkreuz färbt sich nach dem Leben Weiß → Gelb (halb) → Rot (leer). Bild `docs/design/elora-hud-umgesetzt.png`. Offen (Teil 2): Killfeed, Chat, Abstimmung und Scoreboard noch in egui.
 
 ## Voraussetzungen vom Projektinhaber
 

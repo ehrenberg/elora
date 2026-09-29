@@ -26,7 +26,7 @@ pub struct Looks<'a> {
 }
 use elora_render::{Camera, Color, ShapeBatch};
 use elora_sim::Team;
-use elora_sim::{Collision, HookState, PHYS_SIZE, TILE_SIZE, Tile, Tuning, Vec2, Weapon};
+use elora_sim::{Collision, HookState, PHYS_SIZE, TILE_SIZE, Tile, Tuning, Vec2};
 
 pub const BACKGROUND: Color = Color::hex(0x8fb8d9);
 const SKY_TOP: Color = Color::hex(0xa9cde8);
@@ -46,21 +46,10 @@ pub const RED: Color = Color::hex(0xe0574f);
 pub const BLUE: Color = Color::hex(0x4f86e0);
 const OUTLINE: Color = Color::hex(0x2b2b2b);
 const HOOK: Color = Color::hex(0xe8e8e8);
-const CURSOR: Color = Color::hex(0xffffff);
-const HAMMER: Color = Color::hex(0x8a6a4a);
 const GRENADE: Color = Color::hex(0x6fbf4f);
-const LASER: Color = Color::hex(0x5ad0e0);
 const HEALTH: Color = Color::hex(0xe05a7a);
 const ARMOR: Color = Color::hex(0xe0b85a);
 const SPAWN: Color = Color::rgba(1.0, 1.0, 1.0, 0.35);
-
-pub fn weapon_color(w: Weapon) -> Color {
-    match w {
-        Weapon::Hammer => HAMMER,
-        Weapon::Grenade => GRENADE,
-        Weapon::Laser => LASER,
-    }
-}
 
 /// Zeichnet Karte, Pickups, Figuren, Projektile, Laser, Effekte und Fadenkreuz.
 pub fn scene(
@@ -163,8 +152,9 @@ pub fn scene(
     // Fadenkreuz
     if let Some(local) = scene.local() {
         let c = local.pos() + mouse_pos;
-        batch.stroke_circle(c, 8.0, 2.0, CURSOR);
-        batch.fill_circle(c, 1.5, CURSOR);
+        let color = crate::hud::crosshair_color(local.ch.health, tuning.max_health);
+        batch.stroke_circle(c, 8.0, 2.0, color);
+        batch.fill_circle(c, 1.5, color);
         effects.draw_hit_marker(batch, c);
     }
 }
@@ -257,7 +247,7 @@ fn spawns_and_pickups(batch: &mut ShapeBatch, scene: &Scene, items: &ItemArt, ti
 mod tests {
     use super::*;
     use elora_client::scene::{SceneChar, SceneFlag};
-    use elora_sim::Character;
+    use elora_sim::{Character, Weapon};
 
     /// Kartenausschnitt zur Sichtprüfung: `cargo test -p elora-client --bin elora world_sheet -- --ignored`,
     /// danach `cargo xtask svg-preview target/world.svg target/world.png 1200`.

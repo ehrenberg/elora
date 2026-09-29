@@ -10,6 +10,7 @@ mod camera;
 mod mesh;
 mod shapes;
 mod svg;
+mod text;
 
 use std::sync::Arc;
 
@@ -19,6 +20,7 @@ pub use lyon::path::Path;
 pub use mesh::{Affine, Mesh, MeshBuilder, Paint, Tint, ellipse, lerp_color, rounded_rect, shade};
 pub use shapes::{Color, ShapeBatch};
 pub use svg::{SvgAsset, SvgError};
+pub use text::{Align, Font, FontError};
 pub use wgpu;
 
 use shapes::Vertex;
@@ -60,10 +62,10 @@ pub struct Renderer {
     queue: wgpu::Queue,
     config: wgpu::SurfaceConfiguration,
     pipeline: wgpu::RenderPipeline,
-    view_buffer: wgpu::Buffer,
-    view_bind_group: wgpu::BindGroup,
-    vertex_buffer: wgpu::Buffer,
-    index_buffer: wgpu::Buffer,
+    /// Welt (Weltkoordinaten) und Overlay (z. B. HUD in Bildschirmkoordinaten)
+    /// brauchen eigene Puffer, weil beide im selben Frame beschrieben werden.
+    world: Layer,
+    overlay: Layer,
     /// Abtastungen je Pixel (1 = kein MSAA).
     samples: u32,
     /// Mehrfach abgetastetes Ziel, wird in die Surface aufgelöst.
@@ -132,22 +134,10 @@ impl Renderer {
         } else {
             1
         };
-        let (pipeline, view_buffer, view_bind_group) =
-            create_pipeline(&device, config.format, samples);
+        let (pipeline, layout) = create_pipeline(&device, config.format, samples);
+        let world = Layer::new(&device, &layout, "world");
+        let overlay = Layer::new(&device, &layout, "overlay");
         let msaa = create_msaa(&device, &config, samples);
-
-        let vertex_buffer = create_buffer(
-            &device,
-            "vertices",
-            INITIAL_VERTICES * size_of::<Vertex>() as u64,
-            wgpu::BufferUsages::VERTEX,
-        );
-        let index_buffer = create_buffer(
-            &device,
-            "indices",
-            INITIAL_VERTICES * 3 * 4,
-            wgpu::BufferUsages::INDEX,
-        );
 
         Ok(Self {
             surface,
@@ -155,10 +145,8 @@ impl Renderer {
             queue,
             config,
             pipeline,
-            view_buffer,
-            view_bind_group,
-            vertex_buffer,
-            index_buffer,
+            world,
+            overlay,
             samples,
             msaa,
         })
@@ -239,47 +227,51 @@ impl Renderer {
         batch: &ShapeBatch,
         clear: Color,
     ) {
-        let tl = camera.top_left();
-        let rect = [tl.x, tl.y, camera.size.x, camera.size.y];
-        self.queue
-            .write_buffer(&self.view_buffer, 0, bytemuck::cast_slice(&rect));
+        self.draw_layer(frame, false, camera, batch, Some(clear));
+    }
 
-        let vertices = bytemuck::cast_slice(&batch.geometry.vertices);
-        let indices = bytemuck::cast_slice(&batch.geometry.indices);
-        ensure_capacity(
-            &self.device,
-            &mut self.vertex_buffer,
-            "vertices",
-            vertices.len(),
-            wgpu::BufferUsages::VERTEX,
-        );
-        ensure_capacity(
-            &self.device,
-            &mut self.index_buffer,
-            "indices",
-            indices.len(),
-            wgpu::BufferUsages::INDEX,
-        );
-        self.queue.write_buffer(&self.vertex_buffer, 0, vertices);
-        self.queue.write_buffer(&self.index_buffer, 0, indices);
+    /// Zeichnet `batch` über den bisherigen Frame (nach [`Renderer::draw_shapes`]),
+    /// z. B. das HUD mit einer Kamera in Bildschirm-Pixeln.
+    ///
+    /// # Panics
+    /// Bei mehr als `u32::MAX` Indizes in einem Batch.
+    pub fn draw_overlay(&mut self, frame: &mut Frame, camera: &Camera, batch: &ShapeBatch) {
+        self.draw_layer(frame, true, camera, batch, None);
+    }
 
-        let [r, g, b, a] = clear.0.map(f64::from);
+    fn draw_layer(
+        &mut self,
+        frame: &mut Frame,
+        overlay: bool,
+        camera: &Camera,
+        batch: &ShapeBatch,
+        clear: Option<Color>,
+    ) {
+        let layer = if overlay {
+            &mut self.overlay
+        } else {
+            &mut self.world
+        };
+        layer.upload(&self.device, &self.queue, camera, batch);
+        let load = match clear {
+            Some(color) => {
+                let [r, g, b, a] = color.0.map(f64::from);
+                wgpu::LoadOp::Clear(wgpu::Color { r, g, b, a })
+            }
+            None => wgpu::LoadOp::Load,
+        };
         let mut pass = frame
             .encoder
             .begin_render_pass(&wgpu::RenderPassDescriptor {
-                label: Some("shapes"),
+                label: Some(if overlay { "overlay" } else { "shapes" }),
                 color_attachments: &[Some(wgpu::RenderPassColorAttachment {
                     view: self.msaa.as_ref().unwrap_or(&frame.view),
                     depth_slice: None,
                     resolve_target: self.msaa.as_ref().map(|_| &frame.view),
                     ops: wgpu::Operations {
-                        load: wgpu::LoadOp::Clear(wgpu::Color { r, g, b, a }),
-                        // Das MSAA-Ziel wird nach dem Auflösen nicht mehr gebraucht
-                        store: if self.msaa.is_some() {
-                            wgpu::StoreOp::Discard
-                        } else {
-                            wgpu::StoreOp::Store
-                        },
+                        load,
+                        // MSAA-Inhalt behalten, damit das Overlay darauf aufsetzen kann
+                        store: wgpu::StoreOp::Store,
                     },
                 })],
                 depth_stencil_attachment: None,
@@ -290,9 +282,9 @@ impl Renderer {
         if !batch.is_empty() {
             let count = u32::try_from(batch.geometry.indices.len()).expect("zu viele Indizes");
             pass.set_pipeline(&self.pipeline);
-            pass.set_bind_group(0, &self.view_bind_group, &[]);
-            pass.set_vertex_buffer(0, self.vertex_buffer.slice(..));
-            pass.set_index_buffer(self.index_buffer.slice(..), wgpu::IndexFormat::Uint32);
+            pass.set_bind_group(0, &layer.bind_group, &[]);
+            pass.set_vertex_buffer(0, layer.vertices.slice(..));
+            pass.set_index_buffer(layer.indices.slice(..), wgpu::IndexFormat::Uint32);
             pass.draw_indexed(0..count, 0, 0..1);
         }
     }
@@ -309,14 +301,8 @@ fn create_pipeline(
     device: &wgpu::Device,
     format: wgpu::TextureFormat,
     samples: u32,
-) -> (wgpu::RenderPipeline, wgpu::Buffer, wgpu::BindGroup) {
+) -> (wgpu::RenderPipeline, wgpu::BindGroupLayout) {
     let shader = device.create_shader_module(wgpu::include_wgsl!("shader.wgsl"));
-    let view_buffer = device.create_buffer(&wgpu::BufferDescriptor {
-        label: Some("view"),
-        size: 16,
-        usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
-        mapped_at_creation: false,
-    });
     let layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
         label: Some("view"),
         entries: &[wgpu::BindGroupLayoutEntry {
@@ -328,14 +314,6 @@ fn create_pipeline(
                 min_binding_size: None,
             },
             count: None,
-        }],
-    });
-    let view_bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
-        label: Some("view"),
-        layout: &layout,
-        entries: &[wgpu::BindGroupEntry {
-            binding: 0,
-            resource: view_buffer.as_entire_binding(),
         }],
     });
     let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
@@ -375,7 +353,76 @@ fn create_pipeline(
         multiview_mask: None,
         cache: None,
     });
-    (pipeline, view_buffer, view_bind_group)
+    (pipeline, layout)
+}
+
+/// Puffer für einen Zeichendurchgang: Sichtbereich, Vertices, Indizes.
+#[derive(Debug)]
+struct Layer {
+    view: wgpu::Buffer,
+    bind_group: wgpu::BindGroup,
+    vertices: wgpu::Buffer,
+    indices: wgpu::Buffer,
+}
+
+impl Layer {
+    fn new(device: &wgpu::Device, layout: &wgpu::BindGroupLayout, label: &str) -> Self {
+        let view = create_buffer(device, label, 16, wgpu::BufferUsages::UNIFORM);
+        let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
+            label: Some(label),
+            layout,
+            entries: &[wgpu::BindGroupEntry {
+                binding: 0,
+                resource: view.as_entire_binding(),
+            }],
+        });
+        Self {
+            view,
+            bind_group,
+            vertices: create_buffer(
+                device,
+                label,
+                INITIAL_VERTICES * size_of::<Vertex>() as u64,
+                wgpu::BufferUsages::VERTEX,
+            ),
+            indices: create_buffer(
+                device,
+                label,
+                INITIAL_VERTICES * 3 * 4,
+                wgpu::BufferUsages::INDEX,
+            ),
+        }
+    }
+
+    fn upload(
+        &mut self,
+        device: &wgpu::Device,
+        queue: &wgpu::Queue,
+        camera: &Camera,
+        batch: &ShapeBatch,
+    ) {
+        let tl = camera.top_left();
+        let rect = [tl.x, tl.y, camera.size.x, camera.size.y];
+        queue.write_buffer(&self.view, 0, bytemuck::cast_slice(&rect));
+        let vertices = bytemuck::cast_slice(&batch.geometry.vertices);
+        let indices = bytemuck::cast_slice(&batch.geometry.indices);
+        ensure_capacity(
+            device,
+            &mut self.vertices,
+            "vertices",
+            vertices.len(),
+            wgpu::BufferUsages::VERTEX,
+        );
+        ensure_capacity(
+            device,
+            &mut self.indices,
+            "indices",
+            indices.len(),
+            wgpu::BufferUsages::INDEX,
+        );
+        queue.write_buffer(&self.vertices, 0, vertices);
+        queue.write_buffer(&self.indices, 0, indices);
+    }
 }
 
 /// MSAA-Ziel in Surface-Größe; `None` ohne MSAA.

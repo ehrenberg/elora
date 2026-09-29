@@ -12,6 +12,7 @@ elora-sim.workspace = true
 wgpu.workspace = true
 lyon.workspace = true
 usvg.workspace = true
+ttf-parser.workspace = true
 bytemuck.workspace = true
 thiserror.workspace = true
 

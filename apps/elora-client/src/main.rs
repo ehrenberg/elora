@@ -28,7 +28,7 @@ use elora_client::online::{OnlineClient, Status};
 use elora_client::scene::Scene;
 use elora_net::{ClientEvent, DisconnectReason};
 use elora_render::{Camera, Renderer, ShapeBatch, ViewSettings};
-use elora_sim::{Collision, Event, Tuning};
+use elora_sim::{Collision, Event, Tuning, Vec2};
 use winit::application::ApplicationHandler;
 use winit::dpi::LogicalSize;
 use winit::event::{DeviceEvent, DeviceId, ElementState, KeyEvent, WindowEvent};
@@ -113,6 +113,9 @@ struct App {
     controls: Controls,
     view: ViewSettings,
     batch: ShapeBatch,
+    /// HUD in Bildschirm-Pixeln (M5.8).
+    hud_batch: ShapeBatch,
+    hud: hud::Hud,
     effects: effects::Effects,
     figures: figure::Figures,
     figure_art: figure::FigureArt,
@@ -148,6 +151,8 @@ impl App {
             controls,
             view: file.view.into(),
             batch: ShapeBatch::default(),
+            hud_batch: ShapeBatch::default(),
+            hud: hud::Hud::new(),
             effects: effects::Effects::with_settings(file.effects),
             figures: figure::Figures::default(),
             figure_art: figure::FigureArt::load(),
@@ -505,6 +510,34 @@ impl App {
         );
     }
 
+    /// HUD des Frames in `self.hud_batch` sammeln; liefert die Bildschirmgröße.
+    fn build_hud(
+        &mut self,
+        scene: &Scene,
+        tuning: &Tuning,
+        view: Option<&elora_protocol::GameView>,
+        tick: u64,
+        local: Option<usize>,
+    ) -> Vec2 {
+        let size = self.gfx.as_ref().map_or((1, 1), |g| g.renderer.size());
+        #[allow(clippy::cast_precision_loss)]
+        let screen = Vec2::new(size.0 as f32, size.1 as f32);
+        self.hud_batch.clear();
+        self.hud.draw(
+            &mut self.hud_batch,
+            &self.item_art,
+            screen,
+            &hud::HudInfo {
+                character: scene.local().map(|c| &c.ch),
+                max_health: tuning.max_health,
+                view,
+                tick,
+                local,
+            },
+        );
+        screen
+    }
+
     fn redraw(&mut self) {
         let now = Instant::now();
         let elapsed = self.frame_time(now);
@@ -525,6 +558,7 @@ impl App {
             aspect,
         );
         self.build_batch(&scene, &collision, &tuning, &camera);
+        let screen = self.build_hud(&scene, &tuning, view.as_ref(), tick, local_slot);
         let Some(gfx) = &mut self.gfx else { return };
 
         let Some(mut frame) = gfx.renderer.begin_frame() else {
@@ -532,6 +566,12 @@ impl App {
         };
         gfx.renderer
             .draw_shapes(&mut frame, &camera, &self.batch, draw::BACKGROUND);
+        let screen_camera = Camera {
+            center: screen * 0.5,
+            size: screen,
+        };
+        gfx.renderer
+            .draw_overlay(&mut frame, &screen_camera, &self.hud_batch);
 
         // Spielinformationen für Anzeigen und Panel
         game_ui::record_kills(&mut self.killfeed, &events, &names, now);
@@ -569,13 +609,11 @@ impl App {
             team_mode,
             vote_running: vote.is_some(),
         };
-        let local = scene.local().map(|c| c.ch.clone());
         let mut game = game_ui::GameUi {
             view: view.as_ref(),
             names: &names,
             teams: &teams,
             local: local_slot,
-            tick,
             chat,
             input: &mut self.chat_input,
             scoreboard: self.scoreboard,
@@ -583,7 +621,6 @@ impl App {
             killfeed: &self.killfeed,
         };
         gfx.gui.draw(&gfx.window, &gfx.renderer, &mut frame, |ui| {
-            hud::hud(ui, local.as_ref(), tuning.max_health);
             ui_action = ui_action.take().or(game_ui::draw(ui, &mut game));
             if show_panel || cx.net.key_warning.is_some() {
                 action = action.take().or(debug_ui::panel(ui, &mut cx));

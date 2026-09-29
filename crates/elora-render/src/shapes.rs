@@ -178,6 +178,24 @@ impl ShapeBatch {
         );
     }
 
+    /// Rechteck mit abgerundeten Ecken (für UI-Flächen).
+    pub fn fill_rounded_rect(&mut self, min: Vec2, max: Vec2, radius: f32, color: Color) {
+        let radius = radius
+            .min((max.x - min.x) / 2.0)
+            .min((max.y - min.y) / 2.0)
+            .max(0.0);
+        let path = crate::mesh::rounded_rect(min, max, radius);
+        let c = color.0;
+        let _ = self.fill.tessellate_path(
+            &path,
+            &FillOptions::tolerance(self.tolerance),
+            &mut BuffersBuilder::new(&mut self.geometry, |v: FillVertex| Vertex {
+                pos: v.position().to_array(),
+                color: c,
+            }),
+        );
+    }
+
     /// Linienzug mit runden Enden.
     pub fn stroke_polyline(&mut self, points: &[Vec2], width: f32, color: Color) {
         let Some(path) = polyline(points, false) else {

@@ -108,6 +108,9 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-099 | 2026-09-29 | Skins in Team-Modi | Körper in **Teamfarbe**, Füße und Augen behalten die Farben des Spielers | Entscheidung Projektinhaber |
 | E-100 | 2026-09-29 | Huffman-Tabelle | Neu trainierte Tabelle (Commit `3a550bc`) wird behalten | Entscheidung Projektinhaber |
 | E-101 | 2026-09-29 | Pickups, Waffen, Flaggen (M5.5) | **Stil A „Rund“** aus [`design/elora-items.png`](design/elora-items.png) | Entscheidung Projektinhaber |
+| E-102 | 2026-09-29 | HUD (M5.8) | **Entwurf B „Leiste unten mittig“** aus [`design/elora-hud.png`](design/elora-hud.png); zusätzlich färbt sich das **Fadenkreuz nach dem Leben: Weiß → Gelb → Rot** (fließend) | Entscheidung Projektinhaber |
+| E-103 | 2026-09-29 | Emotes (M5.9) | Vorschlag aus [`design/elora-emotes.png`](design/elora-emotes.png) freigegeben: Herz, Lachen, Wut, Traurig, Staunen, Frage, GG, Schlaf; Rad mit Taste E, Anzeige ca. 2 s | Entscheidung Projektinhaber |
+| E-104 | 2026-09-29 | Augen-Ausdrücke (M5.9) | Augen reagieren **zusätzlich automatisch**: zusammengekniffen bei Schaden, fröhlich nach einem Kill | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 

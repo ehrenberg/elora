@@ -5,9 +5,8 @@ use std::collections::{BTreeMap, VecDeque};
 use std::time::{Duration, Instant};
 
 use elora_client::online::ChatLine;
-use elora_game::{Mode, Phase};
 use elora_protocol::{GameView, VoteInfo};
-use elora_sim::{DeathCause, TICKS_PER_SECOND, Team, Weapon};
+use elora_sim::{DeathCause, Team, Weapon};
 
 /// Wie lange Chat-Zeilen und Killfeed-Einträge ohne offenes Chat-Fenster sichtbar sind.
 const FADE: Duration = Duration::from_secs(10);
@@ -76,7 +75,6 @@ pub struct GameUi<'a> {
     pub names: &'a BTreeMap<usize, String>,
     pub teams: &'a BTreeMap<usize, Team>,
     pub local: Option<usize>,
-    pub tick: u64,
     pub chat: Vec<ChatLine>,
     pub input: &'a mut ChatInput,
     pub scoreboard: bool,
@@ -99,21 +97,9 @@ fn panel_frame() -> egui::Frame {
         .inner_margin(8.0)
 }
 
-fn secs_left(until: u64, tick: u64) -> u64 {
-    until
-        .saturating_sub(tick)
-        .div_ceil(u64::from(TICKS_PER_SECOND))
-}
-
-fn clock(secs: u64) -> String {
-    format!("{}:{:02}", secs / 60, secs % 60)
-}
-
 pub fn draw(ui: &mut egui::Ui, g: &mut GameUi<'_>) -> Option<UiAction> {
     let ctx = ui.ctx().clone();
-    if let Some(view) = g.view {
-        status(&ctx, g, view);
-    }
+    // Modus, Timer und Punkte zeichnet das HUD (hud.rs)
     if let Some(v) = g.vote {
         vote(&ctx, v);
     }
@@ -125,88 +111,6 @@ pub fn draw(ui: &mut egui::Ui, g: &mut GameUi<'_>) -> Option<UiAction> {
         scoreboard(&ctx, g, view);
     }
     action
-}
-
-fn status(ctx: &egui::Context, g: &GameUi<'_>, view: &GameView) {
-    egui::Area::new("status".into())
-        .anchor(egui::Align2::CENTER_TOP, [0.0, 10.0])
-        .interactable(false)
-        .show(ctx, |ui| {
-            panel_frame().show(ui, |ui| {
-                ui.vertical_centered(|ui| {
-                    let elapsed =
-                        g.tick.saturating_sub(view.match_start_tick) / u64::from(TICKS_PER_SECOND);
-                    let timer = if view.time_limit > 0 {
-                        clock((u64::from(view.time_limit) * 60).saturating_sub(elapsed))
-                    } else {
-                        clock(elapsed)
-                    };
-                    let phase = match view.phase {
-                        Phase::Warmup { until: Some(t) } => {
-                            format!("Aufwärmen · {} s", secs_left(t, g.tick))
-                        }
-                        Phase::Warmup { until: None } => "Warte auf Spieler …".into(),
-                        Phase::Countdown { until } => {
-                            format!("Start in {}", secs_left(until, g.tick))
-                        }
-                        Phase::Running => timer,
-                        Phase::RoundOver { .. } => "Runde vorbei".into(),
-                        Phase::MatchOver { .. } => "Match vorbei".into(),
-                    };
-                    ui.label(
-                        egui::RichText::new(format!("{} · {phase}", view.title()))
-                            .color(egui::Color32::WHITE)
-                            .strong(),
-                    );
-                    if view.mode.teams() {
-                        ui.horizontal(|ui| {
-                            ui.label(
-                                egui::RichText::new(format!("Rot {}", view.team_score[0]))
-                                    .color(team_color(Team::Red))
-                                    .size(20.0)
-                                    .strong(),
-                            );
-                            ui.label(
-                                egui::RichText::new(":")
-                                    .color(egui::Color32::WHITE)
-                                    .size(20.0),
-                            );
-                            ui.label(
-                                egui::RichText::new(format!("{} Blau", view.team_score[1]))
-                                    .color(team_color(Team::Blue))
-                                    .size(20.0)
-                                    .strong(),
-                            );
-                        });
-                    } else if let Some(me) = g.local {
-                        let mine = view.stats.get(&me).map_or(0, |s| s.score);
-                        let top = view.stats.values().map(|s| s.score).max().unwrap_or(0);
-                        ui.label(
-                            egui::RichText::new(format!("Punkte {mine} · Bester {top}"))
-                                .color(egui::Color32::WHITE),
-                        );
-                    }
-                    let unit = if view.mode == Mode::Ctf {
-                        "Eroberungen"
-                    } else {
-                        "Punkte"
-                    };
-                    if view.score_limit > 0 {
-                        ui.small(
-                            egui::RichText::new(format!("Ziel: {} {unit}", view.score_limit))
-                                .color(egui::Color32::LIGHT_GRAY),
-                        );
-                    }
-                    if view.sudden_death {
-                        ui.label(
-                            egui::RichText::new("SUDDEN DEATH")
-                                .color(egui::Color32::from_rgb(255, 120, 80))
-                                .strong(),
-                        );
-                    }
-                });
-            });
-        });
 }
 
 fn vote(ctx: &egui::Context, v: &VoteInfo) {

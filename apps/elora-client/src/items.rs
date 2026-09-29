@@ -79,6 +79,30 @@ impl ItemArt {
         batch.draw_mesh(self.weapon_mesh(w), &t, &Tint::default());
     }
 
+    /// Waffe als Symbol, mittig um `center` (HUD); `alpha` < 1 für nicht vorhandene Waffen.
+    pub fn draw_icon(
+        &self,
+        batch: &mut ShapeBatch,
+        center: Vec2,
+        w: Weapon,
+        scale: f32,
+        alpha: f32,
+    ) {
+        let mesh = self.weapon_mesh(w);
+        let Some((min, max)) = mesh.bounds() else {
+            return;
+        };
+        let mid = (min + max) * 0.5;
+        let t = Affine::translate(center)
+            .then(Affine::scale(scale, scale))
+            .then(Affine::translate(-mid));
+        let tint = Tint {
+            alpha: Some(alpha),
+            ..Tint::default()
+        };
+        batch.draw_mesh(mesh, &t, &tint);
+    }
+
     /// Pickup, schwebend; `time` in Sekunden.
     pub fn draw_pickup(&self, batch: &mut ShapeBatch, pos: Vec2, kind: PickupKind, time: f32) {
         // Phase nach Position, damit nicht alle Pickups im Gleichtakt schweben
