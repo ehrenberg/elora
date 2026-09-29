@@ -130,6 +130,7 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-121 | 2026-09-30 | Menümusik (D-M7-09) | **Abspielen vorbereiten:** Datei in `assets/music/` läuft im Menü in Schleife mit eigener Lautstärke; ohne Datei still. Musik liefert der Projektinhaber (E-109) | Entscheidung Projektinhaber |
 | E-122 | 2026-09-30 | Hosten (D-M7-12) | **„Server erstellen“ im Menü** (Name, Karte, Modus, Spieler), startet `elora-server` im Hintergrund und verbindet | Entscheidung Projektinhaber |
 | E-123 | 2026-09-30 | Menü-Design (D-M7-01) | **2–3 Entwürfe als Bild** (Hauptmenü, Server-Browser, Einstellungsseite) vor der Umsetzung | Entscheidung Projektinhaber |
+| E-124 | 2026-09-30 | M7-Plan | Plan aus [`12-m7-plan.md`](12-m7-plan.md) freigegeben, Umsetzung beginnt mit M7.0 (Entwürfe) | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 

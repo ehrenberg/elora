@@ -1,0 +1,299 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1420" height="1014" viewBox="0 0 1420 1014" font-family="Inter">
+<rect width="1420" height="1014" fill="#d8e3ec"/>
+<text x="30" y="44" font-size="28" fill="#1e2a36" text-anchor="start" font-weight="bold">Menü – drei Entwürfe (M7.0, E-123)</text>
+<text x="30" y="70" font-size="15" fill="#1e2a36" text-anchor="start" font-weight="normal">Je Stil: Hauptmenü · Server-Browser · Einstellungen (Spieler &amp; Skin). Hintergrund: ruhiges Bild (E-113).</text>
+<text x="30" y="112" font-size="20" fill="#1e2a36" text-anchor="start" font-weight="bold">A – Dunkle Karten</text>
+<text x="241.5" y="112" font-size="13" fill="#1e2a36" text-anchor="start" font-weight="normal">wie das HUD: dunkle, halbtransparente Flächen; Menü links als Liste</text>
+<defs><linearGradient id="sky1" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a9cde8"/><stop offset="1" stop-color="#e8f1f7"/></linearGradient>
+      <clipPath id="clip1"><rect x="30" y="124" width="440" height="248" rx="10"/></clipPath></defs>
+    <g clip-path="url(#clip1)">
+      <rect x="30" y="124" width="440" height="248" fill="url(#sky1)"/>
+      <ellipse cx="260" cy="182" rx="34" ry="11" fill="#ffffff" opacity="0.8"/>
+      <ellipse cx="360" cy="160" rx="44" ry="12" fill="#ffffff" opacity="0.7"/>
+      <ellipse cx="150" cy="412" rx="200" ry="90" fill="#8fbf7a"/>
+      <ellipse cx="410" cy="427" rx="190" ry="95" fill="#7aae6a"/>
+      <g transform="translate(390,350) scale(0.55,0.55)">
+  
+  <g id="foot-back">
+    <ellipse id="tint-3" cx="-20" cy="-8" rx="14" ry="8" fill="#d9a43a" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse id="tint-3" cx="22" cy="-8" rx="14" ry="8" fill="#d9a43a" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path id="tint-2" d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#f2c14e" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path id="tint-2-l45" d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#f8dd9e"/>
+  </g>
+  <g id="eyes">
+    <ellipse id="tint-1" cx="2" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <ellipse id="tint-1-b" cx="26" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    <path d="M 10,-41 Q 16,-36 22,-41" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</g><g transform="translate(330,360) scale(-0.3,0.3)">
+  
+  <g id="foot-back">
+    <ellipse id="tint-3" cx="-20" cy="-8" rx="14" ry="8" fill="#6a78e0" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse id="tint-3" cx="22" cy="-8" rx="14" ry="8" fill="#6a78e0" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path id="tint-2" d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#5aaee8" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path id="tint-2-l45" d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#a4d2f2"/>
+  </g>
+  <g id="eyes">
+    <ellipse id="tint-1" cx="2" cy="-63" rx="6.5" ry="11" fill="#2e3f86"/>
+    <ellipse id="tint-1-b" cx="26" cy="-63" rx="6.5" ry="11" fill="#2e3f86"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    <path d="M 10,-41 Q 16,-36 22,-41" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</g>
+    </g>
+<text x="66" y="182" font-size="34" fill="#1e2a36" text-anchor="start" font-weight="bold">Elora</text><rect x="58" y="198" width="150" height="150" rx="14" fill="#1e2a36" fill-opacity="0.72"/><rect x="66" y="208" width="134" height="22" rx="8" fill="#ffffff" fill-opacity="0.22"/><text x="78" y="223" font-size="12" fill="#ffffff" text-anchor="start" font-weight="normal">Spielen</text><text x="78" y="250" font-size="12" fill="#ffffff" text-anchor="start" font-weight="normal">Training</text><text x="78" y="277" font-size="12" fill="#ffffff" text-anchor="start" font-weight="normal">Server erstellen</text><text x="78" y="304" font-size="12" fill="#ffffff" text-anchor="start" font-weight="normal">Einstellungen</text><text x="78" y="331" font-size="12" fill="#ffffff" text-anchor="start" font-weight="normal">Beenden</text>
+<defs><linearGradient id="sky2" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a9cde8"/><stop offset="1" stop-color="#e8f1f7"/></linearGradient>
+      <clipPath id="clip2"><rect x="490" y="124" width="440" height="248" rx="10"/></clipPath></defs>
+    <g clip-path="url(#clip2)">
+      <rect x="490" y="124" width="440" height="248" fill="url(#sky2)"/>
+      <ellipse cx="720" cy="182" rx="34" ry="11" fill="#ffffff" opacity="0.8"/>
+      <ellipse cx="820" cy="160" rx="44" ry="12" fill="#ffffff" opacity="0.7"/>
+      <ellipse cx="610" cy="412" rx="200" ry="90" fill="#8fbf7a"/>
+      <ellipse cx="870" cy="427" rx="190" ry="95" fill="#7aae6a"/>
+      
+    </g>
+<rect x="506" y="138" width="408" height="220" rx="14" fill="#1e2a36" fill-opacity="0.72"/><rect x="512" y="146" width="64" height="20" rx="8" fill="#ffffff" fill-opacity="0.22"/><text x="518" y="160" font-size="11" fill="#ffffff" text-anchor="start" font-weight="normal">Internet</text><text x="588" y="160" font-size="11" fill="#ffffff" text-anchor="start" font-weight="normal">LAN</text><text x="658" y="160" font-size="11" fill="#ffffff" text-anchor="start" font-weight="normal">Favoriten</text><text x="518" y="184" font-size="9" fill="#ffffff" fill-opacity="0.6" text-anchor="start" font-weight="normal">Name</text><text x="650" y="184" font-size="9" fill="#ffffff" fill-opacity="0.6" text-anchor="start" font-weight="normal">Karte</text><text x="730" y="184" font-size="9" fill="#ffffff" fill-opacity="0.6" text-anchor="start" font-weight="normal">Modus</text><text x="790" y="184" font-size="9" fill="#ffffff" fill-opacity="0.6" text-anchor="start" font-weight="normal">Spieler</text><text x="860" y="184" font-size="9" fill="#ffffff" fill-opacity="0.6" text-anchor="start" font-weight="normal">Ping</text><rect x="512" y="190" width="396" height="20" rx="6" fill="#ffffff" fill-opacity="0.05"/><text x="518" y="204" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">Eloras Wiese</text><text x="650" y="204" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">ctf-test</text><text x="730" y="204" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">CTF</text><text x="790" y="204" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">6/8</text><text x="860" y="204" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">24 ms</text><rect x="512" y="212" width="396" height="20" rx="6" fill="#ffffff" fill-opacity="0.18"/><text x="518" y="226" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">Tropfen-Arena</text><text x="650" y="226" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">sandbox</text><text x="730" y="226" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">DM</text><text x="790" y="226" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">3/8</text><text x="860" y="226" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">41 ms</text><rect x="512" y="234" width="396" height="20" rx="6" fill="#ffffff" fill-opacity="0.05"/><text x="518" y="248" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">Nachtschicht</text><text x="650" y="248" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">sandbox</text><text x="730" y="248" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">iDM</text><text x="790" y="248" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">8/8</text><text x="860" y="248" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">63 ms</text><text x="518" y="270" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">Team Blau</text><text x="650" y="270" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">ctf-test</text><text x="730" y="270" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">TDM</text><text x="790" y="270" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">2/12</text><text x="860" y="270" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">88 ms</text><rect x="512" y="278" width="396" height="20" rx="6" fill="#ffffff" fill-opacity="0.05"/><text x="518" y="292" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">LAN-Party</text><text x="650" y="292" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">sandbox</text><text x="730" y="292" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">LMS</text><text x="790" y="292" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">0/8</text><text x="860" y="292" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">12 ms</text><rect x="518" y="324" width="220" height="22" rx="8" fill="#ffffff" fill-opacity="0.12"/><text x="526" y="339" font-size="10" fill="#ffffff" fill-opacity="0.7" text-anchor="start" font-weight="normal">Adresse: 127.0.0.1:8303</text><rect x="812" y="324" width="90" height="22" rx="8" fill="#6cbf4a"/><text x="857" y="339" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="bold">Verbinden</text>
+<defs><linearGradient id="sky3" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a9cde8"/><stop offset="1" stop-color="#e8f1f7"/></linearGradient>
+      <clipPath id="clip3"><rect x="950" y="124" width="440" height="248" rx="10"/></clipPath></defs>
+    <g clip-path="url(#clip3)">
+      <rect x="950" y="124" width="440" height="248" fill="url(#sky3)"/>
+      <ellipse cx="1180" cy="182" rx="34" ry="11" fill="#ffffff" opacity="0.8"/>
+      <ellipse cx="1280" cy="160" rx="44" ry="12" fill="#ffffff" opacity="0.7"/>
+      <ellipse cx="1070" cy="412" rx="200" ry="90" fill="#8fbf7a"/>
+      <ellipse cx="1330" cy="427" rx="190" ry="95" fill="#7aae6a"/>
+      
+    </g>
+<rect x="966" y="138" width="408" height="220" rx="14" fill="#1e2a36" fill-opacity="0.72"/><rect x="972" y="146" width="62" height="20" rx="8" fill="#ffffff" fill-opacity="0.22"/><text x="978" y="160" font-size="11" fill="#ffffff" text-anchor="start" font-weight="normal">Spieler</text><text x="1048" y="160" font-size="11" fill="#ffffff" text-anchor="start" font-weight="normal">Steuerung</text><text x="1118" y="160" font-size="11" fill="#ffffff" text-anchor="start" font-weight="normal">Grafik</text><text x="1188" y="160" font-size="11" fill="#ffffff" text-anchor="start" font-weight="normal">Ton</text><text x="1258" y="160" font-size="11" fill="#ffffff" text-anchor="start" font-weight="normal">Sprache</text><text x="978" y="190" font-size="10" fill="#ffffff" fill-opacity="0.7" text-anchor="start" font-weight="normal">Name</text><rect x="978" y="196" width="180" height="22" rx="8" fill="#ffffff" fill-opacity="0.12"/><text x="986" y="211" font-size="11" fill="#ffffff" text-anchor="start" font-weight="normal">Elora</text><text x="978" y="236" font-size="10" fill="#ffffff" fill-opacity="0.7" text-anchor="start" font-weight="normal">Körper</text><rect x="978" y="241" width="11" height="11" rx="3" fill="#f2c14e" stroke="#2b2b2b" stroke-width="1"/><rect x="991" y="241" width="11" height="11" rx="3" fill="#f28c3a" stroke="#2b2b2b" stroke-width="1"/><rect x="1004" y="241" width="11" height="11" rx="3" fill="#e8685a" stroke="#2b2b2b" stroke-width="1"/><rect x="1017" y="241" width="11" height="11" rx="3" fill="#d94a4a" stroke="#2b2b2b" stroke-width="1"/><rect x="1030" y="241" width="11" height="11" rx="3" fill="#ef7fb0" stroke="#2b2b2b" stroke-width="1"/><rect x="1043" y="241" width="11" height="11" rx="3" fill="#a77be0" stroke="#2b2b2b" stroke-width="1"/><rect x="1056" y="241" width="11" height="11" rx="3" fill="#6a78e0" stroke="#2b2b2b" stroke-width="1"/><rect x="1069" y="241" width="11" height="11" rx="3" fill="#5aaee8" stroke="#ffffff" stroke-width="2"/><rect x="1082" y="241" width="11" height="11" rx="3" fill="#3fc1b0" stroke="#2b2b2b" stroke-width="1"/><rect x="1095" y="241" width="11" height="11" rx="3" fill="#7fd99a" stroke="#2b2b2b" stroke-width="1"/><rect x="1108" y="241" width="11" height="11" rx="3" fill="#6cbf4a" stroke="#2b2b2b" stroke-width="1"/><rect x="1121" y="241" width="11" height="11" rx="3" fill="#b8d94a" stroke="#2b2b2b" stroke-width="1"/><rect x="1134" y="241" width="11" height="11" rx="3" fill="#e0c89a" stroke="#2b2b2b" stroke-width="1"/><rect x="1147" y="241" width="11" height="11" rx="3" fill="#a8744a" stroke="#2b2b2b" stroke-width="1"/><rect x="1160" y="241" width="11" height="11" rx="3" fill="#9aa4ae" stroke="#2b2b2b" stroke-width="1"/><rect x="1173" y="241" width="11" height="11" rx="3" fill="#f0ece4" stroke="#2b2b2b" stroke-width="1"/><text x="978" y="270" font-size="10" fill="#ffffff" fill-opacity="0.7" text-anchor="start" font-weight="normal">Füße</text><rect x="978" y="275" width="11" height="11" rx="3" fill="#f2c14e" stroke="#2b2b2b" stroke-width="1"/><rect x="991" y="275" width="11" height="11" rx="3" fill="#f28c3a" stroke="#2b2b2b" stroke-width="1"/><rect x="1004" y="275" width="11" height="11" rx="3" fill="#e8685a" stroke="#2b2b2b" stroke-width="1"/><rect x="1017" y="275" width="11" height="11" rx="3" fill="#d94a4a" stroke="#2b2b2b" stroke-width="1"/><rect x="1030" y="275" width="11" height="11" rx="3" fill="#ef7fb0" stroke="#2b2b2b" stroke-width="1"/><rect x="1043" y="275" width="11" height="11" rx="3" fill="#a77be0" stroke="#2b2b2b" stroke-width="1"/><rect x="1056" y="275" width="11" height="11" rx="3" fill="#6a78e0" stroke="#ffffff" stroke-width="2"/><rect x="1069" y="275" width="11" height="11" rx="3" fill="#5aaee8" stroke="#2b2b2b" stroke-width="1"/><rect x="1082" y="275" width="11" height="11" rx="3" fill="#3fc1b0" stroke="#2b2b2b" stroke-width="1"/><rect x="1095" y="275" width="11" height="11" rx="3" fill="#7fd99a" stroke="#2b2b2b" stroke-width="1"/><rect x="1108" y="275" width="11" height="11" rx="3" fill="#6cbf4a" stroke="#2b2b2b" stroke-width="1"/><rect x="1121" y="275" width="11" height="11" rx="3" fill="#b8d94a" stroke="#2b2b2b" stroke-width="1"/><rect x="1134" y="275" width="11" height="11" rx="3" fill="#e0c89a" stroke="#2b2b2b" stroke-width="1"/><rect x="1147" y="275" width="11" height="11" rx="3" fill="#a8744a" stroke="#2b2b2b" stroke-width="1"/><rect x="1160" y="275" width="11" height="11" rx="3" fill="#9aa4ae" stroke="#2b2b2b" stroke-width="1"/><rect x="1173" y="275" width="11" height="11" rx="3" fill="#f0ece4" stroke="#2b2b2b" stroke-width="1"/><text x="978" y="304" font-size="10" fill="#ffffff" fill-opacity="0.7" text-anchor="start" font-weight="normal">Augen</text><rect x="978" y="309" width="11" height="11" rx="3" fill="#2b2b2b" stroke="#2b2b2b" stroke-width="1"/><rect x="991" y="309" width="11" height="11" rx="3" fill="#2e3f86" stroke="#ffffff" stroke-width="2"/><rect x="1004" y="309" width="11" height="11" rx="3" fill="#2f6b4a" stroke="#2b2b2b" stroke-width="1"/><rect x="1017" y="309" width="11" height="11" rx="3" fill="#6b3a2a" stroke="#2b2b2b" stroke-width="1"/><rect x="1030" y="309" width="11" height="11" rx="3" fill="#7a2a4a" stroke="#2b2b2b" stroke-width="1"/><rect x="1043" y="309" width="11" height="11" rx="3" fill="#4a2a7a" stroke="#2b2b2b" stroke-width="1"/><rect x="1056" y="309" width="11" height="11" rx="3" fill="#1f6470" stroke="#2b2b2b" stroke-width="1"/><rect x="1069" y="309" width="11" height="11" rx="3" fill="#5a5a5a" stroke="#2b2b2b" stroke-width="1"/><rect x="1206" y="182" width="150" height="160" rx="12" fill="#ffffff" fill-opacity="0.08"/><g transform="translate(1281,324) scale(0.95,0.95)">
+  
+  <g id="foot-back">
+    <ellipse id="tint-3" cx="-20" cy="-8" rx="14" ry="8" fill="#6a78e0" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse id="tint-3" cx="22" cy="-8" rx="14" ry="8" fill="#6a78e0" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path id="tint-2" d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#5aaee8" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path id="tint-2-l45" d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#a4d2f2"/>
+  </g>
+  <g id="eyes">
+    <ellipse id="tint-1" cx="2" cy="-63" rx="6.5" ry="11" fill="#2e3f86"/>
+    <ellipse id="tint-1-b" cx="26" cy="-63" rx="6.5" ry="11" fill="#2e3f86"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    <path d="M 10,-41 Q 16,-36 22,-41" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</g>
+<text x="30" y="420" font-size="20" fill="#1e2a36" text-anchor="start" font-weight="bold">B – Hell &amp; weich</text>
+<text x="230.0" y="420" font-size="13" fill="#1e2a36" text-anchor="start" font-weight="normal">cremefarbene Karten mit weichem Schatten, farbige Pillen-Knöpfe aus der Palette</text>
+<defs><linearGradient id="sky4" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a9cde8"/><stop offset="1" stop-color="#e8f1f7"/></linearGradient>
+      <clipPath id="clip4"><rect x="30" y="432" width="440" height="248" rx="10"/></clipPath></defs>
+    <g clip-path="url(#clip4)">
+      <rect x="30" y="432" width="440" height="248" fill="url(#sky4)"/>
+      <ellipse cx="260" cy="490" rx="34" ry="11" fill="#ffffff" opacity="0.8"/>
+      <ellipse cx="360" cy="468" rx="44" ry="12" fill="#ffffff" opacity="0.7"/>
+      <ellipse cx="150" cy="720" rx="200" ry="90" fill="#8fbf7a"/>
+      <ellipse cx="410" cy="735" rx="190" ry="95" fill="#7aae6a"/>
+      <g transform="translate(390,658) scale(0.55,0.55)">
+  
+  <g id="foot-back">
+    <ellipse id="tint-3" cx="-20" cy="-8" rx="14" ry="8" fill="#d9a43a" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse id="tint-3" cx="22" cy="-8" rx="14" ry="8" fill="#d9a43a" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path id="tint-2" d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#f2c14e" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path id="tint-2-l45" d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#f8dd9e"/>
+  </g>
+  <g id="eyes">
+    <ellipse id="tint-1" cx="2" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <ellipse id="tint-1-b" cx="26" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    <path d="M 10,-41 Q 16,-36 22,-41" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</g><g transform="translate(330,668) scale(-0.3,0.3)">
+  
+  <g id="foot-back">
+    <ellipse id="tint-3" cx="-20" cy="-8" rx="14" ry="8" fill="#6a78e0" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse id="tint-3" cx="22" cy="-8" rx="14" ry="8" fill="#6a78e0" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path id="tint-2" d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#5aaee8" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path id="tint-2-l45" d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#a4d2f2"/>
+  </g>
+  <g id="eyes">
+    <ellipse id="tint-1" cx="2" cy="-63" rx="6.5" ry="11" fill="#2e3f86"/>
+    <ellipse id="tint-1-b" cx="26" cy="-63" rx="6.5" ry="11" fill="#2e3f86"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    <path d="M 10,-41 Q 16,-36 22,-41" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</g>
+    </g>
+<rect x="59" y="457" width="170" height="208" rx="18" fill="#1e2a36" fill-opacity="0.12"/><rect x="56" y="452" width="170" height="208" rx="18" fill="#fffaf0" stroke="#e7dcc8" stroke-width="1.5"/><text x="141" y="490" font-size="30" fill="#3b3024" text-anchor="middle" font-weight="bold">Elora</text><rect x="74" y="509" width="134" height="24" rx="12.0" fill="#6cbf4a" fill-opacity="0.45"/><rect x="74" y="506" width="134" height="24" rx="12.0" fill="#6cbf4a" stroke="#2b2b2b" stroke-width="1.5"/><text x="141.0" y="522.32" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="bold">Spielen</text><rect x="74" y="538" width="134" height="24" rx="12.0" fill="#5aaee8" fill-opacity="0.45"/><rect x="74" y="535" width="134" height="24" rx="12.0" fill="#5aaee8" stroke="#2b2b2b" stroke-width="1.5"/><text x="141.0" y="551.32" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="bold">Training</text><rect x="74" y="567" width="134" height="24" rx="12.0" fill="#a77be0" fill-opacity="0.45"/><rect x="74" y="564" width="134" height="24" rx="12.0" fill="#a77be0" stroke="#2b2b2b" stroke-width="1.5"/><text x="141.0" y="580.32" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="bold">Server erstellen</text><rect x="74" y="596" width="134" height="24" rx="12.0" fill="#f28c3a" fill-opacity="0.45"/><rect x="74" y="593" width="134" height="24" rx="12.0" fill="#f28c3a" stroke="#2b2b2b" stroke-width="1.5"/><text x="141.0" y="609.32" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="bold">Einstellungen</text><rect x="74" y="625" width="134" height="24" rx="12.0" fill="#9aa4ae" fill-opacity="0.45"/><rect x="74" y="622" width="134" height="24" rx="12.0" fill="#9aa4ae" stroke="#2b2b2b" stroke-width="1.5"/><text x="141.0" y="638.32" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="bold">Beenden</text>
+<defs><linearGradient id="sky5" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a9cde8"/><stop offset="1" stop-color="#e8f1f7"/></linearGradient>
+      <clipPath id="clip5"><rect x="490" y="432" width="440" height="248" rx="10"/></clipPath></defs>
+    <g clip-path="url(#clip5)">
+      <rect x="490" y="432" width="440" height="248" fill="url(#sky5)"/>
+      <ellipse cx="720" cy="490" rx="34" ry="11" fill="#ffffff" opacity="0.8"/>
+      <ellipse cx="820" cy="468" rx="44" ry="12" fill="#ffffff" opacity="0.7"/>
+      <ellipse cx="610" cy="720" rx="200" ry="90" fill="#8fbf7a"/>
+      <ellipse cx="870" cy="735" rx="190" ry="95" fill="#7aae6a"/>
+      
+    </g>
+<rect x="509" y="451" width="408" height="220" rx="18" fill="#1e2a36" fill-opacity="0.12"/><rect x="506" y="446" width="408" height="220" rx="18" fill="#fffaf0" stroke="#e7dcc8" stroke-width="1.5"/><rect x="518" y="459" width="68" height="20" rx="10.0" fill="#5aaee8" fill-opacity="0.45"/><rect x="518" y="456" width="68" height="20" rx="10.0" fill="#5aaee8" stroke="#2b2b2b" stroke-width="1.5"/><text x="552.0" y="469.6" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="bold">Internet</text><rect x="594" y="459" width="68" height="20" rx="10.0" fill="#e0c89a" fill-opacity="0.45"/><rect x="594" y="456" width="68" height="20" rx="10.0" fill="#e0c89a" stroke="#2b2b2b" stroke-width="1.5"/><text x="628.0" y="469.6" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="bold">LAN</text><rect x="670" y="459" width="68" height="20" rx="10.0" fill="#e0c89a" fill-opacity="0.45"/><rect x="670" y="456" width="68" height="20" rx="10.0" fill="#e0c89a" stroke="#2b2b2b" stroke-width="1.5"/><text x="704.0" y="469.6" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="bold">Favoriten</text><text x="518" y="494" font-size="9" fill="#8a7a66" text-anchor="start" font-weight="normal">Name</text><text x="650" y="494" font-size="9" fill="#8a7a66" text-anchor="start" font-weight="normal">Karte</text><text x="730" y="494" font-size="9" fill="#8a7a66" text-anchor="start" font-weight="normal">Modus</text><text x="790" y="494" font-size="9" fill="#8a7a66" text-anchor="start" font-weight="normal">Spieler</text><text x="860" y="494" font-size="9" fill="#8a7a66" text-anchor="start" font-weight="normal">Ping</text><text x="518" y="514" font-size="10" fill="#3b3024" text-anchor="start" font-weight="normal">Eloras Wiese</text><text x="650" y="514" font-size="10" fill="#3b3024" text-anchor="start" font-weight="normal">ctf-test</text><text x="730" y="514" font-size="10" fill="#3b3024" text-anchor="start" font-weight="normal">CTF</text><text x="790" y="514" font-size="10" fill="#3b3024" text-anchor="start" font-weight="normal">6/8</text><text x="860" y="514" font-size="10" fill="#3b3024" text-anchor="start" font-weight="normal">24 ms</text><rect x="512" y="522" width="396" height="20" rx="10" fill="#f2c14e" fill-opacity="0.35"/><text x="518" y="536" font-size="10" fill="#3b3024" text-anchor="start" font-weight="normal">Tropfen-Arena</text><text x="650" y="536" font-size="10" fill="#3b3024" text-anchor="start" font-weight="normal">sandbox</text><text x="730" y="536" font-size="10" fill="#3b3024" text-anchor="start" font-weight="normal">DM</text><text x="790" y="536" font-size="10" fill="#3b3024" text-anchor="start" font-weight="normal">3/8</text><text x="860" y="536" font-size="10" fill="#3b3024" text-anchor="start" font-weight="normal">41 ms</text><text x="518" y="558" font-size="10" fill="#3b3024" text-anchor="start" font-weight="normal">Nachtschicht</text><text x="650" y="558" font-size="10" fill="#3b3024" text-anchor="start" font-weight="normal">sandbox</text><text x="730" y="558" font-size="10" fill="#3b3024" text-anchor="start" font-weight="normal">iDM</text><text x="790" y="558" font-size="10" fill="#3b3024" text-anchor="start" font-weight="normal">8/8</text><text x="860" y="558" font-size="10" fill="#3b3024" text-anchor="start" font-weight="normal">63 ms</text><text x="518" y="580" font-size="10" fill="#3b3024" text-anchor="start" font-weight="normal">Team Blau</text><text x="650" y="580" font-size="10" fill="#3b3024" text-anchor="start" font-weight="normal">ctf-test</text><text x="730" y="580" font-size="10" fill="#3b3024" text-anchor="start" font-weight="normal">TDM</text><text x="790" y="580" font-size="10" fill="#3b3024" text-anchor="start" font-weight="normal">2/12</text><text x="860" y="580" font-size="10" fill="#3b3024" text-anchor="start" font-weight="normal">88 ms</text><text x="518" y="602" font-size="10" fill="#3b3024" text-anchor="start" font-weight="normal">LAN-Party</text><text x="650" y="602" font-size="10" fill="#3b3024" text-anchor="start" font-weight="normal">sandbox</text><text x="730" y="602" font-size="10" fill="#3b3024" text-anchor="start" font-weight="normal">LMS</text><text x="790" y="602" font-size="10" fill="#3b3024" text-anchor="start" font-weight="normal">0/8</text><text x="860" y="602" font-size="10" fill="#3b3024" text-anchor="start" font-weight="normal">12 ms</text><rect x="518" y="630" width="220" height="24" rx="12" fill="#ffffff" stroke="#e7dcc8"/><text x="530" y="646" font-size="10" fill="#8a7a66" text-anchor="start" font-weight="normal">Adresse: 127.0.0.1:8303</text><rect x="810" y="633" width="92" height="24" rx="12.0" fill="#6cbf4a" fill-opacity="0.45"/><rect x="810" y="630" width="92" height="24" rx="12.0" fill="#6cbf4a" stroke="#2b2b2b" stroke-width="1.5"/><text x="856.0" y="646.32" font-size="12" fill="#ffffff" text-anchor="middle" font-weight="bold">Verbinden</text>
+<defs><linearGradient id="sky6" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a9cde8"/><stop offset="1" stop-color="#e8f1f7"/></linearGradient>
+      <clipPath id="clip6"><rect x="950" y="432" width="440" height="248" rx="10"/></clipPath></defs>
+    <g clip-path="url(#clip6)">
+      <rect x="950" y="432" width="440" height="248" fill="url(#sky6)"/>
+      <ellipse cx="1180" cy="490" rx="34" ry="11" fill="#ffffff" opacity="0.8"/>
+      <ellipse cx="1280" cy="468" rx="44" ry="12" fill="#ffffff" opacity="0.7"/>
+      <ellipse cx="1070" cy="720" rx="200" ry="90" fill="#8fbf7a"/>
+      <ellipse cx="1330" cy="735" rx="190" ry="95" fill="#7aae6a"/>
+      
+    </g>
+<rect x="969" y="451" width="408" height="220" rx="18" fill="#1e2a36" fill-opacity="0.12"/><rect x="966" y="446" width="408" height="220" rx="18" fill="#fffaf0" stroke="#e7dcc8" stroke-width="1.5"/><rect x="976" y="459" width="66" height="20" rx="10.0" fill="#f28c3a" fill-opacity="0.45"/><rect x="976" y="456" width="66" height="20" rx="10.0" fill="#f28c3a" stroke="#2b2b2b" stroke-width="1.5"/><text x="1009.0" y="469.6" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="bold">Spieler</text><rect x="1048" y="459" width="66" height="20" rx="10.0" fill="#e0c89a" fill-opacity="0.45"/><rect x="1048" y="456" width="66" height="20" rx="10.0" fill="#e0c89a" stroke="#2b2b2b" stroke-width="1.5"/><text x="1081.0" y="469.6" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="bold">Steuerung</text><rect x="1120" y="459" width="66" height="20" rx="10.0" fill="#e0c89a" fill-opacity="0.45"/><rect x="1120" y="456" width="66" height="20" rx="10.0" fill="#e0c89a" stroke="#2b2b2b" stroke-width="1.5"/><text x="1153.0" y="469.6" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="bold">Grafik</text><rect x="1192" y="459" width="66" height="20" rx="10.0" fill="#e0c89a" fill-opacity="0.45"/><rect x="1192" y="456" width="66" height="20" rx="10.0" fill="#e0c89a" stroke="#2b2b2b" stroke-width="1.5"/><text x="1225.0" y="469.6" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="bold">Ton</text><rect x="1264" y="459" width="66" height="20" rx="10.0" fill="#e0c89a" fill-opacity="0.45"/><rect x="1264" y="456" width="66" height="20" rx="10.0" fill="#e0c89a" stroke="#2b2b2b" stroke-width="1.5"/><text x="1297.0" y="469.6" font-size="10" fill="#ffffff" text-anchor="middle" font-weight="bold">Sprache</text><text x="978" y="498" font-size="10" fill="#8a7a66" text-anchor="start" font-weight="normal">Name</text><rect x="978" y="504" width="180" height="22" rx="11" fill="#ffffff" stroke="#e7dcc8"/><text x="988" y="519" font-size="11" fill="#3b3024" text-anchor="start" font-weight="normal">Elora</text><text x="978" y="544" font-size="10" fill="#8a7a66" text-anchor="start" font-weight="normal">Körper</text><rect x="978" y="549" width="11" height="11" rx="3" fill="#f2c14e" stroke="#2b2b2b" stroke-width="1"/><rect x="991" y="549" width="11" height="11" rx="3" fill="#f28c3a" stroke="#2b2b2b" stroke-width="1"/><rect x="1004" y="549" width="11" height="11" rx="3" fill="#e8685a" stroke="#2b2b2b" stroke-width="1"/><rect x="1017" y="549" width="11" height="11" rx="3" fill="#d94a4a" stroke="#2b2b2b" stroke-width="1"/><rect x="1030" y="549" width="11" height="11" rx="3" fill="#ef7fb0" stroke="#2b2b2b" stroke-width="1"/><rect x="1043" y="549" width="11" height="11" rx="3" fill="#a77be0" stroke="#2b2b2b" stroke-width="1"/><rect x="1056" y="549" width="11" height="11" rx="3" fill="#6a78e0" stroke="#2b2b2b" stroke-width="1"/><rect x="1069" y="549" width="11" height="11" rx="3" fill="#5aaee8" stroke="#3b3024" stroke-width="2.5"/><rect x="1082" y="549" width="11" height="11" rx="3" fill="#3fc1b0" stroke="#2b2b2b" stroke-width="1"/><rect x="1095" y="549" width="11" height="11" rx="3" fill="#7fd99a" stroke="#2b2b2b" stroke-width="1"/><rect x="1108" y="549" width="11" height="11" rx="3" fill="#6cbf4a" stroke="#2b2b2b" stroke-width="1"/><rect x="1121" y="549" width="11" height="11" rx="3" fill="#b8d94a" stroke="#2b2b2b" stroke-width="1"/><rect x="1134" y="549" width="11" height="11" rx="3" fill="#e0c89a" stroke="#2b2b2b" stroke-width="1"/><rect x="1147" y="549" width="11" height="11" rx="3" fill="#a8744a" stroke="#2b2b2b" stroke-width="1"/><rect x="1160" y="549" width="11" height="11" rx="3" fill="#9aa4ae" stroke="#2b2b2b" stroke-width="1"/><rect x="1173" y="549" width="11" height="11" rx="3" fill="#f0ece4" stroke="#2b2b2b" stroke-width="1"/><text x="978" y="578" font-size="10" fill="#8a7a66" text-anchor="start" font-weight="normal">Füße</text><rect x="978" y="583" width="11" height="11" rx="3" fill="#f2c14e" stroke="#2b2b2b" stroke-width="1"/><rect x="991" y="583" width="11" height="11" rx="3" fill="#f28c3a" stroke="#2b2b2b" stroke-width="1"/><rect x="1004" y="583" width="11" height="11" rx="3" fill="#e8685a" stroke="#2b2b2b" stroke-width="1"/><rect x="1017" y="583" width="11" height="11" rx="3" fill="#d94a4a" stroke="#2b2b2b" stroke-width="1"/><rect x="1030" y="583" width="11" height="11" rx="3" fill="#ef7fb0" stroke="#2b2b2b" stroke-width="1"/><rect x="1043" y="583" width="11" height="11" rx="3" fill="#a77be0" stroke="#2b2b2b" stroke-width="1"/><rect x="1056" y="583" width="11" height="11" rx="3" fill="#6a78e0" stroke="#3b3024" stroke-width="2.5"/><rect x="1069" y="583" width="11" height="11" rx="3" fill="#5aaee8" stroke="#2b2b2b" stroke-width="1"/><rect x="1082" y="583" width="11" height="11" rx="3" fill="#3fc1b0" stroke="#2b2b2b" stroke-width="1"/><rect x="1095" y="583" width="11" height="11" rx="3" fill="#7fd99a" stroke="#2b2b2b" stroke-width="1"/><rect x="1108" y="583" width="11" height="11" rx="3" fill="#6cbf4a" stroke="#2b2b2b" stroke-width="1"/><rect x="1121" y="583" width="11" height="11" rx="3" fill="#b8d94a" stroke="#2b2b2b" stroke-width="1"/><rect x="1134" y="583" width="11" height="11" rx="3" fill="#e0c89a" stroke="#2b2b2b" stroke-width="1"/><rect x="1147" y="583" width="11" height="11" rx="3" fill="#a8744a" stroke="#2b2b2b" stroke-width="1"/><rect x="1160" y="583" width="11" height="11" rx="3" fill="#9aa4ae" stroke="#2b2b2b" stroke-width="1"/><rect x="1173" y="583" width="11" height="11" rx="3" fill="#f0ece4" stroke="#2b2b2b" stroke-width="1"/><text x="978" y="612" font-size="10" fill="#8a7a66" text-anchor="start" font-weight="normal">Augen</text><rect x="978" y="617" width="11" height="11" rx="3" fill="#2b2b2b" stroke="#2b2b2b" stroke-width="1"/><rect x="991" y="617" width="11" height="11" rx="3" fill="#2e3f86" stroke="#3b3024" stroke-width="2.5"/><rect x="1004" y="617" width="11" height="11" rx="3" fill="#2f6b4a" stroke="#2b2b2b" stroke-width="1"/><rect x="1017" y="617" width="11" height="11" rx="3" fill="#6b3a2a" stroke="#2b2b2b" stroke-width="1"/><rect x="1030" y="617" width="11" height="11" rx="3" fill="#7a2a4a" stroke="#2b2b2b" stroke-width="1"/><rect x="1043" y="617" width="11" height="11" rx="3" fill="#4a2a7a" stroke="#2b2b2b" stroke-width="1"/><rect x="1056" y="617" width="11" height="11" rx="3" fill="#1f6470" stroke="#2b2b2b" stroke-width="1"/><rect x="1069" y="617" width="11" height="11" rx="3" fill="#5a5a5a" stroke="#2b2b2b" stroke-width="1"/><circle cx="1281" cy="572" r="72" fill="#f2c14e" fill-opacity="0.18"/><g transform="translate(1281,632) scale(0.95,0.95)">
+  
+  <g id="foot-back">
+    <ellipse id="tint-3" cx="-20" cy="-8" rx="14" ry="8" fill="#6a78e0" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse id="tint-3" cx="22" cy="-8" rx="14" ry="8" fill="#6a78e0" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path id="tint-2" d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#5aaee8" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path id="tint-2-l45" d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#a4d2f2"/>
+  </g>
+  <g id="eyes">
+    <ellipse id="tint-1" cx="2" cy="-63" rx="6.5" ry="11" fill="#2e3f86"/>
+    <ellipse id="tint-1-b" cx="26" cy="-63" rx="6.5" ry="11" fill="#2e3f86"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    <path d="M 10,-41 Q 16,-36 22,-41" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</g>
+<text x="30" y="728" font-size="20" fill="#1e2a36" text-anchor="start" font-weight="bold">C – Leiste oben</text>
+<text x="218.5" y="728" font-size="13" fill="#1e2a36" text-anchor="start" font-weight="normal">Reiterleiste oben, Inhalt darunter; „Schnell spielen“ auf der Startseite</text>
+<defs><linearGradient id="sky7" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a9cde8"/><stop offset="1" stop-color="#e8f1f7"/></linearGradient>
+      <clipPath id="clip7"><rect x="30" y="740" width="440" height="248" rx="10"/></clipPath></defs>
+    <g clip-path="url(#clip7)">
+      <rect x="30" y="740" width="440" height="248" fill="url(#sky7)"/>
+      <ellipse cx="260" cy="798" rx="34" ry="11" fill="#ffffff" opacity="0.8"/>
+      <ellipse cx="360" cy="776" rx="44" ry="12" fill="#ffffff" opacity="0.7"/>
+      <ellipse cx="150" cy="1028" rx="200" ry="90" fill="#8fbf7a"/>
+      <ellipse cx="410" cy="1043" rx="190" ry="95" fill="#7aae6a"/>
+      <g transform="translate(390,966) scale(0.55,0.55)">
+  
+  <g id="foot-back">
+    <ellipse id="tint-3" cx="-20" cy="-8" rx="14" ry="8" fill="#d9a43a" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse id="tint-3" cx="22" cy="-8" rx="14" ry="8" fill="#d9a43a" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path id="tint-2" d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#f2c14e" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path id="tint-2-l45" d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#f8dd9e"/>
+  </g>
+  <g id="eyes">
+    <ellipse id="tint-1" cx="2" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <ellipse id="tint-1-b" cx="26" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    <path d="M 10,-41 Q 16,-36 22,-41" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</g><g transform="translate(330,976) scale(-0.3,0.3)">
+  
+  <g id="foot-back">
+    <ellipse id="tint-3" cx="-20" cy="-8" rx="14" ry="8" fill="#6a78e0" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse id="tint-3" cx="22" cy="-8" rx="14" ry="8" fill="#6a78e0" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path id="tint-2" d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#5aaee8" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path id="tint-2-l45" d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#a4d2f2"/>
+  </g>
+  <g id="eyes">
+    <ellipse id="tint-1" cx="2" cy="-63" rx="6.5" ry="11" fill="#2e3f86"/>
+    <ellipse id="tint-1-b" cx="26" cy="-63" rx="6.5" ry="11" fill="#2e3f86"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    <path d="M 10,-41 Q 16,-36 22,-41" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</g>
+    </g>
+<rect x="30" y="740" width="440" height="32" fill="#1e2a36" fill-opacity="0.85"/><text x="44" y="762" font-size="15" fill="#f2c14e" text-anchor="start" font-weight="bold">Elora</text><rect x="102" y="768" width="49.1" height="4" rx="2" fill="#f2c14e"/><text x="108" y="760" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">Spielen</text><text x="159.0" y="760" font-size="10" fill="#ffffff" fill-opacity="0.65" text-anchor="start" font-weight="normal">Training</text><text x="215.0" y="760" font-size="10" fill="#ffffff" fill-opacity="0.65" text-anchor="start" font-weight="normal">Server erstellen</text><text x="311.0" y="760" font-size="10" fill="#ffffff" fill-opacity="0.65" text-anchor="start" font-weight="normal">Einstellungen</text><text x="392.0" y="760" font-size="10" fill="#ffffff" fill-opacity="0.65" text-anchor="start" font-weight="normal">Beenden</text><rect x="52" y="880" width="200" height="84" rx="12" fill="#1e2a36" fill-opacity="0.85"/><text x="66" y="902" font-size="13" fill="#ffffff" text-anchor="start" font-weight="bold">Schnell spielen</text><text x="66" y="920" font-size="10" fill="#ffffff" fill-opacity="0.7" text-anchor="start" font-weight="normal">Tropfen-Arena · DM · 3/8</text><rect x="66" y="930" width="80" height="22" rx="8" fill="#6cbf4a"/><text x="106" y="945" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="bold">Los!</text><text x="56" y="830" font-size="13" fill="#1e2a36" text-anchor="start" font-weight="normal">Willkommen zurück,</text><text x="56" y="856" font-size="24" fill="#1e2a36" text-anchor="start" font-weight="bold">Elora!</text>
+<defs><linearGradient id="sky8" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a9cde8"/><stop offset="1" stop-color="#e8f1f7"/></linearGradient>
+      <clipPath id="clip8"><rect x="490" y="740" width="440" height="248" rx="10"/></clipPath></defs>
+    <g clip-path="url(#clip8)">
+      <rect x="490" y="740" width="440" height="248" fill="url(#sky8)"/>
+      <ellipse cx="720" cy="798" rx="34" ry="11" fill="#ffffff" opacity="0.8"/>
+      <ellipse cx="820" cy="776" rx="44" ry="12" fill="#ffffff" opacity="0.7"/>
+      <ellipse cx="610" cy="1028" rx="200" ry="90" fill="#8fbf7a"/>
+      <ellipse cx="870" cy="1043" rx="190" ry="95" fill="#7aae6a"/>
+      
+    </g>
+<rect x="490" y="740" width="440" height="32" fill="#1e2a36" fill-opacity="0.85"/><text x="504" y="762" font-size="15" fill="#f2c14e" text-anchor="start" font-weight="bold">Elora</text><rect x="562" y="768" width="49.1" height="4" rx="2" fill="#f2c14e"/><text x="568" y="760" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">Spielen</text><text x="619.0" y="760" font-size="10" fill="#ffffff" fill-opacity="0.65" text-anchor="start" font-weight="normal">Training</text><text x="675.0" y="760" font-size="10" fill="#ffffff" fill-opacity="0.65" text-anchor="start" font-weight="normal">Server erstellen</text><text x="771.0" y="760" font-size="10" fill="#ffffff" fill-opacity="0.65" text-anchor="start" font-weight="normal">Einstellungen</text><text x="852.0" y="760" font-size="10" fill="#ffffff" fill-opacity="0.65" text-anchor="start" font-weight="normal">Beenden</text><rect x="504" y="782" width="412" height="194" rx="12" fill="#1e2a36" fill-opacity="0.85"/><text x="516" y="800" font-size="11" fill="#f2c14e" text-anchor="start" font-weight="bold">Internet</text><text x="586" y="800" font-size="11" fill="#ffffff" fill-opacity="0.65" text-anchor="start" font-weight="normal">LAN</text><text x="656" y="800" font-size="11" fill="#ffffff" fill-opacity="0.65" text-anchor="start" font-weight="normal">Favoriten</text><text x="516" y="820" font-size="9" fill="#ffffff" fill-opacity="0.55" text-anchor="start" font-weight="normal">Name</text><text x="648" y="820" font-size="9" fill="#ffffff" fill-opacity="0.55" text-anchor="start" font-weight="normal">Karte</text><text x="728" y="820" font-size="9" fill="#ffffff" fill-opacity="0.55" text-anchor="start" font-weight="normal">Modus</text><text x="788" y="820" font-size="9" fill="#ffffff" fill-opacity="0.55" text-anchor="start" font-weight="normal">Spieler</text><text x="858" y="820" font-size="9" fill="#ffffff" fill-opacity="0.55" text-anchor="start" font-weight="normal">Ping</text><text x="516" y="840" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">Eloras Wiese</text><text x="648" y="840" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">ctf-test</text><text x="728" y="840" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">CTF</text><text x="788" y="840" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">6/8</text><text x="858" y="840" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">24 ms</text><rect x="510" y="848" width="400" height="20" rx="4" fill="#f2c14e" fill-opacity="0.25"/><text x="516" y="862" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">Tropfen-Arena</text><text x="648" y="862" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">sandbox</text><text x="728" y="862" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">DM</text><text x="788" y="862" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">3/8</text><text x="858" y="862" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">41 ms</text><text x="516" y="884" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">Nachtschicht</text><text x="648" y="884" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">sandbox</text><text x="728" y="884" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">iDM</text><text x="788" y="884" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">8/8</text><text x="858" y="884" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">63 ms</text><text x="516" y="906" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">Team Blau</text><text x="648" y="906" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">ctf-test</text><text x="728" y="906" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">TDM</text><text x="788" y="906" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">2/12</text><text x="858" y="906" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">88 ms</text><text x="516" y="928" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">LAN-Party</text><text x="648" y="928" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">sandbox</text><text x="728" y="928" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">LMS</text><text x="788" y="928" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">0/8</text><text x="858" y="928" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">12 ms</text><rect x="818" y="950" width="86" height="22" rx="4" fill="#6cbf4a"/><text x="861" y="965" font-size="11" fill="#ffffff" text-anchor="middle" font-weight="bold">Verbinden</text>
+<defs><linearGradient id="sky9" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#a9cde8"/><stop offset="1" stop-color="#e8f1f7"/></linearGradient>
+      <clipPath id="clip9"><rect x="950" y="740" width="440" height="248" rx="10"/></clipPath></defs>
+    <g clip-path="url(#clip9)">
+      <rect x="950" y="740" width="440" height="248" fill="url(#sky9)"/>
+      <ellipse cx="1180" cy="798" rx="34" ry="11" fill="#ffffff" opacity="0.8"/>
+      <ellipse cx="1280" cy="776" rx="44" ry="12" fill="#ffffff" opacity="0.7"/>
+      <ellipse cx="1070" cy="1028" rx="200" ry="90" fill="#8fbf7a"/>
+      <ellipse cx="1330" cy="1043" rx="190" ry="95" fill="#7aae6a"/>
+      
+    </g>
+<rect x="950" y="740" width="440" height="32" fill="#1e2a36" fill-opacity="0.85"/><text x="964" y="762" font-size="15" fill="#f2c14e" text-anchor="start" font-weight="bold">Elora</text><text x="1028" y="760" font-size="10" fill="#ffffff" fill-opacity="0.65" text-anchor="start" font-weight="normal">Spielen</text><text x="1079.0" y="760" font-size="10" fill="#ffffff" fill-opacity="0.65" text-anchor="start" font-weight="normal">Training</text><text x="1135.0" y="760" font-size="10" fill="#ffffff" fill-opacity="0.65" text-anchor="start" font-weight="normal">Server erstellen</text><rect x="1225.0" y="768" width="80.89999999999999" height="4" rx="2" fill="#f2c14e"/><text x="1231.0" y="760" font-size="10" fill="#ffffff" text-anchor="start" font-weight="normal">Einstellungen</text><text x="1312.0" y="760" font-size="10" fill="#ffffff" fill-opacity="0.65" text-anchor="start" font-weight="normal">Beenden</text><rect x="964" y="782" width="110" height="194" rx="12" fill="#1e2a36" fill-opacity="0.85"/><rect x="970" y="790" width="98" height="20" rx="4" fill="#f2c14e" fill-opacity="0.25"/><text x="980" y="804" font-size="11" fill="#ffffff" text-anchor="start" font-weight="normal">Spieler</text><text x="980" y="828" font-size="11" fill="#ffffff" text-anchor="start" font-weight="normal">Steuerung</text><text x="980" y="852" font-size="11" fill="#ffffff" text-anchor="start" font-weight="normal">Grafik</text><text x="980" y="876" font-size="11" fill="#ffffff" text-anchor="start" font-weight="normal">Ton</text><text x="980" y="900" font-size="11" fill="#ffffff" text-anchor="start" font-weight="normal">Sprache</text><rect x="1082" y="782" width="294" height="194" rx="12" fill="#1e2a36" fill-opacity="0.85"/><text x="1094" y="804" font-size="10" fill="#ffffff" fill-opacity="0.7" text-anchor="start" font-weight="normal">Name</text><rect x="1094" y="810" width="150" height="22" rx="4" fill="#ffffff" fill-opacity="0.12"/><text x="1102" y="825" font-size="11" fill="#ffffff" text-anchor="start" font-weight="normal">Elora</text><text x="1094" y="850" font-size="10" fill="#ffffff" fill-opacity="0.7" text-anchor="start" font-weight="normal">Körper</text><rect x="1094" y="855" width="10" height="10" rx="3" fill="#f2c14e" stroke="#2b2b2b" stroke-width="1"/><rect x="1106" y="855" width="10" height="10" rx="3" fill="#f28c3a" stroke="#2b2b2b" stroke-width="1"/><rect x="1118" y="855" width="10" height="10" rx="3" fill="#e8685a" stroke="#2b2b2b" stroke-width="1"/><rect x="1130" y="855" width="10" height="10" rx="3" fill="#d94a4a" stroke="#2b2b2b" stroke-width="1"/><rect x="1142" y="855" width="10" height="10" rx="3" fill="#ef7fb0" stroke="#2b2b2b" stroke-width="1"/><rect x="1154" y="855" width="10" height="10" rx="3" fill="#a77be0" stroke="#2b2b2b" stroke-width="1"/><rect x="1166" y="855" width="10" height="10" rx="3" fill="#6a78e0" stroke="#2b2b2b" stroke-width="1"/><rect x="1178" y="855" width="10" height="10" rx="3" fill="#5aaee8" stroke="#ffffff" stroke-width="2"/><rect x="1190" y="855" width="10" height="10" rx="3" fill="#3fc1b0" stroke="#2b2b2b" stroke-width="1"/><rect x="1202" y="855" width="10" height="10" rx="3" fill="#7fd99a" stroke="#2b2b2b" stroke-width="1"/><rect x="1214" y="855" width="10" height="10" rx="3" fill="#6cbf4a" stroke="#2b2b2b" stroke-width="1"/><rect x="1226" y="855" width="10" height="10" rx="3" fill="#b8d94a" stroke="#2b2b2b" stroke-width="1"/><rect x="1238" y="855" width="10" height="10" rx="3" fill="#e0c89a" stroke="#2b2b2b" stroke-width="1"/><rect x="1250" y="855" width="10" height="10" rx="3" fill="#a8744a" stroke="#2b2b2b" stroke-width="1"/><rect x="1262" y="855" width="10" height="10" rx="3" fill="#9aa4ae" stroke="#2b2b2b" stroke-width="1"/><rect x="1274" y="855" width="10" height="10" rx="3" fill="#f0ece4" stroke="#2b2b2b" stroke-width="1"/><text x="1094" y="884" font-size="10" fill="#ffffff" fill-opacity="0.7" text-anchor="start" font-weight="normal">Füße</text><rect x="1094" y="889" width="10" height="10" rx="3" fill="#f2c14e" stroke="#2b2b2b" stroke-width="1"/><rect x="1106" y="889" width="10" height="10" rx="3" fill="#f28c3a" stroke="#2b2b2b" stroke-width="1"/><rect x="1118" y="889" width="10" height="10" rx="3" fill="#e8685a" stroke="#2b2b2b" stroke-width="1"/><rect x="1130" y="889" width="10" height="10" rx="3" fill="#d94a4a" stroke="#2b2b2b" stroke-width="1"/><rect x="1142" y="889" width="10" height="10" rx="3" fill="#ef7fb0" stroke="#2b2b2b" stroke-width="1"/><rect x="1154" y="889" width="10" height="10" rx="3" fill="#a77be0" stroke="#2b2b2b" stroke-width="1"/><rect x="1166" y="889" width="10" height="10" rx="3" fill="#6a78e0" stroke="#ffffff" stroke-width="2"/><rect x="1178" y="889" width="10" height="10" rx="3" fill="#5aaee8" stroke="#2b2b2b" stroke-width="1"/><rect x="1190" y="889" width="10" height="10" rx="3" fill="#3fc1b0" stroke="#2b2b2b" stroke-width="1"/><rect x="1202" y="889" width="10" height="10" rx="3" fill="#7fd99a" stroke="#2b2b2b" stroke-width="1"/><rect x="1214" y="889" width="10" height="10" rx="3" fill="#6cbf4a" stroke="#2b2b2b" stroke-width="1"/><rect x="1226" y="889" width="10" height="10" rx="3" fill="#b8d94a" stroke="#2b2b2b" stroke-width="1"/><rect x="1238" y="889" width="10" height="10" rx="3" fill="#e0c89a" stroke="#2b2b2b" stroke-width="1"/><rect x="1250" y="889" width="10" height="10" rx="3" fill="#a8744a" stroke="#2b2b2b" stroke-width="1"/><rect x="1262" y="889" width="10" height="10" rx="3" fill="#9aa4ae" stroke="#2b2b2b" stroke-width="1"/><rect x="1274" y="889" width="10" height="10" rx="3" fill="#f0ece4" stroke="#2b2b2b" stroke-width="1"/><text x="1094" y="918" font-size="10" fill="#ffffff" fill-opacity="0.7" text-anchor="start" font-weight="normal">Augen</text><rect x="1094" y="923" width="10" height="10" rx="3" fill="#2b2b2b" stroke="#2b2b2b" stroke-width="1"/><rect x="1106" y="923" width="10" height="10" rx="3" fill="#2e3f86" stroke="#ffffff" stroke-width="2"/><rect x="1118" y="923" width="10" height="10" rx="3" fill="#2f6b4a" stroke="#2b2b2b" stroke-width="1"/><rect x="1130" y="923" width="10" height="10" rx="3" fill="#6b3a2a" stroke="#2b2b2b" stroke-width="1"/><rect x="1142" y="923" width="10" height="10" rx="3" fill="#7a2a4a" stroke="#2b2b2b" stroke-width="1"/><rect x="1154" y="923" width="10" height="10" rx="3" fill="#4a2a7a" stroke="#2b2b2b" stroke-width="1"/><rect x="1166" y="923" width="10" height="10" rx="3" fill="#1f6470" stroke="#2b2b2b" stroke-width="1"/><rect x="1178" y="923" width="10" height="10" rx="3" fill="#5a5a5a" stroke="#2b2b2b" stroke-width="1"/><g transform="translate(1325,946) scale(0.7,0.7)">
+  
+  <g id="foot-back">
+    <ellipse id="tint-3" cx="-20" cy="-8" rx="14" ry="8" fill="#6a78e0" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse id="tint-3" cx="22" cy="-8" rx="14" ry="8" fill="#6a78e0" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path id="tint-2" d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#5aaee8" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path id="tint-2-l45" d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#a4d2f2"/>
+  </g>
+  <g id="eyes">
+    <ellipse id="tint-1" cx="2" cy="-63" rx="6.5" ry="11" fill="#2e3f86"/>
+    <ellipse id="tint-1-b" cx="26" cy="-63" rx="6.5" ry="11" fill="#2e3f86"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    <path d="M 10,-41 Q 16,-36 22,-41" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</g>
+</svg>

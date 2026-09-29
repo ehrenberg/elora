@@ -1,6 +1,6 @@
 # M7 – Menüs & Infrastruktur: Umsetzungsplan
 
-Status: **Entscheidungen getroffen (E-112–E-123), Plan wartet auf Freigabe** · Grundlage: [`06-roadmap.md`](06-roadmap.md) M7, E-031, E-082, E-111, O-17, O-18, O-45
+Status: **angenommen** (E-112–E-124), in Umsetzung · Grundlage: [`06-roadmap.md`](06-roadmap.md) M7, E-031, E-082, E-111, O-17, O-18, O-45
 
 ## Ziel
 
