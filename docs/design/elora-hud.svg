@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1290" height="470" viewBox="0 0 1290 470" font-family="Inter">
+<rect width="1290" height="470" fill="#8fb8d9"/>
+<text x="30" y="44" font-size="28" fill="#1e2a36" font-weight="bold">HUD – drei Entwürfe (M5.8, E-090)</text>
+<text x="30" y="70" font-size="15" fill="#1e2a36">Gleicher Moment: 7/10 Leben, 4/10 Rüstung, Granate 6/10, 12 Punkte, 3:24. Timer und Punkte oben mittig in allen Entwürfen.</text>
+<text x="30" y="102" font-size="20" fill="#1e2a36" font-weight="bold">A – Segmente am Fadenkreuz</text>
+<text x="30" y="122" font-size="14" fill="#1e2a36">Leben links, Rüstung rechts, Munition als Punkte</text>
+<rect x="30" y="130" width="400" height="300" rx="12" fill="#98bfdf"/><rect x="30" y="360" width="400" height="70" fill="#5b6b7c"/><rect x="30" y="360" width="400" height="4" fill="#2f3944"/><g transform="translate(140,360) scale(0.5)">
+  
+  <g id="foot-back">
+    <ellipse id="tint-3" cx="-20" cy="-8" rx="14" ry="8" fill="#d9a43a" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse id="tint-3" cx="22" cy="-8" rx="14" ry="8" fill="#d9a43a" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path id="tint-2" d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#f2c14e" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path id="tint-2-l45" d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#f8dd9e"/>
+  </g>
+  <g id="eyes">
+    <ellipse id="tint-1" cx="2" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <ellipse id="tint-1-b" cx="26" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    <path d="M 10,-41 Q 16,-36 22,-41" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</g><g transform="translate(142,335) rotate(-18) scale(1.4)">
+  
+  <rect x="0" y="-5.5" width="30" height="11" rx="5.5" fill="#6fbf4f" stroke="#2b2b2b" stroke-width="1.6"/>
+  <rect x="27" y="-3.5" width="11" height="7" rx="2" fill="#3f5a36" stroke="#2b2b2b" stroke-width="1.2"/>
+  <circle cx="9" cy="3" r="5" fill="#4f9a38" stroke="#2b2b2b" stroke-width="1.4"/>
+  <rect x="4" y="-3.5" width="18" height="2" rx="1" fill="#a6dc8c"/>
+</g><circle cx="290" cy="280" r="8" fill="none" stroke="#ffffff" stroke-width="2"/><circle cx="290" cy="280" r="1.5" fill="#ffffff"/><rect x="170.0" y="140" width="120" height="28" rx="14" fill="#1e2a36" opacity="0.55"/><text x="230.0" y="159" font-size="15" text-anchor="middle" fill="#ffffff">3:24 · 12 Punkte</text><path d="M 278.9,307.9 A 30,30 0 0 1 274.0,305.4" fill="none" stroke="#e05a7a" stroke-width="5" stroke-linecap="butt" opacity="1.0"/><path d="M 272.5,304.4 A 30,30 0 0 1 268.3,300.7" fill="none" stroke="#e05a7a" stroke-width="5" stroke-linecap="butt" opacity="1.0"/><path d="M 267.1,299.4 A 30,30 0 0 1 263.9,294.9" fill="none" stroke="#e05a7a" stroke-width="5" stroke-linecap="butt" opacity="1.0"/><path d="M 263.1,293.3 A 30,30 0 0 1 261.1,288.1" fill="none" stroke="#e05a7a" stroke-width="5" stroke-linecap="butt" opacity="1.0"/><path d="M 260.7,286.4 A 30,30 0 0 1 260.0,280.9" fill="none" stroke="#e05a7a" stroke-width="5" stroke-linecap="butt" opacity="1.0"/><path d="M 260.0,279.1 A 30,30 0 0 1 260.7,273.6" fill="none" stroke="#e05a7a" stroke-width="5" stroke-linecap="butt" opacity="1.0"/><path d="M 261.1,271.9 A 30,30 0 0 1 263.1,266.7" fill="none" stroke="#e05a7a" stroke-width="5" stroke-linecap="butt" opacity="1.0"/><path d="M 263.9,265.1 A 30,30 0 0 1 267.1,260.6" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="butt" opacity="0.25"/><path d="M 268.3,259.3 A 30,30 0 0 1 272.5,255.6" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="butt" opacity="0.25"/><path d="M 274.0,254.6 A 30,30 0 0 1 278.9,252.1" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="butt" opacity="0.25"/><path d="M 301.1,307.9 A 30,30 0 0 0 306.0,305.4" fill="none" stroke="#e0b85a" stroke-width="5" stroke-linecap="butt" opacity="1.0"/><path d="M 307.5,304.4 A 30,30 0 0 0 311.7,300.7" fill="none" stroke="#e0b85a" stroke-width="5" stroke-linecap="butt" opacity="1.0"/><path d="M 312.9,299.4 A 30,30 0 0 0 316.1,294.9" fill="none" stroke="#e0b85a" stroke-width="5" stroke-linecap="butt" opacity="1.0"/><path d="M 316.9,293.3 A 30,30 0 0 0 318.9,288.1" fill="none" stroke="#e0b85a" stroke-width="5" stroke-linecap="butt" opacity="1.0"/><path d="M 319.3,286.4 A 30,30 0 0 0 320.0,280.9" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="butt" opacity="0.25"/><path d="M 320.0,279.1 A 30,30 0 0 0 319.3,273.6" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="butt" opacity="0.25"/><path d="M 318.9,271.9 A 30,30 0 0 0 316.9,266.7" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="butt" opacity="0.25"/><path d="M 316.1,265.1 A 30,30 0 0 0 312.9,260.6" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="butt" opacity="0.25"/><path d="M 311.7,259.3 A 30,30 0 0 0 307.5,255.6" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="butt" opacity="0.25"/><path d="M 306.0,254.6 A 30,30 0 0 0 301.1,252.1" fill="none" stroke="#ffffff" stroke-width="5" stroke-linecap="butt" opacity="0.25"/><circle cx="268.0" cy="324" r="1.8" fill="#ffffff" opacity="1"/><circle cx="272.9" cy="324" r="1.8" fill="#ffffff" opacity="1"/><circle cx="277.8" cy="324" r="1.8" fill="#ffffff" opacity="1"/><circle cx="282.7" cy="324" r="1.8" fill="#ffffff" opacity="1"/><circle cx="287.6" cy="324" r="1.8" fill="#ffffff" opacity="1"/><circle cx="292.5" cy="324" r="1.8" fill="#ffffff" opacity="1"/><circle cx="297.4" cy="324" r="1.8" fill="#ffffff" opacity="0.25"/><circle cx="302.3" cy="324" r="1.8" fill="#ffffff" opacity="0.25"/><circle cx="307.2" cy="324" r="1.8" fill="#ffffff" opacity="0.25"/><circle cx="312.1" cy="324" r="1.8" fill="#ffffff" opacity="0.25"/>
+<text x="450" y="102" font-size="20" fill="#1e2a36" font-weight="bold">B – Leiste unten mittig</text>
+<text x="450" y="122" font-size="14" fill="#1e2a36">Balken + Waffenwahl; Fadenkreuz bleibt frei</text>
+<rect x="450" y="130" width="400" height="300" rx="12" fill="#98bfdf"/><rect x="450" y="360" width="400" height="70" fill="#5b6b7c"/><rect x="450" y="360" width="400" height="4" fill="#2f3944"/><g transform="translate(560,360) scale(0.5)">
+  
+  <g id="foot-back">
+    <ellipse id="tint-3" cx="-20" cy="-8" rx="14" ry="8" fill="#d9a43a" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse id="tint-3" cx="22" cy="-8" rx="14" ry="8" fill="#d9a43a" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path id="tint-2" d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#f2c14e" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path id="tint-2-l45" d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#f8dd9e"/>
+  </g>
+  <g id="eyes">
+    <ellipse id="tint-1" cx="2" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <ellipse id="tint-1-b" cx="26" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    <path d="M 10,-41 Q 16,-36 22,-41" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</g><g transform="translate(562,335) rotate(-18) scale(1.4)">
+  
+  <rect x="0" y="-5.5" width="30" height="11" rx="5.5" fill="#6fbf4f" stroke="#2b2b2b" stroke-width="1.6"/>
+  <rect x="27" y="-3.5" width="11" height="7" rx="2" fill="#3f5a36" stroke="#2b2b2b" stroke-width="1.2"/>
+  <circle cx="9" cy="3" r="5" fill="#4f9a38" stroke="#2b2b2b" stroke-width="1.4"/>
+  <rect x="4" y="-3.5" width="18" height="2" rx="1" fill="#a6dc8c"/>
+</g><circle cx="710" cy="280" r="8" fill="none" stroke="#ffffff" stroke-width="2"/><circle cx="710" cy="280" r="1.5" fill="#ffffff"/><rect x="590.0" y="140" width="120" height="28" rx="14" fill="#1e2a36" opacity="0.55"/><text x="650.0" y="159" font-size="15" text-anchor="middle" fill="#ffffff">3:24 · 12 Punkte</text><rect x="540.0" y="380" width="220" height="40" rx="12" fill="#1e2a36" opacity="0.6"/><rect x="552.0" y="390" width="90" height="8" rx="4" fill="#ffffff" opacity="0.2"/><rect x="552.0" y="390" width="63.0" height="8" rx="4" fill="#e05a7a"/><rect x="552.0" y="403" width="90" height="6" rx="3" fill="#ffffff" opacity="0.2"/><rect x="552.0" y="403" width="36.0" height="6" rx="3" fill="#e0b85a"/><g transform="translate(658.0,397) rotate(0) scale(0.68)">
+  
+  <rect x="-2" y="-2" width="26" height="4" rx="2" fill="#8a6a4a" stroke="#2b2b2b" stroke-width="1.2"/>
+  <rect x="22" y="-9" width="12" height="18" rx="4" fill="#c8ced6" stroke="#2b2b2b" stroke-width="1.6"/>
+  <rect x="24" y="-7" width="3" height="14" rx="1.5" fill="#eef1f4"/>
+</g><rect x="689.0" y="385" width="32" height="30" rx="8" fill="#ffffff" opacity="0.25"/><g transform="translate(692.0,397) rotate(0) scale(0.68)">
+  
+  <rect x="0" y="-5.5" width="30" height="11" rx="5.5" fill="#6fbf4f" stroke="#2b2b2b" stroke-width="1.6"/>
+  <rect x="27" y="-3.5" width="11" height="7" rx="2" fill="#3f5a36" stroke="#2b2b2b" stroke-width="1.2"/>
+  <circle cx="9" cy="3" r="5" fill="#4f9a38" stroke="#2b2b2b" stroke-width="1.4"/>
+  <rect x="4" y="-3.5" width="18" height="2" rx="1" fill="#a6dc8c"/>
+</g><text x="705.0" y="412" font-size="10" text-anchor="middle" fill="#ffffff">6</text><g transform="translate(726.0,397) rotate(0) scale(0.68)">
+  
+  <rect x="0" y="-4" width="34" height="8" rx="4" fill="#e8f4f8" stroke="#2b2b2b" stroke-width="1.6"/>
+  <rect x="4" y="-1.2" width="24" height="2.4" rx="1.2" fill="#5ad0e0"/>
+  <circle cx="37" cy="0" r="3.2" fill="#5ad0e0" stroke="#2b2b2b" stroke-width="1.2"/>
+  <circle cx="37" cy="0" r="1.4" fill="#ffffff"/>
+</g>
+<text x="870" y="102" font-size="20" fill="#1e2a36" font-weight="bold">C – Feine Ringe + Waffe unten</text>
+<text x="870" y="122" font-size="14" fill="#1e2a36">dünne Bögen am Fadenkreuz, Waffe mit Zahl unten</text>
+<rect x="870" y="130" width="400" height="300" rx="12" fill="#98bfdf"/><rect x="870" y="360" width="400" height="70" fill="#5b6b7c"/><rect x="870" y="360" width="400" height="4" fill="#2f3944"/><g transform="translate(980,360) scale(0.5)">
+  
+  <g id="foot-back">
+    <ellipse id="tint-3" cx="-20" cy="-8" rx="14" ry="8" fill="#d9a43a" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse id="tint-3" cx="22" cy="-8" rx="14" ry="8" fill="#d9a43a" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path id="tint-2" d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#f2c14e" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path id="tint-2-l45" d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#f8dd9e"/>
+  </g>
+  <g id="eyes">
+    <ellipse id="tint-1" cx="2" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <ellipse id="tint-1-b" cx="26" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    <path d="M 10,-41 Q 16,-36 22,-41" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</g><g transform="translate(982,335) rotate(-18) scale(1.4)">
+  
+  <rect x="0" y="-5.5" width="30" height="11" rx="5.5" fill="#6fbf4f" stroke="#2b2b2b" stroke-width="1.6"/>
+  <rect x="27" y="-3.5" width="11" height="7" rx="2" fill="#3f5a36" stroke="#2b2b2b" stroke-width="1.2"/>
+  <circle cx="9" cy="3" r="5" fill="#4f9a38" stroke="#2b2b2b" stroke-width="1.4"/>
+  <rect x="4" y="-3.5" width="18" height="2" rx="1" fill="#a6dc8c"/>
+</g><circle cx="1130" cy="280" r="8" fill="none" stroke="#ffffff" stroke-width="2"/><circle cx="1130" cy="280" r="1.5" fill="#ffffff"/><rect x="1010.0" y="140" width="120" height="28" rx="14" fill="#1e2a36" opacity="0.55"/><text x="1070.0" y="159" font-size="15" text-anchor="middle" fill="#ffffff">3:24 · 12 Punkte</text><path d="M 1118.0,300.8 A 24,24 0 0 1 1118.0,259.2" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.25"/><path d="M 1108.1,289.8 A 24,24 0 0 1 1118.0,259.2" fill="none" stroke="#e05a7a" stroke-width="3" stroke-linecap="round" opacity="1.0"/><path d="M 1142.0,300.8 A 24,24 0 0 0 1142.0,259.2" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.25"/><path d="M 1153.5,275.0 A 24,24 0 0 0 1142.0,259.2" fill="none" stroke="#e0b85a" stroke-width="3" stroke-linecap="round" opacity="1.0"/><path d="M 1144.1,285.1 A 15,15 0 0 1 1115.9,285.1" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.25"/><path d="M 1133.6,294.6 A 15,15 0 0 1 1115.9,285.1" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="1.0"/><rect x="1032.0" y="384" width="76" height="32" rx="10" fill="#1e2a36" opacity="0.55"/><g transform="translate(1040.0,400) rotate(0) scale(0.7)">
+  
+  <rect x="0" y="-5.5" width="30" height="11" rx="5.5" fill="#6fbf4f" stroke="#2b2b2b" stroke-width="1.6"/>
+  <rect x="27" y="-3.5" width="11" height="7" rx="2" fill="#3f5a36" stroke="#2b2b2b" stroke-width="1.2"/>
+  <circle cx="9" cy="3" r="5" fill="#4f9a38" stroke="#2b2b2b" stroke-width="1.4"/>
+  <rect x="4" y="-3.5" width="18" height="2" rx="1" fill="#a6dc8c"/>
+</g><text x="1096.0" y="406" font-size="15" text-anchor="middle" fill="#ffffff">6</text>
+</svg>
