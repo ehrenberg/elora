@@ -4,7 +4,7 @@ use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use elora_sim::Vec2;
-use kira::sound::static_sound::{StaticSoundData, StaticSoundSettings};
+use kira::sound::static_sound::{StaticSoundData, StaticSoundHandle, StaticSoundSettings};
 use kira::{AudioManager, AudioManagerSettings, Decibels, DefaultBackend, Frame, Panning, Tween};
 
 use crate::{AudioSettings, Bank, Cue, SAMPLE_RATE, Sound, spatial};
@@ -14,6 +14,8 @@ pub struct Audio {
     manager: Option<AudioManager<DefaultBackend>>,
     sounds: BTreeMap<Sound, StaticSoundData>,
     applied: Option<AudioSettings>,
+    /// Laufende Musik (Schleife) und ihre Lautstärke.
+    music: Option<(StaticSoundHandle, f32)>,
 }
 
 impl std::fmt::Debug for Audio {
@@ -70,6 +72,7 @@ impl Audio {
             manager,
             sounds,
             applied: None,
+            music: None,
         }
     }
 
@@ -90,6 +93,40 @@ impl Audio {
                 settings.volume.clamp(0.0, 1.0)
             };
             m.main_track().set_volume(decibels(amp), Tween::default());
+        }
+    }
+
+    /// Musik (Mono-Samples, [`SAMPLE_RATE`]) in Schleife starten, falls noch keine läuft;
+    /// `volume` 0..1 wird bei Änderung sanft nachgeführt.
+    pub fn play_music(&mut self, samples: &[f32], volume: f32) {
+        let tween = Tween {
+            duration: std::time::Duration::from_millis(300),
+            ..Tween::default()
+        };
+        if let Some((handle, v)) = &mut self.music {
+            if (*v - volume).abs() > 0.001 {
+                handle.set_volume(decibels(volume), tween);
+                *v = volume;
+            }
+            return;
+        }
+        let Some(manager) = &mut self.manager else {
+            return;
+        };
+        let data = to_data(samples).loop_region(..).volume(decibels(volume));
+        match manager.play(data) {
+            Ok(handle) => self.music = Some((handle, volume)),
+            Err(e) => tracing::debug!("Musik nicht abgespielt: {e}"),
+        }
+    }
+
+    /// Musik ausblenden und beenden.
+    pub fn stop_music(&mut self) {
+        if let Some((mut handle, _)) = self.music.take() {
+            handle.stop(Tween {
+                duration: std::time::Duration::from_millis(600),
+                ..Tween::default()
+            });
         }
     }
 

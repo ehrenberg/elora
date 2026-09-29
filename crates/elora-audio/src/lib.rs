@@ -234,6 +234,8 @@ pub struct AudioSettings {
     /// Gesamtlautstärke 0..1.
     pub volume: f32,
     pub muted: bool,
+    /// Lautstärke der Menümusik 0..1 (E-121), zusätzlich zur Gesamtlautstärke.
+    pub music_volume: f32,
 }
 
 impl Default for AudioSettings {
@@ -241,6 +243,7 @@ impl Default for AudioSettings {
         Self {
             volume: 0.7,
             muted: false,
+            music_volume: 0.5,
         }
     }
 }

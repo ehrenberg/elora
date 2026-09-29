@@ -121,8 +121,8 @@ oder im Client: `Esc` → Panel *Netzwerk* → Adresse eintragen → *Verbinden*
 | Rechte Maustaste (halten) | Hook |
 | Linke Maustaste | schießen (Granate/Laser: gedrückt halten = Dauerfeuer) |
 | 1 / 2 / 3, Mausrad | Hammer / Granate / Laser |
-| Esc | Maus freigeben (Panel bedienen); erneut Esc = beenden |
-| F1 | Debug-Panel ein/aus |
+| Esc | Pause-Menü (Fortsetzen, Hauptmenü, Beenden) |
+| F1 | Debug-Panel ein/aus (auch im Menü) |
 | R | Respawn (nur Sandbox ohne Modus) |
 | K | Selbstmord (`kill`) |
 | T / Y | Chat / Team-Chat (Enter senden, Esc abbrechen; online) |

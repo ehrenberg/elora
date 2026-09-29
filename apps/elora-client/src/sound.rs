@@ -13,13 +13,30 @@ use elora_sim::{Event, HookState, Vec2};
 
 use crate::figure::Landing;
 
+/// Musik von der Platte laden; fehlt die Datei, bleibt das Menü still.
+fn load_music() -> Option<Vec<f32>> {
+    let data = std::fs::read(MENU_MUSIC).ok()?;
+    match elora_audio::decode_wav(&data) {
+        Ok(samples) => Some(samples),
+        Err(e) => {
+            tracing::warn!("{MENU_MUSIC}: {e}");
+            None
+        }
+    }
+}
+
 #[derive(Debug)]
 pub struct Sounds {
     audio: Audio,
     pub settings: AudioSettings,
     /// Zuletzt gesehene Bits und Hook-Zustand je Slot.
     last: HashMap<usize, (u8, HookState)>,
+    /// Menümusik (E-121), falls `assets/music/menu.wav` vorhanden ist.
+    music: Option<Vec<f32>>,
 }
+
+/// Datei der Menümusik (WAV, 16 Bit, 44,1 kHz; Mono oder Stereo).
+pub const MENU_MUSIC: &str = "assets/music/menu.wav";
 
 impl Sounds {
     /// # Panics
@@ -30,6 +47,19 @@ impl Sounds {
             audio: Audio::new(&bank),
             settings,
             last: HashMap::new(),
+            music: load_music(),
+        }
+    }
+
+    /// Menümusik an (im Menü) oder aus (im Spiel).
+    pub fn menu_music(&mut self, on: bool) {
+        self.audio.apply(self.settings);
+        match (&self.music, on) {
+            (Some(samples), true) => {
+                let volume = self.settings.music_volume.clamp(0.0, 1.0);
+                self.audio.play_music(samples, volume);
+            }
+            _ => self.audio.stop_music(),
         }
     }
 

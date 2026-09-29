@@ -97,6 +97,27 @@ enum Expression {
 const PAIN_TIME: f32 = 0.45;
 const HAPPY_TIME: f32 = 1.2;
 
+impl FigureArt {
+    /// Figur in Ruhe, z. B. als Deko im Menü: Bodenkontakt bei `ground`,
+    /// `size` = Höhe in Pixeln, `facing` 1 = nach rechts, −1 = nach links.
+    pub fn draw_pose(
+        &self,
+        batch: &mut ShapeBatch,
+        ground: Vec2,
+        size: f32,
+        facing: f32,
+        tint: &Tint,
+    ) {
+        // Asset: Spitze bei −131, Boden bei 0
+        let scale = size / 131.0;
+        let root = Affine::translate(ground).then(Affine::scale(facing * scale, scale));
+        batch.draw_mesh(&self.foot_back, &root, tint);
+        batch.draw_mesh(&self.foot_front, &root, tint);
+        batch.draw_mesh(&self.body, &root, tint);
+        batch.draw_mesh(&self.eyes, &root, tint);
+    }
+}
+
 /// Animationszustand einer Figur.
 #[derive(Debug, Clone, Copy, Default)]
 struct Anim {

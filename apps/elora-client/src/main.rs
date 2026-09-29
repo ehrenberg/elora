@@ -3,6 +3,7 @@
 //! Aufruf: `elora [karte.emap.toml] [--mode dm|tdm|ctf|lms|lts] [--instagib] [--connect adresse:port]`
 //! (Standardkarte: `maps/sandbox.emap.toml`)
 
+mod app_menu;
 mod connection;
 mod controls;
 mod debug_ui;
@@ -16,6 +17,7 @@ mod hosting;
 mod hud;
 mod items;
 mod lang;
+mod menu;
 mod sandbox;
 mod settings;
 mod skins;
@@ -92,7 +94,16 @@ fn main() -> anyhow::Result<()> {
 
     let event_loop = EventLoop::new().context("Event-Loop konnte nicht erstellt werden")?;
     event_loop.set_control_flow(ControlFlow::Poll);
+    // Karte, Modus oder Adresse auf der Kommandozeile: direkt ins Spiel (Entwicklung)
+    let direct = connect.is_some()
+        || args
+            .iter()
+            .any(|a| a.ends_with(".emap.toml") || a == "--mode");
     let mut app = App::new(sandbox, &file, settings);
+    if direct {
+        app.screen = Screen::Game;
+        app.show_panel = true;
+    }
     if let Some(address) = connect {
         app.net.address = address;
         app.connect();
@@ -112,6 +123,15 @@ struct Gfx {
 struct Online {
     client: OnlineClient,
     conn: Connection,
+}
+
+/// Was gerade zu sehen ist (M7.3).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Screen {
+    /// Hauptmenü (Startbildschirm, E-113).
+    Menu,
+    /// Training (Sandbox) oder Online-Spiel; das Pause-Menü liegt darüber.
+    Game,
 }
 
 /// Spielinformationen eines Frames für HUD, Anzeigen und Panel.
@@ -159,6 +179,10 @@ struct App {
     /// Spieler-Einstellungen (`settings.toml`, E-116) und Sprache (E-114).
     settings: Settings,
     lang: lang::Lang,
+    screen: Screen,
+    menu: menu::Menu,
+    /// Kartennamen für „Server erstellen“.
+    maps: Vec<String>,
 }
 
 impl App {
@@ -194,7 +218,7 @@ impl App {
             last_frame: Instant::now(),
             fps: 0.0,
             cursor_grabbed: false,
-            show_panel: true,
+            show_panel: false,
             status: String::new(),
             error: None,
             chat_input: game_ui::ChatInput::default(),
@@ -202,6 +226,9 @@ impl App {
             killfeed: VecDeque::new(),
             lang: lang::Lang::new(settings.language),
             settings,
+            screen: Screen::Menu,
+            menu: menu::Menu::default(),
+            maps: app_menu::map_names(),
         }
     }
 
@@ -641,12 +668,17 @@ impl App {
     fn redraw(&mut self) {
         let now = Instant::now();
         let elapsed = self.frame_time(now);
+        let dt = elapsed.as_secs_f32();
+        if self.screen == Screen::Menu {
+            self.redraw_menu(dt);
+            return;
+        }
 
         // Szene aus Sandbox oder Online-Spiel
         let Some((scene, collision, tuning, events)) = self.advance(now, elapsed) else {
             return;
         };
-        self.update_looks(elapsed.as_secs_f32(), &scene, &collision, &events);
+        self.update_looks(dt, &scene, &collision, &events);
         let info = self.game_info(now);
         game_ui::record_kills(
             &mut self.killfeed,
@@ -667,6 +699,11 @@ impl App {
         );
         self.build_batch(&scene, &collision, &tuning, &camera);
         let screen = self.build_hud(&scene, &tuning, &info);
+        let pause_action = if self.menu.paused {
+            self.draw_pause(dt)
+        } else {
+            None
+        };
         let Some(gfx) = &mut self.gfx else { return };
 
         let Some(mut frame) = gfx.renderer.begin_frame() else {
@@ -680,8 +717,17 @@ impl App {
         };
         gfx.renderer
             .draw_overlay(&mut frame, &screen_camera, &self.hud_batch);
+        self.draw_debug_panel(&mut frame, &info);
+        if let Some(gfx) = &mut self.gfx {
+            gfx.renderer.end_frame(frame);
+        }
+        if let Some(a) = pause_action {
+            self.apply_menu(a);
+        }
+    }
 
-        // Debug-Panel (egui, E-031)
+    /// Debug-Panel (egui, E-031) über dem Frame; führt seine Aktion aus.
+    pub(crate) fn draw_debug_panel(&mut self, frame: &mut elora_render::Frame, info: &FrameInfo) {
         let mut action = None;
         let show_panel = self.show_panel;
         let online_view = self.online.as_ref().map(|o| OnlineView {
@@ -715,12 +761,12 @@ impl App {
             team_mode,
             vote_running: info.vote.is_some(),
         };
-        gfx.gui.draw(&gfx.window, &gfx.renderer, &mut frame, |ui| {
+        let Some(gfx) = &mut self.gfx else { return };
+        gfx.gui.draw(&gfx.window, &gfx.renderer, frame, |ui| {
             if show_panel || cx.net.key_warning.is_some() {
                 action = action.take().or(debug_ui::panel(ui, &mut cx));
             }
         });
-        gfx.renderer.end_frame(frame);
         if let Some(action) = action {
             self.apply(action);
         }
@@ -760,10 +806,18 @@ impl App {
         }
     }
 
-    fn key(&mut self, event_loop: &ActiveEventLoop, event: &KeyEvent) {
+    fn key(&mut self, event: &KeyEvent) {
         let PhysicalKey::Code(code) = event.physical_key else {
             return;
         };
+        if self.menu_active() {
+            if code == KeyCode::F1 && event.state.is_pressed() && !event.repeat {
+                self.show_panel = !self.show_panel;
+            } else {
+                self.menu_key(code, event);
+            }
+            return;
+        }
         // Scoreboard solange Tab gehalten wird (E-078)
         if code == KeyCode::Tab {
             self.scoreboard = event.state.is_pressed();
@@ -792,8 +846,7 @@ impl App {
         }
         let online = self.online.is_some();
         match code {
-            KeyCode::Escape if self.cursor_grabbed => self.set_cursor_grab(false),
-            KeyCode::Escape => event_loop.exit(),
+            KeyCode::Escape => self.toggle_pause(),
             KeyCode::KeyR if !online => self.apply(Action::Respawn),
             KeyCode::F5 if !online && self.sandbox.rules.is_some() => {
                 self.status =
@@ -854,7 +907,7 @@ impl ApplicationHandler for App {
             Ok(gfx) => {
                 self.gfx = Some(gfx);
                 self.last_frame = Instant::now();
-                self.set_cursor_grab(true);
+                self.set_cursor_grab(self.screen == Screen::Game);
             }
             Err(e) => {
                 self.error = Some(e.context("Grafik konnte nicht initialisiert werden"));
@@ -883,10 +936,21 @@ impl ApplicationHandler for App {
                     gfx.renderer.resize(size.width, size.height);
                 }
             }
-            WindowEvent::Focused(false) => self.set_cursor_grab(false),
-            WindowEvent::KeyboardInput { event, .. } => self.key(event_loop, &event),
+            WindowEvent::Focused(false) => {
+                if self.screen == Screen::Game && !self.menu.paused {
+                    self.toggle_pause();
+                }
+                self.set_cursor_grab(false);
+            }
+            WindowEvent::CursorMoved { position, .. } => {
+                #[allow(clippy::cast_possible_truncation)]
+                self.menu_cursor(elora_sim::Vec2::new(position.x as f32, position.y as f32));
+            }
+            WindowEvent::KeyboardInput { event, .. } => self.key(&event),
             WindowEvent::MouseInput { state, button, .. } => {
-                if self.cursor_grabbed {
+                if self.menu_active() {
+                    self.menu_mouse_button(button, state);
+                } else if self.cursor_grabbed {
                     self.controls.mouse_button(button, state);
                 } else if state.is_pressed()
                     && !self.gfx.as_ref().is_some_and(|g| g.gui.wants_pointer())
@@ -894,6 +958,7 @@ impl ApplicationHandler for App {
                     self.set_cursor_grab(true);
                 }
             }
+            WindowEvent::MouseWheel { delta, .. } if self.menu_active() => self.menu_wheel(delta),
             WindowEvent::MouseWheel { delta, .. } if self.cursor_grabbed => {
                 let notches = match delta {
                     winit::event::MouseScrollDelta::LineDelta(_, y) => y.round() as i32,
@@ -914,7 +979,11 @@ impl ApplicationHandler for App {
         }
     }
 
-    fn about_to_wait(&mut self, _: &ActiveEventLoop) {
+    fn about_to_wait(&mut self, event_loop: &ActiveEventLoop) {
+        if self.menu.quit {
+            event_loop.exit();
+            return;
+        }
         if let Some(gfx) = &self.gfx {
             gfx.window.request_redraw();
         }
