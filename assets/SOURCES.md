@@ -19,7 +19,7 @@ Anfang entfernt, Ende ausgeblendet, Spitze −1 dBFS, teils gekürzt).
 | `flag_grab_enemy` | `jingles_PIZZI04.ogg` | [Kenney – music-jingles](https://kenney.nl/assets/music-jingles) | Kenney (kenney.nl) | CC0 1.0 |
 | `flag_grab_own` | `jingles_PIZZI10.ogg` | [Kenney – music-jingles](https://kenney.nl/assets/music-jingles) | Kenney (kenney.nl) | CC0 1.0 |
 | `flag_return` | `jingles_STEEL09.ogg` | [Kenney – music-jingles](https://kenney.nl/assets/music-jingles) | Kenney (kenney.nl) | CC0 1.0 |
-| `grenade_explode` | `lowFrequency_explosion_001.ogg` | [Kenney – sci-fi-sounds](https://kenney.nl/assets/sci-fi-sounds) | Kenney (kenney.nl) | CC0 1.0 |
+| `grenade_explode` | `explosionCrunch_000.ogg` + `lowFrequency_explosion_000.ogg` (0–1,6 s, gemischt 1 : 0,9, Nachhall ausgeblendet) | [Kenney – sci-fi-sounds](https://kenney.nl/assets/sci-fi-sounds) | Kenney (kenney.nl) | CC0 1.0 |
 | `grenade_fire` | `impactSoft_heavy_000.ogg` | [Kenney – impact-sounds](https://kenney.nl/assets/impact-sounds) | Kenney (kenney.nl) | CC0 1.0 |
 | `hammer_fire` | `cloth2.ogg` | [Kenney – rpg-audio](https://kenney.nl/assets/rpg-audio) | Kenney (kenney.nl) | CC0 1.0 |
 | `hammer_hit` | `impactPunch_medium_000.ogg` | [Kenney – impact-sounds](https://kenney.nl/assets/impact-sounds) | Kenney (kenney.nl) | CC0 1.0 |
