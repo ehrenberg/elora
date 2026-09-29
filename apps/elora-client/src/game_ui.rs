@@ -467,6 +467,7 @@ mod tests {
     /// danach `cargo xtask svg-preview target/ui.svg target/ui.png 1280`.
     #[test]
     #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
+    #[allow(clippy::too_many_lines)] // Beispieldaten
     fn ui_sheet() {
         use elora_game::{Mode, Phase, Stats};
         let font = Font::new(include_bytes!("../../../assets/fonts/Inter-Regular.ttf")).unwrap();
@@ -495,7 +496,6 @@ mod tests {
                             score,
                             kills,
                             deaths,
-                            ..Stats::default()
                         },
                     )
                 })
