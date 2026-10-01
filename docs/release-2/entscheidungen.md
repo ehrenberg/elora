@@ -26,7 +26,7 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 - [ ] **O-45 Remote-Konsole** (Admin-Befehle aus dem Client mit Passwort)
 - [ ] **O-49 Weitere Vertriebskanäle** (itch.io, Flathub, Steam, eigene Website)
 - [ ] **O-50 macOS auf Intel** (Cross-Build oder eigener Runner)
-- [ ] **O-51 Restpunkte M8:** Credits-Seite im Hauptmenü (M8.5), Playtests und Balancing (M8.6)
+- [ ] **O-51 Restpunkte M8:** ~~Credits-Seite~~ (erledigt, E-209); Playtests und Balancing (M8.6) und Tests der Pakete auf Windows/macOS macht der Projektinhaber später
 - [ ] **O-52 Demos und Replays** (E-115: nach Release 1)
 
 Neu für Release 2 (Rollenspiel-Abenteuer, siehe [`roadmap.md`](roadmap.md)):
@@ -34,7 +34,7 @@ Neu für Release 2 (Rollenspiel-Abenteuer, siehe [`roadmap.md`](roadmap.md)):
 - [x] ~~O-200 Weltaufbau~~ → E-203
 - [x] ~~O-201 Rollenspiel als Spielmodus~~ → E-204
 - [ ] **O-202 Fortschritt speichern** – Spielstände des Einzelspieler-Abenteuers (z. B. lokal, mehrere Plätze); im PvP-Modus nur für die Runde (E-204)
-- [x] ~~O-203 Geschichte und Welt~~ → E-207 (Ausarbeitung folgt)
+- [x] ~~O-203 Geschichte und Welt~~ → E-207 · Ausarbeitung: [`weltbuch.md`](weltbuch.md) (Entwurf)
 - [ ] **O-204 Fortschrittssystem** – Ausgestaltung von Stufen, Fähigkeitenbaum, Waffen-Ausbau, Beute, Währung (Umfang: E-206)
 - [ ] **O-205 NPCs und Gegner** – Verhalten, Dialoge, Händler, Begleiter; Grundlage sind die Bots
 - [ ] **O-206 Abenteuer im Editor** – NPCs, Auslöser, Dialoge und Aufgaben in Karten
