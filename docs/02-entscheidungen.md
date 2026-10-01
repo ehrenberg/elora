@@ -135,6 +135,15 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-126 | 2026-09-30 | M7.0–M7.4 | Menü, Einstellungen und Sprache im Test „sieht gut aus“ – weiter mit M7.5 | Entscheidung Projektinhaber |
 | E-127 | 2026-09-30 | Master-Server-Verbindung (M7.8) | **HTTPS** für Clients und Server (rustls, Mozilla-Stammzertifikate); der Master spricht HTTP und läuft öffentlich hinter einem Reverse-Proxy mit Zertifikat. Lizenz **CDLA-Permissive-2.0** (webpki-roots) wird erlaubt | Entscheidung Projektinhaber |
 | E-128 | 2026-10-01 | M7 Abnahme | **M7 abgeschlossen** („sieht gut aus“) – weiter mit M6 (E-111) | Entscheidung Projektinhaber |
+| E-129 | 2026-10-01 | Release-Kartenformat (D-M6-01, O-37) | **Binär** (kompakt, wie das Original) | Entscheidung Projektinhaber |
+| E-130 | 2026-10-01 | Kartenlook (D-M6-02) | **Beides:** Vektor-Kacheln mit automatischen Kanten/Ecken je Material für die Spielfläche + frei platzierbare Vektor-Deko | Entscheidung Projektinhaber |
+| E-131 | 2026-10-01 | Ebenen (D-M6-03) | **Vereinfacht:** Game-Layer + Deko-Ebenen davor/dahinter + Hintergrund-Ebenen mit Parallax | Entscheidung Projektinhaber |
+| E-132 | 2026-10-01 | Animationen (D-M6-04) | **Wie das Original:** frei editierbare Kurven (Envelopes) für Position, Drehung, Farbe | Entscheidung Projektinhaber |
+| E-133 | 2026-10-01 | Editor-Umfang (D-M6-05) | **Alles:** Grundwerkzeuge, Deko und Hintergrund-Ebenen, Animations-Editor, Testspielen | Entscheidung Projektinhaber |
+| E-134 | 2026-10-01 | Release-Karten (D-M6-06, O-43) | **3 DM** (klein, mittel, groß; auch für TDM/LMS) **+ 2 CTF** | Entscheidung Projektinhaber |
+| E-135 | 2026-10-01 | Kartenbau | **Claude baut die Karten nach Vorgaben des Projektinhabers**, Abnahme im Playtest | Entscheidung Projektinhaber |
+| E-136 | 2026-10-01 | Karten-Download (D-M6-07) | **Automatisch:** Server schickt fehlende Karten komprimiert in Teilen, Prüfsumme, Zwischenspeicher im Client | Entscheidung Projektinhaber |
+| E-137 | 2026-10-01 | Neue Tile-Arten (D-M6-08) | **Plattform** (von unten/seitlich durchlässig), **Eis** (rutschig), **Sprungfeld** (wirft nach oben/schräg), **Beschleuniger** (Laufband) – Werte als Tuning-Vorschlag zur Freigabe | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 
@@ -165,7 +174,7 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 - [x] ~~O-28 Physik-Arithmetik~~ → E-021
 - [x] ~~O-29 Rust-Workspace-Struktur~~ → E-019
 - [x] ~~O-10 Release-Kartenformat~~ → E-028
-- [ ] **O-37 Details Release-Kartenformat** (Layer-Modell, Binär/Text, Kompression, Asset-Einbettung) – später, vor den ersten echten Karten
+- [x] ~~O-37 Details Release-Kartenformat~~ → E-129, E-131, E-132
 - [x] ~~O-11 Versionskontrolle/Hosting~~ → E-034 (Repo-Struktur → E-019)
 - [x] ~~O-41 CI ohne Hosting~~ → E-039
 
@@ -193,6 +202,6 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 - [ ] **O-48 Übersetzte Server-Meldungen** (Server schickt Nachrichten-Codes mit Parametern statt fertiger deutscher Texte, damit der Client sie übersetzt)
 - [ ] **O-47 Betrieb des Master-Servers** (wer betreibt ihn, unter welcher Adresse; Standard-URL im Client) – vor dem ersten öffentlichen Test
 - [x] ~~O-42 Netzwerk-Zielwerte~~ → E-059
-- [ ] **O-43 Release-Karten** (Anzahl, Modi)
+- [x] ~~O-43 Release-Karten~~ → E-134, E-135
 - [ ] **O-44 Vertrieb** (itch.io, Steam, Flathub, Website …)
 - [x] ~~O-21 Meilensteine~~ → E-037
