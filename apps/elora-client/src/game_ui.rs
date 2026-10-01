@@ -182,7 +182,10 @@ fn loading(
 
 /// Abstimmung unter der Statusanzeige.
 fn vote(batch: &mut ShapeBatch, font: &Font, screen: Vec2, s: f32, v: &VoteInfo, lang: &Lang) {
-    let title = lang.f("game.vote_title", &[("text", &v.description)]);
+    let title = lang.f(
+        "game.vote_title",
+        &[("text", &lang.vote_subject(&v.subject))],
+    );
     let info = lang.f(
         "game.vote_info",
         &[
@@ -358,7 +361,15 @@ fn chat(batch: &mut ShapeBatch, font: &Font, screen: Vec2, s: f32, g: &GameUi<'_
                 format!("{}{from}: {}", if c.team { "[Team] " } else { "" }, c.text),
                 TEXT,
             ),
-            None => (format!("*** {}", c.text), SERVER),
+            None => (
+                format!(
+                    "*** {}",
+                    c.message
+                        .as_ref()
+                        .map_or_else(|| c.text.clone(), |m| g.lang.message(m))
+                ),
+                SERVER,
+            ),
         };
         let text = fit(font, &text, size, width - 24.0 * s);
         font.draw_centered(batch, &text, Vec2::new(x, y), size, color, Align::Left);
@@ -616,6 +627,7 @@ mod tests {
             from: from.map(str::to_owned),
             team,
             text: text.to_owned(),
+            message: None,
             at: now,
         };
         let chat = vec![
@@ -630,7 +642,7 @@ mod tests {
             text: "gg".into(),
         };
         let vote = VoteInfo {
-            description: "Karte wechseln: ctf-test".into(),
+            subject: elora_protocol::VoteSubject::Map("ctf-test".into()),
             yes: 2,
             no: 1,
             voters: 4,

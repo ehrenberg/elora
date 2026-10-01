@@ -405,7 +405,8 @@ impl<S: Socket> ServerEndpoint<S> {
         match p.first().copied() {
             Some(P_TOKEN_REQUEST) if p.len() == TOKEN_REQUEST_SIZE => {
                 if &p[1..9] != MAGIC {
-                    self.reject(addr, "Falsche Protokollversion", now);
+                    // Codes wie `elora_protocol::reason` – der Client übersetzt sie
+                    self.reject(addr, "#wrong-version", now);
                     return;
                 }
                 let mut out = vec![P_TOKEN];
@@ -434,7 +435,7 @@ impl<S: Socket> ServerEndpoint<S> {
             return;
         }
         if self.conns.len() >= self.max_clients {
-            self.reject(addr, "Server ist voll", now);
+            self.reject(addr, "#server-full", now);
             return;
         }
         if self.pending.len() >= MAX_PENDING {

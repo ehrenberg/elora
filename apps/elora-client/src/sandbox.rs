@@ -11,6 +11,7 @@ use elora_client::scene::{Scene, SceneChar};
 use elora_game::{GameEvent, Rules, RulesConfig, Winner};
 use elora_map::Map;
 use elora_protocol::GameView;
+use elora_protocol::{Message, WinnerName};
 use elora_sim::replay::Recording;
 use elora_sim::{
     CharacterCore, Controller, Event, PlayerInput, TICKS_PER_SECOND, Tuning, Vec2, World,
@@ -212,13 +213,10 @@ impl Sandbox {
         }
     }
 
-    pub fn notice(&mut self, text: String) {
-        self.notices.push_back(ChatLine {
-            from: None,
-            team: false,
-            text,
-            at: std::time::Instant::now(),
-        });
+    /// Hinweis im Chat-Verlauf (übersetzbar wie die Meldungen eines Servers).
+    pub fn notice(&mut self, message: Message) {
+        self.notices
+            .push_back(ChatLine::notice(message, std::time::Instant::now()));
         while self.notices.len() > 50 {
             self.notices.pop_front();
         }
@@ -227,28 +225,28 @@ impl Sandbox {
     fn rule_events(&mut self) {
         let Some(r) = &mut self.rules else { return };
         let events = r.take_events();
-        let title = r.cfg.title();
+        let mode = r.cfg.title();
         let names = self.names();
-        let name = |w: Winner| match w {
-            Winner::Player(i) => names.get(&i).cloned().unwrap_or_default(),
-            Winner::Team(elora_sim::Team::Red) => "Team Rot".into(),
-            Winner::Team(elora_sim::Team::Blue) => "Team Blau".into(),
-            _ => "niemand".into(),
+        let name_of = |i: usize| names.get(&i).cloned().unwrap_or_default();
+        let winner = |w: Winner| match w {
+            Winner::Player(i) => WinnerName::Player(name_of(i)),
+            Winner::Team(t @ (elora_sim::Team::Red | elora_sim::Team::Blue)) => WinnerName::Team(t),
+            _ => WinnerName::Nobody,
         };
         for e in events {
-            let text = match e {
-                GameEvent::MatchStarted => format!("{title} – Match beginnt"),
-                GameEvent::RoundOver(Winner::Draw) => "Unentschieden".into(),
-                GameEvent::RoundOver(w) => format!("{} gewinnt die Runde", name(w)),
-                GameEvent::MatchOver(w) => format!("{} gewinnt das Match!", name(w)),
-                GameEvent::SuddenDeath => "Gleichstand – Sudden Death!".into(),
-                GameEvent::TeamChanged { player, .. } => format!(
-                    "{} wechselt zum Ausgleich",
-                    names.get(&player).cloned().unwrap_or_default()
-                ),
+            let message = match e {
+                GameEvent::MatchStarted => Message::MatchStarted { mode: mode.clone() },
+                GameEvent::RoundOver(Winner::Draw) => Message::RoundDraw,
+                GameEvent::RoundOver(w) => Message::RoundWon(winner(w)),
+                GameEvent::MatchOver(w) => Message::MatchWon(winner(w)),
+                GameEvent::SuddenDeath => Message::SuddenDeath,
+                GameEvent::TeamChanged { player, team } => Message::TeamBalanced {
+                    name: name_of(player),
+                    team,
+                },
                 GameEvent::RoundStarted | GameEvent::NextMap => continue,
             };
-            self.notice(text);
+            self.notice(message);
         }
     }
 

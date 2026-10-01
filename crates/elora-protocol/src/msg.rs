@@ -56,7 +56,7 @@ pub enum VoteKind {
 /// Laufende Abstimmung.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct VoteInfo {
-    pub description: String,
+    pub subject: crate::text::VoteSubject,
     pub yes: u32,
     pub no: u32,
     pub voters: u32,
@@ -188,7 +188,8 @@ pub enum ServerMsg {
     /// Stand der Abstimmung; `None` = keine.
     Vote(Option<VoteInfo>),
     /// Hinweis des Servers (Rundenende, Abstimmung angenommen, …).
-    Notice(String),
+    /// Hinweis des Servers (übersetzbar, M8.1).
+    Notice(crate::text::Message),
     /// Spieler in `slot` zeigt ein Emote.
     Emote {
         slot: u32,
@@ -850,16 +851,16 @@ impl ServerMsg {
                 w.u8(7);
                 w.bool(v.is_some());
                 if let Some(v) = v {
-                    w.str(&v.description);
+                    v.subject.put(&mut w);
                     w.uvar(u64::from(v.yes));
                     w.uvar(u64::from(v.no));
                     w.uvar(u64::from(v.voters));
                     w.uvar(u64::from(v.seconds_left));
                 }
             }
-            Self::Notice(t) => {
+            Self::Notice(m) => {
                 w.u8(8);
-                w.str(t);
+                m.put(&mut w);
             }
             Self::Emote { slot, emote } => {
                 w.u8(9);
@@ -937,7 +938,7 @@ impl ServerMsg {
             }
             7 => Self::Vote(if r.bool()? {
                 Some(VoteInfo {
-                    description: r.str(MAX_TEXT)?.to_owned(),
+                    subject: crate::text::VoteSubject::get(&mut r)?,
                     yes: r.uint("Stimmen")?,
                     no: r.uint("Stimmen")?,
                     voters: r.uint("Stimmen")?,
@@ -946,7 +947,7 @@ impl ServerMsg {
             } else {
                 None
             }),
-            8 => Self::Notice(r.str(MAX_TEXT)?.to_owned()),
+            8 => Self::Notice(crate::text::Message::get(&mut r)?),
             9 => Self::Emote {
                 slot: r.uint("Slot")?,
                 emote: emote(&mut r)?,
@@ -1148,14 +1149,14 @@ mod tests {
                 skin: Skin::default(),
             },
             ServerMsg::Vote(Some(VoteInfo {
-                description: "Karte: sandbox".into(),
+                subject: crate::text::VoteSubject::Map("sandbox".into()),
                 yes: 2,
                 no: 1,
                 voters: 5,
                 seconds_left: 20,
             })),
             ServerMsg::Vote(None),
-            ServerMsg::Notice("Rot gewinnt".into()),
+            ServerMsg::Notice(crate::text::Message::RoundDraw),
             ServerMsg::Emote { slot: 3, emote: 5 },
         ] {
             assert_eq!(ServerMsg::decode(&m.encode()).unwrap(), m);

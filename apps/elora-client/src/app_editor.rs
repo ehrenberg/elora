@@ -32,8 +32,9 @@ impl App {
         let previous = self.sandbox.play_map(map);
         // nur die erste Karte merken (nicht die eines vorigen Testspiels)
         self.editor_test.get_or_insert(previous);
-        self.sandbox
-            .notice(self.lang.t("editor.test_notice").to_owned());
+        self.sandbox.notice(elora_protocol::Message::Text(
+            self.lang.t("editor.test_notice").to_owned(),
+        ));
         self.enter_game();
     }
 

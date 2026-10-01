@@ -113,7 +113,7 @@ fn main() -> anyhow::Result<()> {
             .saturating_duration_since(Instant::now());
         std::thread::sleep(wait.min(Duration::from_millis(1)));
     }
-    server.shutdown("Server wird beendet", Instant::now());
+    server.shutdown(elora_protocol::reason::SHUTDOWN, Instant::now());
     tracing::info!("beendet");
     Ok(())
 }

@@ -104,7 +104,7 @@ impl<S: Socket> GameServer<S> {
             },
             "maps" => self.map_names().join(", "),
             "kick" | "ban" => match slot() {
-                Some(s) if self.kick(s, "Vom Server getrennt", cmd == "ban", now) => {
+                Some(s) if self.kick(s, elora_protocol::reason::KICKED, cmd == "ban", now) => {
                     format!("Slot {s} getrennt")
                 }
                 _ => "Verwendung: kick <slot> (siehe status)".into(),

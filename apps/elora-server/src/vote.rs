@@ -7,7 +7,7 @@ use std::collections::HashSet;
 use std::time::{Duration, Instant};
 
 use elora_net::Socket;
-use elora_protocol::{ServerMsg, VoteInfo, VoteKind};
+use elora_protocol::{Message, ServerMsg, VoteInfo, VoteKind, VoteSubject, reason};
 use elora_sim::Team;
 
 use crate::GameServer;
@@ -17,7 +17,7 @@ pub const VOTE_DURATION: Duration = Duration::from_secs(25);
 #[derive(Debug, Clone)]
 pub struct Vote {
     pub kind: VoteKind,
-    pub description: String,
+    pub subject: VoteSubject,
     yes: HashSet<u32>,
     no: HashSet<u32>,
     ends: Instant,
@@ -32,12 +32,12 @@ pub enum Outcome {
 }
 
 impl Vote {
-    pub fn new(kind: VoteKind, description: String, caller: u32, now: Instant) -> Self {
+    pub fn new(kind: VoteKind, subject: VoteSubject, caller: u32, now: Instant) -> Self {
         let mut yes = HashSet::new();
         yes.insert(caller);
         Self {
             kind,
-            description,
+            subject,
             yes,
             no: HashSet::new(),
             ends: now + VOTE_DURATION,
@@ -78,7 +78,7 @@ impl Vote {
 
     pub fn info(&self, voters: usize, now: Instant) -> VoteInfo {
         VoteInfo {
-            description: self.description.clone(),
+            subject: self.subject.clone(),
             yes: u32::try_from(self.yes.len()).unwrap_or(u32::MAX),
             no: u32::try_from(self.no.len()).unwrap_or(u32::MAX),
             voters: u32::try_from(voters).unwrap_or(u32::MAX),
@@ -99,53 +99,53 @@ impl<S: Socket> GameServer<S> {
         self.broadcast(&ServerMsg::Vote(info));
     }
 
-    fn reply(&mut self, id: u32, text: &str) {
+    fn reply(&mut self, id: u32, message: Message) {
         self.endpoint
-            .send(id, &ServerMsg::Notice(text.to_owned()).encode(), true);
+            .send(id, &ServerMsg::Notice(message).encode(), true);
     }
 
     pub(crate) fn call_vote(&mut self, id: u32, kind: VoteKind, now: Instant) {
         if !self.votes_enabled {
-            self.reply(id, "Abstimmungen sind auf diesem Server abgeschaltet");
+            self.reply(id, Message::VotesDisabled);
             return;
         }
         if self.vote.is_some() {
-            self.reply(id, "Es läuft bereits eine Abstimmung");
+            self.reply(id, Message::VoteRunning);
             return;
         }
         let caller_slot = self.clients.get(&id).and_then(|c| c.slot);
-        let description = match &kind {
+        let subject = match &kind {
             VoteKind::Map(m) => {
                 if !self.maps.iter().any(|e| &e.name == m) {
-                    self.reply(id, &format!("Karte `{m}` unbekannt"));
+                    self.reply(id, Message::UnknownMap { map: m.clone() });
                     return;
                 }
-                format!("Karte wechseln: {m}")
+                VoteSubject::Map(m.clone())
             }
-            VoteKind::Mode { mode, instagib } => {
-                format!(
-                    "Modus wechseln: {}{}",
-                    if *instagib { "i" } else { "" },
-                    mode.name()
-                )
-            }
+            VoteKind::Mode { mode, instagib } => VoteSubject::Mode {
+                mode: *mode,
+                instagib: *instagib,
+            },
             VoteKind::Kick(s) | VoteKind::Spectate(s) => {
                 let slot = *s as usize;
                 if self.client_by_slot(slot).is_none() || caller_slot == Some(slot) {
-                    self.reply(id, "Ungültiger Spieler");
+                    self.reply(id, Message::InvalidPlayer);
                     return;
                 }
-                let what = if matches!(kind, VoteKind::Kick(_)) {
-                    "kicken"
+                let name = self.name_of(slot);
+                if matches!(kind, VoteKind::Kick(_)) {
+                    VoteSubject::Kick(name)
                 } else {
-                    "zu den Zuschauern"
-                };
-                format!("{} {what}", self.name_of(slot))
+                    VoteSubject::Spectate(name)
+                }
             }
         };
         let who = caller_slot.map_or_else(|| "?".into(), |s| self.name_of(s));
-        self.notice(&format!("{who} startet eine Abstimmung: {description}"));
-        self.vote = Some(Vote::new(kind, description, id, now));
+        self.notice(Message::VoteStarted {
+            who,
+            subject: subject.clone(),
+        });
+        self.vote = Some(Vote::new(kind, subject, id, now));
         self.update_vote(now);
         self.send_vote_status(now);
     }
@@ -155,14 +155,14 @@ impl<S: Socket> GameServer<S> {
         match vote.outcome(self.voters(), now) {
             Outcome::Pending => {}
             Outcome::Failed => {
-                let d = vote.description.clone();
+                let subject = vote.subject.clone();
                 self.vote = None;
-                self.notice(&format!("Abstimmung abgelehnt: {d}"));
+                self.notice(Message::VoteFailed(subject));
                 self.send_vote_status(now);
             }
             Outcome::Passed => {
                 let vote = self.vote.take().expect("vorhanden");
-                self.notice(&format!("Abstimmung angenommen: {}", vote.description));
+                self.notice(Message::VotePassed(vote.subject.clone()));
                 self.send_vote_status(now);
                 self.execute(vote.kind, now);
             }
@@ -173,7 +173,8 @@ impl<S: Socket> GameServer<S> {
         match kind {
             VoteKind::Map(m) => {
                 if let Err(e) = self.change_map(&m, now) {
-                    self.notice(&format!("Kartenwechsel fehlgeschlagen: {e:#}"));
+                    tracing::warn!("Kartenwechsel fehlgeschlagen: {e:#}");
+                    self.notice(Message::MapChangeFailed { map: m });
                 }
             }
             VoteKind::Mode { mode, instagib } => {
@@ -184,7 +185,7 @@ impl<S: Socket> GameServer<S> {
                 self.set_rules(cfg);
             }
             VoteKind::Kick(s) => {
-                self.kick(s as usize, "Per Abstimmung gekickt", true, now);
+                self.kick(s as usize, reason::KICKED_BY_VOTE, true, now);
             }
             VoteKind::Spectate(s) => {
                 self.rules
@@ -196,7 +197,7 @@ impl<S: Socket> GameServer<S> {
     /// Laufende Abstimmung abbrechen (Konsole).
     pub fn cancel_vote(&mut self, now: Instant) {
         if self.vote.take().is_some() {
-            self.notice("Abstimmung abgebrochen");
+            self.notice(Message::VoteCancelled);
             self.send_vote_status(now);
         }
     }
@@ -209,7 +210,12 @@ mod tests {
     #[test]
     fn outcome_rules() {
         let now = Instant::now();
-        let mut v = Vote::new(VoteKind::Map("x".into()), String::new(), 1, now);
+        let mut v = Vote::new(
+            VoteKind::Map("x".into()),
+            VoteSubject::Map("x".into()),
+            1,
+            now,
+        );
         assert_eq!(v.outcome(4, now), Outcome::Pending, "1 von 4 Ja");
         v.cast(2, true);
         assert_eq!(
@@ -219,11 +225,21 @@ mod tests {
         );
         v.cast(3, true);
         assert_eq!(v.outcome(4, now), Outcome::Passed);
-        let mut v = Vote::new(VoteKind::Map("x".into()), String::new(), 1, now);
+        let mut v = Vote::new(
+            VoteKind::Map("x".into()),
+            VoteSubject::Map("x".into()),
+            1,
+            now,
+        );
         v.cast(2, false);
         v.cast(3, false);
         assert_eq!(v.outcome(4, now), Outcome::Failed, "Hälfte Nein");
-        let mut v = Vote::new(VoteKind::Map("x".into()), String::new(), 1, now);
+        let mut v = Vote::new(
+            VoteKind::Map("x".into()),
+            VoteSubject::Map("x".into()),
+            1,
+            now,
+        );
         v.cast(2, true);
         v.cast(3, false);
         assert_eq!(

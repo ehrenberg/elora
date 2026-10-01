@@ -19,7 +19,7 @@ Release 1 ist veröffentlicht: Pakete für Linux, Windows und macOS auf GitHub (
 
 | # | Schritt | Inhalt | Prüfung |
 |---|---|---|---|
-| M8.1 | Übersetzte Server-Meldungen (O-48, E-164) | Server schickt Meldungs-Codes mit Werten statt deutscher Texte (Beitritt, Verlassen, Kartenwechsel, Abstimmungen, Kick, Modus, Runde …); Client übersetzt (DE/EN); Konsole/Log bleiben lesbar; Protokollversion 6 | Tests (alle Codes in beiden Sprachen, Integrationstest) |
+| M8.1 | Übersetzte Server-Meldungen (O-48, E-164) | Server schickt Meldungs-Codes mit Werten statt deutscher Texte (Beitritt, Verlassen, Kartenwechsel, Abstimmungen, Kick, Modus, Runde …); Client übersetzt (DE/EN); Konsole/Log bleiben lesbar; Protokollversion 6 | Tests (alle Codes in beiden Sprachen, Integrationstest) · **umgesetzt** |
 | M8.2 | Paketfähigkeit | Daten neben dem Programm finden (Ordner `data/` bzw. `Resources` im macOS-Bundle), Arbeitsverzeichnis egal; schreibbare Dateien (`known_servers.toml`, eigenes Tuning, `server_key.toml` beim Hosten) ins Benutzerverzeichnis; `elora-server` neben dem Client finden | Tests + Start aus fremdem Ordner |
 | M8.3 | Release-Builds (E-163) | GitHub-Actions-Workflow: bei Versions-Tag `v*` bauen und an ein GitHub-Release hängen – Linux (AppImage + tar.gz), Windows (ZIP), macOS (.app im DMG, unsigniert, Hinweis zum Öffnen); dazu `cargo xtask package` für lokale Pakete; Prüf-Workflow (fmt, clippy, test, deny) bei jedem Push | Workflow-Lauf auf GitHub, Pakete starten |
 | M8.4 | Master-Server-Betrieb (O-47, E-162) | Fertige Betriebsdateien für `elora-master`: systemd-Dienst und Dockerfile, Anleitung (HTTPS über Reverse-Proxy, Firewall, Updates); Standard-Adresse im Client und im Server | Probelauf lokal; danach dein Betrieb |

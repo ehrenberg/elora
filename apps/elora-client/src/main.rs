@@ -444,19 +444,21 @@ impl App {
                         expected: elora_net::hex(&expected),
                         got: elora_net::hex(&got),
                     });
-                    ended = Some("Server-Schlüssel geändert – Verbindung abgebrochen".to_owned());
+                    ended = Some(self.lang.t("reason.key_changed").to_owned());
                 }
                 ClientEvent::Disconnected(reason) => {
                     ended = Some(match reason {
-                        DisconnectReason::Timeout => "Zeitüberschreitung".to_owned(),
-                        DisconnectReason::Remote(r) | DisconnectReason::Rejected(r) => r,
+                        DisconnectReason::Timeout => self.lang.t("reason.timeout").to_owned(),
+                        DisconnectReason::Remote(r) | DisconnectReason::Rejected(r) => {
+                            self.lang.reason(&r)
+                        }
                         other => format!("{other:?}"),
                     });
                 }
             }
         }
         if let Status::Disconnected(reason) = &o.client.status {
-            ended = ended.or_else(|| Some(reason.clone()));
+            ended = ended.or_else(|| Some(self.lang.reason(reason)));
         }
         if let Some(reason) = ended {
             self.status = format!("Getrennt: {reason}");

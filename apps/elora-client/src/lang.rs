@@ -7,6 +7,8 @@
 use std::collections::HashMap;
 use std::fmt::Display;
 
+use elora_protocol::{Message, VoteSubject, WinnerName};
+use elora_sim::Team;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
@@ -109,6 +111,85 @@ impl Lang {
     }
 }
 
+/// Server-Meldungen übersetzen (M8.1, E-164).
+impl Lang {
+    fn team(&self, t: Team) -> &str {
+        self.t(match t {
+            Team::Red => "msg.team_red",
+            Team::Blue => "msg.team_blue",
+            Team::Spectator => "msg.team_spectators",
+            Team::None => "msg.team_none",
+        })
+    }
+
+    fn winner(&self, w: &WinnerName) -> String {
+        match w {
+            WinnerName::Player(p) => p.clone(),
+            WinnerName::Team(Team::Red) => self.t("msg.winner_red").to_owned(),
+            WinnerName::Team(Team::Blue) => self.t("msg.winner_blue").to_owned(),
+            WinnerName::Team(_) | WinnerName::Nobody => self.t("msg.nobody").to_owned(),
+        }
+    }
+
+    /// Gegenstand einer Abstimmung.
+    pub fn vote_subject(&self, s: &VoteSubject) -> String {
+        match s {
+            VoteSubject::Map(m) => self.f("vote.map", &[("map", m)]),
+            VoteSubject::Mode { mode, instagib } => self.f(
+                "vote.mode",
+                &[("mode", &VoteSubject::mode_label(*mode, *instagib))],
+            ),
+            VoteSubject::Kick(n) => self.f("vote.kick", &[("name", n)]),
+            VoteSubject::Spectate(n) => self.f("vote.spectate", &[("name", n)]),
+        }
+    }
+
+    /// Meldung des Servers in dieser Sprache.
+    pub fn message(&self, m: &Message) -> String {
+        match m {
+            Message::Text(t) => t.clone(),
+            Message::Joined { name } => self.f("msg.joined", &[("name", name)]),
+            Message::Left { name } => self.f("msg.left", &[("name", name)]),
+            Message::TeamJoined { name, team } => self.f(
+                "msg.team_joined",
+                &[("name", name), ("team", &self.team(*team))],
+            ),
+            Message::TeamBalanced { name, team } => self.f(
+                "msg.team_balanced",
+                &[("name", name), ("team", &self.team(*team))],
+            ),
+            Message::MatchStarted { mode } => self.f("msg.match_started", &[("mode", mode)]),
+            Message::RoundWon(w) => self.f("msg.round_won", &[("winner", &self.winner(w))]),
+            Message::RoundDraw => self.t("msg.round_draw").to_owned(),
+            Message::MatchWon(w) => self.f("msg.match_won", &[("winner", &self.winner(w))]),
+            Message::SuddenDeath => self.t("msg.sudden_death").to_owned(),
+            Message::MapChanged { map } => self.f("msg.map_changed", &[("map", map)]),
+            Message::ModeChanged { mode } => self.f("msg.mode_changed", &[("mode", mode)]),
+            Message::VoteStarted { who, subject } => self.f(
+                "msg.vote_started",
+                &[("who", who), ("subject", &self.vote_subject(subject))],
+            ),
+            Message::VoteFailed(s) => {
+                self.f("msg.vote_failed", &[("subject", &self.vote_subject(s))])
+            }
+            Message::VotePassed(s) => {
+                self.f("msg.vote_passed", &[("subject", &self.vote_subject(s))])
+            }
+            Message::VoteCancelled => self.t("msg.vote_cancelled").to_owned(),
+            Message::VotesDisabled => self.t("msg.votes_disabled").to_owned(),
+            Message::VoteRunning => self.t("msg.vote_running").to_owned(),
+            Message::UnknownMap { map } => self.f("msg.unknown_map", &[("map", map)]),
+            Message::InvalidPlayer => self.t("msg.invalid_player").to_owned(),
+            Message::MapChangeFailed { map } => self.f("msg.map_change_failed", &[("map", map)]),
+        }
+    }
+
+    /// Trenngrund: Code übersetzen, freien Text unverändert lassen.
+    pub fn reason(&self, text: &str) -> String {
+        elora_protocol::reason::key(text).map_or_else(|| text.to_owned(), |k| self.t(&k).to_owned())
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -121,6 +202,70 @@ mod tests {
             .collect();
         v.sort_unstable();
         v
+    }
+
+    #[test]
+    fn server_messages_are_translated() {
+        use elora_protocol::{Message, VoteSubject, WinnerName, reason};
+        let samples = [
+            Message::Joined { name: "A".into() },
+            Message::TeamJoined {
+                name: "A".into(),
+                team: Team::Spectator,
+            },
+            Message::TeamBalanced {
+                name: "A".into(),
+                team: Team::Red,
+            },
+            Message::MatchStarted { mode: "CTF".into() },
+            Message::RoundWon(WinnerName::Team(Team::Blue)),
+            Message::MatchWon(WinnerName::Nobody),
+            Message::VoteStarted {
+                who: "A".into(),
+                subject: VoteSubject::Kick("B".into()),
+            },
+            Message::VotePassed(VoteSubject::Mode {
+                mode: elora_game::Mode::Ctf,
+                instagib: true,
+            }),
+            Message::VoteFailed(VoteSubject::Spectate("B".into())),
+            Message::UnknownMap { map: "x".into() },
+            Message::MapChangeFailed { map: "x".into() },
+            Message::Left { name: "A".into() },
+            Message::RoundDraw,
+            Message::SuddenDeath,
+            Message::MapChanged { map: "x".into() },
+            Message::ModeChanged { mode: "x".into() },
+            Message::VoteCancelled,
+            Message::VotesDisabled,
+            Message::VoteRunning,
+            Message::InvalidPlayer,
+        ];
+        for lang in Language::ALL.map(Lang::new) {
+            for m in &samples {
+                let text = lang.message(m);
+                assert!(!text.contains('{') && !text.contains("msg."), "{text}");
+            }
+            for code in reason::ALL {
+                let text = lang.reason(code);
+                assert!(
+                    !text.starts_with('#') && !text.starts_with("reason."),
+                    "{text}"
+                );
+            }
+            assert_eq!(lang.reason("freier Text"), "freier Text");
+        }
+        let en = Lang::new(Language::En);
+        assert_eq!(
+            en.message(&Message::Joined {
+                name: "Nimbus".into()
+            }),
+            "Nimbus joined"
+        );
+        assert_eq!(
+            en.message(&Message::RoundWon(WinnerName::Team(Team::Red))),
+            "Team Red wins the round"
+        );
     }
 
     #[test]

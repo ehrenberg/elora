@@ -15,8 +15,8 @@ use elora_game::{GameEvent, Rules, RulesConfig, Winner};
 use elora_net::{DisconnectReason, Keypair, ServerEndpoint, ServerEvent, Socket};
 use elora_protocol::msg::MAX_CHAT;
 use elora_protocol::{
-    ClientMsg, InfoPlayer, MAP_CHUNK, MapChecksum, PROTOCOL_VERSION, ServerInfo, ServerMsg, Skin,
-    Snapshot,
+    ClientMsg, InfoPlayer, MAP_CHUNK, MapChecksum, Message, PROTOCOL_VERSION, ServerInfo,
+    ServerMsg, Skin, Snapshot, WinnerName, reason,
 };
 use elora_sim::{Controller, Event, PlayerInput, TICKS_PER_SECOND, Team, Tuning, World};
 
@@ -270,9 +270,9 @@ impl<S: Socket> GameServer<S> {
     }
 
     /// Hinweis an alle (und ins Server-Log).
-    pub fn notice(&mut self, text: &str) {
-        tracing::info!("{text}");
-        self.broadcast(&ServerMsg::Notice(text.to_owned()));
+    pub fn notice(&mut self, message: Message) {
+        tracing::info!("{message}");
+        self.broadcast(&ServerMsg::Notice(message));
     }
 
     fn name_of(&self, slot: usize) -> String {
@@ -306,8 +306,7 @@ impl<S: Socket> GameServer<S> {
                 self.bans.retain(|_, until| *until > now);
                 if self.bans.contains_key(&addr.ip()) {
                     tracing::info!(%addr, "gesperrt");
-                    self.endpoint
-                        .disconnect(id, "Du bist vorübergehend gesperrt", now);
+                    self.endpoint.disconnect(id, reason::BANNED, now);
                     return;
                 }
                 tracing::info!(%addr, id, "Verbindung aufgebaut");
@@ -326,7 +325,7 @@ impl<S: Socket> GameServer<S> {
                             name: None,
                             skin: Skin::default(),
                         });
-                        self.notice(&format!("{} hat das Spiel verlassen", c.name));
+                        self.notice(Message::Left { name: c.name });
                     }
                     if let Some(v) = &mut self.vote {
                         v.forget(id);
@@ -337,7 +336,7 @@ impl<S: Socket> GameServer<S> {
                 Ok(msg) => self.message(id, msg, now),
                 Err(e) => {
                     tracing::warn!(id, %e, "ungültige Nachricht");
-                    self.endpoint.disconnect(id, "Ungültige Nachricht", now);
+                    self.endpoint.disconnect(id, reason::INVALID_MESSAGE, now);
                 }
             },
         }
@@ -397,7 +396,7 @@ impl<S: Socket> GameServer<S> {
         };
         self.broadcast(&info);
         if first {
-            self.notice(&format!("{name} ist beigetreten"));
+            self.notice(Message::Joined { name });
         }
     }
 
@@ -475,7 +474,7 @@ impl<S: Socket> GameServer<S> {
                 skin,
             } => {
                 if version != PROTOCOL_VERSION {
-                    self.endpoint.disconnect(id, "Falsche Spielversion", now);
+                    self.endpoint.disconnect(id, reason::WRONG_VERSION, now);
                     return;
                 }
                 if slot.is_some() || client.loading {
@@ -499,7 +498,7 @@ impl<S: Socket> GameServer<S> {
             ClientMsg::Input { ack, inputs } => self.on_input(id, ack, inputs, now),
             ClientMsg::Emote(emote) => self.on_emote(id, emote, now),
             ClientMsg::SetSkin(skin) => self.on_set_skin(id, skin),
-            ClientMsg::Leave => self.endpoint.disconnect(id, "Verlassen", now),
+            ClientMsg::Leave => self.endpoint.disconnect(id, reason::LEFT, now),
             ClientMsg::Chat { team, text } => {
                 let Some(slot) = slot else { return };
                 if client.last_chat.is_some_and(|t| now - t < CHAT_INTERVAL) {
@@ -520,13 +519,8 @@ impl<S: Socket> GameServer<S> {
                 if let Some(slot) = slot {
                     self.rules.set_team(&mut self.world, slot, t);
                     let name = self.name_of(slot);
-                    let label = match self.world.team(slot) {
-                        Team::Red => "Rot",
-                        Team::Blue => "Blau",
-                        Team::Spectator => "die Zuschauer",
-                        Team::None => "das Spiel",
-                    };
-                    self.notice(&format!("{name} wechselt zu {label}"));
+                    let team = self.world.team(slot);
+                    self.notice(Message::TeamJoined { name, team });
                 }
             }
             ClientMsg::Kill => {
@@ -653,38 +647,38 @@ impl<S: Socket> GameServer<S> {
         }
     }
 
-    fn winner_text(&self, w: Winner) -> String {
+    fn winner_name(&self, w: Winner) -> WinnerName {
         match w {
-            Winner::Player(i) => self.name_of(i),
-            Winner::Team(Team::Red) => "Team Rot".into(),
-            Winner::Team(Team::Blue) => "Team Blau".into(),
-            Winner::Team(_) | Winner::Draw => "niemand".into(),
+            Winner::Player(i) => WinnerName::Player(self.name_of(i)),
+            Winner::Team(t @ (Team::Red | Team::Blue)) => WinnerName::Team(t),
+            Winner::Team(_) | Winner::Draw => WinnerName::Nobody,
         }
     }
 
     fn game_event(&mut self, e: &GameEvent, now: Instant) {
         match *e {
             GameEvent::MatchStarted => {
-                self.notice(&format!("{} – Match beginnt", self.rules.cfg.title()));
+                self.notice(Message::MatchStarted {
+                    mode: self.rules.cfg.title(),
+                });
             }
             GameEvent::RoundStarted => {}
             GameEvent::RoundOver(w) => {
-                let text = match w {
-                    Winner::Draw => "Unentschieden".to_owned(),
-                    w => format!("{} gewinnt die Runde", self.winner_text(w)),
+                let message = match w {
+                    Winner::Draw => Message::RoundDraw,
+                    w => Message::RoundWon(self.winner_name(w)),
                 };
-                self.notice(&text);
+                self.notice(message);
             }
             GameEvent::MatchOver(w) => {
-                self.notice(&format!("{} gewinnt das Match!", self.winner_text(w)));
+                self.notice(Message::MatchWon(self.winner_name(w)));
             }
-            GameEvent::SuddenDeath => self.notice("Gleichstand – Sudden Death!"),
+            GameEvent::SuddenDeath => self.notice(Message::SuddenDeath),
             GameEvent::TeamChanged { player, team } => {
-                let label = if team == Team::Red { "Rot" } else { "Blau" };
-                self.notice(&format!(
-                    "{} wechselt zum Ausgleich zu {label}",
-                    self.name_of(player)
-                ));
+                self.notice(Message::TeamBalanced {
+                    name: self.name_of(player),
+                    team,
+                });
             }
             GameEvent::NextMap => {
                 if self.rotation.len() > 1 {
@@ -735,7 +729,9 @@ impl<S: Socket> GameServer<S> {
         for id in ids {
             self.start_loading(id);
         }
-        self.notice(&format!("Karte: {}", self.map.name));
+        self.notice(Message::MapChanged {
+            map: self.map.name.clone(),
+        });
         let _ = now;
         Ok(())
     }
@@ -744,7 +740,9 @@ impl<S: Socket> GameServer<S> {
     pub fn set_rules(&mut self, cfg: RulesConfig) {
         self.world.tuning = self.base_tuning.clone();
         self.rules = Rules::new(cfg, &mut self.world, false);
-        self.notice(&format!("Modus: {}", self.rules.cfg.title()));
+        self.notice(Message::ModeChanged {
+            mode: self.rules.cfg.title(),
+        });
     }
 
     /// Server herunterfahren: alle Clients mit Grund trennen.

@@ -182,7 +182,7 @@ fn full_server_rejects() {
     assert_eq!(
         n.client_events[b].last(),
         Some(&ClientEvent::Disconnected(DisconnectReason::Rejected(
-            "Server ist voll".into()
+            "#server-full".into()
         )))
     );
 }

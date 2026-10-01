@@ -35,8 +35,24 @@ pub struct ChatLine {
     /// `None` = Server/Hinweis.
     pub from: Option<String>,
     pub team: bool,
+    /// Angezeigter Text (bei Server-Meldungen die deutsche Fassung als Rückfall).
     pub text: String,
+    /// Server-Meldung zum Übersetzen (M8.1); `None` = Chat oder freier Text.
+    pub message: Option<elora_protocol::Message>,
     pub at: Instant,
+}
+
+impl ChatLine {
+    /// Hinweis ohne Absender aus einer übersetzbaren Meldung.
+    pub fn notice(message: elora_protocol::Message, at: Instant) -> Self {
+        Self {
+            from: None,
+            team: false,
+            text: message.to_string(),
+            message: Some(message),
+            at,
+        }
+    }
 }
 
 /// Länge des Chat-Verlaufs.
@@ -315,6 +331,7 @@ impl OnlineClient {
             from,
             team,
             text,
+            message: None,
             at,
         });
         while self.chat.len() > CHAT_HISTORY {
@@ -467,7 +484,12 @@ impl OnlineClient {
                 }
             }
             ServerMsg::Vote(v) => self.vote = v,
-            ServerMsg::Notice(text) => self.push_chat(None, false, text, at),
+            ServerMsg::Notice(message) => {
+                self.chat.push_back(ChatLine::notice(message, at));
+                while self.chat.len() > CHAT_HISTORY {
+                    self.chat.pop_front();
+                }
+            }
             ServerMsg::Emote { slot, emote } => self.emotes.push((slot as usize, emote)),
             ServerMsg::Snapshot {
                 tick,

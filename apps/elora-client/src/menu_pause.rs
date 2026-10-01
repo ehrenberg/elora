@@ -192,7 +192,10 @@ fn vote_box(
     let (x, mut y) = (r.min.x, r.min.y);
     if let Some(v) = p.vote {
         ui.label(
-            &lang.f("pause.vote_running", &[("text", &v.description)]),
+            &lang.f(
+                "pause.vote_running",
+                &[("text", &lang.vote_subject(&v.subject))],
+            ),
             Vec2::new(x, y + 8.0 * s),
             12.0,
             TEXT,

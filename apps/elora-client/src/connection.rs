@@ -72,7 +72,7 @@ impl Connection {
                                 ep.socket_mut().conditioner.conditions = c;
                             }
                             Ok(Command::Disconnect) | Err(mpsc::TryRecvError::Disconnected) => {
-                                ep.disconnect("Verlassen", Instant::now());
+                                ep.disconnect(elora_protocol::reason::LEFT, Instant::now());
                                 return;
                             }
                             Err(mpsc::TryRecvError::Empty) => break,
