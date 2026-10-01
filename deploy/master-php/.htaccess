@@ -1,0 +1,8 @@
+# Elora-Master: saubere Adressen /servers und /register auf index.php (Apache, mod_rewrite)
+RewriteEngine On
+RewriteRule ^(servers|register)/?$ index.php?route=$1 [L,QSA]
+
+# Einstellungen und Daten nicht ausliefern
+<FilesMatch "^(config\.php|LIESMICH\.md)$">
+    Require all denied
+</FilesMatch>

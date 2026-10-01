@@ -177,6 +177,7 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-168 | 2026-10-01 | Playtests (D-M8-08) | Projektinhaber fragt Bekannte für Spielrunden | Entscheidung Projektinhaber |
 | E-169 | 2026-10-01 | M8-Plan | Plan aus [`14-m8-plan.md`](14-m8-plan.md) angenommen (offene Punkte beantwortet), Beginn mit M8.1 | Entscheidung Projektinhaber |
 | E-170 | 2026-10-01 | Eintragen beim Master | **Dedizierte Server ja** (abschaltbar mit `--no-master`), **aus dem Client gehostete nein**, außer „Im Internet anzeigen“ ist angehakt | Entscheidung Projektinhaber |
+| E-171 | 2026-10-01 | Master auf Webspace | `elora.bastianswelt.de` ist **Webspace mit PHP** → Master zusätzlich als PHP-Skript (`deploy/master-php/`), gleiche Schnittstelle | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 

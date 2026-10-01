@@ -13,6 +13,10 @@ Der Master führt die Internet-Liste: Spiel-Server melden sich alle 20 s per HTT
 | Ausgehend | UDP zu den Spiel-Servern (Prüfung), beliebige Ports |
 | Eingehend (Firewall) | nur 80/443 für den Proxy |
 
+## Variante 0: Webspace mit PHP (E-171)
+
+Für normales Webhosting ohne eigenen Dienst: [`deploy/master-php/`](../deploy/master-php/) – gleiche Schnittstelle, Liste als JSON-Datei, UDP-Prüfung direkt in der Anmeldung. Anleitung zum Hochladen: [`deploy/master-php/LIESMICH.md`](../deploy/master-php/LIESMICH.md). Getestet mit PHP 8.3 und einem echten `elora-server`.
+
 ## Variante A: systemd
 
 ```sh
