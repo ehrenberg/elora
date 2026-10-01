@@ -217,6 +217,10 @@ pub struct Mesh {
 }
 
 impl Mesh {
+    pub(crate) fn from_parts(vertices: Vec<MeshVertex>, indices: Vec<u32>) -> Self {
+        Self { vertices, indices }
+    }
+
     pub fn vertex_count(&self) -> usize {
         self.vertices.len()
     }

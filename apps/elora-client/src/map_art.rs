@@ -48,6 +48,7 @@ pub const BACKGROUND_FILES: &[(&str, &[u8])] = assets!("backgrounds":
 );
 
 /// Breite der wiederholbaren Hintergrund-Streifen.
+#[allow(dead_code)] // für Tests und den Editor (M6.8)
 pub const STRIP_WIDTH: f32 = 1024.0;
 
 #[derive(Debug, Deserialize)]
@@ -494,35 +495,72 @@ fn draw_specials(batch: &mut ShapeBatch, art: &MapArt, col: &Collision, range: T
             Tile::JumpPad(JumpDir::Up) => tile_mesh(batch, &s.jump_up, min, 0.0, false),
             Tile::JumpPad(JumpDir::UpRight) => tile_mesh(batch, &s.jump_diag, min, 0.0, false),
             Tile::JumpPad(JumpDir::UpLeft) => tile_mesh(batch, &s.jump_diag, min, 0.0, true),
-            Tile::Conveyor(dir) => {
-                tile_mesh(batch, &s.belt, min, 0.0, false);
-                tile_mesh(batch, &s.belt_arrow, min, 0.0, dir == BeltDir::Left);
-            }
+            // Pfeil läuft mit und wird je Frame gezeichnet (draw_belt_arrow)
+            Tile::Conveyor(_) => tile_mesh(batch, &s.belt, min, 0.0, false),
             _ => {}
         }
     }
 }
 
-fn rgba(c: Rgba) -> Color {
+/// Laufender Pfeil eines Beschleunigers; `phase` 0..1 wandert in Laufrichtung und blendet an den Enden aus.
+pub fn draw_belt_arrow(batch: &mut ShapeBatch, art: &MapArt, min: Vec2, dir: BeltDir, phase: f32) {
+    let half = TILE_SIZE as f32 / 2.0;
+    let shift = (phase - 0.5) * 8.0 * dir.sign();
+    let t = Affine::translate(min + Vec2::new(half + shift, half))
+        .then(Affine::scale(dir.sign(), 1.0))
+        .then(Affine::translate(Vec2::new(-half, -half)));
+    let tint = Tint {
+        alpha: Some((1.0 - (phase - 0.5).abs() * 2.0).clamp(0.0, 1.0).sqrt()),
+        ..Tint::default()
+    };
+    batch.draw_mesh(&art.specials.belt_arrow, &t, &tint);
+}
+
+/// Wirkung der Animationen auf ein Deko-Objekt.
+#[derive(Debug, Clone, Copy)]
+pub struct Anim {
+    pub offset: Vec2,
+    /// Grad
+    pub rotation: f32,
+    /// Farbe (multipliziert)
+    pub color: [f32; 4],
+}
+
+impl Default for Anim {
+    fn default() -> Self {
+        Self {
+            offset: Vec2::ZERO,
+            rotation: 0.0,
+            color: [1.0; 4],
+        }
+    }
+}
+
+pub fn rgba(c: Rgba) -> Color {
     Color(c.0.map(|v| f32::from(v) / 255.0))
 }
 
-/// Ein Deko-Objekt zeichnen (`offset`: Lage der Ebene; Animationen folgen in M6.4).
-/// Eingebettete Bilder (`images`) sind vorab geladene Meshes der Karte.
-pub fn draw_decor(batch: &mut ShapeBatch, art: &MapArt, images: &[Mesh], d: &Decor, offset: Vec2) {
-    let mesh = match &d.art {
+/// Grafik eines Deko-Objekts; eingebettete Bilder (`images`) sind vorab geladene Meshes der Karte.
+pub fn decor_mesh<'a>(art: &'a MapArt, images: &'a [Mesh], d: &Decor) -> Option<&'a Mesh> {
+    match &d.art {
         Art::Builtin(name) => art.builtin(name),
         Art::Image(i) => images.get(usize::from(*i)),
-    };
-    let Some(mesh) = mesh else {
-        return;
-    };
+    }
+}
+
+/// Ein Deko-Objekt an `at` (Position samt Lage der Ebene) zeichnen.
+pub fn draw_decor(batch: &mut ShapeBatch, mesh: &Mesh, d: &Decor, at: Vec2, anim: &Anim) {
     let flip = if d.flip_x { -1.0 } else { 1.0 };
-    let t = Affine::translate(offset + d.pos)
-        .then(Affine::rotate(d.rotation.to_radians()))
+    let t = Affine::translate(at + anim.offset)
+        .then(Affine::rotate((d.rotation + anim.rotation).to_radians()))
         .then(Affine::scale(d.scale * flip, d.scale));
+    let base = rgba(d.tint).0;
+    let color: [f32; 4] = std::array::from_fn(|i| base[i] * anim.color[i]);
     let tint = Tint {
-        multiply: (d.tint != Rgba::WHITE).then(|| rgba(d.tint)),
+        multiply: color
+            .iter()
+            .any(|c| (c - 1.0).abs() > f32::EPSILON)
+            .then_some(Color(color)),
         ..Tint::default()
     };
     batch.draw_mesh(mesh, &t, &tint);
@@ -532,6 +570,11 @@ pub fn draw_decor(batch: &mut ShapeBatch, art: &MapArt, images: &[Mesh], d: &Dec
 mod tests {
     use super::*;
     use elora_map::Sky;
+
+    fn put(batch: &mut ShapeBatch, art: &MapArt, d: &Decor) {
+        let mesh = decor_mesh(art, &[], d).expect("eingebaut");
+        draw_decor(batch, mesh, d, d.pos, &Anim::default());
+    }
     use std::fmt::Write as _;
 
     #[test]
@@ -604,7 +647,7 @@ mod tests {
         while x < x1 {
             let mut d = Decor::new(Art::Builtin(name.into()), Vec2::new(x, y));
             d.tint = tint;
-            draw_decor(batch, art, &[], &d, Vec2::ZERO);
+            put(batch, art, &d);
             x += STRIP_WIDTH;
         }
     }
@@ -634,7 +677,7 @@ mod tests {
         if night {
             strip(batch, art, "stars", top, 0.0, w, Rgba::WHITE);
             let moon = Decor::new(Art::Builtin("moon".into()), Vec2::new(w * 0.8, top + 90.0));
-            draw_decor(batch, art, &[], &moon, Vec2::ZERO);
+            put(batch, art, &moon);
         } else {
             for (name, x, y) in [
                 ("cloud-1", 180.0, 70.0),
@@ -642,7 +685,7 @@ mod tests {
                 ("cloud-3", 1050.0, 95.0),
             ] {
                 let c = Decor::new(Art::Builtin(name.into()), Vec2::new(x, top + y));
-                draw_decor(batch, art, &[], &c, Vec2::ZERO);
+                put(batch, art, &c);
             }
         }
         strip(batch, art, "mountains", base, -200.0, w, dim(0x5c6a9a));
@@ -737,7 +780,7 @@ mod tests {
         for (i, name) in names.iter().enumerate() {
             let x = 110.0 + i as f32 * step;
             let d = Decor::new(Art::Builtin((*name).into()), Vec2::new(x, ground_y));
-            draw_decor(&mut batch, &art, &[], &d, Vec2::ZERO);
+            put(&mut batch, &art, &d);
             label(x - 28.0, ground_y + 52.0 + (i % 2) as f32 * 16.0, name, 12);
         }
         label(16.0, 16.0 * 32.0, "Deko", 18);

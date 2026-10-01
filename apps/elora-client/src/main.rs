@@ -19,9 +19,8 @@ mod hosting;
 mod hud;
 mod items;
 mod lang;
-// Kartengrafik: wird mit M6.4 ins Spiel eingebaut
-#[cfg_attr(not(test), allow(dead_code))]
 mod map_art;
+mod map_view;
 mod menu;
 mod menu_browser;
 mod menu_pause;
@@ -178,6 +177,7 @@ struct App {
     figures: figure::Figures,
     figure_art: figure::FigureArt,
     item_art: items::ItemArt,
+    map_view: map_view::MapView,
     /// Leere Skin-Tabelle für die Sandbox.
     no_skins: std::collections::BTreeMap<usize, elora_protocol::Skin>,
     last_frame: Instant,
@@ -229,6 +229,7 @@ impl App {
             figures: figure::Figures::default(),
             figure_art: figure::FigureArt::load(),
             item_art: items::ItemArt::load(),
+            map_view: map_view::MapView::default(),
             no_skins: std::collections::BTreeMap::new(),
             last_frame: Instant::now(),
             fps: 0.0,
@@ -591,18 +592,25 @@ impl App {
     }
 
     /// Welt, Figuren und Effekte des Frames in `self.batch` sammeln.
-    fn build_batch(
-        &mut self,
-        scene: &Scene,
-        collision: &Collision,
-        tuning: &Tuning,
-        camera: &Camera,
-    ) {
+    fn build_batch(&mut self, scene: &Scene, tuning: &Tuning, camera: &Camera, tick: u64) {
         self.batch.clear();
+        let map = match &self.online {
+            Some(o) => o.client.map.as_ref(),
+            None => Some(&self.sandbox.map),
+        };
+        #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
+        let look_time = map_view::LookTime {
+            local_ms: (f64::from(self.figures.time()) * 1000.0) as i64,
+            server_ms: (tick * 1000 / u64::from(elora_sim::TICKS_PER_SECOND)) as i64,
+        };
         draw::scene(
             &mut self.batch,
             scene,
-            collision,
+            map_view::MapLayer {
+                map,
+                view: &mut self.map_view,
+                time: look_time,
+            },
             tuning,
             camera,
             self.controls.mouse_pos,
@@ -713,7 +721,7 @@ impl App {
             &self.view,
             aspect,
         );
-        self.build_batch(&scene, &collision, &tuning, &camera);
+        self.build_batch(&scene, &tuning, &camera, info.tick);
         let screen = self.build_hud(&scene, &tuning, &info);
         let pause_action = if self.menu.paused {
             self.draw_pause(dt, &info)

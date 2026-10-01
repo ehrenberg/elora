@@ -47,9 +47,41 @@ impl SvgAsset {
     /// # Errors
     /// Wenn das SVG nicht lesbar ist oder nicht unterstützte Merkmale enthält.
     pub fn load(data: &[u8], tolerance: f32) -> Result<Self, SvgError> {
+        Self::load_with(data, tolerance, &usvg::Options::default())
+    }
+
+    /// Lädt ein fremdes SVG (z. B. aus einer heruntergeladenen Karte): Verweise auf Dateien
+    /// oder eingebettete Bilder werden nie aufgelöst, und die Geometrie ist begrenzt.
+    ///
+    /// # Errors
+    /// Wie [`SvgAsset::load`], außerdem bei mehr als `max_vertices` Ecken.
+    pub fn load_untrusted(
+        data: &[u8],
+        tolerance: f32,
+        max_vertices: usize,
+    ) -> Result<Self, SvgError> {
+        let options = usvg::Options {
+            resources_dir: None,
+            image_href_resolver: usvg::ImageHrefResolver {
+                resolve_data: Box::new(|_, _, _| None),
+                resolve_string: Box::new(|_, _| None),
+            },
+            ..usvg::Options::default()
+        };
+        let asset = Self::load_with(data, tolerance, &options)?;
+        let vertices: usize = asset.parts.iter().map(|(_, m)| m.vertex_count()).sum();
+        if vertices > max_vertices {
+            return Err(SvgError::Unsupported(format!(
+                "zu aufwendig ({vertices} Ecken, erlaubt {max_vertices})"
+            )));
+        }
+        Ok(asset)
+    }
+
+    fn load_with(data: &[u8], tolerance: f32, options: &usvg::Options) -> Result<Self, SvgError> {
         let text = std::str::from_utf8(data)
             .map_err(|e| SvgError::Unsupported(format!("keine UTF-8-Datei: {e}")))?;
-        let tree = usvg::Tree::from_str(text, &usvg::Options::default())?;
+        let tree = usvg::Tree::from_str(text, options)?;
         let local = to_local(text, &tree);
         let mut asset = Self::default();
         let mut rest = MeshBuilder::new(tolerance);
@@ -302,6 +334,21 @@ fn convert_path(data: &usvg::tiny_skia_path::Path, t: &Transform) -> Path {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn untrusted_svg_resolves_nothing_and_is_limited() {
+        // Verweise auf Dateien werden nicht geladen: kein Inhalt statt Dateizugriff
+        let img = br#"<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 10 10"><image width="10" height="10" xlink:href="/etc/hostname"/><image width="10" height="10" href="file:///etc/hostname"/></svg>"#;
+        let a = SvgAsset::load_untrusted(img, 0.1, 1000).unwrap();
+        assert!(a.parts.iter().all(|(_, m)| m.is_empty()));
+        let circle = br#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="50" fill="red"/></svg>"#;
+        assert!(SvgAsset::load_untrusted(circle, 0.1, 100_000).is_ok());
+        assert!(matches!(
+            SvgAsset::load_untrusted(circle, 0.001, 50),
+            Err(SvgError::Unsupported(_))
+        ));
+        assert!(SvgAsset::load_untrusted(b"\xff\xfe", 0.1, 100).is_err());
+    }
     use crate::{Affine, Tint};
 
     const FIGURE: &str = r##"<svg xmlns="http://www.w3.org/2000/svg" width="240" height="280" viewBox="-60 -70 120 140">

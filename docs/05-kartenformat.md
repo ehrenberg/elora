@@ -94,3 +94,12 @@ Ablage `assets/map/`, Übersicht in [`design/elora-kartenteile.png`](design/elor
 | Hintergrund (`Art::Builtin`) | `cloud-1` … `cloud-3`, `moon` (Ursprung Mitte) · `hills-far`, `hills-near`, `mountains`, `forest` (Ursprung unten links) · `stars` (oben links) | Streifen 1024 breit und nahtlos wiederholbar; bei Nacht über die Färbung abgedunkelt |
 
 **Auto-Kanten:** Feste Tiles bilden mit Sprungfeldern und Beschleunigern eine Fläche. Außenecken mit zwei freien Nachbarn werden gerundet, die Kontur liegt nur an freien Kanten, Kappen an jeder freien Oberkante (mit Endstück an freien Seiten), Details fest je Tile verstreut.
+
+## 7. Darstellung im Spiel (M6.4)
+
+- **Reihenfolge:** Himmel → Hintergrund-Ebenen (hinten nach vorn) → Deko hinten → Spielfläche → Figuren, Items, Geschosse → Deko vorn → Effekte.
+- **Parallax:** Ein Objekt einer Hintergrund-Ebene liegt bei `Position + Versatz + Kamera-Mitte × (1 − Parallax)`. Parallax 1 bewegt sich mit der Spielfläche, 0 steht fest im Bild. Mit Wiederholung wird die Ebene waagerecht über den ganzen Ausschnitt gelegt.
+- **Animationen:** Bewegung wirkt als Versatz (x, y) und Drehung, Farbe wird multipliziert. An die Server-Zeit gebundene Animationen sehen alle Spieler in derselben Phase (z. B. ziehende Wolken), die anderen laufen nach der Uhr des Clients.
+- **Zwischenspeicher:** Die Spielfläche wird in Stücken von 16 × 16 Tiles einmal tesselliert und nur bei Änderungen der Karte neu gebaut; nur sichtbare Stücke werden gebaut und gezeichnet. Die Pfeile der Beschleuniger laufen je Frame mit.
+- **Eingebettete SVGs** lädt der Client ohne jede Auflösung externer Verweise und mit höchstens 200 000 Ecken je Bild; ungültige Bilder bleiben unsichtbar.
+- **Vorführkarte:** `maps/look-test.emap` (erzeugt aus `map_view.rs`, Test `write_look_test_map`).

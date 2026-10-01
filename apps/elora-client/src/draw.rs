@@ -1,5 +1,4 @@
-//! Darstellung der Szene. Die Figur ist final (M5.3, [`crate::figure`]); Welt,
-//! Waffen und Effekte sind noch Platzhalter (E-043) und folgen in M5.5/M5.6.
+//! Darstellung der Szene: Karte ([`crate::map_view`], M6.4), Figuren (M5.3), Items, Geschosse und Effekte.
 
 use elora_client::scene::Scene;
 
@@ -28,31 +27,11 @@ pub struct Looks<'a> {
 }
 use elora_render::{Camera, Color, ShapeBatch};
 use elora_sim::Team;
-use elora_sim::{Collision, HookState, PHYS_SIZE, TILE_SIZE, Tile, Tuning, Vec2};
+use elora_sim::{HookState, PHYS_SIZE, Tuning, Vec2};
+
+use crate::map_view::MapLayer;
 
 pub const BACKGROUND: Color = Color::hex(0x8fb8d9);
-const SKY_TOP: Color = Color::hex(0xa9cde8);
-const SKY_BOTTOM: Color = Color::hex(0x7ea8cb);
-const SOLID: Color = Color::hex(0x5b6b7c);
-const SOLID_EDGE: Color = Color::hex(0x2f3944);
-const UNHOOKABLE: Color = Color::hex(0x3a4450);
-const UNHOOKABLE_EDGE: Color = Color::hex(0x1c2229);
-const DEATH: Color = Color::hex(0xc94f4f);
-const DEATH_EDGE: Color = Color::hex(0x7c2a2a);
-const PLATFORM: Color = Color::hex(0x8a6f4e);
-const PLATFORM_EDGE: Color = Color::hex(0x4f3d29);
-const ICE: Color = Color::hex(0xbfe3f2);
-const ICE_EDGE: Color = Color::hex(0x6fa8c4);
-const JUMP_PAD: Color = Color::hex(0x6fbf73);
-const JUMP_PAD_EDGE: Color = Color::hex(0x3b7a3f);
-const CONVEYOR: Color = Color::hex(0x7a6f8f);
-const CONVEYOR_EDGE: Color = Color::hex(0x433b52);
-/// Pfeile auf Sprungfeldern und Laufbändern.
-const TILE_ARROW: Color = Color::rgba(1.0, 1.0, 1.0, 0.8);
-/// Dicke der Plattform (nur obere Kante, Kollision ist die Oberkante des Tiles).
-const PLATFORM_THICKNESS: f32 = 8.0;
-/// Breite der Tile-Kontur in Welteinheiten.
-const EDGE_WIDTH: f32 = 3.0;
 const ELORA: Color = Color::hex(0xf2c14e);
 /// Andere menschliche Spieler (online, ohne Team).
 const OTHER: Color = Color::hex(0x7ccf8a);
@@ -69,7 +48,7 @@ const SPAWN: Color = Color::rgba(1.0, 1.0, 1.0, 0.35);
 pub fn scene(
     batch: &mut ShapeBatch,
     scene: &Scene,
-    collision: &Collision,
+    map: MapLayer<'_>,
     tuning: &Tuning,
     camera: &Camera,
     mouse_pos: Vec2,
@@ -85,8 +64,14 @@ pub fn scene(
         own_skin,
     } = *looks;
     let time = figures.time();
-    sky(batch, camera);
-    tiles(batch, collision, camera);
+    let MapLayer {
+        map,
+        view: map_view,
+        time: look_time,
+    } = map;
+    if let Some(map) = map {
+        map_view.draw_back(batch, map, camera, look_time);
+    }
     spawns_and_pickups(batch, scene, items, time);
 
     for c in &scene.chars {
@@ -162,6 +147,9 @@ pub fn scene(
             Color::rgba(0.9, 1.0, 1.0, l.fade),
         );
     }
+    if let Some(map) = map {
+        map_view.draw_front(batch, map, camera, look_time);
+    }
     effects.draw(batch);
     emotes.draw(batch, scene);
 
@@ -197,86 +185,6 @@ fn health_bar(batch: &mut ShapeBatch, pos: Vec2, health: i32, armor: i32, max: i
         let t = top + Vec2::new(0.0, -5.0);
         batch.fill_rect(t, t + Vec2::new(w * frac(armor), 3.0), ARMOR);
     }
-}
-
-/// Himmel: senkrechter Verlauf über den sichtbaren Bereich (E-089).
-fn sky(batch: &mut ShapeBatch, camera: &Camera) {
-    let tl = camera.top_left();
-    batch.fill_rect_vgradient(tl, tl + camera.size, SKY_TOP, SKY_BOTTOM);
-}
-
-/// Füllung und Kontur je Tile-Art.
-fn tile_colors(t: Tile) -> Option<(Color, Color)> {
-    match t {
-        Tile::Air => None,
-        Tile::Solid => Some((SOLID, SOLID_EDGE)),
-        Tile::Unhookable => Some((UNHOOKABLE, UNHOOKABLE_EDGE)),
-        Tile::Death => Some((DEATH, DEATH_EDGE)),
-        Tile::Platform => Some((PLATFORM, PLATFORM_EDGE)),
-        Tile::Ice => Some((ICE, ICE_EDGE)),
-        Tile::JumpPad(_) => Some((JUMP_PAD, JUMP_PAD_EDGE)),
-        Tile::Conveyor(_) => Some((CONVEYOR, CONVEYOR_EDGE)),
-    }
-}
-
-/// Tiles einfarbig mit Kontur an allen Kanten zu anderen Tile-Arten (E-089).
-fn tiles(batch: &mut ShapeBatch, col: &Collision, camera: &Camera) {
-    let ts = TILE_SIZE as f32;
-    let tl = camera.top_left();
-    let br = tl + camera.size;
-    let x0 = (tl.x / ts).floor() as i32 - 1;
-    let y0 = (tl.y / ts).floor() as i32 - 1;
-    let x1 = (br.x / ts).ceil() as i32 + 1;
-    let y1 = (br.y / ts).ceil() as i32 + 1;
-    for ty in y0..=y1 {
-        for tx in x0..=x1 {
-            let tile = col.tile(tx, ty);
-            let Some((fill, edge)) = tile_colors(tile) else {
-                continue;
-            };
-            let min = Vec2::new(tx as f32 * ts, ty as f32 * ts);
-            let max = min + Vec2::new(ts, ts);
-            if tile == Tile::Platform {
-                // schmales Brett an der Oberkante, unten offen
-                let bottom = Vec2::new(max.x, min.y + PLATFORM_THICKNESS);
-                batch.fill_rect(min, bottom, edge);
-                batch.fill_rect(
-                    min + Vec2::new(0.0, 2.0),
-                    bottom - Vec2::new(0.0, 2.0),
-                    fill,
-                );
-                continue;
-            }
-            batch.fill_rect(min, max, fill);
-            tile_arrow(batch, tile, min + Vec2::new(ts, ts) * 0.5);
-            let w = EDGE_WIDTH;
-            // (Nachbar, Streifen innerhalb des Tiles)
-            let edges = [
-                ((tx, ty - 1), min, Vec2::new(max.x, min.y + w)),
-                ((tx, ty + 1), Vec2::new(min.x, max.y - w), max),
-                ((tx - 1, ty), min, Vec2::new(min.x + w, max.y)),
-                ((tx + 1, ty), Vec2::new(max.x - w, min.y), max),
-            ];
-            for ((nx, ny), a, b) in edges {
-                if col.tile(nx, ny) != tile {
-                    batch.fill_rect(a, b, edge);
-                }
-            }
-        }
-    }
-}
-
-/// Richtungspfeil auf Sprungfeldern und Laufbändern (vorläufig bis zum Kartenlook, M6.4).
-fn tile_arrow(batch: &mut ShapeBatch, tile: Tile, center: Vec2) {
-    let dir = match tile {
-        Tile::JumpPad(d) => d.vector(),
-        Tile::Conveyor(d) => Vec2::new(d.sign(), 0.0),
-        _ => return,
-    };
-    let side = Vec2::new(-dir.y, dir.x);
-    let tip = center + dir * 9.0;
-    let back = center - dir * 5.0;
-    batch.fill_polygon(&[tip, back + side * 8.0, back - side * 8.0], TILE_ARROW);
 }
 
 fn spawns_and_pickups(batch: &mut ShapeBatch, scene: &Scene, items: &ItemArt, time: f32) {
@@ -357,7 +265,11 @@ mod tests {
         super::scene(
             &mut batch,
             &scene,
-            &col,
+            MapLayer {
+                map: Some(&map),
+                view: &mut crate::map_view::MapView::default(),
+                time: crate::map_view::LookTime::default(),
+            },
             &Tuning::default(),
             &camera,
             Vec2::new(1.0, 0.0),

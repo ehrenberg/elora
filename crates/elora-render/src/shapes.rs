@@ -282,6 +282,23 @@ impl ShapeBatch {
         out
     }
 
+    /// Inhalt als Mesh mit festen Farben (z. B. einmal gebaute Kartengeometrie zum Zwischenspeichern).
+    pub fn to_mesh(&self) -> crate::Mesh {
+        crate::Mesh::from_parts(
+            self.geometry
+                .vertices
+                .iter()
+                .map(|v| crate::mesh::MeshVertex {
+                    pos: v.pos,
+                    color: v.color,
+                    slot: 0,
+                    shade: 0.0,
+                })
+                .collect(),
+            self.geometry.indices.clone(),
+        )
+    }
+
     /// Anzahl Dreiecke im Batch (Statistik).
     pub fn triangle_count(&self) -> usize {
         self.geometry.indices.len() / 3

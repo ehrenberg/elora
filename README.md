@@ -66,6 +66,7 @@ Mit einer Karte, `--mode` oder `--connect` auf der Kommandozeile geht es ohne Me
 cargo run --bin elora -- maps/sandbox.emap          # Standardkarte
 cargo run --bin elora -- maps/eigene.emap           # andere Karte
 cargo run --bin elora -- maps/ctf-test.emap --mode ctf   # Spielmodus gegen Dummies
+cargo run --bin elora -- maps/look-test.emap         # Kartenlook: Materialien, Hintergründe, Deko, Animationen
 cargo run --bin elora -- maps/tiles-test.emap        # Plattform, Eis, Sprungfeld, Beschleuniger (S = Runter)
 ```
 
