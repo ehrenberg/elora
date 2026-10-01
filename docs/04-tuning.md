@@ -1,6 +1,6 @@
 # Tuning-Vorschlag für Elora
 
-Status: **angenommen** (E-023, 2026-09-25) – alle Werte T-01 bis T-30 gelten als Startwerte.
+Status: **angenommen** (E-023, 2026-09-25) – alle Werte T-01 bis T-30 gelten als Startwerte; T-31 bis T-36 seit E-140.
 
 Original-Werte stammen aus [`01-analyse-teeworlds.md`](01-analyse-teeworlds.md). Einheiten: 1 Tile = 32 Einheiten, Werte gelten pro Tick.
 
@@ -69,6 +69,17 @@ E-015 verlangt eine Abweichung, aber nur „etwas“. Deshalb gilt:
 | T-28 | Max. HP / Rüstung | 10 / 10 | **10 / 10** | Bestimmt die Time-to-Kill, das ist Kern-Feeling. | ✅ |
 | T-29 | Pickup-Respawn | 15 s | **15 s** | Bleibt | ✅ |
 | T-30 | Respawn-Verzögerung nach Tod | ≈ 0,5 s | **0,5 s** | Bleibt, schnelles Spiel | ✅ |
+
+## E2. Tile-Arten (M6.1, E-137, E-140)
+
+| # | Wert | Original | Vorschlag | Begründung | Entscheidung |
+|---|---|---|---|---|---|
+| T-31 | Bodenreibung auf Eis | – (Boden 0,5) | **0,985** | Figur rutscht nach dem Loslassen weit nach | ✅ |
+| T-32 | Beschleunigung auf Eis | – (Boden 2,0) | **0,35** | Anlaufen und Bremsen dauern spürbar länger | ✅ |
+| T-33 | Kraft Sprungfeld | – | **20** Einheiten/Tick | Wirft etwa 12 Tiles hoch, klar mehr als ein Sprung | ✅ |
+| T-34 | Richtungen Sprungfeld | – | **hoch, schräg links, schräg rechts (45°)** | Reicht für Release 1 | ✅ |
+| T-35 | Geschwindigkeit Beschleuniger | – | **4,0** Einheiten/Tick | Trägt spürbar, man kommt noch dagegen an | ✅ |
+| T-36 | Plattform | – | **von unten/seitlich durchlässig**; Hook, Granate, Laser fliegen hindurch | Wie Einbahn-Plattformen in anderen Spielen | ✅ |
 
 ## F. Regeln aus Folgeentscheidungen
 

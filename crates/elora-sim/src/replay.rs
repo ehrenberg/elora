@@ -20,7 +20,7 @@ const DUMP_INTERVAL: u64 = 25;
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Recording {
     pub format: u32,
-    /// Kollisionsraster: `.` Luft, `#` Wand, `%` unhookable, `^` Tod.
+    /// Kollisionsraster, Zeichen siehe [`Tile::to_char`].
     pub tiles: String,
     /// Spawnpunkte für den Respawn menschlicher Spieler.
     pub spawn_points: Vec<[f32; 2]>,
@@ -97,12 +97,7 @@ impl Recording {
         for y in 0..collision.height() {
             for x in 0..collision.width() {
                 #[allow(clippy::cast_possible_wrap)]
-                tiles.push(match collision.tile(x as i32, y as i32) {
-                    Tile::Air => '.',
-                    Tile::Solid => '#',
-                    Tile::Unhookable => '%',
-                    Tile::Death => '^',
-                });
+                tiles.push(collision.tile(x as i32, y as i32).to_char());
             }
             tiles.push('\n');
         }
@@ -143,7 +138,7 @@ impl Recording {
     pub fn push(&mut self, input: &PlayerInput) {
         let _ = writeln!(
             self.inputs,
-            "{} {} {} {} {} {} {} {} {}",
+            "{} {} {} {} {} {} {} {} {} {}",
             input.direction,
             input.target_x,
             input.target_y,
@@ -153,6 +148,7 @@ impl Recording {
             input.wanted_weapon,
             input.next_weapon,
             input.prev_weapon,
+            u8::from(input.down),
         );
     }
 
@@ -196,13 +192,10 @@ impl Recording {
                 )));
             }
             for c in row.chars() {
-                tiles.push(match c {
-                    '.' => Tile::Air,
-                    '#' => Tile::Solid,
-                    '%' => Tile::Unhookable,
-                    '^' => Tile::Death,
-                    other => return Err(RecordingError(format!("unbekanntes Tile `{other}`"))),
-                });
+                tiles.push(
+                    Tile::from_char(c)
+                        .ok_or_else(|| RecordingError(format!("unbekanntes Tile `{c}`")))?,
+                );
             }
         }
         Ok(Collision::new(width, rows.len(), tiles))
@@ -219,6 +212,12 @@ impl Recording {
                     .map(str::parse)
                     .collect::<Result<_, _>>()
                     .map_err(|_| err())?;
+                // 9 Felder (ältere Aufzeichnungen) oder 10 mit „Runter“ (M6.1)
+                let (fields, down) = match f.len() {
+                    9 => (&f[..], 0),
+                    10 => (&f[..9], f[9]),
+                    _ => return Err(err()),
+                };
                 let [
                     direction,
                     target_x,
@@ -229,7 +228,7 @@ impl Recording {
                     wanted,
                     next,
                     prev,
-                ] = f[..]
+                ] = fields[..]
                 else {
                     return Err(err());
                 };
@@ -244,6 +243,7 @@ impl Recording {
                     wanted_weapon: byte(wanted)?,
                     next_weapon: byte(next)?,
                     prev_weapon: byte(prev)?,
+                    down: down != 0,
                 })
             })
             .collect()

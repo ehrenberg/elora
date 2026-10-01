@@ -15,6 +15,7 @@ pub struct Controls {
     left: bool,
     right: bool,
     jump: bool,
+    down: bool,
     hook: bool,
     /// Zähler wie im Original: jede Zustandsänderung +1, ungerade = gedrückt.
     fire: u8,
@@ -34,6 +35,7 @@ impl Default for Controls {
             left: false,
             right: false,
             jump: false,
+            down: false,
             hook: false,
             fire: 0,
             next_weapon: 0,
@@ -58,6 +60,7 @@ impl Controls {
             GameAction::Left => self.left = down,
             GameAction::Right => self.right = down,
             GameAction::Jump => self.jump = down,
+            GameAction::Down => self.down = down,
             GameAction::Hook => self.hook = down,
             GameAction::Fire => {
                 if down != self.fire_held() {
@@ -95,6 +98,7 @@ impl Controls {
         self.left = false;
         self.right = false;
         self.jump = false;
+        self.down = false;
         self.hook = false;
         if self.fire_held() {
             bump(&mut self.fire);
@@ -114,6 +118,7 @@ impl Controls {
             target_x,
             target_y,
             jump: self.jump,
+            down: self.down,
             hook: self.hook,
             fire: self.fire,
             wanted_weapon: std::mem::take(&mut self.wanted_weapon),

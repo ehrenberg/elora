@@ -97,6 +97,14 @@ pub struct Tuning {
     pub respawn_delay: f32,
     /// Automatischer Respawn ohne Klick (s, Original: 3)
     pub auto_respawn: f32,
+    /// T-31: Bodenreibung auf Eis (normal T-04)
+    pub ice_friction: f32,
+    /// T-32: Beschleunigung auf Eis (normal T-03)
+    pub ice_accel: f32,
+    /// T-33: Kraft des Sprungfelds (Einheiten/Tick)
+    pub jump_pad_force: f32,
+    /// T-35: Geschwindigkeit des Beschleunigers (Einheiten/Tick)
+    pub conveyor_speed: f32,
 }
 
 impl Default for Tuning {
@@ -146,6 +154,10 @@ impl Default for Tuning {
             pickup_respawn: 15.0,
             respawn_delay: 0.5,
             auto_respawn: 3.0,
+            ice_friction: 0.985,
+            ice_accel: 0.35,
+            jump_pad_force: 20.0,
+            conveyor_speed: 4.0,
         }
     }
 }

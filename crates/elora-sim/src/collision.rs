@@ -5,6 +5,42 @@ use crate::math::{Vec2, round_to_int};
 /// Kantenlänge eines Tiles in Welteinheiten.
 pub const TILE_SIZE: i32 = 32;
 
+/// Richtung eines Sprungfelds (T-34).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum JumpDir {
+    Up,
+    UpLeft,
+    UpRight,
+}
+
+impl JumpDir {
+    /// Einheitsvektor der Wurfrichtung (y nach unten).
+    pub fn vector(self) -> Vec2 {
+        let d = std::f32::consts::FRAC_1_SQRT_2;
+        match self {
+            Self::Up => Vec2::new(0.0, -1.0),
+            Self::UpLeft => Vec2::new(-d, -d),
+            Self::UpRight => Vec2::new(d, -d),
+        }
+    }
+}
+
+/// Laufrichtung eines Beschleunigers.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+pub enum BeltDir {
+    Left,
+    Right,
+}
+
+impl BeltDir {
+    pub fn sign(self) -> f32 {
+        match self {
+            Self::Left => -1.0,
+            Self::Right => 1.0,
+        }
+    }
+}
+
 /// Kollisionsart eines Tiles.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Tile {
@@ -15,11 +51,52 @@ pub enum Tile {
     Unhookable,
     /// Tötet bei Berührung.
     Death,
+    /// Von oben begehbar, von unten und seitlich durchlässig; Hook, Granaten und
+    /// Laser fliegen hindurch (T-36, E-140). Mit „Runter“ fällt man hindurch (E-141).
+    Platform,
+    /// Fest, aber rutschig (T-31, T-32).
+    Ice,
+    /// Fest; wirft eine darauf stehende Figur mit T-33 in Richtung T-34.
+    JumpPad(JumpDir),
+    /// Fest; trägt eine darauf stehende Figur wie ein Laufband (T-35).
+    Conveyor(BeltDir),
 }
 
+/// Zeichen der Tile-Arten im Textformat und in Aufzeichnungen (E-024, M6.1).
+const TILE_CHARS: [(char, Tile); 11] = [
+    ('.', Tile::Air),
+    ('#', Tile::Solid),
+    ('%', Tile::Unhookable),
+    ('^', Tile::Death),
+    ('=', Tile::Platform),
+    ('~', Tile::Ice),
+    ('!', Tile::JumpPad(JumpDir::Up)),
+    ('\\', Tile::JumpPad(JumpDir::UpLeft)),
+    ('/', Tile::JumpPad(JumpDir::UpRight)),
+    ('<', Tile::Conveyor(BeltDir::Left)),
+    ('>', Tile::Conveyor(BeltDir::Right)),
+];
+
 impl Tile {
+    /// Zeichen im Textformat (`.` Luft, `#` Wand, `%` unhookable, `^` Tod, `=` Plattform,
+    /// `~` Eis, `!` `\` `/` Sprungfeld hoch/schräg links/schräg rechts, `<` `>` Beschleuniger).
+    pub fn to_char(self) -> char {
+        TILE_CHARS
+            .iter()
+            .find(|(_, t)| *t == self)
+            .map_or('.', |(c, _)| *c)
+    }
+
+    pub fn from_char(c: char) -> Option<Self> {
+        TILE_CHARS.iter().find(|(ch, _)| *ch == c).map(|(_, t)| *t)
+    }
+
+    /// Fest für Figuren, Hook, Granaten und Laser (Plattformen zählen nicht).
     pub fn is_solid(self) -> bool {
-        matches!(self, Self::Solid | Self::Unhookable)
+        matches!(
+            self,
+            Self::Solid | Self::Unhookable | Self::Ice | Self::JumpPad(_) | Self::Conveyor(_)
+        )
     }
 }
 
@@ -107,11 +184,41 @@ impl Collision {
         self.test_box_with(pos, size, Tile::is_solid)
     }
 
+    /// Landet eine Box mit Unterkante `prev → new` (abwärts) auf einer Plattform?
+    /// Sie muss vorher auf oder über der Oberkante gewesen sein (von unten durchlässig).
+    fn lands_on_platform(&self, x: f32, half_w: f32, prev_bottom: f32, new_bottom: f32) -> bool {
+        if new_bottom <= prev_bottom {
+            return false;
+        }
+        let ty = round_to_int(new_bottom).div_euclid(TILE_SIZE);
+        #[allow(clippy::cast_precision_loss)]
+        let top = (ty * TILE_SIZE) as f32;
+        if prev_bottom > top + 0.01 || new_bottom <= top {
+            return false;
+        }
+        [x - half_w, x + half_w]
+            .into_iter()
+            .any(|px| self.tile(round_to_int(px).div_euclid(TILE_SIZE), ty) == Tile::Platform)
+    }
+
     /// Bewegt eine Box um `vel` in Einzelschritten (max. 1 Einheit pro Schritt),
     /// damit auch schnelle Objekte nicht durch Wände tunneln.
     ///
     /// Gibt zurück, ob dabei ein Todes-Tile berührt wurde (Todes-Box ist 2/3 so groß).
     pub fn move_box(&self, pos: &mut Vec2, vel: &mut Vec2, size: Vec2, elasticity: f32) -> bool {
+        self.move_box_platforms(pos, vel, size, elasticity, false)
+    }
+
+    /// Wie [`Collision::move_box`]; mit `platforms` landet die Box auf Plattformen
+    /// (Figuren, die nicht gerade durchfallen).
+    pub fn move_box_platforms(
+        &self,
+        pos: &mut Vec2,
+        vel: &mut Vec2,
+        size: Vec2,
+        elasticity: f32,
+        platforms: bool,
+    ) -> bool {
         let distance = vel.length();
         let mut death = false;
         if distance <= 0.00001 {
@@ -145,6 +252,17 @@ impl Collision {
                     new = p;
                     *vel *= -elasticity;
                 }
+            }
+            if platforms
+                && self.lands_on_platform(
+                    new.x,
+                    size.x * 0.5,
+                    p.y + size.y * 0.5,
+                    new.y + size.y * 0.5,
+                )
+            {
+                new.y = p.y;
+                vel.y *= -elasticity;
             }
             p = new;
         }

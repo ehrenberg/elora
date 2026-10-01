@@ -29,6 +29,7 @@ pub enum GameAction {
     Left,
     Right,
     Jump,
+    Down,
     Hook,
     Fire,
     Hammer,
@@ -46,10 +47,11 @@ pub enum GameAction {
 }
 
 impl GameAction {
-    pub const ALL: [Self; 17] = [
+    pub const ALL: [Self; 18] = [
         Self::Left,
         Self::Right,
         Self::Jump,
+        Self::Down,
         Self::Hook,
         Self::Fire,
         Self::Hammer,
@@ -72,6 +74,7 @@ impl GameAction {
             Self::Left => "left",
             Self::Right => "right",
             Self::Jump => "jump",
+            Self::Down => "down",
             Self::Hook => "hook",
             Self::Fire => "fire",
             Self::Hammer => "hammer",
@@ -93,13 +96,14 @@ impl GameAction {
         Self::ALL.into_iter().find(|a| a.name() == name)
     }
 
-    /// Standardbelegung (E-043, E-051, E-078, E-091).
+    /// Standardbelegung (E-043, E-051, E-078, E-091, E-141).
     fn default_trigger(self) -> Trigger {
         use KeyCode as K;
         match self {
             Self::Left => Trigger::Key(K::KeyA),
             Self::Right => Trigger::Key(K::KeyD),
             Self::Jump => Trigger::Key(K::Space),
+            Self::Down => Trigger::Key(K::KeyS),
             Self::Hook => Trigger::Mouse(MouseButton::Right),
             Self::Fire => Trigger::Mouse(MouseButton::Left),
             Self::Hammer => Trigger::Key(K::Digit1),

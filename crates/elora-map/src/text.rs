@@ -2,7 +2,7 @@
 
 use std::collections::HashMap;
 
-use elora_sim::{DummyPattern, Tile};
+use elora_sim::{BeltDir, DummyPattern, JumpDir, Tile};
 use serde::Deserialize;
 
 use crate::{Entity, EntityKind, MAX_SIZE, Map, TEXT_FORMAT_VERSION};
@@ -72,6 +72,13 @@ fn symbol_by_name(name: &str) -> Option<Symbol> {
         "solid" => Symbol::Tile(Tile::Solid),
         "unhookable" => Symbol::Tile(Tile::Unhookable),
         "death" => Symbol::Tile(Tile::Death),
+        "platform" => Symbol::Tile(Tile::Platform),
+        "ice" => Symbol::Tile(Tile::Ice),
+        "jump_up" => Symbol::Tile(Tile::JumpPad(JumpDir::Up)),
+        "jump_left" => Symbol::Tile(Tile::JumpPad(JumpDir::UpLeft)),
+        "jump_right" => Symbol::Tile(Tile::JumpPad(JumpDir::UpRight)),
+        "conveyor_left" => Symbol::Tile(Tile::Conveyor(BeltDir::Left)),
+        "conveyor_right" => Symbol::Tile(Tile::Conveyor(BeltDir::Right)),
         "spawn" => Symbol::Entity(EntityKind::Spawn),
         "spawn_red" => Symbol::Entity(EntityKind::SpawnRed),
         "spawn_blue" => Symbol::Entity(EntityKind::SpawnBlue),
@@ -96,6 +103,13 @@ fn default_legend() -> HashMap<char, Symbol> {
         ('#', "solid"),
         ('%', "unhookable"),
         ('^', "death"),
+        ('=', "platform"),
+        ('~', "ice"),
+        ('!', "jump_up"),
+        ('\\', "jump_left"),
+        ('/', "jump_right"),
+        ('<', "conveyor_left"),
+        ('>', "conveyor_right"),
         ('S', "spawn"),
         ('R', "spawn_red"),
         ('B', "spawn_blue"),
@@ -351,5 +365,42 @@ mod tests {
         let m = parse_text_map(src).unwrap();
         assert_eq!((m.width, m.height), (48, 20));
         assert!(m.supported_modes().free_for_all);
+    }
+
+    #[test]
+    fn tiles_test_map_has_all_new_tiles() {
+        let src = include_str!("../../../maps/tiles-test.emap.toml");
+        let m = parse_text_map(src).unwrap();
+        assert_eq!((m.width, m.height), (60, 27));
+        assert!(m.supported_modes().free_for_all);
+        for t in [
+            Tile::Platform,
+            Tile::Ice,
+            Tile::JumpPad(JumpDir::Up),
+            Tile::JumpPad(JumpDir::UpLeft),
+            Tile::JumpPad(JumpDir::UpRight),
+            Tile::Conveyor(BeltDir::Left),
+            Tile::Conveyor(BeltDir::Right),
+        ] {
+            assert!(m.tiles.contains(&t), "{t:?} fehlt");
+        }
+    }
+
+    /// Die Standard-Legende benutzt für Tiles dieselben Zeichen wie die Aufzeichnungen (`Tile::to_char`).
+    #[test]
+    fn legend_matches_tile_chars() {
+        let legend = default_legend();
+        for (c, sym) in &legend {
+            if let Symbol::Tile(t) = sym {
+                assert_eq!(t.to_char(), *c);
+            }
+        }
+        assert_eq!(
+            legend
+                .values()
+                .filter(|s| matches!(s, Symbol::Tile(_)))
+                .count(),
+            11
+        );
     }
 }

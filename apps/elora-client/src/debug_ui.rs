@@ -651,6 +651,9 @@ fn tuning(ui: &mut egui::Ui, t: &mut Tuning) {
     section(ui, "Boden (T-02 bis T-05)", true, |ui| ground(ui, t, &d));
     section(ui, "Luft (T-06 bis T-10)", true, |ui| air(ui, t, &d));
     section(ui, "Hook (T-12 bis T-17)", true, |ui| hook(ui, t, &d));
+    section(ui, "Tile-Arten (T-31 bis T-35)", false, |ui| {
+        tiles(ui, t, &d);
+    });
     section(ui, "Waffen (T-18 bis T-27)", false, |ui| {
         weapons(ui, t, &d);
         weapons_grenade(ui, t, &d);
@@ -858,6 +861,37 @@ fn ground(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
         &mut t.ground_jump_impulse,
         1.0..=30.0,
         d.ground_jump_impulse,
+    );
+}
+
+fn tiles(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
+    slider(
+        ui,
+        "Reibung Eis",
+        &mut t.ice_friction,
+        0.0..=1.0,
+        d.ice_friction,
+    );
+    slider(
+        ui,
+        "Beschl. Eis",
+        &mut t.ice_accel,
+        0.05..=10.0,
+        d.ice_accel,
+    );
+    slider(
+        ui,
+        "Sprungfeld",
+        &mut t.jump_pad_force,
+        1.0..=40.0,
+        d.jump_pad_force,
+    );
+    slider(
+        ui,
+        "Beschleuniger",
+        &mut t.conveyor_speed,
+        0.0..=15.0,
+        d.conveyor_speed,
     );
 }
 

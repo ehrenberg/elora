@@ -66,6 +66,7 @@ Mit einer Karte, `--mode` oder `--connect` auf der Kommandozeile geht es ohne Me
 cargo run --bin elora -- maps/sandbox.emap.toml     # Standardkarte
 cargo run --bin elora -- maps/eigene.emap.toml      # andere Karte
 cargo run --bin elora -- maps/ctf-test.emap.toml --mode ctf   # Spielmodus gegen Dummies
+cargo run --bin elora -- maps/tiles-test.emap.toml   # Plattform, Eis, Sprungfeld, Beschleuniger (S = Runter)
 ```
 
 Spielmodi in der Sandbox: `--mode dm|tdm|ctf|lms|lts` (optional `--instagib`) oder im Panel unter *Spiel → Modus*. CTF braucht eine Karte mit Flaggen, z. B. `maps/ctf-test.emap.toml`.

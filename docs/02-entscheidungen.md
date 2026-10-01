@@ -145,6 +145,9 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-136 | 2026-10-01 | Karten-Download (D-M6-07) | **Automatisch:** Server schickt fehlende Karten komprimiert in Teilen, Prüfsumme, Zwischenspeicher im Client | Entscheidung Projektinhaber |
 | E-137 | 2026-10-01 | Neue Tile-Arten (D-M6-08) | **Plattform** (von unten/seitlich durchlässig), **Eis** (rutschig), **Sprungfeld** (wirft nach oben/schräg), **Beschleuniger** (Laufband) – Werte als Tuning-Vorschlag zur Freigabe | Entscheidung Projektinhaber |
 | E-138 | 2026-10-01 | M6-Plan | Plan aus [`13-m6-plan.md`](13-m6-plan.md) freigegeben, Beginn mit M6.0 (Entwürfe Kartenlook) | Entscheidung Projektinhaber |
+| E-139 | 2026-10-01 | Kartenlook (M6.0) | **Stil A „Weich & lebendig“** aus [`design/elora-kartenlook.png`](design/elora-kartenlook.png): Erde mit Grasnarbe, runde Außenecken, Kontur, Büsche/Blumen, Wolken- und Hügel-Ebenen; Spezial-Tiles werden an den Stil angepasst | Entscheidung Projektinhaber |
+| E-140 | 2026-10-01 | Tuning neue Tiles (M6.1) | Vorschlag angenommen: **T-31** Reibung Eis 0,985 · **T-32** Beschleunigung Eis 0,35 · **T-33** Kraft Sprungfeld 20 · **T-34** Richtungen hoch/schräg links/schräg rechts (45°) · **T-35** Beschleuniger 4,0 Einheiten/Tick · **T-36** Plattform von unten/seitlich durchlässig, Hook/Granate/Laser fliegen hindurch | Entscheidung Projektinhaber |
+| E-141 | 2026-10-01 | Durch Plattformen fallen | Neue belegbare Aktion **„Runter“** (Standard S); Spieler-Eingabe bekommt ein Feld dafür (**Protokollversion 3**) | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 

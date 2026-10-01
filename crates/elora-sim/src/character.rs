@@ -1,7 +1,7 @@
 //! Bewegung, Sprung und Hook einer Figur
 //! (Referenz: Teeworlds `CCharacterCore`, E-007).
 
-use crate::collision::{Collision, Tile};
+use crate::collision::{Collision, TILE_SIZE, Tile};
 use crate::input::PlayerInput;
 use crate::math::{Vec2, round_to_int, saturated_add};
 use crate::tuning::Tuning;
@@ -20,6 +20,8 @@ pub mod events {
     pub const HOOK_ATTACH_PLAYER: u8 = 1 << 2;
     pub const HOOK_ATTACH_GROUND: u8 = 1 << 3;
     pub const HOOK_HIT_UNHOOKABLE: u8 = 1 << 4;
+    /// Von einem Sprungfeld geworfen (M6.1).
+    pub const JUMP_PAD: u8 = 1 << 5;
 }
 
 /// Zustand des Hooks.
@@ -57,6 +59,10 @@ pub struct CharacterCore {
     pub triggered_events: u8,
     /// Von anderen Figuren per Hook aufgeprägte Geschwindigkeit (wird in `move` angewendet).
     pub hook_drag_vel: Vec2,
+    /// „Runter“ gehalten: durch Plattformen fallen (E-141).
+    pub drop_through: bool,
+    /// Geschwindigkeit des Untergrunds (Beschleuniger, T-35), in `move` angewendet.
+    pub belt: f32,
 }
 
 impl CharacterCore {
@@ -68,11 +74,35 @@ impl CharacterCore {
         }
     }
 
-    /// Steht die Figur auf festem Boden?
+    /// Steht die Figur auf festem Boden oder auf einer Plattform (nicht beim Durchfallen)?
     pub fn is_grounded(&self, col: &Collision) -> bool {
-        let y = self.pos.y + PHYS_SIZE / 2.0 + 5.0;
-        col.is_solid(Vec2::new(self.pos.x + PHYS_SIZE / 2.0, y))
-            || col.is_solid(Vec2::new(self.pos.x - PHYS_SIZE / 2.0, y))
+        self.ground_tile(col).is_some()
+    }
+
+    /// Tile unter den Füßen, wenn die Figur steht. Spezial-Tiles haben Vorrang
+    /// (Sprungfeld vor Beschleuniger vor Eis), damit ein Fuß darauf genügt.
+    pub fn ground_tile(&self, col: &Collision) -> Option<Tile> {
+        let bottom = self.pos.y + PHYS_SIZE / 2.0;
+        let y = bottom + 5.0;
+        let feet = [
+            col.tile_at(Vec2::new(self.pos.x + PHYS_SIZE / 2.0, y)),
+            col.tile_at(Vec2::new(self.pos.x - PHYS_SIZE / 2.0, y)),
+        ];
+        #[allow(clippy::cast_precision_loss)]
+        let platform_top = (crate::math::round_to_int(y).div_euclid(TILE_SIZE) * TILE_SIZE) as f32;
+        let stands = |t: Tile| {
+            t.is_solid()
+                || (t == Tile::Platform && !self.drop_through && bottom <= platform_top + 0.5)
+        };
+        let rank = |t: Tile| match t {
+            Tile::JumpPad(_) => 3,
+            Tile::Conveyor(_) => 2,
+            Tile::Ice => 1,
+            _ => 0,
+        };
+        feet.into_iter()
+            .filter(|t| stands(*t))
+            .max_by_key(|t| rank(*t))
     }
 
     /// Erste Tick-Phase: Eingabe, Kräfte, Hook.
@@ -94,11 +124,21 @@ impl CharacterCore {
         drag_out: &mut [Vec2],
     ) {
         self.triggered_events = 0;
-        let grounded = self.is_grounded(col);
+        if let Some(input) = input {
+            self.drop_through = input.down;
+        }
+        let ground = self.ground_tile(col);
+        let grounded = ground.is_some();
 
         self.vel.y += tuning.gravity;
 
-        let (max_speed, accel, friction) = if grounded {
+        let (max_speed, accel, friction) = if ground == Some(Tile::Ice) {
+            (
+                tuning.ground_control_speed,
+                tuning.ice_accel,
+                tuning.ice_friction,
+            )
+        } else if grounded {
             (
                 tuning.ground_control_speed,
                 tuning.ground_control_accel,
@@ -157,6 +197,18 @@ impl CharacterCore {
 
         if grounded {
             self.jumped &= !2;
+        }
+
+        // Spezial-Tiles unter den Füßen (M6.1)
+        self.belt = match ground {
+            Some(Tile::Conveyor(dir)) => dir.sign() * tuning.conveyor_speed,
+            _ => 0.0,
+        };
+        if let Some(Tile::JumpPad(dir)) = ground
+            && self.vel.y >= 0.0
+        {
+            self.vel = dir.vector() * tuning.jump_pad_force;
+            self.triggered_events |= events::JUMP_PAD;
         }
 
         // Hook-Zustandsautomat
@@ -343,12 +395,22 @@ impl CharacterCore {
 
         self.vel.x *= ramp;
         let mut new_pos = self.pos;
-        self.death = col.move_box(
+        // Laufband: Untergrund bewegt die Figur mit, ohne ihre eigene Geschwindigkeit zu ändern
+        let mut moved = self.vel + Vec2::new(self.belt, 0.0);
+        self.death = col.move_box_platforms(
             &mut new_pos,
-            &mut self.vel,
+            &mut moved,
             Vec2::new(PHYS_SIZE, PHYS_SIZE),
             0.0,
+            !self.drop_through,
         );
+        self.vel.y = moved.y;
+        // an einer Wand gestoppt: auch die eigene Geschwindigkeit ist weg
+        self.vel.x = if moved.x == 0.0 && self.vel.x + self.belt != 0.0 {
+            0.0
+        } else {
+            moved.x - self.belt
+        };
         self.vel.x *= 1.0 / ramp;
 
         if tuning.player_collision {

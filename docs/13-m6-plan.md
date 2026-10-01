@@ -34,7 +34,7 @@ Ein eigenes Release-Kartenformat mit Grafik und ein ins Spiel integrierter Edito
 | # | Schritt | Crate | Inhalt | Prüfung |
 |---|---|---|---|---|
 | M6.0 | Entwürfe | – | Kartenlook als Bild zur Auswahl: Materialien mit Kanten/Ecken, Deko, Hintergrund-Ebenen (E-130) | Deine Auswahl |
-| M6.1 | Neue Tile-Arten | `elora-sim` | Plattform, Eis, Sprungfeld, Beschleuniger (E-137) in Kollision und Bewegung; Tuning-Vorschlag T-31 ff. zur Freigabe; Testkarte; Golden-Tests der alten Karten unverändert | Tests + dein Playtest |
+| M6.1 | Neue Tile-Arten | `elora-sim` | Plattform, Eis, Sprungfeld, Beschleuniger (E-137) in Kollision und Bewegung; Tuning-Vorschlag T-31 ff. zur Freigabe; Testkarte; Golden-Tests der alten Karten unverändert | Tests + dein Playtest · **umgesetzt** (E-140, E-141; `maps/tiles-test.emap.toml`), Playtest offen |
 | M6.2 | Release-Format | `elora-map` | Binäres Datenmodell (E-129): Kopf mit Version, Abschnitte (Game-Layer mit Tile-Arten und Richtungen, Material-Layer, Deko, Hintergrund-Ebenen mit Parallax, Envelopes, Metadaten), komprimiert, Prüfsumme; Import der Textkarten | Tests (Rundweg, Import, kaputte Dateien) |
 | M6.3 | Materialien & Deko | `assets/` | SVG-Sätze je Material mit Kanten/Ecken (Auto-Kanten-Regeln), Deko-Objekte, Hintergründe – nach dem Entwurf aus M6.0 | Sichtprüfung |
 | M6.4 | Karten-Darstellung | Client, `elora-render` | Ebenen zeichnen (Parallax, Deko vor/hinter der Spielfläche), Auto-Kanten, Envelopes abspielen, gecachte Meshes | Sichtprüfung, Benchmark |

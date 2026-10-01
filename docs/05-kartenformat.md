@@ -65,6 +65,15 @@ tiles = '''
 | `#` | `solid` | Wand, Hook greift |
 | `%` | `unhookable` | Wand, Hook greift **nicht** |
 | `^` | `death` | Tötet bei Berührung |
+| `=` | `platform` | Plattform: trägt von oben, von unten/seitlich durchlässig; Hook, Granate und Laser fliegen hindurch; mit „Runter“ fällt man hindurch (T-36, E-141) |
+| `~` | `ice` | Wand, rutschig (T-31, T-32) |
+| `!` | `jump_up` | Sprungfeld nach oben (T-33) |
+| `\` | `jump_left` | Sprungfeld schräg nach links oben (T-34) |
+| `/` | `jump_right` | Sprungfeld schräg nach rechts oben (T-34) |
+| `<` | `conveyor_left` | Beschleuniger/Laufband nach links (T-35) |
+| `>` | `conveyor_right` | Beschleuniger/Laufband nach rechts (T-35) |
+
+Sprungfelder und Beschleuniger sind fest (Hook greift). Sie wirken auf eine Figur, die auf ihnen steht.
 
 ### Entities
 

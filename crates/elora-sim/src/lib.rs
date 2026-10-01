@@ -19,7 +19,7 @@ pub mod weapon;
 pub mod world;
 
 pub use character::{CharacterCore, HookState, PHYS_SIZE};
-pub use collision::{Collision, TILE_SIZE, Tile};
+pub use collision::{BeltDir, Collision, JumpDir, TILE_SIZE, Tile};
 pub use dummy::DummyPattern;
 pub use event::{DeathCause, Event, PickupKind};
 pub use input::PlayerInput;

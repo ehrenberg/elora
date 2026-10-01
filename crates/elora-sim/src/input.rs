@@ -27,6 +27,9 @@ pub struct PlayerInput {
     pub next_weapon: u8,
     /// Zähler „vorige Waffe“ (Mausrad).
     pub prev_weapon: u8,
+    /// „Runter“ gehalten: durch Plattformen fallen (E-141).
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub down: bool,
 }
 
 impl Default for PlayerInput {
@@ -42,6 +45,7 @@ impl Default for PlayerInput {
             wanted_weapon: 0,
             next_weapon: 0,
             prev_weapon: 0,
+            down: false,
         }
     }
 }

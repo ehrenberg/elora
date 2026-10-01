@@ -187,7 +187,7 @@ fn put_input(w: &mut Writer, i: &PlayerInput) {
     w.ivar(i64::from(i.direction));
     w.ivar(i64::from(i.target_x));
     w.ivar(i64::from(i.target_y));
-    w.u8(u8::from(i.jump) | u8::from(i.hook) << 1);
+    w.u8(u8::from(i.jump) | u8::from(i.hook) << 1 | u8::from(i.down) << 2);
     w.u8(i.fire);
     w.u8(i.wanted_weapon);
     w.u8(i.next_weapon);
@@ -203,7 +203,7 @@ fn get_input(r: &mut Reader<'_>) -> DecodeResult<PlayerInput> {
     let wanted_weapon = r.u8()?;
     let next_weapon = r.u8()?;
     let prev_weapon = r.u8()?;
-    if !(-1..=1).contains(&direction) || flags > 3 || wanted_weapon > 3 {
+    if !(-1..=1).contains(&direction) || flags > 7 || wanted_weapon > 3 {
         return Err(DecodeError::Invalid("Eingabe"));
     }
     Ok(PlayerInput {
@@ -212,6 +212,7 @@ fn get_input(r: &mut Reader<'_>) -> DecodeResult<PlayerInput> {
         target_y,
         jump: flags & 1 != 0,
         hook: flags & 2 != 0,
+        down: flags & 4 != 0,
         fire,
         wanted_weapon,
         next_weapon,

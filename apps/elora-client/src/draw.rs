@@ -39,6 +39,18 @@ const UNHOOKABLE: Color = Color::hex(0x3a4450);
 const UNHOOKABLE_EDGE: Color = Color::hex(0x1c2229);
 const DEATH: Color = Color::hex(0xc94f4f);
 const DEATH_EDGE: Color = Color::hex(0x7c2a2a);
+const PLATFORM: Color = Color::hex(0x8a6f4e);
+const PLATFORM_EDGE: Color = Color::hex(0x4f3d29);
+const ICE: Color = Color::hex(0xbfe3f2);
+const ICE_EDGE: Color = Color::hex(0x6fa8c4);
+const JUMP_PAD: Color = Color::hex(0x6fbf73);
+const JUMP_PAD_EDGE: Color = Color::hex(0x3b7a3f);
+const CONVEYOR: Color = Color::hex(0x7a6f8f);
+const CONVEYOR_EDGE: Color = Color::hex(0x433b52);
+/// Pfeile auf Sprungfeldern und Laufbändern.
+const TILE_ARROW: Color = Color::rgba(1.0, 1.0, 1.0, 0.8);
+/// Dicke der Plattform (nur obere Kante, Kollision ist die Oberkante des Tiles).
+const PLATFORM_THICKNESS: f32 = 8.0;
 /// Breite der Tile-Kontur in Welteinheiten.
 const EDGE_WIDTH: f32 = 3.0;
 const ELORA: Color = Color::hex(0xf2c14e);
@@ -200,6 +212,10 @@ fn tile_colors(t: Tile) -> Option<(Color, Color)> {
         Tile::Solid => Some((SOLID, SOLID_EDGE)),
         Tile::Unhookable => Some((UNHOOKABLE, UNHOOKABLE_EDGE)),
         Tile::Death => Some((DEATH, DEATH_EDGE)),
+        Tile::Platform => Some((PLATFORM, PLATFORM_EDGE)),
+        Tile::Ice => Some((ICE, ICE_EDGE)),
+        Tile::JumpPad(_) => Some((JUMP_PAD, JUMP_PAD_EDGE)),
+        Tile::Conveyor(_) => Some((CONVEYOR, CONVEYOR_EDGE)),
     }
 }
 
@@ -220,7 +236,19 @@ fn tiles(batch: &mut ShapeBatch, col: &Collision, camera: &Camera) {
             };
             let min = Vec2::new(tx as f32 * ts, ty as f32 * ts);
             let max = min + Vec2::new(ts, ts);
+            if tile == Tile::Platform {
+                // schmales Brett an der Oberkante, unten offen
+                let bottom = Vec2::new(max.x, min.y + PLATFORM_THICKNESS);
+                batch.fill_rect(min, bottom, edge);
+                batch.fill_rect(
+                    min + Vec2::new(0.0, 2.0),
+                    bottom - Vec2::new(0.0, 2.0),
+                    fill,
+                );
+                continue;
+            }
             batch.fill_rect(min, max, fill);
+            tile_arrow(batch, tile, min + Vec2::new(ts, ts) * 0.5);
             let w = EDGE_WIDTH;
             // (Nachbar, Streifen innerhalb des Tiles)
             let edges = [
@@ -236,6 +264,19 @@ fn tiles(batch: &mut ShapeBatch, col: &Collision, camera: &Camera) {
             }
         }
     }
+}
+
+/// Richtungspfeil auf Sprungfeldern und Laufbändern (vorläufig bis zum Kartenlook, M6.4).
+fn tile_arrow(batch: &mut ShapeBatch, tile: Tile, center: Vec2) {
+    let dir = match tile {
+        Tile::JumpPad(d) => d.vector(),
+        Tile::Conveyor(d) => Vec2::new(d.sign(), 0.0),
+        _ => return,
+    };
+    let side = Vec2::new(-dir.y, dir.x);
+    let tip = center + dir * 9.0;
+    let back = center - dir * 5.0;
+    batch.fill_polygon(&[tip, back + side * 8.0, back - side * 8.0], TILE_ARROW);
 }
 
 fn spawns_and_pickups(batch: &mut ShapeBatch, scene: &Scene, items: &ItemArt, time: f32) {

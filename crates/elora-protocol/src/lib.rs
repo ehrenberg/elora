@@ -15,4 +15,4 @@ pub use msg::{ClientMsg, ServerMsg, Skin, VoteInfo, VoteKind};
 pub use snapshot::{GameView, Snapshot};
 
 /// Version des Spielprotokolls; Client und Server müssen übereinstimmen.
-pub const PROTOCOL_VERSION: u32 = 2;
+pub const PROTOCOL_VERSION: u32 = 3;
