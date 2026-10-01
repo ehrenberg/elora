@@ -179,6 +179,9 @@ training = "Training"
 no_players = "Keine anderen Spieler"
 
 [editor]
+test = "▶ Testspielen (F5)"
+test_notice = "Testspiel – Esc: zurück zum Editor"
+test_unplayable = "Testspielen nicht möglich: {arg}"
 tool_decor = "Deko"
 tool_decor_hint = "Klick setzt die gewählte Grafik in die Ziel-Ebene, Klick auf ein Objekt wählt es, Ziehen verschiebt, Rechtsklick oder Entf entfernt."
 background = "Hintergrund"

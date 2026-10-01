@@ -200,6 +200,8 @@ struct App {
     lang: lang::Lang,
     screen: Screen,
     editor: Option<editor::Editor>,
+    /// Testspiel aus dem Editor: Trainingskarte davor (M6.9).
+    editor_test: Option<elora_map::Map>,
     /// Kartenfläche des Editors aus dem letzten Frame.
     editor_area: editor::panel::AreaInfo,
     menu: menu::Menu,
@@ -253,6 +255,7 @@ impl App {
             settings,
             screen: Screen::Menu,
             editor: None,
+            editor_test: None,
             editor_area: editor::panel::AreaInfo::default(),
             menu: menu::Menu::default(),
             maps: app_menu::map_names(),
@@ -893,6 +896,7 @@ impl App {
         let online = self.online.is_some();
         if pressed && !event.repeat {
             match code {
+                KeyCode::Escape if self.testing_map() => return self.leave_editor_test(),
                 KeyCode::Escape => return self.toggle_pause(),
                 KeyCode::F1 => {
                     self.show_panel = !self.show_panel;

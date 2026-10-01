@@ -131,6 +131,21 @@ impl Sandbox {
         }
     }
 
+    /// Karte aus dem Speicher spielen (Testspielen aus dem Editor, M6.9): frische Welt im
+    /// freien Spiel. Liefert die bisherige Karte zum Wiederherstellen.
+    pub fn play_map(&mut self, map: Map) -> Map {
+        self.stop_recording("Testspiel");
+        let (world, player) = fresh_world(&map, self.world.tuning.clone());
+        self.world = world;
+        self.player = player;
+        self.rules = None;
+        self.reload_error = None;
+        self.notices.clear();
+        self.accumulator = Duration::ZERO;
+        self.sync_prev();
+        std::mem::replace(&mut self.map, map)
+    }
+
     /// Spielmodus setzen oder abschalten (E-075). Startet ein neues Match mit Countdown.
     pub fn set_mode(&mut self, cfg: Option<RulesConfig>) {
         self.stop_recording("Modus");
@@ -197,7 +212,7 @@ impl Sandbox {
         }
     }
 
-    fn notice(&mut self, text: String) {
+    pub fn notice(&mut self, text: String) {
         self.notices.push_back(ChatLine {
             from: None,
             team: false,
@@ -425,5 +440,30 @@ impl MapWatcher {
     /// Wurde die Datei seit dem letzten Aufruf geändert?
     fn changed(&self) -> bool {
         self.events.try_iter().count() > 0
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn play_map_swaps_and_restores() {
+        let path = std::path::Path::new(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../maps/sandbox.emap"
+        ));
+        let mut sb = Sandbox::load(path, Tuning::default()).unwrap();
+        let own = Map::from_rows("Test", &["#####", "#S..#", "#####"]).unwrap();
+        let previous = sb.play_map(own.clone());
+        assert_eq!(sb.map, own);
+        assert!(
+            sb.character().is_some(),
+            "Elora steht am Spawn der Testkarte"
+        );
+        assert_eq!(sb.world.collision.width(), 5);
+        sb.play_map(previous);
+        assert_eq!(sb.map.name, "Sandbox");
+        assert_eq!(sb.world.collision.width(), 48);
     }
 }

@@ -179,6 +179,9 @@ training = "Training"
 no_players = "No other players"
 
 [editor]
+test = "▶ Test play (F5)"
+test_notice = "Test play – Esc: back to the editor"
+test_unplayable = "Cannot test play: {arg}"
 tool_decor = "Decoration"
 tool_decor_hint = "Click places the chosen graphic into the target layer, click an object to select it, drag moves, right click or Del removes."
 background = "Background"

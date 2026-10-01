@@ -253,6 +253,7 @@ impl App {
                 self.menu.paused = false;
                 self.set_cursor_grab(true);
             }
+            MenuAction::ToMenu if self.testing_map() => self.leave_editor_test(),
             MenuAction::ToMenu => {
                 self.online = None;
                 self.menu.paused = false;
@@ -263,7 +264,7 @@ impl App {
         }
     }
 
-    fn enter_game(&mut self) {
+    pub(crate) fn enter_game(&mut self) {
         self.screen = Screen::Game;
         self.menu.paused = false;
         self.sounds.menu_music(false);

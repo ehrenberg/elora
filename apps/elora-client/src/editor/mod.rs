@@ -68,6 +68,15 @@ pub enum AfterDiscard {
     Leave,
 }
 
+/// Auftrag an die App.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Request {
+    /// Zurück ins Hauptmenü.
+    Leave,
+    /// Karte testspielen (M6.9).
+    Test,
+}
+
 /// Eine Karte zum Öffnen.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MapFile {
@@ -129,8 +138,8 @@ pub struct Editor {
     next_stroke: u32,
     /// Eingaben für Größe ändern (Seitenleiste).
     pub resize: (usize, usize),
-    /// Zurück ins Hauptmenü.
-    pub leave: bool,
+    /// Was die App nach dem Frame tun soll (zurück ins Menü, Testspielen).
+    pub request: Option<Request>,
     /// Ordner für eigene Karten.
     pub user_dir: Option<PathBuf>,
     /// Ordner der mitgelieferten Karten.
@@ -183,7 +192,7 @@ impl Editor {
             status: None,
             stroke: None,
             next_stroke: 0,
-            leave: false,
+            request: None,
             user_dir,
             bundled_dir,
         };
@@ -433,6 +442,14 @@ impl Editor {
         all
     }
 
+    /// Testspielen anfordern; eine unspielbare Karte (z. B. ohne Spawn) wird gemeldet.
+    pub fn request_test(&mut self) {
+        match elora_map::validate(&self.map) {
+            Ok(()) => self.request = Some(Request::Test),
+            Err(e) => self.note("editor.test_unplayable", e.to_string()),
+        }
+    }
+
     /// Aktion, die ungespeicherte Änderungen verwerfen würde: erst nachfragen.
     pub fn request(&mut self, after: AfterDiscard) {
         if self.dirty {
@@ -461,7 +478,7 @@ impl Editor {
                     .unwrap_or_default();
                 self.open(&MapFile { path, name, own });
             }
-            AfterDiscard::Leave => self.leave = true,
+            AfterDiscard::Leave => self.request = Some(Request::Leave),
         }
     }
 }
@@ -578,10 +595,28 @@ mod tests {
     }
 
     #[test]
+    fn test_play_needs_a_playable_map() {
+        let mut e = editor();
+        e.request_test();
+        assert_eq!(e.request, None);
+        assert_eq!(
+            e.status.as_ref().map(|s| s.0),
+            Some("editor.test_unplayable")
+        );
+        e.map.entities.push(elora_map::Entity {
+            kind: elora_map::EntityKind::Spawn,
+            tx: 1,
+            ty: 1,
+        });
+        e.request_test();
+        assert_eq!(e.request, Some(Request::Test));
+    }
+
+    #[test]
     fn unsaved_changes_ask_before_leaving() {
         let mut e = editor();
         e.request(AfterDiscard::Leave);
-        assert!(e.leave, "ohne Änderungen sofort");
+        assert_eq!(e.request, Some(Request::Leave), "ohne Änderungen sofort");
         let mut e = editor();
         e.fill_cells(
             Cells::span((0, 0), (0, 0)),
@@ -590,9 +625,9 @@ mod tests {
             Instant::now(),
         );
         e.request(AfterDiscard::Leave);
-        assert!(!e.leave);
+        assert_eq!(e.request, None);
         assert_eq!(e.dialog, Some(Dialog::Discard(AfterDiscard::Leave)));
         e.proceed(AfterDiscard::Leave);
-        assert!(e.leave);
+        assert_eq!(e.request, Some(Request::Leave));
     }
 }

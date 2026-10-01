@@ -24,6 +24,34 @@ impl App {
         self.set_cursor_grab(false);
     }
 
+    /// Karte des Editors in einer Trainingsrunde spielen (M6.9), ohne zu speichern.
+    fn start_editor_test(&mut self) {
+        let Some(editor) = &self.editor else { return };
+        let map = editor.map.clone();
+        self.online = None;
+        let previous = self.sandbox.play_map(map);
+        // nur die erste Karte merken (nicht die eines vorigen Testspiels)
+        self.editor_test.get_or_insert(previous);
+        self.sandbox
+            .notice(self.lang.t("editor.test_notice").to_owned());
+        self.enter_game();
+    }
+
+    /// Ist gerade ein Testspiel aus dem Editor aktiv?
+    pub(crate) fn testing_map(&self) -> bool {
+        self.editor_test.is_some()
+    }
+
+    /// Testspiel beenden: vorige Trainingskarte zurück, Editor wie zuvor.
+    pub(crate) fn leave_editor_test(&mut self) {
+        if let Some(previous) = self.editor_test.take() {
+            self.sandbox.play_map(previous);
+        }
+        self.menu.paused = false;
+        self.screen = Screen::Editor;
+        self.set_cursor_grab(false);
+    }
+
     pub(crate) fn redraw_editor(&mut self) {
         let now = Instant::now();
         let Some(editor) = &mut self.editor else {
@@ -66,10 +94,16 @@ impl App {
         });
         gfx.renderer.end_frame(frame);
         self.editor_area = area;
-        if std::mem::take(&mut editor.leave) {
-            // im Editor gespeicherte Karten sofort in Training und „Server erstellen“
-            self.maps = app_menu::map_names();
-            self.screen = Screen::Menu;
+        match editor.request.take() {
+            Some(crate::editor::Request::Test) => self.start_editor_test(),
+            Some(crate::editor::Request::Leave) => self.leave_editor(),
+            None => {}
         }
+    }
+
+    fn leave_editor(&mut self) {
+        // im Editor gespeicherte Karten sofort in Training und „Server erstellen“
+        self.maps = app_menu::map_names();
+        self.screen = Screen::Menu;
     }
 }

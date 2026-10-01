@@ -136,6 +136,9 @@ fn shortcuts(ui: &egui::Ui, editor: &mut Editor, now: Instant) {
         if i.consume_shortcut(&cmd(Key::O)) {
             editor.dialog = Some(Dialog::Open);
         }
+        if i.consume_key(Modifiers::NONE, Key::F5) {
+            editor.request_test();
+        }
         if i.consume_shortcut(&cmd(Key::C)) {
             editor.copy_selection();
         }
@@ -217,9 +220,14 @@ fn side(ui: &mut egui::Ui, editor: &mut Editor, lang: &Lang, time_ms: i64, now: 
     if let Some(path) = editor.target_path() {
         ui.small(lang.f("editor.save_target", &[("arg", &path.display())]));
     }
-    if ui.button(lang.t("editor.back")).clicked() {
-        editor.request(AfterDiscard::Leave);
-    }
+    ui.horizontal(|ui| {
+        if ui.button(lang.t("editor.test")).clicked() {
+            editor.request_test();
+        }
+        if ui.button(lang.t("editor.back")).clicked() {
+            editor.request(AfterDiscard::Leave);
+        }
+    });
     ui.separator();
 
     ui.strong(lang.t("editor.edit"));

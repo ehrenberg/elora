@@ -42,7 +42,7 @@ Ein eigenes Release-Kartenformat mit Grafik und ein ins Spiel integrierter Edito
 | M6.6 | Editor-Grundlage | Client (`editor/`, egui) | Editor aus dem Hauptmenü, Kamera, Raster, Ebenen-Liste, Neu/Laden/Speichern, Rückgängig/Wiederholen | Tests + Sichtprüfung · **umgesetzt** (E-150–E-152; dazu vorläufiger Tile-Pinsel) · **abgeschlossen** (E-153) |
 | M6.7 | Werkzeuge | Client | Pinsel, Rechteck, Füllen, Radierer, Tile-Arten mit Richtung, Materialien, Entities (Spawns, Pickups, Flaggen, Dummies), Auswahl kopieren | Sichtprüfung · **abgeschlossen** (E-154) |
 | M6.8 | Deko, Hintergrund, Animation | Client | Deko platzieren/drehen/skalieren, Hintergrund-Ebenen mit Parallax, Envelope-Editor (Kurven für Position, Drehung, Farbe) (E-133) | Sichtprüfung · **umgesetzt** (dazu Vorlagen Tag/Nacht, eigene SVGs), Sichtprüfung offen |
-| M6.9 | Testspielen | Client | aus dem Editor direkt in eine Trainingsrunde und zurück | Sichtprüfung |
+| M6.9 | Testspielen | Client | aus dem Editor direkt in eine Trainingsrunde und zurück | Sichtprüfung · **umgesetzt** (F5 bzw. Knopf, Esc zurück, ohne Speichern), Sichtprüfung offen |
 | M6.10 | Release-Karten | `maps/` | 3 DM + 2 CTF nach deinen Vorgaben (E-134/E-135) | Dein Playtest |
 | M6.11 | Abnahme | – | Karte von Grund auf bauen und spielen | Deine Abnahme |
 
