@@ -48,6 +48,12 @@ erneut `/servers` aufrufen – seine Adresse steht in der Liste. Im Log des Serv
 | `Datenablage nicht beschreibbar` | Ordner `data/` beschreibbar machen. |
 | 404 bei `/servers` | `mod_rewrite`/`.htaccess` greift nicht. Ohne Rewrite geht auch die Adresse `https://elora.bastianswelt.de/master.php` als Master-Adresse (in den Einstellungen bzw. `--master`), dann wird `/master.php/servers` aufgerufen. |
 
+## UDP testen (`udp-test.php`)
+
+Bei „Server per UDP nicht erreichbar“ zeigt `udp-test.php`, woran es liegt: Sie prüft, ob der
+Webspace UDP senden darf, und mit `?port=8303` (Server läuft dabei) ob dein Spiel-Server von
+außen erreichbar ist. Datei nur zum Testen hochladen und danach wieder löschen.
+
 ## Hinweise
 
 - Steht ein CDN/Proxy (z. B. Cloudflare) vor der Seite, `trust_forwarded_for` auf `true`

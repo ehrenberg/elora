@@ -21,14 +21,18 @@ struct TuningFile {
 }
 
 /// Beim Master anmelden und die Anmeldung regelmäßig erneuern (eigener Thread, E-112).
-fn register_loop(master: String, port: u16) {
+fn register_loop(master: String, port: u16, ipv4_only: bool) {
     let spawned = std::thread::Builder::new()
         .name("master".into())
         .spawn(move || {
             let mut last_ok: Option<bool> = None;
             loop {
-                let result =
-                    elora_master::client::register(&master, port, elora_protocol::PROTOCOL_VERSION);
+                let result = elora_master::client::register(
+                    &master,
+                    port,
+                    elora_protocol::PROTOCOL_VERSION,
+                    ipv4_only,
+                );
                 // nur Wechsel melden, nicht alle 20 s dasselbe
                 let ok = result.as_ref().is_ok_and(|r| r.ok);
                 if last_ok != Some(ok) {
@@ -93,8 +97,10 @@ fn main() -> anyhow::Result<()> {
     );
 
     tracing::info!(maps = %server.map_names().join(", "), mode = %server.rules.cfg.title(), "`help` zeigt die Konsolenbefehle");
+    // lauscht der Server nur auf IPv4, meldet er sich auch nur über IPv4 an
+    let ipv4_only = addr.is_ipv4();
     for master in cfg.masters.clone() {
-        register_loop(master, cfg.port);
+        register_loop(master, cfg.port, ipv4_only);
     }
 
     let commands = console_input()?;
