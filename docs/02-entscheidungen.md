@@ -159,6 +159,7 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-150 | 2026-10-01 | Editor-Look (M6.6) | **egui dunkel** (Standard-Dunkeldesign), hebt sich vom Spiel ab | Entscheidung Projektinhaber |
 | E-151 | 2026-10-01 | Editor-Layout | **Alles rechts:** eine Seitenleiste mit Werkzeugen, Ebenen und Eigenschaften; Karte nimmt den Rest | Entscheidung Projektinhaber |
 | E-152 | 2026-10-01 | Speicherort eigener Karten | **Benutzerverzeichnis** (`~/.local/share/elora/maps`, Windows/macOS im Einstellungsordner); Training, Hosten und Download-Suche finden sie dort | Entscheidung Projektinhaber |
+| E-153 | 2026-10-01 | M6.5 und M6.6 abgenommen | Karten-Download und Editor-Grundlage angenommen („sieht super aus“) | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 
