@@ -14,7 +14,8 @@ Webhosting ohne eigenen Dienst. Client und Server brauchen keine Änderung.
 
 1. Subdomain `elora.bastianswelt.de` im Kundenmenü anlegen, Zielordner z. B. `elora/`.
 2. Den **Inhalt** dieses Ordners dorthin hochladen (FTP/SFTP), also:
-   `index.php`, `config.php`, `.htaccess`, Ordner `data/` mit seiner `.htaccess`.
+   `master.php`, `config.php`, `.htaccess`, Ordner `data/` mit seiner `.htaccess`.
+   Die Startseite (`/`) bleibt frei für eine eigene `index.html` (z. B. Projektseite).
    Dateien mit Punkt am Anfang sind in manchen FTP-Programmen versteckt – mit hochladen!
 3. Ordner `data/` für PHP beschreibbar machen (meist schon so; sonst Rechte 755 oder 775).
 4. HTTPS für die Subdomain einschalten.
@@ -23,7 +24,7 @@ Webhosting ohne eigenen Dienst. Client und Server brauchen keine Änderung.
 
 Im Browser oder mit curl:
 
-- `https://elora.bastianswelt.de/` → `{"service":"elora-master"}`
+- `https://elora.bastianswelt.de/master.php` → `{"service":"elora-master"}`
 - `https://elora.bastianswelt.de/servers` → `{"servers":[]}`
 
 Dann einen Spiel-Server starten (er meldet sich von selbst an) und nach ein paar Sekunden
@@ -37,7 +38,7 @@ erneut `/servers` aufrufen – seine Adresse steht in der Liste. Im Log des Serv
 | `Server per UDP nicht erreichbar` | Spiel-Server-Port (UDP) nicht von außen erreichbar – oder der Hoster sperrt ausgehendes UDP. Im zweiten Fall in `config.php` `'verify_udp' => false` setzen: Server werden dann ungeprüft gelistet (nur mit ihrer eigenen Adresse, höchstens 32 je Adresse). |
 | `falsche Protokollversion` | Spiel und `config.php` (`protocol_version`) passen nicht zusammen – nach einem Update der Spielversion anpassen. |
 | `Datenablage nicht beschreibbar` | Ordner `data/` beschreibbar machen. |
-| 404 bei `/servers` | `mod_rewrite`/`.htaccess` greift nicht. Ohne Rewrite geht auch die Adresse `https://elora.bastianswelt.de/index.php` als Master-Adresse (in den Einstellungen bzw. `--master`), dann wird `/index.php/servers` aufgerufen. |
+| 404 bei `/servers` | `mod_rewrite`/`.htaccess` greift nicht. Ohne Rewrite geht auch die Adresse `https://elora.bastianswelt.de/master.php` als Master-Adresse (in den Einstellungen bzw. `--master`), dann wird `/master.php/servers` aufgerufen. |
 
 ## Hinweise
 

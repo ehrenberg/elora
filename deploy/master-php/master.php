@@ -199,7 +199,7 @@ if ($method === 'POST' && $route === 'register') {
     reply(200, ['ok' => true, 'message' => 'gelistet']);
 }
 
-if ($method === 'GET' && ($route === '' || $route === 'index.php')) {
+if ($method === 'GET' && ($route === '' || $route === 'master.php')) {
     reply(200, ['service' => 'elora-master']);
 }
 

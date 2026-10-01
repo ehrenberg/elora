@@ -1,6 +1,7 @@
-# Elora-Master: saubere Adressen /servers und /register auf index.php (Apache, mod_rewrite)
+# Elora-Master: nur /servers und /register gehen an master.php (Apache, mod_rewrite).
+# Alles andere bleibt normale Webseite – z. B. eine index.html als Projektseite.
 RewriteEngine On
-RewriteRule ^(servers|register)/?$ index.php?route=$1 [L,QSA]
+RewriteRule ^(servers|register)/?$ master.php?route=$1 [L,QSA]
 
 # Einstellungen und Daten nicht ausliefern
 <FilesMatch "^(config\.php|LIESMICH\.md)$">
