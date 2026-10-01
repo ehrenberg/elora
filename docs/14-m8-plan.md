@@ -1,6 +1,6 @@
 # M8 – Release 1: Umsetzungsplan
 
-Status: **Entwurf** – zur Freigabe · Grundlage: [`06-roadmap.md`](06-roadmap.md) M8, E-003, E-027, E-161 bis E-164, O-44, O-47, O-48
+Status: **angenommen** (E-169), in Umsetzung · Grundlage: [`06-roadmap.md`](06-roadmap.md) M8, E-003, E-027, E-161 bis E-164, O-44, O-47, O-48
 
 ## Ziel
 
@@ -36,7 +36,7 @@ Release 1 ist veröffentlicht: Pakete für Linux, Windows und macOS auf GitHub (
 | D-M8-02 | Master-Server (O-47) | du betreibst ihn / keiner / später | E-162: **du betreibst ihn**, ich liefere Betriebsdateien und Anleitung |
 | D-M8-03 | Builds | GitHub Actions / lokal | E-163: **GitHub Actions** bei Versions-Tag |
 | D-M8-04 | Server-Meldungen (O-48) | vor Release 1 übersetzbar / später | E-164: **vor Release 1** |
-| D-M8-05 | Versionsnummer von Release 1 | z. B. `1.0.0` / `0.9.0` (Beta) | offen (vor M8.7) |
-| D-M8-06 | Adresse des Master-Servers | deine Domain, z. B. `https://master.example.org` | offen (vor M8.4) |
-| D-M8-07 | macOS-Signierung | unsigniert (Hinweis „Rechtsklick → Öffnen“) / signiert und notarisiert (Apple-Entwicklerkonto, 99 $/Jahr) | offen (Vorschlag: unsigniert für Release 1) |
-| D-M8-08 | Playtest-Runden | Anzahl, Teilnehmer, Ablauf | offen (vor M8.6) |
+| D-M8-05 | Versionsnummer von Release 1 | z. B. `1.0.0` / `0.9.0` (Beta) | E-165: **0.9.0 Beta** |
+| D-M8-06 | Adresse des Master-Servers | deine Domain, z. B. `https://master.example.org` | E-166: **https://elora.bastianswelt.de** (voraussichtlich) |
+| D-M8-07 | macOS-Signierung | unsigniert (Hinweis „Rechtsklick → Öffnen“) / signiert und notarisiert (Apple-Entwicklerkonto, 99 $/Jahr) | E-167: **unsigniert** |
+| D-M8-08 | Playtest-Runden | Anzahl, Teilnehmer, Ablauf | E-168: Projektinhaber fragt Bekannte |

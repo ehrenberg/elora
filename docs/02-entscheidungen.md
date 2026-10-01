@@ -171,6 +171,11 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-162 | 2026-10-01 | Betrieb Master-Server (O-47) | **Projektinhaber betreibt ihn**; Claude liefert Betriebsdateien (systemd, Docker) und Anleitung | Entscheidung Projektinhaber |
 | E-163 | 2026-10-01 | Release-Builds | **Automatisch per GitHub Actions** bei Versions-Tag: Linux (AppImage + tar.gz), Windows (ZIP), macOS (.app im DMG) | Entscheidung Projektinhaber |
 | E-164 | 2026-10-01 | Übersetzte Server-Meldungen (O-48) | **Vor Release 1** umsetzen | Entscheidung Projektinhaber |
+| E-165 | 2026-10-01 | Versionsnummer Release 1 (D-M8-05) | **0.9.0 Beta** | Entscheidung Projektinhaber |
+| E-166 | 2026-10-01 | Adresse des Master-Servers (D-M8-06) | voraussichtlich **https://elora.bastianswelt.de** (Standard in Client und Server) | Entscheidung Projektinhaber |
+| E-167 | 2026-10-01 | macOS-Signierung (D-M8-07) | **Unsigniert** (Hinweis „Rechtsklick → Öffnen“) | Entscheidung Projektinhaber |
+| E-168 | 2026-10-01 | Playtests (D-M8-08) | Projektinhaber fragt Bekannte für Spielrunden | Entscheidung Projektinhaber |
+| E-169 | 2026-10-01 | M8-Plan | Plan aus [`14-m8-plan.md`](14-m8-plan.md) angenommen (offene Punkte beantwortet), Beginn mit M8.1 | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 
