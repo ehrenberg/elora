@@ -167,6 +167,10 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-158 | 2026-10-01 | Aufbau der CTF-Karten | **Spiegelsymmetrisch** (links Rot, rechts Blau) | Entscheidung Projektinhaber |
 | E-159 | 2026-10-01 | M6.10 abgenommen | Release-Karten `dm-wiese`, `dm-wueste`, `dm-winter`, `ctf-wald`, `ctf-nacht` angenommen, Namen bleiben | Entscheidung Projektinhaber |
 | E-160 | 2026-10-01 | M6 abgeschlossen (M6.11) | Abnahme erfüllt: Projektinhaber hat mit dem Editor eine eigene Karte von Grund auf gebaut und gespielt | Entscheidung Projektinhaber |
+| E-161 | 2026-10-01 | Vertrieb Release 1 (O-44) | **Erst GitHub Releases**; itch.io, Flathub, Steam als spätere Möglichkeit festgehalten (O-49) | Entscheidung Projektinhaber |
+| E-162 | 2026-10-01 | Betrieb Master-Server (O-47) | **Projektinhaber betreibt ihn**; Claude liefert Betriebsdateien (systemd, Docker) und Anleitung | Entscheidung Projektinhaber |
+| E-163 | 2026-10-01 | Release-Builds | **Automatisch per GitHub Actions** bei Versions-Tag: Linux (AppImage + tar.gz), Windows (ZIP), macOS (.app im DMG) | Entscheidung Projektinhaber |
+| E-164 | 2026-10-01 | Übersetzte Server-Meldungen (O-48) | **Vor Release 1** umsetzen | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 
@@ -222,9 +226,10 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 - [x] ~~O-19 Skins-System~~ → E-029
 - [x] ~~O-20 Konsole~~ → E-072 (Remote-Konsole später → O-45)
 - [ ] **O-45 Remote-Konsole** (Admin-Befehle aus dem Client mit Passwort) – später (E-119)
-- [ ] **O-48 Übersetzte Server-Meldungen** (Server schickt Nachrichten-Codes mit Parametern statt fertiger deutscher Texte, damit der Client sie übersetzt)
-- [ ] **O-47 Betrieb des Master-Servers** (wer betreibt ihn, unter welcher Adresse; Standard-URL im Client) – vor dem ersten öffentlichen Test
+- [x] ~~O-48 Übersetzte Server-Meldungen~~ → E-164 (Umsetzung M8.1)
+- [x] ~~O-47 Betrieb des Master-Servers~~ → E-162 (Adresse offen: D-M8-06)
 - [x] ~~O-42 Netzwerk-Zielwerte~~ → E-059
 - [x] ~~O-43 Release-Karten~~ → E-134, E-135
-- [ ] **O-44 Vertrieb** (itch.io, Steam, Flathub, Website …)
+- [x] ~~O-44 Vertrieb~~ → E-161
+- [ ] **O-49 Weitere Vertriebskanäle** (itch.io, Flathub, Steam, eigene Website) – nach Release 1 (E-161)
 - [x] ~~O-21 Meilensteine~~ → E-037
