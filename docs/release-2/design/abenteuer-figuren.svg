@@ -1,0 +1,215 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1180" viewBox="0 0 1400 1180" font-family="Inter">
+<defs><linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9cde8"/><stop offset="1" stop-color="#eef4f8"/></linearGradient></defs>
+<rect width="1400" height="1180" fill="url(#sky)"/>
+<text x="40" y="50" font-size="28" fill="#3b3024" text-anchor="start" font-weight="bold" font-style="normal">Abenteuer – Figuren &amp; Objekte (R2-M1, A1.0)</text>
+<text x="40" y="78" font-size="15" fill="#3b3024" text-anchor="start" font-weight="normal" font-style="normal">Alle Bewohner sind Tropfenwesen wie Elora (gleiche Form, Linie und Augen), erkennbar an Farbe und Zubehör. Gegner: rund, bunt, deutlich böse geguckt – ohne Blut (E-211).</text>
+<rect x="33" y="105" width="1340" height="390" rx="18" fill="#1e2a36" fill-opacity="0.10"/><rect x="30" y="100" width="1340" height="390" rx="18" fill="#fffaf0" stroke="#e7dcc8" stroke-width="1.5"/><text x="52" y="132" font-size="19" fill="#3b3024" text-anchor="start" font-weight="bold" font-style="normal">NPCs in Tauwinkel</text>
+<rect x="50" y="386" width="200" height="6" rx="3" fill="#8fbf7a"/>
+<g transform="translate(150,386) scale(0.95,0.95)"><path d="M 58,-4 L 62,-74 Q 64,-90 50,-88" fill="none" stroke="#2b2b2b" stroke-width="10" stroke-linecap="round"/><path d="M 58,-4 L 62,-74 Q 64,-90 50,-88" fill="none" stroke="#a8744a" stroke-width="5" stroke-linecap="round"/>
+  
+  <g id="foot-back">
+    <ellipse id="tint-3" cx="-20" cy="-8" rx="14" ry="8" fill="#8a6fb8" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse id="tint-3" cx="22" cy="-8" rx="14" ry="8" fill="#8a6fb8" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path id="tint-2" d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#b9a3e3" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path id="tint-2-l45" d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#d8ccf0"/>
+  </g>
+  <g id="eyes">
+    <ellipse id="tint-1" cx="2" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <ellipse id="tint-1-b" cx="26" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    
+  </g>
+<circle cx="14" cy="-128" r="12" fill="#e9e6ef" stroke="#2b2b2b" stroke-width="4"/><path d="M -5.5,-63 A 7.5,11 0 0 1 9.5,-63 Z" fill="#b9a3e3" stroke="#2b2b2b" stroke-width="2.5"/><circle cx="2" cy="-63" r="13" fill="#ffffff" fill-opacity="0.18" stroke="#2b2b2b" stroke-width="3"/><path d="M 18.5,-63 A 7.5,11 0 0 1 33.5,-63 Z" fill="#b9a3e3" stroke="#2b2b2b" stroke-width="2.5"/><circle cx="26" cy="-63" r="13" fill="#ffffff" fill-opacity="0.18" stroke="#2b2b2b" stroke-width="3"/><path d="M 15,-64 Q 14,-67 13,-64" fill="none" stroke="#2b2b2b" stroke-width="3"/><path d="M 10,-43 Q 16,-38 22,-43" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/><path d="M -49,-50 Q 0,-26 49,-52 L 47,-36 Q 0,-12 -46,-34 Z" fill="#e8685a" stroke="#2b2b2b" stroke-width="4" stroke-linejoin="round"/><circle cx="-30" cy="-34" r="3" fill="#f6c8c0"/><circle cx="-12" cy="-35" r="3" fill="#f6c8c0"/><circle cx="6" cy="-36" r="3" fill="#f6c8c0"/><circle cx="24" cy="-34" r="3" fill="#f6c8c0"/><circle cx="40" cy="-33" r="3" fill="#f6c8c0"/></g>
+<text x="150" y="424" font-size="17" fill="#3b3024" text-anchor="middle" font-weight="bold" font-style="normal">Oma Pfütze</text>
+<text x="150" y="446" font-size="13" fill="#8a7a66" text-anchor="middle" font-weight="normal" font-style="normal">Älteste · Hauptaufgaben</text>
+<text x="150" y="466" font-size="12" fill="#8a7a66" text-anchor="middle" font-weight="normal" font-style="italic">Haarknoten, Brille, Tuch, Stock</text>
+<rect x="318" y="386" width="200" height="6" rx="3" fill="#8fbf7a"/>
+<g transform="translate(418,386) scale(1.2,1.2)">
+  
+  <g id="foot-back">
+    <ellipse id="tint-3" cx="-20" cy="-8" rx="14" ry="8" fill="#6b4a32" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse id="tint-3" cx="22" cy="-8" rx="14" ry="8" fill="#6b4a32" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path id="tint-2" d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#a8744a" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path id="tint-2-l45" d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#cfb39b"/>
+  </g>
+  <g id="eyes">
+    <ellipse id="tint-1" cx="2" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <ellipse id="tint-1-b" cx="26" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    
+  </g>
+<path d="M -40,-36 L -34,-84 M 44,-36 L 40,-80" fill="none" stroke="#2b2b2b" stroke-width="4"/><path d="M -42,-36 L 46,-36 L 46,-18 Q 4,-6 -44,-18 Z" fill="#5a5a5a" stroke="#2b2b2b" stroke-width="4" stroke-linejoin="round"/><rect x="-6" y="-32" width="22" height="12" rx="3" fill="#4a4a4a" stroke="#2b2b2b" stroke-width="2.5"/><path d="M -10,-82 L 12,-76" stroke="#2b2b2b" stroke-width="7" stroke-linecap="round"/><path d="M 18,-76 L 38,-82" stroke="#2b2b2b" stroke-width="7" stroke-linecap="round"/><path d="M -4,-46 Q 14,-58 32,-46 Q 26,-38 14,-42 Q 2,-38 -4,-46 Z" fill="#4a3424" stroke="#2b2b2b" stroke-width="3"/><path d="M 46,-14 L 66,-78" stroke="#2b2b2b" stroke-width="10" stroke-linecap="round"/><path d="M 46,-14 L 66,-78" stroke="#8a6a4a" stroke-width="5" stroke-linecap="round"/><rect x="50" y="-98" width="34" height="22" rx="5" fill="#c8ced6" stroke="#2b2b2b" stroke-width="4" transform="rotate(17 67 -87)"/></g>
+<text x="418" y="424" font-size="17" fill="#3b3024" text-anchor="middle" font-weight="bold" font-style="normal">Klonk</text>
+<text x="418" y="446" font-size="13" fill="#8a7a66" text-anchor="middle" font-weight="normal" font-style="normal">Schmied · Waffen-Ausbau</text>
+<text x="418" y="466" font-size="12" fill="#8a7a66" text-anchor="middle" font-weight="normal" font-style="italic">groß, Schürze, Brauen, Bart, Hammer</text>
+<rect x="586" y="386" width="200" height="6" rx="3" fill="#8fbf7a"/>
+<g transform="translate(686,386) scale(1.0,1.0)"><path d="M -40,-58 L 22,-14" stroke="#2b2b2b" stroke-width="4"/>
+  
+  <g id="foot-back">
+    <ellipse id="tint-3" cx="-20" cy="-8" rx="14" ry="8" fill="#5aaee8" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse id="tint-3" cx="22" cy="-8" rx="14" ry="8" fill="#5aaee8" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path id="tint-2" d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#8fd0f0" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path id="tint-2-l45" d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#c1e5f7"/>
+  </g>
+  <g id="eyes">
+    <ellipse id="tint-1" cx="2" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <ellipse id="tint-1-b" cx="26" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    <path d="M 10,-41 Q 16,-36 22,-41" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+<path d="M -40,-86 L -52,-50" stroke="#a8744a" stroke-width="6" stroke-linecap="round"/><rect x="-74" y="-52" width="40" height="32" rx="8" fill="#e0c89a" stroke="#2b2b2b" stroke-width="4"/><path d="M -74,-42 L -34,-42" stroke="#2b2b2b" stroke-width="3"/><polygon points="-54.0,-37.0 -52.1,-31.9 -47.0,-30.0 -52.1,-28.1 -54.0,-23.0 -55.9,-28.1 -61.0,-30.0 -55.9,-31.9" fill="#f2c14e" stroke="#2b2b2b" stroke-width="1.5" stroke-linejoin="round"/><circle cx="-26.0" cy="-23.7" r="3.6" fill="#ef7fb0" stroke="#2b2b2b" stroke-width="1.5"/><circle cx="-16.5" cy="-27.3" r="3.6" fill="#f2c14e" stroke="#2b2b2b" stroke-width="1.5"/><circle cx="-7.0" cy="-29.4" r="3.6" fill="#a77be0" stroke="#2b2b2b" stroke-width="1.5"/><circle cx="2.5" cy="-30.0" r="3.6" fill="#ef7fb0" stroke="#2b2b2b" stroke-width="1.5"/><circle cx="12.0" cy="-29.2" r="3.6" fill="#f2c14e" stroke="#2b2b2b" stroke-width="1.5"/><circle cx="21.5" cy="-27.0" r="3.6" fill="#a77be0" stroke="#2b2b2b" stroke-width="1.5"/><circle cx="31.0" cy="-23.3" r="3.6" fill="#ef7fb0" stroke="#2b2b2b" stroke-width="1.5"/><ellipse cx="10" cy="-104" rx="46" ry="9" fill="#f0ece4" stroke="#2b2b2b" stroke-width="4"/><path d="M -16,-106 Q -14,-142 14,-142 Q 38,-142 38,-106 Z" fill="#f0ece4" stroke="#2b2b2b" stroke-width="4" stroke-linejoin="round"/><path d="M -15,-114 Q 12,-108 37,-114 L 37,-106 Q 12,-100 -15,-106 Z" fill="#ef7fb0"/><circle cx="36.0" cy="-122.0" r="5" fill="#f2c14e" stroke="#2b2b2b" stroke-width="1.5"/><circle cx="31.9" cy="-116.3" r="5" fill="#f2c14e" stroke="#2b2b2b" stroke-width="1.5"/><circle cx="25.1" cy="-118.5" r="5" fill="#f2c14e" stroke="#2b2b2b" stroke-width="1.5"/><circle cx="25.1" cy="-125.5" r="5" fill="#f2c14e" stroke="#2b2b2b" stroke-width="1.5"/><circle cx="31.9" cy="-127.7" r="5" fill="#f2c14e" stroke="#2b2b2b" stroke-width="1.5"/><circle cx="30" cy="-122" r="3.5" fill="#e8685a"/><polygon points="66.0,-104.0 68.1,-98.1 74.0,-96.0 68.1,-93.9 66.0,-88.0 63.9,-93.9 58.0,-96.0 63.9,-98.1" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.5" stroke-linejoin="round"/><polygon points="-64.0,-100.0 -62.4,-95.6 -58.0,-94.0 -62.4,-92.4 -64.0,-88.0 -65.6,-92.4 -70.0,-94.0 -65.6,-95.6" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.5" stroke-linejoin="round"/></g>
+<text x="686" y="424" font-size="17" fill="#3b3024" text-anchor="middle" font-weight="bold" font-style="normal">Lotte Lichtblau</text>
+<text x="686" y="446" font-size="13" fill="#8a7a66" text-anchor="middle" font-weight="normal" font-style="normal">Händlerin</text>
+<text x="686" y="466" font-size="12" fill="#8a7a66" text-anchor="middle" font-weight="normal" font-style="italic">Sonnenhut, Glitzerkette, Tasche</text>
+<rect x="854" y="386" width="200" height="6" rx="3" fill="#8fbf7a"/>
+<g transform="translate(954,386) scale(1.0,1.0)"><path d="M 19,-128 q 10,-6 0,-12 q -10,-6 0,-12 q 10,-6 0,-12" fill="none" stroke="#2b2b2b" stroke-width="3.5"/><circle cx="19" cy="-168" r="7" fill="#f2c14e" stroke="#2b2b2b" stroke-width="3"/>
+  
+  <g id="foot-back">
+    <ellipse id="tint-3" cx="-20" cy="-8" rx="14" ry="8" fill="#3fc1b0" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse id="tint-3" cx="22" cy="-8" rx="14" ry="8" fill="#3fc1b0" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path id="tint-2" d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#7fd99a" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path id="tint-2-l45" d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#b9eac7"/>
+  </g>
+  <g id="eyes">
+    <ellipse id="tint-1" cx="2" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <ellipse id="tint-1-b" cx="26" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    
+  </g>
+<path d="M 10,-41 Q 16,-37 24,-43" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/><path d="M 21,-42 Q 23,-36 26,-41" fill="#e8685a" stroke="#2b2b2b" stroke-width="2"/><path d="M -36,-94 Q 6,-104 42,-90" fill="none" stroke="#6b4a32" stroke-width="7"/><circle cx="4" cy="-96" r="11" fill="#bfe6f5" stroke="#2b2b2b" stroke-width="4"/><path d="M -1,-99 Q 2,-103 6,-102" fill="none" stroke="#ffffff" stroke-width="2.5"/><circle cx="28" cy="-96" r="11" fill="#bfe6f5" stroke="#2b2b2b" stroke-width="4"/><path d="M 23,-99 Q 26,-103 30,-102" fill="none" stroke="#ffffff" stroke-width="2.5"/><path d="M 44,-20 L 62,-62" stroke="#2b2b2b" stroke-width="10" stroke-linecap="round"/><path d="M 44,-20 L 62,-62" stroke="#c8ced6" stroke-width="5" stroke-linecap="round"/><path d="M 56,-62 a 11,11 0 1 1 14,4 l -4,-9 l -6,3 Z" fill="#c8ced6" stroke="#2b2b2b" stroke-width="3.5" stroke-linejoin="round"/><ellipse cx="-24" cy="-62" rx="7" ry="5" fill="#3fa090" opacity="0.7"/></g>
+<text x="954" y="424" font-size="17" fill="#3b3024" text-anchor="middle" font-weight="bold" font-style="normal">Tüftel</text>
+<text x="954" y="446" font-size="13" fill="#8a7a66" text-anchor="middle" font-weight="normal" font-style="normal">Erfinder · Fähigkeiten</text>
+<text x="954" y="466" font-size="12" fill="#8a7a66" text-anchor="middle" font-weight="normal" font-style="italic">Schutzbrille, Glühbirnen-Feder, Schlüssel</text>
+<rect x="1122" y="386" width="200" height="6" rx="3" fill="#8fbf7a"/>
+<g transform="translate(1222,386) scale(0.7,0.7)">
+  
+  <g id="foot-back">
+    <ellipse id="tint-3" cx="-20" cy="-8" rx="14" ry="8" fill="#d94a4a" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse id="tint-3" cx="22" cy="-8" rx="14" ry="8" fill="#d94a4a" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path id="tint-2" d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#f28c3a" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path id="tint-2-l45" d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#f8c093"/>
+  </g>
+  <g id="eyes">
+    <ellipse id="tint-1" cx="2" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <ellipse id="tint-1-b" cx="26" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    <path d="M 10,-41 Q 16,-36 22,-41" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+<circle cx="0" cy="-58" r="1.8" fill="#ffffff"/><circle cx="24" cy="-58" r="1.8" fill="#ffffff"/><path d="M -18,-104 Q -4,-146 36,-112 Z" fill="#5aaee8" stroke="#2b2b2b" stroke-width="4" stroke-linejoin="round"/><path d="M -18,-104 Q -40,-104 -44,-96 Q -28,-92 -10,-100" fill="#4a8ec8" stroke="#2b2b2b" stroke-width="4" stroke-linejoin="round"/><circle cx="14" cy="-128" r="4" fill="#f0ece4" stroke="#2b2b2b" stroke-width="2"/><rect x="30" y="-58" width="16" height="8" rx="3" fill="#f0ece4" stroke="#2b2b2b" stroke-width="2" transform="rotate(-25 38 -54)"/><circle cx="-36" cy="-60" r="5" fill="#e8685a" opacity="0.35"/></g>
+<text x="1222" y="424" font-size="17" fill="#3b3024" text-anchor="middle" font-weight="bold" font-style="normal">Pip</text>
+<text x="1222" y="446" font-size="13" fill="#8a7a66" text-anchor="middle" font-weight="normal" font-style="normal">kleiner Bruder · Nebenaufgaben</text>
+<text x="1222" y="466" font-size="12" fill="#8a7a66" text-anchor="middle" font-weight="normal" font-style="italic">klein, Mütze verkehrt, Pflaster</text>
+<g transform="translate(1316,386) scale(0.45,0.45)">
+  
+  <g id="foot-back">
+    <ellipse id="tint-3" cx="-20" cy="-8" rx="14" ry="8" fill="#d9a43a" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse id="tint-3" cx="22" cy="-8" rx="14" ry="8" fill="#d9a43a" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path id="tint-2" d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#f2c14e" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path id="tint-2-l45" d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#f8dd9e"/>
+  </g>
+  <g id="eyes">
+    <ellipse id="tint-1" cx="2" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <ellipse id="tint-1-b" cx="26" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    <path d="M 10,-41 Q 16,-36 22,-41" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</g>
+<text x="1316" y="404" font-size="11" fill="#8a7a66" text-anchor="middle" font-weight="normal" font-style="normal">Elora</text>
+<rect x="33" y="515" width="1340" height="330" rx="18" fill="#1e2a36" fill-opacity="0.10"/><rect x="30" y="510" width="1340" height="330" rx="18" fill="#fffaf0" stroke="#e7dcc8" stroke-width="1.5"/><text x="52" y="542" font-size="19" fill="#3b3024" text-anchor="start" font-weight="bold" font-style="normal">Gegner der Blütenwiesen</text>
+<rect x="80" y="760" width="300" height="6" rx="3" fill="#8fbf7a"/>
+<g transform="translate(210,760) scale(1.15,1.15)"><path d="M -24,-14 l -6,12 l -6,0" fill="none" stroke="#2b2b2b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M 0,-14 l -6,12 l -6,0" fill="none" stroke="#2b2b2b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M 24,-14 l -6,12 l -6,0" fill="none" stroke="#2b2b2b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M 44,-30 q 10,-24 24,-26" fill="none" stroke="#2b2b2b" stroke-width="3.5"/><circle cx="68" cy="-56" r="4" fill="#2b2b2b"/><path d="M 48,-28 q 18,-14 30,-10" fill="none" stroke="#2b2b2b" stroke-width="3.5"/><circle cx="78" cy="-18" r="4" fill="#2b2b2b"/><path d="M -46.0,-19.5 L -60.1,-33.2 L -40.5,-34.5 Z" fill="#f0e0c0" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round"/><path d="M -36.7,-36.9 L -42.8,-55.6 L -24.8,-47.6 Z" fill="#f0e0c0" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round"/><path d="M -18.9,-48.9 L -15.5,-68.3 L -3.4,-52.8 Z" fill="#f0e0c0" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round"/><path d="M 3.4,-52.8 L 15.5,-68.3 L 18.9,-48.9 Z" fill="#f0e0c0" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round"/><path d="M 24.8,-47.6 L 42.8,-55.6 L 36.7,-36.9 Z" fill="#f0e0c0" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round"/><path d="M 40.5,-34.5 L 60.1,-33.2 L 46.0,-19.5 Z" fill="#f0e0c0" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round"/><path d="M -48,-14 A 48,40 0 0 1 48,-14 Z" fill="#c94a4a" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/><path d="M 0,-54 L 0,-14" stroke="#2b2b2b" stroke-width="3"/><circle cx="-24" cy="-30" r="5" fill="#2b2b2b" opacity="0.75"/><circle cx="22" cy="-34" r="5" fill="#2b2b2b" opacity="0.75"/><circle cx="-14" cy="-46" r="5" fill="#2b2b2b" opacity="0.75"/><circle cx="14" cy="-22" r="5" fill="#2b2b2b" opacity="0.75"/><path d="M -36,-36 Q -26,-48 -12,-50" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" opacity="0.5"/><circle cx="50" cy="-22" r="20" fill="#3b3024" stroke="#2b2b2b" stroke-width="4"/><ellipse cx="56" cy="-26" rx="8" ry="9.2" fill="#ffffff" stroke="#2b2b2b" stroke-width="2.5"/><circle cx="58.4" cy="-25" r="4.0" fill="#2b2b2b"/><path d="M 46.4,-37.8 L 64.8,-29.6" stroke="#2b2b2b" stroke-width="4" stroke-linecap="round"/></g>
+<text x="230" y="794" font-size="17" fill="#3b3024" text-anchor="middle" font-weight="bold" font-style="normal">Stachelkäfer</text>
+<text x="230" y="816" font-size="13" fill="#8a7a66" text-anchor="middle" font-weight="normal" font-style="normal">läuft hin und her · Stacheln oben: nicht draufspringen</text>
+<rect x="390" y="760" width="300" height="6" rx="3" fill="#8fbf7a"/>
+<g transform="translate(500,760) scale(1.0,1.0)"><path d="M 0,0 Q -6,-40 0,-70" fill="none" stroke="#2b2b2b" stroke-width="10"/><path d="M 0,0 Q -6,-40 0,-70" fill="none" stroke="#4f9a3a" stroke-width="5"/><path d="M -3,-26 Q -36,-40 -40,-18 Q -20,-12 -3,-26 Z" fill="#6cbf4a" stroke="#2b2b2b" stroke-width="3.5"/><path d="M -1,-40 Q 30,-58 36,-34 Q 16,-28 -1,-40 Z" fill="#6cbf4a" stroke="#2b2b2b" stroke-width="3.5"/><ellipse cx="27.8" cy="-84.8" rx="16" ry="10" transform="rotate(22 27.8 -84.8)" fill="#ef7fb0" stroke="#2b2b2b" stroke-width="3.5"/><ellipse cx="11.7" cy="-68.4" rx="16" ry="10" transform="rotate(67 11.7 -68.4)" fill="#ef7fb0" stroke="#2b2b2b" stroke-width="3.5"/><ellipse cx="-11.2" cy="-68.2" rx="16" ry="10" transform="rotate(112 -11.2 -68.2)" fill="#ef7fb0" stroke="#2b2b2b" stroke-width="3.5"/><ellipse cx="-27.6" cy="-84.3" rx="16" ry="10" transform="rotate(157 -27.6 -84.3)" fill="#ef7fb0" stroke="#2b2b2b" stroke-width="3.5"/><ellipse cx="-27.8" cy="-107.2" rx="16" ry="10" transform="rotate(202 -27.8 -107.2)" fill="#ef7fb0" stroke="#2b2b2b" stroke-width="3.5"/><ellipse cx="-11.7" cy="-123.6" rx="16" ry="10" transform="rotate(247 -11.7 -123.6)" fill="#ef7fb0" stroke="#2b2b2b" stroke-width="3.5"/><ellipse cx="11.2" cy="-123.8" rx="16" ry="10" transform="rotate(292 11.2 -123.8)" fill="#ef7fb0" stroke="#2b2b2b" stroke-width="3.5"/><ellipse cx="27.6" cy="-107.7" rx="16" ry="10" transform="rotate(337 27.6 -107.7)" fill="#ef7fb0" stroke="#2b2b2b" stroke-width="3.5"/><circle cx="0" cy="-96" r="24" fill="#f2c14e" stroke="#2b2b2b" stroke-width="4"/><circle cx="-12" cy="-106" r="2" fill="#c89a2a"/><circle cx="10" cy="-84" r="2" fill="#c89a2a"/><circle cx="-8" cy="-82" r="2" fill="#c89a2a"/><circle cx="14" cy="-108" r="2" fill="#c89a2a"/><ellipse cx="-8" cy="-100" rx="5" ry="5.8" fill="#ffffff" stroke="#2b2b2b" stroke-width="2.5"/><circle cx="-6.5" cy="-99" r="2.5" fill="#2b2b2b"/><path d="M -14.0,-108.5 L -2.5,-101.5" stroke="#2b2b2b" stroke-width="4" stroke-linecap="round"/><ellipse cx="8" cy="-100" rx="5" ry="5.8" fill="#ffffff" stroke="#2b2b2b" stroke-width="2.5"/><circle cx="9.5" cy="-99" r="2.5" fill="#2b2b2b"/><path d="M 2.0,-108.5 L 13.5,-101.5" stroke="#2b2b2b" stroke-width="4" stroke-linecap="round"/><path d="M 10,-92 L 44,-98 L 50,-108 L 52,-82 L 44,-88 L 10,-84 Z" fill="#e0c89a" stroke="#2b2b2b" stroke-width="3.5" stroke-linejoin="round"/><circle cx="84" cy="-94" r="14" fill="#f2c14e" opacity="0.35"/><circle cx="84" cy="-94" r="9" fill="#f8dd6e" stroke="#2b2b2b" stroke-width="2.5"/><circle cx="88.5" cy="-94.0" r="1.2" fill="#c89a2a"/><circle cx="86.2" cy="-90.1" r="1.2" fill="#c89a2a"/><circle cx="81.8" cy="-90.1" r="1.2" fill="#c89a2a"/><circle cx="79.5" cy="-94.0" r="1.2" fill="#c89a2a"/><circle cx="81.8" cy="-97.9" r="1.2" fill="#c89a2a"/><circle cx="86.2" cy="-97.9" r="1.2" fill="#c89a2a"/><circle cx="116" cy="-97" r="12" fill="#f2c14e" opacity="0.35"/><circle cx="116" cy="-97" r="7" fill="#f8dd6e" stroke="#2b2b2b" stroke-width="2.5"/><circle cx="119.5" cy="-97.0" r="1.2" fill="#c89a2a"/><circle cx="117.8" cy="-94.0" r="1.2" fill="#c89a2a"/><circle cx="114.2" cy="-94.0" r="1.2" fill="#c89a2a"/><circle cx="112.5" cy="-97.0" r="1.2" fill="#c89a2a"/><circle cx="114.2" cy="-100.0" r="1.2" fill="#c89a2a"/><circle cx="117.8" cy="-100.0" r="1.2" fill="#c89a2a"/></g>
+<text x="540" y="794" font-size="17" fill="#3b3024" text-anchor="middle" font-weight="bold" font-style="normal">Pollenbläser</text>
+<text x="540" y="816" font-size="13" fill="#8a7a66" text-anchor="middle" font-weight="normal" font-style="normal">steht fest · schießt langsame Pollenkugeln</text>
+<rect x="770" y="760" width="420" height="6" rx="3" fill="#8fbf7a"/>
+<g transform="translate(860,760) scale(1.05,1.05)"><path d="M -20,-34 L -46,-62 L -54,-6 L -36,-4" fill="none" stroke="#2b2b2b" stroke-width="11" stroke-linejoin="round" stroke-linecap="round"/><path d="M -20,-34 L -46,-62 L -54,-6 L -36,-4" fill="none" stroke="#5c9a32" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/><path d="M 6,-20 L 10,-4" stroke="#2b2b2b" stroke-width="4" stroke-linecap="round"/><path d="M 22,-20 L 26,-4" stroke="#2b2b2b" stroke-width="4" stroke-linecap="round"/><ellipse cx="0" cy="-34" rx="36" ry="22" fill="#8fcf5a" stroke="#2b2b2b" stroke-width="4.5"/><path d="M -26,-26 Q 0,-16 24,-26" fill="none" stroke="#6cae3a" stroke-width="3"/><path d="M -30,-44 Q -6,-62 16,-52" fill="#b8e08a" stroke="#2b2b2b" stroke-width="3"/><circle cx="32" cy="-50" r="18" fill="#8fcf5a" stroke="#2b2b2b" stroke-width="4.5"/><path d="M 30,-66 Q 34,-92 54,-96" fill="none" stroke="#2b2b2b" stroke-width="3"/><path d="M 38,-66 Q 48,-86 66,-84" fill="none" stroke="#2b2b2b" stroke-width="3"/><ellipse cx="38" cy="-54" rx="7" ry="8.0" fill="#ffffff" stroke="#2b2b2b" stroke-width="2.5"/><circle cx="40.1" cy="-53" r="3.5" fill="#2b2b2b"/><path d="M 29.6,-61.7 L 45.7,-58.9" stroke="#2b2b2b" stroke-width="4" stroke-linecap="round"/><path d="M 36,-40 Q 42,-36 48,-42" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/></g><g transform="translate(1040,720) scale(1.05,1.05)"><path d="M -80,30 Q -40,-60 10,-30" fill="none" stroke="#8a7a66" stroke-width="3" stroke-dasharray="6 7"/><path d="M -20,-34 L -60,-46 L -86,-20 L -96,-28" fill="none" stroke="#2b2b2b" stroke-width="11" stroke-linejoin="round" stroke-linecap="round"/><path d="M -20,-34 L -60,-46 L -86,-20 L -96,-28" fill="none" stroke="#5c9a32" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/><path d="M 6,-20 L 10,-12" stroke="#2b2b2b" stroke-width="4" stroke-linecap="round"/><path d="M 22,-20 L 26,-12" stroke="#2b2b2b" stroke-width="4" stroke-linecap="round"/><ellipse cx="0" cy="-34" rx="36" ry="22" fill="#8fcf5a" stroke="#2b2b2b" stroke-width="4.5"/><path d="M -26,-26 Q 0,-16 24,-26" fill="none" stroke="#6cae3a" stroke-width="3"/><path d="M -30,-44 Q -6,-62 16,-52" fill="#b8e08a" stroke="#2b2b2b" stroke-width="3"/><circle cx="32" cy="-50" r="18" fill="#8fcf5a" stroke="#2b2b2b" stroke-width="4.5"/><path d="M 30,-66 Q 34,-92 54,-96" fill="none" stroke="#2b2b2b" stroke-width="3"/><path d="M 38,-66 Q 48,-86 66,-84" fill="none" stroke="#2b2b2b" stroke-width="3"/><ellipse cx="38" cy="-54" rx="7" ry="8.0" fill="#ffffff" stroke="#2b2b2b" stroke-width="2.5"/><circle cx="40.1" cy="-53" r="3.5" fill="#2b2b2b"/><path d="M 29.6,-61.7 L 45.7,-58.9" stroke="#2b2b2b" stroke-width="4" stroke-linecap="round"/><path d="M 36,-40 Q 42,-36 48,-42" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/></g>
+<text x="920" y="794" font-size="17" fill="#3b3024" text-anchor="middle" font-weight="bold" font-style="normal">Gras-Hüpfer</text>
+<text x="920" y="816" font-size="13" fill="#8a7a66" text-anchor="middle" font-weight="normal" font-style="normal">wartet und springt Elora an</text>
+<text x="1215" y="640" font-size="12" fill="#8a7a66" text-anchor="middle" font-weight="normal" font-style="normal">Ruhe / Sprung</text>
+<rect x="33" y="865" width="1340" height="290" rx="18" fill="#1e2a36" fill-opacity="0.10"/><rect x="30" y="860" width="1340" height="290" rx="18" fill="#fffaf0" stroke="#e7dcc8" stroke-width="1.5"/><text x="52" y="892" font-size="19" fill="#3b3024" text-anchor="start" font-weight="bold" font-style="normal">Abenteuer-Objekte</text>
+<rect x="70" y="1060" width="180" height="6" rx="3" fill="#8fbf7a"/>
+<g transform="translate(110,1060) scale(1.0,1.0)"><rect x="-34" y="-40" width="68" height="40" rx="6" fill="#a8744a" stroke="#2b2b2b" stroke-width="4"/><rect x="-34" y="-28" width="68" height="7" fill="#e0b85a" stroke="#2b2b2b" stroke-width="2.5"/><path d="M -34,-40 Q -34,-66 0,-66 Q 34,-66 34,-40 Z" fill="#8a5a36" stroke="#2b2b2b" stroke-width="4"/><rect x="-7" y="-46" width="14" height="16" rx="3" fill="#e0b85a" stroke="#2b2b2b" stroke-width="2.5"/></g><g transform="translate(210,1060) scale(1.0,1.0)"><path d="M -20,-44 L -40,-110 M 0,-44 L 0,-118 M 20,-44 L 40,-110" stroke="#f2c14e" stroke-width="7" stroke-linecap="round" opacity="0.5"/><rect x="-34" y="-40" width="68" height="40" rx="6" fill="#a8744a" stroke="#2b2b2b" stroke-width="4"/><rect x="-34" y="-28" width="68" height="7" fill="#e0b85a" stroke="#2b2b2b" stroke-width="2.5"/><path d="M -34,-40 L -40,-74 Q 0,-90 40,-74 L 34,-40" fill="#8a5a36" stroke="#2b2b2b" stroke-width="4" stroke-linejoin="round"/><polygon points="-10.0,-71.0 -7.6,-64.4 -1.0,-62.0 -7.6,-59.6 -10.0,-53.0 -12.4,-59.6 -19.0,-62.0 -12.4,-64.4" fill="#f8dd6e" stroke="#2b2b2b" stroke-width="1.5" stroke-linejoin="round"/><polygon points="14.0,-76.0 15.6,-71.6 20.0,-70.0 15.6,-68.4 14.0,-64.0 12.4,-68.4 8.0,-70.0 12.4,-71.6" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.5" stroke-linejoin="round"/></g>
+<text x="160" y="1094" font-size="16" fill="#3b3024" text-anchor="middle" font-weight="bold" font-style="normal">Truhe</text>
+<text x="160" y="1114" font-size="12" fill="#8a7a66" text-anchor="middle" font-weight="normal" font-style="normal">zu / offen</text>
+<rect x="260" y="1060" width="180" height="6" rx="3" fill="#8fbf7a"/>
+<g transform="translate(350,1050) scale(1.6,1.6)"><g transform="scale(1.0)"><circle cx="0" cy="-6" r="22" fill="#7fe3f0" opacity="0.3"/><path d="M 0,-30 C 3,-20 14,-12 14,-2 C 14,7 7,13 0,13 C -7,13 -14,7 -14,-2 C -14,-12 -3,-20 0,-30 Z" fill="#5ad0e8" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round"/><path d="M -7,-6 Q -6,4 2,7" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/><polygon points="6.0,-16.0 7.6,-11.6 12.0,-10.0 7.6,-8.4 6.0,-4.0 4.4,-8.4 0.0,-10.0 4.4,-11.6" fill="#ffffff" stroke="#ffffff" stroke-width="0.5" stroke-linejoin="round"/></g></g>
+<text x="350" y="1094" font-size="16" fill="#3b3024" text-anchor="middle" font-weight="bold" font-style="normal">Glanztropfen</text>
+<text x="350" y="1114" font-size="12" fill="#8a7a66" text-anchor="middle" font-weight="normal" font-style="normal">Währung</text>
+<rect x="465" y="1060" width="180" height="6" rx="3" fill="#8fbf7a"/>
+<g transform="translate(500,1060) scale(1.0,1.0)"><path d="M -30,0 L -26,-62 Q 0,-92 26,-62 L 30,0 Z" fill="#b8bfc6" stroke="#2b2b2b" stroke-width="4.5" stroke-linejoin="round"/><path d="M -18,-10 L -16,-58" stroke="#ffffff" stroke-width="3" opacity="0.4"/><path d="M 0,-74 C 2,-66 10,-60 10,-52 C 10,-45 5,-40 0,-40 C -5,-40 -10,-45 -10,-52 C -10,-60 -2,-66 0,-74 Z" fill="#9aa4ae" stroke="#2b2b2b" stroke-width="3"/><path d="M -16,-30 Q 0,-22 16,-30" fill="none" stroke="#9aa4ae" stroke-width="4" stroke-linecap="round"/><rect x="-38" y="-6" width="76" height="8" rx="4" fill="#8a949e" stroke="#2b2b2b" stroke-width="3"/></g><g transform="translate(610,1060) scale(1.0,1.0)"><ellipse cx="0" cy="-50" rx="46" ry="56" fill="#7fe3f0" opacity="0.28"/><path d="M -30,0 L -26,-62 Q 0,-92 26,-62 L 30,0 Z" fill="#b8bfc6" stroke="#2b2b2b" stroke-width="4.5" stroke-linejoin="round"/><path d="M -18,-10 L -16,-58" stroke="#ffffff" stroke-width="3" opacity="0.4"/><path d="M 0,-74 C 2,-66 10,-60 10,-52 C 10,-45 5,-40 0,-40 C -5,-40 -10,-45 -10,-52 C -10,-60 -2,-66 0,-74 Z" fill="#5ad0e8" stroke="#2b2b2b" stroke-width="3"/><path d="M -16,-30 Q 0,-22 16,-30" fill="none" stroke="#5ad0e8" stroke-width="4" stroke-linecap="round"/><rect x="-38" y="-6" width="76" height="8" rx="4" fill="#8a949e" stroke="#2b2b2b" stroke-width="3"/><polygon points="-30.0,-92.0 -28.4,-87.6 -24.0,-86.0 -28.4,-84.4 -30.0,-80.0 -31.6,-84.4 -36.0,-86.0 -31.6,-87.6" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.5" stroke-linejoin="round"/><polygon points="32.0,-79.0 33.3,-75.3 37.0,-74.0 33.3,-72.7 32.0,-69.0 30.7,-72.7 27.0,-74.0 30.7,-75.3" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.5" stroke-linejoin="round"/></g>
+<text x="555" y="1094" font-size="16" fill="#3b3024" text-anchor="middle" font-weight="bold" font-style="normal">Speicherpunkt „Quellstein“</text>
+<text x="555" y="1114" font-size="12" fill="#8a7a66" text-anchor="middle" font-weight="normal" font-style="normal">aus / aktiv</text>
+<rect x="700" y="1060" width="180" height="6" rx="3" fill="#8fbf7a"/>
+<g transform="translate(750,1060) scale(1.0,1.0)"><g transform="rotate(-30 0 -14)"><path d="M 0,-14 L 0,-56" stroke="#2b2b2b" stroke-width="10" stroke-linecap="round"/><path d="M 0,-14 L 0,-56" stroke="#8a6a4a" stroke-width="5" stroke-linecap="round"/><circle cx="0" cy="-58" r="9" fill="#e8685a" stroke="#2b2b2b" stroke-width="3.5"/></g><path d="M -26,0 L -20,-20 L 20,-20 L 26,0 Z" fill="#9aa4ae" stroke="#2b2b2b" stroke-width="4" stroke-linejoin="round"/></g><g transform="translate(830,1060) scale(1.0,1.0)"><g transform="rotate(30 0 -14)"><path d="M 0,-14 L 0,-56" stroke="#2b2b2b" stroke-width="10" stroke-linecap="round"/><path d="M 0,-14 L 0,-56" stroke="#8a6a4a" stroke-width="5" stroke-linecap="round"/><circle cx="0" cy="-58" r="9" fill="#6cbf4a" stroke="#2b2b2b" stroke-width="3.5"/></g><path d="M -26,0 L -20,-20 L 20,-20 L 26,0 Z" fill="#9aa4ae" stroke="#2b2b2b" stroke-width="4" stroke-linejoin="round"/></g>
+<text x="790" y="1094" font-size="16" fill="#3b3024" text-anchor="middle" font-weight="bold" font-style="normal">Schalter</text>
+<text x="790" y="1114" font-size="12" fill="#8a7a66" text-anchor="middle" font-weight="normal" font-style="normal">aus / an</text>
+<rect x="890" y="1060" width="180" height="6" rx="3" fill="#8fbf7a"/>
+<g transform="translate(980,1060) scale(1.0,1.0)"><rect x="-30" y="-96" width="60" height="96" rx="6" fill="#a8744a" stroke="#2b2b2b" stroke-width="4.5"/><path d="M -15,-92 L -15,-4" stroke="#6b4a32" stroke-width="3"/><path d="M 0,-92 L 0,-4" stroke="#6b4a32" stroke-width="3"/><path d="M 15,-92 L 15,-4" stroke="#6b4a32" stroke-width="3"/><rect x="-32" y="-76" width="64" height="10" rx="3" fill="#7a828a" stroke="#2b2b2b" stroke-width="3"/><rect x="-32" y="-24" width="64" height="10" rx="3" fill="#7a828a" stroke="#2b2b2b" stroke-width="3"/><circle cx="0" cy="-50" r="10" fill="#f2c14e" stroke="#2b2b2b" stroke-width="3"/><path d="M 0,-54 L 0,-46" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/></g>
+<text x="980" y="1094" font-size="16" fill="#3b3024" text-anchor="middle" font-weight="bold" font-style="normal">Tür / Tor</text>
+<text x="980" y="1114" font-size="12" fill="#8a7a66" text-anchor="middle" font-weight="normal" font-style="normal">öffnet per Schalter oder Aufgabe</text>
+<rect x="1060" y="1060" width="180" height="6" rx="3" fill="#8fbf7a"/>
+<g transform="translate(1150,1050) scale(1.5,1.5)"><ellipse cx="0" cy="-20" rx="26" ry="26" fill="#ef7fb0" opacity="0.25"/><path d="M -16,-20 L -8,-36 L 8,-36 L 16,-20 L 0,0 Z" fill="#c9a0f0" stroke="#2b2b2b" stroke-width="3.5" stroke-linejoin="round"/><path d="M -16,-20 L 16,-20 M -8,-36 L -4,-20 L 0,0 M 8,-36 L 4,-20" fill="none" stroke="#2b2b2b" stroke-width="2"/><path d="M -6,-31 L -2,-24" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/><polygon points="18.0,-42.0 19.6,-37.6 24.0,-36.0 19.6,-34.4 18.0,-30.0 16.4,-34.4 12.0,-36.0 16.4,-37.6" fill="#ffffff" stroke="#2b2b2b" stroke-width="1.5" stroke-linejoin="round"/></g>
+<text x="1150" y="1094" font-size="16" fill="#3b3024" text-anchor="middle" font-weight="bold" font-style="normal">Glitzerstein</text>
+<text x="1150" y="1114" font-size="12" fill="#8a7a66" text-anchor="middle" font-weight="normal" font-style="normal">Sammelstück</text>
+<g transform="translate(1290,1060) scale(0.42,0.42)">
+  
+  <g id="foot-back">
+    <ellipse id="tint-3" cx="-20" cy="-8" rx="14" ry="8" fill="#d9a43a" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse id="tint-3" cx="22" cy="-8" rx="14" ry="8" fill="#d9a43a" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path id="tint-2" d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#f2c14e" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path id="tint-2-l45" d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#f8dd9e"/>
+  </g>
+  <g id="eyes">
+    <ellipse id="tint-1" cx="2" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <ellipse id="tint-1-b" cx="26" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    <path d="M 10,-41 Q 16,-36 22,-41" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</g>
+<text x="1290" y="1080" font-size="11" fill="#8a7a66" text-anchor="middle" font-weight="normal" font-style="normal">Elora</text>
+</svg>
