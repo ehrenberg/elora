@@ -3,6 +3,7 @@
 //! Aufruf: `elora [karte.emap] [--mode dm|tdm|ctf|lms|lts] [--instagib] [--connect adresse:port]`
 //! (Standardkarte: `maps/sandbox.emap`)
 
+mod app_editor;
 mod app_menu;
 mod bindings;
 mod browser;
@@ -10,6 +11,7 @@ mod connection;
 mod controls;
 mod debug_ui;
 mod draw;
+mod editor;
 mod effects;
 mod emotes;
 mod figure;
@@ -144,6 +146,8 @@ enum Screen {
     Menu,
     /// Training (Sandbox) oder Online-Spiel; das Pause-Menü liegt darüber.
     Game,
+    /// Karten-Editor (M6.6).
+    Editor,
 }
 
 /// Spielinformationen eines Frames für HUD, Anzeigen und Panel.
@@ -195,6 +199,9 @@ struct App {
     settings: Settings,
     lang: lang::Lang,
     screen: Screen,
+    editor: Option<editor::Editor>,
+    /// Kartenfläche des Editors aus dem letzten Frame.
+    editor_area: editor::panel::AreaInfo,
     menu: menu::Menu,
     /// Kartennamen für „Server erstellen“.
     maps: Vec<String>,
@@ -245,6 +252,8 @@ impl App {
             lang: lang::Lang::new(settings.language),
             settings,
             screen: Screen::Menu,
+            editor: None,
+            editor_area: editor::panel::AreaInfo::default(),
             menu: menu::Menu::default(),
             maps: app_menu::map_names(),
             bind_capture: None,
@@ -290,7 +299,7 @@ impl App {
                 self.status = format!("Verbinde mit {} …", conn.server);
                 let client = OnlineClient::new(&self.net.name, self.net.skin, Instant::now())
                     .with_store(Box::new(elora_client::map_store::DiskStore {
-                        maps_dir: PathBuf::from("maps"),
+                        maps_dirs: hosting::map_dirs(),
                         download_dir: settings::data_dir()
                             .map_or_else(|| PathBuf::from("downloads"), |d| d.join("downloads")),
                     }));
@@ -714,6 +723,11 @@ impl App {
             self.redraw_menu(dt);
             return;
         }
+        if self.screen == Screen::Editor {
+            self.figures.advance_time(dt);
+            self.redraw_editor();
+            return;
+        }
 
         // Szene aus Sandbox oder Online-Spiel
         let Some((scene, collision, tuning, events)) = self.advance(now, elapsed) else {
@@ -855,6 +869,9 @@ impl App {
         if self.bind_capture.is_some() {
             self.capture_trigger(Trigger::Key(code), pressed);
             return;
+        }
+        if self.screen == Screen::Editor {
+            return; // Tastatur gehört egui (Kürzel im Editor)
         }
         if self.menu_active() {
             if code == KeyCode::F1 && pressed && !event.repeat {
@@ -1034,6 +1051,8 @@ impl ApplicationHandler for App {
             WindowEvent::MouseInput { state, button, .. } => {
                 if self.bind_capture.is_some() {
                     self.capture_trigger(Trigger::Mouse(button), state.is_pressed());
+                } else if self.screen == Screen::Editor {
+                    // Maus gehört egui
                 } else if self.menu_active() {
                     self.menu_mouse_button(button, state);
                 } else if self.cursor_grabbed {

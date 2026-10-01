@@ -423,6 +423,17 @@ impl<'a> Sections<'a> {
 /// Bei falscher Kennung oder Version, beschädigten Daten, überschrittenen Grenzen oder einer
 /// unspielbaren Karte (kein Spawn, falsche Flaggen).
 pub fn decode(data: &[u8]) -> Result<Map> {
+    let map = decode_draft(data)?;
+    validate(&map)?;
+    Ok(map)
+}
+
+/// Wie [`decode`], aber ohne die Spielbarkeits-Prüfung (Spawn, Flaggen) – für Entwürfe im Editor.
+/// Alle Schutzgrenzen und Verweise werden weiterhin geprüft.
+///
+/// # Errors
+/// Bei falscher Kennung oder Version, beschädigten Daten oder überschrittenen Grenzen.
+pub fn decode_draft(data: &[u8]) -> Result<Map> {
     let mut head = Reader(data);
     if head.array::<4>().map_err(|_| MapError::BadMagic)? != MAGIC {
         return Err(MapError::BadMagic);
@@ -481,7 +492,6 @@ pub fn decode(data: &[u8]) -> Result<Map> {
     };
     decode_look(&sections, &mut map)?;
     check_references(&map)?;
-    validate(&map)?;
     Ok(map)
 }
 
@@ -690,7 +700,10 @@ fn check_references(map: &Map) -> Result<()> {
 }
 
 /// Spielbarkeit: mindestens ein Spawn, Flaggen nur paarweise.
-pub(crate) fn validate(map: &Map) -> Result<()> {
+///
+/// # Errors
+/// Ohne Spawn oder mit unpaarigen Flaggen.
+pub fn validate(map: &Map) -> Result<()> {
     let count = |k| map.entities_of(k).count();
     let spawns =
         count(EntityKind::Spawn) + count(EntityKind::SpawnRed) + count(EntityKind::SpawnBlue);
@@ -894,6 +907,7 @@ mod tests {
             decode(&raw(&[info(), game(1, 1, &[0]), ents(&[])])).unwrap_err(),
             MapError::NoSpawn
         );
+        assert!(decode_draft(&raw(&[info(), game(1, 1, &[0]), ents(&[])])).is_ok());
         assert_eq!(
             decode(&raw(&[
                 info(),

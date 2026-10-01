@@ -197,6 +197,7 @@ impl App {
 
     pub(crate) fn apply_menu(&mut self, action: MenuAction) {
         match action {
+            MenuAction::Editor => self.enter_editor(),
             MenuAction::Training => {
                 self.online = None;
                 self.enter_game();

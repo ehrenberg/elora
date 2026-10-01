@@ -44,16 +44,28 @@ fn server_binary() -> anyhow::Result<PathBuf> {
     Ok(path)
 }
 
-/// Karten im Verzeichnis `maps/`.
+/// Kartenordner: mitgelieferte (`maps/`) und eigene aus dem Editor (E-152).
+pub fn map_dirs() -> Vec<PathBuf> {
+    let mut dirs = vec![PathBuf::from("maps")];
+    dirs.extend(crate::settings::user_maps_dir());
+    dirs
+}
+
+/// Karten aus allen Kartenordnern; bei gleichem Namen gilt die eigene nicht doppelt.
 pub fn available_maps() -> Vec<PathBuf> {
-    let mut maps: Vec<PathBuf> = std::fs::read_dir("maps")
-        .into_iter()
-        .flatten()
-        .filter_map(Result::ok)
-        .map(|e| e.path())
-        .filter(|p| p.extension().is_some_and(|e| e == elora_map::EXTENSION))
-        .collect();
-    maps.sort();
+    let mut maps: Vec<PathBuf> = Vec::new();
+    for dir in map_dirs() {
+        let mut found: Vec<PathBuf> = std::fs::read_dir(dir)
+            .into_iter()
+            .flatten()
+            .filter_map(Result::ok)
+            .map(|e| e.path())
+            .filter(|p| p.extension().is_some_and(|e| e == elora_map::EXTENSION))
+            .filter(|p| !maps.iter().any(|m| m.file_name() == p.file_name()))
+            .collect();
+        found.sort();
+        maps.extend(found);
+    }
     maps
 }
 

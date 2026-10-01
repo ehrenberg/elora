@@ -181,6 +181,28 @@ fn merge(asset: &SvgAsset) -> Mesh {
     batch.to_mesh()
 }
 
+/// Welche Ebenen gezeichnet werden (der Editor blendet einzelne aus).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[allow(clippy::struct_excessive_bools)]
+pub struct Layers {
+    /// Himmel über den ganzen Ausschnitt (der Editor zeichnet ihn nur innerhalb der Karte).
+    pub sky: bool,
+    pub backgrounds: bool,
+    pub decor_back: bool,
+    pub terrain: bool,
+    pub decor_front: bool,
+}
+
+impl Layers {
+    pub const ALL: Self = Self {
+        sky: true,
+        backgrounds: true,
+        decor_back: true,
+        terrain: true,
+        decor_front: true,
+    };
+}
+
 /// Karte, Zwischenspeicher und Zeit für einen Frame.
 #[derive(Debug)]
 pub struct MapLayer<'a> {
@@ -253,17 +275,37 @@ impl MapView {
         camera: &Camera,
         time: LookTime,
     ) {
-        let tl = camera.top_left();
-        batch.fill_rect_vgradient(
-            tl,
-            tl + camera.size,
-            map_art::rgba(map.sky.top),
-            map_art::rgba(map.sky.bottom),
-        );
+        self.draw_back_layers(batch, map, camera, time, Layers::ALL);
+    }
+
+    /// Wie [`MapView::draw_back`], nur die eingeschalteten Ebenen.
+    pub fn draw_back_layers(
+        &mut self,
+        batch: &mut ShapeBatch,
+        map: &Map,
+        camera: &Camera,
+        time: LookTime,
+        layers: Layers,
+    ) {
+        if layers.sky {
+            let tl = camera.top_left();
+            batch.fill_rect_vgradient(
+                tl,
+                tl + camera.size,
+                map_art::rgba(map.sky.top),
+                map_art::rgba(map.sky.bottom),
+            );
+        }
         self.sync(map);
-        self.backgrounds(batch, map, camera, time);
-        self.decor(batch, map, &map.decor_back, camera, time);
-        self.terrain(batch, camera, time);
+        if layers.backgrounds {
+            self.backgrounds(batch, map, camera, time);
+        }
+        if layers.decor_back {
+            self.decor(batch, map, &map.decor_back, camera, time);
+        }
+        if layers.terrain {
+            self.terrain(batch, camera, time);
+        }
     }
 
     /// Deko vor den Figuren.

@@ -11,7 +11,7 @@ use elora_sim::{
 };
 
 pub use ascii::ENTITY_CHARS;
-pub use binary::{FORMAT_VERSION, MapError, checksum, decode, encode};
+pub use binary::{FORMAT_VERSION, MapError, checksum, decode, decode_draft, encode, validate};
 pub use look::{Art, Background, Decor, Envelope, Image, Rgba, Sky};
 
 /// Dateiendung der Karten (ohne Punkt).

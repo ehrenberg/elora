@@ -32,6 +32,8 @@ pub enum Page {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum MenuAction {
     Training,
+    /// Karten-Editor öffnen (M6.6).
+    Editor,
     Connect(String),
     /// Server mit den Werten aus [`CreateForm`] starten und verbinden.
     Host,
@@ -113,7 +115,8 @@ pub struct Menu {
     pub last_click: Option<(std::time::Instant, Vec2)>,
 }
 
-const TAB_COLORS: [Color; 5] = [GREEN, BLUE, VIOLET, ORANGE, GRAY];
+/// Farbe des gewählten Reiters (Editor, Training und Beenden sind Aktionen und nie gewählt).
+const TAB_COLORS: [Color; 6] = [GREEN, BLUE, VIOLET, GRAY, ORANGE, GRAY];
 
 impl Menu {
     /// Hauptmenü zeichnen; liefert eine Aktion und ob Einstellungen geändert wurden.
@@ -303,13 +306,14 @@ fn top_bar(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, page: &mut Page) -> Option<MenuAct
         lang.t("menu.play"),
         lang.t("menu.training"),
         lang.t("menu.create"),
+        lang.t("menu.editor"),
         lang.t("menu.settings"),
         lang.t("menu.quit"),
     ];
     let selected = match page {
         Page::Play => 0,
         Page::Create => 2,
-        Page::Settings => 3,
+        Page::Settings => 4,
     };
     match ui.tabs(
         "top",
@@ -322,8 +326,9 @@ fn top_bar(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, page: &mut Page) -> Option<MenuAct
         Some(0) => *page = Page::Play,
         Some(1) => return Some(MenuAction::Training),
         Some(2) => *page = Page::Create,
-        Some(3) => *page = Page::Settings,
-        Some(4) => return Some(MenuAction::Quit),
+        Some(3) => return Some(MenuAction::Editor),
+        Some(4) => *page = Page::Settings,
+        Some(5) => return Some(MenuAction::Quit),
         _ => {}
     }
     None

@@ -48,6 +48,11 @@ pub fn data_dir() -> Option<PathBuf> {
         .map(|p| p.join("elora"))
 }
 
+/// Eigene Karten aus dem Editor (E-152).
+pub fn user_maps_dir() -> Option<PathBuf> {
+    data_dir().map(|d| d.join("maps"))
+}
+
 /// Pfad der Einstellungsdatei (Rückfall: Arbeitsverzeichnis).
 pub fn settings_path() -> PathBuf {
     config_dir().map_or_else(|| PathBuf::from(SETTINGS_FILE), |d| d.join(SETTINGS_FILE))

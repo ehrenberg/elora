@@ -30,11 +30,11 @@ impl MapStore for MemoryStore {
     }
 }
 
-/// Auf der Platte: eigene Karten aus `maps/` und heruntergeladene in `downloads`
-/// (Dateiname `<name>-<prüfsumme>.emap`, so liegen verschiedene Stände nebeneinander).
+/// Auf der Platte: Karten aus `maps_dirs` (mitgelieferte und eigene, E-152) und heruntergeladene
+/// in `download_dir` (Dateiname `<name>-<prüfsumme>.emap`, so liegen verschiedene Stände nebeneinander).
 #[derive(Debug, Clone)]
 pub struct DiskStore {
-    pub maps_dir: PathBuf,
+    pub maps_dirs: Vec<PathBuf>,
     pub download_dir: PathBuf,
 }
 
@@ -76,11 +76,11 @@ impl DiskStore {
 
 impl MapStore for DiskStore {
     fn find(&mut self, name: &str, checksum: &MapChecksum) -> Option<Vec<u8>> {
+        let file = format!("{}.emap", safe_name(name));
         read_matching(&self.download_path(name, checksum), checksum).or_else(|| {
-            read_matching(
-                &self.maps_dir.join(format!("{}.emap", safe_name(name))),
-                checksum,
-            )
+            self.maps_dirs
+                .iter()
+                .find_map(|d| read_matching(&d.join(&file), checksum))
         })
     }
 
@@ -115,7 +115,7 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("elora-store-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
         let mut store = DiskStore {
-            maps_dir: dir.join("maps"),
+            maps_dirs: vec![dir.join("maps")],
             download_dir: dir.join("downloads"),
         };
         let data = b"EMAP-Testdaten".to_vec();
@@ -124,8 +124,8 @@ mod tests {
         store.store("arena", &sum, &data);
         assert_eq!(store.find("arena", &sum), Some(data.clone()));
         // eigene Karte in maps/ mit gleichem Inhalt wird ebenfalls gefunden, andere nicht
-        std::fs::create_dir_all(&store.maps_dir).unwrap();
-        std::fs::write(store.maps_dir.join("eigen.emap"), &data).unwrap();
+        std::fs::create_dir_all(&store.maps_dirs[0]).unwrap();
+        std::fs::write(store.maps_dirs[0].join("eigen.emap"), &data).unwrap();
         assert!(store.find("eigen", &sum).is_some());
         assert!(store.find("eigen", &[0; 32]).is_none());
         let _ = std::fs::remove_dir_all(&dir);

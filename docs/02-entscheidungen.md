@@ -156,6 +156,9 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-147 | 2026-10-01 | Kartengrafik (M6.3) | Materialien Erde/Gras, Sand, Schnee, Stein (nicht hookbar), Eis; Spezial-Tiles Tod, Holz-Plattform, Sprungfeld, Beschleuniger; Deko Büsche, Blumen, Gras, Steine, Pilze, Bäume, Zaun, Schilder; Hintergründe Wolken, Hügel, Berge, Wald, Nachthimmel | Entscheidung Projektinhaber |
 | E-148 | 2026-10-01 | M6.3 abgenommen | Kartengrafik nach Überarbeitung (Stein, Beschleuniger-Pfeil, Büsche, Baum, Wald) angenommen; **Stein nur für nicht hookbare Wände**, hookbar sind Erde, Sand, Schnee | Entscheidung Projektinhaber |
 | E-149 | 2026-10-01 | M6.4 abgenommen | Kartenlook im Spiel (Parallax, Deko, Animationen, Zwischenspeicher) im Playtest angenommen | Entscheidung Projektinhaber |
+| E-150 | 2026-10-01 | Editor-Look (M6.6) | **egui dunkel** (Standard-Dunkeldesign), hebt sich vom Spiel ab | Entscheidung Projektinhaber |
+| E-151 | 2026-10-01 | Editor-Layout | **Alles rechts:** eine Seitenleiste mit Werkzeugen, Ebenen und Eigenschaften; Karte nimmt den Rest | Entscheidung Projektinhaber |
+| E-152 | 2026-10-01 | Speicherort eigener Karten | **Benutzerverzeichnis** (`~/.local/share/elora/maps`, Windows/macOS im Einstellungsordner); Training, Hosten und Download-Suche finden sie dort | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 

@@ -233,6 +233,11 @@ impl Figures {
     }
 
     /// Laufzeit der Darstellung in Sekunden (für Animationen).
+    /// Uhr weiterlaufen lassen, ohne Figuren zu aktualisieren (z. B. Animationen im Editor).
+    pub fn advance_time(&mut self, dt: f32) {
+        self.time += dt;
+    }
+
     pub fn time(&self) -> f32 {
         self.time
     }

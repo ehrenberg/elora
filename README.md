@@ -117,6 +117,8 @@ cargo run --bin elora -- --connect 127.0.0.1:8303
 
 oder im Hauptmenü unter *Spielen* (Adresse, Favoriten). Für Entwickler zusätzlich im Debug-Panel (F1) → *Netzwerk*.
 
+**Karten-Editor:** Hauptmenü → *Editor*. Seitenleiste rechts: Datei (Neu, Öffnen, Speichern), Rückgängig/Wiederholen, Pinsel (Tile-Arten), Ebenen ein-/ausblenden, Karteneigenschaften (Name, Autor, Größe, Himmel). Kartenfläche: mittlere Maustaste oder Leertaste + Ziehen verschiebt, Mausrad zoomt, links malen, rechts löschen. Kürzel: Strg+Z/Strg+Y, Strg+S, Strg+N, Strg+O, Esc zurück. Eigene Karten liegen im Benutzerverzeichnis (`~/.local/share/elora/maps`, Windows/macOS im Einstellungsordner) und erscheinen danach in Training und *Server erstellen*.
+
 **Aus dem Client hosten:** Hauptmenü → *Server erstellen* (Name, Karte, Modus, Instagib, Spieler) → *Server starten*. Der Client schreibt `server.toml` und startet `elora-server` als eigenen Prozess (vorher einmal `cargo build`). Mehr Optionen im Debug-Panel → *Netzwerk* → *Server einrichten …*.
 
 **Master-Server (Internet-Liste):**
