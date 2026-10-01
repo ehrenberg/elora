@@ -111,7 +111,9 @@ impl Sandbox {
             Ok(map) => {
                 self.stop_recording("Karte geändert");
                 let elora = self.character().cloned();
+                let abilities = self.abilities();
                 let (mut world, player) = fresh_world(&map, self.world.tuning.clone());
+                world.set_abilities(player, abilities);
                 if let Some(p) = world.players[player].as_mut() {
                     p.character = elora;
                 }
@@ -136,7 +138,9 @@ impl Sandbox {
     /// freien Spiel. Liefert die bisherige Karte zum Wiederherstellen.
     pub fn play_map(&mut self, map: Map) -> Map {
         self.stop_recording("Testspiel");
-        let (world, player) = fresh_world(&map, self.world.tuning.clone());
+        let abilities = self.abilities();
+        let (mut world, player) = fresh_world(&map, self.world.tuning.clone());
+        world.set_abilities(player, abilities);
         self.world = world;
         self.player = player;
         self.rules = None;
@@ -154,11 +158,20 @@ impl Sandbox {
             .rules
             .as_ref()
             .map_or_else(|| self.world.tuning.clone(), |_| self.base_tuning());
+        let abilities = self.abilities();
         let (mut world, player) = fresh_world(&self.map, tuning);
+        world.set_abilities(player, abilities);
         self.rules = cfg.map(|c| Rules::new(c, &mut world, false));
         self.world = world;
         self.player = player;
         self.sync_prev();
+    }
+
+    /// Fähigkeiten von Elora (Panel, A1.1) – bleiben beim Neuladen der Karte erhalten.
+    fn abilities(&self) -> elora_sim::Abilities {
+        self.world
+            .player(self.player)
+            .map_or(elora_sim::Abilities::NONE, |p| p.abilities)
     }
 
     /// Tuning ohne Instagib-Anpassungen (Regler im Panel).
