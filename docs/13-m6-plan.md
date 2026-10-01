@@ -1,6 +1,6 @@
 # M6 – Karten & Editor: Umsetzungsplan
 
-Status: **Entscheidungen getroffen (E-129–E-137), Plan wartet auf Freigabe** · Grundlage: [`06-roadmap.md`](06-roadmap.md) M6 (nach M7, E-111), E-024, E-028, E-030, E-031, E-089, O-37, O-43
+Status: **angenommen** (E-129–E-138), in Umsetzung · Grundlage: [`06-roadmap.md`](06-roadmap.md) M6 (nach M7, E-111), E-024, E-028, E-030, E-031, E-089, O-37, O-43
 
 ## Ziel
 

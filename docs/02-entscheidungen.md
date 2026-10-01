@@ -144,6 +144,7 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-135 | 2026-10-01 | Kartenbau | **Claude baut die Karten nach Vorgaben des Projektinhabers**, Abnahme im Playtest | Entscheidung Projektinhaber |
 | E-136 | 2026-10-01 | Karten-Download (D-M6-07) | **Automatisch:** Server schickt fehlende Karten komprimiert in Teilen, Prüfsumme, Zwischenspeicher im Client | Entscheidung Projektinhaber |
 | E-137 | 2026-10-01 | Neue Tile-Arten (D-M6-08) | **Plattform** (von unten/seitlich durchlässig), **Eis** (rutschig), **Sprungfeld** (wirft nach oben/schräg), **Beschleuniger** (Laufband) – Werte als Tuning-Vorschlag zur Freigabe | Entscheidung Projektinhaber |
+| E-138 | 2026-10-01 | M6-Plan | Plan aus [`13-m6-plan.md`](13-m6-plan.md) freigegeben, Beginn mit M6.0 (Entwürfe Kartenlook) | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 
