@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 -30 24 32">
+  <!-- Blume (Stil A). Ursprung unten in der Mitte. -->
+  <path d="M 0,0 Q -2,-10 0,-18" stroke="#4f8a3a" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <path d="M -1,-7 Q -7,-11 -8,-6 Q -4,-4 -1,-7 Z" fill="#7bbf55" stroke="#2b2b2b" stroke-width="1.2"/>
+  <circle cx="0" cy="-25" r="3.6" fill="#f2c14e" stroke="#2b2b2b" stroke-width="1.4"/><circle cx="4.76" cy="-21.55" r="3.6" fill="#f2c14e" stroke="#2b2b2b" stroke-width="1.4"/><circle cx="2.94" cy="-15.95" r="3.6" fill="#f2c14e" stroke="#2b2b2b" stroke-width="1.4"/><circle cx="-2.94" cy="-15.95" r="3.6" fill="#f2c14e" stroke="#2b2b2b" stroke-width="1.4"/><circle cx="-4.76" cy="-21.55" r="3.6" fill="#f2c14e" stroke="#2b2b2b" stroke-width="1.4"/>
+  <circle cx="0" cy="-20" r="2.6" fill="#e0574f" stroke="#2b2b2b" stroke-width="1.2"/>
+</svg>

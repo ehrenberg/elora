@@ -1,4 +1,4 @@
-# Elora-Master für Webspace (PHP)
+# Elora-Master und Projektseite für Webspace (PHP)
 
 Gleiche Schnittstelle wie das Programm `elora-master`, aber als PHP-Skript für normales
 Webhosting ohne eigenen Dienst. Client und Server brauchen keine Änderung.
@@ -14,11 +14,19 @@ Webhosting ohne eigenen Dienst. Client und Server brauchen keine Änderung.
 
 1. Subdomain `elora.bastianswelt.de` im Kundenmenü anlegen, Zielordner z. B. `elora/`.
 2. Den **Inhalt** dieses Ordners dorthin hochladen (FTP/SFTP), also:
-   `master.php`, `config.php`, `.htaccess`, Ordner `data/` mit seiner `.htaccess`.
-   Die Startseite (`/`) bleibt frei für eine eigene `index.html` (z. B. Projektseite).
+   `index.php` (Projektseite), `master.php` (Master), `common.php`, `config.php`,
+   `.htaccess`, Ordner `assets/` (Grafiken, Schrift) und Ordner `data/` mit seiner `.htaccess`.
    Dateien mit Punkt am Anfang sind in manchen FTP-Programmen versteckt – mit hochladen!
 3. Ordner `data/` für PHP beschreibbar machen (meist schon so; sonst Rechte 755 oder 775).
 4. HTTPS für die Subdomain einschalten.
+
+## Projektseite
+
+`index.php` ist die Startseite: Vorstellung des Spiels, Links zu GitHub und den Downloads und
+ein **Live-Status** der Server. Die Seite fragt die gelisteten Server selbst per UDP nach Name,
+Karte, Modus und Spielern (alle gleichzeitig, höchstens 48) und merkt sich das 15 Sekunden in
+`data/status.json`. Texte der Server werden maskiert ausgegeben. Grafiken stammen aus dem
+Projekt (`assets/*.svg`, CC-BY-SA 4.0), die Schrift ist Inter (OFL, `assets/Inter-OFL.txt`).
 
 ## Prüfen
 

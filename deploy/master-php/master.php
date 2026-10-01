@@ -12,6 +12,7 @@
 declare(strict_types=1);
 
 $config = require __DIR__ . '/config.php';
+require __DIR__ . '/common.php';
 
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
@@ -34,108 +35,11 @@ function client_ip(array $config): ?string
     return filter_var($ip, FILTER_VALIDATE_IP) !== false ? $ip : null;
 }
 
-/** `ip:port` wie in Rust (`SocketAddr`): IPv6 in eckigen Klammern. */
-function addr(string $ip, int $port): string
-{
-    return (str_contains($ip, ':') ? "[$ip]" : $ip) . ':' . $port;
-}
-
-/** Liste unter Dateisperre lesen und ändern; `$change` bekommt die Daten als Referenz. */
-function with_store(array $config, bool $write, callable $change)
-{
-    $dir = dirname($config['data_file']);
-    if (!is_dir($dir)) {
-        @mkdir($dir, 0700, true);
-    }
-    $fh = @fopen($config['data_file'], 'c+');
-    if ($fh === false) {
-        reply(500, ['ok' => false, 'message' => 'Datenablage nicht beschreibbar']);
-    }
-    flock($fh, $write ? LOCK_EX : LOCK_SH);
-    $raw = stream_get_contents($fh);
-    $data = json_decode($raw ?: '', true);
-    if (!is_array($data)) {
-        $data = ['listed' => [], 'last' => []];
-    }
-    // Abgelaufenes entfernen
-    $now = time();
-    $data['listed'] = array_filter($data['listed'] ?? [], fn ($until) => $until > $now);
-    $keep = max($config['min_reregister'], $config['expiry']);
-    $data['last'] = array_filter($data['last'] ?? [], fn ($t) => $now - $t < $keep);
-    $result = $change($data, $now);
-    if ($write) {
-        ftruncate($fh, 0);
-        rewind($fh);
-        fwrite($fh, json_encode($data));
-        fflush($fh);
-    }
-    flock($fh, LOCK_UN);
-    fclose($fh);
-    return $result;
-}
-
-/** Vorzeichenlose Zahl im Varint-Format des Spiels (7 Bit je Byte). */
-function read_uvar(string $data, int &$pos): ?int
-{
-    $value = 0;
-    for ($shift = 0; $shift < 35; $shift += 7) {
-        if ($pos >= strlen($data)) {
-            return null;
-        }
-        $byte = ord($data[$pos++]);
-        $value |= ($byte & 0x7f) << $shift;
-        if (($byte & 0x80) === 0) {
-            return $value;
-        }
-    }
-    return null;
-}
-
-/**
- * Info-Abfrage wie `elora_net::InfoProbe`: Token anfordern (512 Byte, gegen Verstärkung),
- * dann Info mit Token und Zufallswert. Liefert die Protokollversion oder null.
- */
+/** Protokollversion eines Servers per UDP-Info-Abfrage, oder `null`. */
 function probe(string $ip, int $port, float $timeout): ?int
 {
-    $sock = @stream_socket_client('udp://' . addr($ip, $port), $errno, $error, $timeout);
-    if ($sock === false) {
-        return null;
-    }
-    stream_set_blocking($sock, false);
-    $tokenRequest = chr(1) . "ELORA\0\0\x01" . str_repeat("\0", 512 - 9);
-    $deadline = microtime(true) + $timeout;
-    $nextSend = 0.0;
-    $infoRequest = null;
-    $nonce = random_bytes(4);
-    $version = null;
-    while (($now = microtime(true)) < $deadline) {
-        if ($now >= $nextSend) {
-            @fwrite($sock, $infoRequest ?? $tokenRequest);
-            $nextSend = $now + 0.5;
-        }
-        $wait = max(0.0, min($deadline, $nextSend) - $now);
-        $read = [$sock];
-        $none = null;
-        if (@stream_select($read, $none, $none, (int) $wait, (int) (fmod($wait, 1.0) * 1e6)) < 1) {
-            continue;
-        }
-        $p = @fread($sock, 2048);
-        if ($p === false || $p === '') {
-            continue;
-        }
-        if ($infoRequest === null && strlen($p) === 9 && $p[0] === chr(2)) {
-            $infoRequest = chr(8) . substr($p, 1, 8) . $nonce;
-            @fwrite($sock, $infoRequest);
-            $nextSend = microtime(true) + 0.5;
-        } elseif ($infoRequest !== null && strlen($p) >= 5 && $p[0] === chr(9)
-            && substr($p, 1, 4) === $nonce) {
-            $pos = 5;
-            $version = read_uvar($p, $pos);
-            break;
-        }
-    }
-    fclose($sock);
-    return $version;
+    $info = elora_query(['s' => [$ip, $port]], $timeout)['s'] ?? null;
+    return $info === null ? null : (new EloraReader($info))->uvar();
 }
 
 $route = $_GET['route'] ?? trim((string) parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH), '/');
@@ -143,8 +47,7 @@ $route = basename($route);
 $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 
 if ($method === 'GET' && $route === 'servers') {
-    $list = with_store($config, false, fn (array &$data) => array_keys($data['listed']));
-    sort($list);
+    $list = elora_listed($config);
     reply(200, ['servers' => array_values($list)]);
 }
 
@@ -161,14 +64,14 @@ if ($method === 'POST' && $route === 'register') {
     if ($port < 1 || $port > 65535) {
         reply(400, ['ok' => false, 'message' => 'ungültiger Port']);
     }
-    $key = addr($ip, $port);
+    $key = elora_addr($ip, $port);
     // Grenzen prüfen und Anmeldung vermerken (kurz gesperrt, die UDP-Prüfung läuft danach)
-    $refused = with_store($config, true, function (array &$data, int $now) use ($config, $key, $ip) {
+    $refused = elora_store($config, true, function (array &$data, int $now) use ($config, $key, $ip) {
         if (isset($data['last'][$key]) && $now - $data['last'][$key] < $config['min_reregister']) {
             return 'zu häufige Anmeldung';
         }
         if (!isset($data['listed'][$key])) {
-            $prefix = addr($ip, 0);
+            $prefix = elora_addr($ip, 0);
             $prefix = substr($prefix, 0, -1);
             $same = count(array_filter(array_keys($data['listed']), fn ($a) => str_starts_with($a, $prefix)));
             if ($same >= $config['max_per_ip']) {
@@ -193,9 +96,13 @@ if ($method === 'POST' && $route === 'register') {
             reply(400, ['ok' => false, 'message' => 'Server meldet falsche Protokollversion']);
         }
     }
-    with_store($config, true, function (array &$data, int $now) use ($config, $key) {
+    $stored = false;
+    elora_store($config, true, function (array &$data, int $now) use ($config, $key) {
         $data['listed'][$key] = $now + $config['expiry'];
-    });
+    }, $stored);
+    if (!$stored) {
+        reply(500, ['ok' => false, 'message' => 'Datenablage nicht beschreibbar']);
+    }
     reply(200, ['ok' => true, 'message' => 'gelistet']);
 }
 

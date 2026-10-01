@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="100" viewBox="-12 -10 24 20">
+  <!-- Leben (E-101, Stil A). Welteinheiten, Ursprung = Pickup-Mitte. -->
+  <path d="M 0,9 C -13,1 -13,-10 -5.5,-10 C -2.5,-10 0,-7.5 0,-5 C 0,-7.5 2.5,-10 5.5,-10 C 13,-10 13,1 0,9 Z" fill="#e05a7a" stroke="#2b2b2b" stroke-width="1.6" stroke-linejoin="round"/>
+  <ellipse cx="-5" cy="-5.5" rx="2.6" ry="1.8" fill="#ffffff" fill-opacity="0.8"/>
+</svg>

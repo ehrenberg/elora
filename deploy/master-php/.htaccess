@@ -4,6 +4,6 @@ RewriteEngine On
 RewriteRule ^(servers|register)/?$ master.php?route=$1 [L,QSA]
 
 # Einstellungen und Daten nicht ausliefern
-<FilesMatch "^(config\.php|LIESMICH\.md)$">
+<FilesMatch "^(config\.php|common\.php|LIESMICH\.md)$">
     Require all denied
 </FilesMatch>

@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-20 -20 40 21">
+  <!-- Stein (Stil A). Ursprung unten in der Mitte. -->
+  <path d="M -16,0 Q -18,-12 -6,-16 Q 8,-19 14,-9 Q 18,-2 16,0 Z" fill="#9aa4ad" stroke="#2b2b2b" stroke-width="2"/>
+  <path d="M -8,-12 Q -2,-15 4,-13" stroke="#c3cad1" stroke-width="2" stroke-linecap="round" fill="none"/>
+</svg>
