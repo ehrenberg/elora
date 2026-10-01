@@ -10,6 +10,9 @@ use elora_sim::{BeltDir, JumpDir, Tile, Vec2};
 use super::tools::{Cells, ENTITIES, Tool};
 use super::{AfterDiscard, Dialog, Editor};
 use crate::lang::Lang;
+use crate::map_view::MapView;
+
+use super::panel_look;
 
 /// Höchstlänge von Name und Autor in Zeichen (die Datei erlaubt 128 Bytes, UTF-8 bis 4 Bytes je Zeichen).
 const NAME_CHARS: usize = 32;
@@ -88,12 +91,15 @@ fn swatch(ui: &mut egui::Ui, color: u32) {
 }
 
 /// Baut die ganze Editor-Oberfläche. `window` = Fenstergröße in Pixeln, `ppp` = Pixel je Punkt.
+#[allow(clippy::too_many_arguments)]
 pub fn ui(
     ui: &mut egui::Ui,
     editor: &mut Editor,
+    map_view: &mut MapView,
     lang: &Lang,
     window: Vec2,
     ppp: f32,
+    time_ms: i64,
     now: Instant,
 ) -> AreaInfo {
     ui.ctx().set_visuals(egui::Visuals::dark());
@@ -102,10 +108,10 @@ pub fn ui(
         .exact_size(PANEL_WIDTH)
         .resizable(false)
         .show(ui, |ui| {
-            egui::ScrollArea::vertical().show(ui, |ui| side(ui, editor, lang, now));
+            egui::ScrollArea::vertical().show(ui, |ui| side(ui, editor, lang, time_ms, now));
         });
     let info = egui::CentralPanel::no_frame()
-        .show(ui, |ui| area(ui, editor, window, ppp, now))
+        .show(ui, |ui| area(ui, editor, map_view, window, ppp, now))
         .inner;
     dialogs(ui.ctx(), editor, lang);
     info
@@ -163,6 +169,7 @@ fn shortcuts(ui: &egui::Ui, editor: &mut Editor, now: Instant) {
             Key::Num5,
             Key::Num6,
             Key::Num7,
+            Key::Num8,
         ];
         for (k, tool) in digits.into_iter().zip(Tool::ALL) {
             if i.consume_key(Modifiers::NONE, k) {
@@ -177,12 +184,15 @@ fn shortcuts(ui: &egui::Ui, editor: &mut Editor, now: Instant) {
             editor.brush_size = (editor.brush_size + 1).min(MAX_BRUSH);
         }
         if i.consume_key(Modifiers::NONE, Key::Delete) {
-            editor.delete_selection(now);
+            match (editor.tool, editor.selected_decor) {
+                (Tool::Decor, Some(r)) => editor.remove_decor(r, now),
+                _ => editor.delete_selection(now),
+            }
         }
     });
 }
 
-fn side(ui: &mut egui::Ui, editor: &mut Editor, lang: &Lang, now: Instant) {
+fn side(ui: &mut egui::Ui, editor: &mut Editor, lang: &Lang, time_ms: i64, now: Instant) {
     ui.heading(lang.t("editor.title"));
     let title = if editor.dirty {
         format!("{}  {}", editor.map.name, lang.t("editor.unsaved"))
@@ -230,6 +240,9 @@ fn side(ui: &mut egui::Ui, editor: &mut Editor, lang: &Lang, now: Instant) {
     ui.separator();
 
     tools(ui, editor, lang, now);
+    ui.separator();
+    panel_look::backgrounds(ui, editor, lang, now);
+    panel_look::envelopes(ui, editor, lang, time_ms, now);
     ui.separator();
 
     ui.strong(lang.t("editor.layers"));
@@ -284,6 +297,7 @@ fn tools(ui: &mut egui::Ui, editor: &mut Editor, lang: &Lang, now: Instant) {
             }
         }
         Tool::Material => material_choice(ui, editor, lang),
+        Tool::Decor => panel_look::decor_tool(ui, editor, lang, now),
         Tool::Select => {
             ui.horizontal_wrapped(|ui| {
                 let has = editor.selection.is_some();
@@ -407,7 +421,14 @@ fn map_properties(ui: &mut egui::Ui, editor: &mut Editor, lang: &Lang, now: Inst
 
 /// Kartenfläche: Verschieben (mittlere Maustaste oder Leertaste + Ziehen), Zoomen (Mausrad),
 /// Malen (links: Pinsel, rechts: Luft).
-fn area(ui: &mut egui::Ui, editor: &mut Editor, window: Vec2, ppp: f32, now: Instant) -> AreaInfo {
+fn area(
+    ui: &mut egui::Ui,
+    editor: &mut Editor,
+    map_view: &mut MapView,
+    window: Vec2,
+    ppp: f32,
+    now: Instant,
+) -> AreaInfo {
     let rect = ui.max_rect();
     let response = ui.allocate_rect(rect, egui::Sense::click_and_drag());
     let px = |p: egui::Pos2| Vec2::new(p.x * ppp, p.y * ppp);
@@ -443,7 +464,18 @@ fn area(ui: &mut egui::Ui, editor: &mut Editor, window: Vec2, ppp: f32, now: Ins
     let pressed = !space
         && response.hovered()
         && ui.input(|i| i.pointer.primary_pressed() || i.pointer.secondary_pressed());
-    use_tool(editor, &mut info, down, pressed, primary, now);
+    if editor.tool == Tool::Decor {
+        panel_look::decor_interact(
+            editor,
+            map_view,
+            world,
+            camera.center,
+            (pressed, primary, down),
+            now,
+        );
+    } else {
+        use_tool(editor, &mut info, down, pressed, primary, now);
+    }
     info
 }
 
@@ -523,6 +555,7 @@ fn use_tool(
                 editor.flood_fill(x, y, tile, now);
             }
         }
+        Tool::Decor => {}
         Tool::Entity => {
             info.preview = Preview::Cells(Cells::span((x, y), (x, y)));
             if pressed {

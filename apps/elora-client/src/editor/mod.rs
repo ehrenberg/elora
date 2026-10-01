@@ -4,7 +4,9 @@
 //! Hier liegen Zustand und Logik (ohne egui, testbar); [`panel`] baut die Oberfläche,
 //! [`view`] zeichnet Karte, Raster und Entities.
 
+pub mod look;
 pub mod panel;
+pub mod panel_look;
 pub mod tools;
 pub mod view;
 
@@ -107,6 +109,17 @@ pub struct Editor {
     pub pasting: bool,
     /// Beginn eines Rechtecks oder einer Auswahl und ob mit der linken Taste.
     pub drag: Option<((usize, usize), bool)>,
+    /// Ziel-Ebene für neue Deko (M6.8).
+    pub decor_layer: look::DecorLayer,
+    /// Grafik für neue Deko.
+    pub decor_art: elora_map::Art,
+    pub selected_decor: Option<look::DecorRef>,
+    /// Deko wird gezogen: letzter Weltpunkt der Maus.
+    pub decor_drag: Option<Vec2>,
+    pub selected_bg: Option<usize>,
+    pub selected_env: Option<usize>,
+    /// Pfad zum Einbetten eines SVGs.
+    pub image_path: String,
     pub visible: Visible,
     pub dialog: Option<Dialog>,
     /// Letzte Meldung: Sprachschlüssel und Wert (`{arg}`).
@@ -158,6 +171,13 @@ impl Editor {
             clipboard: None,
             pasting: false,
             drag: None,
+            decor_layer: look::DecorLayer::Front,
+            decor_art: elora_map::Art::Builtin("bush-1".into()),
+            selected_decor: None,
+            decor_drag: None,
+            selected_bg: None,
+            selected_env: None,
+            image_path: String::new(),
             visible: Visible::default(),
             dialog: None,
             status: None,
@@ -249,6 +269,10 @@ impl Editor {
     }
 
     fn after_history(&mut self) {
+        // Indizes könnten nach Rückgängig ins Leere zeigen
+        self.selected_decor = None;
+        self.selected_bg = self.selected_bg.filter(|&i| i < self.map.backgrounds.len());
+        self.selected_env = self.selected_env.filter(|&i| i < self.map.envelopes.len());
         self.last_edit = None;
         self.dirty = true;
         self.resize = (self.map.width, self.map.height);
@@ -324,6 +348,11 @@ impl Editor {
         self.last_edit = None;
         self.dirty = false;
         self.resize = (self.map.width, self.map.height);
+        self.selection = None;
+        self.selected_decor = None;
+        self.selected_bg = None;
+        self.selected_env = None;
+        self.decor_layer = look::DecorLayer::Front;
         self.center_view();
     }
 

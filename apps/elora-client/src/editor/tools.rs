@@ -22,10 +22,12 @@ pub enum Tool {
     Select,
     Entity,
     Material,
+    /// Deko platzieren und bearbeiten (M6.8).
+    Decor,
 }
 
 impl Tool {
-    pub const ALL: [Self; 7] = [
+    pub const ALL: [Self; 8] = [
         Self::Brush,
         Self::Rect,
         Self::Fill,
@@ -33,6 +35,7 @@ impl Tool {
         Self::Select,
         Self::Entity,
         Self::Material,
+        Self::Decor,
     ];
 
     /// Sprachschlüssel.
@@ -45,6 +48,7 @@ impl Tool {
             Self::Select => "editor.tool_select",
             Self::Entity => "editor.tool_entity",
             Self::Material => "editor.tool_material",
+            Self::Decor => "editor.tool_decor",
         }
     }
 }

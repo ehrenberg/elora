@@ -308,6 +308,13 @@ impl MapView {
         }
     }
 
+    /// Umschließendes Rechteck der Grafik eines Deko-Objekts (lokal, ohne Lage und Drehung).
+    pub fn decor_bounds(&mut self, map: &Map, d: &Decor) -> Option<(Vec2, Vec2)> {
+        self.sync(map);
+        let cache = self.cache.as_ref()?;
+        map_art::decor_mesh(&self.art, &cache.images, d)?.bounds()
+    }
+
     /// Deko vor den Figuren.
     pub fn draw_front(
         &mut self,

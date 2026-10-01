@@ -56,10 +56,13 @@ impl App {
         gfx.renderer
             .draw_shapes(&mut frame, &camera, &self.batch, view::OUTSIDE);
         let lang = &self.lang;
+        let map_view = &mut self.map_view;
+        #[allow(clippy::cast_possible_truncation)]
+        let time_ms = (f64::from(self.figures.time()) * 1000.0) as i64;
         let mut area = self.editor_area;
         gfx.gui.draw(&gfx.window, &gfx.renderer, &mut frame, |ui| {
             let ppp = ui.ctx().pixels_per_point();
-            area = panel::ui(ui, editor, lang, window, ppp, now);
+            area = panel::ui(ui, editor, map_view, lang, window, ppp, time_ms, now);
         });
         gfx.renderer.end_frame(frame);
         self.editor_area = area;

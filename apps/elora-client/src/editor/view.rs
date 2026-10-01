@@ -101,6 +101,19 @@ pub fn draw(
     if editor.visible.layers.decor_front {
         map_view.draw_front(batch, map, camera, look_time);
     }
+    if editor.tool == super::tools::Tool::Decor
+        && let Some(r) = editor.selected_decor
+        && let Some(d) = editor.decor(r)
+        && let Some(bounds) = map_view.decor_bounds(map, d)
+        && let Some(at) = editor.decor_world_pos(r, camera.center, camera.center)
+    {
+        let c = super::look::corners(d, at, bounds);
+        batch.stroke_polyline(
+            &[c[0], c[1], c[2], c[3], c[0]],
+            2.0 * editor.zoom,
+            SELECTION,
+        );
+    }
     if editor.visible.grid {
         grid(batch, camera, size, editor.zoom);
     }
@@ -291,6 +304,44 @@ fn grid(batch: &mut ShapeBatch, camera: &Camera, size: Vec2, zoom: f32) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Vorlage „Tag“ auf einer neuen Karte mit Boden: `… preset_sheet -- --ignored` → `target/preset.svg`.
+    #[test]
+    #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
+    fn preset_sheet() {
+        let mut editor = Editor::new(None, std::path::PathBuf::from("maps"));
+        let t = std::time::Instant::now();
+        let (w, h) = (editor.map.width, editor.map.height);
+        editor.fill_cells(
+            super::super::tools::Cells::span((0, h - 2), (w - 1, h - 1)),
+            elora_sim::Tile::Solid,
+            "boden",
+            t,
+        );
+        editor.apply_preset(super::super::look::Preset::Day, t);
+        editor.zoom = 0.75;
+        // tiefste Kamera (Karte 30 Tiles hoch): früher klaffte hier eine Lücke über dem Boden
+        editor.center.y = 960.0 - 337.0;
+        let window = Vec2::new(1600.0, 900.0);
+        let cam = camera(&editor, window, window * 0.5);
+        let mut batch = ShapeBatch::default();
+        draw(
+            &mut batch,
+            &editor,
+            &mut MapView::default(),
+            &ItemArt::load(),
+            &cam,
+            0.0,
+            Preview::None,
+        );
+        let tl = cam.top_left();
+        let svg = batch.debug_svg(tl, tl + cam.size, OUTSIDE);
+        std::fs::write(
+            concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/preset.svg"),
+            svg,
+        )
+        .unwrap();
+    }
 
     /// Editor-Ansicht ohne Oberfläche: `cargo test -p elora-client --bin elora editor_sheet -- --ignored`,
     /// danach `cargo xtask svg-preview target/editor.svg target/editor.png 1400`.
