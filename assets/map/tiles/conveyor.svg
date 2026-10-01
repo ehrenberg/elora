@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
   <!-- Beschleuniger (Stil A): Gehäuse und Pfeil nach rechts (links = gespiegelt, Pfeil läuft später mit). -->
   <g id="base"><rect x="1" y="1" width="30" height="30" rx="4" fill="#6c7a89" stroke="#2b2b2b" stroke-width="2"/><rect x="3" y="3" width="26" height="4" rx="2" fill="#4f5b68"/><circle cx="8" cy="24" r="3" fill="#9aa6b2"/><circle cx="24" cy="24" r="3" fill="#9aa6b2"/></g>
-  <g id="arrow"><path d="M 11,9 L 19,15 L 11,21" stroke="#f2c14e" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></g>
+  <g id="arrow"><path d="M 7,15 H 24 M 18,9 L 24,15 L 18,21" stroke="#2b2b2b" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/><path d="M 7,15 H 24 M 18,9 L 24,15 L 18,21" stroke="#f2c14e" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></g>
 </svg>

@@ -100,6 +100,40 @@ def snow_cap(left, right):
             '<path d="M 5,9.5 q 6,2 12,0" stroke="#cfdde8" stroke-width="1.2" stroke-linecap="round" fill="none"/>']
 
 
+def stone_cap(left, right):
+    return [f'<path d="{rim(left, right, 4)}" fill="#a5aeb6"/>']
+
+
+def stone_blocks(rects):
+    """Felsblöcke (x0, y0, x1, y1) mit abgerundeten Ecken: Fläche, Lichtkante oben, Schatten unten."""
+    out = []
+    for x0, y0, x1, y1 in rects:
+        w, h = x1 - x0 - 1, y1 - y0 - 1
+        out.append(f'<rect x="{x0 + 0.5}" y="{y0 + 0.5}" width="{w}" height="{h}" rx="3" fill="#8a949d"/>')
+        out.append(f'<path d="M {x0 + 3},{y0 + 2} H {x1 - 3}" stroke="#a5aeb6" stroke-width="1.6" stroke-linecap="round"/>')
+        out.append(f'<path d="M {x0 + 3},{y1 - 1.5} H {x1 - 3}" stroke="#66707a" stroke-width="1.6" stroke-linecap="round"/>')
+        if w > 10 and h > 10:
+            cx, cy = (x0 + x1) / 2, (y0 + y1) / 2
+            out.append(crack(f'M {f(cx - 3)},{f(cy - 2)} l 2,2 l -1,3', '#66707a', 1.2))
+    return out
+
+
+def rocks(polys):
+    """Unregelmäßige Felsbrocken: Fläche, Lichtkante an der Oberseite, Schatten unten, Fugen dazwischen."""
+    out = []
+    for pts in polys:
+        d = 'M ' + ' L '.join(f'{x},{y}' for x, y in pts) + ' Z'
+        out.append(f'<path d="{d}" fill="#7d8790" stroke="#4f5860" stroke-width="1.4" stroke-linejoin="round"/>')
+        (x0, y0), (x1, y1) = pts[0], pts[1]
+        out.append(f'<path d="M {f(x0 + (x1 - x0) * 0.15)},{f(y0 + (y1 - y0) * 0.15 + 1.6)} L {f(x0 + (x1 - x0) * 0.85)},{f(y0 + (y1 - y0) * 0.85 + 1.6)}" stroke="#a5aeb6" stroke-width="1.8" stroke-linecap="round"/>')
+        xs = [p[0] for p in pts]
+        ys = [p[1] for p in pts]
+        cx, cy = sum(xs) / len(xs), sum(ys) / len(ys)
+        if max(xs) - min(xs) > 12 and max(ys) - min(ys) > 10:
+            out.append(crack(f'M {f(cx - 3)},{f(cy - 1)} l 3,2 l -1,3', '#5f6870', 1.2))
+    return out
+
+
 def ice_cap(left, right):
     return [f'<path d="{cap_outline(left, right, 4, 16, 0.5)}" fill="#e3f5fc"/>']
 
@@ -124,10 +158,16 @@ def materials():
     material('snow', 'Gefrorene Erde mit Schneedecke (Stil A).', snow_cap,
              [[spot(14, 21, 3.5, 2.6, '#74645a')],
               [spot(20, 23, 2, 1.6, '#74645a'), spot(11, 19, 1.4, 1.2, '#74645a')]])
-    material('stone', 'Stein (nicht hookbar, Stil A): Risse statt Kappe.', None,
-             [[crack('M 7,9 l 6,5 l -2,7', '#5f6870')],
-              [crack('M 20,6 l -3,6 l 5,4', '#5f6870')],
-              [crack('M 10,22 l 5,2 l 6,-3 M 15,24 l 1,4', '#5f6870')]])
+    material('stone', 'Stein (nicht hookbar, Stil A): Felsblöcke mit Fugen, heller Grat an freien Oberkanten.', stone_cap,
+             [rocks([[(2, 3), (17, 1), (22, 9), (16, 18), (3, 16)],
+                     [(24, 4), (31, 6), (30, 19), (19, 20)],
+                     [(3, 20), (14, 21), (20, 31), (2, 30)]]),
+              rocks([[(1, 2), (13, 2), (15, 14), (2, 13)],
+                     [(17, 1), (31, 3), (30, 17), (20, 15)],
+                     [(4, 17), (27, 20), (29, 31), (6, 30)]]),
+              rocks([[(3, 1), (28, 2), (30, 12), (5, 13)],
+                     [(2, 16), (16, 15), (18, 30), (1, 29)],
+                     [(20, 17), (31, 16), (30, 30), (22, 31)]])])
     material('ice', 'Eis (Stil A): heller Rand und Glanzlinien.', ice_cap,
              [[crack('M 7,22 L 17,10', '#ffffff', 3)],
               [crack('M 13,25 L 21,15 M 19,26 L 23,21', '#ffffff', 2.2)]])
@@ -180,7 +220,8 @@ def specials():
           [g('base', f'<rect x="1" y="1" width="30" height="30" rx="4" fill="#6c7a89" stroke="{OUT}" stroke-width="2"/>',
              '<rect x="3" y="3" width="26" height="4" rx="2" fill="#4f5b68"/>',
              '<circle cx="8" cy="24" r="3" fill="#9aa6b2"/>', '<circle cx="24" cy="24" r="3" fill="#9aa6b2"/>'),
-           g('arrow', '<path d="M 11,9 L 19,15 L 11,21" stroke="#f2c14e" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>')],
+           g('arrow', f'<path d="M 7,15 H 24 M 18,9 L 24,15 L 18,21" stroke="{OUT}" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>',
+             '<path d="M 7,15 H 24 M 18,9 L 24,15 L 18,21" stroke="#f2c14e" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>')],
           'Beschleuniger (Stil A): Gehäuse und Pfeil nach rechts (links = gespiegelt, Pfeil läuft später mit).')
 
 
@@ -194,16 +235,29 @@ def stroke(w=2):
     return f'stroke="{OUT}" stroke-width="{w}"'
 
 
+def foliage(blobs, dark, light, highlight, leaves=()):
+    """Laubmasse aus Kreisen: erst alle mit Kontur, dann alle ohne darüber → eine Außenkontur.
+    Unterer Teil dunkler (Schatten), oben Lichter und einzelne Blattbögen."""
+    out = [f'<circle cx="{x}" cy="{y}" r="{r + 1.2}" fill="{OUT}"/>' for x, y, r in blobs]
+    out += [f'<circle cx="{x}" cy="{y}" r="{r}" fill="{dark}"/>' for x, y, r in blobs]
+    out += [f'<circle cx="{f(x - r * 0.12)}" cy="{f(y - r * 0.18)}" r="{f(r * 0.8)}" fill="{light}"/>' for x, y, r in blobs]
+    out += [f'<ellipse cx="{f(x - r * 0.3)}" cy="{f(y - r * 0.45)}" rx="{f(r * 0.32)}" ry="{f(r * 0.18)}" fill="{highlight}"/>' for x, y, r in blobs if r > 8]
+    for x, y, r in leaves:
+        out.append(f'<path d="M {f(x - r)},{y} Q {x},{f(y + r * 0.9)} {f(x + r)},{y}" stroke="{dark}" stroke-width="1.6" stroke-linecap="round" fill="none"/>')
+    return out
+
+
 def decor():
-    deco('bush-1', '-40 -32 80 34', [
-        f'<ellipse cx="-6" cy="-12" rx="24" ry="14" fill="#5f9c42" {stroke()}/>',
-        f'<ellipse cx="12" cy="-17" rx="15" ry="11" fill="#7bbf55" {stroke()}/>',
-        '<ellipse cx="9" cy="-21" rx="5" ry="2.5" fill="#a4dc7a"/>'], 'Busch (Stil A).')
-    deco('bush-2', '-50 -40 100 42', [
-        f'<ellipse cx="-20" cy="-12" rx="18" ry="12" fill="#5f9c42" {stroke()}/>',
-        f'<ellipse cx="18" cy="-12" rx="20" ry="13" fill="#5f9c42" {stroke()}/>',
-        f'<ellipse cx="0" cy="-20" rx="20" ry="15" fill="#7bbf55" {stroke()}/>',
-        '<ellipse cx="-4" cy="-28" rx="7" ry="3" fill="#a4dc7a"/>'], 'Breiter Busch (Stil A).')
+    deco('bush-1', '-40 -40 80 42', foliage(
+        [(-22, -7, 8), (-12, -13, 11), (2, -19, 12), (15, -13, 11), (24, -7, 8), (-4, -8, 11), (10, -6, 10)],
+        '#4f8a3a', '#6aae4a', '#a4dc7a', [(-10, -10, 3), (6, -14, 3), (16, -6, 2.5)]),
+        'Busch (Stil A): Laub aus vielen Blattbögen.')
+    deco('bush-2', '-56 -50 112 52', foliage(
+        [(-38, -7, 9), (-28, -15, 12), (-14, -22, 13), (2, -27, 14), (18, -22, 13), (32, -15, 12), (42, -7, 9),
+         (-20, -8, 12), (0, -10, 13), (20, -8, 12)],
+        '#4f8a3a', '#6aae4a', '#a4dc7a', [(-24, -12, 3), (-4, -18, 3.5), (14, -12, 3), (30, -8, 2.5)])
+        + ['<circle cx="-16" cy="-14" r="2.2" fill="#e0574f"/><circle cx="8" cy="-22" r="2.2" fill="#e0574f"/><circle cx="26" cy="-12" r="2.2" fill="#e0574f"/>'],
+        'Breiter Busch mit Beeren (Stil A).')
     for name, petal, center in [('flower-pink', '#ef7fb0', '#f2c14e'), ('flower-yellow', '#f2c14e', '#e0574f'), ('flower-blue', '#6fa8e8', '#f4f8fb')]:
         petals = ''.join(f'<circle cx="{f(5 * math.cos(a))}" cy="{f(-20 + 5 * math.sin(a))}" r="3.6" fill="{petal}" {stroke(1.4)}/>'
                          for a in [i * 2 * math.pi / 5 - math.pi / 2 for i in range(5)])
@@ -233,13 +287,16 @@ def decor():
         f'<path d="M -9,-8 Q -9,-16 0,-16 Q 9,-16 9,-8 Z" fill="#a87a52" {stroke(1.6)}/>',
         f'<path d="M 6,0 Q 5,-4 7,-6 H 10 Q 11,-4 10,0 Z" fill="#f4ecd8" {stroke(1.4)}/>',
         f'<path d="M 4,-5 Q 4,-11 8.5,-11 Q 13,-11 13,-5 Z" fill="#c9955c" {stroke(1.4)}/>'], 'Pilzgruppe (Stil A).')
-    deco('tree-round', '-60 -160 120 162', [
-        f'<path d="M -8,0 Q -6,-30 -7,-70 H 7 Q 6,-30 8,0 Z" fill="#8a6040" {stroke()}/>',
-        f'<path d="M -2,-50 Q -14,-60 -20,-58" stroke="{OUT}" stroke-width="2" fill="none" stroke-linecap="round"/>',
-        f'<circle cx="-24" cy="-88" r="28" fill="#5f9c42" {stroke()}/>',
-        f'<circle cx="24" cy="-90" r="26" fill="#5f9c42" {stroke()}/>',
-        f'<circle cx="0" cy="-118" r="34" fill="#7bbf55" {stroke()}/>',
-        '<ellipse cx="-10" cy="-132" rx="12" ry="6" fill="#a4dc7a"/>'], 'Laubbaum (Stil A).')
+    trunk = [f'<path d="M -16,0 Q -9,-4 -8,-14 Q -7,-40 -9,-70 L -24,-92 L -19,-95 L -4,-78 L 0,-100 L 6,-99 L 5,-78 L 20,-96 L 25,-92 L 9,-68 Q 7,-40 8,-14 Q 9,-4 16,0 Z" fill="#8a6040" {stroke()} stroke-linejoin="round"/>',
+             '<path d="M -2,-12 Q -3,-34 -1,-56 M 3,-24 Q 4,-36 3,-46" stroke="#6e4c32" stroke-width="1.6" stroke-linecap="round" fill="none"/>']
+    crown = foliage(
+        [(-38, -96, 18), (-24, -116, 22), (-2, -130, 26), (22, -118, 22), (38, -98, 18),
+         (-20, -92, 20), (2, -100, 22), (24, -90, 18), (-8, -150, 18), (14, -146, 16)],
+        '#4f8a3a', '#6aae4a', '#a4dc7a',
+        [(-26, -104, 4), (-4, -118, 5), (18, -104, 4), (4, -138, 4), (30, -92, 3), (-34, -90, 3)])
+    deco('tree-round', '-64 -172 128 174', trunk + crown + [
+        '<path d="M -8,-86 Q -2,-80 4,-86" stroke="#6e4c32" stroke-width="2" stroke-linecap="round" fill="none"/>'],
+        'Laubbaum (Stil A): Stamm mit Ästen, Krone aus Blattbögen.')
     layers = []
     for i, (y, w) in enumerate([(-36, 46), (-76, 38), (-112, 28)]):
         top = y - 44 + i * 6
@@ -303,14 +360,22 @@ def backgrounds():
 
     # Wald: Reihe runder Baumkronen (Silhouette)
     trees = []
-    for i in range(16):
-        x = i * 64 + 32
-        h = 120 + 30 * math.sin(i * 1.7)
-        trees.append(f'<rect x="{x - 5}" y="{f(-h * 0.45)}" width="10" height="{f(h * 0.45)}" fill="#6a9a72"/>')
-        trees.append(f'<circle cx="{x}" cy="{f(-h * 0.62)}" r="{f(h * 0.3)}" fill="#7fae86"/>')
-        trees.append(f'<circle cx="{x + 18}" cy="{f(-h * 0.5)}" r="{f(h * 0.22)}" fill="#7fae86"/>')
-    write('assets/map/backgrounds/forest.svg', f'0 -200 {W} 200',
-          [f'<rect x="0" y="-40" width="{W}" height="40" fill="#7fae86"/>', *trees],
+    for i in range(20):
+        x = i * 51.2 + 25
+        h = 230 + 40 * math.sin(i * 1.7) + 20 * math.sin(i * 3.1)
+        if i % 3 == 1:
+            # Nadelbaum
+            trees.append(f'<rect x="{f(x - 4)}" y="{f(-h * 0.3)}" width="8" height="{f(h * 0.3)}" fill="#55805c"/>')
+            for k in range(3):
+                yb, wb = -h * (0.22 + k * 0.2), 40 - k * 9
+                trees.append(f'<path d="M {f(x - wb)},{f(yb)} Q {f(x)},{f(yb + 6)} {f(x + wb)},{f(yb)} L {f(x + 6)},{f(yb - h * 0.24)} Q {f(x)},{f(yb - h * 0.28)} {f(x - 6)},{f(yb - h * 0.24)} Z" fill="#5f8f68"/>')
+        else:
+            trees.append(f'<rect x="{f(x - 5)}" y="{f(-h * 0.5)}" width="10" height="{f(h * 0.5)}" fill="#55805c"/>')
+            for dx, dy, r in [(0, 0.72, 0.2), (-16, 0.6, 0.15), (16, 0.6, 0.15), (0, 0.86, 0.13)]:
+                trees.append(f'<circle cx="{f(x + dx)}" cy="{f(-h * dy)}" r="{f(h * r)}" fill="#6a9a72"/>')
+            trees.append(f'<circle cx="{f(x - 8)}" cy="{f(-h * 0.8)}" r="{f(h * 0.06)}" fill="#86b48d"/>')
+    write('assets/map/backgrounds/forest.svg', f'0 -300 {W} 300',
+          [f'<rect x="0" y="-60" width="{W}" height="60" fill="#6a9a72"/>', *trees],
           f'Waldsilhouette (Stil A). Ursprung unten links, {W} breit, nahtlos wiederholbar.')
 
     for i, blobs in enumerate([[(-30, 0, 20), (0, -8, 28), (30, 0, 22)],

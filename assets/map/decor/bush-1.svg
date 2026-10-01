@@ -1,6 +1,32 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-40 -32 80 34">
-  <!-- Busch (Stil A). Ursprung unten in der Mitte. -->
-  <ellipse cx="-6" cy="-12" rx="24" ry="14" fill="#5f9c42" stroke="#2b2b2b" stroke-width="2"/>
-  <ellipse cx="12" cy="-17" rx="15" ry="11" fill="#7bbf55" stroke="#2b2b2b" stroke-width="2"/>
-  <ellipse cx="9" cy="-21" rx="5" ry="2.5" fill="#a4dc7a"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-40 -40 80 42">
+  <!-- Busch (Stil A): Laub aus vielen Blattbögen. Ursprung unten in der Mitte. -->
+  <circle cx="-22" cy="-7" r="9.2" fill="#2b2b2b"/>
+  <circle cx="-12" cy="-13" r="12.2" fill="#2b2b2b"/>
+  <circle cx="2" cy="-19" r="13.2" fill="#2b2b2b"/>
+  <circle cx="15" cy="-13" r="12.2" fill="#2b2b2b"/>
+  <circle cx="24" cy="-7" r="9.2" fill="#2b2b2b"/>
+  <circle cx="-4" cy="-8" r="12.2" fill="#2b2b2b"/>
+  <circle cx="10" cy="-6" r="11.2" fill="#2b2b2b"/>
+  <circle cx="-22" cy="-7" r="8" fill="#4f8a3a"/>
+  <circle cx="-12" cy="-13" r="11" fill="#4f8a3a"/>
+  <circle cx="2" cy="-19" r="12" fill="#4f8a3a"/>
+  <circle cx="15" cy="-13" r="11" fill="#4f8a3a"/>
+  <circle cx="24" cy="-7" r="8" fill="#4f8a3a"/>
+  <circle cx="-4" cy="-8" r="11" fill="#4f8a3a"/>
+  <circle cx="10" cy="-6" r="10" fill="#4f8a3a"/>
+  <circle cx="-22.96" cy="-8.44" r="6.4" fill="#6aae4a"/>
+  <circle cx="-13.32" cy="-14.98" r="8.8" fill="#6aae4a"/>
+  <circle cx="0.56" cy="-21.16" r="9.6" fill="#6aae4a"/>
+  <circle cx="13.68" cy="-14.98" r="8.8" fill="#6aae4a"/>
+  <circle cx="23.04" cy="-8.44" r="6.4" fill="#6aae4a"/>
+  <circle cx="-5.32" cy="-9.98" r="8.8" fill="#6aae4a"/>
+  <circle cx="8.8" cy="-7.8" r="8" fill="#6aae4a"/>
+  <ellipse cx="-15.3" cy="-17.95" rx="3.52" ry="1.98" fill="#a4dc7a"/>
+  <ellipse cx="-1.6" cy="-24.4" rx="3.84" ry="2.16" fill="#a4dc7a"/>
+  <ellipse cx="11.7" cy="-17.95" rx="3.52" ry="1.98" fill="#a4dc7a"/>
+  <ellipse cx="-7.3" cy="-12.95" rx="3.52" ry="1.98" fill="#a4dc7a"/>
+  <ellipse cx="7" cy="-10.5" rx="3.2" ry="1.8" fill="#a4dc7a"/>
+  <path d="M -13,-10 Q -10,-7.3 -7,-10" stroke="#4f8a3a" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+  <path d="M 3,-14 Q 6,-11.3 9,-14" stroke="#4f8a3a" stroke-width="1.6" stroke-linecap="round" fill="none"/>
+  <path d="M 13.5,-6 Q 16,-3.75 18.5,-6" stroke="#4f8a3a" stroke-width="1.6" stroke-linecap="round" fill="none"/>
 </svg>

@@ -31,9 +31,9 @@ details = 0.25
 for = ["solid"]
 
 [stone]
-body = "#7d8790"
-radius = 6
-details = 0.5
+body = "#566068"
+radius = 5
+details = 1.0
 for = ["unhookable"]
 
 [ice]
