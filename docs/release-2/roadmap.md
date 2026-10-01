@@ -1,6 +1,6 @@
-# Roadmap Release 2 (Entwurf)
+# Roadmap Release 2
 
-Status: **Entwurf zur gemeinsamen Ausarbeitung** · Schwerpunkte: E-202
+Status: **Reihenfolge festgelegt (E-216)** · Schwerpunkte: E-202
 
 ## Ziele
 
@@ -12,28 +12,28 @@ Status: **Entwurf zur gemeinsamen Ausarbeitung** · Schwerpunkte: E-202
 ## Abhängigkeiten
 
 ```
-Restpunkte R1 ─► Bots ─────────────┐
-                                   ├─► Abenteuer-Grundlage ─► Geschichte & Inhalte ─► Abenteuer als Spielmodus
-Waffen & Inhalte ──────────────────┘        (Fortschritt, Spielstände, NPCs, Dialoge, Aufgaben, Editor)
-Gemeinschaft (Demos, Zuschauer, Remote-Konsole) läuft parallel
+Abenteuer-Grundlage ─► Geschichte & Abenteuer ─► Rollenspiel-PvP-Modus
+        │  (Fähigkeiten, Gegner, Fortschritt, Spielstände, Dialoge, Aufgaben, Editor)
+        └─► Mitspieler-Bots (nutzen Gegner-Steuerung und Wegfindung)
+Waffen & Inhalte, Gemeinschaft laufen dazwischen
 ```
 
-- **Bots zuerst:** Gegner und NPCs im Abenteuer brauchen dieselbe Steuerung (Wegfindung auf Tile-Karten, Kampfverhalten, Hook-Nutzung). Bots liefern Eingaben wie Spieler (E-035) – Physik und Netz bleiben unverändert.
-- **Abenteuer-Grundlage vor Inhalten:** Fortschrittssystem, Spielstände, NPCs mit Dialogen, Aufgaben und die Editor-Werkzeuge dafür, bevor Geschichte und Karten entstehen.
+- **Abenteuer-Grundlage zuerst** (E-216): Technik und Editor-Werkzeuge, bevor Geschichte und Karten in Menge entstehen.
+- **Bots danach:** Die Mehrspieler-Bots bauen auf Steuerung und Wegfindung der Abenteuer-Gegner auf; Bots liefern Eingaben wie Spieler (E-035).
 - **Spielgefühl bleibt Kern:** Rollenspiel-Werte dürfen das Bewegungs- und Hook-Gefühl nicht verwässern; Werte wie Schaden oder Leben im Abenteuer sind eigene Tuning-Sätze.
+- **Restpunkte Release 1** (Playtests, Balancing, Pakete auf Windows/macOS) übernimmt der Projektinhaber nebenher (O-51).
 
-## Meilensteine (Vorschlag, Reihenfolge offen)
+## Meilensteine
 
 | # | Meilenstein | Inhalt |
 |---|---|---|
-| R2-M1 | Restpunkte Release 1 | Credits-Seite, Playtests und Balancing, Pakete auf Windows/macOS geprüft, ggf. 0.9.x |
-| R2-M2 | Bots | Wegfindung, Kampf- und Hook-Verhalten, Schwierigkeitsstufen, Bots auf Servern und im Training |
-| R2-M3 | Waffen & Inhalte | weitere Waffen, Sounds in Karten, neue Themen und Karten |
-| R2-M4 | Abenteuer-Grundlage | Fortschritt (Erfahrung, Stufen, Ausbau), Spielstände, NPCs, Dialoge, Aufgaben, Editor-Erweiterungen |
-| R2-M5 | Geschichte & Abenteuer | Welt, Kapitel, Figuren, Gegner, Bosse – nach den Vorgaben des Projektinhabers |
-| R2-M6 | Rollenspiel-PvP-Modus | Spielmodus mit Stufen, Ausbau und Beute während des Matches (E-204) |
-| R2-M7 | Gemeinschaft | Demos und Replays, Zuschauer-Kamera, Remote-Konsole |
-| R2-M8 | Release 2 | Abnahme, Pakete, Veröffentlichung |
+| R2-M1 | Abenteuer-Grundlage | Fähigkeiten, Gegner, Fortschritt, Spielstände, NPCs, Dialoge, Aufgaben, Editor; Abnahme mit dem Prolog – Plan: [`a1-plan.md`](a1-plan.md) |
+| R2-M2 | Geschichte & Abenteuer | Tauwinkel, fünf Gebiete, Bosse, Finale, Nebenaufgaben ([`weltbuch.md`](weltbuch.md)); ggf. in Teil-Meilensteine je Gebiet |
+| R2-M3 | Mitspieler-Bots | Wegfindung, Kampf- und Hook-Verhalten, Schwierigkeitsstufen, Bots auf Servern und im Training |
+| R2-M4 | Waffen & Inhalte | weitere Waffen, Sounds in Karten, neue Themen und Karten |
+| R2-M5 | Rollenspiel-PvP-Modus | „Quellenkampf“: Stufen, Ausbau und Beute während des Matches (E-204) |
+| R2-M6 | Gemeinschaft | Demos und Replays, Zuschauer-Kamera, Remote-Konsole |
+| R2-M7 | Release 2 | Abnahme, Pakete, Veröffentlichung |
 
 ## Zu klären (gemeinsam)
 

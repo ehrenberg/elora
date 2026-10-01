@@ -23,6 +23,16 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-212 | 2026-10-02 | Namen, Fähigkeiten | Namen von Welt und Figuren sowie die fünf Fähigkeiten in ihrer Reihenfolge (Hook-Ruck, Heranhooken, Stampfen, Eisgriff, Gleiten) **bleiben** | Entscheidung Projektinhaber |
 | E-213 | 2026-10-02 | Dialoge | **Auswahl mit Folgen** erlaubt | Entscheidung Projektinhaber |
 | E-214 | 2026-10-02 | Spieldauer | Der Einzelspieler-Modus soll **lange tragen – mehrere Stunden** (Zielwerte siehe [Weltbuch §8](weltbuch.md)) | Entscheidung Projektinhaber |
+| E-215 | 2026-10-02 | Spieldauer: Zielwerte | **Hauptgeschichte 6–8 h, mit Nebeninhalten 12 h+**, etwa 20 Abenteuer-Karten, ~25 Nebenaufgaben, Sammelstücke, „Quellen-Prüfungen“ nach dem Ende ([Weltbuch §8](weltbuch.md)) | Entscheidung Projektinhaber |
+| E-216 | 2026-10-02 | Reihenfolge Release 2 | **Abenteuer-Grundlage zuerst** (R2-M1, Plan: [`a1-plan.md`](a1-plan.md)); Gegner-Steuerung und Wegfindung daraus nutzen später die Mehrspieler-Bots | Entscheidung Projektinhaber |
+| E-217 | 2026-10-02 | Sprache Abenteuer (D-A1-01) | **Deutsch und Englisch von Anfang an** | Entscheidung Projektinhaber |
+| E-218 | 2026-10-02 | Pflege von Gesprächen und Aufgaben (D-A1-02) | **Textdateien**, im Editor sichtbar (welcher NPC welches Gespräch hat) und direkt testbar | Entscheidung Projektinhaber |
+| E-219 | 2026-10-02 | Spielstände (D-A1-03, O-202) | **3 Plätze**, automatisch beim Kartenwechsel und an Speicherpunkten; kein Speichern mitten im Kampf | Entscheidung Projektinhaber |
+| E-220 | 2026-10-02 | Tod im Abenteuer (D-A1-04) | **Zurück zum letzten Speicherpunkt mit kleinem Verlust:** ein Teil der seitdem gesammelten Glanztropfen geht verloren; Gegenstände und Erfahrung bleiben | Entscheidung Projektinhaber |
+| E-221 | 2026-10-02 | Schwierigkeit (D-A1-05) | **Nur eine Schwierigkeitsstufe** | Entscheidung Projektinhaber |
+| E-222 | 2026-10-02 | Darstellung der Gespräche (D-A1-06) | **Beides:** Gespräche im Textfeld unten mit Bild der Figur und Auswahl; kurze Zurufe als Sprechblase über der Figur | Entscheidung Projektinhaber |
+| E-223 | 2026-10-02 | Fähigkeiten im Mehrspieler (D-A1-07) | Neue Fähigkeiten **nur im Abenteuer und im Quellenkampf**; die übrigen Modi bleiben unverändert | Entscheidung Projektinhaber |
+| E-224 | 2026-10-02 | Kamera im Abenteuer (D-A1-08) | **Leicht vorausschauend**, dazu **Kamera-Zonen** aus der Karte (z. B. Bossräume); Mausblick wie gewohnt | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 
@@ -38,7 +48,7 @@ Neu für Release 2 (Rollenspiel-Abenteuer, siehe [`roadmap.md`](roadmap.md)):
 
 - [x] ~~O-200 Weltaufbau~~ → E-203
 - [x] ~~O-201 Rollenspiel als Spielmodus~~ → E-204
-- [ ] **O-202 Fortschritt speichern** – Spielstände des Einzelspieler-Abenteuers (z. B. lokal, mehrere Plätze); im PvP-Modus nur für die Runde (E-204)
+- [x] ~~O-202 Fortschritt speichern~~ → E-219 (im PvP-Modus nur für die Runde, E-204)
 - [x] ~~O-203 Geschichte und Welt~~ → E-207 · Ausarbeitung: [`weltbuch.md`](weltbuch.md) (Entwurf)
 - [ ] **O-204 Fortschrittssystem** – Ausgestaltung von Stufen, Fähigkeitenbaum, Waffen-Ausbau, Beute, Währung (Umfang: E-206)
 - [ ] **O-205 NPCs und Gegner** – Verhalten, Dialoge, Händler, Begleiter; Grundlage sind die Bots

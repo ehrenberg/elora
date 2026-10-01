@@ -16,7 +16,8 @@ Elora ist ein schnelles 2D-Multiplayer-Spiel nach dem Vorbild von Teeworlds; „
 
 | Dokument | Inhalt |
 |---|---|
-| [release-2/roadmap.md](release-2/roadmap.md) | Ziele, Abhängigkeiten, Meilensteine (Entwurf) |
+| [release-2/roadmap.md](release-2/roadmap.md) | Ziele, Abhängigkeiten, Meilensteine |
+| [release-2/a1-plan.md](release-2/a1-plan.md) | Plan R2-M1 Abenteuer-Grundlage |
 | [release-2/entscheidungen.md](release-2/entscheidungen.md) | Entscheidungslog ab E-200, offene Punkte |
 | [release-2/geschichte-entwuerfe.md](release-2/geschichte-entwuerfe.md) | Drei Entwürfe für Geschichte und Welt (gewählt: A) |
 | [release-2/weltbuch.md](release-2/weltbuch.md) | Weltbuch „Die verstummten Quellen“ (Entwurf) |
