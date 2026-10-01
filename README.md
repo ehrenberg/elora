@@ -2,7 +2,7 @@
 
 Ein 2D-Multiplayer-Arena-Shooter nach dem Vorbild von [Teeworlds](https://teeworlds.com) – eigene Figur, eigener Stil, gleiches Spielgefühl. Elora ist zugleich der Name der spielbaren Figur.
 
-**Stand:** M0–M7 abgeschlossen (Bewegung, Hook, Waffen, Dummies, Netzwerk, Spielmodi, Look & Sound, Menüs & Server-Browser, Karten & Editor). Als Nächstes M8 (Release 1). Siehe [Roadmap](docs/06-roadmap.md).
+**Stand:** Release 1 als **0.9.0 Beta** fertig (Bewegung, Hook, Waffen, Netzwerk, Spielmodi, Look & Sound, Menüs & Server-Browser, Karten & Editor). Release 2 wird geplant: [Roadmap (Entwurf)](docs/release-2/roadmap.md).
 
 ## Einrichtung unter Arch Linux
 
@@ -135,7 +135,7 @@ cargo run --bin elora-master -- --bind 0.0.0.0:8300                # HTTP auf Po
 cargo run --bin elora-master -- --bind 127.0.0.1:8300 --behind-proxy   # hinter Reverse-Proxy
 ```
 
-Spielserver melden sich beim Standard-Master an (abschaltbar mit `--no-master`, eigener mit `--master <URL>` oder `masters = ["…"]` in `server.toml`; aus dem Client gehostete nur mit „Im Internet anzeigen“), alle 20 s; der Master listet sie erst, wenn er sie selbst per UDP erreicht, und entfernt sie nach 60 s ohne Anmeldung. Öffentlich den Master hinter einem Reverse-Proxy mit HTTPS betreiben (z. B. Caddy: `reverse_proxy 127.0.0.1:8300`) und `--behind-proxy` setzen. Schnittstelle: `GET /servers`, `POST /register` (JSON). Betrieb mit systemd oder Docker: [`docs/15-master-betrieb.md`](docs/15-master-betrieb.md).
+Spielserver melden sich beim Standard-Master an (abschaltbar mit `--no-master`, eigener mit `--master <URL>` oder `masters = ["…"]` in `server.toml`; aus dem Client gehostete nur mit „Im Internet anzeigen“), alle 20 s; der Master listet sie erst, wenn er sie selbst per UDP erreicht, und entfernt sie nach 60 s ohne Anmeldung. Öffentlich den Master hinter einem Reverse-Proxy mit HTTPS betreiben (z. B. Caddy: `reverse_proxy 127.0.0.1:8300`) und `--behind-proxy` setzen. Schnittstelle: `GET /servers`, `POST /register` (JSON). Betrieb mit systemd oder Docker: [`docs/handbuch/master-betrieb.md`](docs/handbuch/master-betrieb.md).
 
 **Firewall:** Für Spieler aus dem LAN/Internet muss der UDP-Port (Standard 8303) freigegeben sein, z. B. `sudo ufw allow 8303/udp` bzw. `sudo firewall-cmd --add-port=8303/udp`.
 
@@ -175,7 +175,7 @@ Team wählen, zuschauen und Abstimmungen (Karte, Modus, Kick, Zuschauer) starten
 | `server.toml` | vom Client geschriebene Server-Konfiguration | nein |
 | `server_key.toml` | geheimer Server-Schlüssel – nicht weitergeben | nein |
 | `known_servers.toml` | bekannte Server-Schlüssel des Clients | nein |
-| `maps/*.emap` | Karten ([Format](docs/05-kartenformat.md), ansehen mit `cargo xtask map-dump`) | ja |
+| `maps/*.emap` | Karten ([Format](docs/handbuch/kartenformat.md), ansehen mit `cargo xtask map-dump`) | ja |
 
 ## Entwicklung
 
@@ -233,10 +233,10 @@ apps/elora-server      dedizierter Server
 xtask                  Entwicklungsbefehle (cargo xtask …)
 maps/                  Textkarten
 assets/                Schriften (später Grafik und Sound)
-docs/                  Analyse, Entscheidungen, Architektur, Pläne
+docs/                  Handbuch, Release-2-Planung, Release-Notizen, Archiv von Release 1
 ```
 
-Details: [Architektur](docs/03-architektur.md).
+Details: [Architektur](docs/handbuch/architektur.md).
 
 ## Fehlerbehebung
 
@@ -251,7 +251,7 @@ Details: [Architektur](docs/03-architektur.md).
 
 ## Dokumentation
 
-Siehe [`docs/`](docs/README.md) – Analyse des Originals, Entscheidungslog, Architektur, Tuning, Kartenformat, Roadmap und die Umsetzungspläne der Meilensteine.
+Siehe [`docs/`](docs/README.md) – Handbuch (Grundsätze, Architektur, Tuning, Kartenformat, Master-Betrieb), Planung von Release 2 und das Archiv von Release 1.
 
 ## Lizenz
 

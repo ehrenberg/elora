@@ -7,7 +7,7 @@ use elora_sim::Team;
 
 use crate::figure::{KEY_BODY, KEY_EYES, KEY_FEET};
 
-/// Körper und Füße (16), freigegeben mit `docs/design/elora-palette.png`.
+/// Körper und Füße (16), freigegeben mit `docs/archiv/release-1/design/elora-palette.png`.
 pub const BODY: [(&str, Color); Skin::BODY_COLORS as usize] = [
     ("Sonne", Color::hex(0xf2c14e)),
     ("Orange", Color::hex(0xf28c3a)),

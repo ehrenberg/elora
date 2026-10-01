@@ -84,7 +84,7 @@ Kurven der Animationen: 0 Stufe, 1 linear, 2 langsam beginnend, 3 schnell beginn
 
 ## 6. Eingebaute Grafik (Stil A, M6.3)
 
-Ablage `assets/map/`, Übersicht in [`design/elora-kartenteile.png`](design/elora-kartenteile.png). Erzeugt einmalig mit `tools/design/elora_map_assets.py`, danach normale, von Hand änderbare SVGs.
+Ablage `assets/map/`, Übersicht in [`../archiv/release-1/design/elora-kartenteile.png`](../archiv/release-1/design/elora-kartenteile.png). Erzeugt einmalig mit `tools/../archiv/release-1/design/elora_map_assets.py`, danach normale, von Hand änderbare SVGs.
 
 | Art | Namen | Hinweis |
 |---|---|---|

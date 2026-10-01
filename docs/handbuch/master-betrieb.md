@@ -1,6 +1,6 @@
 # Master-Server betreiben
 
-Stand: M8.4 · Grundlage: E-112, E-127, E-162, E-166, E-170 · Dateien: [`deploy/master/`](../deploy/master/)
+Stand: M8.4 · Grundlage: E-112, E-127, E-162, E-166, E-170 · Dateien: [`deploy/master/`](../../deploy/master/)
 
 Der Master führt die Internet-Liste: Spiel-Server melden sich alle 20 s per HTTPS an, der Master prüft sie per UDP (Info-Abfrage) und nimmt sie nach 60 s ohne Meldung wieder heraus. Clients holen die Liste per HTTPS. Der Master speichert nichts auf der Platte.
 
@@ -15,7 +15,7 @@ Der Master führt die Internet-Liste: Spiel-Server melden sich alle 20 s per HTT
 
 ## Variante 0: Webspace mit PHP (E-171)
 
-Für normales Webhosting ohne eigenen Dienst: [`deploy/master-php/`](../deploy/master-php/) – gleiche Schnittstelle, Liste als JSON-Datei, UDP-Prüfung direkt in der Anmeldung. Dazu gehört die Projektseite `index.php` mit Live-Status der Server (E-172). Anleitung zum Hochladen: [`deploy/master-php/LIESMICH.md`](../deploy/master-php/LIESMICH.md). Getestet mit PHP 8.3 und einem echten `elora-server`.
+Für normales Webhosting ohne eigenen Dienst: [`deploy/master-php/`](../../deploy/master-php/) – gleiche Schnittstelle, Liste als JSON-Datei, UDP-Prüfung direkt in der Anmeldung. Dazu gehört die Projektseite `index.php` mit Live-Status der Server (E-172). Anleitung zum Hochladen: [`deploy/master-php/LIESMICH.md`](../../deploy/master-php/LIESMICH.md). Getestet mit PHP 8.3 und einem echten `elora-server`.
 
 ## Variante A: systemd
 
@@ -39,9 +39,9 @@ docker logs -f elora-master
 
 ## HTTPS davor
 
-**Caddy** (Zertifikat automatisch): [`deploy/master/Caddyfile`](../deploy/master/Caddyfile) nach `/etc/caddy/Caddyfile`, dann `systemctl reload caddy`.
+**Caddy** (Zertifikat automatisch): [`deploy/master/Caddyfile`](../../deploy/master/Caddyfile) nach `/etc/caddy/Caddyfile`, dann `systemctl reload caddy`.
 
-**nginx**: [`deploy/master/nginx.conf`](../deploy/master/nginx.conf) als Server-Block, Zertifikat z. B. mit `certbot --nginx -d elora.bastianswelt.de`.
+**nginx**: [`deploy/master/nginx.conf`](../../deploy/master/nginx.conf) als Server-Block, Zertifikat z. B. mit `certbot --nginx -d elora.bastianswelt.de`.
 
 Der Proxy setzt `X-Forwarded-For` auf die echte Absenderadresse (beim nginx-Beispiel überschrieben, nicht angehängt). Der Master nutzt sie wegen `--behind-proxy` – nur so prüft er die richtige Adresse und hält die Grenze von 32 Servern je Adresse (insgesamt höchstens 8192) ein. Den Master **nie** mit `--behind-proxy` direkt ins Internet stellen, sonst könnte jeder eine Adresse vortäuschen.
 

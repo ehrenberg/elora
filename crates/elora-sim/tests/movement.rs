@@ -1,4 +1,4 @@
-//! Verhaltenstests der Bewegungsphysik gegen die Werte aus docs/04-tuning.md.
+//! Verhaltenstests der Bewegungsphysik gegen die Werte aus docs/handbuch/tuning.md.
 
 use elora_sim::{Collision, HookState, PlayerInput, Tile, Tuning, Vec2, World};
 

@@ -10,13 +10,13 @@ Elora läuft, springt, macht den Doppelsprung und hookt auf der Testkarte. Alle 
 
 | # | Schritt | Crate | Inhalt | Prüfung |
 |---|---|---|---|---|
-| M1.1 ✅ | Simulationskern | `elora-sim` | `Vec2` mit Quantisierung (E-021), `Tuning` (E-023), Tile-Kollision (`MoveBox`, Raycast für den Hook), Bewegung, Sprung, Doppelsprung, Velocity Ramp, Hook-Zustandsautomat | Unit-Tests: Sprunghöhen aus `04-tuning.md` nachrechnen, Hook-Reichweite, keine Tunnel durch Wände |
+| M1.1 ✅ | Simulationskern | `elora-sim` | `Vec2` mit Quantisierung (E-021), `Tuning` (E-023), Tile-Kollision (`MoveBox`, Raycast für den Hook), Bewegung, Sprung, Doppelsprung, Velocity Ramp, Hook-Zustandsautomat | Unit-Tests: Sprunghöhen aus `../../handbuch/tuning.md` nachrechnen, Hook-Reichweite, keine Tunnel durch Wände |
 | M1.2 ✅ | Karten-Loader | `elora-map` | Parser für `.emap.toml` (E-024), Validierung mit Zeile und Spalte, Testkarte `maps/sandbox.emap.toml` | Tests: gültige und ungültige Karten |
 | M1.3 ✅ | Fenster & Renderer | `elora-render` | winit-Fenster, wgpu, Formen per lyon (Kreis, Rechteck, Linie; E-033), Kamera mit Sichtbereich (D-02) | Sichtprüfung |
 | M1.4 ✅ | Game-Loop & Eingabe | `elora-client` | Fester Tick mit 50 TPS und Akkumulator, Interpolation zwischen Ticks, Tastenbelegung (D-05), Mauszielen, Kamera (D-01) | Die Sandbox ist spielbar |
 | M1.5 ✅ | Debug-Werkzeuge | `elora-client` | egui-Panel: alle Tuning-Werte als Regler, Anzeige von Geschwindigkeit, Bodenkontakt und Hook-Zustand, Hot-Reload der Karte, Taste für Reset/Respawn, Speichern des Tunings (D-03) | Manuell |
 | M1.6 ✅ | Determinismus | `elora-sim` | Input-Aufzeichnung → Golden-Datei mit dem End-Zustand, Test im `cargo xtask check` | Test grün |
-| M1.7 ✅ | Abnahme | – | Du spielst die Sandbox, eventuell mit Nach-Tuning. Die finalen Werte kommen in `04-tuning.md`. | Deine Abnahme |
+| M1.7 ✅ | Abnahme | – | Du spielst die Sandbox, eventuell mit Nach-Tuning. Die finalen Werte kommen in `../../handbuch/tuning.md`. | Deine Abnahme |
 
 Nach jedem Schritt: `cargo xtask check` grün, dann ein Commit.
 

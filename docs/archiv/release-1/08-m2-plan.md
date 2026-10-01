@@ -27,7 +27,7 @@ Nach jedem Schritt: `cargo xtask check` grün, dann ein Commit.
 
 - **Alles, was das Spielgeschehen beeinflusst, liegt in `elora-sim`:** Waffen, Projektile, Laser, Schaden, Pickups, Tod. Nur so kann der Client in M3 dieselbe Logik zur Vorhersage nutzen. Spielregeln wie Punkte, Teams und Runden folgen in M4 in `elora-game`.
 - **Ereignisse** (Schuss, Treffer, Explosion, Tod, Pickup) liefert die Simulation als Liste pro Tick. Sie sind die Grundlage für Effekte und Sounds (M5) und später für Netzwerk-Events.
-- **Werte:** Alle Waffenwerte kommen in `Tuning` (live im Panel einstellbar, gespeichert in `tuning.toml`). Festwerte aus dem Original, die nicht in `04-tuning.md` stehen, bleiben wie im Original (Hammer-Radius, Sperre nach Hammer-Treffer, Pickup-Radius, 125 ms Sperre ohne Munition). Sie werden als Konstanten dokumentiert.
+- **Werte:** Alle Waffenwerte kommen in `Tuning` (live im Panel einstellbar, gespeichert in `tuning.toml`). Festwerte aus dem Original, die nicht in `../../handbuch/tuning.md` stehen, bleiben wie im Original (Hammer-Radius, Sperre nach Hammer-Treffer, Pickup-Radius, 125 ms Sperre ohne Munition). Sie werden als Konstanten dokumentiert.
 
 ## Entscheidungen zu M2
 

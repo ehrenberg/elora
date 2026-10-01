@@ -1,6 +1,6 @@
 //! Karten-Datenmodell und Kartenformat von Elora.
 //!
-//! Release-Format `.emap` (binär, E-129, E-143 bis E-146), beschrieben in `docs/05-kartenformat.md`.
+//! Release-Format `.emap` (binär, E-129, E-143 bis E-146), beschrieben in `docs/handbuch/kartenformat.md`.
 
 mod ascii;
 mod binary;

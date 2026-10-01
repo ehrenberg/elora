@@ -24,13 +24,13 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-016 | 2026-09-25 | Waffen Release 1 (O-13) | Hammer, Laser, Granate | Entscheidung Projektinhaber |
 | E-017 | 2026-09-25 | Testkarte (O-31) | Einfaches Textformat (Syntax → O-33) | Entscheidung Projektinhaber |
 | E-018 | 2026-09-25 | Projektname (O-06) | **Elora** – zugleich Name der spielbaren Figur; Abgrenzung zu Teeworlds | Entscheidung Projektinhaber |
-| E-019 | 2026-09-25 | Code-Struktur (O-29) | Aufteilung nach professionellem Rust-Standard gemäß [`03-architektur.md`](03-architektur.md) – **bestätigt** | Entscheidung Projektinhaber |
+| E-019 | 2026-09-25 | Code-Struktur (O-29) | Aufteilung nach professionellem Rust-Standard gemäß [`../../handbuch/architektur.md`](../../handbuch/architektur.md) – **bestätigt** | Entscheidung Projektinhaber |
 | E-020 | 2026-09-25 | Lizenz (O-24) | **GPL-3.0** (Copyleft), ersetzt E-010 | Entscheidung Projektinhaber |
 | E-021 | 2026-09-25 | Physik-Arithmetik (O-28) | `f32` mit Quantisierung pro Tick (wie Original) | Entscheidung Projektinhaber |
-| E-022 | 2026-09-25 | Vorgehen Physikwerte (O-32) | Claude schlägt pro Wert eine Abweichung mit Begründung vor, Projektinhaber entscheidet einzeln → [`04-tuning.md`](04-tuning.md) | Entscheidung Projektinhaber |
+| E-022 | 2026-09-25 | Vorgehen Physikwerte (O-32) | Claude schlägt pro Wert eine Abweichung mit Begründung vor, Projektinhaber entscheidet einzeln → [`../../handbuch/tuning.md`](../../handbuch/tuning.md) | Entscheidung Projektinhaber |
 
-| E-023 | 2026-09-25 | Tuning (O-32) | Alle Vorschläge T-01 bis T-30 aus [`04-tuning.md`](04-tuning.md) angenommen | Entscheidung Projektinhaber |
-| E-024 | 2026-09-25 | Karten-Textformat (O-33) | Vorschlag aus [`05-kartenformat.md`](05-kartenformat.md) angenommen (TOML + ASCII-Raster, Legende, Endung `.emap.toml`) – **nur für Test- und Entwicklungskarten** | Entscheidung Projektinhaber; für Release 1 zu einfach (keine Grafik-Layer) · **ersetzt durch E-146** |
+| E-023 | 2026-09-25 | Tuning (O-32) | Alle Vorschläge T-01 bis T-30 aus [`../../handbuch/tuning.md`](../../handbuch/tuning.md) angenommen | Entscheidung Projektinhaber |
+| E-024 | 2026-09-25 | Karten-Textformat (O-33) | Vorschlag aus [`../../handbuch/kartenformat.md`](../../handbuch/kartenformat.md) angenommen (TOML + ASCII-Raster, Legende, Endung `.emap.toml`) – **nur für Test- und Entwicklungskarten** | Entscheidung Projektinhaber; für Release 1 zu einfach (keine Grafik-Layer) · **ersetzt durch E-146** |
 | E-025 | 2026-09-25 | Startausrüstung (O-35) | Elora spawnt **nur mit Hammer**; Laser und Granate ausschließlich per Pickup | Entscheidung Projektinhaber; Pickups und Kartenkontrolle werden wichtig |
 | E-026 | 2026-09-25 | Instagib-Regeln | Klassisch: nur Laser, unendliche Munition, ein Treffer tötet, keine Pickups | Entscheidung Projektinhaber |
 | E-027 | 2026-09-25 | Asset-Lizenz (O-36) | **CC-BY-SA 4.0** für eigene Grafiken/Sounds | Entscheidung Projektinhaber; Copyleft passend zu GPL-3.0 |

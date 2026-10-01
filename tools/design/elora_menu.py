@@ -1,7 +1,7 @@
-"""Erzeugt docs/design/elora-menue.svg – drei Menü-Entwürfe (M7.0, E-123).
+"""Erzeugt docs/archiv/release-1/design/elora-menue.svg – drei Menü-Entwürfe (M7.0, E-123).
 
 Aufruf: python3 tools/design/elora_menu.py && cargo xtask svg-preview \
-        docs/design/elora-menue.svg docs/design/elora-menue.png 1400
+        docs/archiv/release-1/design/elora-menue.svg docs/archiv/release-1/design/elora-menue.png 1400
 
 Je Stil drei Bildschirme (16:9): Hauptmenü, Server-Browser, Einstellungen (Spieler & Skin),
 alle über demselben ruhigen Hintergrundbild (E-113).
@@ -373,7 +373,7 @@ def sheet_chosen():
 
 
 if __name__ == '__main__':
-    with open('docs/design/elora-menue.svg', 'w') as fh:
+    with open('docs/archiv/release-1/design/elora-menue.svg', 'w') as fh:
         fh.write(sheet())
-    with open('docs/design/elora-menue-gewaehlt.svg', 'w') as fh:
+    with open('docs/archiv/release-1/design/elora-menue-gewaehlt.svg', 'w') as fh:
         fh.write(sheet_chosen())

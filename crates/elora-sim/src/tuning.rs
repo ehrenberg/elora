@@ -1,4 +1,4 @@
-//! Einstellbare Simulationswerte (docs/04-tuning.md, E-023).
+//! Einstellbare Simulationswerte (docs/handbuch/tuning.md, E-023).
 //!
 //! Alle Werte gelten pro Tick bei [`crate::TICKS_PER_SECOND`].
 

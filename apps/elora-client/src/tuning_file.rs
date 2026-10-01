@@ -71,7 +71,7 @@ impl TuningFile {
         let body = toml::to_string_pretty(self)?;
         let text = format!(
             "# Elora – Sandbox-Tuning (E-046). Von der Sandbox geschrieben.\n\
-             # Fehlende Einträge nutzen die Standardwerte aus docs/04-tuning.md.\n\n{body}"
+             # Fehlende Einträge nutzen die Standardwerte aus docs/handbuch/tuning.md.\n\n{body}"
         );
         if let Some(dir) = path.parent().filter(|d| !d.as_os_str().is_empty()) {
             std::fs::create_dir_all(dir)
