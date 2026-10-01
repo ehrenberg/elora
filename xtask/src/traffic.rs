@@ -3,7 +3,7 @@
 use elora_protocol::{ClientMsg, ServerMsg, Snapshot};
 use elora_sim::{PlayerInput, Tuning, Weapon};
 
-const MAP: &str = include_str!("../../maps/sandbox.emap.toml");
+const MAP: &[u8] = include_bytes!("../../maps/sandbox.emap");
 
 /// Aufgezeichnete, unkomprimierte Nachrichten.
 pub struct Traffic {
@@ -24,7 +24,7 @@ fn rng(state: &mut u64) -> u64 {
 /// Snapshots werden wie beim Server alle 2 Ticks als Delta gegen einen um
 /// `ack_lag` Snapshots älteren Stand erzeugt.
 pub fn generate(players: usize, seed: u64, ticks: u64, ack_lag: usize) -> Traffic {
-    let map = elora_map::parse_text_map(MAP).expect("Sandbox-Karte gültig");
+    let map = elora_map::decode(MAP).expect("Sandbox-Karte gültig");
     let mut world = map.world(Tuning::default());
     let slots: Vec<usize> = (0..players).map(|_| world.join()).collect();
     let mut state = seed | 1;

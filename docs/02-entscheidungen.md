@@ -30,7 +30,7 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-022 | 2026-09-25 | Vorgehen Physikwerte (O-32) | Claude schlägt pro Wert eine Abweichung mit Begründung vor, Projektinhaber entscheidet einzeln → [`04-tuning.md`](04-tuning.md) | Entscheidung Projektinhaber |
 
 | E-023 | 2026-09-25 | Tuning (O-32) | Alle Vorschläge T-01 bis T-30 aus [`04-tuning.md`](04-tuning.md) angenommen | Entscheidung Projektinhaber |
-| E-024 | 2026-09-25 | Karten-Textformat (O-33) | Vorschlag aus [`05-kartenformat.md`](05-kartenformat.md) angenommen (TOML + ASCII-Raster, Legende, Endung `.emap.toml`) – **nur für Test- und Entwicklungskarten** | Entscheidung Projektinhaber; für Release 1 zu einfach (keine Grafik-Layer) |
+| E-024 | 2026-09-25 | Karten-Textformat (O-33) | Vorschlag aus [`05-kartenformat.md`](05-kartenformat.md) angenommen (TOML + ASCII-Raster, Legende, Endung `.emap.toml`) – **nur für Test- und Entwicklungskarten** | Entscheidung Projektinhaber; für Release 1 zu einfach (keine Grafik-Layer) · **ersetzt durch E-146** |
 | E-025 | 2026-09-25 | Startausrüstung (O-35) | Elora spawnt **nur mit Hammer**; Laser und Granate ausschließlich per Pickup | Entscheidung Projektinhaber; Pickups und Kartenkontrolle werden wichtig |
 | E-026 | 2026-09-25 | Instagib-Regeln | Klassisch: nur Laser, unendliche Munition, ein Treffer tötet, keine Pickups | Entscheidung Projektinhaber |
 | E-027 | 2026-09-25 | Asset-Lizenz (O-36) | **CC-BY-SA 4.0** für eigene Grafiken/Sounds | Entscheidung Projektinhaber; Copyleft passend zu GPL-3.0 |
@@ -149,6 +149,10 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-140 | 2026-10-01 | Tuning neue Tiles (M6.1) | Vorschlag angenommen: **T-31** Reibung Eis 0,985 · **T-32** Beschleunigung Eis 0,35 · **T-33** Kraft Sprungfeld 20 · **T-34** Richtungen hoch/schräg links/schräg rechts (45°) · **T-35** Beschleuniger 4,0 Einheiten/Tick · **T-36** Plattform von unten/seitlich durchlässig, Hook/Granate/Laser fliegen hindurch | Entscheidung Projektinhaber |
 | E-141 | 2026-10-01 | Durch Plattformen fallen | Neue belegbare Aktion **„Runter“** (Standard S); Spieler-Eingabe bekommt ein Feld dafür (**Protokollversion 3**) | Entscheidung Projektinhaber |
 | E-142 | 2026-10-01 | M6.1 abgenommen | Neue Tile-Arten im Playtest „fühlt sich perfekt an“; Werte T-31 bis T-36 bleiben | Entscheidung Projektinhaber |
+| E-143 | 2026-10-01 | Kompression Kartenformat (M6.2) | **Deflate/zlib** wie im Original (reines Rust, `miniz_oxide`) | Entscheidung Projektinhaber |
+| E-144 | 2026-10-01 | Eigene Grafiken in Karten | **Eingebettete SVGs erlaubt** (eigene Deko); Grenzen 64 Bilder × 512 KiB, Client parst ohne externe Verweise | Entscheidung Projektinhaber |
+| E-145 | 2026-10-01 | Dateiendung | **`.emap`** | Entscheidung Projektinhaber |
+| E-146 | 2026-10-01 | Textformat | **Textkarten umgewandelt, Textformat `.emap.toml` entfernt** (ersetzt E-024); Karten werden mit dem Editor gebaut, Tests nutzen `Map::from_rows`; Protokollversion 4 (Karte als Binärdaten im `Welcome`) | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 

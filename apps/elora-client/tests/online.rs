@@ -9,7 +9,7 @@ use elora_protocol::Skin;
 use elora_server::{GameServer, MapEntry, ServerConfig};
 use elora_sim::{PlayerInput, Tuning};
 
-const MAP: &str = include_str!("../../../maps/sandbox.emap.toml");
+const MAP: &[u8] = include_bytes!("../../../maps/sandbox.emap");
 
 fn addr(port: u16) -> SocketAddr {
     SocketAddr::from(([10, 0, 0, 1], port))
@@ -41,7 +41,7 @@ impl Game {
             &cfg,
             vec![MapEntry {
                 name: "sandbox".into(),
-                source: MAP.to_owned(),
+                data: MAP.to_vec(),
             }],
             Tuning::default(),
             now,

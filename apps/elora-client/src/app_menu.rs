@@ -19,14 +19,11 @@ use crate::{Action, App, Screen, draw, hosting, hud};
 const DOUBLE_CLICK_SECS: f32 = 0.4;
 const DOUBLE_CLICK_PX: f32 = 6.0;
 
-/// Kartennamen aus `maps/` (ohne `.emap.toml`).
+/// Kartennamen aus `maps/` (ohne `.emap`).
 pub fn map_names() -> Vec<String> {
     hosting::available_maps()
         .iter()
-        .filter_map(|p| {
-            let name = p.file_name()?.to_str()?;
-            Some(name.trim_end_matches(".emap.toml").to_owned())
-        })
+        .filter_map(|p| Some(p.file_stem()?.to_str()?.to_owned()))
         .collect()
 }
 

@@ -379,9 +379,9 @@ fn fresh_world(map: &Map, tuning: Tuning) -> (World, usize) {
 }
 
 pub fn load_map(path: &Path) -> anyhow::Result<Map> {
-    let src = std::fs::read_to_string(path)
-        .with_context(|| format!("Karte {} nicht lesbar", path.display()))?;
-    elora_map::parse_text_map(&src).with_context(|| format!("Karte {}", path.display()))
+    let data =
+        std::fs::read(path).with_context(|| format!("Karte {} nicht lesbar", path.display()))?;
+    elora_map::decode(&data).with_context(|| format!("Karte {}", path.display()))
 }
 
 /// Beobachtet die Kartendatei. Beobachtet wird das Verzeichnis, weil viele Editoren

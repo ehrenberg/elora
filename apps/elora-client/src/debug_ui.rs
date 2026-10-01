@@ -312,7 +312,7 @@ fn sandbox_mode(ui: &mut egui::Ui, net: &mut NetUi) -> Option<Action> {
             action = Some(Action::SandboxMode(cfg));
         }
     });
-    ui.small("CTF braucht eine Karte mit Flaggen, z. B. maps/ctf-test.emap.toml");
+    ui.small("CTF braucht eine Karte mit Flaggen, z. B. maps/ctf-test.emap");
     action
 }
 

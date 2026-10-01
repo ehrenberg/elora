@@ -1,18 +1,21 @@
-//! Karten-Datenmodell und Kartenformate von Elora.
+//! Karten-Datenmodell und Kartenformat von Elora.
 //!
-//! - Textformat für Test- und Entwicklungskarten (`docs/05-kartenformat.md`, E-024)
-//! - Release-Kartenformat (E-028), folgt in M6
+//! Release-Format `.emap` (binär, E-129, E-143 bis E-146), beschrieben in `docs/05-kartenformat.md`.
 
-mod text;
+mod ascii;
+mod binary;
+pub mod look;
 
 use elora_sim::{
     Collision, DummyPattern, PickupKind, TILE_SIZE, Tile, Tuning, Vec2, Weapon, World,
 };
 
-pub use text::{MapError, parse_text_map};
+pub use ascii::ENTITY_CHARS;
+pub use binary::{FORMAT_VERSION, MapError, checksum, decode, encode};
+pub use look::{Art, Background, Decor, Envelope, Image, Rgba, Sky};
 
-/// Unterstützte Version des Textformats.
-pub const TEXT_FORMAT_VERSION: u32 = 1;
+/// Dateiendung der Karten (ohne Punkt).
+pub const EXTENSION: &str = "emap";
 /// Maximale Kantenlänge einer Karte in Tiles.
 pub const MAX_SIZE: usize = 1000;
 
@@ -73,9 +76,40 @@ pub struct Map {
     /// Zeilenweise, oben links beginnend.
     pub tiles: Vec<Tile>,
     pub entities: Vec<Entity>,
+    /// Namen der verwendeten Materialien (eingebaute Sätze, M6.3).
+    pub materials: Vec<String>,
+    /// Material je Tile: 0 = Standard der Tile-Art, sonst Index + 1 in `materials`.
+    /// Leer, wenn die Karte keine Materialien festlegt.
+    pub material_map: Vec<u8>,
+    pub sky: Sky,
+    /// Von hinten nach vorn.
+    pub backgrounds: Vec<Background>,
+    /// Deko hinter der Spielfläche.
+    pub decor_back: Vec<Decor>,
+    /// Deko vor der Spielfläche.
+    pub decor_front: Vec<Decor>,
+    pub envelopes: Vec<Envelope>,
+    pub images: Vec<Image>,
 }
 
 impl Map {
+    /// Liest eine Kartendatei.
+    ///
+    /// # Errors
+    /// Wenn die Datei fehlt oder keine gültige Karte ist.
+    pub fn load(path: &std::path::Path) -> anyhow::Result<Self> {
+        let data = std::fs::read(path)?;
+        Ok(decode(&data)?)
+    }
+
+    /// Schreibt die Karte als Datei.
+    ///
+    /// # Errors
+    /// Wenn die Datei nicht geschrieben werden kann.
+    pub fn save(&self, path: &std::path::Path) -> std::io::Result<()> {
+        std::fs::write(path, encode(self))
+    }
+
     /// Kollisionsraster für die Simulation.
     pub fn collision(&self) -> Collision {
         Collision::new(self.width, self.height, self.tiles.clone())

@@ -51,7 +51,7 @@ pub fn available_maps() -> Vec<PathBuf> {
         .flatten()
         .filter_map(Result::ok)
         .map(|e| e.path())
-        .filter(|p| p.to_string_lossy().ends_with(".emap.toml"))
+        .filter(|p| p.extension().is_some_and(|e| e == elora_map::EXTENSION))
         .collect();
     maps.sort();
     maps

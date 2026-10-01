@@ -130,7 +130,8 @@ pub enum ServerMsg {
         slot: u32,
         tick: u64,
         map_name: String,
-        map_source: String,
+        /// Kartendatei (`.emap`, schon komprimiert).
+        map_data: Vec<u8>,
         tuning: Tuning,
         high_bandwidth: bool,
     },
@@ -723,7 +724,7 @@ impl ServerMsg {
                 slot,
                 tick,
                 map_name,
-                map_source,
+                map_data,
                 tuning,
                 high_bandwidth,
             } => {
@@ -732,7 +733,7 @@ impl ServerMsg {
                 w.uvar(u64::from(*slot));
                 w.uvar(*tick);
                 w.str(map_name);
-                w.str(map_source);
+                w.bytes(map_data);
                 put_tuning(&mut w, tuning);
                 w.bool(*high_bandwidth);
             }
@@ -816,7 +817,7 @@ impl ServerMsg {
                     slot: r.uint("Slot")?,
                     tick: r.uvar()?,
                     map_name: r.str(MAX_TEXT)?.to_owned(),
-                    map_source: r.str(MAX_MAP)?.to_owned(),
+                    map_data: r.bytes(MAX_MAP)?.to_vec(),
                     tuning: get_tuning(&mut r)?,
                     high_bandwidth: r.bool()?,
                 }
@@ -982,7 +983,7 @@ mod tests {
                 slot: 2,
                 tick: 99,
                 map_name: "sandbox".into(),
-                map_source: "format = 1".into(),
+                map_data: b"EMAP\x01\x00".to_vec(),
                 tuning: Tuning::default(),
                 high_bandwidth: true,
             },

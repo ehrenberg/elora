@@ -34,7 +34,7 @@ elora/
 │   ├── elora-client/       # M1  das Spiel: Sandbox + Online (lib: Online-Logik/Szene, bin: Fenster/UI)
 │   └── elora-server/       # M3  dedizierter Server (lib: Spielserver, bin: Programm)
 ├── assets/                 # eigene Grafiken, Sounds, Schriften (E-006)
-├── maps/                   # Karten im Textformat (E-017), z. B. sandbox.emap.toml
+├── maps/                   # Karten im Format .emap (E-146), z. B. sandbox.emap
 ├── xtask/                  # Entwicklungsaufgaben: `cargo xtask check` (E-039)
 ├── tools/                  # Hilfsprogramme (Asset-Pipeline, Map-Konverter, …)
 ├── docs/

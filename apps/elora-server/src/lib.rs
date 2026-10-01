@@ -41,7 +41,8 @@ const KICK_BAN: Duration = Duration::from_mins(5);
 #[derive(Debug, Clone)]
 pub struct MapEntry {
     pub name: String,
-    pub source: String,
+    /// Kartendatei (`.emap`).
+    pub data: Vec<u8>,
 }
 
 #[derive(Debug)]
@@ -84,7 +85,7 @@ pub struct GameServer<S: Socket> {
     rotation: Vec<String>,
     map_index: usize,
     map_name: String,
-    map_source: String,
+    map_data: Vec<u8>,
     base_tuning: Tuning,
     high_bandwidth: bool,
     votes_enabled: bool,
@@ -111,8 +112,8 @@ impl<S: Socket> std::fmt::Debug for GameServer<S> {
     }
 }
 
-fn load_world(source: &str, tuning: Tuning) -> anyhow::Result<World> {
-    Ok(elora_map::parse_text_map(source)?.world(tuning))
+fn load_world(data: &[u8], tuning: Tuning) -> anyhow::Result<World> {
+    Ok(elora_map::decode(data)?.world(tuning))
 }
 
 impl<S: Socket> GameServer<S> {
@@ -132,7 +133,7 @@ impl<S: Socket> GameServer<S> {
             .first()
             .cloned()
             .ok_or_else(|| anyhow::anyhow!("keine Karte"))?;
-        let mut world = load_world(&first.source, tuning.clone())?;
+        let mut world = load_world(&first.data, tuning.clone())?;
         let rules = Rules::new(config.rules.clone(), &mut world, true);
         let rotation = if config.rotation.is_empty() {
             vec![first.name.clone()]
@@ -147,7 +148,7 @@ impl<S: Socket> GameServer<S> {
             rotation,
             map_index: 0,
             map_name: first.name,
-            map_source: first.source,
+            map_data: first.data,
             base_tuning: tuning,
             high_bandwidth: config.high_bandwidth,
             votes_enabled: config.votes,
@@ -325,7 +326,7 @@ impl<S: Socket> GameServer<S> {
             slot: u32::try_from(slot).unwrap_or(0),
             tick: self.world.tick,
             map_name: self.map_name.clone(),
-            map_source: self.map_source.clone(),
+            map_data: self.map_data.clone(),
             tuning: self.world.tuning.clone(),
             high_bandwidth: self.high_bandwidth,
         };
@@ -632,7 +633,7 @@ impl<S: Socket> GameServer<S> {
             .find(|m| m.name == name)
             .cloned()
             .ok_or_else(|| anyhow::anyhow!("Karte `{name}` unbekannt"))?;
-        let mut world = load_world(&entry.source, self.base_tuning.clone())?;
+        let mut world = load_world(&entry.data, self.base_tuning.clone())?;
         // Zeit läuft weiter: Tick der neuen Welt = aktueller Server-Tick
         world.tick = self.world.tick;
         let mut ids: Vec<u32> = self
@@ -656,7 +657,7 @@ impl<S: Socket> GameServer<S> {
         self.world = world;
         self.history.clear();
         self.map_name = entry.name;
-        self.map_source = entry.source;
+        self.map_data = entry.data;
         for id in ids {
             self.welcome(id);
         }

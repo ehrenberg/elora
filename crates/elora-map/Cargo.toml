@@ -9,9 +9,10 @@ publish.workspace = true
 
 [dependencies]
 elora-sim.workspace = true
-serde.workspace = true
-toml.workspace = true
 thiserror.workspace = true
+anyhow.workspace = true
+miniz_oxide.workspace = true
+blake2.workspace = true
 
 [lints]
 workspace = true

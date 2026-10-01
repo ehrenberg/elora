@@ -1,6 +1,6 @@
 //! Elora – dedizierter Server (M3.5, M4). Befehle im Terminal: `help`.
 //!
-//! Aufruf: `elora-server [--config server.toml] [--port 8303] [--map karte.emap.toml]
+//! Aufruf: `elora-server [--config server.toml] [--port 8303] [--map karte.emap]
 //! [--name "…"] [--max-clients 8] [--high-bandwidth] [--key-file server_key.toml]
 //! [--mode dm|tdm|ctf|lms|lts] [--instagib] [--score-limit n] [--time-limit min]
 //! [--no-friendly-fire] [--no-votes]`
@@ -122,16 +122,12 @@ fn main() -> anyhow::Result<()> {
 fn load_maps(cfg: &ServerConfig) -> anyhow::Result<Vec<MapEntry>> {
     let name_of = |p: &Path| {
         p.file_name()
-            .map(|n| {
-                n.to_string_lossy()
-                    .trim_end_matches(".emap.toml")
-                    .to_string()
-            })
+            .map(|n| n.to_string_lossy().trim_end_matches(".emap").to_string())
             .unwrap_or_default()
     };
     let first = MapEntry {
         name: name_of(&cfg.map),
-        source: std::fs::read_to_string(&cfg.map)
+        data: std::fs::read(&cfg.map)
             .with_context(|| format!("Karte {} nicht lesbar", cfg.map.display()))?,
     };
     let mut maps = vec![first];
@@ -140,7 +136,7 @@ fn load_maps(cfg: &ServerConfig) -> anyhow::Result<Vec<MapEntry>> {
         .flatten()
         .filter_map(Result::ok)
         .map(|e| e.path())
-        .filter(|p| p.to_string_lossy().ends_with(".emap.toml"))
+        .filter(|p| p.extension().is_some_and(|e| e == elora_map::EXTENSION))
         .collect();
     paths.sort();
     for p in paths {
@@ -148,9 +144,9 @@ fn load_maps(cfg: &ServerConfig) -> anyhow::Result<Vec<MapEntry>> {
         if maps.iter().any(|m| m.name == name) {
             continue;
         }
-        match std::fs::read_to_string(&p) {
-            Ok(source) if elora_map::parse_text_map(&source).is_ok() => {
-                maps.push(MapEntry { name, source });
+        match std::fs::read(&p) {
+            Ok(data) if elora_map::decode(&data).is_ok() => {
+                maps.push(MapEntry { name, data });
             }
             _ => {
                 tracing::warn!(path = %p.display(), "Karte übersprungen (nicht lesbar oder ungültig)");

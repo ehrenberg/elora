@@ -1,7 +1,7 @@
 //! Elora-Client: lokale Sandbox (M1/M2) oder online mit einem Server (M3).
 //!
-//! Aufruf: `elora [karte.emap.toml] [--mode dm|tdm|ctf|lms|lts] [--instagib] [--connect adresse:port]`
-//! (Standardkarte: `maps/sandbox.emap.toml`)
+//! Aufruf: `elora [karte.emap] [--mode dm|tdm|ctf|lms|lts] [--instagib] [--connect adresse:port]`
+//! (Standardkarte: `maps/sandbox.emap`)
 
 mod app_menu;
 mod bindings;
@@ -57,7 +57,14 @@ use sandbox::Sandbox;
 use settings::Settings;
 use tuning_file::{TUNING_FILE, TuningFile};
 
-const DEFAULT_MAP: &str = "maps/sandbox.emap.toml";
+const DEFAULT_MAP: &str = "maps/sandbox.emap";
+
+/// Kommandozeilen-Argument ist eine Kartendatei.
+fn is_map_path(arg: &str) -> bool {
+    Path::new(arg)
+        .extension()
+        .is_some_and(|e| e.eq_ignore_ascii_case(elora_map::EXTENSION))
+}
 
 fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt()
@@ -74,7 +81,7 @@ fn main() -> anyhow::Result<()> {
         .and_then(|i| args.get(i + 1).cloned());
     let map_path = args
         .iter()
-        .find(|a| a.ends_with(".emap.toml"))
+        .find(|a| is_map_path(a))
         .map_or_else(|| PathBuf::from(DEFAULT_MAP), PathBuf::from);
     let file = TuningFile::load(Path::new(TUNING_FILE))?;
     let settings = Settings::load(&settings::settings_path()).unwrap_or_else(|e| {
@@ -101,10 +108,7 @@ fn main() -> anyhow::Result<()> {
     let event_loop = EventLoop::new().context("Event-Loop konnte nicht erstellt werden")?;
     event_loop.set_control_flow(ControlFlow::Poll);
     // Karte, Modus oder Adresse auf der Kommandozeile: direkt ins Spiel (Entwicklung)
-    let direct = connect.is_some()
-        || args
-            .iter()
-            .any(|a| a.ends_with(".emap.toml") || a == "--mode");
+    let direct = connect.is_some() || args.iter().any(|a| is_map_path(a) || a == "--mode");
     let mut app = App::new(sandbox, &file, settings);
     if direct {
         app.screen = Screen::Game;

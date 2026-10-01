@@ -281,12 +281,12 @@ impl OnlineClient {
                 slot,
                 tick,
                 map_name,
-                map_source,
+                map_data,
                 tuning,
                 high_bandwidth,
             } => {
                 // auch nach einem Kartenwechsel: Zustand der alten Karte verwerfen
-                match elora_map::parse_text_map(&map_source) {
+                match elora_map::decode(&map_data) {
                     Ok(map) => {
                         self.template = Some(map.world(tuning));
                         self.map = Some(map);

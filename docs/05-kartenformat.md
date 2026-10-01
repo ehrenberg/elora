@@ -1,137 +1,83 @@
-# Kartenformat (Textformat)
+# Kartenformat `.emap`
 
-Status: **angenommen** (E-024) · gilt **nur für Test- und Entwicklungskarten** · Grundlage: E-017
+Status: **angenommen** (E-129, E-143 bis E-146) · ersetzt das frühere Textformat `.emap.toml` (E-024, entfernt mit M6.2) · Code: `crates/elora-map`
 
 ## 1. Ziele
 
-1. **Von Hand schreibbar und lesbar.** Eine Karte lässt sich in jedem Texteditor bauen, man sieht die Karte direkt im Text.
-2. **Diff-freundlich.** Änderungen erscheinen in Git zeilenweise.
-3. **Robust parsbar.** Ein Standardformat statt eigener Syntax, klare Fehlermeldungen mit Zeile und Spalte.
-4. **Erweiterbar.** Die Versionsnummer erlaubt später weitere Tile-Arten und Entities, ohne alte Karten zu brechen.
-5. **Nur Gameplay.** Das Format beschreibt Kollision und Entities. Grafik-Layer (Tilesets, Parallax, Quads) sind **nicht** Teil davon, sie kommen später (→ O-10, O-16).
+1. **Ein Format für alles:** Test-, Entwicklungs- und Release-Karten (E-146). Gebaut werden Karten mit dem Editor (ab M6.6).
+2. **Kompakt:** zlib-komprimiert (E-143), geeignet für den Download vom Server (E-136).
+3. **Robust:** Jede beschädigte oder bösartige Datei führt zu einem Fehler, nie zu einem Absturz. Feste Obergrenzen schützen vor zu großen Daten.
+4. **Erweiterbar:** Abschnitte mit Kennung; unbekannte Abschnitte werden übersprungen, die Formatversion steht im Kopf.
+5. **Aussehen inklusive:** Materialien, Deko, Hintergrund-Ebenen mit Parallax, Animationen und eingebettete SVGs (E-130 bis E-132, E-144).
 
-## 2. Vorschlag: TOML-Datei mit ASCII-Raster
+## 2. Aufbau der Datei
 
-Die ganze Datei ist gültiges **TOML**. Metadaten stehen als normale Schlüssel darin, das Raster als mehrzeiliger *Literal-String* (`'''…'''`). In einem Literal-String sind alle Zeichen wörtlich, auch `#`, das in TOML sonst einen Kommentar einleitet.
-
-- Dateiendung: **`.emap.toml`**. Editoren erkennen die Datei so als TOML, und sie ist trotzdem eindeutig eine Elora-Karte.
-- Ablage: `maps/`
-- Parser: Crate `toml` + `serde` in `elora-map`
-
-### Beispiel: Sandbox-Karte (Stand M1; die aktuelle Datei `maps/sandbox.emap.toml` enthält zusätzlich Dummies)
-
-```toml
-# Elora-Karte
-format  = 1                 # Formatversion
-name    = "Sandbox"
-author  = "Elora-Team"
-
-# Optional: eigene Zeichen oder Überschreibungen der Standard-Legende
-# [legend]
-# "~" = "death"
-
-[grid]
-tiles = '''
-################################################
-#..............................................#
-#..............................................#
-#...a.....................................h....#
-#..#####..........%%%%%%%%%%..........#####....#
-#..............................................#
-#..............................................#
-#.......................G......................#
-#..................############................#
-#..............................................#
-#....S..................................S......#
-#..######....................................###
-#..........%%%%..................%%%%..........#
-#..............................................#
-#.......................L......................#
-#....................#######...................#
-#..S..........................................S#
-#.....h..........................a.............#
-#########^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^#########
-################################################
-'''
+```
+Offset  Inhalt
+0       "EMAP"                       Kennung (4 Byte)
+4       Formatversion (u16)          zurzeit 1
+6       zlib-Strom                   Folge von Abschnitten (entpackt höchstens 32 MiB)
 ```
 
-## 3. Standard-Legende
+Jeder **Abschnitt**: `Kennung (4 Byte ASCII) | Länge (u32) | Inhalt`. Zahlen sind Little Endian, Texte UTF-8 mit vorangestellter Länge (u32), Gleitkommazahlen `f32` und müssen endlich sein. Jeder Abschnitt darf höchstens einmal vorkommen.
 
-### Tiles (Kollision)
-
-| Zeichen | Tile | Bedeutung |
+| Kennung | Pflicht | Inhalt |
 |---|---|---|
-| `.` | `air` | Leer |
-| `#` | `solid` | Wand, Hook greift |
-| `%` | `unhookable` | Wand, Hook greift **nicht** |
-| `^` | `death` | Tötet bei Berührung |
-| `=` | `platform` | Plattform: trägt von oben, von unten/seitlich durchlässig; Hook, Granate und Laser fliegen hindurch; mit „Runter“ fällt man hindurch (T-36, E-141) |
-| `~` | `ice` | Wand, rutschig (T-31, T-32) |
-| `!` | `jump_up` | Sprungfeld nach oben (T-33) |
-| `\` | `jump_left` | Sprungfeld schräg nach links oben (T-34) |
-| `/` | `jump_right` | Sprungfeld schräg nach rechts oben (T-34) |
-| `<` | `conveyor_left` | Beschleuniger/Laufband nach links (T-35) |
-| `>` | `conveyor_right` | Beschleuniger/Laufband nach rechts (T-35) |
+| `INFO` | ja | Name, Autor (leer = keiner); je höchstens 128 Byte |
+| `GAME` | ja | Breite, Höhe (je 1–1000), dann je Tile 1 Byte Tile-Art (zeilenweise, oben links beginnend) |
+| `ENTS` | ja | Anzahl, je Entity: Art (u8), Spalte, Zeile |
+| `MATL` | nein | Materialnamen (höchstens 255), dann je Tile 1 Byte: 0 = Standard der Tile-Art, sonst Index + 1 |
+| `SKY ` | nein | Himmelsverlauf oben, unten (RGBA); fehlt er, gilt der bisherige Himmel |
+| `BGRD` | nein | Hintergrund-Ebenen (höchstens 16), von hinten nach vorn: Name, Parallax (x, y), Versatz (x, y), Wiederholung waagerecht (0 = keine), Deko-Liste |
+| `DECO` | nein | Deko-Liste hinter der Spielfläche, Deko-Liste davor |
+| `ENVL` | nein | Animationen (höchstens 256): Name, Art (0 Bewegung, 1 Farbe), an Server-Zeit gebunden, Punkte (höchstens 1024, Zeit streng aufsteigend): Zeit (ms), 4 Werte, Kurve |
+| `IMGS` | nein | Eingebettete SVGs (höchstens 64, je höchstens 512 KiB): Name, Daten |
 
-Sprungfelder und Beschleuniger sind fest (Hook greift). Sie wirken auf eine Figur, die auf ihnen steht.
+**Deko-Objekt:** Grafik (0 = eingebaut + Name, 1 = eingebettetes SVG + Index), Position, Skalierung, Drehung (Grad), gespiegelt, Färbung (RGBA), Bewegungs-Animation und Farb-Animation (je Index u16 + Versatz in ms; `0xFFFF` = keine). Insgesamt höchstens 20 000 Deko-Objekte.
 
-### Entities
+**Animationen** laufen in Schleife über die Zeit des letzten Punkts. Bewegung: Versatz x, y (Welteinheiten) und Drehung (Grad). Farbe: r, g, b, a (0 bis 1, multipliziert).
 
-Eine Entity belegt ihr Feld und macht es zu **Luft**. Sie sitzt in der Mitte des Tiles.
+### Kodierung der Aufzählungen
 
-| Zeichen | Entity | Hinweis |
-|---|---|---|
-| `S` | Spawn (neutral) | DM, LMS, Instagib |
-| `R` | Spawn Team Rot | TDM, CTF, LTS |
-| `B` | Spawn Team Blau | TDM, CTF, LTS |
-| `r` | Flaggenstand Rot | CTF |
-| `b` | Flaggenstand Blau | CTF |
-| `h` | Herz (Health) | |
-| `a` | Rüstung (Armor) | |
-| `L` | Laser | E-016 |
-| `G` | Granatwerfer | E-016 |
-| `D` | Trainings-Dummy, steht | nur Sandbox (E-053, E-054) |
-| `W` | Trainings-Dummy, läuft hin und her | nur Sandbox |
-| `J` | Trainings-Dummy, springt | nur Sandbox |
-| `X` | Trainings-Dummy, läuft + springt | nur Sandbox |
+| Code | Tile-Art | | Code | Entity |
+|---|---|---|---|---|
+| 0 | Luft | | 0 | Spawn (neutral) |
+| 1 | Fest | | 1 / 2 | Spawn Rot / Blau |
+| 2 | Nicht hookbar | | 3 / 4 | Flaggenstand Rot / Blau |
+| 3 | Tod | | 5 / 6 | Herz / Rüstung |
+| 4 | Plattform | | 7 / 8 | Laser / Granatwerfer |
+| 5 | Eis | | 9–12 | Dummy: steht, läuft, springt, läuft + springt |
+| 6 / 7 / 8 | Sprungfeld hoch / schräg links / schräg rechts | | | |
+| 9 / 10 | Beschleuniger links / rechts | | | |
 
-Die Regel für Zeichen: **Satzzeichen sind Tiles, Buchstaben sind Entities.** So bleibt die Legende auch mit neuen Einträgen übersichtlich.
+Kurven der Animationen: 0 Stufe, 1 linear, 2 langsam beginnend, 3 schnell beginnend, 4 weich (wie im Original).
+
+## 3. Bedeutung der Tile-Arten
+
+| Tile | Bedeutung |
+|---|---|
+| Luft | Leer |
+| Fest | Wand, Hook greift |
+| Nicht hookbar | Wand, Hook greift **nicht** |
+| Tod | Tötet bei Berührung |
+| Plattform | Trägt von oben, von unten/seitlich durchlässig; Hook, Granate und Laser fliegen hindurch; mit „Runter“ fällt man hindurch (T-36, E-141) |
+| Eis | Wand, rutschig (T-31, T-32) |
+| Sprungfeld | Wirft eine darauf stehende Figur hoch oder schräg (T-33, T-34); Hook greift |
+| Beschleuniger | Trägt eine darauf stehende Figur wie ein Laufband (T-35); Hook greift |
 
 ## 4. Regeln
 
 | Regel | Festlegung |
 |---|---|
-| Koordinaten | Ursprung oben links, x nach rechts, y nach unten. 1 Tile = 32 Einheiten |
-| Rastergröße | Ergibt sich aus dem Raster. Alle Zeilen müssen gleich lang sein. Maximum z. B. 1000 × 1000 |
-| Leerzeilen | Führende und abschließende Leerzeilen im Raster werden ignoriert |
-| Außerhalb der Karte | Gilt als `solid` (niemand fällt aus der Welt) |
-| Unbekanntes Zeichen | Fehler mit Zeile und Spalte |
-| Pflichtfelder | `format`, `name`, `grid.tiles` |
-| Validierung | mindestens 1 Spawn; CTF braucht genau 1× `r` und 1× `b`; Team-Modi brauchen `R` und `B` |
-| Unterstützte Modi | werden aus den Entities abgeleitet (z. B. Flaggen vorhanden → CTF möglich) |
-| Encoding | UTF-8, Zeilenenden LF oder CRLF |
+| Koordinaten | Ursprung oben links, x nach rechts, y nach unten. 1 Tile = 32 Einheiten. Entities sitzen in der Tile-Mitte |
+| Außerhalb der Karte | gilt als fest (niemand fällt aus der Welt) |
+| Validierung | mindestens 1 Spawn; Flaggen nur als Paar (genau 1× Rot und 1× Blau); Entities innerhalb des Rasters; Verweise auf Bilder und Animationen (der passenden Art) müssen existieren |
+| Unterstützte Modi | aus den Entities abgeleitet: neutrale Spawns → DM/LMS/Instagib, rote + blaue Spawns → TDM/LTS, dazu ein Flaggenpaar → CTF |
+| Prüfsumme | BLAKE2s-256 über die Datei-Bytes; identifiziert die Karte beim Download und im Zwischenspeicher (M6.5) |
+| Eingebettete SVGs | Die Karte prüft nur Anzahl und Größe. Der Client parst sie beim Zeichnen **ohne externe Verweise** (keine Dateien, keine Netzadressen, M6.4) |
 
-## 5. Entwicklerkomfort in der Sandbox
+## 5. Werkzeuge
 
-- **Hot-Reload:** Die Sandbox beobachtet die Datei und lädt die Karte beim Speichern neu. Elora bleibt dabei an ihrer Position. So lassen sich Karte und Tuning schnell im Wechsel ausprobieren.
-- **Fehler** erscheinen im Spiel als Einblendung, statt das Programm zu beenden.
-
-## 6. Betrachtete Alternativen
-
-| Alternative | Warum nicht gewählt |
-|---|---|
-| Reine ASCII-Datei ohne Kopf | Kein Platz für Name, Version und Legende, also nicht erweiterbar |
-| Eigenes INI-artiges Format | Wir müssten einen eigenen Parser schreiben und pflegen, obwohl TOML dasselbe kann |
-| JSON mit Zeilen-Array | Das Raster ist schlecht lesbar (Anführungszeichen, Kommas), Kommentare fehlen |
-| Tiled (`.tmx`/`.tmj`) | Starker Editor, aber keine handschreibbare Textkarte. Später eventuell als Import (→ O-10) |
-
-## 7. Abgrenzung zum Release-Kartenformat
-
-Dieses Format ist für Release 1 bewusst zu einfach (E-024). Folgendes kann es nicht:
-
-- Grafik-Layer: Tilesets, Deko-Layer vor und hinter dem Spielfeld, Parallax-Hintergründe
-- Freie Polygone/Quads, Animationen (Envelopes), Soundquellen
-- eingebettete oder referenzierte Bilder, kompakte Speicherung großer Karten
-- Anbindung an einen Editor (Rundlauf Laden ↔ Speichern ohne Verlust)
-
-Das Release-Format ist eine eigene Entscheidung (O-10). Das Textformat bleibt daneben für Tests, Golden-Tests und schnelles Prototyping bestehen. Ein Import vom Text- ins Release-Format ist sinnvoll.
+- **Ansehen:** `cargo xtask map-dump maps/<karte>.emap` gibt Kopf, Prüfsumme, Modi, Ebenen und das Raster als Zeichen aus.
+- **Tests:** `Map::from_rows` baut Karten aus Zeichenrastern (Tiles wie in den Aufzeichnungen: `. # % ^ = ~ ! \ / < >`; Entities `S R B r b h a L G D W J X`). Das ist eine Hilfe im Code, kein Dateiformat.
+- **Hot-Reload:** Die Sandbox beobachtet die Kartendatei und lädt sie beim Speichern neu (z. B. aus dem Editor).

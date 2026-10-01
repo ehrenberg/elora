@@ -765,10 +765,11 @@ dependencies = [
 name = "elora-map"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
+ "blake2",
  "elora-sim",
- "serde",
+ "miniz_oxide 0.9.1",
  "thiserror 2.0.21",
- "toml",
 ]
 
 [[package]]

@@ -31,7 +31,7 @@ pub struct ServerConfig {
     pub key_file: PathBuf,
     /// Optionale Tuning-Datei (Format wie `tuning.toml` des Clients, Abschnitt `[physics]`).
     pub tuning: Option<PathBuf>,
-    /// Kartenrotation (Namen ohne `.emap.toml` aus `maps_dir`); leer = nur `map` (E-074).
+    /// Kartenrotation (Namen ohne `.emap` aus `maps_dir`); leer = nur `map` (E-074).
     pub rotation: Vec<String>,
     /// Verzeichnis mit Karten für Rotation und Abstimmungen.
     pub maps_dir: PathBuf,
@@ -50,7 +50,7 @@ impl Default for ServerConfig {
             name: "Elora-Server".into(),
             bind: "0.0.0.0".into(),
             port: DEFAULT_PORT,
-            map: PathBuf::from("maps/sandbox.emap.toml"),
+            map: PathBuf::from("maps/sandbox.emap"),
             max_clients: 8,
             high_bandwidth: false,
             key_file: PathBuf::from("server_key.toml"),

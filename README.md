@@ -63,13 +63,13 @@ Im Hauptmenü: **Spielen** (Server-Browser mit Internet – braucht eine Master-
 Mit einer Karte, `--mode` oder `--connect` auf der Kommandozeile geht es ohne Menü direkt ins Spiel, mit Debug-Panel:
 
 ```sh
-cargo run --bin elora -- maps/sandbox.emap.toml     # Standardkarte
-cargo run --bin elora -- maps/eigene.emap.toml      # andere Karte
-cargo run --bin elora -- maps/ctf-test.emap.toml --mode ctf   # Spielmodus gegen Dummies
-cargo run --bin elora -- maps/tiles-test.emap.toml   # Plattform, Eis, Sprungfeld, Beschleuniger (S = Runter)
+cargo run --bin elora -- maps/sandbox.emap          # Standardkarte
+cargo run --bin elora -- maps/eigene.emap           # andere Karte
+cargo run --bin elora -- maps/ctf-test.emap --mode ctf   # Spielmodus gegen Dummies
+cargo run --bin elora -- maps/tiles-test.emap        # Plattform, Eis, Sprungfeld, Beschleuniger (S = Runter)
 ```
 
-Spielmodi in der Sandbox: `--mode dm|tdm|ctf|lms|lts` (optional `--instagib`) oder im Panel unter *Spiel → Modus*. CTF braucht eine Karte mit Flaggen, z. B. `maps/ctf-test.emap.toml`.
+Spielmodi in der Sandbox: `--mode dm|tdm|ctf|lms|lts` (optional `--instagib`) oder im Panel unter *Spiel → Modus*. CTF braucht eine Karte mit Flaggen, z. B. `maps/ctf-test.emap`.
 
 Die Sandbox dient zum Tunen und Testen: Dummies, Pickups, Live-Regler für alle Werte, Hot-Reload der Karte.
 
@@ -79,7 +79,7 @@ Die Sandbox dient zum Tunen und Testen: Dummies, Pickups, Live-Regler für alle 
 
 ```sh
 cargo run --bin elora-server
-cargo run --bin elora-server -- --port 8303 --map maps/sandbox.emap.toml --max-clients 16 --name "Mein Server"
+cargo run --bin elora-server -- --port 8303 --map maps/sandbox.emap --max-clients 16 --name "Mein Server"
 cargo run --bin elora-server -- --config server.toml
 ```
 
@@ -87,7 +87,7 @@ cargo run --bin elora-server -- --config server.toml
 |---|---|---|
 | `--port` | 8303 | UDP-Port |
 | `--bind` | 0.0.0.0 | Adresse, an die gebunden wird |
-| `--map` | `maps/sandbox.emap.toml` | Karte (Textformat) |
+| `--map` | `maps/sandbox.emap` | Karte |
 | `--max-clients` | 8 | Spieler, 1–64 |
 | `--name` | Elora-Server | Anzeigename |
 | `--high-bandwidth` | aus | Snapshots mit 50 statt 25 Hz (nur LAN) |
@@ -165,7 +165,7 @@ Team wählen, zuschauen und Abstimmungen (Karte, Modus, Kick, Zuschauer) starten
 | `server.toml` | vom Client geschriebene Server-Konfiguration | nein |
 | `server_key.toml` | geheimer Server-Schlüssel – nicht weitergeben | nein |
 | `known_servers.toml` | bekannte Server-Schlüssel des Clients | nein |
-| `maps/*.emap.toml` | Test-/Entwicklungskarten ([Format](docs/05-kartenformat.md)) | ja |
+| `maps/*.emap` | Karten ([Format](docs/05-kartenformat.md), ansehen mit `cargo xtask map-dump`) | ja |
 
 ## Entwicklung
 

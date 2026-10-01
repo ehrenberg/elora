@@ -23,7 +23,7 @@ Ein eigenes Release-Kartenformat mit Grafik und ein ins Spiel integrierter Edito
 
 ## Stand in Elora
 
-- **Textformat** (E-024, `.emap.toml`): nur Kollision und Entities als ASCII-Raster – für Test- und Entwicklungskarten. Zwei Karten: `sandbox`, `ctf-test`.
+- **Textformat** (E-024, `.emap.toml`): nur Kollision und Entities als ASCII-Raster – für Test- und Entwicklungskarten. Zwei Karten: `sandbox`, `ctf-test`. *(Mit M6.2 durch `.emap` ersetzt, E-146.)*
 - **Welt-Optik** (E-089): Tiles einfarbig mit Kontur, Himmel als Verlauf – schlicht, ohne Grafik-Layer.
 - **Übertragung:** Der Server schickt die Karte als Text im `Welcome` (bis 4 MB, ein Paket über den zuverlässigen Kanal).
 - **Stil:** Alles ist Vektor (E-030), Assets sind SVG (M5.2) – Figur, Items, Emotes.
@@ -35,7 +35,7 @@ Ein eigenes Release-Kartenformat mit Grafik und ein ins Spiel integrierter Edito
 |---|---|---|---|---|
 | M6.0 | Entwürfe | – | Kartenlook als Bild zur Auswahl: Materialien mit Kanten/Ecken, Deko, Hintergrund-Ebenen (E-130) | Deine Auswahl |
 | M6.1 | Neue Tile-Arten | `elora-sim` | Plattform, Eis, Sprungfeld, Beschleuniger (E-137) in Kollision und Bewegung; Tuning-Vorschlag T-31 ff. zur Freigabe; Testkarte; Golden-Tests der alten Karten unverändert | Tests + dein Playtest · **abgeschlossen** (E-140–E-142; `maps/tiles-test.emap.toml`) |
-| M6.2 | Release-Format | `elora-map` | Binäres Datenmodell (E-129): Kopf mit Version, Abschnitte (Game-Layer mit Tile-Arten und Richtungen, Material-Layer, Deko, Hintergrund-Ebenen mit Parallax, Envelopes, Metadaten), komprimiert, Prüfsumme; Import der Textkarten | Tests (Rundweg, Import, kaputte Dateien) |
+| M6.2 | Release-Format | `elora-map` | Binäres Datenmodell (E-129): Kopf mit Version, Abschnitte (Game-Layer mit Tile-Arten und Richtungen, Material-Layer, Deko, Hintergrund-Ebenen mit Parallax, Envelopes, Metadaten), komprimiert, Prüfsumme; Import der Textkarten | Tests (Rundweg, Import, kaputte Dateien) · **abgeschlossen** (E-143–E-146; Textformat entfernt, `cargo xtask map-dump`) |
 | M6.3 | Materialien & Deko | `assets/` | SVG-Sätze je Material mit Kanten/Ecken (Auto-Kanten-Regeln), Deko-Objekte, Hintergründe – nach dem Entwurf aus M6.0 | Sichtprüfung |
 | M6.4 | Karten-Darstellung | Client, `elora-render` | Ebenen zeichnen (Parallax, Deko vor/hinter der Spielfläche), Auto-Kanten, Envelopes abspielen, gecachte Meshes | Sichtprüfung, Benchmark |
 | M6.5 | Übertragung | Protokoll, Server, Client | Karte komprimiert in Teilen, Prüfsumme, Zwischenspeicher im Client (E-136) | Integrationstest |

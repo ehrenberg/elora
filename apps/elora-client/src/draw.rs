@@ -299,8 +299,7 @@ mod tests {
     #[test]
     #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
     fn world_sheet() {
-        let map =
-            elora_map::parse_text_map(include_str!("../../../maps/sandbox.emap.toml")).unwrap();
+        let map = elora_map::decode(include_bytes!("../../../maps/sandbox.emap")).unwrap();
         let world = map.world(Tuning::default());
         let col = map.collision();
         let camera = Camera {

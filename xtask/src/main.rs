@@ -21,6 +21,8 @@ Befehle:
                  Sounds (prozedural + Dateien) als WAV nach target/sounds/ (Hörprobe, M5.7)
   sound-import <name> <eingabe> [start_s] [länge_s]
                  Tondatei per ffmpeg nach assets/sounds/files/<name>.wav (Quelle in assets/SOURCES.md eintragen!)
+  map-dump <karte.emap>
+                 Karte lesbar ausgeben: Kopf, Prüfsumme, Raster, Ebenen (M6.2)
   help           Diese Hilfe
 ";
 
@@ -42,6 +44,10 @@ fn main() -> ExitCode {
             let args: Vec<String> = std::env::args().skip(2).collect();
             sound_preview(&args)
         }
+        Some("map-dump") => std::env::args().nth(2).map_or_else(
+            || Err("Verwendung: cargo xtask map-dump <karte.emap>".to_owned()),
+            |p| map_dump(std::path::Path::new(&p)),
+        ),
         Some("net-stats") => {
             net_stats();
             Ok(())
@@ -346,4 +352,76 @@ fn svg_preview(args: &[String]) -> Result<(), String> {
         .map_err(|e| format!("{output}: {e}"))?;
     println!("{output} ({w}×{h})");
     Ok(())
+}
+
+/// Karte lesbar ausgeben (M6.2): Ersatz für das entfernte Textformat beim Prüfen von Karten.
+fn map_dump(path: &std::path::Path) -> Result<(), String> {
+    let data = std::fs::read(path).map_err(|e| format!("{}: {e}", path.display()))?;
+    let map = elora_map::decode(&data).map_err(|e| format!("{}: {e}", path.display()))?;
+    let sum: String = elora_map::checksum(&data)
+        .iter()
+        .fold(String::new(), |mut s, b| {
+            let _ = write!(s, "{b:02x}");
+            s
+        });
+    println!("Name:       {}", map.name);
+    println!("Autor:      {}", map.author.as_deref().unwrap_or("–"));
+    println!(
+        "Größe:      {} × {} Tiles, {} Bytes",
+        map.width,
+        map.height,
+        data.len()
+    );
+    println!("Prüfsumme:  {sum}");
+    let modes = map.supported_modes();
+    println!(
+        "Modi:       DM/LMS {} · TDM/LTS {} · CTF {}",
+        yes(modes.free_for_all),
+        yes(modes.team),
+        yes(modes.ctf)
+    );
+    println!("Materialien: {:?}", map.materials);
+    println!(
+        "Himmel:     #{} → #{}",
+        hex(map.sky.top.0),
+        hex(map.sky.bottom.0)
+    );
+    for b in &map.backgrounds {
+        println!(
+            "Hintergrund „{}“: Parallax {:?}, {} Objekte",
+            b.name,
+            (b.parallax.x, b.parallax.y),
+            b.items.len()
+        );
+    }
+    println!(
+        "Deko:       {} hinten, {} vorn",
+        map.decor_back.len(),
+        map.decor_front.len()
+    );
+    for e in &map.envelopes {
+        println!(
+            "Animation „{}“: {:?}, {} Punkte, {} ms",
+            e.name,
+            e.kind,
+            e.points.len(),
+            e.duration_ms()
+        );
+    }
+    for i in &map.images {
+        println!("Bild „{}“: {} Bytes", i.name, i.svg.len());
+    }
+    println!();
+    for row in map.to_rows() {
+        println!("{row}");
+    }
+    Ok(())
+}
+
+fn yes(b: bool) -> &'static str {
+    if b { "ja" } else { "nein" }
+}
+
+fn hex(c: [u8; 4]) -> String {
+    format!("{:02x}{:02x}{:02x}", c[0], c[1], c[2])
 }
