@@ -11,6 +11,10 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-200 | 2026-10-02 | Dokumentation | **Archiv + Handbuch:** Release 1 nach `docs/archiv/release-1/`, gültiges Wissen als Handbuch in `docs/handbuch/`, Release 2 in `docs/release-2/` | Entscheidung Projektinhaber |
 | E-201 | 2026-10-02 | Entscheidungslog | Log von Release 1 archiviert, **neuer Log ab E-200**; Grundsätze als Kurzfassung im Handbuch | Entscheidung Projektinhaber |
 | E-202 | 2026-10-02 | Schwerpunkte Release 2 | **Spieler & Gemeinschaft, mehr Spielinhalt, Mitspieler-Bots** und ein **Rollenspiel-Abenteuer**: Einzelspieler mit Geschichte, NPCs und Rollenspiel-Elementen (Leveln, Waffen und Fähigkeiten ausbauen …), zusätzlich als Spielmodus | Entscheidung Projektinhaber |
+| E-203 | 2026-10-02 | Weltaufbau (O-200) | **Hub mit Gebieten:** ein Dorf als Treffpunkt mit NPCs, Händlern und Aufgaben; Gebiete (z. B. Wald, Wüste, Eisberge, Höhlen) werden nach und nach freigeschaltet | Entscheidung Projektinhaber |
+| E-204 | 2026-10-02 | Rollenspiel als Spielmodus (O-201) | **Rollenspiel-PvP-Modus:** eigener Spielmodus, in dem man während des Matches levelt und Waffen/Fähigkeiten ausbaut (Fortschritt gilt für die Runde). Kein Koop-Abenteuer vorgesehen | Entscheidung Projektinhaber |
+| E-205 | 2026-10-02 | Geschichte (O-203) | **Claude schlägt vor** (Welt, Figuren, Handlung in Varianten), **Projektinhaber entscheidet** | Entscheidung Projektinhaber |
+| E-206 | 2026-10-02 | Rollenspiel-Elemente (O-204) | **Alle vier:** Stufen & Fertigkeiten (Fähigkeitenbaum), Waffen ausbauen, Ausrüstung & Beute (Inventar, Händler, Währung), Aufgaben & Dialoge | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 
@@ -24,11 +28,15 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 
 Neu für Release 2 (Rollenspiel-Abenteuer, siehe [`roadmap.md`](roadmap.md)):
 
-- [ ] **O-200 Weltaufbau** – zusammenhängende Welt, Kapitel mit Hub oder Levelfolge
-- [ ] **O-201 Rollenspiel als Spielmodus** – Koop-Abenteuer, eigener Mehrspieler-Modus mit Fortschritt oder beides
-- [ ] **O-202 Fortschritt speichern** – lokal, auf dem Server oder mit Konten
-- [ ] **O-203 Geschichte und Welt** – Thema, Ton, Figuren; wer schreibt sie
-- [ ] **O-204 Fortschrittssystem** – Erfahrung und Stufen, Waffen-Ausbau, Fähigkeiten, Ausrüstung, Währung
+- [x] ~~O-200 Weltaufbau~~ → E-203
+- [x] ~~O-201 Rollenspiel als Spielmodus~~ → E-204
+- [ ] **O-202 Fortschritt speichern** – Spielstände des Einzelspieler-Abenteuers (z. B. lokal, mehrere Plätze); im PvP-Modus nur für die Runde (E-204)
+- [ ] **O-203 Geschichte und Welt** – Thema, Ton, Figuren (Vorgehen: E-205)
+- [ ] **O-204 Fortschrittssystem** – Ausgestaltung von Stufen, Fähigkeitenbaum, Waffen-Ausbau, Beute, Währung (Umfang: E-206)
 - [ ] **O-205 NPCs und Gegner** – Verhalten, Dialoge, Händler, Begleiter; Grundlage sind die Bots
 - [ ] **O-206 Abenteuer im Editor** – NPCs, Auslöser, Dialoge und Aufgaben in Karten
 - [ ] **O-207 Weitere Waffen** – welche, für welche Modi
+
+Für die Zukunft festgehalten:
+
+- [ ] **O-208 Dauerhafte Welt** – ein Server mit fortlaufender Welt, auf dem Spielerfiguren ihren Fortschritt behalten (kleines Online-Rollenspiel; braucht Konten und Speicherung auf dem Server) – nach Release 2

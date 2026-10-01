@@ -7,7 +7,7 @@ Status: **Entwurf zur gemeinsamen Ausarbeitung** · Schwerpunkte: E-202
 1. **Spieler & Gemeinschaft:** Restpunkte aus Release 1 (Credits, Playtests, Balancing), Demos und Replays, Zuschauer-Kamera, Remote-Konsole.
 2. **Mehr Spielinhalt:** weitere Waffen, neue Karten und Themen, Sounds in Karten, Musik.
 3. **Mitspieler-Bots:** Computergegner, die richtig mitspielen – für Training, volle Server mit wenigen Leuten und als Grundlage für Gegner und NPCs im Abenteuer.
-4. **Rollenspiel-Abenteuer:** Einzelspieler mit Geschichte, NPCs und Rollenspiel-Elementen (Leveln, Waffen und Fähigkeiten ausbauen …), zusätzlich als Spielmodus.
+4. **Rollenspiel-Abenteuer:** Einzelspieler mit Geschichte in einer **Hub-Welt** (Dorf + freischaltbare Gebiete, E-203); Stufen & Fähigkeitenbaum, Waffen-Ausbau, Ausrüstung & Beute, Aufgaben & Dialoge (E-206). Dazu ein **Rollenspiel-PvP-Modus**, in dem man während des Matches levelt (E-204). Geschichte: Claude schlägt vor, der Projektinhaber entscheidet (E-205).
 
 ## Abhängigkeiten
 
@@ -31,10 +31,12 @@ Gemeinschaft (Demos, Zuschauer, Remote-Konsole) läuft parallel
 | R2-M3 | Waffen & Inhalte | weitere Waffen, Sounds in Karten, neue Themen und Karten |
 | R2-M4 | Abenteuer-Grundlage | Fortschritt (Erfahrung, Stufen, Ausbau), Spielstände, NPCs, Dialoge, Aufgaben, Editor-Erweiterungen |
 | R2-M5 | Geschichte & Abenteuer | Welt, Kapitel, Figuren, Gegner, Bosse – nach den Vorgaben des Projektinhabers |
-| R2-M6 | Abenteuer als Spielmodus | Mehrspieler-Fassung (z. B. Koop) |
+| R2-M6 | Rollenspiel-PvP-Modus | Spielmodus mit Stufen, Ausbau und Beute während des Matches (E-204) |
 | R2-M7 | Gemeinschaft | Demos und Replays, Zuschauer-Kamera, Remote-Konsole |
 | R2-M8 | Release 2 | Abnahme, Pakete, Veröffentlichung |
 
 ## Zu klären (gemeinsam)
 
 Siehe offene Punkte O-200 bis O-207 in [`entscheidungen.md`](entscheidungen.md).
+
+Idee für die Zeit nach Release 2: **dauerhafte Welt** auf einem Server (O-208).
