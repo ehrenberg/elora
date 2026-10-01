@@ -125,11 +125,15 @@ fn load_maps(cfg: &ServerConfig) -> anyhow::Result<Vec<MapEntry>> {
             .map(|n| n.to_string_lossy().trim_end_matches(".emap").to_string())
             .unwrap_or_default()
     };
-    let first = MapEntry {
-        name: name_of(&cfg.map),
-        data: std::fs::read(&cfg.map)
-            .with_context(|| format!("Karte {} nicht lesbar", cfg.map.display()))?,
-    };
+    let data = std::fs::read(&cfg.map)
+        .with_context(|| format!("Karte {} nicht lesbar", cfg.map.display()))?;
+    anyhow::ensure!(
+        data.len() <= elora_protocol::MAX_MAP,
+        "Karte {} ist größer als {} MiB und kann nicht übertragen werden",
+        cfg.map.display(),
+        elora_protocol::MAX_MAP >> 20
+    );
+    let first = MapEntry::new(name_of(&cfg.map), data);
     let mut maps = vec![first];
     let mut paths: Vec<_> = std::fs::read_dir(&cfg.maps_dir)
         .into_iter()
@@ -145,11 +149,13 @@ fn load_maps(cfg: &ServerConfig) -> anyhow::Result<Vec<MapEntry>> {
             continue;
         }
         match std::fs::read(&p) {
-            Ok(data) if elora_map::decode(&data).is_ok() => {
-                maps.push(MapEntry { name, data });
+            Ok(data)
+                if data.len() <= elora_protocol::MAX_MAP && elora_map::decode(&data).is_ok() =>
+            {
+                maps.push(MapEntry::new(name, data));
             }
             _ => {
-                tracing::warn!(path = %p.display(), "Karte übersprungen (nicht lesbar oder ungültig)");
+                tracing::warn!(path = %p.display(), "Karte übersprungen (nicht lesbar, ungültig oder zu groß)");
             }
         }
     }

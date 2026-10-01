@@ -155,6 +155,8 @@ struct FrameInfo {
     tick: u64,
     vote: Option<elora_protocol::VoteInfo>,
     chat: Vec<elora_client::online::ChatLine>,
+    /// Karte wird geladen: Name, empfangen, gesamt (M6.5).
+    loading: Option<(String, usize, usize)>,
 }
 
 struct App {
@@ -286,7 +288,12 @@ impl App {
         match Connection::open(&address, expected, self.net.conditions()) {
             Ok(conn) => {
                 self.status = format!("Verbinde mit {} …", conn.server);
-                let client = OnlineClient::new(&self.net.name, self.net.skin, Instant::now());
+                let client = OnlineClient::new(&self.net.name, self.net.skin, Instant::now())
+                    .with_store(Box::new(elora_client::map_store::DiskStore {
+                        maps_dir: PathBuf::from("maps"),
+                        download_dir: settings::data_dir()
+                            .map_or_else(|| PathBuf::from("downloads"), |d| d.join("downloads")),
+                    }));
                 self.online = Some(Online { client, conn });
                 self.sandbox.stop_recording("Online");
             }
@@ -507,6 +514,14 @@ impl App {
                 tick: o.client.server_tick(now).unwrap_or(0),
                 vote: o.client.vote.clone(),
                 chat: o.client.chat.iter().cloned().collect(),
+                loading: match &o.client.status {
+                    Status::Loading {
+                        map,
+                        received,
+                        size,
+                    } => Some((map.clone(), *received, *size)),
+                    _ => None,
+                },
             },
             None => FrameInfo {
                 names: self.sandbox.names(),
@@ -523,6 +538,7 @@ impl App {
                 tick: self.sandbox.world.tick,
                 vote: None,
                 chat: self.sandbox.notices.iter().cloned().collect(),
+                loading: None,
             },
         }
     }
@@ -665,6 +681,7 @@ impl App {
                 scoreboard: self.scoreboard,
                 vote: info.vote.as_ref(),
                 killfeed: &self.killfeed,
+                loading: info.loading.as_ref().map(|(m, r, s)| (m.as_str(), *r, *s)),
                 time: self.figures.time(),
                 lang: &self.lang,
             },

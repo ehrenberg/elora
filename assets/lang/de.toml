@@ -17,6 +17,7 @@ round_over = "Runde vorbei"
 match_over = "Match vorbei"
 
 [game]
+loading_map = "Karte „{map}“ wird geladen … {percent} %"
 vote_title = "Abstimmung: {text}"
 vote_info = "Ja {yes} · Nein {no} · {voters} Spieler · noch {secs} s  —  F3 Ja, F4 Nein"
 death_zone = "Todeszone"

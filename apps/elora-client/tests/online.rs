@@ -32,6 +32,10 @@ struct Game {
 
 impl Game {
     fn new(conditions: Conditions) -> Self {
+        Self::with_maps(conditions, vec![MapEntry::new("sandbox", MAP.to_vec())])
+    }
+
+    fn with_maps(conditions: Conditions, maps: Vec<MapEntry>) -> Self {
         let net = MemNetwork::new();
         let now = Instant::now();
         let cfg = ServerConfig::default();
@@ -39,10 +43,7 @@ impl Game {
             net.socket(addr(8303), conditions, 1),
             Keypair::generate(),
             &cfg,
-            vec![MapEntry {
-                name: "sandbox".into(),
-                data: MAP.to_vec(),
-            }],
+            maps,
             Tuning::default(),
             now,
         )
@@ -412,4 +413,95 @@ fn console_commands() {
         "nach Kartenwechsel weiter verbunden"
     );
     assert!(g.players[0].online.latest_snapshot_tick().is_some());
+}
+
+/// Große Karte (mehrere Download-Teile): eingebettetes „SVG“ aus schlecht komprimierbaren Bytes.
+fn big_map() -> Vec<u8> {
+    let mut m = elora_map::Map::from_rows("Gross", &["#####", "#S.S#", "#####"]).unwrap();
+    let mut x: u32 = 1;
+    let svg: Vec<u8> = (0..150_000)
+        .map(|_| {
+            x = x.wrapping_mul(1_103_515_245).wrapping_add(12345);
+            b'a' + (x >> 16) as u8 % 26
+        })
+        .collect();
+    m.images.push(elora_map::Image {
+        name: "rauschen".into(),
+        svg,
+    });
+    let data = elora_map::encode(&m);
+    assert!(data.len() > 3 * elora_protocol::MAP_CHUNK, "{}", data.len());
+    data
+}
+
+#[test]
+fn missing_map_is_downloaded_in_parts_and_cached() {
+    let data = big_map();
+    let sum = elora_map::checksum(&data);
+    let mut g = Game::with_maps(lag(20), vec![MapEntry::new("gross", data.clone())]);
+    g.join("Lader");
+    g.run(3000, false);
+    let p = &g.players[0];
+    assert_eq!(p.online.status, Status::Playing);
+    assert_eq!(p.online.map_name, "gross");
+    assert_eq!(p.online.map.as_ref().unwrap().images.len(), 1);
+    assert_eq!(g.server.player_count(), 1);
+
+    // zweiter Besuch mit gefülltem Zwischenspeicher: keine Teile mehr nötig
+    let mut store = elora_client::map_store::MemoryStore::default();
+    store.maps.insert(sum, data);
+    let i = g.join("Wiederkehrer");
+    g.players[i].online =
+        OnlineClient::new("Wiederkehrer", Skin::default(), g.now).with_store(Box::new(store));
+    g.run(400, false);
+    assert_eq!(
+        g.players[i].online.status,
+        Status::Playing,
+        "sofort aus dem Speicher"
+    );
+    assert_eq!(g.server.player_count(), 2);
+}
+
+#[test]
+fn loading_player_is_not_in_the_world_yet() {
+    let mut g = Game::with_maps(lag(100), vec![MapEntry::new("gross", big_map())]);
+    g.join("Langsam");
+    let mut seen_partial = false;
+    for _ in 0..300 {
+        g.run(10, false);
+        if let Status::Loading { received, size, .. } = g.players[0].online.status
+            && received < size
+        {
+            assert_eq!(
+                g.server.player_count(),
+                0,
+                "noch kein Slot während des Downloads"
+            );
+            seen_partial |= received > 0;
+        }
+    }
+    assert!(seen_partial, "Fortschritt sichtbar");
+    assert_eq!(g.players[0].online.status, Status::Playing);
+}
+
+#[test]
+fn map_change_loads_new_map() {
+    let mut g = Game::with_maps(
+        Conditions::default(),
+        vec![
+            MapEntry::new("sandbox", MAP.to_vec()),
+            MapEntry::new("gross", big_map()),
+        ],
+    );
+    g.join("A");
+    g.join("B");
+    g.run(500, false);
+    assert_eq!(g.server.player_count(), 2);
+    g.server.change_map("gross", g.now).unwrap();
+    g.run(2000, false);
+    for p in &g.players {
+        assert_eq!(p.online.status, Status::Playing);
+        assert_eq!(p.online.map_name, "gross");
+    }
+    assert_eq!(g.server.player_count(), 2);
 }

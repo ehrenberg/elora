@@ -11,10 +11,12 @@ use elora_map::Map;
 use elora_protocol::codec::Reader;
 use elora_protocol::snapshot::is_dummy;
 use elora_protocol::{
-    ClientMsg, GameView, PROTOCOL_VERSION, ServerMsg, Skin, Snapshot, VoteInfo, VoteKind,
+    ClientMsg, GameView, MAP_CHUNK, MapChecksum, PROTOCOL_VERSION, ServerMsg, Skin, Snapshot,
+    VoteInfo, VoteKind,
 };
 use elora_sim::{Event, PlayerInput, TICKS_PER_SECOND, Team, Tuning, World};
 
+use crate::map_store::{MapStore, MemoryStore};
 use crate::scene::{Scene, SceneChar};
 
 const TICK_SECS: f64 = 1.0 / TICKS_PER_SECOND as f64;
@@ -39,11 +41,31 @@ pub struct ChatLine {
 
 /// Länge des Chat-Verlaufs.
 const CHAT_HISTORY: usize = 50;
+/// Gleichzeitig angeforderte Kartenteile beim Download.
+const MAP_WINDOW: u32 = 4;
+
+/// Laufender Karten-Download (M6.5).
+#[derive(Debug)]
+struct Download {
+    name: String,
+    checksum: MapChecksum,
+    size: usize,
+    data: Vec<u8>,
+    /// Nächster anzufordernder Teil.
+    next_request: u32,
+    total: u32,
+}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Status {
     Connecting,
     Joining,
+    /// Karte wird geladen (Zwischenspeicher oder Download); Bytes empfangen / gesamt.
+    Loading {
+        map: String,
+        received: usize,
+        size: usize,
+    },
     Playing,
     Disconnected(String),
 }
@@ -73,6 +95,9 @@ pub struct OnlineClient {
     pub slot: Option<usize>,
     pub map: Option<Map>,
     pub map_name: String,
+    map_checksum: Option<MapChecksum>,
+    download: Option<Download>,
+    store: Box<dyn MapStore>,
     pub high_bandwidth: bool,
     template: Option<World>,
     snapshots: VecDeque<Snapshot>,
@@ -117,6 +142,9 @@ impl OnlineClient {
             slot: None,
             map: None,
             map_name: String::new(),
+            map_checksum: None,
+            download: None,
+            store: Box::new(MemoryStore::default()),
             high_bandwidth: false,
             template: None,
             snapshots: VecDeque::new(),
@@ -140,6 +168,108 @@ impl OnlineClient {
             chat: VecDeque::new(),
             vote: None,
             emotes: Vec::new(),
+        }
+    }
+
+    /// Karten aus diesem Speicher nehmen und Downloads dort ablegen (Standard: nur im Speicher).
+    #[must_use]
+    pub fn with_store(mut self, store: Box<dyn MapStore>) -> Self {
+        self.store = store;
+        self
+    }
+
+    fn fail(&mut self, reason: String) {
+        tracing::warn!("{reason}");
+        self.download = None;
+        self.status = Status::Disconnected(reason);
+    }
+
+    /// Neue Karte angekündigt: Spielzustand verwerfen, Karte suchen oder herunterladen.
+    fn on_map_info(&mut self, name: String, checksum: MapChecksum, size: u32) {
+        self.slot = None;
+        self.template = None;
+        self.snapshots.clear();
+        self.inputs.clear();
+        self.pred = None;
+        self.pred_prev = None;
+        self.pred_history.clear();
+        let size = size as usize;
+        self.status = Status::Loading {
+            map: name.clone(),
+            received: 0,
+            size,
+        };
+        if let Some(data) = self.store.find(&name, &checksum) {
+            tracing::info!(map = %name, "Karte aus dem Zwischenspeicher");
+            self.finish_map(name, checksum, &data);
+            return;
+        }
+        let total = u32::try_from(size.div_ceil(MAP_CHUNK)).unwrap_or(u32::MAX);
+        tracing::info!(map = %name, size, "Karte wird heruntergeladen");
+        self.download = Some(Download {
+            name,
+            checksum,
+            size,
+            data: Vec::with_capacity(size),
+            next_request: 0,
+            total,
+        });
+        for _ in 0..MAP_WINDOW {
+            self.request_next_chunk();
+        }
+    }
+
+    fn request_next_chunk(&mut self) {
+        let Some(d) = &mut self.download else { return };
+        if d.next_request < d.total {
+            let msg = ClientMsg::MapRequest {
+                chunk: d.next_request,
+            };
+            d.next_request += 1;
+            self.send(&msg);
+        }
+    }
+
+    fn on_map_chunk(&mut self, index: u32, data: &[u8]) {
+        let Some(d) = &mut self.download else { return };
+        let offset = index as usize * MAP_CHUNK;
+        // Teile kommen über den zuverlässigen Kanal in Reihenfolge
+        if offset != d.data.len() {
+            return;
+        }
+        let expected = (d.size - offset).min(MAP_CHUNK);
+        if data.len() != expected {
+            self.fail("Karte beschädigt (falsche Teilgröße)".into());
+            return;
+        }
+        d.data.extend_from_slice(data);
+        let (received, size) = (d.data.len(), d.size);
+        if let Status::Loading { received: r, .. } = &mut self.status {
+            *r = received;
+        }
+        if received < size {
+            self.request_next_chunk();
+            return;
+        }
+        let d = self.download.take().expect("eben geprüft");
+        if elora_map::checksum(&d.data) != d.checksum {
+            self.fail("Karte beschädigt (Prüfsumme stimmt nicht)".into());
+            return;
+        }
+        self.store.store(&d.name, &d.checksum, &d.data);
+        self.finish_map(d.name, d.checksum, &d.data);
+    }
+
+    /// Karte liegt vor: lesen und dem Server melden.
+    fn finish_map(&mut self, name: String, checksum: MapChecksum, data: &[u8]) {
+        match elora_map::decode(data) {
+            Ok(map) => {
+                self.map = Some(map);
+                self.map_name = name;
+                self.map_checksum = Some(checksum);
+                self.send(&ClientMsg::MapReady);
+            }
+            Err(e) => self.fail(format!("Karte vom Server ungültig: {e}")),
         }
     }
 
@@ -277,36 +407,40 @@ impl OnlineClient {
             return;
         };
         match msg {
+            ServerMsg::MapInfo {
+                name,
+                checksum,
+                size,
+            } => self.on_map_info(name, checksum, size),
+            ServerMsg::MapChunk { index, data } => self.on_map_chunk(index, &data),
             ServerMsg::Welcome {
                 slot,
                 tick,
                 map_name,
-                map_data,
+                map_checksum,
                 tuning,
                 high_bandwidth,
             } => {
+                let Some(map) = self
+                    .map
+                    .as_ref()
+                    .filter(|_| self.map_checksum == Some(map_checksum))
+                else {
+                    self.fail(format!("Karte `{map_name}` passt nicht zum Server"));
+                    return;
+                };
                 // auch nach einem Kartenwechsel: Zustand der alten Karte verwerfen
-                match elora_map::decode(&map_data) {
-                    Ok(map) => {
-                        self.template = Some(map.world(tuning));
-                        self.map = Some(map);
-                        self.map_name = map_name;
-                        self.slot = Some(slot as usize);
-                        self.high_bandwidth = high_bandwidth;
-                        self.last_input_tick = tick;
-                        self.snapshots.clear();
-                        self.inputs.clear();
-                        self.pred = None;
-                        self.pred_prev = None;
-                        self.pred_history.clear();
-                        self.names.clear();
-                        self.status = Status::Playing;
-                    }
-                    Err(e) => {
-                        self.status =
-                            Status::Disconnected(format!("Karte vom Server ungültig: {e}"));
-                    }
-                }
+                self.template = Some(map.world(tuning));
+                self.slot = Some(slot as usize);
+                self.high_bandwidth = high_bandwidth;
+                self.last_input_tick = tick;
+                self.snapshots.clear();
+                self.inputs.clear();
+                self.pred = None;
+                self.pred_prev = None;
+                self.pred_history.clear();
+                self.names.clear();
+                self.status = Status::Playing;
             }
             ServerMsg::Chat { from, team, text } => {
                 let from = from.map(|f| {

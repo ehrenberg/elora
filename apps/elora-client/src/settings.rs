@@ -35,6 +35,19 @@ pub fn config_dir() -> Option<PathBuf> {
     }
 }
 
+/// Benutzerverzeichnis für Daten wie heruntergeladene Karten (M6.5); unter Linux nach XDG
+/// `~/.local/share/elora`, sonst wie [`config_dir`].
+pub fn data_dir() -> Option<PathBuf> {
+    if cfg!(any(target_os = "windows", target_os = "macos")) {
+        return config_dir();
+    }
+    std::env::var_os("XDG_DATA_HOME")
+        .filter(|v| !v.is_empty())
+        .map(PathBuf::from)
+        .or_else(|| std::env::var_os("HOME").map(|h| PathBuf::from(h).join(".local/share")))
+        .map(|p| p.join("elora"))
+}
+
 /// Pfad der Einstellungsdatei (Rückfall: Arbeitsverzeichnis).
 pub fn settings_path() -> PathBuf {
     config_dir().map_or_else(|| PathBuf::from(SETTINGS_FILE), |d| d.join(SETTINGS_FILE))

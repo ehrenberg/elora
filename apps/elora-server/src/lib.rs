@@ -15,7 +15,8 @@ use elora_game::{GameEvent, Rules, RulesConfig, Winner};
 use elora_net::{DisconnectReason, Keypair, ServerEndpoint, ServerEvent, Socket};
 use elora_protocol::msg::MAX_CHAT;
 use elora_protocol::{
-    ClientMsg, InfoPlayer, PROTOCOL_VERSION, ServerInfo, ServerMsg, Skin, Snapshot,
+    ClientMsg, InfoPlayer, MAP_CHUNK, MapChecksum, PROTOCOL_VERSION, ServerInfo, ServerMsg, Skin,
+    Snapshot,
 };
 use elora_sim::{Controller, Event, PlayerInput, TICKS_PER_SECOND, Team, Tuning, World};
 
@@ -43,11 +44,33 @@ pub struct MapEntry {
     pub name: String,
     /// Kartendatei (`.emap`).
     pub data: Vec<u8>,
+    pub checksum: MapChecksum,
+}
+
+impl MapEntry {
+    pub fn new(name: impl Into<String>, data: Vec<u8>) -> Self {
+        Self {
+            name: name.into(),
+            checksum: elora_map::checksum(&data),
+            data,
+        }
+    }
+
+    /// Anzahl der Teile beim Download.
+    fn chunks(&self) -> usize {
+        self.data.len().div_ceil(MAP_CHUNK)
+    }
 }
 
 #[derive(Debug)]
 struct Client {
     slot: Option<usize>,
+    /// Hat `Join` geschickt und lädt die Karte (wartet auf `MapReady`, M6.5).
+    loading: bool,
+    /// War schon einmal im Spiel (Beitritts-Hinweis nur beim ersten Mal).
+    entered: bool,
+    /// Verschickte Kartenteile für die aktuelle Karte (begrenzt Anfragen).
+    chunks_sent: usize,
     name: String,
     skin: Skin,
     inputs: BTreeMap<u64, PlayerInput>,
@@ -63,6 +86,9 @@ impl Client {
     fn new(ip: Option<IpAddr>) -> Self {
         Self {
             slot: None,
+            loading: false,
+            entered: false,
+            chunks_sent: 0,
             name: String::new(),
             skin: Skin::default(),
             inputs: BTreeMap::new(),
@@ -84,8 +110,8 @@ pub struct GameServer<S: Socket> {
     maps: Vec<MapEntry>,
     rotation: Vec<String>,
     map_index: usize,
-    map_name: String,
-    map_data: Vec<u8>,
+    /// Aktuelle Karte.
+    map: MapEntry,
     base_tuning: Tuning,
     high_bandwidth: bool,
     votes_enabled: bool,
@@ -147,8 +173,7 @@ impl<S: Socket> GameServer<S> {
             maps,
             rotation,
             map_index: 0,
-            map_name: first.name,
-            map_data: first.data,
+            map: first,
             base_tuning: tuning,
             high_bandwidth: config.high_bandwidth,
             votes_enabled: config.votes,
@@ -174,7 +199,7 @@ impl<S: Socket> GameServer<S> {
     }
 
     pub fn map_name(&self) -> &str {
-        &self.map_name
+        &self.map.name
     }
 
     pub fn map_names(&self) -> Vec<String> {
@@ -218,7 +243,7 @@ impl<S: Socket> GameServer<S> {
         ServerInfo {
             version: PROTOCOL_VERSION,
             name: self.name.clone(),
-            map: self.map_name.clone(),
+            map: self.map.name.clone(),
             mode: self.rules.cfg.title(),
             clients: u32::try_from(self.player_count()).unwrap_or(u32::MAX),
             max_clients: u32::try_from(self.max_clients).unwrap_or(u32::MAX),
@@ -236,7 +261,7 @@ impl<S: Socket> GameServer<S> {
         let ids: Vec<u32> = self
             .clients
             .iter()
-            .filter(|(_, c)| c.slot.is_some())
+            .filter(|(_, c)| c.slot.is_some() || c.loading)
             .map(|(id, _)| *id)
             .collect();
         for id in ids {
@@ -318,6 +343,64 @@ impl<S: Socket> GameServer<S> {
         }
     }
 
+    /// Karte ankündigen; der Client meldet sich mit `MapReady`, sobald er sie hat (M6.5).
+    fn start_loading(&mut self, id: u32) {
+        let Some(client) = self.clients.get_mut(&id) else {
+            return;
+        };
+        client.loading = true;
+        client.chunks_sent = 0;
+        let info = ServerMsg::MapInfo {
+            name: self.map.name.clone(),
+            checksum: self.map.checksum,
+            size: u32::try_from(self.map.data.len()).unwrap_or(u32::MAX),
+        };
+        self.endpoint.send(id, &info.encode(), true);
+    }
+
+    /// Kartenteil schicken – nur an ladende Clients, jeden Teil höchstens zweimal im Mittel.
+    fn on_map_request(&mut self, id: u32, chunk: u32) {
+        let total = self.map.chunks();
+        let Some(client) = self.clients.get_mut(&id) else {
+            return;
+        };
+        let index = chunk as usize;
+        if !client.loading || index >= total || client.chunks_sent >= 2 * total {
+            return;
+        }
+        client.chunks_sent += 1;
+        let end = (index * MAP_CHUNK + MAP_CHUNK).min(self.map.data.len());
+        let msg = ServerMsg::MapChunk {
+            index: chunk,
+            data: self.map.data[index * MAP_CHUNK..end].to_vec(),
+        };
+        self.endpoint.send(id, &msg.encode(), true);
+    }
+
+    /// Ladenden Client ins Spiel holen: Slot, `Welcome`, Namen.
+    fn enter(&mut self, id: u32) {
+        let slot = self.world.join();
+        self.rules.on_join(&mut self.world, slot);
+        let Some(client) = self.clients.get_mut(&id) else {
+            return;
+        };
+        client.loading = false;
+        client.slot = Some(slot);
+        let first = !std::mem::replace(&mut client.entered, true);
+        let (name, skin) = (client.name.clone(), client.skin);
+        tracing::info!(id, slot, %name, "beigetreten");
+        self.welcome(id);
+        let info = ServerMsg::PlayerInfo {
+            slot: u32::try_from(slot).unwrap_or(0),
+            name: Some(name.clone()),
+            skin,
+        };
+        self.broadcast(&info);
+        if first {
+            self.notice(&format!("{name} ist beigetreten"));
+        }
+    }
+
     fn welcome(&mut self, id: u32) {
         let Some(slot) = self.clients.get(&id).and_then(|c| c.slot) else {
             return;
@@ -325,8 +408,8 @@ impl<S: Socket> GameServer<S> {
         let welcome = ServerMsg::Welcome {
             slot: u32::try_from(slot).unwrap_or(0),
             tick: self.world.tick,
-            map_name: self.map_name.clone(),
-            map_data: self.map_data.clone(),
+            map_name: self.map.name.clone(),
+            map_checksum: self.map.checksum,
             tuning: self.world.tuning.clone(),
             high_bandwidth: self.high_bandwidth,
         };
@@ -395,30 +478,23 @@ impl<S: Socket> GameServer<S> {
                     self.endpoint.disconnect(id, "Falsche Spielversion", now);
                     return;
                 }
-                if slot.is_some() {
+                if slot.is_some() || client.loading {
                     return;
                 }
                 let name: String = name.chars().filter(|c| !c.is_control()).take(16).collect();
-                let name = if name.trim().is_empty() {
+                client.name = if name.trim().is_empty() {
                     "Elora".to_owned()
                 } else {
                     name
                 };
-                let slot = self.world.join();
-                self.rules.on_join(&mut self.world, slot);
-                let client = self.clients.get_mut(&id).expect("vorhanden");
-                client.slot = Some(slot);
-                client.name.clone_from(&name);
                 client.skin = skin;
-                tracing::info!(id, slot, %name, "beigetreten");
-                self.welcome(id);
-                let info = ServerMsg::PlayerInfo {
-                    slot: u32::try_from(slot).unwrap_or(0),
-                    name: Some(name.clone()),
-                    skin,
-                };
-                self.broadcast(&info);
-                self.notice(&format!("{name} ist beigetreten"));
+                self.start_loading(id);
+            }
+            ClientMsg::MapRequest { chunk } => self.on_map_request(id, chunk),
+            ClientMsg::MapReady => {
+                if self.clients.get(&id).is_some_and(|c| c.loading) {
+                    self.enter(id);
+                }
             }
             ClientMsg::Input { ack, inputs } => self.on_input(id, ack, inputs, now),
             ClientMsg::Emote(emote) => self.on_emote(id, emote, now),
@@ -622,7 +698,7 @@ impl<S: Socket> GameServer<S> {
         }
     }
 
-    /// Karte wechseln: neue Welt, alle Spieler treten neu bei (E-074).
+    /// Karte wechseln: neue Welt, alle Spieler laden die Karte und treten neu bei (E-074, M6.5).
     ///
     /// # Errors
     /// Wenn die Karte unbekannt oder ungültig ist.
@@ -639,14 +715,13 @@ impl<S: Socket> GameServer<S> {
         let mut ids: Vec<u32> = self
             .clients
             .iter()
-            .filter(|(_, c)| c.slot.is_some())
+            .filter(|(_, c)| c.slot.is_some() || c.loading)
             .map(|(id, _)| *id)
             .collect();
         ids.sort_unstable();
         for id in &ids {
-            let slot = world.join();
             if let Some(c) = self.clients.get_mut(id) {
-                c.slot = Some(slot);
+                c.slot = None;
                 c.acked = None;
                 c.inputs.clear();
                 c.last_input = PlayerInput::default();
@@ -656,12 +731,11 @@ impl<S: Socket> GameServer<S> {
         self.rules = Rules::new(self.rules.cfg.clone(), &mut world, true);
         self.world = world;
         self.history.clear();
-        self.map_name = entry.name;
-        self.map_data = entry.data;
+        self.map = entry;
         for id in ids {
-            self.welcome(id);
+            self.start_loading(id);
         }
-        self.notice(&format!("Karte: {}", self.map_name));
+        self.notice(&format!("Karte: {}", self.map.name));
         let _ = now;
         Ok(())
     }

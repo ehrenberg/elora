@@ -103,3 +103,13 @@ Ablage `assets/map/`, Übersicht in [`design/elora-kartenteile.png`](design/elor
 - **Zwischenspeicher:** Die Spielfläche wird in Stücken von 16 × 16 Tiles einmal tesselliert und nur bei Änderungen der Karte neu gebaut; nur sichtbare Stücke werden gebaut und gezeichnet. Die Pfeile der Beschleuniger laufen je Frame mit.
 - **Eingebettete SVGs** lädt der Client ohne jede Auflösung externer Verweise und mit höchstens 200 000 Ecken je Bild; ungültige Bilder bleiben unsichtbar.
 - **Vorführkarte:** `maps/look-test.emap` (erzeugt aus `map_view.rs`, Test `write_look_test_map`).
+
+## 8. Übertragung (M6.5, E-136)
+
+1. Client → `Join`. Der Server antwortet mit `MapInfo` (Name, Prüfsumme, Größe) – der Spieler ist **noch nicht** in der Welt.
+2. Der Client sucht die Karte mit genau dieser Prüfsumme: zuerst unter den Downloads (`~/.local/share/elora/downloads/<name>-<prüfsumme>.emap`, unter Windows/macOS im Einstellungsordner), dann in `maps/<name>.emap`.
+3. Fehlt sie, fordert er sie mit `MapRequest` in Teilen zu 16 KiB an (4 Teile gleichzeitig unterwegs) und zeigt den Fortschritt. Nach dem letzten Teil prüft er Größe und Prüfsumme und legt die Datei ab.
+4. Client → `MapReady`. Erst jetzt bekommt er einen Slot und `Welcome` (mit der Prüfsumme zur Kontrolle).
+5. **Kartenwechsel:** Der Server schickt allen erneut `MapInfo`; alle laden und treten neu bei.
+
+Grenzen: Karten bis 4 MiB (größere lädt der Server gar nicht erst), jeder Teil höchstens zweimal je Client; Dateinamen aus Servernamen werden auf `A–Z a–z 0–9 - _` gekürzt. Protokollversion 5.

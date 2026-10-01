@@ -20,8 +20,23 @@ use crate::snapshot::Snapshot;
 /// Maximale Länge von Namen und Texten.
 const MAX_NAME: usize = 32;
 const MAX_TEXT: usize = 256;
-/// Maximale Größe einer übertragenen Karte (Textformat).
-const MAX_MAP: usize = 4 * 1024 * 1024;
+/// Maximale Größe einer übertragenen Kartendatei (E-136).
+pub const MAX_MAP: usize = 4 * 1024 * 1024;
+/// Größe eines Kartenteils beim Download (M6.5).
+pub const MAP_CHUNK: usize = 16 * 1024;
+
+/// Prüfsumme einer Kartendatei (BLAKE2s-256, siehe `elora_map::checksum`).
+pub type MapChecksum = [u8; 32];
+
+fn put_checksum(w: &mut Writer, c: &MapChecksum) {
+    w.bytes(c);
+}
+
+fn get_checksum(r: &mut Reader<'_>) -> DecodeResult<MapChecksum> {
+    r.bytes(32)?
+        .try_into()
+        .map_err(|_| DecodeError::Invalid("Prüfsumme"))
+}
 /// Eingaben pro Paket (Redundanz gegen Verlust).
 pub const MAX_INPUTS: usize = 8;
 const MAX_EVENTS: usize = 1024;
@@ -122,6 +137,12 @@ pub enum ClientMsg {
     SetSkin(Skin),
     /// Emote zeigen (Nummer `0..EMOTES`).
     Emote(u8),
+    /// Teil `chunk` der Karte aus [`ServerMsg::MapInfo`] anfordern (M6.5).
+    MapRequest {
+        chunk: u32,
+    },
+    /// Karte liegt vor (Zwischenspeicher, `maps/` oder Download) – jetzt ins Spiel.
+    MapReady,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -130,8 +151,8 @@ pub enum ServerMsg {
         slot: u32,
         tick: u64,
         map_name: String,
-        /// Kartendatei (`.emap`, schon komprimiert).
-        map_data: Vec<u8>,
+        /// Prüfsumme der Karte aus [`ServerMsg::MapInfo`].
+        map_checksum: MapChecksum,
         tuning: Tuning,
         high_bandwidth: bool,
     },
@@ -172,6 +193,18 @@ pub enum ServerMsg {
     Emote {
         slot: u32,
         emote: u8,
+    },
+    /// Karte der Runde (vor `Welcome`, auch bei Kartenwechsel): Der Client lädt sie aus dem
+    /// Zwischenspeicher oder fordert sie mit [`ClientMsg::MapRequest`] in Teilen an (E-136).
+    MapInfo {
+        name: String,
+        checksum: MapChecksum,
+        size: u32,
+    },
+    /// Teil `index` der Kartendatei ([`MAP_CHUNK`] Bytes, der letzte ggf. kürzer).
+    MapChunk {
+        index: u32,
+        data: Vec<u8>,
     },
 }
 
@@ -629,6 +662,11 @@ impl ClientMsg {
                 w.u8(9);
                 w.u8(*e);
             }
+            Self::MapRequest { chunk } => {
+                w.u8(10);
+                w.uvar(u64::from(*chunk));
+            }
+            Self::MapReady => w.u8(11),
         }
         w.into_bytes()
     }
@@ -684,6 +722,10 @@ impl ClientMsg {
             7 => Self::Vote(r.bool()?),
             8 => Self::SetSkin(Skin::get(&mut r)?),
             9 => Self::Emote(emote(&mut r)?),
+            10 => Self::MapRequest {
+                chunk: r.uint("Kartenteil")?,
+            },
+            11 => Self::MapReady,
             _ => return Err(DecodeError::Invalid("Nachricht")),
         };
         r.finish()?;
@@ -716,6 +758,28 @@ impl ServerMsg {
         Self::decode_raw(&unpack(data)?)
     }
 
+    /// Karten-Nachrichten (M6.5).
+    fn put_map(&self, w: &mut Writer) {
+        match self {
+            Self::MapInfo {
+                name,
+                checksum,
+                size,
+            } => {
+                w.u8(10);
+                w.str(name);
+                put_checksum(w, checksum);
+                w.uvar(u64::from(*size));
+            }
+            Self::MapChunk { index, data } => {
+                w.u8(11);
+                w.uvar(u64::from(*index));
+                w.bytes(data);
+            }
+            _ => {}
+        }
+    }
+
     /// Kodiert ohne Kompression (für Messungen und Training).
     pub fn encode_raw(&self) -> Vec<u8> {
         let mut w = Writer::new();
@@ -724,7 +788,7 @@ impl ServerMsg {
                 slot,
                 tick,
                 map_name,
-                map_data,
+                map_checksum,
                 tuning,
                 high_bandwidth,
             } => {
@@ -733,7 +797,7 @@ impl ServerMsg {
                 w.uvar(u64::from(*slot));
                 w.uvar(*tick);
                 w.str(map_name);
-                w.bytes(map_data);
+                put_checksum(&mut w, map_checksum);
                 put_tuning(&mut w, tuning);
                 w.bool(*high_bandwidth);
             }
@@ -802,6 +866,7 @@ impl ServerMsg {
                 w.uvar(u64::from(*slot));
                 w.u8(*emote);
             }
+            Self::MapInfo { .. } | Self::MapChunk { .. } => self.put_map(&mut w),
         }
         w.into_bytes()
     }
@@ -817,7 +882,7 @@ impl ServerMsg {
                     slot: r.uint("Slot")?,
                     tick: r.uvar()?,
                     map_name: r.str(MAX_TEXT)?.to_owned(),
-                    map_data: r.bytes(MAX_MAP)?.to_vec(),
+                    map_checksum: get_checksum(&mut r)?,
                     tuning: get_tuning(&mut r)?,
                     high_bandwidth: r.bool()?,
                 }
@@ -886,6 +951,23 @@ impl ServerMsg {
                 slot: r.uint("Slot")?,
                 emote: emote(&mut r)?,
             },
+            10 => {
+                let name = r.str(MAX_TEXT)?.to_owned();
+                let checksum = get_checksum(&mut r)?;
+                let size: u32 = r.uint("Kartengröße")?;
+                if size == 0 || size as usize > MAX_MAP {
+                    return Err(DecodeError::Invalid("Kartengröße"));
+                }
+                Self::MapInfo {
+                    name,
+                    checksum,
+                    size,
+                }
+            }
+            11 => Self::MapChunk {
+                index: r.uint("Kartenteil")?,
+                data: r.bytes(MAP_CHUNK)?.to_vec(),
+            },
             _ => return Err(DecodeError::Invalid("Nachricht")),
         };
         r.finish()?;
@@ -920,6 +1002,8 @@ mod tests {
             },
             ClientMsg::SetSkin(Skin::default()),
             ClientMsg::Emote(7),
+            ClientMsg::MapRequest { chunk: 41 },
+            ClientMsg::MapReady,
             ClientMsg::Input {
                 ack: Some(1234),
                 inputs: vec![(100, input), (101, PlayerInput::default()), (102, input)],
@@ -948,6 +1032,27 @@ mod tests {
     }
 
     #[test]
+    fn map_messages_are_limited() {
+        let info = |size| {
+            ServerMsg::MapInfo {
+                name: "x".into(),
+                checksum: [0; 32],
+                size,
+            }
+            .encode()
+        };
+        assert!(ServerMsg::decode(&info(1)).is_ok());
+        assert!(ServerMsg::decode(&info(0)).is_err());
+        assert!(ServerMsg::decode(&info(MAX_MAP as u32 + 1)).is_err());
+        let chunk = ServerMsg::MapChunk {
+            index: 0,
+            data: vec![0; MAP_CHUNK + 1],
+        };
+        assert!(ServerMsg::decode(&chunk.encode()).is_err());
+    }
+
+    #[test]
+    #[allow(clippy::too_many_lines)]
     fn server_messages_roundtrip() {
         let events = vec![
             Event::Explosion {
@@ -979,11 +1084,20 @@ mod tests {
             },
         ];
         for m in [
+            ServerMsg::MapInfo {
+                name: "look-test".into(),
+                checksum: [3; 32],
+                size: 70_000,
+            },
+            ServerMsg::MapChunk {
+                index: 4,
+                data: vec![9; MAP_CHUNK],
+            },
             ServerMsg::Welcome {
                 slot: 2,
                 tick: 99,
                 map_name: "sandbox".into(),
-                map_data: b"EMAP\x01\x00".to_vec(),
+                map_checksum: [7; 32],
                 tuning: Tuning::default(),
                 high_bandwidth: true,
             },

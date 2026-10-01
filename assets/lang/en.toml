@@ -17,6 +17,7 @@ round_over = "Round over"
 match_over = "Match over"
 
 [game]
+loading_map = "Loading map “{map}” … {percent} %"
 vote_title = "Vote: {text}"
 vote_info = "Yes {yes} · No {no} · {voters} players · {secs} s left  —  F3 yes, F4 no"
 death_zone = "death zone"

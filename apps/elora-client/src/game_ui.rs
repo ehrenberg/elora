@@ -92,6 +92,8 @@ pub struct GameUi<'a> {
     pub scoreboard: bool,
     pub vote: Option<&'a VoteInfo>,
     pub killfeed: &'a VecDeque<KillEntry>,
+    /// Karte wird geladen: Name, empfangene und gesamte Bytes (M6.5).
+    pub loading: Option<(&'a str, usize, usize)>,
     /// Laufzeit in s (blinkender Cursor).
     pub time: f32,
     pub lang: &'a Lang,
@@ -128,6 +130,9 @@ pub fn draw(
     if let Some(v) = g.vote {
         vote(batch, font, screen, s, v, g.lang);
     }
+    if let Some((map, received, size)) = g.loading {
+        loading(batch, font, screen, s, map, received, size, g.lang);
+    }
     killfeed(batch, font, items, screen, s, g);
     chat(batch, font, screen, s, g);
     if g.scoreboard
@@ -135,6 +140,44 @@ pub fn draw(
     {
         scoreboard(batch, font, screen, s, g, view);
     }
+}
+
+/// Ladeanzeige der Karte in der Bildmitte mit Fortschrittsbalken.
+#[allow(clippy::too_many_arguments)]
+fn loading(
+    batch: &mut ShapeBatch,
+    font: &Font,
+    screen: Vec2,
+    s: f32,
+    map: &str,
+    received: usize,
+    size: usize,
+    lang: &Lang,
+) {
+    #[allow(clippy::cast_precision_loss)]
+    let frac = if size == 0 {
+        1.0
+    } else {
+        (received as f32 / size as f32).clamp(0.0, 1.0)
+    };
+    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+    let percent = (frac * 100.0).round() as u32;
+    let text = lang.f("game.loading_map", &[("map", &map), ("percent", &percent)]);
+    let w = font.width(&text, 16.0 * s).max(260.0 * s) + 40.0 * s;
+    let top = Vec2::new((screen.x - w) / 2.0, screen.y / 2.0 - 40.0 * s);
+    batch.fill_rounded_rect(top, top + Vec2::new(w, 70.0 * s), 14.0 * s, PANEL);
+    font.draw_centered(
+        batch,
+        &text,
+        Vec2::new(screen.x / 2.0, top.y + 28.0 * s),
+        16.0 * s,
+        TEXT,
+        Align::Center,
+    );
+    let bar = top + Vec2::new(20.0 * s, 44.0 * s);
+    let bw = w - 40.0 * s;
+    batch.fill_rounded_rect(bar, bar + Vec2::new(bw, 8.0 * s), 4.0 * s, ROW);
+    batch.fill_rounded_rect(bar, bar + Vec2::new(bw * frac, 8.0 * s), 4.0 * s, OWN);
 }
 
 /// Abstimmung unter der Statusanzeige.
@@ -610,6 +653,7 @@ mod tests {
                 scoreboard: true,
                 vote: Some(&vote),
                 killfeed: &killfeed,
+                loading: None,
                 time: 0.0,
                 lang: &Lang::new(crate::lang::Language::De),
             },
