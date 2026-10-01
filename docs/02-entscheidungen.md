@@ -165,6 +165,8 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-156 | 2026-10-01 | Größe der Release-Karten | **Eher groß** (mehr Platz als Vanilla, für volle Server) | Entscheidung Projektinhaber |
 | E-157 | 2026-10-01 | Neue Tile-Arten in Release-Karten | **Gezielt:** Plattformen als Bauelement, Eis/Sprungfeld/Beschleuniger je Karte an ein bis zwei markanten Stellen | Entscheidung Projektinhaber |
 | E-158 | 2026-10-01 | Aufbau der CTF-Karten | **Spiegelsymmetrisch** (links Rot, rechts Blau) | Entscheidung Projektinhaber |
+| E-159 | 2026-10-01 | M6.10 abgenommen | Release-Karten `dm-wiese`, `dm-wueste`, `dm-winter`, `ctf-wald`, `ctf-nacht` angenommen, Namen bleiben | Entscheidung Projektinhaber |
+| E-160 | 2026-10-01 | M6 abgeschlossen (M6.11) | Abnahme erfüllt: Projektinhaber hat mit dem Editor eine eigene Karte von Grund auf gebaut und gespielt | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 

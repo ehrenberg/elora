@@ -111,6 +111,8 @@ M0 Setup ─► M1 Physik-Sandbox ─► M2 Kampf lokal ─► M3 Netzwerk ─�
 
 **Abnahme:** Mit dem Editor lässt sich eine Karte von Grund auf bauen und spielen.
 
+**Stand 2026-10-01:** **Abgeschlossen** (E-160), Plan und Umsetzung in [`13-m6-plan.md`](13-m6-plan.md).
+
 ## M7 – Menüs & Infrastruktur – vor M6 (E-111)
 
 - Hauptmenü, Einstellungen (Grafik, Audio, Steuerung, Spieler und Skin), Tastenbelegung
