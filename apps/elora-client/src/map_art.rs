@@ -211,6 +211,15 @@ impl MapArt {
         .or_else(|| self.default_material(tile))
     }
 
+    /// Für feste Tiles wählbare Materialien, Standard zuerst (E-148).
+    pub fn solid_material_names(&self) -> Vec<String> {
+        self.materials
+            .iter()
+            .filter(|m| m.tiles.contains(&Tile::Solid))
+            .map(|m| m.name.clone())
+            .collect()
+    }
+
     pub fn builtin(&self, name: &str) -> Option<&Mesh> {
         self.builtin.get(name)
     }

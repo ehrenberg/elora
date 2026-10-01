@@ -1,17 +1,24 @@
 //! Editor-Ansicht: Karte (wie im Spiel), Raster, Kartenrand, Entities und Pinsel-Vorschau.
 
+// Zeichen-Code: kurze Namen für Ecken und Koordinaten
+#![allow(clippy::many_single_char_names)]
+
 use elora_map::EntityKind;
 use elora_render::{Camera, Color, ShapeBatch};
 use elora_sim::{PickupKind, TILE_SIZE, Team, Vec2, Weapon};
 
 use super::Editor;
+use super::panel::{BRUSHES, Preview};
+use super::tools::Cells;
 use crate::items::ItemArt;
 use crate::map_view::{LookTime, MapView};
 
 const GRID: Color = Color::rgba(1.0, 1.0, 1.0, 0.12);
 const GRID_MAJOR: Color = Color::rgba(1.0, 1.0, 1.0, 0.25);
 const BORDER: Color = Color::hex(0xf2c14e);
-const HOVER: Color = Color::rgba(1.0, 1.0, 1.0, 0.35);
+const HOVER: Color = Color::rgba(1.0, 1.0, 1.0, 0.6);
+const SELECTION: Color = Color::hex(0x5aaee8);
+const SELECTION_FILL: Color = Color::rgba(0.35, 0.68, 0.91, 0.15);
 const SPAWN: Color = Color::rgb(1.0, 1.0, 1.0);
 const DUMMY: Color = Color::hex(0x9aa6b2);
 /// Hintergrund außerhalb der Karte (dunkel, passend zu egui dunkel).
@@ -34,7 +41,7 @@ fn team_color(team: Team) -> Color {
     crate::draw::team_color(team)
 }
 
-/// Alles zeichnen; `hover` = Tile unter der Maus (Pinsel-Vorschau).
+/// Alles zeichnen; `preview` = was das Werkzeug unter der Maus zeigt.
 pub fn draw(
     batch: &mut ShapeBatch,
     editor: &Editor,
@@ -42,7 +49,7 @@ pub fn draw(
     items: &ItemArt,
     camera: &Camera,
     time: f32,
-    hover: Option<(usize, usize)>,
+    preview: Preview,
 ) {
     let map = &editor.map;
     let ts = TILE_SIZE as f32;
@@ -110,22 +117,85 @@ pub fn draw(
         w,
         BORDER,
     );
-    if let Some((x, y)) = hover {
-        #[allow(clippy::cast_precision_loss)]
-        let min = Vec2::new(x as f32 * ts, y as f32 * ts);
-        let max = min + Vec2::new(ts, ts);
-        batch.stroke_polyline(
-            &[
-                min,
-                Vec2::new(max.x, min.y),
-                max,
-                Vec2::new(min.x, max.y),
-                min,
-            ],
-            1.5 * editor.zoom,
-            HOVER,
-        );
+    if editor.tool == super::tools::Tool::Select
+        && let Some(sel) = editor.selection
+    {
+        let (min, max) = cell_rect(sel);
+        batch.fill_rect(min, max, SELECTION_FILL);
+        outline(batch, min, max, 2.0 * editor.zoom, SELECTION);
     }
+    match preview {
+        Preview::None => {}
+        Preview::Cells(cells) => {
+            let (min, max) = cell_rect(cells);
+            outline(batch, min, max, 1.5 * editor.zoom, HOVER);
+        }
+        Preview::Stamp(x, y) => {
+            if let Some(clip) = &editor.clipboard {
+                stamp(batch, clip, x, y, editor.zoom);
+            }
+        }
+    }
+}
+
+/// Weltrechteck eines Tile-Bereichs.
+fn cell_rect(c: Cells) -> (Vec2, Vec2) {
+    let ts = TILE_SIZE as f32;
+    #[allow(clippy::cast_precision_loss)]
+    (
+        Vec2::new(c.x0 as f32 * ts, c.y0 as f32 * ts),
+        Vec2::new((c.x1 + 1) as f32 * ts, (c.y1 + 1) as f32 * ts),
+    )
+}
+
+fn outline(batch: &mut ShapeBatch, min: Vec2, max: Vec2, width: f32, color: Color) {
+    batch.stroke_polyline(
+        &[
+            min,
+            Vec2::new(max.x, min.y),
+            max,
+            Vec2::new(min.x, max.y),
+            min,
+        ],
+        width,
+        color,
+    );
+}
+
+/// Vorschau beim Einfügen: Tiles halbdurchsichtig in ihrer Pinselfarbe.
+fn stamp(batch: &mut ShapeBatch, clip: &super::tools::Clip, x: usize, y: usize, zoom: f32) {
+    let ts = TILE_SIZE as f32;
+    for cy in 0..clip.height {
+        for cx in 0..clip.width {
+            let tile = clip.tiles[cy * clip.width + cx];
+            let Some(&(_, _, hex)) = BRUSHES.iter().find(|(t, _, _)| *t == tile) else {
+                continue;
+            };
+            if tile == elora_sim::Tile::Air {
+                continue;
+            }
+            let mut c = Color::hex(hex);
+            c.0[3] = 0.55;
+            #[allow(clippy::cast_precision_loss)]
+            let min = Vec2::new((x + cx) as f32 * ts, (y + cy) as f32 * ts);
+            batch.fill_rect(min, min + Vec2::new(ts, ts), c);
+        }
+    }
+    for &(_, ex, ey) in &clip.entities {
+        #[allow(clippy::cast_precision_loss)]
+        let p = Vec2::new(
+            (x + ex) as f32 * ts + ts / 2.0,
+            (y + ey) as f32 * ts + ts / 2.0,
+        );
+        batch.stroke_circle(p, 10.0, 2.0, SPAWN);
+    }
+    let (min, max) = cell_rect(Cells {
+        x0: x,
+        y0: y,
+        x1: x + clip.width - 1,
+        y1: y + clip.height - 1,
+    });
+    outline(batch, min, max, 2.0 * zoom, SELECTION);
 }
 
 fn entities(batch: &mut ShapeBatch, editor: &Editor, items: &ItemArt, time: f32) {
@@ -241,7 +311,7 @@ mod tests {
             &ItemArt::load(),
             &cam,
             0.5,
-            Some((10, 17)),
+            Preview::Cells(Cells::span((10, 17), (12, 18))),
         );
         let tl = cam.top_left();
         let svg = batch.debug_svg(tl, tl + cam.size, OUTSIDE);

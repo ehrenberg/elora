@@ -5,6 +5,7 @@
 //! [`view`] zeichnet Karte, Raster und Entities.
 
 pub mod panel;
+pub mod tools;
 pub mod view;
 
 use std::path::{Path, PathBuf};
@@ -14,6 +15,7 @@ use elora_map::Map;
 use elora_sim::{TILE_SIZE, Tile, Vec2};
 
 use crate::map_view::Layers;
+use tools::{Cells, Clip, Tool};
 
 /// Rückgängig-Schritte, die aufbewahrt werden.
 const HISTORY: usize = 100;
@@ -89,6 +91,22 @@ pub struct Editor {
     pub dirty: bool,
     /// Gewählte Tile-Art des Pinsels.
     pub brush: Tile,
+    pub tool: Tool,
+    /// Kantenlänge des Pinsels in Tiles.
+    pub brush_size: usize,
+    /// Material für neu gemalte feste Tiles.
+    pub solid_material: String,
+    /// Wählbare Materialien fester Tiles; das erste ist der Standard (aus `materials.toml`).
+    pub solid_materials: Vec<String>,
+    /// Gewähltes Entity.
+    pub entity: elora_map::EntityKind,
+    /// Auswahl (Werkzeug Auswahl).
+    pub selection: Option<Cells>,
+    pub clipboard: Option<Clip>,
+    /// Einfügen läuft: Vorschau folgt der Maus, Klick setzt.
+    pub pasting: bool,
+    /// Beginn eines Rechtecks oder einer Auswahl und ob mit der linken Taste.
+    pub drag: Option<((usize, usize), bool)>,
     pub visible: Visible,
     pub dialog: Option<Dialog>,
     /// Letzte Meldung: Sprachschlüssel und Wert (`{arg}`).
@@ -131,6 +149,15 @@ impl Editor {
             last_edit: None,
             dirty: false,
             brush: Tile::Solid,
+            tool: Tool::Brush,
+            brush_size: 1,
+            solid_material: "earth".into(),
+            solid_materials: vec!["earth".into()],
+            entity: elora_map::EntityKind::Spawn,
+            selection: None,
+            clipboard: None,
+            pasting: false,
+            drag: None,
             visible: Visible::default(),
             dialog: None,
             status: None,
@@ -193,6 +220,12 @@ impl Editor {
         self.last_edit = None;
     }
 
+    /// Anzahl der Rückgängig-Schritte.
+    #[cfg(test)]
+    pub fn undo_len(&self) -> usize {
+        self.undo.len()
+    }
+
     pub fn can_undo(&self) -> bool {
         !self.undo.is_empty()
     }
@@ -232,21 +265,6 @@ impl Editor {
         )]
         (x >= 0.0 && y >= 0.0 && x < self.map.width as f32 && y < self.map.height as f32)
             .then_some((x as usize, y as usize))
-    }
-
-    /// Tile setzen (Teil eines Pinselstrichs `stroke`); Entities auf dem Feld bleiben unberührt.
-    pub fn paint(&mut self, x: usize, y: usize, tile: Tile, stroke: &str, now: Instant) {
-        let i = y * self.map.width + x;
-        if self.map.tiles.get(i) == Some(&tile) {
-            return;
-        }
-        self.begin_edit(stroke, now);
-        self.map.tiles[i] = tile;
-        if let Some(m) = self.map.material_map.get_mut(i)
-            && tile == Tile::Air
-        {
-            *m = 0;
-        }
     }
 
     /// Kartengröße ändern; der Inhalt bleibt oben links stehen, Entities außerhalb fallen weg.
@@ -431,10 +449,10 @@ mod tests {
     fn strokes_are_single_undo_steps() {
         let mut e = editor();
         let t = Instant::now();
-        e.paint(1, 1, Tile::Solid, "strich-1", t);
-        e.paint(2, 1, Tile::Solid, "strich-1", t);
+        e.fill_cells(Cells::span((1, 1), (1, 1)), Tile::Solid, "strich-1", t);
+        e.fill_cells(Cells::span((2, 1), (2, 1)), Tile::Solid, "strich-1", t);
         e.end_edit();
-        e.paint(3, 1, Tile::Ice, "strich-2", t);
+        e.fill_cells(Cells::span((3, 1), (3, 1)), Tile::Ice, "strich-2", t);
         assert!(e.dirty);
         e.undo();
         assert_eq!(e.map.tiles[e.map.width + 3], Tile::Air);
@@ -452,7 +470,7 @@ mod tests {
         assert!(!e.can_redo());
         // neue Änderung löscht das Wiederholen
         e.undo();
-        e.paint(5, 5, Tile::Death, "strich-3", t);
+        e.fill_cells(Cells::span((5, 5), (5, 5)), Tile::Death, "strich-3", t);
         assert!(!e.can_redo());
     }
 
@@ -476,7 +494,7 @@ mod tests {
     fn resize_keeps_top_left_and_drops_outside_entities() {
         let mut e = editor();
         let t = Instant::now();
-        e.paint(2, 2, Tile::Solid, "s", t);
+        e.fill_cells(Cells::span((2, 2), (2, 2)), Tile::Solid, "s", t);
         e.map.entities.push(elora_map::Entity {
             kind: elora_map::EntityKind::Spawn,
             tx: 50,
@@ -511,7 +529,12 @@ mod tests {
         let _ = std::fs::remove_dir_all(&dir);
         let mut e = Editor::new(Some(dir.clone()), dir.join("mitgeliefert"));
         e.map.name = "Meine Karte!".into();
-        e.paint(0, 0, Tile::Solid, "s", Instant::now());
+        e.fill_cells(
+            Cells::span((0, 0), (0, 0)),
+            Tile::Solid,
+            "s",
+            Instant::now(),
+        );
         e.save();
         assert!(!e.dirty);
         assert_eq!(e.status.as_ref().map(|s| s.0), Some("editor.saved_draft"));
@@ -531,7 +554,12 @@ mod tests {
         e.request(AfterDiscard::Leave);
         assert!(e.leave, "ohne Änderungen sofort");
         let mut e = editor();
-        e.paint(0, 0, Tile::Solid, "s", Instant::now());
+        e.fill_cells(
+            Cells::span((0, 0), (0, 0)),
+            Tile::Solid,
+            "s",
+            Instant::now(),
+        );
         e.request(AfterDiscard::Leave);
         assert!(!e.leave);
         assert_eq!(e.dialog, Some(Dialog::Discard(AfterDiscard::Leave)));

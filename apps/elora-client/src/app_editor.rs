@@ -12,10 +12,12 @@ impl App {
     /// Aus dem Hauptmenü in den Editor; der letzte Stand bleibt erhalten.
     pub(crate) fn enter_editor(&mut self) {
         if self.editor.is_none() {
-            self.editor = Some(Editor::new(
-                settings::user_maps_dir(),
-                PathBuf::from("maps"),
-            ));
+            let mut editor = Editor::new(settings::user_maps_dir(), PathBuf::from("maps"));
+            editor.solid_materials = self.map_view.art.solid_material_names();
+            if let Some(first) = editor.solid_materials.first() {
+                editor.solid_material.clone_from(first);
+            }
+            self.editor = Some(editor);
         }
         self.sounds.menu_music(false);
         self.screen = Screen::Editor;
@@ -46,7 +48,7 @@ impl App {
             &self.item_art,
             &camera,
             self.figures.time(),
-            self.editor_area.hover,
+            self.editor_area.preview,
         );
         let Some(mut frame) = gfx.renderer.begin_frame() else {
             return;
