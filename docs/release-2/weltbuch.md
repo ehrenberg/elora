@@ -1,6 +1,6 @@
 # Weltbuch: „Die verstummten Quellen“
 
-Status: **Entwurf zur Durchsicht** · Grundlage: E-203, E-206, E-207 · Alles hier ist Vorschlag – du entscheidest Abschnitt für Abschnitt.
+Status: **Grundzüge angenommen** (E-210 bis E-214) · Grundlage: E-203, E-206, E-207 · Ausgestaltung im Detail folgt
 
 ## 1. In einem Satz
 
@@ -20,7 +20,7 @@ Die Tropfenwesen leben vom **Tau der Quellen**: Er gibt ihnen Farbe, Mut und Leb
 
 **Das Geheimnis:** Es gab einmal eine **sechste Quelle**, die **Ursprungsquelle** – genau dort, wo heute der Dorfbrunnen von Tauwinkel steht. Ihr Hüter wurde vergessen, als die Gründer das Dorf darauf bauten und den Brunnen mit einem Deckel verschlossen. Aus seiner Einsamkeit wurde **der Dürre**: Er wandert durch das Land und trinkt die Farben der anderen Quellen, weil er glaubt, niemand brauche ihn mehr.
 
-**Die Hüter sind keine Bösewichte.** Seit ihre Quellen schweigen, sind sie verwirrt und gereizt. Elora besiegt sie nicht, sondern **beruhigt** sie im Kampf; danach helfen sie ihr.
+**Die Hüter sind keine Bösewichte.** Seit ihre Quellen schweigen, sind sie verwirrt und gereizt. Die Kämpfe gegen sie sind echte Bosskämpfe; die Geschichte erzählt sie als **Beruhigen** – danach helfen die Hüter Elora. Das ganze Abenteuer bleibt **für 12+ spielbar**: keine Darstellung von Blut oder Grausamkeit (E-211).
 
 ## 3. Tauwinkel (Hub)
 
@@ -125,10 +125,23 @@ Jedes Gebiet ist eine zusammenhängende Karte mit mehreren Abschnitten. Am Ende 
 
 Teams verteidigen ihre Quelle und erobern die der Gegner; Tropfen von besiegten Gegnern und Quellen geben **Stufen während des Matches**, an einem Quellstein wählt man kleine Ausbauten (Schaden, Leben, eine Gebietsfähigkeit). Alles setzt sich nach der Runde zurück (E-204).
 
-## 8. Offen für dich
+## 8. Spieldauer (Vorschlag zu E-214)
 
-1. Passt die Wendung mit der **sechsten Quelle unter dem Dorfbrunnen**?
-2. Sollen die Hüter wirklich nur **beruhigt** werden (kein „Töten“)?
-3. Namen von Welt und Figuren – so lassen oder ändern?
-4. Gefallen dir die fünf **Fähigkeiten** und ihre Reihenfolge?
-5. Sollen Dialoge **Auswahl mit Folgen** haben oder eher erzählend sein?
+Ziel: **Hauptgeschichte etwa 6–8 Stunden, mit Nebeninhalten 12 Stunden und mehr.**
+
+| Baustein | Umfang | Spielzeit (ungefähr) |
+|---|---|---|
+| Prolog + Tauwinkel | Tutorial, Dorf, erste Aufgaben | 20–30 min |
+| je Gebiet (5×) | 3–4 Abschnitte (eigene Karten) + Hüter-Arena; Zwischen-Speicherpunkte | 60–90 min Hauptweg |
+| Finale | Ursprungshöhle, mehrstufiger Endkampf | 30–45 min |
+| Nebenaufgaben | etwa 25 (4–5 je Gebiet + Dorf), teils mit Folgen aus Dialogen | 3–4 h |
+| Sammelstücke | Erinnerungsrunen, Glitzersteine, Bienen …, verstecken sich hinter späteren Fähigkeiten (Rückkehr lohnt) | 1–2 h |
+| Nach dem Finale | **Quellen-Prüfungen**: schwierigere Fassungen der Gebiete und Hüter, Zeitrennen pro Abschnitt | offen |
+
+Das ergibt rund **20 Abenteuer-Karten** plus Dorf und Arenen. Damit das machbar bleibt, entstehen die Karten wie die Release-Karten mit Baukasten und Editor, und Gegner, NPCs, Aufgaben und Dialoge werden **im Editor** platziert (O-206).
+
+## 9. Noch offen
+
+- Ausgestaltung des Fähigkeitenbaums, der Waffen-Ausbauten und der Beute (O-204)
+- Spielstände (O-202)
+- Dialog- und Aufgabensystem im Detail, Editor-Werkzeuge dafür (O-205, O-206)

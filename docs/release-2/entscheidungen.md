@@ -18,6 +18,11 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-207 | 2026-10-02 | Geschichte (O-203) | **Entwurf A „Die verstummten Quellen“** aus [`geschichte-entwuerfe.md`](geschichte-entwuerfe.md): märchenhaft, warm; Dorf Tauwinkel, fünf Gebiete (Blütenwiesen, Murmelwald, Glutsandwüste, Frostspitzen, Sternschlucht), Gegenspieler „Der Dürre“, Versöhnung statt Sieg; PvP-Modus „Quellenkampf“ | Entscheidung Projektinhaber |
 | E-208 | 2026-10-02 | Credits: Name | Projektinhaber als **Bastian Ehrenberg** | Entscheidung Projektinhaber |
 | E-209 | 2026-10-02 | Credits: Ort (M8.5) | **Letzte Seite in den Einstellungen** („Über Elora“) | Entscheidung Projektinhaber |
+| E-210 | 2026-10-02 | Wendung der Geschichte | **Sechste Quelle unter dem Dorfbrunnen**, der Dürre als ihr vergessener Hüter – passt | Entscheidung Projektinhaber |
+| E-211 | 2026-10-02 | Altersgruppe | Das Abenteuer ist **immer für 12+ spielbar**: Kämpfe ja, aber ohne Blut und Grausamkeit; die Hüter-Kämpfe dürfen echte Kämpfe sein, die Geschichte erzählt sie als Beruhigen | Entscheidung Projektinhaber |
+| E-212 | 2026-10-02 | Namen, Fähigkeiten | Namen von Welt und Figuren sowie die fünf Fähigkeiten in ihrer Reihenfolge (Hook-Ruck, Heranhooken, Stampfen, Eisgriff, Gleiten) **bleiben** | Entscheidung Projektinhaber |
+| E-213 | 2026-10-02 | Dialoge | **Auswahl mit Folgen** erlaubt | Entscheidung Projektinhaber |
+| E-214 | 2026-10-02 | Spieldauer | Der Einzelspieler-Modus soll **lange tragen – mehrere Stunden** (Zielwerte siehe [Weltbuch §8](weltbuch.md)) | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 
