@@ -93,7 +93,7 @@ cargo run --bin elora-server -- --config server.toml
 | Option | Standard | Bedeutung |
 |---|---|---|
 | `--port` | 8303 | UDP-Port |
-| `--bind` | 0.0.0.0 | Adresse, an die gebunden wird |
+| `--bind` | `::` | `::` = IPv4 und IPv6 (meldet sich beim Master über beide an), `0.0.0.0` = nur IPv4 |
 | `--map` | `maps/dm-wiese.emap` | Karte (relativ: erst Arbeitsverzeichnis, dann Datenordner der Installation) |
 | `--max-clients` | 8 | Spieler, 1–64 |
 | `--name` | Elora-Server | Anzeigename |

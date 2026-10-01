@@ -110,7 +110,7 @@ fn json(status: u16, body: String) -> tiny_http::Response<std::io::Cursor<Vec<u8
 /// Wenn Port oder UDP-Socket nicht geöffnet werden können.
 pub fn run(bind: SocketAddr, behind_proxy: bool) -> anyhow::Result<()> {
     let http = tiny_http::Server::http(bind).map_err(|e| anyhow::anyhow!("{bind}: {e}"))?;
-    let udp = elora_net::UdpSocket::bind(SocketAddr::from(([0, 0, 0, 0], 0)))?;
+    let udp = elora_net::UdpSocket::bind_dual(0)?;
     let mut master = Master::new(udp);
     tracing::info!(%bind, behind_proxy, "Master läuft");
     loop {

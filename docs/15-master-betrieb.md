@@ -55,7 +55,7 @@ elora-server --name "Test" --port 8303               # trägt sich von selbst ei
 curl https://elora.bastianswelt.de/servers          # „Test“ erscheint nach wenigen Sekunden
 ```
 
-Der Spiel-Server muss von außen per UDP erreichbar sein (Port freigeben), sonst lehnt der Master ihn nach der Prüfung ab.
+Der Spiel-Server muss von außen per UDP erreichbar sein (Port freigeben), sonst lehnt der Master ihn nach der Prüfung ab. Er lauscht standardmäßig auf IPv4 und IPv6 (`bind = "::"`) und meldet sich über beide Familien an; gelistet wird, was der Master erreicht. Hinter **DS-Lite** (z. B. Vodafone-Kabel) gibt es keine eigene IPv4-Adresse – dann klappt nur IPv6, und in der Fritzbox muss die Freigabe für UDP 8303 auch für IPv6 gelten.
 
 ## Verhalten der Spiel-Server (E-170)
 

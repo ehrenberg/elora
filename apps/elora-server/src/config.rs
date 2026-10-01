@@ -21,7 +21,8 @@ pub const DEFAULT_MASTER: &str = "https://elora.bastianswelt.de";
 pub struct ServerConfig {
     /// Anzeigename des Servers.
     pub name: String,
-    /// Adresse, an die gebunden wird (z. B. `0.0.0.0`).
+    /// Adresse, an die gebunden wird: `::` = IPv4 und IPv6 (Standard), `0.0.0.0` = nur IPv4,
+    /// sonst eine bestimmte Adresse.
     pub bind: String,
     pub port: u16,
     /// Karte im Textformat.
@@ -51,7 +52,7 @@ impl Default for ServerConfig {
     fn default() -> Self {
         Self {
             name: "Elora-Server".into(),
-            bind: "0.0.0.0".into(),
+            bind: "::".into(),
             port: DEFAULT_PORT,
             map: PathBuf::from("maps/dm-wiese.emap"),
             max_clients: 8,
@@ -151,10 +152,25 @@ impl ServerConfig {
         Ok(())
     }
 
+    /// Lauscht der Server auf IPv4 und IPv6 (`bind = "::"`)?
+    pub fn dual_stack(&self) -> bool {
+        matches!(self.bind.trim(), "::" | "[::]" | "")
+    }
+
     /// # Errors
     /// Bei ungültiger Adresse.
     pub fn addr(&self) -> anyhow::Result<SocketAddr> {
-        format!("{}:{}", self.bind, self.port)
+        let host = self
+            .bind
+            .trim()
+            .trim_start_matches('[')
+            .trim_end_matches(']');
+        let host = if host.contains(':') {
+            format!("[{host}]")
+        } else {
+            host.to_owned()
+        };
+        format!("{host}:{}", self.port)
             .parse()
             .context("ungültige Bind-Adresse")
     }

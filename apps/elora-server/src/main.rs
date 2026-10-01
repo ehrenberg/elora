@@ -10,6 +10,7 @@ use std::sync::mpsc;
 use std::time::{Duration, Instant};
 
 use anyhow::Context as _;
+use elora_master::client::Family;
 use elora_net::UdpSocket;
 use elora_server::{GameServer, MapEntry, ServerConfig, config};
 use elora_sim::Tuning;
@@ -21,7 +22,7 @@ struct TuningFile {
 }
 
 /// Beim Master anmelden und die Anmeldung regelmäßig erneuern (eigener Thread, E-112).
-fn register_loop(master: String, port: u16, ipv4_only: bool) {
+fn register_loop(master: String, port: u16, family: elora_master::client::Family) {
     let spawned = std::thread::Builder::new()
         .name("master".into())
         .spawn(move || {
@@ -31,15 +32,17 @@ fn register_loop(master: String, port: u16, ipv4_only: bool) {
                     &master,
                     port,
                     elora_protocol::PROTOCOL_VERSION,
-                    ipv4_only,
+                    family,
                 );
                 // nur Wechsel melden, nicht alle 20 s dasselbe
                 let ok = result.as_ref().is_ok_and(|r| r.ok);
                 if last_ok != Some(ok) {
                     match &result {
-                        Ok(r) if r.ok => tracing::info!(%master, "beim Master angemeldet"),
-                        Ok(r) => tracing::warn!(%master, reason = %r.message, "Master lehnt ab"),
-                        Err(e) => tracing::warn!(%master, "{e:#}"),
+                        Ok(r) if r.ok => tracing::info!(%master, ?family, "beim Master angemeldet"),
+                        Ok(r) => {
+                            tracing::warn!(%master, ?family, reason = %r.message, "Master lehnt ab");
+                        }
+                        Err(e) => tracing::warn!(%master, ?family, "{e:#}"),
                     }
                     last_ok = Some(ok);
                 }
@@ -84,7 +87,17 @@ fn main() -> anyhow::Result<()> {
     };
     let key = config::load_or_create_key(&cfg.key_file)?;
     let addr = cfg.addr()?;
-    let socket = UdpSocket::bind(addr).with_context(|| format!("Port {addr} nicht verfügbar"))?;
+    let socket = if cfg.dual_stack() {
+        UdpSocket::bind_dual(cfg.port)
+    } else {
+        UdpSocket::bind(addr)
+    }
+    .with_context(|| format!("Port {addr} nicht verfügbar"))?;
+    let families = match (socket.has_ipv4(), socket.has_ipv6()) {
+        (true, true) => vec![Family::V4, Family::V6],
+        (false, true) => vec![Family::V6],
+        _ => vec![Family::V4],
+    };
     let mut server = GameServer::new(socket, key, &cfg, maps, tuning, Instant::now())?;
     tracing::info!(
         name = %cfg.name,
@@ -97,10 +110,12 @@ fn main() -> anyhow::Result<()> {
     );
 
     tracing::info!(maps = %server.map_names().join(", "), mode = %server.rules.cfg.title(), "`help` zeigt die Konsolenbefehle");
-    // lauscht der Server nur auf IPv4, meldet er sich auch nur über IPv4 an
-    let ipv4_only = addr.is_ipv4();
+    // je Adressfamilie, auf der der Server lauscht, eine Anmeldung: gelistet wird, was der
+    // Master erreicht (z. B. nur IPv6 hinter DS-Lite)
     for master in cfg.masters.clone() {
-        register_loop(master, cfg.port, ipv4_only);
+        for &family in &families {
+            register_loop(master.clone(), cfg.port, family);
+        }
     }
 
     let commands = console_input()?;

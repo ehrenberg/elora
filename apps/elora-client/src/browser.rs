@@ -193,6 +193,21 @@ impl<S: Socket> Browser<S> {
             State::Querying => Duration::from_secs(10),
             State::Unreachable => Duration::from_secs(20),
         };
+        // derselbe Server über IPv4 und IPv6 gelistet: nur den schnelleren Weg zeigen
+        let same = |a: &Entry, b: &Entry| match (&a.state, &b.state) {
+            (State::Online { info: x, .. }, State::Online { info: y, .. }) => {
+                a.addr.port() == b.addr.port()
+                    && a.addr.is_ipv4() != b.addr.is_ipv4()
+                    && x.name == y.name
+                    && x.map == y.map
+            }
+            _ => false,
+        };
+        let all = v.clone();
+        v.retain(|e| {
+            !all.iter()
+                .any(|o| same(e, o) && (ping(o), o.addr) < (ping(e), e.addr))
+        });
         let name = |e: &Entry| match &e.state {
             State::Online { info, .. } => info.name.to_lowercase(),
             _ => e.addr.to_string(),
@@ -222,7 +237,8 @@ impl Browser<UdpSocket> {
         if self.probe.is_some() {
             return;
         }
-        match UdpSocket::bind(SocketAddr::from(([0, 0, 0, 0], 0))) {
+        // IPv4 und IPv6: Server hinter DS-Lite sind oft nur über IPv6 erreichbar
+        match UdpSocket::bind_dual(0) {
             Ok(socket) => {
                 if let Err(e) = socket.set_broadcast(true) {
                     tracing::warn!("Broadcast nicht möglich: {e}");
@@ -360,6 +376,41 @@ mod tests {
                 && !shown.contains(&addr(8303))
                 && !shown.contains(&addr(8304))
         );
+    }
+
+    #[test]
+    fn same_server_over_v4_and_v6_is_shown_once() {
+        let net = MemNetwork::new();
+        let v6 = SocketAddr::from(([0, 0, 0, 0, 0, 0, 0, 1], 8303));
+        let mut a = server(&net, 8303, "Doppelt", 2);
+        let mut b = ServerEndpoint::new(
+            net.socket(v6, Conditions::default(), 77),
+            Keypair::generate(),
+            8,
+        );
+        b.set_info(
+            ServerInfo {
+                version: PROTOCOL_VERSION,
+                name: "Doppelt".into(),
+                map: "sandbox".into(),
+                mode: "DM".into(),
+                clients: 2,
+                max_clients: 8,
+                players: vec![],
+            }
+            .encode(),
+        );
+        let probe = InfoProbe::new(net.socket(addr(9101), Conditions::default(), 9), 1);
+        let mut br = Browser::new(Some(probe));
+        let mut now = Instant::now();
+        br.query(&[addr(8303), v6], now);
+        for _ in 0..60 {
+            now += Duration::from_millis(50);
+            a.poll(now);
+            b.poll(now);
+            br.poll(now);
+        }
+        assert_eq!(br.visible().len(), 1, "einmal statt zweimal");
     }
 
     #[test]

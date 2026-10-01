@@ -54,6 +54,17 @@ function server_status(array $config): array
             'players' => array_map(fn ($p) => ['name' => $p['name'], 'team' => $p['team']], array_slice($humans, 0, 8)),
         ];
     }
+    // derselbe Server über IPv4 und IPv6 gelistet: nur einmal zeigen
+    $seen = [];
+    $servers = array_values(array_filter($servers, function ($s) use (&$seen) {
+        $port = elora_split($s['addr'])[1] ?? 0;
+        $key = $port . '|' . $s['name'] . '|' . $s['map'];
+        if (isset($seen[$key])) {
+            return false;
+        }
+        $seen[$key] = true;
+        return true;
+    }));
     usort($servers, fn ($a, $b) => [$b['clients'], $a['name']] <=> [$a['clients'], $b['name']]);
     $status = ['time' => time(), 'servers' => $servers];
     @file_put_contents($cache, json_encode($status), LOCK_EX);

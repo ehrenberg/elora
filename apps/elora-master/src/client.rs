@@ -15,6 +15,14 @@ fn agent() -> ureq::Agent {
     agent_for(ureq::config::IpFamily::Any)
 }
 
+/// Über welche Adressfamilie sich ein Spielserver anmeldet.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Family {
+    Any,
+    V4,
+    V6,
+}
+
 fn agent_for(family: ureq::config::IpFamily) -> ureq::Agent {
     ureq::Agent::config_builder()
         .timeout_global(Some(Duration::from_secs(5)))
@@ -31,9 +39,9 @@ fn endpoint(base: &str, path: &str) -> String {
 
 /// Spielserver beim Master anmelden (bzw. die Anmeldung erneuern).
 ///
-/// Der Master prüft die Adresse, von der die Anmeldung kommt. Lauscht der Server nur auf
-/// IPv4 (`ipv4_only`), geht die Anmeldung deshalb auch nur über IPv4 – sonst prüfte der
-/// Master bei Hosts mit IPv6 die falsche Adresse.
+/// Der Master prüft die Adresse, von der die Anmeldung kommt. Ein Server meldet sich deshalb
+/// über die Familien an, auf denen er lauscht (bei IPv4 und IPv6 je einmal) – sonst prüfte der
+/// Master die falsche Adresse.
 ///
 /// # Errors
 /// Bei Netzwerkfehlern oder ungültiger Antwort.
@@ -41,13 +49,13 @@ pub fn register(
     base: &str,
     port: u16,
     version: u32,
-    ipv4_only: bool,
+    family: Family,
 ) -> anyhow::Result<RegisterReply> {
     let body = serde_json::to_string(&RegisterRequest { port, version })?;
-    let family = if ipv4_only {
-        ureq::config::IpFamily::Ipv4Only
-    } else {
-        ureq::config::IpFamily::Any
+    let family = match family {
+        Family::Any => ureq::config::IpFamily::Any,
+        Family::V4 => ureq::config::IpFamily::Ipv4Only,
+        Family::V6 => ureq::config::IpFamily::Ipv6Only,
     };
     let mut resp = agent_for(family)
         .post(&endpoint(base, "register"))
