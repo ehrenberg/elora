@@ -1,3 +1,6 @@
+// Windows: im Release kein Konsolenfenster neben dem Spiel
+#![cfg_attr(all(windows, not(debug_assertions)), windows_subsystem = "windows")]
+
 //! Elora-Client: lokale Sandbox (M1/M2) oder online mit einem Server (M3).
 //!
 //! Aufruf: `elora [karte.emap] [--mode dm|tdm|ctf|lms|lts] [--instagib] [--connect adresse:port]`

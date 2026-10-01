@@ -1,0 +1,21 @@
+# Prüfung bei jedem Push und Pull Request (M8.3): fmt, clippy, Tests, Lizenzen.
+name: Prüfung
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  check:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Systempakete (Fenster, Ton)
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
+      # Toolchain kommt aus rust-toolchain.toml
+      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest,cargo-deny
+      - run: cargo xtask check

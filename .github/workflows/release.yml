@@ -1,0 +1,82 @@
+# Release-Pakete bei einem Versions-Tag `v*` (M8.3, E-163):
+# Linux (tar.gz + AppImage), Windows (ZIP), macOS (DMG, unsigniert – E-167).
+# Das GitHub-Release entsteht als Entwurf; veröffentlicht wird es von Hand (M8.8).
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-22.04
+          - os: windows-latest
+          - os: macos-14   # Apple Silicon (Intel-Macs: offen, O-50)
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Tag passt zur Version im Cargo.toml
+        shell: bash
+        run: |
+          version=$(grep -m1 '^version' Cargo.toml | cut -d'"' -f2)
+          test "v$version" = "${GITHUB_REF_NAME%%-*}" || { echo "Tag $GITHUB_REF_NAME ≠ Version $version"; exit 1; }
+      - name: Systempakete (Linux)
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev libfuse2
+      - uses: Swatinem/rust-cache@v2
+      - name: Paket bauen
+        run: cargo xtask package --archive
+      - name: AppImage (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          set -e
+          pkg=$(ls -d dist/elora-*-linux-* | grep -v '\.tar\.gz$')
+          app=dist/Elora.AppDir
+          mkdir -p "$app/usr/bin" "$app/usr/share/elora"
+          cp "$pkg"/elora "$pkg"/elora-server "$pkg"/elora-master "$app/usr/bin/"
+          cp -r "$pkg/maps" "$app/usr/share/elora/"
+          [ -d "$pkg/assets" ] && cp -r "$pkg/assets" "$app/usr/share/elora/" || true
+          cp "$pkg"/LICENSE "$pkg"/THIRD_PARTY_LICENSES "$pkg"/SOURCES.md "$app/usr/share/elora/"
+          cp "$pkg/elora.png" "$app/elora.png"
+          printf '[Desktop Entry]\nType=Application\nName=Elora\nExec=elora\nIcon=elora\nCategories=Game;ActionGame;\n' > "$app/elora.desktop"
+          ln -s usr/bin/elora "$app/AppRun"
+          curl -sSL -o appimagetool https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-x86_64.AppImage
+          chmod +x appimagetool
+          ARCH=x86_64 APPIMAGE_EXTRACT_AND_RUN=1 ./appimagetool "$app" "$pkg.AppImage"
+      - name: DMG (macOS)
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          pkg=$(ls -d dist/elora-*-macos-* | grep -v '\.tar\.gz$')
+          hdiutil create -volname Elora -srcfolder dist/Elora.app -ov -format UDZO "$pkg.dmg"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: elora-${{ matrix.os }}
+          path: |
+            dist/*.tar.gz
+            dist/*.zip
+            dist/*.AppImage
+            dist/*.dmg
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+      - uses: softprops/action-gh-release@v2
+        with:
+          draft: true
+          prerelease: true
+          name: Elora ${{ github.ref_name }}
+          files: artifacts/*

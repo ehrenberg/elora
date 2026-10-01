@@ -2,6 +2,7 @@
 //!
 //! Aufruf: `cargo xtask <befehl>`
 
+mod package;
 mod traffic;
 
 use std::fmt::Write as _;
@@ -21,6 +22,9 @@ Befehle:
                  Sounds (prozedural + Dateien) als WAV nach target/sounds/ (Hörprobe, M5.7)
   sound-import <name> <eingabe> [start_s] [länge_s]
                  Tondatei per ffmpeg nach assets/sounds/files/<name>.wav (Quelle in assets/SOURCES.md eintragen!)
+  package [--archive]
+                 Release-Paket unter dist/ (Programme, Karten, Lizenzen; macOS: Elora.app),
+                 mit --archive als .tar.gz bzw. .zip (M8.3)
   map-dump <karte.emap>
                  Karte lesbar ausgeben: Kopf, Prüfsumme, Raster, Ebenen (M6.2)
   help           Diese Hilfe
@@ -43,6 +47,10 @@ fn main() -> ExitCode {
         Some("sound-preview") => {
             let args: Vec<String> = std::env::args().skip(2).collect();
             sound_preview(&args)
+        }
+        Some("package") => {
+            let args: Vec<String> = std::env::args().skip(2).collect();
+            package::package(&args)
         }
         Some("map-dump") => std::env::args().nth(2).map_or_else(
             || Err("Verwendung: cargo xtask map-dump <karte.emap>".to_owned()),

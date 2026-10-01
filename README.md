@@ -70,6 +70,8 @@ cargo run --bin elora -- maps/look-test.emap         # Kartenlook: Materialien, 
 cargo run --bin elora -- maps/tiles-test.emap        # Plattform, Eis, Sprungfeld, Beschleuniger (S = Runter)
 ```
 
+**Pakete:** `cargo xtask package --archive` baut ein Release-Paket für das eigene System unter `dist/` (Programme, Release-Karten, Lizenzen, Symbol; macOS zusätzlich `Elora.app`). Bei einem Tag `v<version>` baut GitHub Actions Linux (tar.gz, AppImage), Windows (ZIP) und macOS (DMG) und legt ein Entwurfs-Release an; jeder Push wird mit `cargo xtask check` geprüft.
+
 **Dateien:** Mitgelieferte Daten (`maps/`, Menümusik) sucht das Spiel erst im Arbeitsverzeichnis, dann in `ELORA_DATA`, neben dem Programm, in `../share/elora` oder `../Resources` (macOS). Einstellungen, `tuning.toml`, `known_servers.toml` und die Dateien des gehosteten Servers (`server.toml`, `server_key.toml`) liegen im Einstellungsordner (`~/.config/elora`, Windows `%APPDATA%\Elora`, macOS `~/Library/Application Support/Elora`); eigene und heruntergeladene Karten unter `~/.local/share/elora`.
 
 **Release-Karten** (M6.10): `dm-wiese` (64×36, 4–8 Spieler), `dm-wueste` (96×48, 8–12), `dm-winter` (128×64, 12–16), `ctf-wald` (150×48, 8–12), `ctf-nacht` (190×64, 12–16). Layouts werden in `tools/design/release_maps/` gebaut und geprüft (`python3 tools/design/release_maps/export.py`), die Dateien schreibt `cargo test -p elora-client --bin elora write_release_maps -- --ignored`.

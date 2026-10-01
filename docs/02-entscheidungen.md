@@ -236,5 +236,6 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 - [x] ~~O-42 Netzwerk-Zielwerte~~ → E-059
 - [x] ~~O-43 Release-Karten~~ → E-134, E-135
 - [x] ~~O-44 Vertrieb~~ → E-161
+- [ ] **O-50 macOS auf Intel** – Release-Builds zunächst nur für Apple Silicon; Intel-Macs per Cross-Build oder eigenem Runner nachrüsten
 - [ ] **O-49 Weitere Vertriebskanäle** (itch.io, Flathub, Steam, eigene Website) – nach Release 1 (E-161)
 - [x] ~~O-21 Meilensteine~~ → E-037
