@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-60 -160 120 162">
+  <!-- Laubbaum (Stil A). Ursprung unten in der Mitte. -->
+  <path d="M -8,0 Q -6,-30 -7,-70 H 7 Q 6,-30 8,0 Z" fill="#8a6040" stroke="#2b2b2b" stroke-width="2"/>
+  <path d="M -2,-50 Q -14,-60 -20,-58" stroke="#2b2b2b" stroke-width="2" fill="none" stroke-linecap="round"/>
+  <circle cx="-24" cy="-88" r="28" fill="#5f9c42" stroke="#2b2b2b" stroke-width="2"/>
+  <circle cx="24" cy="-90" r="26" fill="#5f9c42" stroke="#2b2b2b" stroke-width="2"/>
+  <circle cx="0" cy="-118" r="34" fill="#7bbf55" stroke="#2b2b2b" stroke-width="2"/>
+  <ellipse cx="-10" cy="-132" rx="12" ry="6" fill="#a4dc7a"/>
+</svg>

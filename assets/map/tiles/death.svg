@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Tod (Stil A): Stacheln nach oben; andere Richtungen werden gedreht. -->
+  <g id="up"><rect x="0" y="27" width="32" height="5" fill="#7c2a2a"/><path d="M 0.5,32 L 5.33,7 L 10.17,32 Z" fill="#c94f4f" stroke="#2b2b2b" stroke-width="1.6" stroke-linejoin="round"/><path d="M 4.83,12 L 2.83,24" stroke="#ef9a9a" stroke-width="1.4" stroke-linecap="round"/><path d="M 11.17,32 L 16,7 L 20.83,32 Z" fill="#c94f4f" stroke="#2b2b2b" stroke-width="1.6" stroke-linejoin="round"/><path d="M 15.5,12 L 13.5,24" stroke="#ef9a9a" stroke-width="1.4" stroke-linecap="round"/><path d="M 21.83,32 L 26.67,7 L 31.5,32 Z" fill="#c94f4f" stroke="#2b2b2b" stroke-width="1.6" stroke-linejoin="round"/><path d="M 26.17,12 L 24.17,24" stroke="#ef9a9a" stroke-width="1.4" stroke-linecap="round"/></g>
+</svg>

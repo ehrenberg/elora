@@ -81,3 +81,16 @@ Kurven der Animationen: 0 Stufe, 1 linear, 2 langsam beginnend, 3 schnell beginn
 - **Ansehen:** `cargo xtask map-dump maps/<karte>.emap` gibt Kopf, Prüfsumme, Modi, Ebenen und das Raster als Zeichen aus.
 - **Tests:** `Map::from_rows` baut Karten aus Zeichenrastern (Tiles wie in den Aufzeichnungen: `. # % ^ = ~ ! \ / < >`; Entities `S R B r b h a L G D W J X`). Das ist eine Hilfe im Code, kein Dateiformat.
 - **Hot-Reload:** Die Sandbox beobachtet die Kartendatei und lädt sie beim Speichern neu (z. B. aus dem Editor).
+
+## 6. Eingebaute Grafik (Stil A, M6.3)
+
+Ablage `assets/map/`, Übersicht in [`design/elora-kartenteile.png`](design/elora-kartenteile.png). Erzeugt einmalig mit `tools/design/elora_map_assets.py`, danach normale, von Hand änderbare SVGs.
+
+| Art | Namen | Hinweis |
+|---|---|---|
+| Materialien (`MATL`) | `earth`, `sand`, `snow` (fest) · `stone` (nicht hookbar) · `ice` (Eis) | Farben, Rundung und Detail-Anteil in `materials.toml`; je Material ein SVG mit Kappen (`cap`, `cap-left`, `cap-right`, `cap-single`) und Details (`detail-1` …). Das erste Material einer Tile-Art ist ihr Standard |
+| Spezial-Tiles | `tiles/death`, `platform`, `jump`, `conveyor` | fest zugeordnet; Stacheln zeigen vom Untergrund weg, Sprungfeld links und Beschleuniger links sind gespiegelt |
+| Deko (`Art::Builtin`) | `bush-1`, `bush-2`, `flower-pink`, `flower-yellow`, `flower-blue`, `grass-1`, `grass-2`, `rock-1`, `rock-2`, `mushroom-red`, `mushroom-brown`, `tree-round`, `tree-pine`, `fence`, `sign-arrow`, `sign-board` | Ursprung unten in der Mitte |
+| Hintergrund (`Art::Builtin`) | `cloud-1` … `cloud-3`, `moon` (Ursprung Mitte) · `hills-far`, `hills-near`, `mountains`, `forest` (Ursprung unten links) · `stars` (oben links) | Streifen 1024 breit und nahtlos wiederholbar; bei Nacht über die Färbung abgedunkelt |
+
+**Auto-Kanten:** Feste Tiles bilden mit Sprungfeldern und Beschleunigern eine Fläche. Außenecken mit zwei freien Nachbarn werden gerundet, die Kontur liegt nur an freien Kanten, Kappen an jeder freien Oberkante (mit Endstück an freien Seiten), Details fest je Tile verstreut.

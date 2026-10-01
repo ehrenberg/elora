@@ -744,6 +744,7 @@ dependencies = [
  "elora-render",
  "elora-server",
  "elora-sim",
+ "lyon",
  "notify",
  "pollster",
  "serde",

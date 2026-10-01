@@ -153,6 +153,7 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-144 | 2026-10-01 | Eigene Grafiken in Karten | **Eingebettete SVGs erlaubt** (eigene Deko); Grenzen 64 Bilder × 512 KiB, Client parst ohne externe Verweise | Entscheidung Projektinhaber |
 | E-145 | 2026-10-01 | Dateiendung | **`.emap`** | Entscheidung Projektinhaber |
 | E-146 | 2026-10-01 | Textformat | **Textkarten umgewandelt, Textformat `.emap.toml` entfernt** (ersetzt E-024); Karten werden mit dem Editor gebaut, Tests nutzen `Map::from_rows`; Protokollversion 4 (Karte als Binärdaten im `Welcome`) | Entscheidung Projektinhaber |
+| E-147 | 2026-10-01 | Kartengrafik (M6.3) | Materialien Erde/Gras, Sand, Schnee, Stein (nicht hookbar), Eis; Spezial-Tiles Tod, Holz-Plattform, Sprungfeld, Beschleuniger; Deko Büsche, Blumen, Gras, Steine, Pilze, Bäume, Zaun, Schilder; Hintergründe Wolken, Hügel, Berge, Wald, Nachthimmel | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 

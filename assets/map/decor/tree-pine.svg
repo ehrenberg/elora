@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-50 -170 100 172">
+  <!-- Nadelbaum (Stil A), passt zu Schnee. Ursprung unten in der Mitte. -->
+  <rect x="-6" y="-30" width="12" height="30" rx="2" fill="#8a6040" stroke="#2b2b2b" stroke-width="2"/>
+  <path d="M -46,-36 Q 0,-28 46,-36 L 4,-80 Q 0,-84 -4,-80 Z" fill="#4f8a3a" stroke="#2b2b2b" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M -38,-76 Q 0,-68 38,-76 L 4,-114 Q 0,-118 -4,-114 Z" fill="#5f9c42" stroke="#2b2b2b" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M -28,-112 Q 0,-104 28,-112 L 4,-144 Q 0,-148 -4,-144 Z" fill="#4f8a3a" stroke="#2b2b2b" stroke-width="2" stroke-linejoin="round"/>
+</svg>

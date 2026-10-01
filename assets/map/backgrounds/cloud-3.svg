@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-80 -50 160 80">
+  <!-- Wolke (Stil A). Ursprung in der Mitte. -->
+  <ellipse cx="0" cy="12" rx="50" ry="8" fill="#ffffff" fill-opacity="0.85"/>
+  <circle cx="-16" cy="0" r="14" fill="#ffffff" fill-opacity="0.85"/>
+  <circle cx="6" cy="-5" r="18" fill="#ffffff" fill-opacity="0.85"/>
+  <circle cx="24" cy="1" r="13" fill="#ffffff" fill-opacity="0.85"/>
+</svg>

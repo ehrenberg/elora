@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 640">
+  <!-- Sternenfeld (Stil A). Ursprung oben links, 1024 × 640, wiederholbar. -->
+  <circle cx="308" cy="93" r="1.5" fill="#ffffff" fill-opacity="0.8"/>
+  <circle cx="419" cy="160" r="1.5" fill="#ffffff" fill-opacity="0.7"/>
+  <path d="M 30,121 Q 31,126 36,127 Q 31,128 30,133 Q 29,128 24,127 Q 29,126 30,121 Z" fill="#fff6d8"/>
+  <circle cx="277" cy="170" r="2.0" fill="#ffffff" fill-opacity="0.9"/>
+  <circle cx="952" cy="145" r="2.0" fill="#ffffff" fill-opacity="0.8"/>
+  <circle cx="247" cy="100" r="1.0" fill="#ffffff" fill-opacity="0.7"/>
+  <circle cx="642" cy="147" r="2.0" fill="#ffffff" fill-opacity="0.6"/>
+  <circle cx="457" cy="334" r="2.0" fill="#ffffff" fill-opacity="0.9"/>
+  <circle cx="764" cy="133" r="2.0" fill="#ffffff" fill-opacity="0.8"/>
+  <path d="M 11,354 Q 12,359 17,360 Q 12,361 11,366 Q 10,361 5,360 Q 10,359 11,354 Z" fill="#fff6d8"/>
+  <circle cx="934" cy="359" r="1.5" fill="#ffffff" fill-opacity="0.6"/>
+  <circle cx="61" cy="178" r="2.0" fill="#ffffff" fill-opacity="0.9"/>
+  <circle cx="768" cy="569" r="1.5" fill="#ffffff" fill-opacity="0.8"/>
+  <circle cx="735" cy="44" r="1.0" fill="#ffffff" fill-opacity="0.7"/>
+  <circle cx="906" cy="635" r="2.0" fill="#ffffff" fill-opacity="0.6"/>
+  <circle cx="113" cy="598" r="1.5" fill="#ffffff" fill-opacity="0.9"/>
+  <path d="M 964,295 Q 965,300 970,301 Q 965,302 964,307 Q 963,302 958,301 Q 963,300 964,295 Z" fill="#fff6d8"/>
+  <circle cx="371" cy="304" r="1.5" fill="#ffffff" fill-opacity="0.7"/>
+  <circle cx="558" cy="335" r="1.5" fill="#ffffff" fill-opacity="0.6"/>
+  <circle cx="613" cy="442" r="2.0" fill="#ffffff" fill-opacity="0.9"/>
+  <circle cx="328" cy="225" r="1.5" fill="#ffffff" fill-opacity="0.8"/>
+  <circle cx="967" cy="628" r="1.5" fill="#ffffff" fill-opacity="0.7"/>
+  <circle cx="914" cy="99" r="1.5" fill="#ffffff" fill-opacity="0.6"/>
+  <circle cx="537" cy="478" r="2.0" fill="#ffffff" fill-opacity="0.9"/>
+  <circle cx="908" cy="341" r="1.5" fill="#ffffff" fill-opacity="0.8"/>
+  <path d="M 475,242 Q 476,247 481,248 Q 476,249 475,254 Q 474,249 469,248 Q 474,247 475,242 Z" fill="#fff6d8"/>
+  <circle cx="950" cy="439" r="1.5" fill="#ffffff" fill-opacity="0.6"/>
+  <path d="M 909,572 Q 910,577 915,578 Q 910,579 909,584 Q 908,579 903,578 Q 908,577 909,572 Z" fill="#fff6d8"/>
+  <circle cx="656" cy="9" r="2.0" fill="#ffffff" fill-opacity="0.8"/>
+  <circle cx="943" cy="316" r="1.0" fill="#ffffff" fill-opacity="0.7"/>
+  <circle cx="666" cy="459" r="2.0" fill="#ffffff" fill-opacity="0.6"/>
+  <circle cx="705" cy="358" r="1.0" fill="#ffffff" fill-opacity="0.9"/>
+  <circle cx="596" cy="253" r="2.0" fill="#ffffff" fill-opacity="0.8"/>
+  <circle cx="323" cy="64" r="1.0" fill="#ffffff" fill-opacity="0.7"/>
+  <circle cx="62" cy="159" r="2.0" fill="#ffffff" fill-opacity="0.6"/>
+  <path d="M 949,196 Q 950,201 955,202 Q 950,203 949,208 Q 948,203 943,202 Q 948,201 949,196 Z" fill="#fff6d8"/>
+  <circle cx="728" cy="305" r="1.5" fill="#ffffff" fill-opacity="0.8"/>
+  <circle cx="663" cy="260" r="2.0" fill="#ffffff" fill-opacity="0.7"/>
+  <circle cx="162" cy="307" r="1.0" fill="#ffffff" fill-opacity="0.6"/>
+  <circle cx="617" cy="494" r="1.5" fill="#ffffff" fill-opacity="0.9"/>
+  <circle cx="28" cy="293" r="2.0" fill="#ffffff" fill-opacity="0.8"/>
+  <circle cx="939" cy="8" r="1.0" fill="#ffffff" fill-opacity="0.7"/>
+  <circle cx="966" cy="391" r="2.0" fill="#ffffff" fill-opacity="0.6"/>
+  <circle cx="733" cy="210" r="2.0" fill="#ffffff" fill-opacity="0.9"/>
+  <circle cx="544" cy="217" r="2.0" fill="#ffffff" fill-opacity="0.8"/>
+  <circle cx="127" cy="332" r="1.0" fill="#ffffff" fill-opacity="0.7"/>
+  <circle cx="426" cy="283" r="2.0" fill="#ffffff" fill-opacity="0.6"/>
+  <circle cx="273" cy="630" r="2.0" fill="#ffffff" fill-opacity="0.9"/>
+  <circle cx="228" cy="205" r="2.0" fill="#ffffff" fill-opacity="0.8"/>
+  <path d="M 275,330 Q 276,335 281,336 Q 276,337 275,342 Q 274,337 269,336 Q 274,335 275,330 Z" fill="#fff6d8"/>
+  <circle cx="590" cy="367" r="1.5" fill="#ffffff" fill-opacity="0.6"/>
+  <circle cx="261" cy="218" r="1.5" fill="#ffffff" fill-opacity="0.9"/>
+  <circle cx="104" cy="257" r="1.5" fill="#ffffff" fill-opacity="0.8"/>
+  <circle cx="359" cy="404" r="2.0" fill="#ffffff" fill-opacity="0.7"/>
+  <circle cx="434" cy="387" r="2.0" fill="#ffffff" fill-opacity="0.6"/>
+  <circle cx="697" cy="126" r="2.0" fill="#ffffff" fill-opacity="0.9"/>
+  <circle cx="172" cy="373" r="2.0" fill="#ffffff" fill-opacity="0.8"/>
+  <circle cx="379" cy="408" r="2.0" fill="#ffffff" fill-opacity="0.7"/>
+  <circle cx="982" cy="343" r="1.5" fill="#ffffff" fill-opacity="0.6"/>
+  <circle cx="557" cy="610" r="2.0" fill="#ffffff" fill-opacity="0.9"/>
+  <circle cx="432" cy="169" r="2.0" fill="#ffffff" fill-opacity="0.8"/>
+  <circle cx="335" cy="476" r="1.5" fill="#ffffff" fill-opacity="0.7"/>
+  <circle cx="186" cy="107" r="1.5" fill="#ffffff" fill-opacity="0.6"/>
+  <circle cx="865" cy="390" r="2.0" fill="#ffffff" fill-opacity="0.9"/>
+  <circle cx="884" cy="413" r="2.0" fill="#ffffff" fill-opacity="0.8"/>
+  <circle cx="227" cy="96" r="1.5" fill="#ffffff" fill-opacity="0.7"/>
+  <path d="M 94,57 Q 95,62 100,63 Q 95,64 94,69 Q 93,64 88,63 Q 93,62 94,57 Z" fill="#fff6d8"/>
+  <circle cx="597" cy="618" r="1.0" fill="#ffffff" fill-opacity="0.9"/>
+  <circle cx="504" cy="81" r="1.5" fill="#ffffff" fill-opacity="0.8"/>
+  <circle cx="55" cy="164" r="1.0" fill="#ffffff" fill-opacity="0.7"/>
+  <circle cx="706" cy="339" r="1.0" fill="#ffffff" fill-opacity="0.6"/>
+  <circle cx="777" cy="270" r="1.5" fill="#ffffff" fill-opacity="0.9"/>
+  <circle cx="316" cy="325" r="1.0" fill="#ffffff" fill-opacity="0.8"/>
+  <circle cx="843" cy="552" r="2.0" fill="#ffffff" fill-opacity="0.7"/>
+  <circle cx="998" cy="39" r="2.0" fill="#ffffff" fill-opacity="0.6"/>
+  <circle cx="381" cy="114" r="1.0" fill="#ffffff" fill-opacity="0.9"/>
+  <circle cx="320" cy="377" r="2.0" fill="#ffffff" fill-opacity="0.8"/>
+  <circle cx="543" cy="620" r="1.0" fill="#ffffff" fill-opacity="0.7"/>
+  <circle cx="970" cy="571" r="1.0" fill="#ffffff" fill-opacity="0.6"/>
+  <circle cx="433" cy="406" r="1.5" fill="#ffffff" fill-opacity="0.9"/>
+  <circle cx="516" cy="109" r="1.5" fill="#ffffff" fill-opacity="0.8"/>
+  <circle cx="179" cy="240" r="1.5" fill="#ffffff" fill-opacity="0.7"/>
+  <circle cx="622" cy="399" r="1.5" fill="#ffffff" fill-opacity="0.6"/>
+  <circle cx="933" cy="250" r="2.0" fill="#ffffff" fill-opacity="0.9"/>
+  <circle cx="904" cy="417" r="1.0" fill="#ffffff" fill-opacity="0.8"/>
+  <path d="M 775,174 Q 776,179 781,180 Q 776,181 775,186 Q 774,181 769,180 Q 774,179 775,174 Z" fill="#fff6d8"/>
+  <circle cx="978" cy="419" r="1.0" fill="#ffffff" fill-opacity="0.6"/>
+  <circle cx="857" cy="542" r="1.0" fill="#ffffff" fill-opacity="0.9"/>
+  <circle cx="460" cy="533" r="1.5" fill="#ffffff" fill-opacity="0.8"/>
+  <circle cx="283" cy="56" r="1.5" fill="#ffffff" fill-opacity="0.7"/>
+</svg>

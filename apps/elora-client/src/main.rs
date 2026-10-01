@@ -19,6 +19,9 @@ mod hosting;
 mod hud;
 mod items;
 mod lang;
+// Kartengrafik: wird mit M6.4 ins Spiel eingebaut
+#[cfg_attr(not(test), allow(dead_code))]
+mod map_art;
 mod menu;
 mod menu_browser;
 mod menu_pause;

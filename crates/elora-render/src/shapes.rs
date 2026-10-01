@@ -178,6 +178,19 @@ impl ShapeBatch {
         );
     }
 
+    /// Beliebiger gefüllter Pfad (Regel: nicht null).
+    pub fn fill_path(&mut self, path: &Path, color: Color) {
+        let c = color.0;
+        let _ = self.fill.tessellate_path(
+            path,
+            &FillOptions::tolerance(self.tolerance),
+            &mut BuffersBuilder::new(&mut self.geometry, |v: FillVertex| Vertex {
+                pos: v.position().to_array(),
+                color: c,
+            }),
+        );
+    }
+
     /// Rechteck mit abgerundeten Ecken (für UI-Flächen).
     pub fn fill_rounded_rect(&mut self, min: Vec2, max: Vec2, radius: f32, color: Color) {
         let radius = radius

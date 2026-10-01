@@ -1,0 +1,43 @@
+# Materialien der Spielfläche (M6.3, Stil A, E-139).
+#
+# Jedes Material hat eine gleichnamige SVG-Datei in materials/ mit den Teilen
+# cap / cap-left / cap-right / cap-single (Kappe an freien Oberkanten, optional)
+# und detail-1 … detail-n (verstreut im Inneren, optional).
+#
+# Die Form (runde Außenecken, Kontur an freien Kanten) erzeugt das Spiel selbst.
+#
+# body    Füllfarbe
+# radius  Rundung der Außenecken in Welteinheiten (Tile = 32)
+# details Anteil der Tiles mit einem Detail (0 bis 1)
+# for     Tile-Arten, für die das Material wählbar ist; das erste Material
+#         einer Tile-Art ist ihr Standard
+
+[earth]
+body = "#a87a52"
+radius = 10
+details = 0.3
+for = ["solid"]
+
+[sand]
+body = "#d9b26f"
+radius = 10
+details = 0.35
+for = ["solid"]
+
+[snow]
+body = "#8c7b70"
+radius = 10
+details = 0.25
+for = ["solid"]
+
+[stone]
+body = "#7d8790"
+radius = 6
+details = 0.5
+for = ["unhookable"]
+
+[ice]
+body = "#bfe6f5"
+radius = 8
+details = 0.35
+for = ["ice"]

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 -200 1024 200">
+  <!-- Waldsilhouette (Stil A). Ursprung unten links, 1024 breit, nahtlos wiederholbar. -->
+  <rect x="0" y="-40" width="1024" height="40" fill="#7fae86"/>
+  <rect x="27" y="-54" width="10" height="54" fill="#6a9a72"/>
+  <circle cx="32" cy="-74.4" r="36" fill="#7fae86"/>
+  <circle cx="50" cy="-60" r="26.4" fill="#7fae86"/>
+  <rect x="91" y="-67.39" width="10" height="67.39" fill="#6a9a72"/>
+  <circle cx="96" cy="-92.84" r="44.92" fill="#7fae86"/>
+  <circle cx="114" cy="-74.87" r="32.94" fill="#7fae86"/>
+  <rect x="155" y="-50.55" width="10" height="50.55" fill="#6a9a72"/>
+  <circle cx="160" cy="-69.65" r="33.7" fill="#7fae86"/>
+  <circle cx="178" cy="-56.17" r="24.71" fill="#7fae86"/>
+  <rect x="219" y="-41.5" width="10" height="41.5" fill="#6a9a72"/>
+  <circle cx="224" cy="-57.18" r="27.67" fill="#7fae86"/>
+  <circle cx="242" cy="-46.11" r="20.29" fill="#7fae86"/>
+  <rect x="283" y="-60.67" width="10" height="60.67" fill="#6a9a72"/>
+  <circle cx="288" cy="-83.59" r="40.45" fill="#7fae86"/>
+  <circle cx="306" cy="-67.41" r="29.66" fill="#7fae86"/>
+  <rect x="347" y="-64.78" width="10" height="64.78" fill="#6a9a72"/>
+  <circle cx="352" cy="-89.25" r="43.19" fill="#7fae86"/>
+  <circle cx="370" cy="-71.98" r="31.67" fill="#7fae86"/>
+  <rect x="411" y="-44.55" width="10" height="44.55" fill="#6a9a72"/>
+  <circle cx="416" cy="-61.38" r="29.7" fill="#7fae86"/>
+  <circle cx="434" cy="-49.5" r="21.78" fill="#7fae86"/>
+  <rect x="475" y="-45.66" width="10" height="45.66" fill="#6a9a72"/>
+  <circle cx="480" cy="-62.9" r="30.44" fill="#7fae86"/>
+  <circle cx="498" cy="-50.73" r="22.32" fill="#7fae86"/>
+  <rect x="539" y="-65.6" width="10" height="65.6" fill="#6a9a72"/>
+  <circle cx="544" cy="-90.38" r="43.73" fill="#7fae86"/>
+  <circle cx="562" cy="-72.89" r="32.07" fill="#7fae86"/>
+  <rect x="603" y="-59.36" width="10" height="59.36" fill="#6a9a72"/>
+  <circle cx="608" cy="-81.78" r="39.57" fill="#7fae86"/>
+  <circle cx="626" cy="-65.95" r="29.02" fill="#7fae86"/>
+  <rect x="667" y="-41.02" width="10" height="41.02" fill="#6a9a72"/>
+  <circle cx="672" cy="-56.52" r="27.35" fill="#7fae86"/>
+  <circle cx="690" cy="-45.58" r="20.05" fill="#7fae86"/>
+  <rect x="731" y="-51.99" width="10" height="51.99" fill="#6a9a72"/>
+  <circle cx="736" cy="-71.63" r="34.66" fill="#7fae86"/>
+  <circle cx="754" cy="-57.77" r="25.42" fill="#7fae86"/>
+  <rect x="795" y="-67.5" width="10" height="67.5" fill="#6a9a72"/>
+  <circle cx="800" cy="-93" r="45" fill="#7fae86"/>
+  <circle cx="818" cy="-75" r="33" fill="#7fae86"/>
+  <rect x="859" y="-52.53" width="10" height="52.53" fill="#6a9a72"/>
+  <circle cx="864" cy="-72.38" r="35.02" fill="#7fae86"/>
+  <circle cx="882" cy="-58.37" r="25.68" fill="#7fae86"/>
+  <rect x="923" y="-40.88" width="10" height="40.88" fill="#6a9a72"/>
+  <circle cx="928" cy="-56.32" r="27.25" fill="#7fae86"/>
+  <circle cx="946" cy="-45.42" r="19.99" fill="#7fae86"/>
+  <rect x="987" y="-58.85" width="10" height="58.85" fill="#6a9a72"/>
+  <circle cx="992" cy="-81.08" r="39.23" fill="#7fae86"/>
+  <circle cx="1010" cy="-65.39" r="28.77" fill="#7fae86"/>
+</svg>

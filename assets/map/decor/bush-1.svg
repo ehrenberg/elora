@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-40 -32 80 34">
+  <!-- Busch (Stil A). Ursprung unten in der Mitte. -->
+  <ellipse cx="-6" cy="-12" rx="24" ry="14" fill="#5f9c42" stroke="#2b2b2b" stroke-width="2"/>
+  <ellipse cx="12" cy="-17" rx="15" ry="11" fill="#7bbf55" stroke="#2b2b2b" stroke-width="2"/>
+  <ellipse cx="9" cy="-21" rx="5" ry="2.5" fill="#a4dc7a"/>
+</svg>

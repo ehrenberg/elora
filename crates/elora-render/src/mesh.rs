@@ -144,6 +144,8 @@ pub struct Tint {
     pub colors: Vec<Color>,
     /// Deckkraft für das ganze Mesh (Ausblenden, Unsichtbarkeit).
     pub alpha: Option<f32>,
+    /// Färbung für das ganze Mesh (Komponenten multipliziert, z. B. Kartendeko bei Nacht).
+    pub multiply: Option<Color>,
 }
 
 impl Tint {
@@ -151,6 +153,7 @@ impl Tint {
         Self {
             colors: colors.into(),
             alpha: None,
+            multiply: None,
         }
     }
 
@@ -169,6 +172,11 @@ impl Tint {
         };
         if let Some(a) = self.alpha {
             c[3] *= a;
+        }
+        if let Some(m) = self.multiply {
+            for (v, f) in c.iter_mut().zip(m.0) {
+                *v *= f;
+            }
         }
         c
     }
