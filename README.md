@@ -56,7 +56,7 @@ Alle Befehle werden aus dem Projektordner ausgeführt (Karten liegen in `maps/`)
 cargo run --bin elora                               # startet ins Hauptmenü
 ```
 
-Im Hauptmenü: **Spielen** (Server-Browser mit Internet – braucht eine Master-Adresse –, LAN und Favoriten; Direkt-Verbinden; „Schnell spielen“ = letzter Server), **Training** (Sandbox), **Server erstellen** (startet einen eigenen Server und verbindet), **Einstellungen**, **Beenden**. Im Spiel öffnet Esc das Pause-Menü.
+Im Hauptmenü: **Spielen** (Server-Browser mit Internet über `https://elora.bastianswelt.de`, LAN und Favoriten; Direkt-Verbinden; „Schnell spielen“ = letzter Server), **Training** (Sandbox), **Server erstellen** (startet einen eigenen Server und verbindet), **Einstellungen**, **Beenden**. Im Spiel öffnet Esc das Pause-Menü.
 
 ### Sandbox direkt starten (Entwicklung)
 
@@ -106,7 +106,8 @@ cargo run --bin elora-server -- --config server.toml
 | `--time-limit` | 0 | Zeitlimit in Minuten, 0 = aus |
 | `--no-friendly-fire` | an | kein Schaden an Teammitgliedern (Rückstoß bleibt) |
 | `--no-votes` | an | Abstimmungen abschalten |
-| `--master` | – | beim Master-Server anmelden (Internet-Liste), z. B. `--master https://master.example.org`; mehrfach möglich |
+| `--master` | `https://elora.bastianswelt.de` | beim Master-Server anmelden (Internet-Liste); ein eigener ersetzt den Standard, mehrfach möglich |
+| `--no-master` | – | nicht in die Internet-Liste eintragen |
 | `--config` | – | alle Optionen aus einer TOML-Datei; weitere Optionen überschreiben sie |
 
 Weitere Einstellungen nur in der Konfigurationsdatei: `rotation = ["sandbox", "ctf-test"]` (Kartenrotation), `maps_dir`, und ein Abschnitt `[rules]` (`warmup_secs`, `countdown_secs`, `tdm_respawn_secs`, `team_balance_secs`, `match_swap`, `matches_per_map`).
@@ -134,7 +135,7 @@ cargo run --bin elora-master -- --bind 0.0.0.0:8300                # HTTP auf Po
 cargo run --bin elora-master -- --bind 127.0.0.1:8300 --behind-proxy   # hinter Reverse-Proxy
 ```
 
-Spielserver melden sich mit `--master <URL>` (oder `masters = ["…"]` in `server.toml`) alle 20 s an; der Master listet sie erst, wenn er sie selbst per UDP erreicht, und entfernt sie nach 60 s ohne Anmeldung. Öffentlich den Master hinter einem Reverse-Proxy mit HTTPS betreiben (z. B. Caddy: `reverse_proxy 127.0.0.1:8300`) und `--behind-proxy` setzen. Schnittstelle: `GET /servers`, `POST /register` (JSON).
+Spielserver melden sich beim Standard-Master an (abschaltbar mit `--no-master`, eigener mit `--master <URL>` oder `masters = ["…"]` in `server.toml`; aus dem Client gehostete nur mit „Im Internet anzeigen“), alle 20 s; der Master listet sie erst, wenn er sie selbst per UDP erreicht, und entfernt sie nach 60 s ohne Anmeldung. Öffentlich den Master hinter einem Reverse-Proxy mit HTTPS betreiben (z. B. Caddy: `reverse_proxy 127.0.0.1:8300`) und `--behind-proxy` setzen. Schnittstelle: `GET /servers`, `POST /register` (JSON). Betrieb mit systemd oder Docker: [`docs/15-master-betrieb.md`](docs/15-master-betrieb.md).
 
 **Firewall:** Für Spieler aus dem LAN/Internet muss der UDP-Port (Standard 8303) freigegeben sein, z. B. `sudo ufw allow 8303/udp` bzw. `sudo firewall-cmd --add-port=8303/udp`.
 

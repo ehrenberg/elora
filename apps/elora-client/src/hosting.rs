@@ -28,6 +28,8 @@ impl Default for Hosting {
         if config.key_file.is_relative() {
             config.key_file = crate::settings::config_file("server_key.toml");
         }
+        // aus dem Client gehostet = privat, bis „Im Internet anzeigen“ gewählt wird (E-170)
+        config.masters.clear();
         config.map = elora_server::paths::resolve(&config.map);
         config.maps_dir = elora_server::paths::resolve(&config.maps_dir);
         Self {

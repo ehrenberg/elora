@@ -59,6 +59,8 @@ pub struct CreateForm {
     pub map: usize,
     pub mode: Mode,
     pub instagib: bool,
+    /// Im Internet anzeigen (beim Master eintragen, E-170); aus = private Runde.
+    pub public: bool,
     pub max_clients: f32,
 }
 
@@ -69,6 +71,7 @@ impl Default for CreateForm {
             map: 0,
             mode: Mode::Dm,
             instagib: false,
+            public: false,
             max_clients: 8.0,
         }
     }
@@ -497,6 +500,13 @@ fn create_page(
         Vec2::new(x, y),
         lang.t("menu.instagib"),
         &mut form.instagib,
+    );
+    y += 40.0 * s;
+    ui.toggle(
+        "public",
+        Vec2::new(x, y),
+        lang.t("menu.public"),
+        &mut form.public,
     );
     y += 40.0 * s;
     #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]

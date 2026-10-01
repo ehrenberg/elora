@@ -218,6 +218,15 @@ impl App {
                 }
                 config.rules.mode = form.mode;
                 config.rules.instagib = form.instagib;
+                // private Runde, außer „Im Internet anzeigen“ ist an (E-170)
+                config.masters = if form.public {
+                    vec![self.settings.master_url.clone()]
+                        .into_iter()
+                        .filter(|m| !m.is_empty())
+                        .collect()
+                } else {
+                    Vec::new()
+                };
                 #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
                 {
                     config.max_clients = form.max_clients.round() as usize;

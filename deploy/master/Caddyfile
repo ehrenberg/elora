@@ -1,0 +1,4 @@
+# Reverse-Proxy mit automatischem HTTPS (Let's Encrypt) vor dem Master (M8.4).
+elora.bastianswelt.de {
+	reverse_proxy 127.0.0.1:8300
+}

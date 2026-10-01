@@ -13,6 +13,9 @@ pub const DEFAULT_PORT: u16 = 8303;
 /// Technisches Maximum an Spielern (E-059).
 pub const MAX_CLIENTS: usize = 64;
 
+/// Standard-Master für die Internet-Liste (E-166); dedizierte Server tragen sich dort ein (E-170).
+pub const DEFAULT_MASTER: &str = "https://elora.bastianswelt.de";
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct ServerConfig {
@@ -59,7 +62,7 @@ impl Default for ServerConfig {
             maps_dir: PathBuf::from("maps"),
             votes: true,
             rules: RulesConfig::default(),
-            masters: Vec::new(),
+            masters: vec![DEFAULT_MASTER.into()],
         }
     }
 }
@@ -117,7 +120,14 @@ impl ServerConfig {
                 }
                 "--no-friendly-fire" => self.rules.friendly_fire = false,
                 "--no-votes" => self.votes = false,
-                "--master" => self.masters.push(value()?.clone()),
+                // eigener Master ersetzt den Standard; mehrere `--master` sind möglich
+                "--master" => {
+                    if self.masters == [DEFAULT_MASTER] {
+                        self.masters.clear();
+                    }
+                    self.masters.push(value()?.clone());
+                }
+                "--no-master" => self.masters.clear(),
                 "--config" => {
                     value()?; // bereits in main ausgewertet
                 }

@@ -1,0 +1,34 @@
+# systemd-Dienst für den Elora-Master-Server (M8.4, E-162).
+# Installation siehe docs/15-master-betrieb.md.
+[Unit]
+Description=Elora-Master-Server (Internet-Serverliste)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=elora-master
+Group=elora-master
+# lauscht nur lokal; HTTPS macht der Reverse-Proxy davor
+ExecStart=/usr/local/bin/elora-master --bind 127.0.0.1:8300 --behind-proxy
+Restart=on-failure
+RestartSec=5
+Environment=RUST_LOG=info
+
+# Absicherung: der Dienst braucht weder Dateien noch Rechte
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+PrivateDevices=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictAddressFamilies=AF_INET AF_INET6
+RestrictNamespaces=true
+LockPersonality=true
+MemoryDenyWriteExecute=true
+SystemCallArchitectures=native
+CapabilityBoundingSet=
+
+[Install]
+WantedBy=multi-user.target

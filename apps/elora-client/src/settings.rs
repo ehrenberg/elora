@@ -94,7 +94,7 @@ impl Default for Settings {
             bindings: crate::bindings::Bindings::default(),
             favorites: Vec::new(),
             last_server: None,
-            master_url: String::new(),
+            master_url: elora_server::config::DEFAULT_MASTER.into(),
         }
     }
 }
