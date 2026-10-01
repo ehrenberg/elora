@@ -43,7 +43,7 @@ Ein eigenes Release-Kartenformat mit Grafik und ein ins Spiel integrierter Edito
 | M6.7 | Werkzeuge | Client | Pinsel, Rechteck, Füllen, Radierer, Tile-Arten mit Richtung, Materialien, Entities (Spawns, Pickups, Flaggen, Dummies), Auswahl kopieren | Sichtprüfung · **abgeschlossen** (E-154) |
 | M6.8 | Deko, Hintergrund, Animation | Client | Deko platzieren/drehen/skalieren, Hintergrund-Ebenen mit Parallax, Envelope-Editor (Kurven für Position, Drehung, Farbe) (E-133) | Sichtprüfung · **umgesetzt** (dazu Vorlagen Tag/Nacht, eigene SVGs), Sichtprüfung offen |
 | M6.9 | Testspielen | Client | aus dem Editor direkt in eine Trainingsrunde und zurück | Sichtprüfung · **umgesetzt** (F5 bzw. Knopf, Esc zurück, ohne Speichern), Sichtprüfung offen |
-| M6.10 | Release-Karten | `maps/` | 3 DM + 2 CTF nach deinen Vorgaben (E-134/E-135) | Dein Playtest |
+| M6.10 | Release-Karten | `maps/` | 3 DM + 2 CTF nach deinen Vorgaben (E-134/E-135) | Dein Playtest · **umgesetzt** (E-155–E-158: `dm-wiese`, `dm-wueste`, `dm-winter`, `ctf-wald`, `ctf-nacht`; Baukasten mit Prüfungen in `tools/design/release_maps/`), Playtest offen |
 | M6.11 | Abnahme | – | Karte von Grund auf bauen und spielen | Deine Abnahme |
 
 ## Entscheidungen zu M6

@@ -7,6 +7,10 @@
 pub mod look;
 pub mod panel;
 pub mod panel_look;
+#[cfg(test)]
+mod release;
+#[cfg(test)]
+mod release_layouts;
 pub mod tools;
 pub mod view;
 
