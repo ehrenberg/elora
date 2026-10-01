@@ -179,6 +179,7 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-170 | 2026-10-01 | Eintragen beim Master | **Dedizierte Server ja** (abschaltbar mit `--no-master`), **aus dem Client gehostete nein**, außer „Im Internet anzeigen“ ist angehakt | Entscheidung Projektinhaber |
 | E-171 | 2026-10-01 | Master auf Webspace | `elora.bastianswelt.de` ist **Webspace mit PHP** → Master zusätzlich als PHP-Skript (`deploy/master-php/`), gleiche Schnittstelle | Entscheidung Projektinhaber |
 | E-172 | 2026-10-01 | Projektseite | Onepager auf `elora.bastianswelt.de` (`deploy/master-php/index.php`): deutsch, Grafiken aus den Projekt-SVGs, Live-Status der Server, Verweis auf github.com/ehrenberg/elora, kein Impressum | Entscheidung Projektinhaber |
+| E-173 | 2026-10-01 | Release 0.9.0 Beta | Projektinhaber gibt 0.9.0 frei, nachdem der Master über IPv6 funktioniert; Credits-Seite im Menü (M8.5) und Playtests (M8.6) folgen nach der Beta | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 

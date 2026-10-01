@@ -70,6 +70,7 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
@@ -79,4 +80,5 @@ jobs:
           draft: true
           prerelease: true
           name: Elora ${{ github.ref_name }}
+          body_path: docs/releases/${{ github.ref_name }}.md
           files: artifacts/*
