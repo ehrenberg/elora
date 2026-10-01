@@ -119,6 +119,8 @@ M0 Setup ─► M1 Physik-Sandbox ─► M2 Kampf lokal ─► M3 Netzwerk ─�
 
 **Abnahme:** Ein neuer Spieler findet ohne Hilfe einen Server und kann spielen.
 
+**Stand 2026-10-01:** **Abgeschlossen** (E-128), Plan und Umsetzung in [`12-m7-plan.md`](12-m7-plan.md).
+
 ## M8 – Release 1 (E-003)
 
 - Pakete und Installer für Linux, Windows und macOS (O-44: Vertriebskanäle)

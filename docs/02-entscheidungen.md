@@ -134,6 +134,7 @@ Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit D
 | E-125 | 2026-09-30 | Menü-Stil (M7.0) | **Aufbau von C „Leiste oben“** (Reiterleiste oben, Startseite mit „Schnell spielen“, Einstellungen mit Seitenleiste) **in den Farben und Formen von B „Hell & weich“** (cremefarbene Karten, weicher Schatten, farbige Pillen-Knöpfe) | Entscheidung Projektinhaber |
 | E-126 | 2026-09-30 | M7.0–M7.4 | Menü, Einstellungen und Sprache im Test „sieht gut aus“ – weiter mit M7.5 | Entscheidung Projektinhaber |
 | E-127 | 2026-09-30 | Master-Server-Verbindung (M7.8) | **HTTPS** für Clients und Server (rustls, Mozilla-Stammzertifikate); der Master spricht HTTP und läuft öffentlich hinter einem Reverse-Proxy mit Zertifikat. Lizenz **CDLA-Permissive-2.0** (webpki-roots) wird erlaubt | Entscheidung Projektinhaber |
+| E-128 | 2026-10-01 | M7 Abnahme | **M7 abgeschlossen** („sieht gut aus“) – weiter mit M6 (E-111) | Entscheidung Projektinhaber |
 
 > **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
 

@@ -1,6 +1,6 @@
 # M7 – Menüs & Infrastruktur: Umsetzungsplan
 
-Status: **angenommen** (E-112–E-127), in Umsetzung · Grundlage: [`06-roadmap.md`](06-roadmap.md) M7, E-031, E-082, E-111, O-17, O-18, O-45
+Status: **abgeschlossen** (E-128) · angenommen (E-112–E-127) · Grundlage: [`06-roadmap.md`](06-roadmap.md) M7, E-031, E-082, E-111, O-17, O-18, O-45
 
 ## Ziel
 
@@ -43,7 +43,7 @@ Ein neuer Spieler startet Elora, findet ohne Hilfe einen Server und kann spielen
 | M7.7 ✅ | Server-Browser | Client | Internet (Master, E-112), LAN (Broadcast), Favoriten, Direkt-Verbinden; Liste, Sortieren, Filter, Details mit Spielerliste, Ping | Integrationstest + Sichtprüfung |
 | M7.8 ✅ | Master-Server | `elora-master` (neu) | HTTP/JSON (E-112): Server melden sich regelmäßig an (Adresse, Port; Master prüft Erreichbarkeit per Info-Abfrage), `GET` liefert die Liste als JSON, nicht mehr gemeldete Server laufen ab | Tests |
 | M7.9 ✅ | Ingame-Menü | Client | Esc: Fortsetzen, Team/Zuschauen, Abstimmung starten, Einstellungen, Trennen, Beenden – ersetzt die Spiel-Teile des Debug-Panels | Sichtprüfung |
-| M7.10 | Abnahme | – | neuer Spieler ohne Hilfe im Spiel | Deine Abnahme |
+| M7.10 ✅ | Abnahme | – | neuer Spieler ohne Hilfe im Spiel | Deine Abnahme |
 
 ## Entscheidungen zu M7
 
