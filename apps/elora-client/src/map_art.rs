@@ -31,7 +31,7 @@ macro_rules! assets {
 }
 
 const MATERIAL_FILES: &[(&str, &[u8])] =
-    assets!("materials": "earth", "sand", "snow", "stone", "ice");
+    assets!("materials": "earth", "sand", "snow", "stone", "ice", "climb", "crumble");
 const MATERIALS_TOML: &str = include_str!("../../../assets/map/materials.toml");
 
 /// Eingebaute Deko (Namen für [`Art::Builtin`]).
@@ -116,6 +116,8 @@ fn tile_kind(name: &str) -> Option<Tile> {
         "solid" => Tile::Solid,
         "unhookable" => Tile::Unhookable,
         "ice" => Tile::Ice,
+        "climb" => Tile::Climb,
+        "crumble" => Tile::Crumble,
         _ => return None,
     })
 }
@@ -229,13 +231,22 @@ impl MapArt {
 fn ground(t: Tile) -> bool {
     matches!(
         t,
-        Tile::Solid | Tile::Unhookable | Tile::Ice | Tile::JumpPad(_) | Tile::Conveyor(_)
+        Tile::Solid
+            | Tile::Unhookable
+            | Tile::Ice
+            | Tile::JumpPad(_)
+            | Tile::Conveyor(_)
+            | Tile::Climb
+            | Tile::Crumble
     )
 }
 
 /// Tiles, die mit einem Material gezeichnet werden.
 fn has_material(t: Tile) -> bool {
-    matches!(t, Tile::Solid | Tile::Unhookable | Tile::Ice)
+    matches!(
+        t,
+        Tile::Solid | Tile::Unhookable | Tile::Ice | Tile::Climb | Tile::Crumble
+    )
 }
 
 /// Fester Pseudo-Zufall je Tile (gleiches Bild bei jedem Laden).
@@ -589,8 +600,14 @@ mod tests {
     #[test]
     fn all_assets_load() {
         let art = MapArt::load();
-        assert_eq!(art.materials.len(), 5);
-        for t in [Tile::Solid, Tile::Unhookable, Tile::Ice] {
+        assert_eq!(art.materials.len(), 7);
+        for t in [
+            Tile::Solid,
+            Tile::Unhookable,
+            Tile::Ice,
+            Tile::Climb,
+            Tile::Crumble,
+        ] {
             assert!(art.default_material(t).is_some(), "{t:?} ohne Material");
         }
         assert_eq!(
@@ -742,8 +759,8 @@ mod tests {
             "..eeeeee..ssssss..nnnnnn..%%%%%%..~~~~~~...eee..",
             "...ee......ss......nn......%%......~~.......e...",
             "................................................",
-            "................................................",
-            "................................................",
+            "..........................||||||....::::::......",
+            "..........................||||||....::::::......",
             "..===.....=.......................e..........e..",
             "..................................e..........e..",
             "..ee^^^ee....!\\/.....<<<>>>.......e^^^^^^^^^^e..",
@@ -781,6 +798,8 @@ mod tests {
             label(x as f32 * 32.0, 10.0 * 32.0 - 8.0, t, 15);
         }
         label(4.0 * 32.0, 12.0 * 32.0 - 4.0, "Tod", 11);
+        label(26.0 * 32.0, 8.0 * 32.0 - 6.0, "Kletterwand", 15);
+        label(36.0 * 32.0, 8.0 * 32.0 - 6.0, "Bröckelboden", 15);
 
         // 2) Deko auf dem Boden (Zeile 23)
         let ground_y = 23.0 * 32.0;

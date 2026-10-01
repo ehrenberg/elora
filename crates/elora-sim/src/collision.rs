@@ -60,10 +60,14 @@ pub enum Tile {
     JumpPad(JumpDir),
     /// Fest; trägt eine darauf stehende Figur wie ein Laufband (T-35).
     Conveyor(BeltDir),
+    /// Kletterwand: fest, nicht hookbar; mit Eisgriff kann man daran haften (E-228).
+    Climb,
+    /// Bröckelboden: fest und hookbar; bricht beim Stampfen (E-230).
+    Crumble,
 }
 
 /// Zeichen der Tile-Arten im Textformat und in Aufzeichnungen (E-024, M6.1).
-const TILE_CHARS: [(char, Tile); 11] = [
+const TILE_CHARS: [(char, Tile); 13] = [
     ('.', Tile::Air),
     ('#', Tile::Solid),
     ('%', Tile::Unhookable),
@@ -75,11 +79,14 @@ const TILE_CHARS: [(char, Tile); 11] = [
     ('/', Tile::JumpPad(JumpDir::UpRight)),
     ('<', Tile::Conveyor(BeltDir::Left)),
     ('>', Tile::Conveyor(BeltDir::Right)),
+    ('|', Tile::Climb),
+    (':', Tile::Crumble),
 ];
 
 impl Tile {
     /// Zeichen im Textformat (`.` Luft, `#` Wand, `%` unhookable, `^` Tod, `=` Plattform,
-    /// `~` Eis, `!` `\` `/` Sprungfeld hoch/schräg links/schräg rechts, `<` `>` Beschleuniger).
+    /// `~` Eis, `!` `\` `/` Sprungfeld hoch/schräg links/schräg rechts, `<` `>` Beschleuniger,
+    /// `|` Kletterwand, `:` Bröckelboden).
     pub fn to_char(self) -> char {
         TILE_CHARS
             .iter()
@@ -95,8 +102,19 @@ impl Tile {
     pub fn is_solid(self) -> bool {
         matches!(
             self,
-            Self::Solid | Self::Unhookable | Self::Ice | Self::JumpPad(_) | Self::Conveyor(_)
+            Self::Solid
+                | Self::Unhookable
+                | Self::Ice
+                | Self::JumpPad(_)
+                | Self::Conveyor(_)
+                | Self::Climb
+                | Self::Crumble
         )
+    }
+
+    /// Greift der Hook an diesem Tile (nur feste Tiles)?
+    pub fn is_hookable(self) -> bool {
+        self.is_solid() && !matches!(self, Self::Unhookable | Self::Climb)
     }
 }
 
@@ -153,6 +171,16 @@ impl Collision {
             return Tile::Solid;
         }
         self.tiles[y * self.width + x]
+    }
+
+    /// Setzt ein Tile (z. B. zerbrochener Bröckelboden); außerhalb des Rasters ohne Wirkung.
+    pub fn set_tile(&mut self, tx: i32, ty: i32, tile: Tile) {
+        let (Ok(x), Ok(y)) = (usize::try_from(tx), usize::try_from(ty)) else {
+            return;
+        };
+        if x < self.width && y < self.height {
+            self.tiles[y * self.width + x] = tile;
+        }
     }
 
     /// Tile an einer Weltposition.

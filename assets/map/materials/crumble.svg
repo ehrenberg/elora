@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Bröckelboden (hookbar, bricht beim Stampfen, E-230): rissige, sandige Erde mit losen Brocken. -->
+  <g id="cap"><path d="M 0,0 H 32 V 4 L 26,5 L 20,3.5 L 13,5 L 6,3.5 L 0,4.5 Z" fill="#e2c391"/></g>
+  <g id="cap-left"><path d="M 0,10 Q 0,0 10,0 H 32 V 4 L 26,5 L 20,3.5 L 13,5 L 8,4 Q 4,5 4,10 Z" fill="#e2c391"/></g>
+  <g id="cap-right"><path d="M 0,0 H 22 Q 32,0 32,10 L 28,10 Q 28,5 24,4 L 20,3.5 L 13,5 L 6,3.5 L 0,4.5 Z" fill="#e2c391"/></g>
+  <g id="cap-single"><path d="M 0,10 Q 0,0 10,0 H 22 Q 32,0 32,10 L 28,10 Q 28,5 24,4 L 20,3.5 L 13,5 L 8,4 Q 4,5 4,10 Z" fill="#e2c391"/></g>
+  <g id="detail-1"><path d="M 4,6 L 10,13 L 8,19 L 15,26 M 10,13 L 17,12 L 22,18 M 22,18 L 28,15 M 22,18 L 20,28" fill="none" stroke="#7a5634" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="26" cy="25" r="2.2" fill="#9c7448"/><circle cx="6" cy="27" r="1.6" fill="#9c7448"/></g>
+  <g id="detail-2"><path d="M 26,5 L 20,11 L 23,17 L 16,22 L 18,30 M 20,11 L 12,10 L 8,16 M 8,16 L 3,14 M 8,16 L 10,24" fill="none" stroke="#7a5634" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="5" cy="25" r="2.2" fill="#9c7448"/><circle cx="27" cy="26" r="1.6" fill="#9c7448"/></g>
+</svg>

@@ -212,6 +212,25 @@ impl Default for Effects {
     }
 }
 
+const STOMP_DUST: Burst = Burst {
+    count: 16,
+    speed: (90.0, 260.0),
+    life: (0.3, 0.55),
+    size: (6.0, 2.0),
+    gravity: 0.0,
+    drag: 4.0,
+};
+
+/// Brocken eines zerbrochenen Bröckelbodens.
+const CRUMBS: Burst = Burst {
+    count: 10,
+    speed: (60.0, 200.0),
+    life: (0.4, 0.8),
+    size: (4.0, 2.0),
+    gravity: 900.0,
+    drag: 1.0,
+};
+
 const SMOKE: Color = Color::rgba(0.92, 0.92, 0.9, 0.75);
 const DUST: Color = Color::rgba(0.85, 0.82, 0.76, 0.7);
 const SPARK: Color = Color::rgb(1.0, 0.8, 0.35);
@@ -219,6 +238,7 @@ const WHITE: Color = Color::rgb(1.0, 1.0, 1.0);
 const LASER_SPARK: Color = Color::rgb(0.6, 0.95, 1.0);
 const GLITTER: Color = Color::rgb(1.0, 0.95, 0.6);
 const FALLBACK_BODY: Color = Color::hex(0xf2c14e);
+const CRUMB: Color = Color::hex(0xb08a5e);
 
 impl Effects {
     pub fn with_settings(settings: EffectSettings) -> Self {
@@ -299,6 +319,9 @@ impl Effects {
             let bits = c.ch.core.triggered_events;
             if bits & events::GROUND_JUMP != 0 {
                 self.burst(feet(c.pos()), DUST, &GROUND_JUMP);
+            }
+            if bits & (events::WALL_JUMP | events::HOOK_RUCK) != 0 {
+                self.burst(c.pos(), SMOKE, &GROUND_JUMP);
             }
             if bits & events::AIR_JUMP != 0 {
                 for k in 0..8 {
@@ -410,6 +433,19 @@ impl Effects {
             }
             Event::Pickup { pos, .. } => {
                 self.burst(pos, GLITTER, &PICKUP_GLITTER);
+            }
+            Event::Stomp { player, pos } => {
+                self.burst(pos, DUST, &STOMP_DUST);
+                if is_local(player) {
+                    self.add_shake(0.35);
+                }
+            }
+            Event::TileBroken { tx, ty } => {
+                #[allow(clippy::cast_precision_loss)]
+                let ts = elora_sim::TILE_SIZE as f32;
+                #[allow(clippy::cast_precision_loss)]
+                let center = Vec2::new((tx as f32 + 0.5) * ts, (ty as f32 + 0.5) * ts);
+                self.burst(center, CRUMB, &CRUMBS);
             }
             _ => {}
         }

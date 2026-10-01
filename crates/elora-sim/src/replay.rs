@@ -244,6 +244,7 @@ impl Recording {
                     next_weapon: byte(next)?,
                     prev_weapon: byte(prev)?,
                     down: down != 0,
+                    ability: false,
                 })
             })
             .collect()

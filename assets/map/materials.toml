@@ -41,3 +41,17 @@ body = "#bfe6f5"
 radius = 8
 details = 0.35
 for = ["ice"]
+
+# Abenteuer (R2-M1, E-228, E-230)
+
+[climb]
+body = "#5f8a9a"
+radius = 5
+details = 1.0
+for = ["climb"]
+
+[crumble]
+body = "#c49a68"
+radius = 8
+details = 1.0
+for = ["crumble"]

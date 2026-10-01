@@ -49,6 +49,8 @@ Jeder **Abschnitt**: `Kennung (4 Byte ASCII) | Länge (u32) | Inhalt`. Zahlen si
 | 5 | Eis | | 9–12 | Dummy: steht, läuft, springt, läuft + springt |
 | 6 / 7 / 8 | Sprungfeld hoch / schräg links / schräg rechts | | | |
 | 9 / 10 | Beschleuniger links / rechts | | | |
+| 11 | Kletterwand (E-228) | | | |
+| 12 | Bröckelboden (E-230) | | | |
 
 Kurven der Animationen: 0 Stufe, 1 linear, 2 langsam beginnend, 3 schnell beginnend, 4 weich (wie im Original).
 
@@ -64,6 +66,8 @@ Kurven der Animationen: 0 Stufe, 1 linear, 2 langsam beginnend, 3 schnell beginn
 | Eis | Wand, rutschig (T-31, T-32) |
 | Sprungfeld | Wirft eine darauf stehende Figur hoch oder schräg (T-33, T-34); Hook greift |
 | Beschleuniger | Trägt eine darauf stehende Figur wie ein Laufband (T-35); Hook greift |
+| Kletterwand | Wand, Hook greift **nicht**; mit Eisgriff kann Elora daran haften und abspringen (E-228) |
+| Bröckelboden | Wand, Hook greift; bricht beim Stampfen und bleibt zerbrochen (E-230) |
 
 ## 4. Regeln
 

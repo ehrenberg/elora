@@ -165,6 +165,8 @@ pub fn panel(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
                     ui.separator();
                     action = action.take().or(buttons(ui, cx.status));
                     ui.separator();
+                    abilities(ui, sandbox);
+                    ui.separator();
                     tuning(ui, &mut sandbox.world.tuning);
                 } else if !cx.status.is_empty() {
                     ui.small(cx.status);
@@ -643,6 +645,48 @@ fn buttons(ui: &mut egui::Ui, status: &str) -> Option<Action> {
     action
 }
 
+/// Fähigkeiten zum Ausprobieren (A1.1); im normalen Mehrspieler gibt es sie nicht (E-223).
+fn abilities(ui: &mut egui::Ui, s: &mut Sandbox) {
+    use elora_sim::{Abilities, Ability};
+    egui::CollapsingHeader::new("Fähigkeiten (Abenteuer)")
+        .default_open(false)
+        .show(ui, |ui| {
+            let mut a = s
+                .world
+                .player(s.player)
+                .map_or(Abilities::NONE, |p| p.abilities);
+            let before = a;
+            for (ability, label) in [
+                (
+                    Ability::HookRuck,
+                    "Hook-Ruck (Fähigkeit-Taste bei hängendem Hook)",
+                ),
+                (Ability::Stomp, "Stampfen (Runter in der Luft)"),
+                (Ability::Grip, "Eisgriff (gegen Kletterwand laufen)"),
+                (
+                    Ability::Glide,
+                    "Gleiten (Springen halten nach Doppelsprung)",
+                ),
+            ] {
+                let mut on = a.has(ability);
+                ui.checkbox(&mut on, label);
+                a.set(ability, on);
+            }
+            ui.horizontal(|ui| {
+                if ui.button("Alle").clicked() {
+                    a = Abilities::ALL;
+                }
+                if ui.button("Keine").clicked() {
+                    a = Abilities::NONE;
+                }
+            });
+            if a != before {
+                s.world.set_abilities(s.player, a);
+            }
+            ui.small("Heranhooken kommt mit den Kreaturen (A1.2).");
+        });
+}
+
 fn tuning(ui: &mut egui::Ui, t: &mut Tuning) {
     let d = Tuning::default();
     if ui.button("Alle Werte auf Standard").clicked() {
@@ -653,6 +697,9 @@ fn tuning(ui: &mut egui::Ui, t: &mut Tuning) {
     section(ui, "Hook (T-12 bis T-17)", true, |ui| hook(ui, t, &d));
     section(ui, "Tile-Arten (T-31 bis T-35)", false, |ui| {
         tiles(ui, t, &d);
+    });
+    section(ui, "Fähigkeiten (A-01 bis A-10)", false, |ui| {
+        ability_values(ui, t, &d);
     });
     section(ui, "Waffen (T-18 bis T-27)", false, |ui| {
         weapons(ui, t, &d);
@@ -892,6 +939,65 @@ fn tiles(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
         &mut t.conveyor_speed,
         0.0..=15.0,
         d.conveyor_speed,
+    );
+}
+
+fn ability_values(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
+    ui.label("Hook-Ruck");
+    slider(ui, "Tempo", &mut t.ruck_speed, 1.0..=40.0, d.ruck_speed);
+    int(
+        ui,
+        "Abklingzeit ms",
+        &mut t.ruck_cooldown,
+        0..=5000,
+        d.ruck_cooldown,
+    );
+    ui.label("Stampfen");
+    slider(ui, "Tempo", &mut t.stomp_speed, 1.0..=60.0, d.stomp_speed);
+    slider(
+        ui,
+        "Stoßwelle",
+        &mut t.stomp_radius,
+        0.0..=256.0,
+        d.stomp_radius,
+    );
+    ui.label("Eisgriff");
+    int(ui, "Haftdauer ms", &mut t.grip_time, 0..=5000, d.grip_time);
+    slider(
+        ui,
+        "Rutschtempo",
+        &mut t.grip_slide_speed,
+        0.0..=10.0,
+        d.grip_slide_speed,
+    );
+    slider(
+        ui,
+        "Wandsprung seitlich",
+        &mut t.wall_jump_x,
+        0.0..=30.0,
+        d.wall_jump_x,
+    );
+    slider(
+        ui,
+        "Wandsprung hoch",
+        &mut t.wall_jump_y,
+        0.0..=30.0,
+        d.wall_jump_y,
+    );
+    ui.label("Gleiten");
+    slider(
+        ui,
+        "max. Fallen",
+        &mut t.glide_fall_speed,
+        0.1..=20.0,
+        d.glide_fall_speed,
+    );
+    slider(
+        ui,
+        "Luftsteuerung",
+        &mut t.glide_control_speed,
+        0.5..=20.0,
+        d.glide_control_speed,
     );
 }
 

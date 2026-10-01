@@ -31,6 +31,8 @@ pub enum GameAction {
     Jump,
     Down,
     Hook,
+    /// Fähigkeit (Hook-Ruck, E-226) – nur im Abenteuer und im Quellenkampf.
+    Ability,
     Fire,
     Hammer,
     Grenade,
@@ -47,12 +49,13 @@ pub enum GameAction {
 }
 
 impl GameAction {
-    pub const ALL: [Self; 18] = [
+    pub const ALL: [Self; 19] = [
         Self::Left,
         Self::Right,
         Self::Jump,
         Self::Down,
         Self::Hook,
+        Self::Ability,
         Self::Fire,
         Self::Hammer,
         Self::Grenade,
@@ -76,6 +79,7 @@ impl GameAction {
             Self::Jump => "jump",
             Self::Down => "down",
             Self::Hook => "hook",
+            Self::Ability => "ability",
             Self::Fire => "fire",
             Self::Hammer => "hammer",
             Self::Grenade => "grenade",
@@ -96,7 +100,7 @@ impl GameAction {
         Self::ALL.into_iter().find(|a| a.name() == name)
     }
 
-    /// Standardbelegung (E-043, E-051, E-078, E-091, E-141).
+    /// Standardbelegung (E-043, E-051, E-078, E-091, E-141, E-226).
     fn default_trigger(self) -> Trigger {
         use KeyCode as K;
         match self {
@@ -105,6 +109,7 @@ impl GameAction {
             Self::Jump => Trigger::Key(K::Space),
             Self::Down => Trigger::Key(K::KeyS),
             Self::Hook => Trigger::Mouse(MouseButton::Right),
+            Self::Ability => Trigger::Key(K::ShiftLeft),
             Self::Fire => Trigger::Mouse(MouseButton::Left),
             Self::Hammer => Trigger::Key(K::Digit1),
             Self::Grenade => Trigger::Key(K::Digit2),

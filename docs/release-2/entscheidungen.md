@@ -33,6 +33,12 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-222 | 2026-10-02 | Darstellung der Gespräche (D-A1-06) | **Beides:** Gespräche im Textfeld unten mit Bild der Figur und Auswahl; kurze Zurufe als Sprechblase über der Figur | Entscheidung Projektinhaber |
 | E-223 | 2026-10-02 | Fähigkeiten im Mehrspieler (D-A1-07) | Neue Fähigkeiten **nur im Abenteuer und im Quellenkampf**; die übrigen Modi bleiben unverändert | Entscheidung Projektinhaber |
 | E-224 | 2026-10-02 | Kamera im Abenteuer (D-A1-08) | **Leicht vorausschauend**, dazu **Kamera-Zonen** aus der Karte (z. B. Bossräume); Mausblick wie gewohnt | Entscheidung Projektinhaber |
+| E-225 | 2026-10-02 | Entwürfe A1.0 | **Figuren, Objekte und Oberfläche angenommen** ([`design/`](design/)); das Abenteuer-Menü bekommt zusätzlich eine **Karte** | Entscheidung Projektinhaber |
+| E-226 | 2026-10-02 | Hook-Ruck (A1.1) | Neue Taste **„Fähigkeit“** (frei belegbar): Ruck zum Hook-Punkt, während der Hook an einer Wand hängt, mit Abklingzeit | Entscheidung Projektinhaber |
+| E-227 | 2026-10-02 | Stampfen (A1.1) | **Runter in der Luft** drücken | Entscheidung Projektinhaber |
+| E-228 | 2026-10-02 | Eisgriff (A1.1) | Haften nur an einem **eigenen Klettertile**; dieses ist eine **feste, nicht hookbare** Wand | Entscheidung Projektinhaber |
+| E-229 | 2026-10-02 | Gleiten (A1.1) | **Springen halten beim Fallen** (nach dem Doppelsprung bzw. wenn er verbraucht ist) | Entscheidung Projektinhaber |
+| E-230 | 2026-10-02 | Bröckelboden | Bricht beim Stampfen und **bleibt zerbrochen**; im Abenteuer im Spielstand gemerkt, im PvP bis Rundenende | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 

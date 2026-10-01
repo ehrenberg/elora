@@ -314,6 +314,16 @@ impl Sandbox {
                 r.update(&mut self.world);
             }
             self.rule_events();
+            // zerbrochene Tiles auch in der Karte (Grafik), E-230
+            for e in &self.world.events {
+                if let Event::TileBroken { tx, ty } = *e
+                    && let (Ok(x), Ok(y)) = (usize::try_from(tx), usize::try_from(ty))
+                    && x < self.map.width
+                    && let Some(t) = self.map.tiles.get_mut(y * self.map.width + x)
+                {
+                    *t = elora_sim::Tile::Air;
+                }
+            }
             self.pending_events
                 .extend(self.world.events.iter().cloned());
             if let Some(c) = self.character() {

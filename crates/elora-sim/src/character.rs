@@ -1,10 +1,11 @@
 //! Bewegung, Sprung und Hook einer Figur
 //! (Referenz: Teeworlds `CCharacterCore`, E-007).
 
+use crate::ability::{Abilities, Ability};
 use crate::collision::{Collision, TILE_SIZE, Tile};
 use crate::input::PlayerInput;
 use crate::math::{Vec2, round_to_int, saturated_add};
-use crate::tuning::Tuning;
+use crate::tuning::{Tuning, ms_to_ticks};
 
 /// Kantenlänge der Kollisionsbox einer Figur.
 pub const PHYS_SIZE: f32 = 28.0;
@@ -15,13 +16,25 @@ const MAX_VELOCITY: f32 = 6000.0;
 
 /// Ereignisse eines Ticks (z. B. für Sounds und Effekte).
 pub mod events {
-    pub const GROUND_JUMP: u8 = 1 << 0;
-    pub const AIR_JUMP: u8 = 1 << 1;
-    pub const HOOK_ATTACH_PLAYER: u8 = 1 << 2;
-    pub const HOOK_ATTACH_GROUND: u8 = 1 << 3;
-    pub const HOOK_HIT_UNHOOKABLE: u8 = 1 << 4;
+    pub const GROUND_JUMP: u16 = 1 << 0;
+    pub const AIR_JUMP: u16 = 1 << 1;
+    pub const HOOK_ATTACH_PLAYER: u16 = 1 << 2;
+    pub const HOOK_ATTACH_GROUND: u16 = 1 << 3;
+    pub const HOOK_HIT_UNHOOKABLE: u16 = 1 << 4;
     /// Von einem Sprungfeld geworfen (M6.1).
-    pub const JUMP_PAD: u8 = 1 << 5;
+    pub const JUMP_PAD: u16 = 1 << 5;
+    /// Hook-Ruck ausgelöst (E-226).
+    pub const HOOK_RUCK: u16 = 1 << 6;
+    /// Stampfen begonnen (E-227).
+    pub const STOMP: u16 = 1 << 7;
+    /// Stampfen aufgeprallt – die Welt wertet die Stoßwelle aus.
+    pub const STOMP_LAND: u16 = 1 << 8;
+    /// An einer Kletterwand festgehalten (E-228).
+    pub const WALL_GRIP: u16 = 1 << 9;
+    /// Von einer Kletterwand abgesprungen.
+    pub const WALL_JUMP: u16 = 1 << 10;
+    /// Gleiten begonnen (E-229).
+    pub const GLIDE: u16 = 1 << 11;
 }
 
 /// Zustand des Hooks.
@@ -39,6 +52,7 @@ pub enum HookState {
 
 /// Physikalischer Zustand einer Figur.
 #[derive(Debug, Clone, PartialEq, Default)]
+#[allow(clippy::struct_excessive_bools)] // unabhängige Zustände, keine Zustandsmaschine
 pub struct CharacterCore {
     pub pos: Vec2,
     pub vel: Vec2,
@@ -56,13 +70,27 @@ pub struct CharacterCore {
     /// Im letzten Tick ein Todes-Tile berührt.
     pub death: bool,
     /// Ereignisse des letzten Ticks, siehe [`events`].
-    pub triggered_events: u8,
+    pub triggered_events: u16,
     /// Von anderen Figuren per Hook aufgeprägte Geschwindigkeit (wird in `move` angewendet).
     pub hook_drag_vel: Vec2,
     /// „Runter“ gehalten: durch Plattformen fallen (E-141).
     pub drop_through: bool,
     /// Geschwindigkeit des Untergrunds (Beschleuniger, T-35), in `move` angewendet.
     pub belt: f32,
+    /// Freigeschaltete Fähigkeiten (Abenteuer, Quellenkampf); leer im Mehrspieler.
+    pub abilities: Abilities,
+    /// Fähigkeitstaste im letzten Tick gehalten (Flanke für den Hook-Ruck).
+    pub ability_held: bool,
+    /// Ticks bis zum nächsten Hook-Ruck (A-02).
+    pub ruck_cooldown: u32,
+    /// Stampft gerade (bis zum Aufprall).
+    pub stomping: bool,
+    /// Haftet an einer Kletterwand: -1 links, 1 rechts, 0 nicht.
+    pub grip: i8,
+    /// Verbrauchte Haftzeit seit dem letzten Boden oder Wandsprung (A-06).
+    pub grip_ticks: u32,
+    /// Gleitet gerade.
+    pub gliding: bool,
 }
 
 impl CharacterCore {
@@ -124,13 +152,20 @@ impl CharacterCore {
         drag_out: &mut [Vec2],
     ) {
         self.triggered_events = 0;
+        // „Runter“ frisch gedrückt (vor dem Überschreiben von `drop_through`)
+        let down_pressed = input.is_some_and(|i| i.down && !self.drop_through);
         if let Some(input) = input {
-            self.drop_through = input.down;
+            // beim Stampfen landet die Figur auch auf Plattformen
+            self.drop_through = input.down && !self.stomping;
         }
         let ground = self.ground_tile(col);
         let grounded = ground.is_some();
 
         self.vel.y += tuning.gravity;
+
+        if let Some(input) = input {
+            self.tick_abilities(input, tuning, col, grounded, down_pressed);
+        }
 
         let (max_speed, accel, friction) = if ground == Some(Tile::Ice) {
             (
@@ -143,6 +178,12 @@ impl CharacterCore {
                 tuning.ground_control_speed,
                 tuning.ground_control_accel,
                 tuning.ground_friction,
+            )
+        } else if self.gliding {
+            (
+                tuning.glide_control_speed,
+                tuning.air_control_accel,
+                tuning.air_friction,
             )
         } else {
             (
@@ -161,7 +202,17 @@ impl CharacterCore {
 
             if input.jump {
                 if self.jumped & 1 == 0 {
-                    if grounded {
+                    if self.grip != 0 {
+                        // Wandsprung: weg von der Wand, Doppelsprung bleibt erhalten
+                        self.triggered_events |= events::WALL_JUMP;
+                        self.vel = Vec2::new(
+                            -f32::from(self.grip) * tuning.wall_jump_x,
+                            -tuning.wall_jump_y,
+                        );
+                        self.jumped |= 1;
+                        self.grip = 0;
+                        self.grip_ticks = 0;
+                    } else if grounded {
                         self.triggered_events |= events::GROUND_JUMP;
                         self.vel.y = -tuning.ground_jump_impulse;
                         self.jumped |= 1;
@@ -197,6 +248,10 @@ impl CharacterCore {
 
         if grounded {
             self.jumped &= !2;
+            self.grip_ticks = 0;
+        }
+        if self.stomping {
+            self.vel = Vec2::new(0.0, self.vel.y.max(tuning.stomp_speed));
         }
 
         // Spezial-Tiles unter den Füßen (M6.1)
@@ -286,10 +341,10 @@ impl CharacterCore {
         let mut hit_unhookable = false;
         if let Some((hit_pos, tile)) = col.intersect_line(self.hook_pos, new_pos) {
             new_pos = hit_pos;
-            if tile == Tile::Unhookable {
-                hit_unhookable = true;
-            } else {
+            if tile.is_hookable() {
                 hit_ground = true;
+            } else {
+                hit_unhookable = true;
             }
         }
 
@@ -377,6 +432,93 @@ impl CharacterCore {
 
         self.do_move(tuning, col, self_index, others);
         self.quantize();
+        if self.stomping && self.is_grounded(col) {
+            self.stomping = false;
+            self.triggered_events |= events::STOMP_LAND;
+        }
+    }
+
+    /// Fähigkeiten vor der Laufsteuerung: Hook-Ruck, Stampfen, Eisgriff, Gleiten.
+    fn tick_abilities(
+        &mut self,
+        input: &PlayerInput,
+        tuning: &Tuning,
+        col: &Collision,
+        grounded: bool,
+        down_pressed: bool,
+    ) {
+        let a = self.abilities;
+        let ability_pressed = input.ability && !self.ability_held;
+        self.ability_held = input.ability;
+        self.ruck_cooldown = self.ruck_cooldown.saturating_sub(1);
+
+        // Hook-Ruck (E-226): nur an einer Wand, nicht an Spielern
+        if a.has(Ability::HookRuck)
+            && ability_pressed
+            && self.ruck_cooldown == 0
+            && self.hook_state == HookState::Grabbed
+            && self.hooked_player.is_none()
+            && self.hook_pos.distance(self.pos) > HOOK_MIN_DRAG_DISTANCE
+        {
+            self.vel = (self.hook_pos - self.pos).normalize() * tuning.ruck_speed;
+            self.ruck_cooldown = ms_to_ticks(tuning.ruck_cooldown);
+            self.triggered_events |= events::HOOK_RUCK;
+        }
+
+        // Stampfen (E-227): „Runter“ in der Luft; der Hook lässt los
+        if grounded {
+            self.stomping = false;
+        } else if a.has(Ability::Stomp) && down_pressed && !self.stomping {
+            self.stomping = true;
+            self.drop_through = false;
+            self.release_hook(HookState::Retracted);
+            self.triggered_events |= events::STOMP;
+        }
+
+        // Eisgriff (E-228): in der Luft gegen eine Kletterwand laufen
+        let was_gripping = self.grip != 0;
+        self.grip = 0;
+        if a.has(Ability::Grip)
+            && !grounded
+            && !self.stomping
+            && input.direction != 0
+            && self.vel.y >= 0.0
+            && self.grip_ticks < ms_to_ticks(tuning.grip_time)
+            && self.touches_climb(col, input.direction.signum())
+        {
+            self.grip = input.direction.signum();
+            self.grip_ticks += 1;
+            self.vel.y = self.vel.y.min(tuning.grip_slide_speed);
+            self.jumped &= !2;
+            if !was_gripping {
+                self.triggered_events |= events::WALL_GRIP;
+            }
+        }
+
+        // Gleiten (E-229): Springen halten beim Fallen, wenn der Doppelsprung verbraucht ist
+        let was_gliding = self.gliding;
+        self.gliding = a.has(Ability::Glide)
+            && !grounded
+            && !self.stomping
+            && self.grip == 0
+            && input.jump
+            && self.jumped & 2 != 0
+            && self.vel.y > 0.0;
+        if self.gliding {
+            self.vel.y = self.vel.y.min(tuning.glide_fall_speed);
+            if !was_gliding {
+                self.triggered_events |= events::GLIDE;
+            }
+        }
+    }
+
+    /// Berührt die Figur seitlich (`side` -1/1) eine Kletterwand?
+    fn touches_climb(&self, col: &Collision, side: i8) -> bool {
+        let x = self.pos.x + f32::from(side) * (PHYS_SIZE / 2.0 + 1.0);
+        let h = PHYS_SIZE / 2.0 - 2.0;
+        [self.pos.y - h, self.pos.y + h]
+            .into_iter()
+            .any(|y| col.tile_at(Vec2::new(x, y)) == Tile::Climb)
     }
 
     fn do_move(

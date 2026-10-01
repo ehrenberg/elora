@@ -11,6 +11,7 @@ pub const INPUT_STATE_MASK: u8 = 0x3f;
 /// auch Klicks, die kürzer als ein Tick sind, nicht verloren.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+#[allow(clippy::struct_excessive_bools)] // Tasten sind unabhängig
 pub struct PlayerInput {
     /// Laufrichtung: -1 links, 0 keine, 1 rechts.
     pub direction: i8,
@@ -30,6 +31,9 @@ pub struct PlayerInput {
     /// „Runter“ gehalten: durch Plattformen fallen (E-141).
     #[cfg_attr(feature = "serde", serde(default))]
     pub down: bool,
+    /// Taste „Fähigkeit“ gehalten (Hook-Ruck, E-226).
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub ability: bool,
 }
 
 impl Default for PlayerInput {
@@ -46,6 +50,7 @@ impl Default for PlayerInput {
             next_weapon: 0,
             prev_weapon: 0,
             down: false,
+            ability: false,
         }
     }
 }

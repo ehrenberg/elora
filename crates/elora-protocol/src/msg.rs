@@ -222,6 +222,8 @@ fn put_input(w: &mut Writer, i: &PlayerInput) {
     w.ivar(i64::from(i.direction));
     w.ivar(i64::from(i.target_x));
     w.ivar(i64::from(i.target_y));
+    // `ability` geht noch nicht über das Netz: Fähigkeiten gibt es online erst im
+    // Quellenkampf (E-223), dann mit neuer Protokollversion.
     w.u8(u8::from(i.jump) | u8::from(i.hook) << 1 | u8::from(i.down) << 2);
     w.u8(i.fire);
     w.u8(i.wanted_weapon);
@@ -248,6 +250,7 @@ fn get_input(r: &mut Reader<'_>) -> DecodeResult<PlayerInput> {
         jump: flags & 1 != 0,
         hook: flags & 2 != 0,
         down: flags & 4 != 0,
+        ability: false,
         fire,
         wanted_weapon,
         next_weapon,
@@ -329,6 +332,11 @@ fn get_pickup(r: &mut Reader<'_>) -> DecodeResult<PickupKind> {
         2 => PickupKind::Weapon(get_weapon(r)?),
         _ => return Err(DecodeError::Invalid("Pickup")),
     })
+}
+
+/// Geht das Ereignis über das Netz? Fähigkeiten gibt es online erst im Quellenkampf (E-223).
+fn networked(e: &Event) -> bool {
+    !matches!(e, Event::Stomp { .. } | Event::TileBroken { .. })
 }
 
 /// Ereignisse (für Effekte) – Positionen gerundet auf ganze Einheiten.
@@ -419,6 +427,7 @@ fn put_event(w: &mut Writer, e: &Event) {
         | Event::FlagCapture { .. } => {
             put_flag_event(w, e);
         }
+        Event::Stomp { .. } | Event::TileBroken { .. } => unreachable!("nicht im Netz"),
     }
 }
 
@@ -814,8 +823,9 @@ impl ServerMsg {
                 w.uvar(base.map_or(0, |b| tick - b));
                 w.uvar(u64::from(*checksum));
                 w.bytes(delta);
-                w.uvar(events.len() as u64);
-                for e in events {
+                let sent: Vec<&Event> = events.iter().filter(|e| networked(e)).collect();
+                w.uvar(sent.len() as u64);
+                for e in sent {
                     put_event(&mut w, e);
                 }
             }

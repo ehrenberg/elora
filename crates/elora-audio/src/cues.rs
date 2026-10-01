@@ -166,7 +166,10 @@ pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>)
         Event::WeaponSwitch { player, .. } => {
             at_player(Sound::WeaponSwitch, player).into_iter().collect()
         }
-        Event::HammerHit { pos, .. } => vec![Cue::at(Sound::HammerHit, pos)],
+        // Stampfen (A1.1) klingt vorerst wie ein Hammertreffer; eigene Sounds liefert der Projektinhaber (E-109)
+        Event::HammerHit { pos, .. } | Event::Stomp { pos, .. } => {
+            vec![Cue::at(Sound::HammerHit, pos)]
+        }
         Event::LaserBounce { pos, .. } => vec![Cue::at(Sound::LaserBounce, pos)],
         Event::Explosion { pos, .. } => vec![Cue::at(Sound::GrenadeExplode, pos)],
         Event::Damage {
@@ -205,12 +208,13 @@ pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>)
         Event::FlagDrop { .. } => vec![Cue::global(Sound::FlagDrop)],
         Event::FlagReturn { .. } => vec![Cue::global(Sound::FlagReturn)],
         Event::FlagCapture { .. } => vec![Cue::global(Sound::FlagCapture)],
+        Event::TileBroken { .. } => Vec::new(),
     }
 }
 
 /// Sounds aus dem Zustand einer Figur: Sprünge und Hook (Bits des letzten Ticks)
 /// sowie Hook-Abschuss (Wechsel nach [`HookState::Flying`]).
-pub fn for_character(pos: Vec2, triggered: u8, prev_hook: HookState, hook: HookState) -> Vec<Cue> {
+pub fn for_character(pos: Vec2, triggered: u16, prev_hook: HookState, hook: HookState) -> Vec<Cue> {
     let mut cues = Vec::new();
     let table = [
         (bits::GROUND_JUMP, Sound::Jump),

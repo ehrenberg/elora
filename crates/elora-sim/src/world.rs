@@ -150,12 +150,24 @@ impl World {
     pub fn spawn_character(&mut self, i: usize, pos: Vec2) {
         let max_health = self.tuning.max_health;
         if let Some(p) = self.players.get_mut(i).and_then(Option::as_mut) {
-            p.character = Some(Character::spawn(pos, max_health));
+            let mut ch = Character::spawn(pos, max_health);
+            ch.core.abilities = p.abilities;
+            p.character = Some(ch);
             p.spawning = false;
             if let Controller::Dummy { brain, .. } = &mut p.controller {
                 *brain = DummyBrain::default();
             }
             self.events.push(Event::Spawn { player: i, pos });
+        }
+    }
+
+    /// Fähigkeiten eines Spielers setzen – gilt sofort und nach jedem Respawn.
+    pub fn set_abilities(&mut self, i: usize, abilities: crate::Abilities) {
+        if let Some(p) = self.players.get_mut(i).and_then(Option::as_mut) {
+            p.abilities = abilities;
+            if let Some(ch) = &mut p.character {
+                ch.core.abilities = abilities;
+            }
         }
     }
 
@@ -800,8 +812,40 @@ impl World {
             };
             ch.core
                 .apply_drag_and_move(&self.tuning, &self.collision, i, &positions);
+            let landed = ch.core.triggered_events & crate::character::events::STOMP_LAND != 0;
+            let feet = ch.core.pos + Vec2::new(0.0, PHYS_SIZE / 2.0);
             if ch.core.death && !self.prediction {
                 self.die(i, None, DeathCause::World);
+            } else if landed {
+                self.stomp_wave(i, feet);
+            }
+        }
+    }
+
+    /// Stoßwelle beim Aufprall des Stampfens (A-05): bricht Bröckelboden im Radius (E-230).
+    fn stomp_wave(&mut self, player: usize, pos: Vec2) {
+        self.events.push(Event::Stomp { player, pos });
+        if self.prediction {
+            return;
+        }
+        let r = self.tuning.stomp_radius;
+        let tile = crate::TILE_SIZE as f32;
+        #[allow(clippy::cast_possible_truncation)]
+        let (x0, x1, y0, y1) = (
+            ((pos.x - r) / tile).floor() as i32,
+            ((pos.x + r) / tile).floor() as i32,
+            ((pos.y - r) / tile).floor() as i32,
+            ((pos.y + r) / tile).floor() as i32,
+        );
+        for ty in y0..=y1 {
+            for tx in x0..=x1 {
+                #[allow(clippy::cast_precision_loss)]
+                let center = Vec2::new((tx as f32 + 0.5) * tile, (ty as f32 + 0.5) * tile);
+                if self.collision.tile(tx, ty) == crate::Tile::Crumble && center.distance(pos) <= r
+                {
+                    self.collision.set_tile(tx, ty, crate::Tile::Air);
+                    self.events.push(Event::TileBroken { tx, ty });
+                }
             }
         }
     }

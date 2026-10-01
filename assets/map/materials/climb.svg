@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Kletterwand (nicht hookbar, Eisgriff, E-228): Felsrippen mit hellen Griffen, Reif an freien Oberkanten. -->
+  <g id="cap"><path d="M 0,0 H 32 V 4 Q 24,6 16,4 Q 8,6 0,4 Z" fill="#cfe9f0"/></g>
+  <g id="cap-left"><path d="M 0,10 Q 0,0 10,0 H 32 V 4 Q 24,6 16,4 Q 10,5.5 6,5 Q 4,6 4,10 Z" fill="#cfe9f0"/></g>
+  <g id="cap-right"><path d="M 0,0 H 22 Q 32,0 32,10 L 28,10 Q 28,6 26,5 Q 22,5.5 16,4 Q 8,6 0,4 Z" fill="#cfe9f0"/></g>
+  <g id="cap-single"><path d="M 0,10 Q 0,0 10,0 H 22 Q 32,0 32,10 L 28,10 Q 28,6 26,5 Q 20,6 16,4 Q 12,6 6,5 Q 4,6 4,10 Z" fill="#cfe9f0"/></g>
+  <g id="detail-1"><path d="M 8,0 V 32 M 24,0 V 32" stroke="#4a7080" stroke-width="2.2"/><path d="M 3,9 h 9 M 19,22 h 9" stroke="#2f4f5c" stroke-width="5" stroke-linecap="round"/><path d="M 3,8 h 9 M 19,21 h 9" stroke="#bfe0ea" stroke-width="2.6" stroke-linecap="round"/></g>
+  <g id="detail-2"><path d="M 8,0 V 32 M 24,0 V 32" stroke="#4a7080" stroke-width="2.2"/><path d="M 19,7 h 9 M 3,20 h 9" stroke="#2f4f5c" stroke-width="5" stroke-linecap="round"/><path d="M 19,6 h 9 M 3,19 h 9" stroke="#bfe0ea" stroke-width="2.6" stroke-linecap="round"/></g>
+  <g id="detail-3"><path d="M 8,0 V 32 M 24,0 V 32" stroke="#4a7080" stroke-width="2.2"/><path d="M 11,13 h 10 M 11,28 h 10" stroke="#2f4f5c" stroke-width="5" stroke-linecap="round"/><path d="M 11,12 h 10 M 11,27 h 10" stroke="#bfe0ea" stroke-width="2.6" stroke-linecap="round"/></g>
+</svg>

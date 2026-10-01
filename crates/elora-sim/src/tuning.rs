@@ -105,6 +105,28 @@ pub struct Tuning {
     pub jump_pad_force: f32,
     /// T-35: Geschwindigkeit des Beschleunigers (Einheiten/Tick)
     pub conveyor_speed: f32,
+
+    // Fähigkeiten im Abenteuer und im Quellenkampf (R2-M1, A-01 ff.)
+    /// A-01: Tempo des Hook-Rucks zum Hook-Punkt (Einheiten/Tick)
+    pub ruck_speed: f32,
+    /// A-02: Abklingzeit des Hook-Rucks (ms)
+    pub ruck_cooldown: u32,
+    /// A-04: Fallgeschwindigkeit beim Stampfen (Einheiten/Tick)
+    pub stomp_speed: f32,
+    /// A-05: Radius der Stoßwelle beim Aufprall (Einheiten)
+    pub stomp_radius: f32,
+    /// A-06: Haftdauer des Eisgriffs (ms)
+    pub grip_time: u32,
+    /// A-07: Rutschtempo beim Haften (Einheiten/Tick)
+    pub grip_slide_speed: f32,
+    /// A-08: Wandsprung seitlich (Einheiten/Tick)
+    pub wall_jump_x: f32,
+    /// A-08: Wandsprung nach oben (Einheiten/Tick)
+    pub wall_jump_y: f32,
+    /// A-09: maximale Fallgeschwindigkeit beim Gleiten (Einheiten/Tick)
+    pub glide_fall_speed: f32,
+    /// A-10: Luftsteuerung beim Gleiten (normal T-07)
+    pub glide_control_speed: f32,
 }
 
 impl Default for Tuning {
@@ -158,6 +180,16 @@ impl Default for Tuning {
             ice_accel: 0.35,
             jump_pad_force: 20.0,
             conveyor_speed: 4.0,
+            ruck_speed: 16.0,
+            ruck_cooldown: 800,
+            stomp_speed: 22.0,
+            stomp_radius: 64.0,
+            grip_time: 1000,
+            grip_slide_speed: 1.0,
+            wall_jump_x: 9.0,
+            wall_jump_y: 12.0,
+            glide_fall_speed: 2.0,
+            glide_control_speed: 7.0,
         }
     }
 }

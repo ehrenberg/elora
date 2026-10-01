@@ -81,6 +81,23 @@ E-015 verlangt eine Abweichung, aber nur „etwas“. Deshalb gilt:
 | T-35 | Geschwindigkeit Beschleuniger | – | **4,0** Einheiten/Tick | Trägt spürbar, man kommt noch dagegen an | ✅ |
 | T-36 | Plattform | – | **von unten/seitlich durchlässig**; Hook, Granate, Laser fliegen hindurch | Wie Einbahn-Plattformen in anderen Spielen | ✅ |
 
+## E3. Fähigkeiten im Abenteuer (R2-M1, E-226 bis E-230)
+
+Nur im Abenteuer und im Quellenkampf (E-223). Startwerte zum Anspielen; die Sandbox zeigt sie unter „Fähigkeiten (A-01 bis A-10)“.
+
+| # | Wert | Vorschlag | Begründung | Entscheidung |
+|---|---|---|---|---|
+| A-01 | Tempo Hook-Ruck | **16** Einheiten/Tick | Deutlich über dem normalen Hook-Zug (T-15: 14) | offen (Playtest) |
+| A-02 | Abklingzeit Hook-Ruck | **800 ms** | Ein Ruck je Schwung, kein Dauerfeuer | offen (Playtest) |
+| A-03 | Zugkraft Heranhooken | – | kommt mit den Kreaturen (A1.2) | offen |
+| A-04 | Tempo Stampfen | **22** Einheiten/Tick | Klar schneller als freier Fall | offen (Playtest) |
+| A-05 | Radius Stoßwelle | **64** (2 Tiles) | Bricht den Bröckelboden unter und neben Elora | offen (Playtest) |
+| A-06 | Haftdauer Eisgriff | **1,0 s** | Kurz festhalten, dann rutscht Elora ab; Boden oder Wandsprung setzen zurück | offen (Playtest) |
+| A-07 | Rutschtempo beim Haften | **1,0** Einheiten/Tick | Langsames Abgleiten | offen (Playtest) |
+| A-08 | Wandsprung seitlich / hoch | **9 / 12** Einheiten/Tick | Etwas schwächer als der Bodensprung (T-05: 13,6); Doppelsprung bleibt | offen (Playtest) |
+| A-09 | max. Fallen beim Gleiten | **2,0** Einheiten/Tick | Etwa ein Fünftel des freien Falls | offen (Playtest) |
+| A-10 | Luftsteuerung beim Gleiten | **7,0** (normal T-07: 5,0) | Weit treiben | offen (Playtest) |
+
 ## F. Regeln aus Folgeentscheidungen
 
 - **Startausrüstung (E-025):** Spawn nur mit Hammer. Laser und Granate gibt es per Pickup mit voller Munition (10).

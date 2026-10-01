@@ -68,6 +68,7 @@ cargo run --bin elora -- maps/eigene.emap           # andere Karte
 cargo run --bin elora -- maps/ctf-test.emap --mode ctf   # Spielmodus gegen Dummies
 cargo run --bin elora -- maps/look-test.emap         # Kartenlook: Materialien, Hintergründe, Deko, Animationen
 cargo run --bin elora -- maps/tiles-test.emap        # Plattform, Eis, Sprungfeld, Beschleuniger (S = Runter)
+cargo run --bin elora -- maps/faehigkeiten-test.emap # Abenteuer-Fähigkeiten (F1 → „Fähigkeiten“ einschalten)
 ```
 
 **Pakete:** `cargo xtask package --archive` baut ein Release-Paket für das eigene System unter `dist/` (Programme, Release-Karten, Lizenzen, Symbol; macOS zusätzlich `Elora.app`). Bei einem Tag `v<version>` baut GitHub Actions Linux (tar.gz, AppImage), Windows (ZIP) und macOS (DMG) und legt ein Entwurfs-Release an; jeder Push wird mit `cargo xtask check` geprüft.

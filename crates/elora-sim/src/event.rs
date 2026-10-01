@@ -106,6 +106,16 @@ pub enum Event {
         kind: PickupKind,
         pos: Vec2,
     },
+    /// Stampfen ist aufgeprallt (Stoßwelle, A-05).
+    Stomp {
+        player: usize,
+        pos: Vec2,
+    },
+    /// Ein Tile ist zerbrochen (Bröckelboden, E-230) und jetzt Luft.
+    TileBroken {
+        tx: i32,
+        ty: i32,
+    },
 }
 
 impl Event {

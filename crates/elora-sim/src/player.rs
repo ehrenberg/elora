@@ -1,6 +1,7 @@
 //! Spieler-Slots und lebende Figuren.
 
 use crate::Vec2;
+use crate::ability::Abilities;
 use crate::character::CharacterCore;
 use crate::dummy::{DummyBrain, DummyPattern};
 use crate::input::PlayerInput;
@@ -98,6 +99,8 @@ pub struct Player {
     pub team: Team,
     /// Kein Respawn (Survival-Modi während einer Runde).
     pub respawn_disabled: bool,
+    /// Fähigkeiten, mit denen die Figur spawnt (Abenteuer, Quellenkampf).
+    pub abilities: Abilities,
 }
 
 impl Player {
@@ -112,6 +115,7 @@ impl Player {
             spawning: true,
             team: Team::None,
             respawn_disabled: false,
+            abilities: Abilities::NONE,
         }
     }
 

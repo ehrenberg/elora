@@ -33,7 +33,7 @@ pub struct Sounds {
     audio: Audio,
     pub settings: AudioSettings,
     /// Zuletzt gesehene Bits und Hook-Zustand je Slot.
-    last: HashMap<usize, (u8, HookState)>,
+    last: HashMap<usize, (u16, HookState)>,
     /// Menümusik (E-121), falls `assets/music/menu.wav` vorhanden ist.
     music: Option<Vec<f32>>,
 }

@@ -4,6 +4,7 @@
 //! (siehe `docs/handbuch/architektur.md`). Server, Client-Vorhersage und Tests nutzen
 //! denselben Code.
 
+pub mod ability;
 pub mod character;
 pub mod collision;
 pub mod dummy;
@@ -18,6 +19,7 @@ pub mod tuning;
 pub mod weapon;
 pub mod world;
 
+pub use ability::{Abilities, Ability};
 pub use character::{CharacterCore, HookState, PHYS_SIZE};
 pub use collision::{BeltDir, Collision, JumpDir, TILE_SIZE, Tile};
 pub use dummy::DummyPattern;
