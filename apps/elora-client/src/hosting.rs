@@ -7,8 +7,10 @@ use std::process::{Child, Command, Stdio};
 use anyhow::Context as _;
 use elora_server::ServerConfig;
 
-/// Konfigurationsdatei, die der Client für den Server schreibt.
-pub const SERVER_CONFIG_FILE: &str = "server.toml";
+/// Konfigurationsdatei, die der Client für den Server schreibt (im Benutzerverzeichnis, M8.2).
+pub fn server_config_file() -> PathBuf {
+    crate::settings::config_file("server.toml")
+}
 
 #[derive(Debug)]
 pub struct Hosting {
@@ -21,7 +23,13 @@ pub struct Hosting {
 
 impl Default for Hosting {
     fn default() -> Self {
-        let config = ServerConfig::load(Path::new(SERVER_CONFIG_FILE)).unwrap_or_default();
+        let mut config = ServerConfig::load(&server_config_file()).unwrap_or_default();
+        // Schlüssel des gehosteten Servers ebenfalls im Benutzerverzeichnis
+        if config.key_file.is_relative() {
+            config.key_file = crate::settings::config_file("server_key.toml");
+        }
+        config.map = elora_server::paths::resolve(&config.map);
+        config.maps_dir = elora_server::paths::resolve(&config.maps_dir);
         Self {
             config,
             keep_running: false,
@@ -46,7 +54,7 @@ fn server_binary() -> anyhow::Result<PathBuf> {
 
 /// Kartenordner: mitgelieferte (`maps/`) und eigene aus dem Editor (E-152).
 pub fn map_dirs() -> Vec<PathBuf> {
-    let mut dirs = vec![PathBuf::from("maps")];
+    let mut dirs = vec![elora_server::paths::resolve(Path::new("maps"))];
     dirs.extend(crate::settings::user_maps_dir());
     dirs
 }
@@ -95,10 +103,14 @@ impl Hosting {
         if self.is_running() {
             self.stop();
         }
-        self.config.save(Path::new(SERVER_CONFIG_FILE))?;
+        let file = server_config_file();
+        if let Some(dir) = file.parent() {
+            std::fs::create_dir_all(dir)?;
+        }
+        self.config.save(&file)?;
         let child = Command::new(server_binary()?)
             .arg("--config")
-            .arg(SERVER_CONFIG_FILE)
+            .arg(&file)
             .stdin(Stdio::null())
             .spawn()
             .context("Server konnte nicht gestartet werden")?;

@@ -48,6 +48,11 @@ pub fn data_dir() -> Option<PathBuf> {
         .map(|p| p.join("elora"))
 }
 
+/// Datei im Einstellungsordner (Rückfall: Arbeitsverzeichnis), z. B. `known_servers.toml`.
+pub fn config_file(name: &str) -> PathBuf {
+    config_dir().map_or_else(|| PathBuf::from(name), |d| d.join(name))
+}
+
 /// Eigene Karten aus dem Editor (E-152).
 pub fn user_maps_dir() -> Option<PathBuf> {
     data_dir().map(|d| d.join("maps"))

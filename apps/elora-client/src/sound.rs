@@ -15,7 +15,10 @@ use crate::figure::Landing;
 
 /// Musik von der Platte laden; fehlt die Datei, bleibt das Menü still.
 fn load_music() -> Option<Vec<f32>> {
-    let data = std::fs::read(MENU_MUSIC).ok()?;
+    let data = std::fs::read(elora_server::paths::resolve(std::path::Path::new(
+        MENU_MUSIC,
+    )))
+    .ok()?;
     match elora_audio::decode_wav(&data) {
         Ok(samples) => Some(samples),
         Err(e) => {

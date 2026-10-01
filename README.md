@@ -70,6 +70,8 @@ cargo run --bin elora -- maps/look-test.emap         # Kartenlook: Materialien, 
 cargo run --bin elora -- maps/tiles-test.emap        # Plattform, Eis, Sprungfeld, Beschleuniger (S = Runter)
 ```
 
+**Dateien:** Mitgelieferte Daten (`maps/`, Menümusik) sucht das Spiel erst im Arbeitsverzeichnis, dann in `ELORA_DATA`, neben dem Programm, in `../share/elora` oder `../Resources` (macOS). Einstellungen, `tuning.toml`, `known_servers.toml` und die Dateien des gehosteten Servers (`server.toml`, `server_key.toml`) liegen im Einstellungsordner (`~/.config/elora`, Windows `%APPDATA%\Elora`, macOS `~/Library/Application Support/Elora`); eigene und heruntergeladene Karten unter `~/.local/share/elora`.
+
 **Release-Karten** (M6.10): `dm-wiese` (64×36, 4–8 Spieler), `dm-wueste` (96×48, 8–12), `dm-winter` (128×64, 12–16), `ctf-wald` (150×48, 8–12), `ctf-nacht` (190×64, 12–16). Layouts werden in `tools/design/release_maps/` gebaut und geprüft (`python3 tools/design/release_maps/export.py`), die Dateien schreibt `cargo test -p elora-client --bin elora write_release_maps -- --ignored`.
 
 Spielmodi in der Sandbox: `--mode dm|tdm|ctf|lms|lts` (optional `--instagib`) oder im Panel unter *Spiel → Modus*. CTF braucht eine Karte mit Flaggen, z. B. `maps/ctf-test.emap`.
@@ -82,7 +84,7 @@ Die Sandbox dient zum Tunen und Testen: Dummies, Pickups, Live-Regler für alle 
 
 ```sh
 cargo run --bin elora-server
-cargo run --bin elora-server -- --port 8303 --map maps/sandbox.emap --max-clients 16 --name "Mein Server"
+cargo run --bin elora-server -- --port 8303 --map maps/dm-wiese.emap --max-clients 16 --name "Mein Server"
 cargo run --bin elora-server -- --config server.toml
 ```
 
@@ -90,7 +92,7 @@ cargo run --bin elora-server -- --config server.toml
 |---|---|---|
 | `--port` | 8303 | UDP-Port |
 | `--bind` | 0.0.0.0 | Adresse, an die gebunden wird |
-| `--map` | `maps/sandbox.emap` | Karte |
+| `--map` | `maps/dm-wiese.emap` | Karte (relativ: erst Arbeitsverzeichnis, dann Datenordner der Installation) |
 | `--max-clients` | 8 | Spieler, 1–64 |
 | `--name` | Elora-Server | Anzeigename |
 | `--high-bandwidth` | aus | Snapshots mit 50 statt 25 Hz (nur LAN) |

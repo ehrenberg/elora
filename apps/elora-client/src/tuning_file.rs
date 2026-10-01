@@ -73,6 +73,10 @@ impl TuningFile {
             "# Elora – Sandbox-Tuning (E-046). Von der Sandbox geschrieben.\n\
              # Fehlende Einträge nutzen die Standardwerte aus docs/04-tuning.md.\n\n{body}"
         );
+        if let Some(dir) = path.parent().filter(|d| !d.as_os_str().is_empty()) {
+            std::fs::create_dir_all(dir)
+                .with_context(|| format!("{} nicht anlegbar", dir.display()))?;
+        }
         std::fs::write(path, text).with_context(|| format!("{} nicht schreibbar", path.display()))
     }
 }

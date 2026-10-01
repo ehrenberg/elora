@@ -63,6 +63,15 @@ use tuning_file::{TUNING_FILE, TuningFile};
 
 const DEFAULT_MAP: &str = "maps/sandbox.emap";
 
+/// Tuning- und Server-Schlüssel-Dateien im Einstellungsordner (M8.2).
+fn tuning_path() -> PathBuf {
+    settings::config_file(TUNING_FILE)
+}
+
+fn known_servers_path() -> PathBuf {
+    settings::config_file(KNOWN_SERVERS_FILE)
+}
+
 /// Kommandozeilen-Argument ist eine Kartendatei.
 fn is_map_path(arg: &str) -> bool {
     Path::new(arg)
@@ -87,7 +96,8 @@ fn main() -> anyhow::Result<()> {
         .iter()
         .find(|a| is_map_path(a))
         .map_or_else(|| PathBuf::from(DEFAULT_MAP), PathBuf::from);
-    let file = TuningFile::load(Path::new(TUNING_FILE))?;
+    let map_path = elora_server::paths::resolve(&map_path);
+    let file = TuningFile::load(&tuning_path())?;
     let settings = Settings::load(&settings::settings_path()).unwrap_or_else(|e| {
         tracing::warn!("{e:#} – Standard-Einstellungen");
         Settings::default()
@@ -226,7 +236,7 @@ impl App {
             gfx: None,
             sandbox,
             online: None,
-            known: KnownServers::load(Path::new(KNOWN_SERVERS_FILE)),
+            known: KnownServers::load(&known_servers_path()),
             net,
             controls,
             view: file.view.into(),
@@ -314,7 +324,7 @@ impl App {
     }
 
     fn apply(&mut self, action: Action) {
-        let path = Path::new(TUNING_FILE);
+        let path = &tuning_path();
         match action {
             Action::Save => {
                 self.status = match self.tuning_file().save(path) {
@@ -357,10 +367,7 @@ impl App {
                         .step_by(2)
                         .filter_map(|i| u8::from_str_radix(&w.got[i..i + 2], 16).ok())
                         .collect();
-                    if let Err(e) = self
-                        .known
-                        .trust(Path::new(KNOWN_SERVERS_FILE), w.server, &got)
-                    {
+                    if let Err(e) = self.known.trust(&known_servers_path(), w.server, &got) {
                         self.status = format!("Fehler: {e:#}");
                     }
                     self.connect();
@@ -426,11 +433,9 @@ impl App {
             match event {
                 ClientEvent::Connected { server_key } => {
                     if self.known.get(o.conn.server).is_none()
-                        && let Err(e) = self.known.trust(
-                            Path::new(KNOWN_SERVERS_FILE),
-                            o.conn.server,
-                            &server_key,
-                        )
+                        && let Err(e) =
+                            self.known
+                                .trust(&known_servers_path(), o.conn.server, &server_key)
                     {
                         tracing::warn!("Server-Schlüssel nicht gespeichert: {e:#}");
                     }

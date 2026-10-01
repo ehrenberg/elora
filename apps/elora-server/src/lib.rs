@@ -5,6 +5,7 @@
 
 pub mod config;
 mod console;
+pub mod paths;
 mod vote;
 
 use std::collections::{BTreeMap, HashMap, VecDeque};

@@ -50,7 +50,7 @@ impl Default for ServerConfig {
             name: "Elora-Server".into(),
             bind: "0.0.0.0".into(),
             port: DEFAULT_PORT,
-            map: PathBuf::from("maps/sandbox.emap"),
+            map: PathBuf::from("maps/dm-wiese.emap"),
             max_clients: 8,
             high_bandwidth: false,
             key_file: PathBuf::from("server_key.toml"),

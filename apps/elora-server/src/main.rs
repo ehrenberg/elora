@@ -62,6 +62,9 @@ fn main() -> anyhow::Result<()> {
         None => ServerConfig::default(),
     };
     cfg.apply_args(&args)?;
+    // mitgelieferte Karten auch finden, wenn der Server aus einem anderen Ordner startet (M8.2)
+    cfg.map = elora_server::paths::resolve(&cfg.map);
+    cfg.maps_dir = elora_server::paths::resolve(&cfg.maps_dir);
 
     let maps = load_maps(&cfg)?;
     let map_name = maps[0].name.clone();

@@ -12,7 +12,10 @@ impl App {
     /// Aus dem Hauptmenü in den Editor; der letzte Stand bleibt erhalten.
     pub(crate) fn enter_editor(&mut self) {
         if self.editor.is_none() {
-            let mut editor = Editor::new(settings::user_maps_dir(), PathBuf::from("maps"));
+            let mut editor = Editor::new(
+                settings::user_maps_dir(),
+                elora_server::paths::resolve(&PathBuf::from("maps")),
+            );
             editor.solid_materials = self.map_view.art.solid_material_names();
             if let Some(first) = editor.solid_materials.first() {
                 editor.solid_material.clone_from(first);
