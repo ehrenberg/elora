@@ -15,6 +15,9 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-204 | 2026-10-02 | Rollenspiel als Spielmodus (O-201) | **Rollenspiel-PvP-Modus:** eigener Spielmodus, in dem man während des Matches levelt und Waffen/Fähigkeiten ausbaut (Fortschritt gilt für die Runde). Kein Koop-Abenteuer vorgesehen | Entscheidung Projektinhaber |
 | E-205 | 2026-10-02 | Geschichte (O-203) | **Claude schlägt vor** (Welt, Figuren, Handlung in Varianten), **Projektinhaber entscheidet** | Entscheidung Projektinhaber |
 | E-206 | 2026-10-02 | Rollenspiel-Elemente (O-204) | **Alle vier:** Stufen & Fertigkeiten (Fähigkeitenbaum), Waffen ausbauen, Ausrüstung & Beute (Inventar, Händler, Währung), Aufgaben & Dialoge | Entscheidung Projektinhaber |
+| E-207 | 2026-10-02 | Geschichte (O-203) | **Entwurf A „Die verstummten Quellen“** aus [`geschichte-entwuerfe.md`](geschichte-entwuerfe.md): märchenhaft, warm; Dorf Tauwinkel, fünf Gebiete (Blütenwiesen, Murmelwald, Glutsandwüste, Frostspitzen, Sternschlucht), Gegenspieler „Der Dürre“, Versöhnung statt Sieg; PvP-Modus „Quellenkampf“ | Entscheidung Projektinhaber |
+| E-208 | 2026-10-02 | Credits: Name | Projektinhaber als **Bastian Ehrenberg** | Entscheidung Projektinhaber |
+| E-209 | 2026-10-02 | Credits: Ort (M8.5) | **Letzte Seite in den Einstellungen** („Über Elora“) | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 
@@ -31,7 +34,7 @@ Neu für Release 2 (Rollenspiel-Abenteuer, siehe [`roadmap.md`](roadmap.md)):
 - [x] ~~O-200 Weltaufbau~~ → E-203
 - [x] ~~O-201 Rollenspiel als Spielmodus~~ → E-204
 - [ ] **O-202 Fortschritt speichern** – Spielstände des Einzelspieler-Abenteuers (z. B. lokal, mehrere Plätze); im PvP-Modus nur für die Runde (E-204)
-- [ ] **O-203 Geschichte und Welt** – Thema, Ton, Figuren (Vorgehen: E-205)
+- [x] ~~O-203 Geschichte und Welt~~ → E-207 (Ausarbeitung folgt)
 - [ ] **O-204 Fortschrittssystem** – Ausgestaltung von Stufen, Fähigkeitenbaum, Waffen-Ausbau, Beute, Währung (Umfang: E-206)
 - [ ] **O-205 NPCs und Gegner** – Verhalten, Dialoge, Händler, Begleiter; Grundlage sind die Bots
 - [ ] **O-206 Abenteuer im Editor** – NPCs, Auslöser, Dialoge und Aufgaben in Karten

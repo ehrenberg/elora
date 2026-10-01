@@ -545,7 +545,7 @@ fn settings_page(
         area.min.x + 8.0 * s,
         area.min.y + 8.0 * s,
         170.0 * s,
-        200.0 * s,
+        236.0 * s,
     );
     ui.card(side);
     let items = [
@@ -554,6 +554,7 @@ fn settings_page(
         lang.t("menu.settings_graphics"),
         lang.t("menu.settings_audio"),
         lang.t("menu.settings_language"),
+        lang.t("menu.settings_about"),
     ];
     if let Some(i) = ui.side_tabs("settings_tabs", side.shrink(12.0 * s), &items, *tab, ORANGE) {
         *tab = i;
@@ -591,6 +592,7 @@ mod tests {
             ("erstellen", Page::Create),
             ("einstellungen", Page::Settings),
             ("grafik", Page::Settings),
+            ("ueber", Page::Settings),
             ("steuerung", Page::Settings),
             ("pause", Page::Play),
         ] {
@@ -673,6 +675,7 @@ mod tests {
                 browser_loaded: Some(crate::browser::Tab::Favorites),
                 settings_tab: match name {
                     "grafik" => 2,
+                    "ueber" => 5,
                     "steuerung" => 1,
                     _ => 0,
                 },

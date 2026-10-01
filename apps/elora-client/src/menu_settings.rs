@@ -57,8 +57,67 @@ pub fn page(
         1 => controls(ui, cx, page, edit),
         2 => graphics(ui, cx, page, edit),
         3 => audio(ui, cx, page, edit),
-        _ => language(ui, cx, page, edit),
+        4 => language(ui, cx, page, edit),
+        _ => {
+            about(ui, cx, page);
+            false
+        }
     }
+}
+
+/// „Über Elora“ (M8.5, E-208, E-209): Version, Mitwirkende, Lizenzen, Quellen.
+fn about(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, page: Rect) {
+    let s = cx.s;
+    let lang = cx.lang;
+    let x = page.min.x + 20.0 * s;
+    let mut y = page.min.y + 62.0 * s;
+    ui.label(
+        &lang.f("about.version", &[("version", &env!("CARGO_PKG_VERSION"))]),
+        Vec2::new(x, y),
+        14.0,
+        TEXT,
+        Align::Left,
+    );
+    y += 22.0 * s;
+    ui.label(
+        lang.t("about.author"),
+        Vec2::new(x, y),
+        12.0,
+        TEXT,
+        Align::Left,
+    );
+    y += 30.0 * s;
+    let sections: [(&str, &[&str]); 4] = [
+        (
+            "about.licenses",
+            &["about.license_code", "about.license_assets"],
+        ),
+        (
+            "about.assets",
+            &["about.assets_sounds", "about.assets_fonts"],
+        ),
+        (
+            "about.thanks",
+            &["about.thanks_teeworlds", "about.thanks_libs"],
+        ),
+        ("about.links", &["about.link_project", "about.link_site"]),
+    ];
+    for (title, lines) in sections {
+        ui.label(lang.t(title), Vec2::new(x, y), 11.0, TEXT_DIM, Align::Left);
+        y += 18.0 * s;
+        for line in lines {
+            ui.label(lang.t(line), Vec2::new(x, y), 11.5, TEXT, Align::Left);
+            y += 17.0 * s;
+        }
+        y += 10.0 * s;
+    }
+    ui.label(
+        lang.t("about.files"),
+        Vec2::new(x, y),
+        10.5,
+        TEXT_DIM,
+        Align::Left,
+    );
 }
 
 fn player(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, page: Rect, edit: &mut SettingsEdit<'_>) -> bool {
