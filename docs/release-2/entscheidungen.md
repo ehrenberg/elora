@@ -60,6 +60,14 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-249 | 2026-10-02 | Aufgaben-Schritte (A1.4) | Sprechen mit, Ort erreichen, Gegner besiegen, Sammeln, Bringen, Auslöser in der Welt | Entscheidung Projektinhaber |
 | E-250 | 2026-10-02 | Scheitern von Aufgaben | **Manche Aufgaben können scheitern** (durch Entscheidungen oder Bedingungen) | Entscheidung Projektinhaber |
 | E-251 | 2026-10-02 | Aufgabenbuch | Zeigt **erledigte Schritte und den aktuellen**, weitere als „?“ | Entscheidung Projektinhaber |
+| E-252 | 2026-10-02 | Kartenübergänge (A1.5) | **Je Übergang wählbar:** offene Wege beim Hineinlaufen, Türen, Höhlen und Tore mit der Aktionstaste | Entscheidung Projektinhaber |
+| E-253 | 2026-10-02 | Aktionstaste | **E ist überall die Aktionstaste** (Sprechen, Öffnen, Benutzen); das **Emote-Rad liegt überall auf Strg** | Entscheidung Projektinhaber |
+| E-254 | 2026-10-02 | Türen und Tore | **Feste Wand wie Stein** (nicht hookbar), öffnet sich, sobald eine Bedingung gilt, und bleibt offen | Entscheidung Projektinhaber |
+| E-255 | 2026-10-02 | Truhen | **Fester Inhalt je Truhe**, einmal geöffnet bleibt sie offen; optional verschlossen (Schlüssel oder Bedingung) | Entscheidung Projektinhaber |
+| E-256 | 2026-10-02 | Schalter | **Hebel mit der Aktionstaste, umschaltbar** (Merker 1/0), wahlweise nur einmal; außerdem Schalter, die man mit dem Hammer oder per Heranhooken auslöst | Entscheidung Projektinhaber |
+| E-257 | 2026-10-02 | NPCs | **Stehen, drehen sich zu Elora**, rufen Zurufe; einzelne mit kurzem Laufweg | Entscheidung Projektinhaber |
+| E-258 | 2026-10-02 | Heilpflanzen | **Berühren heilt** (Grundwert 2 Leben, mehr mit „Heilblumen“), **wachsen beim Wiederbetreten der Karte nach** | Entscheidung Projektinhaber |
+| E-259 | 2026-10-02 | Kamera-Zonen | **Festsetzen** (fester Ausschnitt, z. B. Bossraum) **oder Begrenzen** (Kamera bleibt im Bereich), sanfter Übergang | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 

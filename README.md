@@ -159,7 +159,10 @@ Standardbelegung; alles außer Esc und F1 lässt sich unter *Einstellungen → S
 | K | Selbstmord (`kill`) |
 | T / Y | Chat / Team-Chat (Enter senden, Esc abbrechen; online) |
 | Tab (halten) | Scoreboard |
-| E (halten) | Emote-Rad: Maus in Richtung des Emotes, loslassen zeigt es |
+| Strg links (halten) | Emote-Rad: Maus in Richtung des Emotes, loslassen zeigt es |
+| E | Aktion: Sprechen, Öffnen, Benutzen (Abenteuer) |
+| Shift links | Fähigkeit: Hook-Ruck (Abenteuer) |
+| S | Runter: durch Plattformen fallen, in der Luft Stampfen (mit Fähigkeit) |
 | F3 / F4 | Ja / Nein bei Abstimmungen |
 | F5 | Aufzeichnung starten/beenden (nur Sandbox, siehe unten) |
 

@@ -224,3 +224,86 @@ fn quests(c: &Content) -> Result<(), String> {
     }
     Ok(())
 }
+
+/// Abenteuer-Objekte einer Karte gegen die Inhalte prüfen: Gegnerarten, Figuren,
+/// Gespräche, Gegenstände, Bedingungen. Liefert alle Fehler (für den Editor, A1.8).
+pub fn map_objects(c: &Content, map: &elora_map::Map) -> Vec<String> {
+    use elora_map::ObjectKind as K;
+    let mut errors = Vec::new();
+    for o in &map.adventure.objects {
+        let at = format!("Karte `{}`, Objekt `{}`", map.name, o.id);
+        let mut push = |r: Result<(), String>| {
+            if let Err(e) = r {
+                errors.push(e);
+            }
+        };
+        let item = |id: &str| {
+            c.item(id)
+                .map(|_| ())
+                .ok_or_else(|| format!("{at}: unbekannter Gegenstand `{id}`"))
+        };
+        match &o.kind {
+            K::Creature { kind, .. } => {
+                if !c.creatures.iter().any(|k| &k.name == kind) {
+                    push(Err(format!("{at}: unbekannte Gegnerart `{kind}`")));
+                }
+            }
+            K::Npc {
+                character, dialog, ..
+            } => {
+                push(speaker(c, character, &at));
+                if c.dialog(dialog).is_none() {
+                    push(Err(format!("{at}: unbekanntes Gespräch `{dialog}`")));
+                }
+            }
+            K::Chest { contents, lock } => {
+                for (i, n) in contents {
+                    push(item(i));
+                    if *n == 0 {
+                        push(Err(format!("{at}: Anzahl 0")));
+                    }
+                }
+                if !lock.is_empty() {
+                    push(cond(c, lock, &at));
+                }
+            }
+            K::Switch { flag, .. } if flag.is_empty() => {
+                push(Err(format!("{at}: Merker fehlt")));
+            }
+            K::Door { open_if, .. } => push(cond(c, open_if, &at)),
+            K::Collectible { item: i } => push(item(i)),
+            K::HealPlant { heal } if *heal <= 0 => push(Err(format!("{at}: heilt nicht"))),
+            _ => {}
+        }
+    }
+    errors
+}
+
+/// Übergänge zwischen Karten prüfen: Zielkarte und Ziel-Eingang müssen existieren.
+pub fn map_links(maps: &[(&str, &elora_map::Map)]) -> Vec<String> {
+    let mut errors = Vec::new();
+    for (name, m) in maps {
+        for o in &m.adventure.objects {
+            if let elora_map::ObjectKind::Exit { map, spawn, .. } = &o.kind {
+                match maps.iter().find(|(n, _)| n == map) {
+                    None => errors.push(format!(
+                        "Karte `{name}`, Übergang `{}`: Zielkarte `{map}` fehlt",
+                        o.id
+                    )),
+                    Some((_, target)) => {
+                        let ok = target.adventure.objects.iter().any(|t| {
+                            &t.id == spawn && matches!(t.kind, elora_map::ObjectKind::Spawn)
+                        });
+                        if !ok {
+                            errors.push(format!(
+                                "Karte `{name}`, Übergang `{}`: Eingang `{spawn}` fehlt auf `{map}`",
+                                o.id
+                            ));
+                        }
+                    }
+                }
+            }
+        }
+    }
+    errors
+}

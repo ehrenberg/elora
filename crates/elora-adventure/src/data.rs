@@ -125,6 +125,8 @@ pub enum ItemKind {
     Material,
     /// Schlüssel und Aufgabengegenstände: nicht verkaufbar.
     Key,
+    /// Sammelstück (Glitzerstein, Erinnerungsrune …): nicht verkaufbar, wird gezählt.
+    Collectible,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

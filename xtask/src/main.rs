@@ -407,6 +407,15 @@ fn map_dump(path: &std::path::Path) -> Result<(), String> {
         map.decor_back.len(),
         map.decor_front.len()
     );
+    for o in &map.adventure.objects {
+        println!(
+            "Abenteuer:  {} „{}“ bei ({:.0}, {:.0})",
+            o.kind.name(),
+            o.id,
+            o.pos.x,
+            o.pos.y
+        );
+    }
     for e in &map.envelopes {
         println!(
             "Animation „{}“: {:?}, {} Punkte, {} ms",

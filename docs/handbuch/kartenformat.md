@@ -32,6 +32,7 @@ Jeder **Abschnitt**: `Kennung (4 Byte ASCII) | Länge (u32) | Inhalt`. Zahlen si
 | `DECO` | nein | Deko-Liste hinter der Spielfläche, Deko-Liste davor |
 | `ENVL` | nein | Animationen (höchstens 256): Name, Art (0 Bewegung, 1 Farbe), an Server-Zeit gebunden, Punkte (höchstens 1024, Zeit streng aufsteigend): Zeit (ms), 4 Werte, Kurve |
 | `IMGS` | nein | Eingebettete SVGs (höchstens 64, je höchstens 512 KiB): Name, Daten |
+| `ADVN` | nein | Abenteuer-Objekte (A1.5, höchstens 4096): Id, Position, Art und ihre Werte (siehe unten) |
 
 **Deko-Objekt:** Grafik (0 = eingebaut + Name, 1 = eingebettetes SVG + Index), Position, Skalierung, Drehung (Grad), gespiegelt, Färbung (RGBA), Bewegungs-Animation und Farb-Animation (je Index u16 + Versatz in ms; `0xFFFF` = keine). Insgesamt höchstens 20 000 Deko-Objekte.
 
@@ -53,6 +54,27 @@ Jeder **Abschnitt**: `Kennung (4 Byte ASCII) | Länge (u32) | Inhalt`. Zahlen si
 | 12 | Bröckelboden (E-230) | | | |
 
 Kurven der Animationen: 0 Stufe, 1 linear, 2 langsam beginnend, 3 schnell beginnend, 4 weich (wie im Original).
+
+### Abenteuer-Objekte (`ADVN`, E-252 bis E-259)
+
+Je Objekt: Id (eindeutig, ohne `:`; Schlüssel im Spielstand), Position (f32 × 2), Art (u8) und deren Werte. Figuren und Gegenstände liegen mit der Mitte, Bereiche und Türen mit der linken oberen Ecke auf `pos`. Eine Karte mit Eingang braucht keinen Mehrspieler-Spawn.
+
+| Code | Art | Werte |
+|---|---|---|
+| 0 | Gegner | Art aus `creatures.toml`, bleibt besiegt (Boss/besonders, E-235) |
+| 1 | NPC | Figur, Gespräch, Blickrichtung, halber Laufweg (0 = steht, E-257) |
+| 2 | Truhe | Inhalt (Gegenstand, Anzahl; höchstens 64), Schloss-Bedingung (leer = offen, E-255) |
+| 3 | Schalter | Merker, nur einmal, Auslöser: Aktionstaste / Hammer / Hook (E-256) |
+| 4 | Tür | Größe in Tiles (auf dem Raster), Bedingung zum Öffnen (E-254) |
+| 5 | Sammelstück | Gegenstand |
+| 6 | Speicherpunkt | – |
+| 7 | Heilpflanze | Leben (E-258) |
+| 8 | Eingang | – (Ziel von Übergängen) |
+| 9 | Übergang | Größe, Zielkarte, Ziel-Eingang, beim Hineinlaufen (sonst Aktionstaste, E-252) |
+| 10 | Zone | Größe (für Aufgaben „Ort erreichen“) |
+| 11 | Kamera | Größe, Art: festsetzen / begrenzen (E-259) |
+
+Die Karte prüft den Aufbau (Ids, Lage, Größen, Raster); Verweise auf Gegnerarten, Figuren, Gespräche, Gegenstände, Bedingungen und Zielkarten prüft `elora-adventure` (`check::map_objects`, `check::map_links`).
 
 ## 3. Bedeutung der Tile-Arten
 

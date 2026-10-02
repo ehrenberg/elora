@@ -41,6 +41,7 @@ impl Map {
             decor_front: Vec::new(),
             envelopes: Vec::new(),
             images: Vec::new(),
+            adventure: crate::Adventure::default(),
         }
     }
 

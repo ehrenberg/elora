@@ -5,6 +5,9 @@
 
 use elora_sim::{BeltDir, DummyPattern, JumpDir, Tile, Vec2};
 
+use crate::adventure::{
+    Adventure, CameraMode, MAX_LIST, MAX_OBJECTS, Object, ObjectKind, SwitchTrigger,
+};
 use crate::look::{
     Art, Background, Curve, Decor, EnvKind, EnvPoint, EnvRef, Envelope, Image, Rgba, Sky,
 };
@@ -28,6 +31,8 @@ pub const MAX_ENVELOPES: usize = 256;
 pub const MAX_ENV_POINTS: usize = 1024;
 /// Länge von Namen und Kennungen in Bytes.
 pub const MAX_NAME: usize = 128;
+/// Länge von Bedingungen im Abenteuer-Abschnitt.
+pub const MAX_CONDITION: usize = 1024;
 
 /// Fehler beim Lesen einer Karte.
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
@@ -62,6 +67,8 @@ pub enum MapError {
         column: usize,
         symbol: char,
     },
+    #[error("Abenteuer-Objekte: {0}")]
+    Adventure(String),
     #[error("Karte hat keinen Spawnpunkt")]
     NoSpawn,
     #[error("Flaggen: {red}× rot, {blue}× blau – für CTF genau je eine, sonst keine")]
@@ -265,10 +272,175 @@ pub fn encode(map: &Map) -> Vec<u8> {
         payload.section(*b"IMGS", &s);
     }
 
+    if !map.adventure.objects.is_empty() {
+        let mut s = Writer::default();
+        put_adventure(&mut s, &map.adventure);
+        payload.section(*b"ADVN", &s);
+    }
+
     let mut out = MAGIC.to_vec();
     out.extend_from_slice(&FORMAT_VERSION.to_le_bytes());
     out.extend_from_slice(&miniz_oxide::deflate::compress_to_vec_zlib(&payload.0, 9));
     out
+}
+
+fn put_adventure(w: &mut Writer, a: &Adventure) {
+    w.len(a.objects.len());
+    for o in &a.objects {
+        w.str(&o.id);
+        w.vec2(o.pos);
+        match &o.kind {
+            ObjectKind::Creature { kind, persistent } => {
+                w.u8(0);
+                w.str(kind);
+                w.u8(u8::from(*persistent));
+            }
+            ObjectKind::Npc {
+                character,
+                dialog,
+                facing,
+                walk,
+            } => {
+                w.u8(1);
+                w.str(character);
+                w.str(dialog);
+                w.u8(u8::from(*facing > 0));
+                w.f32(*walk);
+            }
+            ObjectKind::Chest { contents, lock } => {
+                w.u8(2);
+                w.len(contents.len());
+                for (item, n) in contents {
+                    w.str(item);
+                    w.u32(*n);
+                }
+                w.str(lock);
+            }
+            ObjectKind::Switch {
+                flag,
+                once,
+                trigger,
+            } => {
+                w.u8(3);
+                w.str(flag);
+                w.u8(u8::from(*once));
+                w.u8(match trigger {
+                    SwitchTrigger::Interact => 0,
+                    SwitchTrigger::Hammer => 1,
+                    SwitchTrigger::Hook => 2,
+                });
+            }
+            ObjectKind::Door { size, open_if } => {
+                w.u8(4);
+                w.u8(size.0);
+                w.u8(size.1);
+                w.str(open_if);
+            }
+            ObjectKind::Collectible { item } => {
+                w.u8(5);
+                w.str(item);
+            }
+            ObjectKind::SavePoint => w.u8(6),
+            ObjectKind::HealPlant { heal } => {
+                w.u8(7);
+                w.i32(*heal);
+            }
+            ObjectKind::Spawn => w.u8(8),
+            ObjectKind::Exit {
+                size,
+                map,
+                spawn,
+                on_touch,
+            } => {
+                w.u8(9);
+                w.vec2(*size);
+                w.str(map);
+                w.str(spawn);
+                w.u8(u8::from(*on_touch));
+            }
+            ObjectKind::Zone { size } => {
+                w.u8(10);
+                w.vec2(*size);
+            }
+            ObjectKind::Camera { size, mode } => {
+                w.u8(11);
+                w.vec2(*size);
+                w.u8(match mode {
+                    CameraMode::Fixed => 0,
+                    CameraMode::Bounds => 1,
+                });
+            }
+        }
+    }
+}
+
+fn get_adventure(r: &mut Reader<'_>) -> Result<Adventure> {
+    let n = r.len(MAX_OBJECTS, "Anzahl Abenteuer-Objekte")?;
+    let mut objects = Vec::with_capacity(n);
+    for _ in 0..n {
+        let id = r.str(MAX_NAME, "Objekt-Id")?;
+        let pos = r.vec2()?;
+        let kind = match r.u8()? {
+            0 => ObjectKind::Creature {
+                kind: r.str(MAX_NAME, "Gegnerart")?,
+                persistent: r.bool()?,
+            },
+            1 => ObjectKind::Npc {
+                character: r.str(MAX_NAME, "Figur")?,
+                dialog: r.str(MAX_NAME, "Gespräch")?,
+                facing: if r.bool()? { 1 } else { -1 },
+                walk: r.f32()?,
+            },
+            2 => {
+                let k = r.len(MAX_LIST, "Truhen-Inhalt")?;
+                let contents = (0..k)
+                    .map(|_| Ok((r.str(MAX_NAME, "Gegenstand")?, r.u32()?)))
+                    .collect::<Result<Vec<_>>>()?;
+                ObjectKind::Chest {
+                    contents,
+                    lock: r.str(MAX_CONDITION, "Schloss")?,
+                }
+            }
+            3 => ObjectKind::Switch {
+                flag: r.str(MAX_NAME, "Merker")?,
+                once: r.bool()?,
+                trigger: match r.u8()? {
+                    0 => SwitchTrigger::Interact,
+                    1 => SwitchTrigger::Hammer,
+                    2 => SwitchTrigger::Hook,
+                    _ => return Err(MapError::Invalid("Schalter-Auslöser")),
+                },
+            },
+            4 => ObjectKind::Door {
+                size: (r.u8()?, r.u8()?),
+                open_if: r.str(MAX_CONDITION, "Tür-Bedingung")?,
+            },
+            5 => ObjectKind::Collectible {
+                item: r.str(MAX_NAME, "Gegenstand")?,
+            },
+            6 => ObjectKind::SavePoint,
+            7 => ObjectKind::HealPlant { heal: r.i32()? },
+            8 => ObjectKind::Spawn,
+            9 => ObjectKind::Exit {
+                size: r.vec2()?,
+                map: r.str(MAX_NAME, "Zielkarte")?,
+                spawn: r.str(MAX_NAME, "Ziel-Eingang")?,
+                on_touch: r.bool()?,
+            },
+            10 => ObjectKind::Zone { size: r.vec2()? },
+            11 => ObjectKind::Camera {
+                size: r.vec2()?,
+                mode: match r.u8()? {
+                    0 => CameraMode::Fixed,
+                    1 => CameraMode::Bounds,
+                    _ => return Err(MapError::Invalid("Kamera-Art")),
+                },
+            },
+            _ => return Err(MapError::Invalid("Art eines Abenteuer-Objekts")),
+        };
+        objects.push(Object { id, pos, kind });
+    }
+    Ok(Adventure { objects })
 }
 
 fn put_env_ref(w: &mut Writer, r: Option<EnvRef>) {
@@ -493,6 +665,13 @@ pub fn decode_draft(data: &[u8]) -> Result<Map> {
         ..Map::new("", 0, 0)
     };
     decode_look(&sections, &mut map)?;
+    if let Some(mut r) = sections.get(*b"ADVN") {
+        map.adventure = get_adventure(&mut r)?;
+        r.done("ADVN")?;
+        map.adventure
+            .validate(map.width, map.height)
+            .map_err(MapError::Adventure)?;
+    }
     check_references(&map)?;
     Ok(map)
 }
@@ -709,7 +888,14 @@ pub fn validate(map: &Map) -> Result<()> {
     let count = |k| map.entities_of(k).count();
     let spawns =
         count(EntityKind::Spawn) + count(EntityKind::SpawnRed) + count(EntityKind::SpawnBlue);
-    if spawns == 0 {
+    // Abenteuer-Karten dürfen nur Eingänge haben (A1.5)
+    let entrances = map
+        .adventure
+        .objects
+        .iter()
+        .filter(|o| matches!(o.kind, ObjectKind::Spawn))
+        .count();
+    if spawns + entrances == 0 {
         return Err(MapError::NoSpawn);
     }
     let (red, blue) = (count(EntityKind::FlagRed), count(EntityKind::FlagBlue));
@@ -730,6 +916,198 @@ pub fn checksum(data: &[u8]) -> [u8; 32] {
 mod tests {
     use super::*;
     use crate::look::Curve;
+
+    /// Alle Arten von Abenteuer-Objekten.
+    #[allow(clippy::too_many_lines)] // eine Liste aller Objektarten
+    fn adventure_map() -> Map {
+        let mut m = Map::from_rows(
+            "Wiese",
+            &["##########", "#S.......#", "#........#", "##########"],
+        )
+        .unwrap();
+        let o = |id: &str, x: f32, y: f32, kind| Object {
+            id: id.into(),
+            pos: Vec2::new(x, y),
+            kind,
+        };
+        m.adventure.objects = vec![
+            o("eingang", 48.0, 80.0, ObjectKind::Spawn),
+            o(
+                "kaefer-1",
+                100.0,
+                80.0,
+                ObjectKind::Creature {
+                    kind: "stachelkaefer".into(),
+                    persistent: false,
+                },
+            ),
+            o(
+                "hummel",
+                140.0,
+                60.0,
+                ObjectKind::Creature {
+                    kind: "hummel".into(),
+                    persistent: true,
+                },
+            ),
+            o(
+                "oma",
+                60.0,
+                80.0,
+                ObjectKind::Npc {
+                    character: "oma".into(),
+                    dialog: "oma".into(),
+                    facing: -1,
+                    walk: 32.0,
+                },
+            ),
+            o(
+                "truhe-1",
+                200.0,
+                80.0,
+                ObjectKind::Chest {
+                    contents: vec![("glanztropfen".into(), 20), ("tauumhang".into(), 1)],
+                    lock: "hat schluessel".into(),
+                },
+            ),
+            o(
+                "hebel",
+                220.0,
+                80.0,
+                ObjectKind::Switch {
+                    flag: "tor.wiese".into(),
+                    once: false,
+                    trigger: SwitchTrigger::Hammer,
+                },
+            ),
+            o(
+                "tor",
+                256.0,
+                32.0,
+                ObjectKind::Door {
+                    size: (1, 2),
+                    open_if: "merker tor.wiese".into(),
+                },
+            ),
+            o(
+                "stein",
+                120.0,
+                70.0,
+                ObjectKind::Collectible {
+                    item: "glitzerstein".into(),
+                },
+            ),
+            o("quellstein", 160.0, 80.0, ObjectKind::SavePoint),
+            o("blume", 180.0, 84.0, ObjectKind::HealPlant { heal: 2 }),
+            o(
+                "weg-ost",
+                288.0,
+                32.0,
+                ObjectKind::Exit {
+                    size: Vec2::new(32.0, 64.0),
+                    map: "wiese-2".into(),
+                    spawn: "west".into(),
+                    on_touch: true,
+                },
+            ),
+            o(
+                "bruecke",
+                64.0,
+                32.0,
+                ObjectKind::Zone {
+                    size: Vec2::new(64.0, 64.0),
+                },
+            ),
+            o(
+                "arena",
+                32.0,
+                32.0,
+                ObjectKind::Camera {
+                    size: Vec2::new(256.0, 64.0),
+                    mode: CameraMode::Bounds,
+                },
+            ),
+        ];
+        m
+    }
+
+    #[test]
+    fn adventure_objects_roundtrip() {
+        let m = adventure_map();
+        let back = decode(&encode(&m)).unwrap();
+        assert_eq!(back.adventure, m.adventure);
+        // ohne Objekte kein Abschnitt: Mehrspieler-Karten bleiben Byte für Byte gleich
+        let mut plain = m.clone();
+        plain.adventure = Adventure::default();
+        assert!(!encode(&plain).is_empty());
+        assert_eq!(
+            decode(&encode(&plain)).unwrap().adventure,
+            Adventure::default()
+        );
+    }
+
+    #[test]
+    fn adventure_map_needs_no_multiplayer_spawn() {
+        let mut m = adventure_map();
+        m.entities.clear();
+        assert!(decode(&encode(&m)).is_ok(), "Eingang genügt");
+        m.adventure
+            .objects
+            .retain(|o| !matches!(o.kind, ObjectKind::Spawn));
+        assert_eq!(decode(&encode(&m)), Err(MapError::NoSpawn));
+    }
+
+    #[test]
+    fn broken_adventure_objects_are_rejected() {
+        type Breaker = fn(&mut Map);
+        let cases: [(Breaker, &str); 5] = [
+            (
+                |m| m.adventure.objects[1].id = "eingang".into(),
+                "Id doppelt",
+            ),
+            (
+                |m| m.adventure.objects[1].pos = Vec2::new(5000.0, 0.0),
+                "außerhalb",
+            ),
+            (
+                |m| m.adventure.objects[6].pos = Vec2::new(250.0, 32.0),
+                "Raster",
+            ),
+            (
+                |m| {
+                    if let ObjectKind::Exit { spawn, .. } = &mut m.adventure.objects[10].kind {
+                        spawn.clear();
+                    }
+                },
+                "Ziel fehlt",
+            ),
+            (
+                |m| {
+                    if let ObjectKind::Zone { size } = &mut m.adventure.objects[11].kind {
+                        *size = Vec2::new(0.0, 10.0);
+                    }
+                },
+                "Bereich",
+            ),
+        ];
+        for (break_it, expected) in cases {
+            let mut m = adventure_map();
+            break_it(&mut m);
+            let e = decode(&encode(&m)).unwrap_err().to_string();
+            assert!(e.contains(expected), "{expected}: {e}");
+        }
+        // abgeschnittener Abschnitt
+        let mut w = Writer::default();
+        put_adventure(&mut w, &adventure_map().adventure);
+        let cut = &w.0[..w.0.len() - 3];
+        assert_eq!(
+            get_adventure(&mut Reader(cut)).unwrap_err(),
+            MapError::Truncated
+        );
+        let mut bad = w.0.clone();
+        bad[4 + 4 + 7 + 8] = 99; // Art des ersten Objekts
+        assert!(get_adventure(&mut Reader(&bad)).is_err());
+    }
 
     fn rich_map() -> Map {
         let mut m = Map::from_rows("Test", &["#######", "#S.r.b#", "#=~!</#", "#######"]).unwrap();

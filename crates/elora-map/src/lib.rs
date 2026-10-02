@@ -2,6 +2,7 @@
 //!
 //! Release-Format `.emap` (binär, E-129, E-143 bis E-146), beschrieben in `docs/handbuch/kartenformat.md`.
 
+pub mod adventure;
 mod ascii;
 mod binary;
 pub mod look;
@@ -10,6 +11,7 @@ use elora_sim::{
     Collision, DummyPattern, PickupKind, TILE_SIZE, Tile, Tuning, Vec2, Weapon, World,
 };
 
+pub use adventure::{Adventure, Object, ObjectKind};
 pub use ascii::ENTITY_CHARS;
 pub use binary::{FORMAT_VERSION, MapError, checksum, decode, decode_draft, encode, validate};
 pub use look::{Art, Background, Decor, Envelope, Image, Rgba, Sky};
@@ -90,6 +92,8 @@ pub struct Map {
     pub decor_front: Vec<Decor>,
     pub envelopes: Vec<Envelope>,
     pub images: Vec<Image>,
+    /// Abenteuer-Objekte (A1.5); leer bei Mehrspieler-Karten.
+    pub adventure: adventure::Adventure,
 }
 
 impl Map {

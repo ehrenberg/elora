@@ -43,13 +43,15 @@ pub enum GameAction {
     TeamChat,
     Scoreboard,
     Emote,
+    /// Aktionstaste: Sprechen, Öffnen, Benutzen (E-253).
+    Interact,
     Kill,
     VoteYes,
     VoteNo,
 }
 
 impl GameAction {
-    pub const ALL: [Self; 19] = [
+    pub const ALL: [Self; 20] = [
         Self::Left,
         Self::Right,
         Self::Jump,
@@ -66,6 +68,7 @@ impl GameAction {
         Self::TeamChat,
         Self::Scoreboard,
         Self::Emote,
+        Self::Interact,
         Self::Kill,
         Self::VoteYes,
         Self::VoteNo,
@@ -90,6 +93,7 @@ impl GameAction {
             Self::TeamChat => "team_chat",
             Self::Scoreboard => "scoreboard",
             Self::Emote => "emote",
+            Self::Interact => "interact",
             Self::Kill => "kill",
             Self::VoteYes => "vote_yes",
             Self::VoteNo => "vote_no",
@@ -100,7 +104,7 @@ impl GameAction {
         Self::ALL.into_iter().find(|a| a.name() == name)
     }
 
-    /// Standardbelegung (E-043, E-051, E-078, E-091, E-141, E-226).
+    /// Standardbelegung (E-043, E-051, E-078, E-091, E-141, E-226, E-253).
     fn default_trigger(self) -> Trigger {
         use KeyCode as K;
         match self {
@@ -119,7 +123,8 @@ impl GameAction {
             Self::Chat => Trigger::Key(K::KeyT),
             Self::TeamChat => Trigger::Key(K::KeyY),
             Self::Scoreboard => Trigger::Key(K::Tab),
-            Self::Emote => Trigger::Key(K::KeyE),
+            Self::Emote => Trigger::Key(K::ControlLeft),
+            Self::Interact => Trigger::Key(K::KeyE),
             Self::Kill => Trigger::Key(K::KeyK),
             Self::VoteYes => Trigger::Key(K::F3),
             Self::VoteNo => Trigger::Key(K::F4),
@@ -299,11 +304,16 @@ impl Default for Bindings {
 impl From<BTreeMap<String, String>> for Bindings {
     fn from(raw: BTreeMap<String, String>) -> Self {
         let mut b = Self::default();
+        // Ältere Einstellungen ohne Aktionstaste: Emote-Rad von E auf Strg (E-253)
+        let old = !raw.contains_key("interact");
         for (action, trigger) in raw {
             if let (Some(a), Some(t)) =
                 (GameAction::from_name(&action), Trigger::from_name(&trigger))
                 && !reserved(t)
             {
+                if old && a == GameAction::Emote && t == Trigger::Key(KeyCode::KeyE) {
+                    continue;
+                }
                 b.map.insert(a, t);
             }
         }
@@ -356,6 +366,27 @@ impl Bindings {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn old_settings_move_emote_to_ctrl() {
+        let raw = BTreeMap::from([("emote".to_owned(), "e".to_owned())]);
+        let b = Bindings::from(raw);
+        assert_eq!(
+            b.trigger(GameAction::Emote),
+            Trigger::Key(KeyCode::ControlLeft)
+        );
+        assert_eq!(b.trigger(GameAction::Interact), Trigger::Key(KeyCode::KeyE));
+        assert!(!b.conflict(GameAction::Interact));
+        // neue Einstellungen behalten eine bewusste Wahl
+        let raw = BTreeMap::from([
+            ("emote".to_owned(), "e".to_owned()),
+            ("interact".to_owned(), "f".to_owned()),
+        ]);
+        assert_eq!(
+            Bindings::from(raw).trigger(GameAction::Emote),
+            Trigger::Key(KeyCode::KeyE)
+        );
+    }
 
     #[test]
     fn defaults_have_no_conflicts_and_roundtrip() {

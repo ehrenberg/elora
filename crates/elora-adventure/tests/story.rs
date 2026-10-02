@@ -201,3 +201,138 @@ fn broken_dialogs_are_reported() {
     );
     assert!(load_with_dialog(ok).is_ok());
 }
+
+// ---------------------------------------------------------------- Karten (A1.5)
+
+use elora_adventure::check::{map_links, map_objects};
+use elora_map::{Map, Object, ObjectKind};
+
+fn obj(id: &str, kind: ObjectKind) -> Object {
+    Object {
+        id: id.into(),
+        pos: Vec2::new(40.0, 40.0),
+        kind,
+    }
+}
+
+fn small(name: &str, objects: Vec<Object>) -> Map {
+    let mut m = Map::from_rows(name, &["#####", "#S..#", "#...#", "#####"]).unwrap();
+    m.adventure.objects = objects;
+    m
+}
+
+#[test]
+fn map_objects_are_checked_against_content() {
+    let c = Content::builtin();
+    let good = small(
+        "wiese-1",
+        vec![
+            obj(
+                "kaefer",
+                ObjectKind::Creature {
+                    kind: "stachelkaefer".into(),
+                    persistent: false,
+                },
+            ),
+            obj(
+                "oma",
+                ObjectKind::Npc {
+                    character: "oma".into(),
+                    dialog: "oma".into(),
+                    facing: 1,
+                    walk: 0.0,
+                },
+            ),
+            obj(
+                "truhe",
+                ObjectKind::Chest {
+                    contents: vec![("glanztropfen".into(), 20)],
+                    lock: String::new(),
+                },
+            ),
+            obj(
+                "stein",
+                ObjectKind::Collectible {
+                    item: "glitzerstein".into(),
+                },
+            ),
+            obj(
+                "tor",
+                ObjectKind::Door {
+                    size: (1, 1),
+                    open_if: "merker tor.wiese".into(),
+                },
+            ),
+        ],
+    );
+    assert!(
+        map_objects(&c, &good).is_empty(),
+        "{:?}",
+        map_objects(&c, &good)
+    );
+    let bad = small(
+        "wiese-1",
+        vec![
+            obj(
+                "a",
+                ObjectKind::Creature {
+                    kind: "drache".into(),
+                    persistent: false,
+                },
+            ),
+            obj(
+                "b",
+                ObjectKind::Npc {
+                    character: "oma".into(),
+                    dialog: "fehlt".into(),
+                    facing: 1,
+                    walk: 0.0,
+                },
+            ),
+            obj(
+                "c",
+                ObjectKind::Chest {
+                    contents: vec![("gold".into(), 1)],
+                    lock: "hat".into(),
+                },
+            ),
+            obj(
+                "d",
+                ObjectKind::Door {
+                    size: (1, 1),
+                    open_if: "merker".into(),
+                },
+            ),
+        ],
+    );
+    let errors = map_objects(&c, &bad);
+    assert_eq!(errors.len(), 5, "{errors:?}");
+    assert!(
+        errors[0].contains("drache") && errors[1].contains("fehlt") && errors[2].contains("gold")
+    );
+}
+
+#[test]
+fn exits_must_lead_to_existing_entrances() {
+    let exit = |map: &str, spawn: &str| {
+        obj(
+            "weg",
+            ObjectKind::Exit {
+                size: Vec2::new(32.0, 32.0),
+                map: map.into(),
+                spawn: spawn.into(),
+                on_touch: true,
+            },
+        )
+    };
+    let a = small("dorf", vec![exit("wiese-1", "west")]);
+    let b = small(
+        "wiese-1",
+        vec![obj("west", ObjectKind::Spawn), exit("dorf", "ost")],
+    );
+    let errors = map_links(&[("dorf", &a), ("wiese-1", &b)]);
+    assert_eq!(errors.len(), 1, "{errors:?}");
+    assert!(errors[0].contains("Eingang `ost` fehlt"));
+    let errors = map_links(&[("dorf", &a)]);
+    assert!(errors[0].contains("Zielkarte `wiese-1` fehlt"));
+}

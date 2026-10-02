@@ -90,3 +90,10 @@ rarity = "rare"
 bonuses = [{ max_health = 1 }, { glide_fall = -0.2 }]
 name = { de = "Tauumhang", en = "Dew cape" }
 desc = { de = "Riecht ein bisschen nach Morgen.", en = "Smells a little like morning." }
+
+# Sammelstücke (Weltbuch §8)
+[[item]]
+id = "glitzerstein"
+type = "collectible"
+name = { de = "Glitzerstein", en = "Glitter stone" }
+desc = { de = "Pip sammelt sie.", en = "Pip collects them." }

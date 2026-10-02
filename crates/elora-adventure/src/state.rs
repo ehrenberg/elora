@@ -387,7 +387,10 @@ impl SaveGame {
     /// Verkaufspreis (P-26); Schlüssel und Währung sind unverkäuflich.
     pub fn sell_price(content: &Content, id: &str) -> Option<u32> {
         let d = content.item(id)?;
-        if matches!(d.kind, ItemKind::Key | ItemKind::Currency) {
+        if matches!(
+            d.kind,
+            ItemKind::Key | ItemKind::Currency | ItemKind::Collectible
+        ) {
             return None;
         }
         Some(d.price * content.progression.sell_pct / 100)
