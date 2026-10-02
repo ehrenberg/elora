@@ -103,6 +103,7 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-292 | 2026-10-02 | Menü-Hintergrund verspielter | **Bestehende Grafiken:** Dorfszene (Häuser, Brunnen, Bäume, Requisiten), Figuren (Elora im Skin, Pip, Oma, Tüftel, Klonk, Lotte; einige laufen), Tiere und Bewegung (Schmetterlinge, Vögel, Rauch, Wolken, Fahnen), Gegner (Stachelkäfer, Gras-Hüpfer) | Entscheidung Projektinhaber |
 | E-293 | 2026-10-02 | Trainingskarte | **Etwa 120 × 40** mit allen Neuerungen (Kletterwände, Bröckelboden, Dornen, Sondertiles, Gegner-Übungsplatz) und verspielter Deko | Entscheidung Projektinhaber |
 | E-294 | 2026-10-02 | Haken im Online-Spiel (Rückmeldung) | „Alles scheint ein gewisses Zittern/Ruckeln zu haben“ – Ursachen suchen und beheben | Rückmeldung Projektinhaber |
+| E-295 | 2026-10-02 | KI-Dienste für Inhalte | **Keine** (OpenAI, openart.ai, Recraft verworfen): Grafiken entstehen weiter über die Python-Skripte in `tools/design/`, Musik und Sounds aus freien Quellen (E-285) | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 
