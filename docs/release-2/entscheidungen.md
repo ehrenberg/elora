@@ -136,3 +136,4 @@ Neu für Release 2 (Rollenspiel-Abenteuer, siehe [`roadmap.md`](roadmap.md)):
 Für die Zukunft festgehalten:
 
 - [ ] **O-208 Dauerhafte Welt** – ein Server mit fortlaufender Welt, auf dem Spielerfiguren ihren Fortschritt behalten (kleines Online-Rollenspiel; braucht Konten und Speicherung auf dem Server) – nach Release 2
+- [ ] **O-209 Tageszeiten und Wetter** – Tageszeit (Morgen, Tag, Abend, Nacht) und Wetter (Regen, Wind, Nebel, Schnee, Gewitter) in Abenteuer und Karten: Himmel, Licht, Deko-Färbung und Partikel; im Abenteuer ggf. mit Spielwirkung (Gegner nur nachts, leuchtende Pilze, rutschiger Boden bei Regen). Grundlage: Tageszeiten im Hauptmenü (E-291), Tag/Nacht-Vorlagen im Editor – offen, nach R2-M2.1
