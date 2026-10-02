@@ -12,6 +12,7 @@
 
 use std::time::Instant;
 
+use elora_map::look::{Curve, EnvKind, EnvPoint, EnvRef, Envelope};
 use elora_map::{Art, Decor, Map, Object, ObjectKind};
 use elora_sim::{TILE_SIZE, Vec2};
 
@@ -143,6 +144,113 @@ fn decor(name: &str, tx: f32, ty: usize) -> Decor {
         Art::Builtin(name.into()),
         Vec2::new(tx * T + T / 2.0, ty as f32 * T),
     )
+}
+
+/// Deko an einer Weltposition (Pixel), z. B. auf Dächern und Bänken.
+fn decor_px(name: &str, x: f32, y: f32) -> Decor {
+    Decor::new(Art::Builtin(name.into()), Vec2::new(x, y))
+}
+
+/// Animation anhängen; liefert ihren Index.
+fn envelope(map: &mut Map, name: &str, kind: EnvKind, points: &[(u32, [f32; 4], Curve)]) -> u16 {
+    map.envelopes.push(Envelope {
+        name: name.into(),
+        kind,
+        synced: false,
+        points: points
+            .iter()
+            .map(|&(time_ms, value, curve)| EnvPoint {
+                time_ms,
+                value,
+                curve,
+            })
+            .collect(),
+    });
+    u16::try_from(map.envelopes.len() - 1).expect("wenige Animationen")
+}
+
+/// Kleine Bewegungen (Detail): Schmetterlinge flattern, Rauch steigt, Fahnen wehen.
+fn animate(map: &mut Map, smoke: &[Vec2]) {
+    use Curve::{Linear, Smooth};
+    let flutter = envelope(
+        map,
+        "Flattern",
+        EnvKind::Position,
+        &[
+            (0, [0.0, 0.0, 0.0, 0.0], Smooth),
+            (1500, [30.0, -24.0, 8.0, 0.0], Smooth),
+            (3000, [64.0, -4.0, -6.0, 0.0], Smooth),
+            (4500, [30.0, 18.0, 6.0, 0.0], Smooth),
+            (6000, [0.0, 0.0, 0.0, 0.0], Smooth),
+        ],
+    );
+    let wave = envelope(
+        map,
+        "Wehen",
+        EnvKind::Position,
+        &[
+            (0, [0.0, 0.0, -1.5, 0.0], Smooth),
+            (1800, [0.0, 0.0, 1.5, 0.0], Smooth),
+            (3600, [0.0, 0.0, -1.5, 0.0], Smooth),
+        ],
+    );
+    let rise = envelope(
+        map,
+        "Rauch",
+        EnvKind::Position,
+        &[
+            (0, [0.0, 0.0, 0.0, 0.0], Linear),
+            (3000, [14.0, -90.0, 0.0, 0.0], Linear),
+        ],
+    );
+    let fade = envelope(
+        map,
+        "Rauch verblasst",
+        EnvKind::Color,
+        &[
+            (0, [1.0, 1.0, 1.0, 0.0], Linear),
+            (400, [1.0, 1.0, 1.0, 0.9], Linear),
+            (3000, [1.0, 1.0, 1.0, 0.0], Linear),
+        ],
+    );
+    let mut k = 0;
+    for d in map.decor_front.iter_mut().chain(map.decor_back.iter_mut()) {
+        let Art::Builtin(name) = &d.art else {
+            continue;
+        };
+        k += 1;
+        let offset_ms = (k * 977) % 6000;
+        match name.as_str() {
+            "schmetterling" => {
+                d.pos_env = Some(EnvRef {
+                    index: flutter,
+                    offset_ms,
+                });
+            }
+            n if n.starts_with("fahne-") => {
+                d.pos_env = Some(EnvRef {
+                    index: wave,
+                    offset_ms,
+                });
+            }
+            _ => {}
+        }
+    }
+    for (i, &at) in smoke.iter().enumerate() {
+        for puff in 0..2 {
+            let offset_ms = i32::try_from(i * 700 + puff * 1500).unwrap_or(0);
+            let mut d = decor_px("rauch", at.x, at.y);
+            d.pos_env = Some(EnvRef {
+                index: rise,
+                offset_ms,
+            });
+            d.color_env = Some(EnvRef {
+                index: fade,
+                offset_ms,
+            });
+            map.decor_back.push(d);
+        }
+    }
 }
 
 /// Gras vor der Spielfläche (Tauwinkel: keine bunten Blumen, E-210).
@@ -343,7 +451,51 @@ pub fn tauwinkel() -> Map {
         d.flip_x = k % 2 == 1;
         m.decor_front.push(d);
     }
-    finish(m, &GRASS)
+    let ground = |tx: f32, ty: usize| Vec2::new(tx * T + T / 2.0, ty as f32 * T);
+    m.decor_front.extend([
+        decor("blumentopf-blass", 13.0, 40),
+        decor("giesskanne", 15.0, 40),
+        decor("briefkasten", 24.5, 40),
+        decor("kuerbisse", 35.0, 40),
+        decor("vogelhaus", 47.0, 40),
+        decor("katze", 46.0, 35),
+        decor("beerenbusch", 64.5, 40),
+        decor("trittsteine", 96.0, 38),
+        decor("korb", 126.0, 38),
+        decor("blumentopf-blass", 130.5, 38),
+        decor("blumentopf-blass", 133.5, 38),
+        decor_px("katze", ground(140.0, 38).x, ground(140.0, 38).y - 28.0),
+        decor("trittsteine", 160.0, 38),
+        decor("giesskanne", 170.0, 38),
+        decor("baumstumpf", 207.0, 38),
+        decor("farn", 224.0, 38),
+        decor_px("vogel", ground(244.0, 15).x + 40.0, ground(244.0, 15).y),
+        decor("kuerbisse", 264.0, 32),
+        decor("korb", 324.0, 32),
+        decor("blumentopf-blass", 331.0, 32),
+        decor("briefkasten", 318.0, 32),
+        decor("baumstumpf", 376.0, 38),
+        decor("farn", 386.0, 38),
+        decor("loewenzahn", 392.0, 38),
+        decor("beerenbusch", 414.0, 36),
+        decor_px("vogel", ground(428.0, 38).x, ground(428.0, 38).y - 28.0),
+        decor("schmetterling", 395.0, 36),
+        decor("schmetterling", 420.0, 35),
+        decor("loewenzahn", 433.0, 38),
+    ]);
+    // Vögel auf den Dächern
+    for (tx, ty, dy) in [(18.0, 40, 246.0), (115.0, 38, 178.0)] {
+        let p = ground(tx, ty);
+        m.decor_back.push(decor_px("vogel", p.x - 10.0, p.y - dy));
+    }
+    let chimneys = [
+        ground(18.0, 40) + Vec2::new(56.0, -240.0),
+        ground(166.0, 38) + Vec2::new(-42.0, -258.0),
+        ground(328.0, 32) + Vec2::new(-40.0, -246.0),
+    ];
+    let mut map = finish(m, &GRASS);
+    animate(&mut map, &chimneys);
+    map
 }
 
 /// Blütenwiesen 1, 300 × 60 (E-282): Hügel, Tal mit Dornengrube und Hook-Decke darüber,
@@ -473,7 +625,47 @@ pub fn wiese() -> Map {
             x += 2;
         }
     }
-    finish(m, &release::THEMES[0])
+    m.decor_front.extend([
+        decor("farn", 18.0, 44),
+        decor("loewenzahn", 26.0, 42),
+        decor("baumstumpf", 45.0, 41),
+        decor("beerenbusch", 57.0, 44),
+        decor("farn", 62.0, 50),
+        decor("loewenzahn", 86.0, 50),
+        decor("farn", 92.0, 50),
+        decor("trittsteine", 102.0, 44),
+        decor("beerenbusch", 138.0, 44),
+        decor("loewenzahn", 155.0, 40),
+        decor("baumstumpf", 168.0, 36),
+        decor("farn", 176.0, 32),
+        decor("beerenbusch", 190.0, 46),
+        decor("loewenzahn", 212.0, 46),
+        decor("farn", 219.0, 30),
+        decor("baumstumpf", 233.0, 46),
+        decor("beerenbusch", 248.0, 43),
+        decor("loewenzahn", 262.0, 40),
+        decor("farn", 274.0, 40),
+        decor("beerenbusch", 287.0, 40),
+    ]);
+    for (tx, ty) in [
+        (14, 41),
+        (33, 37),
+        (70, 47),
+        (90, 47),
+        (122, 41),
+        (146, 41),
+        (176, 29),
+        (206, 43),
+        (226, 27),
+        (252, 37),
+        (270, 37),
+        (284, 36),
+    ] {
+        m.decor_front.push(decor("schmetterling", tx as f32, ty));
+    }
+    let mut map = finish(m, &release::THEMES[0]);
+    animate(&mut map, &[]);
+    map
 }
 
 #[cfg(test)]

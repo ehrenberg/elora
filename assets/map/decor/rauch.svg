@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-12 -24 30 26">
+  <!-- Rauch (steigt auf) (A1.9, aus tools/design/tauwinkel_requisiten.py). Ursprung unten in der Mitte. -->
+  <circle cx="0" cy="-10" r="10" fill="#e6e2dc" stroke="#b8b2aa" stroke-width="1.4"/><circle cx="9" cy="-15" r="7" fill="#e6e2dc" stroke="#b8b2aa" stroke-width="1.4"/>
+</svg>

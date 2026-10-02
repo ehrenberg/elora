@@ -110,6 +110,129 @@ def mauer():
     return s
 
 
+def giesskanne():
+    s = f'<path d="M -14,0 V -24 Q -14,-28 -10,-28 H 10 Q 14,-28 14,-24 V 0 Z" fill="#7f9aa6" {st()}/>'
+    s += f'<path d="M 14,-20 L 30,-34 L 33,-31" fill="none" stroke="{OUT}" stroke-width="4.5" stroke-linecap="round"/>'
+    s += f'<path d="M 14,-20 L 30,-34 L 33,-31" fill="none" stroke="#7f9aa6" stroke-width="2.5" stroke-linecap="round"/>'
+    s += f'<path d="M -10,-28 Q 0,-42 10,-28" fill="none" stroke="{OUT}" stroke-width="3"/>'
+    return s
+
+
+def vogelhaus():
+    s = f'<rect x="-3" y="-80" width="6" height="80" fill="{WOOD}" {st(1.6)}/>'
+    s += f'<rect x="-16" y="-104" width="32" height="26" fill="#c79a66" {st()}/>'
+    s += f'<path d="M -22,-102 L 0,-120 L 22,-102 Z" fill="{SHINGLE}" {st()}/>'
+    s += f'<circle cx="0" cy="-92" r="5" fill="{OUT}"/><path d="M -4,-82 H 4" stroke="{WOOD_DARK}" stroke-width="2.4"/>'
+    return s
+
+
+def briefkasten():
+    s = f'<rect x="-3" y="-46" width="6" height="46" fill="{WOOD}" {st(1.6)}/>'
+    s += f'<path d="M -14,-46 V -60 Q -14,-68 0,-68 Q 14,-68 14,-60 V -46 Z" fill="#c8a24a" {st()}/>'
+    s += f'<path d="M -8,-58 H 8" stroke="{OUT}" stroke-width="2"/><path d="M 14,-62 h 6 v 8" fill="none" stroke="#b5523b" stroke-width="2.5"/>'
+    return s
+
+
+def korb():
+    s = ''
+    for (x, y) in ((-10, -22), (2, -24), (12, -21), (-4, -30), (8, -30)):
+        s += f'<circle cx="{x}" cy="{y}" r="6" fill="#c8483a" {st(1.4)}/><path d="M {x},{y - 6} v -3" stroke="#5e4430" stroke-width="1.4"/>'
+    s += f'<path d="M -20,-20 H 22 L 16,0 H -14 Z" fill="#c9a45c" {st()}/>'
+    s += f'<path d="M -17,-12 H 19 M -6,-20 L -4,0 M 6,-20 L 6,0" stroke="#a3813f" stroke-width="1.4"/>'
+    return s
+
+
+def kuerbisse():
+    s = ''
+    for (x, r, c) in ((-16, 14, '#d9822b'), (12, 11, '#e09a3c'), (-1, 9, '#c8702a')):
+        s += f'<ellipse cx="{x}" cy="{-r}" rx="{r * 1.2}" ry="{r}" fill="{c}" {st()}/>'
+        s += f'<path d="M {x},{-2 * r + 1} Q {x - r * 0.5},{-r} {x},{-1} M {x},{-2 * r + 1} Q {x + r * 0.5},{-r} {x},{-1}" fill="none" stroke="#a5561e" stroke-width="1.2"/>'
+        s += f'<path d="M {x},{-2 * r} q 2,-6 6,-6" fill="none" stroke="#5e7a32" stroke-width="2.4"/>'
+    return s
+
+
+def blumentopf(pale=True):
+    from tauwinkel_gebaeude import flowers
+    s = f'<path d="M -10,0 L -13,-16 H 13 L 10,0 Z" fill="#b8673f" {st()}/>'
+    return s + flowers([-6, 0, 6], -16, pale)
+
+
+def katze():
+    """Schlafende Katze (auf Bank, Mauer oder Boden)."""
+    s = f'<path d="M -22,0 Q -24,-16 -6,-18 Q 12,-20 18,-8 Q 20,0 12,0 Z" fill="#8a8580" {st()}/>'
+    s += f'<path d="M 10,-14 L 12,-24 L 17,-16 L 22,-22 L 22,-10 Q 20,-4 14,-6 Z" fill="#8a8580" {st()}/>'
+    s += f'<path d="M 15,-12 q 1.5,1.5 3,0" fill="none" stroke="{OUT}" stroke-width="1.4"/>'
+    s += f'<path d="M -22,-2 Q -32,-2 -30,-10 Q -28,-14 -22,-12" fill="none" stroke="{OUT}" stroke-width="4.5" stroke-linecap="round"/>'
+    s += f'<path d="M -22,-2 Q -32,-2 -30,-10 Q -28,-14 -22,-12" fill="none" stroke="#8a8580" stroke-width="2.6" stroke-linecap="round"/>'
+    s += f'<path d="M -8,-12 q 4,-3 8,0 M 0,-8 q 4,-3 8,0" fill="none" stroke="#6e6a66" stroke-width="1.4"/>'
+    return s
+
+
+def vogel():
+    """Sitzender Vogel (Dachfirst, Zaun)."""
+    s = f'<path d="M -8,-2 Q -10,-12 -2,-14 Q 6,-16 8,-8 Q 8,-2 2,-1 Z" fill="#5b7fa6" {st(1.6)}/>'
+    s += f'<circle cx="5" cy="-12" r="1.4" fill="{OUT}"/><path d="M 8,-11 l 4,1 l -4,1.5 Z" fill="#e0a23a" {st(1)}/>'
+    s += f'<path d="M -8,-4 l -6,-2 l 2,4 Z" fill="#45648a" {st(1)}/><path d="M -1,-1 v 2 M 2,-1 v 2" stroke="{OUT}" stroke-width="1.2"/>'
+    return s
+
+
+def schmetterling():
+    s = f'<path d="M 0,-6 Q -10,-18 -12,-8 Q -12,-2 0,-6 Z M 0,-6 Q 10,-18 12,-8 Q 12,-2 0,-6 Z" fill="#f2c14e" {st(1.2)}/>'
+    s += f'<path d="M 0,-6 Q -8,0 -6,3 Q -2,2 0,-6 Z M 0,-6 Q 8,0 6,3 Q 2,2 0,-6 Z" fill="#e8925a" {st(1.2)}/>'
+    s += f'<path d="M 0,-10 V 0" stroke="{OUT}" stroke-width="1.8" stroke-linecap="round"/>'
+    return s
+
+
+def rauch():
+    return (f'<circle cx="0" cy="-10" r="10" fill="#e6e2dc" stroke="#b8b2aa" stroke-width="1.4"/>'
+            f'<circle cx="9" cy="-15" r="7" fill="#e6e2dc" stroke="#b8b2aa" stroke-width="1.4"/>')
+
+
+def baumstumpf():
+    s = f'<path d="M -22,0 Q -16,-4 -16,-26 H 16 Q 16,-4 22,0 Z" fill="#8a6040" {st()}/>'
+    s += f'<ellipse cx="0" cy="-26" rx="16" ry="5" fill="#d9b080" {st(1.6)}/>'
+    s += f'<ellipse cx="0" cy="-26" rx="8" ry="2.4" fill="none" stroke="#a8804f" stroke-width="1.2"/>'
+    s += f'<path d="M 12,-18 q 8,-6 10,-14" fill="none" stroke="#5e7a32" stroke-width="2"/><circle cx="22" cy="-33" r="3" fill="#6f9a4a"/>'
+    return s
+
+
+def farn():
+    s = ''
+    for (a, l) in ((-50, 34), (-22, 42), (0, 46), (24, 40), (52, 32)):
+        s += f'<g transform="rotate({a})"><path d="M 0,0 Q 4,{-l / 2} 0,{-l}" fill="none" stroke="#3f6e34" stroke-width="2"/>'
+        for k in range(1, 6):
+            y = -l * k / 6
+            w = 8 * (1 - k / 7)
+            s += f'<path d="M 0,{y} q {-w},-2 {-w - 2},-6 M 0,{y} q {w},-2 {w + 2},-6" fill="none" stroke="#5b9d42" stroke-width="2.4" stroke-linecap="round"/>'
+        s += '</g>'
+    return s
+
+
+def beerenbusch():
+    s = f'<path d="M -30,0 Q -36,-24 -14,-30 Q -2,-44 14,-32 Q 34,-28 30,0 Z" fill="#4f8f3a" {st()}/>'
+    for (x, y) in ((-18, -14), (-8, -22), (4, -12), (14, -22), (20, -10), (-2, -30), (-22, -6)):
+        s += f'<circle cx="{x}" cy="{y}" r="3.4" fill="#7a3fa0" stroke="{OUT}" stroke-width="1"/>'
+    return s
+
+
+def loewenzahn():
+    s = ''
+    for (x, h) in ((-8, 26), (4, 34), (12, 20)):
+        s += f'<path d="M {x},0 Q {x - 2},{-h / 2} {x},{-h}" fill="none" stroke="#6f9a4a" stroke-width="2"/>'
+        s += f'<circle cx="{x}" cy="{-h}" r="6" fill="#f4f1ea" stroke="#c8c2b4" stroke-width="1.2"/>'
+        for a in range(0, 360, 45):
+            s += f'<path d="M {x},{-h} l 0,-6" stroke="#d8d2c4" stroke-width="1" transform="rotate({a} {x} {-h})"/>'
+    s += f'<path d="M -16,0 q 6,-8 10,-2 q 6,-8 12,0 q 6,-6 10,0" fill="#5b9d42" {st(1.2)}/>'
+    return s
+
+
+def trittsteine():
+    s = ''
+    for (x, w) in ((-40, 22), (-12, 18), (14, 24), (40, 16)):
+        s += f'<ellipse cx="{x}" cy="-2" rx="{w / 2}" ry="4" fill="#bdb7ac" stroke="{STONE_LINE}" stroke-width="1.4"/>'
+    return s
+
+
 PROPS = {
     'dornen': (dornen, '-36 -34 72 36', 'Dornenranke über Gruben (E-283)'),
     'bank': (bank, '-44 -56 88 58', 'Bank'),
@@ -120,16 +243,35 @@ PROPS = {
     'waescheleine': (waescheleine, '-78 -100 156 102', 'Wäscheleine'),
     'heuballen': (heuballen, '-38 -44 76 46', 'Heuballen'),
     'mauer': (mauer, '-52 -40 104 42', 'Feldsteinmauer'),
+    'giesskanne': (giesskanne, '-18 -46 56 48', 'Gießkanne'),
+    'vogelhaus': (vogelhaus, '-26 -124 52 126', 'Vogelhaus'),
+    'briefkasten': (briefkasten, '-18 -72 42 74', 'Briefkasten'),
+    'korb': (korb, '-24 -40 50 42', 'Apfelkorb'),
+    'kuerbisse': (kuerbisse, '-36 -38 70 40', 'Kürbisse'),
+    'katze': (katze, '-36 -28 62 30', 'schlafende Katze'),
+    'vogel': (vogel, '-16 -18 30 20', 'Vogel'),
+    'schmetterling': (schmetterling, '-14 -20 28 26', 'Schmetterling (bewegt)'),
+    'rauch': (rauch, '-12 -24 30 26', 'Rauch (steigt auf)'),
+    'baumstumpf': (baumstumpf, '-26 -40 54 42', 'Baumstumpf'),
+    'farn': (farn, '-44 -50 88 52', 'Farn'),
+    'beerenbusch': (beerenbusch, '-36 -46 72 48', 'Beerenbusch'),
+    'loewenzahn': (loewenzahn, '-20 -44 40 46', 'Löwenzahn'),
+    'trittsteine': (trittsteine, '-54 -8 108 10', 'Trittsteine'),
+}
+VARIANTS = {
+    'blumentopf': (blumentopf, '-16 -34 32 36', 'Blumentopf'),
 }
 
 
 def sheet():
     cell, cols = 220, 5
-    rows = (len(PROPS) + cols - 1) // cols
+    rows = (len(PROPS) + 2 * len(VARIANTS) + cols - 1) // cols
     w, h = cell * cols, 70 + rows * cell
     s = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}"><rect width="{w}" height="{h}" fill="#f4efe4"/>'
     s += text(w / 2, 40, 'Tauwinkel – Requisiten (Playtest A1.9)', 22)
-    for i, (name, (fn, _, note)) in enumerate(PROPS.items()):
+    items = list(PROPS.items()) + [(n + '-blass', (lambda f=f: f(True), vb, note + ' (verblasst)')) for n, (f, vb, note) in VARIANTS.items()] \
+        + [(n + '-bunt', (lambda f=f: f(False), vb, note + ' (farbig)')) for n, (f, vb, note) in VARIANTS.items()]
+    for i, (name, (fn, _, note)) in enumerate(items):
         cx = cell * (i % cols) + cell / 2
         base = 70 + cell * (i // cols) + cell - 50
         s += f'<path d="M {cx - 90},{base} H {cx + 90}" stroke="#7d9a5a" stroke-width="6"/>'
@@ -139,7 +281,11 @@ def sheet():
 
 
 def export():
-    for name, (fn, vb, note) in PROPS.items():
+    items = dict(PROPS)
+    for n, (f, vb, note) in VARIANTS.items():
+        items[n + '-blass'] = (lambda f=f: f(True), vb, note + ', verblasst (E-277)')
+        items[n + '-bunt'] = (lambda f=f: f(False), vb, note + ', farbig (E-277)')
+    for name, (fn, vb, note) in items.items():
         with open(f'assets/map/decor/{name}.svg', 'w') as f:
             f.write(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{vb}">\n'
                     f'  <!-- {note} (A1.9, aus tools/design/tauwinkel_requisiten.py). Ursprung unten in der Mitte. -->\n'
