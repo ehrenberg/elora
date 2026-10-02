@@ -19,6 +19,12 @@ use elora_sim::{Event, PlayerInput, TICKS_PER_SECOND, Team, Tuning, World};
 use crate::map_store::{MapStore, MemoryStore};
 use crate::scene::{Scene, SceneChar};
 
+/// Zeitabgleich: so schnell folgt `offset` dem Ziel (s je s), ab dieser Abweichung springt er.
+const OFFSET_RISE: f64 = 0.002;
+const OFFSET_FALL: f64 = 0.02;
+const OFFSET_SNAP: f64 = 0.05;
+/// So schnell folgt der gezeichnete Vorlauf dem Vorlauf der Eingaben (s je s).
+const LEAD_RATE: f64 = 0.01;
 const TICK_SECS: f64 = 1.0 / TICKS_PER_SECOND as f64;
 /// Angestrebte Zeit, die eine Eingabe vor ihrem Tick beim Server ankommt (Original: 10 ms).
 const INPUT_MARGIN_MS: f64 = 10.0;
@@ -122,9 +128,15 @@ pub struct OnlineClient {
     epoch: Instant,
     /// Empfangszeit − Tick·Dauer, Minimum über ein Fenster = Zeit „Tick 0 kommt an“.
     offsets: VecDeque<f64>,
+    /// Ziel aus dem Fenster; `offset` folgt ihm sanft, damit die Zeit nicht springt (E-294).
+    offset_target: Option<f64>,
     offset: Option<f64>,
     /// Vorlauf der Vorhersage vor der geschätzten Server-Zeit (s).
     lead: f64,
+    /// Geglätteter Vorlauf fürs Zeichnen (Eingaben nutzen `lead`).
+    render_lead: f64,
+    /// Zeit des letzten `update` (Glätten).
+    last_update: Option<Instant>,
     /// Vorhergesagte Welt beim Tick `pred_tick` und Elora einen Tick davor.
     pred: Option<World>,
     pred_prev: Option<elora_sim::CharacterCore>,
@@ -168,8 +180,11 @@ impl OnlineClient {
             last_input_tick: 0,
             epoch: now,
             offsets: VecDeque::new(),
+            offset_target: None,
             offset: None,
             lead: 0.1,
+            render_lead: 0.1,
+            last_update: None,
             pred: None,
             pred_prev: None,
             pred_tick: 0,
@@ -565,7 +580,10 @@ impl OnlineClient {
         while self.offsets.len() > OFFSET_WINDOW {
             self.offsets.pop_front();
         }
-        self.offset = self.offsets.iter().copied().reduce(f64::min);
+        self.offset_target = self.offsets.iter().copied().reduce(f64::min);
+        if self.offset.is_none() {
+            self.offset = self.offset_target;
+        }
 
         // Abweichung der Vorhersage messen (für das Panel)
         if let Some(slot) = local
@@ -593,9 +611,41 @@ impl OnlineClient {
         Some(self.arrival_tick(now)? + self.lead / TICK_SECS)
     }
 
+    /// Zeitpunkt der eigenen Figur beim Zeichnen: wie [`Self::prediction_time`], mit
+    /// geglättetem Vorlauf.
+    fn render_time(&self, now: Instant) -> Option<f64> {
+        Some(self.arrival_tick(now)? + self.render_lead / TICK_SECS)
+    }
+
+    /// Zeitabgleich und Vorlauf langsam nachführen statt springen lassen (E-294).
+    fn smooth_clock(&mut self, now: Instant) {
+        let dt = self
+            .last_update
+            .map_or(0.0, |t| now.saturating_duration_since(t).as_secs_f64())
+            .min(0.1);
+        self.last_update = Some(now);
+        if let (Some(target), Some(offset)) = (self.offset_target, self.offset) {
+            let diff = target - offset;
+            self.offset = Some(if diff.abs() > OFFSET_SNAP {
+                target
+            } else if diff < 0.0 {
+                // Pakete kommen früher als gedacht: zügig folgen
+                offset + diff.max(-OFFSET_FALL * dt)
+            } else {
+                offset + diff.min(OFFSET_RISE * dt)
+            });
+        }
+        let diff = self.lead - self.render_lead;
+        self.render_lead += diff.clamp(-LEAD_RATE * dt, LEAD_RATE * dt);
+        if diff.abs() > 0.1 {
+            self.render_lead = self.lead;
+        }
+    }
+
     /// Einmal pro Frame: fällige Eingaben erzeugen und senden, Vorhersage aktualisieren.
     /// `sample_input` liefert die aktuelle Eingabe des Spielers.
     pub fn update(&mut self, now: Instant, mut sample_input: impl FnMut() -> PlayerInput) {
+        self.smooth_clock(now);
         if self.status != Status::Playing || self.snapshots.is_empty() {
             return;
         }
@@ -603,7 +653,9 @@ impl OnlineClient {
             return;
         };
         #[allow(clippy::cast_sign_loss)] // durch max(0) ausgeschlossen
-        let target_tick = target.floor().max(0.0) as u64;
+        // einen Tick voraus: gezeichnet wird zwischen diesem und dem vorigen Tick (wie das
+        // Original), sonst stünde die eigene Figur jedes sechste Bild still (E-294)
+        let target_tick = target.floor().max(0.0) as u64 + 1;
         let latest = self.snapshots.back().map_or(0, |s| s.tick);
         // Nie mehr als 1 s vorausrechnen (Schutz bei Hängern)
         let target_tick = target_tick.clamp(latest, latest + u64::from(TICKS_PER_SECOND));
@@ -694,7 +746,8 @@ impl OnlineClient {
 
         // Fremde Figuren: zwischen den Snapshots um die Renderzeit interpolieren
         let interval = if self.high_bandwidth { 1.0 } else { 2.0 };
-        let render = self.arrival_tick(now).unwrap_or(latest.tick as f64) - (interval + 1.0);
+        // ein Tick Reserve für schwankende Laufzeiten (E-294)
+        let render = self.arrival_tick(now).unwrap_or(latest.tick as f64) - (interval + 2.0);
         let (a, b) = self.bracket(render);
         let alpha = if b.tick > a.tick {
             ((render - a.tick as f64) / (b.tick - a.tick) as f64).clamp(0.0, 1.0) as f32
@@ -723,10 +776,11 @@ impl OnlineClient {
                 team: wb.team(i),
             });
         }
-        scene.add_shots(&wb, alpha, |owner| owner != slot);
+        #[allow(clippy::cast_possible_truncation)]
+        scene.add_shots(&wb, alpha, interval as f32, |owner| owner != slot);
 
         // Eigene Figur und eigene Schüsse aus der Vorhersage
-        let pred_alpha = self.prediction_time(now).map_or(1.0, |t| {
+        let pred_alpha = self.render_time(now).map_or(1.0, |t| {
             (t - (self.pred_tick as f64 - 1.0)).clamp(0.0, 1.0) as f32
         });
         if let Some(pred) = &self.pred {
@@ -743,7 +797,7 @@ impl OnlineClient {
                     team: pred.team(slot),
                 });
             }
-            scene.add_shots(pred, pred_alpha, |owner| owner == slot);
+            scene.add_shots(pred, pred_alpha, 1.0, |owner| owner == slot);
         }
         if scene.local().is_none() {
             // tot: Kamera an die letzte Position
@@ -758,7 +812,6 @@ impl OnlineClient {
         let mut wl = template.clone();
         latest.apply_to(&mut wl, None);
         scene.add_pickups(&wl);
-        scene.add_flags(&wb);
         scene.add_flags(&wb);
         Some(scene)
     }

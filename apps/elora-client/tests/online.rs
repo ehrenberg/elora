@@ -505,3 +505,67 @@ fn map_change_loads_new_map() {
     }
     assert_eq!(g.server.player_count(), 2);
 }
+
+/// Eigene Figur und Kamera laufen online in jedem Bild weiter (E-294): 60 Bilder je
+/// Sekunde bei 50 Ticks; früher stand jedes sechste Bild still (immer alpha = 1).
+#[test]
+fn own_character_moves_smoothly_every_frame() {
+    // lange, flache Bahn
+    let wall = "#".repeat(200);
+    let open = format!("#S{}#", ".".repeat(197));
+    let air = format!("#{}#", ".".repeat(198));
+    let rows = [wall.as_str(), air.as_str(), open.as_str(), wall.as_str()];
+    let track = elora_map::encode(&elora_map::Map::from_rows("Bahn", &rows).unwrap());
+    let mut g = Game::with_maps(
+        Conditions {
+            latency: Duration::from_millis(30),
+            jitter: Duration::from_millis(8),
+            ..Conditions::default()
+        },
+        vec![MapEntry::new("bahn", track)],
+    );
+    g.join("Elora");
+    g.run(2000, false);
+    g.players[0].input.direction = 1;
+    let frame = Duration::from_micros(16_667);
+    let mut next = g.now + frame;
+    let (mut xs, mut alphas) = (Vec::new(), Vec::new());
+    for ms in 0..1500 {
+        g.now += Duration::from_millis(1);
+        let now = g.now;
+        let p = &mut g.players[0];
+        for e in p.endpoint.poll(now) {
+            match e {
+                ClientEvent::Connected { .. } => p.online.on_connected(),
+                ClientEvent::Message { data, .. } => p.online.on_message(&data, now),
+                ClientEvent::Disconnected(r) => p.online.on_disconnected(format!("{r:?}")),
+            }
+        }
+        p.endpoint.flush(now);
+        g.server.update(now);
+        if now >= next {
+            next += frame;
+            let p = &mut g.players[0];
+            let input = p.input;
+            p.online.update(now, || input);
+            for (data, reliable) in p.online.take_outgoing() {
+                p.endpoint.send(&data, reliable);
+            }
+            p.endpoint.flush(now);
+            // erst messen, wenn Elora auf voller Geschwindigkeit läuft
+            if ms > 500
+                && let Some(scene) = p.online.scene(now)
+                && let Some(me) = scene.local()
+            {
+                xs.push(scene.camera.x);
+                alphas.push((me.alpha * 20.0).round() as i32);
+            }
+        }
+    }
+    assert!(xs.len() > 50, "{}", xs.len());
+    let frozen = xs.windows(2).filter(|w| (w[1] - w[0]).abs() < 1.0).count();
+    assert_eq!(frozen, 0, "Bilder ohne Bewegung: {xs:?}");
+    alphas.sort_unstable();
+    alphas.dedup();
+    assert!(alphas.len() > 5, "alpha ändert sich: {alphas:?}");
+}

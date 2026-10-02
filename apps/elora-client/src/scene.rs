@@ -119,18 +119,26 @@ impl Scene {
         self.chars.iter().find(|c| c.local)
     }
 
-    /// Projektile und Laser einer Welt zum Zeitpunkt `tick + alpha` hinzufügen.
+    /// Projektile und Laser einer Welt zum Zeitpunkt `tick − span·(1 − alpha)` hinzufügen:
+    /// `span` Ticks zwischen dem vorigen und diesem Stand (online bei jedem 2. Tick: 2).
     /// `filter` wählt nach Schütze aus.
-    pub fn add_shots(&mut self, world: &World, alpha: f32, filter: impl Fn(usize) -> bool) {
+    pub fn add_shots(
+        &mut self,
+        world: &World,
+        alpha: f32,
+        span: f32,
+        filter: impl Fn(usize) -> bool,
+    ) {
         let tps = TICKS_PER_SECOND as f32;
+        let back = span * (1.0 - alpha);
         for pr in world.projectiles.iter().filter(|p| filter(p.owner)) {
             let age = (world.tick - pr.start_tick) as f32;
             self.projectiles
-                .push(pr.pos_at((age - 1.0 + alpha).max(0.0) / tps, &world.tuning));
+                .push(pr.pos_at((age - back).max(0.0) / tps, &world.tuning));
         }
         let fade_ticks = (TICKS_PER_SECOND * world.tuning.laser_bounce_delay) as f32 / 1000.0 + 1.0;
         for l in world.lasers.iter().filter(|l| filter(l.owner)) {
-            let age = (world.tick - l.eval_tick) as f32 + alpha;
+            let age = (world.tick - l.eval_tick) as f32 + 1.0 - back;
             let fade = (1.0 - age / fade_ticks).clamp(0.2, 1.0);
             self.lasers.push(SceneLaser {
                 from: l.from,
