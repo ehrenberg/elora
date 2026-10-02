@@ -136,6 +136,8 @@ def hanging_sign(x, y, icon, w=34):
 
 
 def flowers(xs, base, pale):
+    if pale is None:
+        return ''
     colors = ('#b9b4ad', '#a9a49d', '#c4bfb8') if pale else ('#e8708f', '#f2c14e', '#7aa8d8')
     stem = '#8f9488' if pale else '#4f9a3a'
     s = ''
@@ -148,6 +150,8 @@ def flowers(xs, base, pale):
 
 
 def flower_box(x0, x1, y, pale):
+    if pale is None:
+        return ''
     s = f'<rect x="{x0}" y="{y}" width="{x1 - x0}" height="9" rx="2" fill="{WOOD}" {st(1.6)}/>'
     xs = [x0 + 5 + i * 7 for i in range(int((x1 - x0 - 6) / 7))]
     return flowers(xs, y, pale) + s
@@ -415,6 +419,51 @@ def sheet():
     return '\n'.join(o)
 
 
+def blumenkasten(pale=True):
+    """Blumenkasten unter einem Fenster (eigene Deko, damit er verblassen kann)."""
+    return flower_box(-18, 18, -9, pale)
+
+
+def kraeuterbeet(pale=True):
+    s = f'<path d="M -16,0 Q -2,-8 12,0 Z" fill="#7a5a3e" {st(1.6)}/>'
+    return s + flowers([-12, -5, 2, 9], -3, pale)
+
+
+# Deko für die Karten (E-278): Gebäude ohne Blumen, Blumen/Beete/Fahnen als Varianten (E-277)
+DECOR = {
+    'haus-elora': (haus_elora, '-140 -290 280 292'),
+    'haus-oma': (haus_oma, '-120 -220 240 222'),
+    'brunnen': (brunnen, '-100 -180 200 182'),
+    'werkstatt': (werkstatt_tueftel, '-120 -300 270 302'),
+    'schmiede': (schmiede_klonk, '-120 -320 270 322'),
+    'laden': (laden_lotte, '-150 -260 300 262'),
+    'baumhaus': (baumhaus_pip, '-150 -420 300 422'),
+    'anschlagbrett': (anschlagbrett, '-60 -140 120 142'),
+    'wegweiser': (wegweiser, '-60 -100 120 102'),
+}
+VARIANTS = {
+    'blumenkasten': (blumenkasten, '-30 -30 60 32'),
+    'beet': (beet, '-60 -30 120 32'),
+    'kraeuterbeet': (kraeuterbeet, '-24 -24 48 26'),
+    'fahne': (fahne, '-10 -160 80 162'),
+}
+
+
+def export_decor():
+    out = 'assets/map/decor'
+    def write(name, body, vb, note):
+        with open(f'{out}/{name}.svg', 'w') as f:
+            f.write(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{vb}">\n'
+                    f'  <!-- {note} (A1.9, aus tools/design/tauwinkel_gebaeude.py). Ursprung unten in der Mitte. -->\n'
+                    f'  {body}\n</svg>\n')
+    for name, (fn, vb) in DECOR.items():
+        write(name, fn(None), vb, f'Tauwinkel: {name}')
+    for name, (fn, vb) in VARIANTS.items():
+        write(f'{name}-blass', fn(True), vb, f'{name}, verblasst (E-277)')
+        write(f'{name}-bunt', fn(False), vb, f'{name}, farbig (E-277)')
+
+
 if __name__ == '__main__':
     os.makedirs('docs/release-2/design', exist_ok=True)
     open('docs/release-2/design/tauwinkel-gebaeude.svg', 'w').write(sheet())
+    export_decor()

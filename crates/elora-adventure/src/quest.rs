@@ -94,6 +94,9 @@ pub struct QuestDef {
     /// Scheitert, sobald diese Bedingung gilt (E-250).
     #[serde(default)]
     pub fail_if: Option<String>,
+    /// Diese Aufgabe beginnt, sobald diese erledigt ist (Kapitel-Übergänge).
+    #[serde(default)]
+    pub next: Option<String>,
 }
 
 /// Zustand einer begonnenen Aufgabe.
@@ -306,6 +309,9 @@ impl SaveGame {
         self.bonus_points += r.points;
         if r.xp > 0 {
             out.extend(self.add_xp(content, r.xp).into_iter().map(Outcome::Notice));
+        }
+        if let Some(next) = &def.next {
+            out.extend(self.start_quest(content, next));
         }
         out
     }

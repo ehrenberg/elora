@@ -1,0 +1,9 @@
+# Wegweiser (E-273, A1.9)
+speaker = "wegweiser"
+
+[[start]]
+node = "text"
+
+[[node]]
+id = "text"
+text = { de = "Blütenwiesen. Beute fliegt dir zu, wenn du nah genug bist. Heilblumen heilen, wenn du sie berührst.", en = "Blütenwiesen. Loot flies to you when you get close. Healing blossoms heal when you touch them." }

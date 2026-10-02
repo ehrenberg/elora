@@ -104,7 +104,7 @@ impl GameAction {
         }
     }
 
-    fn from_name(name: &str) -> Option<Self> {
+    pub fn from_name(name: &str) -> Option<Self> {
         Self::ALL.into_iter().find(|a| a.name() == name)
     }
 

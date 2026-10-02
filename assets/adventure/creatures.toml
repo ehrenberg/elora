@@ -41,3 +41,11 @@ small = true
 xp = 6
 loot = [{ item = "glanztropfen", min = 2, max = 3 }]
 behavior = { type = "hopper", wait_ms = 900, jump_x = 6.0, jump_y = 11.0, sight = 320.0 }
+
+# Übungspuppe bei Klonk (A1.9): steht fest, wehrt sich nicht
+[[creature]]
+name = "strohpuppe"
+size = [36.0, 40.0]
+health = 6
+xp = 2
+behavior = { type = "turret", interval_ms = 1000000, range = 0.0, shot_speed = 1.0, shot_damage = 0 }

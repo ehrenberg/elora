@@ -1,45 +1,71 @@
-# Aufgaben (A1.4, E-249 bis E-251). Bedingungen und Folgen: crates/elora-adventure/src/script.rs
+# Aufgaben (A1.4, E-249 bis E-251). Bedingungen und Folgen: docs/handbuch/abenteuer-inhalte.md
 # goal.type = talk | reach | defeat | collect | bring | flag | manual
-# Entwurf für den Prolog – Feinschliff mit A1.9.
+# Prolog (A1.9, docs/release-2/prolog.md)
 
 [[quest]]
 id = "brunnen"
 kind = "main"
 giver = "oma"
 name = { de = "Der blasse Brunnen", en = "The Pale Well" }
-desc = { de = "Die Blumen am Dorfbrunnen verlieren ihre Farbe. Oma Pfütze glaubt, die Blütenquelle sei verstummt.", en = "The flowers by the village well are losing their colour. Oma Pfütze believes the Blossom Spring has fallen silent." }
+desc = { de = "Die Blumen am Dorfbrunnen verlieren ihre Farbe. Oma Pfütze glaubt, die Blütenquelle sei verstummt. Vorher soll Elora sich bei Tüftel und Klonk vorbereiten.", en = "The flowers by the village well are losing their colour. Oma Pfütze believes the Blossom Spring has fallen silent. First, Elora should get ready with Tüftel and Klonk." }
 reward = { xp = 50, glanztropfen = 30 }
+next = "bluetenquelle"
 
 [[quest.step]]
 id = "tueftel"
-text = { de = "Bei Tüftel vorbeischauen", en = "Drop by Tüftel's workshop" }
+text = { de = "Tüftel in seiner Werkstatt besuchen", en = "Visit Tüftel in his workshop" }
 goal = { type = "talk", who = "tueftel" }
 
 [[quest.step]]
-id = "bruecke"
-text = { de = "Den Wiesenpfad bis zur Brücke gehen", en = "Follow the meadow path to the bridge" }
-goal = { type = "reach", map = "wiese-1", zone = "bruecke" }
+id = "klonk"
+text = { de = "Bei Klonk in der Schmiede vorbeischauen", en = "Drop by Klonk's forge" }
+goal = { type = "talk", who = "klonk" }
+
+[[quest.step]]
+id = "wiese"
+text = { de = "Über den Ostpfad in die Blütenwiesen gehen", en = "Take the east path into the Blütenwiesen" }
+goal = { type = "reach", map = "wiese-1" }
 
 [[quest.step]]
 id = "kaefer"
-text = { de = "Drei Stachelkäfer von der Brücke vertreiben", en = "Drive three Stachelkäfer off the bridge" }
-goal = { type = "defeat", kind = "stachelkaefer", count = 3 }
+text = { de = "Drei Stachelkäfer an der Brücke vertreiben", en = "Drive three Stachelkäfer away from the bridge" }
+goal = { type = "defeat", kind = "stachelkaefer", count = 3, map = "wiese-1" }
 
 [[quest.step]]
-id = "quelle"
-text = { de = "Die Blütenquelle finden", en = "Find the Blossom Spring" }
-goal = { type = "reach", map = "wiese-1", zone = "quelle" }
+id = "wiesenrand"
+text = { de = "Den Quellstein am Wiesenrand erreichen", en = "Reach the spring stone at the edge of the meadow" }
+goal = { type = "reach", map = "wiese-1", zone = "wiesenrand" }
 
-# Beispiel einer Nebenaufgabe, die scheitern kann (E-250)
+# Kapitel 1 – beginnt nach dem Prolog, Fortsetzung mit dem nächsten Abschnitt
+[[quest]]
+id = "bluetenquelle"
+kind = "main"
+giver = "oma"
+name = { de = "Die Blütenquelle", en = "The Blossom Spring" }
+desc = { de = "Die Blütenquelle liegt tief in den Blütenwiesen. Irgendwo dort brummt die alte Hummel.", en = "The Blossom Spring lies deep in the Blütenwiesen. Somewhere there, the old bumblebee is buzzing." }
+reward = { xp = 100 }
+
+[[quest.step]]
+id = "tiefer"
+text = { de = "Tiefer in die Blütenwiesen vordringen", en = "Venture deeper into the Blütenwiesen" }
+goal = { type = "manual" }
+
+# Nebenaufgabe, die scheitern kann (E-250)
 [[quest]]
 id = "pips_stein"
 kind = "side"
 giver = "pip"
 name = { de = "Der Glitzerstein im Gras", en = "The Glitter Stone in the Grass" }
+desc = { de = "Pip hat in den Blütenwiesen einen Glitzerstein gesehen – hoch oben, wo man nur mit dem Hook hinkommt.", en = "Pip saw a glitter stone in the Blütenwiesen – high up, where only the hook can reach." }
 reward = { xp = 30, items = [{ item = "heiltrank", count = 1 }] }
 fail_if = "merker pip.verpetzt"
 
 [[quest.step]]
+id = "finden"
+text = { de = "Den Glitzerstein in den Blütenwiesen finden", en = "Find the glitter stone in the Blütenwiesen" }
+goal = { type = "collect", item = "glitzerstein", count = 1 }
+
+[[quest.step]]
 id = "bringen"
-text = { de = "Pip drei Bernsteine bringen", en = "Bring Pip three pieces of amber" }
-goal = { type = "bring", item = "bernstein", count = 3, to = "pip" }
+text = { de = "Pip den Glitzerstein bringen", en = "Bring Pip the glitter stone" }
+goal = { type = "bring", item = "glitzerstein", count = 1, to = "pip" }

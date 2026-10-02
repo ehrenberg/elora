@@ -287,7 +287,21 @@ macro_rules! dialogs {
         &[$(($name, include_str!(concat!("../../../assets/adventure/dialogs/", $name, ".toml")))),*]
     };
 }
-const DIALOG_FILES: &[(&str, &str)] = dialogs!("oma", "tueftel", "lotte", "klonk");
+const DIALOG_FILES: &[(&str, &str)] = dialogs!(
+    "oma",
+    "tueftel",
+    "lotte",
+    "klonk",
+    "pip",
+    "schild-start",
+    "schild-hecke",
+    "schild-plattform",
+    "schild-hook",
+    "schild-hammer",
+    "schild-brunnen",
+    "schild-ostpfad",
+    "schild-wiese",
+);
 
 /// Quelltexte der Inhaltsdateien.
 #[derive(Debug, Clone, Copy)]

@@ -188,6 +188,7 @@ impl Session {
                 }
             }
         }
+        recolor(&mut map, self.save.flag(SPRINGS_FREED));
         let tuning = self.save.tuning(c, base);
         let mut world = map.world(tuning);
         world.creature_kinds.clone_from(&c.creatures);
@@ -680,8 +681,13 @@ impl Session {
                         0.0
                     };
                     let pos = o.pos + Vec2::new(offset, 0.0);
+                    let fixed = self
+                        .content
+                        .characters
+                        .get(character)
+                        .is_some_and(|c| c.fixed);
                     let facing = match elora {
-                        Some(e) if e.distance(pos) < BARK_RANGE => {
+                        Some(e) if !fixed && e.distance(pos) < BARK_RANGE => {
                             if e.x < pos.x {
                                 -1
                             } else {
@@ -729,6 +735,31 @@ impl Session {
     }
 }
 
+/// Merker: Anzahl befreiter Quellen (0–5).
+pub const SPRINGS_FREED: &str = "quellen_befreit";
+
+/// Verblasste Deko (`…-blass`) bekommt mit jeder befreiten Quelle zum Teil ihre Farbe zurück
+/// (`…-bunt`, E-277): je Stück fest über seine Lage verteilt, nach fünf Quellen alles.
+fn recolor(map: &mut Map, freed: i64) {
+    use elora_map::Art;
+    let mut fix = |d: &mut elora_map::Decor| {
+        if let Art::Builtin(name) = &d.art
+            && let Some(stem) = name.strip_suffix("-blass")
+        {
+            #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+            let h = (d.pos.x as i64 * 31 + d.pos.y as i64 * 17).rem_euclid(5);
+            if h < freed {
+                d.art = Art::Builtin(format!("{stem}-bunt"));
+            }
+        }
+    };
+    map.decor_back.iter_mut().for_each(&mut fix);
+    map.decor_front.iter_mut().for_each(&mut fix);
+    for b in &mut map.backgrounds {
+        b.items.iter_mut().for_each(&mut fix);
+    }
+}
+
 fn outcomes(v: Vec<Outcome>) -> Vec<SessionEvent> {
     v.into_iter()
         .map(|o| match o {
@@ -740,4 +771,39 @@ fn outcomes(v: Vec<Outcome>) -> Vec<SessionEvent> {
 
 fn world_max_health(save: &SaveGame, c: &Content) -> i32 {
     save.max_health(c)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use elora_map::{Art, Decor};
+
+    #[test]
+    fn freed_springs_bring_colour_back() {
+        let mut m = Map::new("t", 4, 4);
+        m.decor_front = (0..20)
+            .map(|k| {
+                Decor::new(
+                    Art::Builtin("beet-blass".into()),
+                    Vec2::new(k as f32 * 32.0, 0.0),
+                )
+            })
+            .collect();
+        m.decor_back = vec![Decor::new(Art::Builtin("haus-oma".into()), Vec2::ZERO)];
+        let bunt = |m: &Map| {
+            m.decor_front
+                .iter()
+                .filter(|d| d.art == Art::Builtin("beet-bunt".into()))
+                .count()
+        };
+        let mut none = m.clone();
+        recolor(&mut none, 0);
+        assert_eq!(bunt(&none), 0);
+        let mut some = m.clone();
+        recolor(&mut some, 2);
+        assert!(bunt(&some) > 0 && bunt(&some) < 20);
+        recolor(&mut m, 5);
+        assert_eq!(bunt(&m), 20, "alle fünf Quellen");
+        assert_eq!(m.decor_back[0].art, Art::Builtin("haus-oma".into()));
+    }
 }

@@ -10,6 +10,8 @@ pub mod panel;
 pub mod panel_adventure;
 pub mod panel_look;
 #[cfg(test)]
+mod prolog;
+#[cfg(test)]
 mod release;
 #[cfg(test)]
 mod release_layouts;

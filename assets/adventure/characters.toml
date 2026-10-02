@@ -1,5 +1,5 @@
 # Figuren, die sprechen (A1.4). Eloras eigene Zeilen: speaker = "elora" (ohne Eintrag hier).
-# portrait = Grafik im Gesprächsfeld (kommt mit der Oberfläche, A1.7)
+# portrait = Grafik im Gesprächsfeld; fixed = dreht sich nicht zu Elora (Schilder)
 
 [[character]]
 id = "oma"
@@ -25,3 +25,10 @@ portrait = "tueftel"
 id = "pip"
 name = { de = "Pip", en = "Pip" }
 portrait = "pip"
+
+# Lesbare Schilder (E-273)
+[[character]]
+id = "wegweiser"
+name = { de = "Wegweiser", en = "Signpost" }
+portrait = "wegweiser"
+fixed = true

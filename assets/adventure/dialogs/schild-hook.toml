@@ -1,0 +1,9 @@
+# Wegweiser (E-273, A1.9)
+speaker = "wegweiser"
+
+[[start]]
+node = "text"
+
+[[node]]
+id = "text"
+text = { de = "Tüftels Übungsplatz: Halt {taste:hook} und zieh dich an Decke und Wand entlang. An Stein greift der Hook nicht.", en = "Tüftel's practice ground: hold {taste:hook} to pull yourself along ceiling and wall. The hook can't grip stone." }

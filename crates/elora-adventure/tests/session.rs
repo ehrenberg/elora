@@ -1,19 +1,14 @@
-//! Abenteuer-Sitzung (A1.6) auf den Test-Karten: Truhen, Schalter und Türen, Speicherpunkt,
+//! Abenteuer-Sitzung (A1.6) auf den Test-Karten (`fixture`): Truhen, Schalter und Türen, Speicherpunkt,
 //! Übergänge, Zonen, Tod.
 
 use elora_adventure::session::Prompt;
 use elora_adventure::state::Notice;
 use elora_adventure::{Content, Session, SessionEvent};
-use elora_map::Map;
 use elora_sim::{PlayerInput, Tile, Tuning, Vec2, World};
 
-fn load(name: &str) -> Map {
-    let path = format!(
-        "{}/../../maps/abenteuer/{name}.emap",
-        env!("CARGO_MANIFEST_DIR")
-    );
-    elora_map::decode(&std::fs::read(path).unwrap()).unwrap()
-}
+mod fixture;
+
+use fixture::load;
 
 fn start() -> (Session, World) {
     let mut s = Session::new_game(Content::builtin());
@@ -108,7 +103,11 @@ fn walking_into_the_exit_travels_and_zones_count() {
     let (mut s, mut w) = start();
     s.save.run(
         &s.content.clone(),
-        &["quest brunnen start".into(), "quest brunnen weiter".into()],
+        &[
+            "quest brunnen start".into(),
+            "quest brunnen weiter".into(),
+            "quest brunnen weiter".into(),
+        ],
     );
     let exit = s.map.adventure.object("weg-wiese").unwrap().pos;
     w.spawn_character(s.player, exit + Vec2::new(-40.0, 150.0));
@@ -133,17 +132,21 @@ fn walking_into_the_exit_travels_and_zones_count() {
     let mut w = s.enter(&map, load(&map), &spawn, &Tuning::default());
     assert_eq!(s.save.location.map, "wiese-1");
     assert_eq!(w.creatures.len(), 5);
-    // Zone „Brücke“ erreichen
-    let zone = s.map.adventure.object("bruecke").unwrap().pos;
+    assert!(s.save.holds(&s.content, "quest brunnen schritt kaefer"));
+    s.save
+        .run(&s.content.clone(), &["quest brunnen weiter".into()]);
+    // Zone „Wiesenrand“ erreichen: Aufgabe fertig, die nächste beginnt
+    let zone = s.map.adventure.object("wiesenrand").unwrap().pos;
     w.spawn_character(s.player, zone + Vec2::new(100.0, 200.0));
     let mut notes = Vec::new();
     for _ in 0..3 {
         notes.extend(step(&mut s, &mut w, PlayerInput::default(), false));
     }
     assert!(
-        s.save.holds(&s.content, "quest brunnen schritt kaefer"),
+        s.save.holds(&s.content, "quest brunnen erledigt"),
         "{notes:?}"
     );
+    assert!(s.save.holds(&s.content, "quest bluetenquelle aktiv"));
 }
 
 #[test]

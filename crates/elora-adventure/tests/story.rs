@@ -35,17 +35,28 @@ fn oma_starts_the_well_quest_with_a_choice() {
         turn.outcomes
             .contains(&Outcome::Notice(Notice::QuestStarted("brunnen".into())))
     );
-    assert!(turn.outcomes.contains(&Outcome::Notice(Notice::Item {
-        id: "heiltrank".into(),
-        count: 1
-    })));
     assert_eq!(g.affection("oma"), 1);
-    assert_eq!(g.count("heiltrank"), 1);
     assert!(!conv.advance(&c, &mut g).open, "Ende nach der Zusage");
     // nächstes Gespräch: Erinnerung statt Begrüßung
     let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
     assert_eq!(conv.node, "erinnerung");
     assert_eq!(bark(&c, &g, "oma").unwrap().de, "Pass auf dich auf!");
+}
+
+#[test]
+fn lotte_gives_a_potion_once() {
+    let (c, mut g) = game();
+    let (conv, turn) = Conversation::start(&c, &mut g, "lotte").unwrap();
+    assert_eq!(conv.node, "erster");
+    assert!(text(&c, &conv).contains("{taste:quick_heal}"));
+    assert!(turn.outcomes.contains(&Outcome::Notice(Notice::Item {
+        id: "heiltrank".into(),
+        count: 1
+    })));
+    assert_eq!(g.count("heiltrank"), 1);
+    let (conv, _) = Conversation::start(&c, &mut g, "lotte").unwrap();
+    assert_eq!(conv.node, "laden");
+    assert_eq!(g.count("heiltrank"), 1, "nur einmal");
 }
 
 #[test]
@@ -73,9 +84,13 @@ fn well_quest_runs_through_all_goal_types() {
         turn.outcomes
             .contains(&Outcome::Notice(Notice::QuestStep("brunnen".into())))
     );
-    // Ort erreichen
-    assert!(g.on_reach(&c, "wiese-1", Some("falsch")).is_empty());
-    g.on_reach(&c, "wiese-1", Some("bruecke"));
+    // Sprechen: Klonk mit der Hammer-Übung
+    let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
+    assert_eq!(conv.node, "uebung");
+    assert!(g.holds(&c, "quest brunnen schritt wiese"));
+    // Karte erreichen
+    assert!(g.on_reach(&c, "tauwinkel", None).is_empty());
+    g.on_reach(&c, "wiese-1", None);
     assert!(g.holds(&c, "quest brunnen schritt kaefer"));
     // Gegner besiegen (über Ereignisse der Welt)
     g.location.map = "wiese-1".into();
@@ -93,11 +108,16 @@ fn well_quest_runs_through_all_goal_types() {
         };
         g.on_event(&c, &c.creatures, 0, &e);
     }
-    assert!(g.holds(&c, "quest brunnen schritt quelle"));
-    let out = g.on_reach(&c, "wiese-1", Some("quelle"));
+    assert!(g.holds(&c, "quest brunnen schritt wiesenrand"));
+    assert!(g.on_reach(&c, "wiese-1", Some("falsch")).is_empty());
+    let out = g.on_reach(&c, "wiese-1", Some("wiesenrand"));
     assert!(out.contains(&Outcome::Notice(Notice::QuestDone("brunnen".into()))));
     assert_eq!(g.quest("brunnen").unwrap().status, QuestStatus::Done);
     assert!(g.glanztropfen >= 30, "Belohnung");
+    assert!(
+        g.holds(&c, "quest bluetenquelle aktiv"),
+        "Kapitel 1 beginnt"
+    );
     let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
     assert_eq!(conv.node, "danach");
 }
@@ -107,14 +127,14 @@ fn side_quest_bring_and_fail() {
     let (c, mut g) = game();
     g.run(&c, &["quest pips_stein start".into()]);
     g.on_talk(&c, "pip");
-    assert!(
-        g.holds(&c, "quest pips_stein aktiv"),
-        "ohne Bernstein nichts abgegeben"
-    );
-    g.add_item(&c, "bernstein", 3).unwrap();
-    g.on_talk(&c, "pip");
+    assert!(g.holds(&c, "quest pips_stein schritt finden"));
+    g.add_item(&c, "glitzerstein", 1).unwrap();
+    g.update_quests(&c);
+    assert!(g.holds(&c, "quest pips_stein schritt bringen"));
+    let (conv, _) = Conversation::start(&c, &mut g, "pip").unwrap();
+    assert_eq!(conv.node, "stein_da");
     assert!(g.holds(&c, "quest pips_stein erledigt"));
-    assert_eq!(g.count("bernstein"), 0, "abgegeben");
+    assert_eq!(g.count("glitzerstein"), 0, "abgegeben");
 
     let (c, mut g) = game();
     g.run(&c, &["quest pips_stein start".into()]);

@@ -39,6 +39,10 @@ pub const DECOR_FILES: &[(&str, &[u8])] = assets!("decor":
     "bush-1", "bush-2", "flower-pink", "flower-yellow", "flower-blue", "grass-1", "grass-2",
     "rock-1", "rock-2", "mushroom-red", "mushroom-brown", "tree-round", "tree-pine", "fence",
     "sign-arrow", "sign-board",
+    // Tauwinkel (A1.9, E-278); Blumen, Beete, Fahnen verblasst und farbig (E-277)
+    "haus-elora", "haus-oma", "brunnen", "werkstatt", "schmiede", "laden", "baumhaus",
+    "anschlagbrett", "wegweiser", "blumenkasten-blass", "blumenkasten-bunt", "beet-blass",
+    "beet-bunt", "kraeuterbeet-blass", "kraeuterbeet-bunt", "fahne-blass", "fahne-bunt",
 );
 
 /// Eingebaute Hintergrund-Grafik (ebenfalls über [`Art::Builtin`] benutzt).

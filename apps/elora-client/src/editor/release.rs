@@ -175,7 +175,7 @@ fn clearance(map: &Map, x: usize, y: usize, max: usize) -> usize {
         .count()
 }
 
-fn place(theme: &Theme, map: &mut Map) {
+pub(super) fn place(theme: &Theme, map: &mut Map) {
     let ts = TILE_SIZE as f32;
     let tint = theme.decor_tint.unwrap_or(Rgba::WHITE);
     let mut next_back = 0;

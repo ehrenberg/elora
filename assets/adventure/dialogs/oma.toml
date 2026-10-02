@@ -1,4 +1,4 @@
-# Oma Pfütze (A1.4) – Entwurf für den Prolog, Feinschliff mit A1.9.
+# Oma Pfütze (A1.9, Prolog)
 speaker = "oma"
 
 [[start]]
@@ -29,13 +29,13 @@ next = "quellen"
 
 [[node.choice]]
 tone = "frech"
-text = { de = "Vielleicht sind die Blumen einfach müde, Oma.", en = "Maybe the flowers are just tired, Granny." }
+text = { de = "Vielleicht sind die Blumen einfach müde, Oma.", en = "Maybe the flowers are just tired, Oma." }
 next = "frech"
 do = ["merker oma.frech = 1"]
 
 [[node]]
 id = "quellen"
-text = { de = "Fünf Quellen gibt es im Tauland, und jede singt ihr eigenes Lied. Die Blütenquelle liegt hinter den Wiesen, gleich über die Brücke.", en = "There are five springs in the Tauland, and each sings its own song. The Blossom Spring lies beyond the meadows, just over the bridge." }
+text = { de = "Fünf Quellen gibt es im Tauland, und jede singt ihr eigenes Lied. Ihr Tau gibt uns Farbe und Mut. Die Blütenquelle liegt hinter den Wiesen im Osten.", en = "There are five springs in the Tauland, and each sings its own song. Their dew gives us colour and courage. The Blossom Spring lies beyond the meadows to the east." }
 next = "bitte"
 do = ["zuneigung oma +1"]
 
@@ -46,7 +46,7 @@ next = "bitte"
 
 [[node]]
 id = "bitte"
-text = { de = "Würdest du nach der Quelle sehen? Hol dir aber zuerst bei Tüftel ein paar Ratschläge.", en = "Would you look in on the spring? But get some advice from Tüftel first." }
+text = { de = "Würdest du nach der Quelle sehen? Aber geh nicht unvorbereitet. Tüftel zeigt dir, wie man richtig hookt, und Klonk hat sicher einen Hammer für dich.", en = "Would you look in on the spring? But don't go unprepared. Tüftel will show you how to hook properly, and Klonk surely has a hammer for you." }
 
 [[node.choice]]
 tone = "freundlich"
@@ -56,16 +56,33 @@ do = ["quest brunnen start"]
 
 [[node]]
 id = "zusage"
-text = { de = "Du bist ein gutes Kind. Hier, nimm das mit – für unterwegs.", en = "You're a good child. Here, take this – for the road." }
-do = ["gib heiltrank 1"]
+text = { de = "Du bist ein gutes Kind. Und wenn du müde wirst: Am Quellstein hier am Brunnen kannst du rasten.", en = "You're a good child. And if you get tired: you can rest at the spring stone here by the well." }
 
 [[node]]
 id = "erinnerung"
-text = { de = "Die Blütenquelle, Kind. Über die Brücke. Und sei vorsichtig mit den Käfern!", en = "The Blossom Spring, dear. Over the bridge. And watch out for the beetles!" }
+text = { de = "Erst zu Tüftel und Klonk, dann über den Ostpfad in die Wiesen. Und sei vorsichtig mit den Stachelkäfern!", en = "First to Tüftel and Klonk, then along the east path into the meadows. And watch out for the Stachelkäfer!" }
+
+[[node.choice]]
+tone = "frech"
+if = "quest pips_stein aktiv"
+text = { de = "Pip schickt mich übrigens Glitzersteine suchen, statt seine Aufgaben zu machen.", en = "By the way, Pip is sending me to look for glitter stones instead of doing his chores." }
+next = "verpetzt"
+do = ["merker pip.verpetzt = 1", "zuneigung pip -2"]
+
+[[node.choice]]
+text = { de = "Ich gehe schon.", en = "I'm on my way." }
+
+[[node]]
+id = "verpetzt"
+text = { de = "So, so. Na, dem werde ich was erzählen. Aber du, Kind, kümmere dich um die Quelle.", en = "Is that so. Well, I'll have a word with him. But you, dear, see to the spring." }
 
 [[node]]
 id = "danach"
-text = { de = "Hörst du das? Die Blumen summen wieder. Danke, Elora.", en = "Do you hear that? The flowers are humming again. Thank you, Elora." }
+text = { de = "Du warst schon am Wiesenrand? Dann bist du bereit für mehr. Die Blütenquelle liegt tief in den Wiesen – dort, wo die alte Hummel brummt.", en = "You've already been to the edge of the meadow? Then you're ready for more. The Blossom Spring lies deep in the meadows – where the old bumblebee hums." }
+
+[[bark]]
+if = "quest brunnen neu"
+text = { de = "Elora, Kind, komm doch mal her.", en = "Elora, dear, come over here." }
 
 [[bark]]
 if = "quest brunnen aktiv"

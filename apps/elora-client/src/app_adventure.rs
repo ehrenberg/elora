@@ -468,7 +468,12 @@ impl App {
                 if let Some(a) = &mut self.adventure {
                     let until = Instant::now() + Duration::from_secs_f32(BARK_SECS);
                     a.barks.retain(|b| b.0 != npc);
-                    a.barks.push((npc, text.get(code).to_owned(), until));
+                    let line = crate::adventure_hud::with_keys(
+                        text.get(code),
+                        &self.settings.bindings,
+                        &self.lang,
+                    );
+                    a.barks.push((npc, line, until));
                 }
             }
             SessionEvent::Locked { .. } => {
@@ -842,6 +847,7 @@ impl App {
                 code,
                 &view,
                 screen,
+                &self.settings.bindings,
             );
         }
         // Abenteuer-Menü

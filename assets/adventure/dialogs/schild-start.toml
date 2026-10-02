@@ -1,0 +1,9 @@
+# Wegweiser (E-273, A1.9)
+speaker = "wegweiser"
+
+[[start]]
+node = "text"
+
+[[node]]
+id = "text"
+text = { de = "Willkommen in Tauwinkel! Laufen: {taste:left} und {taste:right}. Springen: {taste:jump}. Lesen, sprechen, öffnen: {taste:interact}.", en = "Welcome to Tauwinkel! Walk: {taste:left} and {taste:right}. Jump: {taste:jump}. Read, talk, open: {taste:interact}." }

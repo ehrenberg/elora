@@ -171,6 +171,28 @@ pub fn status(
     }
 }
 
+/// Platzhalter `{taste:<aktion>}` durch die belegte Taste ersetzen (Schilder, E-273),
+/// z. B. `{taste:jump}` → „Leertaste“.
+pub fn with_keys(text: &str, keys: &crate::bindings::Bindings, lang: &Lang) -> String {
+    let mut out = String::with_capacity(text.len());
+    let mut rest = text;
+    while let Some(i) = rest.find("{taste:") {
+        out.push_str(&rest[..i]);
+        let after = &rest[i + 7..];
+        let Some(end) = after.find('}') else {
+            out.push_str(&rest[i..]);
+            return out;
+        };
+        match crate::bindings::GameAction::from_name(&after[..end]) {
+            Some(a) => out.push_str(&keys.trigger(a).label(lang)),
+            None => out.push_str(&rest[i..i + 8 + end]),
+        }
+        rest = &after[end + 1..];
+    }
+    out.push_str(rest);
+    out
+}
+
 /// Zeilenumbruch an Wortgrenzen für die Breite `max` (Pixel).
 pub fn wrap(ui: &Ui<'_>, text: &str, size: f32, max: f32) -> Vec<String> {
     let mut lines = Vec::new();
@@ -233,11 +255,12 @@ pub fn dialog(
     code: &str,
     v: &DialogView<'_>,
     screen: Vec2,
+    keys: &crate::bindings::Bindings,
 ) -> Option<usize> {
     let s = ui.s;
     let w = (screen.x - 48.0 * s).min(920.0 * s);
     let text_w = w - 170.0 * s;
-    let lines = wrap(ui, v.text.get(code), 13.0, text_w);
+    let lines = wrap(ui, &with_keys(v.text.get(code), keys, lang), 13.0, text_w);
     #[allow(clippy::cast_precision_loss)]
     let h =
         (54.0 + lines.len() as f32 * 19.0 + v.choices.len() as f32 * 30.0 + 26.0).max(170.0) * s;
@@ -302,7 +325,7 @@ pub fn dialog(
             Align::Left,
         );
         ui.label(
-            c.text.get(code),
+            &with_keys(c.text.get(code), keys, lang),
             Vec2::new(x + 34.0 * s, y),
             12.0,
             ui::TEXT,
@@ -412,6 +435,24 @@ mod tests {
     use elora_adventure::{Conversation, Location};
     use elora_render::{Font, ShapeBatch};
 
+    #[test]
+    fn key_placeholders_show_the_bound_key() {
+        let lang = Lang::new(Language::De);
+        let keys = crate::bindings::Bindings::default();
+        let interact = keys
+            .trigger(crate::bindings::GameAction::Interact)
+            .label(&lang);
+        assert_eq!(
+            with_keys("Drück {taste:interact}!", &keys, &lang),
+            format!("Drück {interact}!")
+        );
+        assert_eq!(
+            with_keys("{taste:gibtsnicht} a", &keys, &lang),
+            "{taste:gibtsnicht} a"
+        );
+        assert_eq!(with_keys("offen {taste:", &keys, &lang), "offen {taste:");
+    }
+
     /// Sichtprüfung: `cargo test -p elora-client --bin elora adventure_hud_sheet -- --ignored`,
     /// dann `cargo xtask svg-preview target/abenteuer-hud.svg target/abenteuer-hud.png 1280`.
     #[test]
@@ -453,7 +494,15 @@ mod tests {
             text: &node.text,
             choices: choices.iter().map(|&i| (i, &node.choice[i])).collect(),
         };
-        dialog(&mut ui, &art, &lang, "de", &view, screen);
+        dialog(
+            &mut ui,
+            &art,
+            &lang,
+            "de",
+            &view,
+            screen,
+            &crate::bindings::Bindings::default(),
+        );
         conv.choose(&c, &mut save, 0);
         status(&mut ui, &art, &lang, "de", &c, &save, screen);
         bubble(&mut ui, "Hallo, Elora!", Vec2::new(300.0, 200.0));

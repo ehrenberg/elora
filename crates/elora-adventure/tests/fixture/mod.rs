@@ -1,12 +1,8 @@
-//! Test-Karten des Abenteuers (A1.6): `maps/abenteuer/tauwinkel.emap` und `wiese-1.emap`.
-//! Schlichte Testfassungen, bis die richtigen Karten mit A1.9 entstehen.
-//!
-//! Neu schreiben: `cargo test -p elora-adventure --test maps -- --ignored`
+//! Schlichte Test-Karten der Sitzung (A1.6), unabhängig von den Prolog-Karten (A1.9):
+//! `tauwinkel` und `wiese-1` mit Truhe, Hebel und Tor, Übergang, Zonen und Gegnern.
 
-#![allow(clippy::many_single_char_names)]
+#![allow(clippy::many_single_char_names, dead_code)]
 
-use elora_adventure::Content;
-use elora_adventure::check::{map_links, map_objects};
 use elora_map::adventure::{CameraMode, SwitchTrigger};
 use elora_map::{Map, Object, ObjectKind};
 use elora_sim::Vec2;
@@ -52,7 +48,7 @@ fn o(id: &str, pos: Vec2, kind: ObjectKind) -> Object {
     }
 }
 
-fn tauwinkel() -> Map {
+pub fn tauwinkel() -> Map {
     let (w, h, floor) = (70, 24, 20);
     let mut g = grid(w, h, floor);
     // Tor: Durchgang in Spalte 46, darüber eine Decke, damit man nicht drüberspringt
@@ -151,7 +147,7 @@ fn tauwinkel() -> Map {
     m
 }
 
-fn wiese() -> Map {
+pub fn wiese() -> Map {
     let (w, h, floor) = (90, 26, 22);
     let mut g = grid(w, h, floor);
     // Brücke über eine Senke
@@ -197,7 +193,7 @@ fn wiese() -> Map {
             },
         ),
         o(
-            "bruecke",
+            "wiesenrand",
             corner(24, 12),
             ObjectKind::Zone {
                 size: Vec2::new(12.0 * T, 10.0 * T),
@@ -248,44 +244,24 @@ fn wiese() -> Map {
     m
 }
 
+/// Test-Karte nach Name.
+pub fn load(name: &str) -> Map {
+    match name {
+        "tauwinkel" => tauwinkel(),
+        "wiese-1" => wiese(),
+        _ => panic!("keine Test-Karte {name}"),
+    }
+}
+
 #[test]
 fn test_maps_match_content_and_link_up() {
-    let c = Content::builtin();
+    let c = elora_adventure::Content::builtin();
     let (a, b) = (tauwinkel(), wiese());
     for m in [&a, &b] {
-        let enc = elora_map::encode(m);
-        let back = elora_map::decode(&enc).expect("Karte gültig");
-        let errors = map_objects(&c, &back);
+        let back = elora_map::decode(&elora_map::encode(m)).expect("Karte gültig");
+        let errors = elora_adventure::check::map_objects(&c, &back);
         assert!(errors.is_empty(), "{errors:?}");
     }
-    let errors = map_links(&[("tauwinkel", &a), ("wiese-1", &b)]);
+    let errors = elora_adventure::check::map_links(&[("tauwinkel", &a), ("wiese-1", &b)]);
     assert!(errors.is_empty(), "{errors:?}");
-    assert_eq!(c.progression.start_map, "tauwinkel");
-    assert!(a.adventure.object(&c.progression.start_spawn).is_some());
-}
-
-#[test]
-fn shipped_test_maps_are_current() {
-    for (name, map) in [("tauwinkel", tauwinkel()), ("wiese-1", wiese())] {
-        let path = format!(
-            "{}/../../maps/abenteuer/{name}.emap",
-            env!("CARGO_MANIFEST_DIR")
-        );
-        let file = std::fs::read(&path).expect("Karte vorhanden – mit --ignored erzeugen");
-        assert_eq!(
-            elora_map::decode(&file).expect("gültig"),
-            map,
-            "{name} veraltet – mit --ignored neu schreiben"
-        );
-    }
-}
-
-#[test]
-#[ignore = "schreibt maps/abenteuer/*.emap"]
-fn write_test_maps() {
-    let dir = format!("{}/../../maps/abenteuer", env!("CARGO_MANIFEST_DIR"));
-    std::fs::create_dir_all(&dir).unwrap();
-    for (name, map) in [("tauwinkel", tauwinkel()), ("wiese-1", wiese())] {
-        std::fs::write(format!("{dir}/{name}.emap"), elora_map::encode(&map)).unwrap();
-    }
 }

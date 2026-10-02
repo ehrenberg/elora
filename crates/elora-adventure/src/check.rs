@@ -218,6 +218,11 @@ fn quests(c: &Content) -> Result<(), String> {
                 ));
             }
         }
+        if let Some(n) = &q.next
+            && c.quest(n).is_none()
+        {
+            return Err(format!("{at}: nächste Aufgabe `{n}` gibt es nicht"));
+        }
         if let Some(f) = &q.fail_if {
             cond(c, f, &format!("{at} fail_if"))?;
         }

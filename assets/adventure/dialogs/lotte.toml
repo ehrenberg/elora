@@ -1,8 +1,18 @@
-# Lotte Lichtblau (A1.7) – Entwurf, Feinschliff mit A1.9.
+# Lotte Lichtblau (A1.9, Prolog)
 speaker = "lotte"
 
 [[start]]
+if = "nicht merker lotte.geschenk"
+node = "erster"
+
+[[start]]
 node = "laden"
+
+[[node]]
+id = "erster"
+text = { de = "Elora! Du willst los? Hier, ein Heiltrank – geht aufs Haus. Mit {taste:quick_heal} trinkst du ihn, wenn's brenzlig wird.", en = "Elora! Heading out? Here, a healing potion – on the house. Press {taste:quick_heal} to drink it when things get dicey." }
+next = "laden"
+do = ["gib heiltrank 1", "merker lotte.geschenk = 1"]
 
 [[node]]
 id = "laden"
@@ -24,7 +34,7 @@ text = { de = "Vielleicht später.", en = "Maybe later." }
 
 [[node]]
 id = "hut"
-text = { de = "Ach, du! Für dich gibt's bald bestimmt einen Freundschaftspreis.", en = "Oh, you! I'm sure there'll be a friendship price for you soon." }
+text = { de = "Ach, du! Für dich gibt's bestimmt bald einen Freundschaftspreis.", en = "Oh, you! I'm sure there'll be a friendship price for you soon." }
 
 [[bark]]
 text = { de = "Glitzerkram! Frisch reingekommen!", en = "Shiny stuff! Fresh in!" }

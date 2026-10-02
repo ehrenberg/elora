@@ -1,4 +1,4 @@
-# Tüftel (A1.4) – Entwurf für den Prolog, Feinschliff mit A1.9.
+# Tüftel (A1.9, Prolog)
 speaker = "tueftel"
 
 [[start]]
@@ -10,7 +10,7 @@ node = "werkstatt"
 
 [[node]]
 id = "rat"
-text = { de = "Zur Quelle? Wenn man den Hook … nein, warte … ja! Halt dich an Wänden fest und zieh. Und der Hammer – feste drauf!", en = "To the spring? If you take the hook … no, wait … yes! Grab the walls and pull. And the hammer – give it a good whack!" }
+text = { de = "Zur Quelle? Wenn man den Hook … nein, warte … ja! Halt {taste:hook} gedrückt, dann greift er an Erde und Holz. An Stein rutscht er ab, das merk dir. Probier's an meinem Übungsplatz hinter der Werkstatt!", en = "To the spring? If you take the hook … no, wait … yes! Hold {taste:hook} and it grabs earth and wood. It slips off stone, remember that. Try it at my practice ground behind the workshop!" }
 
 [[node.choice]]
 tone = "neugierig"
@@ -20,19 +20,25 @@ next = "birne"
 [[node.choice]]
 tone = "freundlich"
 text = { de = "Danke, Tüftel!", en = "Thanks, Tüftel!" }
+next = "klonk"
 
 [[node]]
 id = "birne"
 text = { de = "Meine Ideen-Birne! Leuchtet, wenn … na, du weißt schon.", en = "My idea bulb! It lights up when … well, you know." }
+next = "klonk"
 do = ["zuneigung tueftel +1"]
 
 [[node]]
+id = "klonk"
+text = { de = "Ach, und Klonk wollte dich auch noch sehen. Wegen … Hammer. Oder Hummel. Hammer, glaube ich.", en = "Oh, and Klonk wanted to see you too. About … hammer. Or bumblebee. Hammer, I think." }
+
+[[node]]
 id = "werkstatt"
-text = { de = "Wenn ich nur … hmm. Komm später wieder, ich tüftle gerade.", en = "If only I … hmm. Come back later, I'm tinkering." }
+text = { de = "Wenn ich nur … hmm. Bring mir einen Quellfunken, dann baue ich dir etwas Großartiges!", en = "If only I … hmm. Bring me a spring spark and I'll build you something marvellous!" }
 
 [[node.choice]]
-text = { de = "Zeig mir den Fähigkeitenbaum.", en = "Show me the skill tree." }
 if = "stufe >= 2"
+text = { de = "Zeig mir den Fähigkeitenbaum.", en = "Show me the skill tree." }
 do = ["baum"]
 
 [[node.choice]]

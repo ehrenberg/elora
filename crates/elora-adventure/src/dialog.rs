@@ -27,6 +27,9 @@ pub struct CharacterDef {
     /// Bild der Figur im Gesprächsfeld (Grafikname).
     #[serde(default)]
     pub portrait: Option<String>,
+    /// Dreht sich nicht zu Elora (Schilder).
+    #[serde(default)]
+    pub fixed: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

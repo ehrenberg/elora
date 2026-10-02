@@ -86,6 +86,7 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-275 | 2026-10-02 | Blässe des Dorfs (E-210) | ~~Entfärbter Look der Karte~~ (ersetzt durch E-277): über einen Farbfilter (Figuren bleiben bunt), wird mit jeder befreiten Quelle schwächer (Merker) | Entscheidung Projektinhaber |
 | E-276 | 2026-10-02 | Look der Gebäude (Entwürfe A1.9) | **Keine Tropfendächer**, nicht zu kindlich: kinderfreundlich, aber **ernst zu nehmen** (richtige Dächer, Fachwerk, Stein, Holz) | Entscheidung Projektinhaber |
 | E-277 | 2026-10-02 | Blässe des Dorfs (ersetzt E-275) | **Kein Farbfilter:** das Dorf bleibt normal gezeichnet, **einzelne Dinge sind verblasst** (Blumen, Fahnen, Beete, Brunnenplatz) und bekommen mit jeder befreiten Quelle ihre Farbe zurück (Deko-Varianten per Merker) | Entscheidung Projektinhaber |
+| E-278 | 2026-10-02 | Gebäude von Tauwinkel | **Zweite Fassung angenommen** (`design/tauwinkel-gebaeude.png`) | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 

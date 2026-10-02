@@ -1,8 +1,31 @@
-# Klonk (A1.7) – Entwurf, Feinschliff mit A1.9.
+# Klonk (A1.9, Prolog)
 speaker = "klonk"
 
 [[start]]
+if = "quest brunnen schritt klonk"
+node = "uebung"
+
+[[start]]
 node = "schmiede"
+
+[[node]]
+id = "uebung"
+text = { de = "Da bist du ja. Ohne Hammer gehst du mir nicht in die Wiesen. Hau mal auf die Strohpuppen da drüben – mit {taste:fire}. Feste! Die halten das aus.", en = "There you are. You're not going into the meadows without a hammer. Go and hit the straw dummies over there – with {taste:fire}. Hard! They can take it." }
+
+[[node.choice]]
+tone = "freundlich"
+text = { de = "Mach ich, Klonk.", en = "Will do, Klonk." }
+do = ["zuneigung klonk +1"]
+
+[[node.choice]]
+tone = "frech"
+text = { de = "Dein Bart ist größer als dein Hammer.", en = "Your beard is bigger than your hammer." }
+next = "bart"
+do = ["zuneigung klonk -1"]
+
+[[node]]
+id = "bart"
+text = { de = "Hmpf. Mein Bart hat auch schon mehr erlebt als du.", en = "Hmph. My beard has seen more than you have." }
 
 [[node]]
 id = "schmiede"
@@ -14,17 +37,7 @@ text = { de = "Kannst du meine Waffen verbessern?", en = "Can you improve my wea
 do = ["schmied"]
 
 [[node.choice]]
-tone = "frech"
-text = { de = "Dein Bart ist größer als dein Hammer.", en = "Your beard is bigger than your hammer." }
-next = "bart"
-do = ["zuneigung klonk -1"]
-
-[[node.choice]]
 text = { de = "Nur mal schauen.", en = "Just looking." }
-
-[[node]]
-id = "bart"
-text = { de = "Hmpf.", en = "Hmph." }
 
 [[bark]]
 text = { de = "*klong* *klong*", en = "*clang* *clang*" }

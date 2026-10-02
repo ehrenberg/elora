@@ -43,7 +43,7 @@ macro_rules! adventure_svgs {
 }
 
 const CHARACTER_FILES: &[(&str, &[u8])] =
-    adventure_svgs!("characters": "oma", "klonk", "lotte", "tueftel", "pip");
+    adventure_svgs!("characters": "oma", "klonk", "lotte", "tueftel", "pip", "wegweiser");
 /// Objekt und die Namen seiner beiden Teile (aus, an).
 const OBJECT_FILES: &[(&str, &[u8], [&str; 2])] = &[
     (
@@ -78,8 +78,12 @@ macro_rules! creatures {
     };
 }
 
-const CREATURE_FILES: &[(&str, &[u8])] =
-    creatures!("stachelkaefer", "pollenblaeser", "grashuepfer");
+const CREATURE_FILES: &[(&str, &[u8])] = creatures!(
+    "stachelkaefer",
+    "pollenblaeser",
+    "grashuepfer",
+    "strohpuppe"
+);
 
 impl CreatureArt {
     /// # Panics

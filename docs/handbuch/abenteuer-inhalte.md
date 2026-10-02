@@ -1,6 +1,6 @@
 # Abenteuer-Inhalte schreiben
 
-Stand: R2-M1 (A1.4) · Entscheidungen: E-217, E-218, E-246 bis E-251
+Stand: R2-M1 (A1.9) · Entscheidungen: E-217, E-218, E-246 bis E-251
 
 Alle Inhalte des Abenteuers sind TOML-Dateien unter `assets/adventure/`. Texte stehen immer in **beiden Sprachen nebeneinander** (`{ de = "…", en = "…" }`); fehlt eine, meldet das Spiel beim Laden Datei und Stelle (ebenso unbekannte Figuren, Gegenstände, Aufgaben, Knoten und Tippfehler in Bedingungen). `cargo xtask check` prüft die mitgelieferten Inhalte.
 
@@ -43,6 +43,10 @@ text = { de = "Pass auf dich auf!", en = "Take care!" }
 
 Ein Knoten kann `speaker = "elora"` oder eine andere Figur haben. Jeder Knoten muss erreichbar sein.
 
+**Tasten im Text (A1.9):** `{taste:<aktion>}` zeigt die belegte Taste, z. B. `{taste:jump}`, `{taste:interact}`, `{taste:hook}`, `{taste:fire}`, `{taste:down}`, `{taste:quick_heal}`, `{taste:scoreboard}` (Namen wie in den Einstellungen-Dateien der Steuerung). Gilt in Knoten, Antworten und Zurufen.
+
+**Schilder (E-273):** Wegweiser sind Figuren mit `fixed = true` in `characters.toml` (drehen sich nicht zu Elora); jedes Schild hat ein eigenes Gespräch `dialogs/schild-<ort>.toml`.
+
 ## Bedingungen (`if`)
 
 | Bedingung | Bedeutung |
@@ -80,6 +84,7 @@ name = { de = "…", en = "…" }
 desc = { de = "…", en = "…" }
 reward = { xp = 50, glanztropfen = 30, items = [{ item = "heiltrank", count = 1 }], points = 0 }
 fail_if = "merker brunnen.zu_spaet"    # freiwillig: scheitert, sobald das gilt (E-250)
+next = "bluetenquelle"                 # freiwillig: beginnt nach dem Abschluss
 
 [[quest.step]]
 id = "tueftel"

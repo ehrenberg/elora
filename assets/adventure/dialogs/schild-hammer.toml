@@ -1,0 +1,9 @@
+# Wegweiser (E-273, A1.9)
+speaker = "wegweiser"
+
+[[start]]
+node = "text"
+
+[[node]]
+id = "text"
+text = { de = "Klonks Übungspuppen. Hau mit {taste:fire} zu – die Puppen halten das aus.", en = "Klonk's practice dummies. Strike with {taste:fire} – the dummies can take it." }

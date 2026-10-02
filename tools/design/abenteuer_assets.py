@@ -15,11 +15,34 @@ import re  # noqa: E402
 from abenteuer_figuren import (glanztropfen, glitzerstein, grashuepfer, klonk, lotte, oma_pfuetze, pip,  # noqa: E402
                                pollenblaeser, quellstein, schalter, stachelkaefer, truhe, tueftel)
 
+def strohpuppe():
+    """Übungspuppe bei Klonk (A1.9): Pfahl, Strohsack, Zielscheibe."""
+    s = '<path d="M 0,0 V -20" stroke="#2b2b2b" stroke-width="10"/><path d="M 0,0 V -20" stroke="#a87a52" stroke-width="5"/>'
+    s += '<path d="M -26,-34 H 26" stroke="#2b2b2b" stroke-width="9" stroke-linecap="round"/><path d="M -26,-34 H 26" stroke="#a87a52" stroke-width="5" stroke-linecap="round"/>'
+    s += '<ellipse cx="0" cy="-44" rx="22" ry="26" fill="#e0c070" stroke="#2b2b2b" stroke-width="4"/>'
+    for y in (-58, -44, -30):
+        s += f'<path d="M -16,{y} Q 0,{y + 4} 16,{y}" fill="none" stroke="#b8963c" stroke-width="2.5"/>'
+    s += '<circle cx="0" cy="-46" r="9" fill="#e8685a" stroke="#2b2b2b" stroke-width="3"/><circle cx="0" cy="-46" r="3.5" fill="#fffaf0"/>'
+    s += '<circle cx="0" cy="-78" r="11" fill="#e0c070" stroke="#2b2b2b" stroke-width="4"/>'
+    s += '<path d="M -6,-88 l -4,-8 M 0,-89 l 0,-9 M 6,-88 l 4,-8" stroke="#b8963c" stroke-width="2.5" stroke-linecap="round"/>'
+    return s
+
+
+def wegweiser_npc():
+    """Lesbares Schild (E-273), gleiche Form wie die Deko."""
+    s = '<rect x="-4" y="-92" width="8" height="92" fill="#a87a52" stroke="#2b2b2b" stroke-width="2"/>'
+    s += '<path d="M -6,-84 H 42 L 52,-75 L 42,-66 H -6 Z" fill="#c9955c" stroke="#2b2b2b" stroke-width="2" stroke-linejoin="round"/>'
+    s += '<path d="M 6,-58 H -42 L -52,-49 L -42,-40 H 6 Z" fill="#b8865a" stroke="#2b2b2b" stroke-width="2" stroke-linejoin="round"/>'
+    s += '<path d="M 4,-78 H 34 M 4,-72 H 24 M -8,-52 H -36 M -8,-46 H -26" stroke="#7a5434" stroke-width="1.6" stroke-linecap="round"/>'
+    return s
+
+
 # Name: (Boxhöhe, Maßstab, {Teil: Zeichnung})
 CREATURES = {
     'stachelkaefer': (26, 0.36, {'idle': stachelkaefer()}),
     'pollenblaeser': (60, 0.42, {'idle': pollenblaeser(shots=False)}),
     'grashuepfer': (28, 0.36, {'idle': grashuepfer(), 'air': grashuepfer(True, arc=False)}),
+    'strohpuppe': (40, 0.5, {'idle': strohpuppe()}),
 }
 
 
@@ -30,6 +53,8 @@ CHARACTERS = {
     'lotte': (1.0, lotte()),
     'tueftel': (1.0, tueftel()),
     'pip': (0.7, pip()),
+    # gleiche Größe wie die Deko (Welteinheiten): 1 / 0,36
+    'wegweiser': (1 / 0.36 * 0.55, wegweiser_npc()),
 }
 
 
