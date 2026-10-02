@@ -1,0 +1,30 @@
+# Lotte Lichtblau (A1.7) – Entwurf, Feinschliff mit A1.9.
+speaker = "lotte"
+
+[[start]]
+node = "laden"
+
+[[node]]
+id = "laden"
+text = { de = "Frisch reingekommen: Sandstiefel! Kaum gebraucht, nur ein bisschen verschluckt.", en = "Fresh in: sand boots! Barely used, only slightly swallowed." }
+
+[[node.choice]]
+tone = "neugierig"
+text = { de = "Zeig mal, was du hast.", en = "Show me what you've got." }
+do = ["laden lotte"]
+
+[[node.choice]]
+tone = "freundlich"
+text = { de = "Dein Hut ist wunderschön, Lotte!", en = "Your hat is beautiful, Lotte!" }
+next = "hut"
+do = ["zuneigung lotte +1"]
+
+[[node.choice]]
+text = { de = "Vielleicht später.", en = "Maybe later." }
+
+[[node]]
+id = "hut"
+text = { de = "Ach, du! Für dich gibt's bald bestimmt einen Freundschaftspreis.", en = "Oh, you! I'm sure there'll be a friendship price for you soon." }
+
+[[bark]]
+text = { de = "Glitzerkram! Frisch reingekommen!", en = "Shiny stuff! Fresh in!" }

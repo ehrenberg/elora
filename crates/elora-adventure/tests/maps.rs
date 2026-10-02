@@ -88,6 +88,26 @@ fn tauwinkel() -> Map {
             },
         ),
         o(
+            "lotte",
+            at(29, floor, 28.0),
+            ObjectKind::Npc {
+                character: "lotte".into(),
+                dialog: "lotte".into(),
+                facing: -1,
+                walk: 0.0,
+            },
+        ),
+        o(
+            "klonk",
+            at(38, floor, 28.0),
+            ObjectKind::Npc {
+                character: "klonk".into(),
+                dialog: "klonk".into(),
+                facing: -1,
+                walk: 0.0,
+            },
+        ),
+        o(
             "truhe-1",
             at(34, floor, 26.0),
             ObjectKind::Chest {

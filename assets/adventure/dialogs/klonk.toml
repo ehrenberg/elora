@@ -1,0 +1,30 @@
+# Klonk (A1.7) – Entwurf, Feinschliff mit A1.9.
+speaker = "klonk"
+
+[[start]]
+node = "schmiede"
+
+[[node]]
+id = "schmiede"
+text = { de = "Hammer kaputt? Zeig her. Hmpf. Das wird was.", en = "Hammer broken? Show me. Hmph. That'll do." }
+
+[[node.choice]]
+tone = "freundlich"
+text = { de = "Kannst du meine Waffen verbessern?", en = "Can you improve my weapons?" }
+do = ["schmied"]
+
+[[node.choice]]
+tone = "frech"
+text = { de = "Dein Bart ist größer als dein Hammer.", en = "Your beard is bigger than your hammer." }
+next = "bart"
+do = ["zuneigung klonk -1"]
+
+[[node.choice]]
+text = { de = "Nur mal schauen.", en = "Just looking." }
+
+[[node]]
+id = "bart"
+text = { de = "Hmpf.", en = "Hmph." }
+
+[[bark]]
+text = { de = "*klong* *klong*", en = "*clang* *clang*" }
