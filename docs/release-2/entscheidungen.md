@@ -75,6 +75,7 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-264 | 2026-10-02 | Reiter „Karte“ | **Weltkarte des Taulands:** Tauwinkel und die fünf Gebiete, freigeschaltete farbig, Eloras Ort, Abschnitte des aktuellen Gebiets | Entscheidung Projektinhaber |
 | E-265 | 2026-10-02 | Heiltränke | **Schnelltaste Q** trinkt einen Heiltrank, andere Verbrauchsgegenstände über das Inventar | Entscheidung Projektinhaber |
 | E-266 | 2026-10-02 | Vorausschauende Kamera (E-224) | **Leicht nach Laufrichtung** (bis etwa 3 Tiles, sanft), dazu Mausblick und Kamera-Zonen | Entscheidung Projektinhaber |
+| E-267 | 2026-10-02 | Kamera beim Stehenbleiben (Playtest A1.7) | **Vorausschau bleibt stehen:** Vorsprung in die zuletzt gelaufene Richtung, Wechsel erst nach kurzem Laufen in die andere Richtung (ersetzt das Zurückziehen aus E-266) | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 

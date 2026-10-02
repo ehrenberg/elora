@@ -1097,8 +1097,13 @@ impl ApplicationHandler for App {
     }
 
     fn window_event(&mut self, event_loop: &ActiveEventLoop, _: WindowId, event: WindowEvent) {
-        // Solange die Maus frei ist, bekommt egui (Debug-Panel) die Eingaben zuerst
-        let to_gui = !self.cursor_grabbed;
+        // Solange die Maus frei ist und egui sichtbar (Debug-Panel, Editor, Fenster),
+        // bekommt egui die Eingaben zuerst – sonst schluckt es z. B. Tab und Klicks der Spiel-UI
+        let egui_visible = self.show_panel
+            || self.screen == Screen::Editor
+            || self.net.show_host
+            || self.net.key_warning.is_some();
+        let to_gui = !self.cursor_grabbed && egui_visible;
         if to_gui
             && let Some(gfx) = &mut self.gfx
             && gfx.gui.on_window_event(&gfx.window, &event)

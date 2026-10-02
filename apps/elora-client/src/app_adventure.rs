@@ -25,11 +25,15 @@ use crate::{App, Screen};
 
 /// Wie lange ein Zuruf über der Figur steht.
 const BARK_SECS: f32 = 3.5;
-/// Vorausschau der Kamera in Laufrichtung (E-266): höchstens 3 Tiles, je Einheit/Tick Tempo.
-const LOOKAHEAD_MAX: f32 = 96.0;
-const LOOKAHEAD_PER_SPEED: f32 = 9.0;
+/// Vorausschau der Kamera in die zuletzt gelaufene Richtung (E-266, E-267): 3 Tiles, bleibt beim
+/// Stehenbleiben stehen und wechselt erst nach kurzem Laufen in die andere Richtung.
+const LOOKAHEAD: f32 = 96.0;
+/// Ab diesem Tempo (Einheiten/Tick) zählt Laufen als Richtung.
+const LOOKAHEAD_MIN_SPEED: f32 = 2.0;
+/// So lange (s) muss Elora in die andere Richtung laufen, bis die Kamera wechselt.
+const LOOKAHEAD_TURN_SECS: f32 = 0.4;
 /// Nachziehen je Sekunde (Vorausschau, Übergang in Kamera-Zonen).
-const LOOKAHEAD_RATE: f32 = 2.5;
+const LOOKAHEAD_RATE: f32 = 1.5;
 const ZONE_RATE: f32 = 3.0;
 
 /// Übersicht eines Platzes für das Menü.
@@ -60,6 +64,9 @@ pub struct AdventureMode {
     previous: Option<Map>,
     /// Vorausschau der Kamera (Einheiten) und Anteil der Kamera-Zone (0..1, weicher Übergang).
     look: f32,
+    /// Richtung der Vorausschau (−1, 0, 1) und Zeit in der Gegenrichtung (E-267).
+    look_dir: i8,
+    look_turn: f32,
     zone_mix: f32,
     zone_center: Vec2,
     /// Abenteuer-Menü offen (Tab, Laden, Schmiede, E-263).
@@ -138,6 +145,8 @@ impl App {
             interact: false,
             previous: None,
             look: 0.0,
+            look_dir: 0,
+            look_turn: 0.0,
             zone_mix: 0.0,
             zone_center: Vec2::ZERO,
             menu: None,
@@ -489,7 +498,7 @@ impl App {
         if self
             .adventure
             .as_ref()
-            .is_some_and(|a| a.conversation.is_none() && a.dead.is_none())
+            .is_some_and(|a| a.conversation.is_none() && a.dead.is_none() && a.menu.is_none())
         {
             self.set_cursor_grab(true);
         }
@@ -547,8 +556,22 @@ impl App {
             .world
             .character(a.session.player)
             .map_or(Vec2::ZERO, |c| c.core.vel);
-        let target = (vel.x * LOOKAHEAD_PER_SPEED).clamp(-LOOKAHEAD_MAX, LOOKAHEAD_MAX);
-        if a.conversation.is_none() {
+        if a.conversation.is_none() && a.menu.is_none() {
+            if vel.x.abs() > LOOKAHEAD_MIN_SPEED {
+                let dir: i8 = if vel.x < 0.0 { -1 } else { 1 };
+                if a.look_dir == 0 {
+                    a.look_dir = dir;
+                } else if dir == a.look_dir {
+                    a.look_turn = 0.0;
+                } else {
+                    a.look_turn += dt;
+                    if a.look_turn > LOOKAHEAD_TURN_SECS {
+                        a.look_dir = dir;
+                        a.look_turn = 0.0;
+                    }
+                }
+            }
+            let target = f32::from(a.look_dir) * LOOKAHEAD;
             a.look += (target - a.look) * (dt * LOOKAHEAD_RATE).min(1.0);
         }
         let free = center + Vec2::new(a.look, 0.0);
