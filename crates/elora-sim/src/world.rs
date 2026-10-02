@@ -24,8 +24,6 @@ use crate::weapon::Weapon;
 const NO_AMMO_DELAY_MS: u32 = 125;
 /// Sperre nach einem Hammer-Treffer (Original: 1/3 s).
 const HAMMER_HIT_DELAY: u32 = TICKS_PER_SECOND / 3;
-/// Radius des Hammer-Treffers um den Schlagpunkt (Original: halbe Körpergröße).
-pub(crate) const HAMMER_RADIUS: f32 = PHYS_SIZE * 0.5;
 /// Radius eines Projektils bei der Treffer-Prüfung.
 const PROJECTILE_RADIUS: f32 = 6.0;
 /// Aufnahme-Radius eines Pickups (Original: 20, effektiv < 40 durch `ClosestEntity`).
@@ -459,7 +457,7 @@ impl World {
             .filter_map(|(j, p)| Some((j, p?)))
             .filter(|&(j, p)| {
                 j != i
-                    && p.distance(start) < HAMMER_RADIUS + PHYS_SIZE
+                    && p.distance(start) < self.tuning.hammer_reach + PHYS_SIZE
                     && self.collision.intersect_line(start, p).is_none()
             })
             .collect();
@@ -530,17 +528,25 @@ impl World {
         let to = hit_wall.map_or(to, |h| h.before);
 
         let player_hit = self.intersect_character(l.pos, to, 0.0, owner);
-        if let Some((c, at)) = self.intersect_creature(l.pos, to, 0.0)
-            && player_hit.is_none_or(|(_, p)| l.pos.distance(at) < l.pos.distance(p))
-        {
-            l.from = l.pos;
-            l.pos = at;
-            l.energy = -1.0;
-            let dir = (to - l.from).normalize();
+        let limit = player_hit.map_or(to, |(_, p)| p);
+        // Gegner bis zum ersten Spieler; mit Durchschlag (A-21) mehrere hintereinander
+        let creatures = self.creatures_on_line(l.pos, limit);
+        if !creatures.is_empty() {
+            let dir = (to - l.pos).normalize();
             let (force, damage) = (dir * self.tuning.laser_knockback, self.tuning.laser_damage);
-            self.lasers[idx] = l.clone();
-            self.damage_creature(c, force, damage, Some(l.owner));
-            return true;
+            let n = 1 + self.tuning.laser_pierce as usize;
+            for &(id, _) in creatures.iter().take(n) {
+                if let Some(c) = self.creatures.iter().position(|c| c.id == id) {
+                    self.damage_creature(c, force, damage, Some(l.owner));
+                }
+            }
+            if creatures.len() >= n || self.tuning.laser_pierce == 0 {
+                l.from = l.pos;
+                l.pos = creatures[(n - 1).min(creatures.len() - 1)].1;
+                l.energy = -1.0;
+                self.lasers[idx] = l;
+                return true;
+            }
         }
         if let Some((target, at)) = player_hit {
             l.from = l.pos;
@@ -665,6 +671,9 @@ impl World {
             self.take_damage(j, force, damage, Some(owner), DeathCause::Weapon(weapon));
         }
         self.explode_creatures(pos, owner, max_damage);
+        if weapon == Weapon::Grenade {
+            self.grenade_shards(pos, owner, max_damage);
+        }
     }
 
     /// Schaden und Kraft auf Slot `i`. Liefert `true`, wenn die Figur gestorben ist.

@@ -3,7 +3,7 @@
 use crate::tuning::{Tuning, ms_to_ticks};
 
 /// Waffen in Release 1, in der Reihenfolge der Tasten 1–3 (E-051).
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Weapon {
     Hammer,

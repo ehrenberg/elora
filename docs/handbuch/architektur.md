@@ -13,13 +13,14 @@ Stand: Release 1 (0.9.0) · Grundsätze: [`grundsaetze.md`](grundsaetze.md)
 
 ```
 crates/
-  elora-sim        Simulation: Welt, Kollision (Tile-Arten), Figur, Hook, Waffen, Pickups, Dummies, Tuning, Aufzeichnungen
+  elora-sim        Simulation: Welt, Kollision (Tile-Arten), Figur, Hook, Waffen, Pickups, Dummies, Fähigkeiten, Gegner, Beute, Tuning, Aufzeichnungen
   elora-game       Spielregeln: Modi, Punkte, Runden, Teams, Aufwärmen, Sudden Death
   elora-map        Kartenmodell und Format .emap (binär, zlib), Aussehen (Materialien, Deko, Ebenen, Envelopes, SVGs)
   elora-protocol   Nachrichten, Snapshots mit Delta, Huffman, Server-Info, übersetzbare Meldungen
   elora-net        UDP: Token, Noise-Handshake, Zuverlässigkeit, Fragmente, Info-Abfrage, IPv4/IPv6, Netz-Simulator
   elora-render     wgpu-Renderer: Formen, Meshes, SVG-Assets, Text, Kamera
   elora-audio      Sounds: prozeduraler Generator, Zuordnung zu Ereignissen, Wiedergabe (kira)
+  elora-adventure  Abenteuer: Inhalte als Daten, Spielstand, Stufen, Fähigkeitenbaum, Inventar, Läden, Ausbau, Speichern
 apps/
   elora-client     das Spiel (lib: Online-Client, Szene, Kartenspeicher; bin: Fenster, Menüs, HUD, Editor)
   elora-server     dedizierter Server (lib: Spielserver, Konsole, Abstimmungen, Pfade; bin: Programm, Master-Anmeldung)
@@ -27,7 +28,7 @@ apps/
 xtask/             cargo xtask: check, package, map-dump, svg-preview, sound-preview/-import, train-huffman, net-stats
 deploy/            Betrieb: master/ (systemd, Docker, Proxy), master-php/ (Webspace: Master + Projektseite)
 tools/design/      Python-Generatoren für Entwürfe, Kartengrafik und Release-Karten
-assets/            SVGs (Figur, Items, Emotes, Karten), Sounds, Schriften, Sprachen
+assets/            SVGs (Figur, Items, Emotes, Karten), Sounds, Schriften, Sprachen; adventure/ mit Inhalten des Abenteuers
 maps/              mitgelieferte Karten (.emap)
 ```
 

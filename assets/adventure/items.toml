@@ -1,0 +1,92 @@
+# Gegenstände des Abenteuers (Eigennamen wie Tauwinkel bleiben auch auf Englisch, E-212)
+# (P-20 bis P-26). type = currency | equipment | consumable | material | key
+# Boni siehe crates/elora-adventure/src/data.rs (Bonus), z. B. { max_health = 1 } oder { damage_pct = 10.0 }
+
+[[item]]
+id = "glanztropfen"
+type = "currency"
+name = { de = "Glanztropfen", en = "Gleam drops" }
+desc = { de = "Die Währung von Tauwinkel.", en = "The currency of Tauwinkel." }
+
+# Materialien je Gebiet (P-13)
+[[item]]
+id = "bernstein"
+type = "material"
+name = { de = "Bernstein", en = "Amber" }
+desc = { de = "Aus den Blütenwiesen. Klonk mag ihn für Hämmer.", en = "From the Blütenwiesen. Klonk likes it for hammers." }
+
+[[item]]
+id = "harz"
+type = "material"
+name = { de = "Harz", en = "Resin" }
+desc = { de = "Klebrig, aus dem Murmelwald.", en = "Sticky, from the Murmelwald." }
+
+[[item]]
+id = "glutstein"
+type = "material"
+name = { de = "Glutstein", en = "Ember stone" }
+desc = { de = "Noch warm, aus der Glutsandwüste.", en = "Still warm, from the Glutsandwüste." }
+
+[[item]]
+id = "eiskristall"
+type = "material"
+name = { de = "Eiskristall", en = "Ice crystal" }
+desc = { de = "Schmilzt nie, aus den Frostspitzen.", en = "Never melts, from the Frostspitzen." }
+
+[[item]]
+id = "sternsplitter"
+type = "material"
+name = { de = "Sternsplitter", en = "Star shard" }
+desc = { de = "Leuchtet leise, aus der Sternschlucht.", en = "Glows softly, from the Sternschlucht." }
+
+# Verbrauch (P-25)
+[[item]]
+id = "heiltrank"
+type = "consumable"
+effect = { heal = 5 }
+price = 15
+name = { de = "Heiltrank", en = "Healing potion" }
+desc = { de = "Stellt 5 Leben her.", en = "Restores 5 health." }
+
+[[item]]
+id = "tautrank"
+type = "consumable"
+effect = { tau = 10 }
+price = 25
+name = { de = "Tautrank", en = "Dew potion" }
+desc = { de = "10 Sekunden Hook-Ruck ohne Abklingzeit.", en = "Hook jerk without cooldown for 10 seconds." }
+
+# Ausrüstung (Beispiele aus dem Entwurf)
+[[item]]
+id = "strohhut"
+type = "equipment"
+slot = "hat"
+price = 200
+bonuses = [{ max_health = 1 }]
+name = { de = "Strohhut", en = "Straw hat" }
+
+[[item]]
+id = "sandstiefel"
+type = "equipment"
+slot = "boots"
+price = 80
+bonuses = [{ armor = 1 }]
+name = { de = "Sandstiefel", en = "Sand boots" }
+desc = { de = "Kaum gebraucht, nur ein bisschen verschluckt.", en = "Barely used, only slightly swallowed." }
+
+[[item]]
+id = "gluecksanhaenger"
+type = "equipment"
+slot = "pendant"
+price = 120
+bonuses = [{ drops_pct = 10.0 }]
+name = { de = "Glücksanhänger", en = "Lucky pendant" }
+
+[[item]]
+id = "tauumhang"
+type = "equipment"
+slot = "cape"
+rarity = "rare"
+bonuses = [{ max_health = 1 }, { glide_fall = -0.2 }]
+name = { de = "Tauumhang", en = "Dew cape" }
+desc = { de = "Riecht ein bisschen nach Morgen.", en = "Smells a little like morning." }

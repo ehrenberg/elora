@@ -1,0 +1,82 @@
+# Waffen-Ausbau bei Klonk (P-12, P-13, E-243). weapon = Hammer | Grenade | Laser
+
+[[upgrade]]
+weapon = "Hammer"
+level = 1
+name = { de = "Wucht", en = "Heft" }
+desc = { de = "+1 Schaden", en = "+1 damage" }
+glanztropfen = 40
+materials = [{ item = "bernstein", count = 3 }]
+bonuses = [{ hammer_damage = 1 }]
+
+[[upgrade]]
+weapon = "Hammer"
+level = 2
+name = { de = "Reichweite", en = "Reach" }
+desc = { de = "+30 % Reichweite", en = "+30 % reach" }
+glanztropfen = 120
+materials = [{ item = "harz", count = 4 }]
+bonuses = [{ hammer_reach_pct = 30.0 }]
+
+[[upgrade]]
+weapon = "Hammer"
+level = 3
+name = { de = "Schockwelle", en = "Shockwave" }
+desc = { de = "Trifft alle Gegner um Elora", en = "Hits every enemy around Elora" }
+glanztropfen = 300
+materials = [{ item = "sternsplitter", count = 3 }]
+bonuses = [{ hammer_shockwave = 1 }]
+
+[[upgrade]]
+weapon = "Grenade"
+level = 1
+name = { de = "Größere Explosion", en = "Bigger blast" }
+desc = { de = "+20 % Explosion", en = "+20 % blast" }
+glanztropfen = 80
+materials = [{ item = "harz", count = 3 }]
+bonuses = [{ explosion_pct = 20.0 }]
+
+[[upgrade]]
+weapon = "Grenade"
+level = 2
+name = { de = "Splitter", en = "Shards" }
+desc = { de = "3 kleine Nach-Explosionen", en = "3 small after-blasts" }
+glanztropfen = 180
+materials = [{ item = "glutstein", count = 4 }]
+bonuses = [{ grenade_shards = 3 }]
+
+[[upgrade]]
+weapon = "Grenade"
+level = 3
+name = { de = "Große Tasche", en = "Big pouch" }
+desc = { de = "+2 Munition", en = "+2 ammo" }
+glanztropfen = 300
+materials = [{ item = "eiskristall", count = 3 }]
+bonuses = [{ ammo = 2 }]
+
+[[upgrade]]
+weapon = "Laser"
+level = 1
+name = { de = "Abpraller", en = "Ricochet" }
+desc = { de = "+1 Abpraller", en = "+1 bounce" }
+glanztropfen = 150
+materials = [{ item = "glutstein", count = 3 }]
+bonuses = [{ laser_bounces = 1 }]
+
+[[upgrade]]
+weapon = "Laser"
+level = 2
+name = { de = "Durchschlag", en = "Pierce" }
+desc = { de = "Trifft bis zu 3 Gegner", en = "Hits up to 3 enemies" }
+glanztropfen = 240
+materials = [{ item = "eiskristall", count = 4 }]
+bonuses = [{ laser_pierce = 2 }]
+
+[[upgrade]]
+weapon = "Laser"
+level = 3
+name = { de = "Schnelles Laden", en = "Quick charge" }
+desc = { de = "Ladezeit −25 %", en = "Charge time −25 %" }
+glanztropfen = 360
+materials = [{ item = "sternsplitter", count = 3 }]
+bonuses = [{ laser_delay_pct = -25.0 }]

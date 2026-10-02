@@ -1,0 +1,598 @@
+//! Spielstand und seine Regeln: Stufen, Fähigkeitenbaum, Inventar, Ausrüstung, Waffen,
+//! Läden, Tod und Speichern (E-219, E-220, E-241 bis E-244).
+
+use std::collections::{BTreeMap, BTreeSet};
+
+use elora_sim::{Abilities, Ability, Event, Tuning, Weapon};
+use serde::{Deserialize, Serialize};
+
+use crate::data::{Branch, Content, Effect, GLANZTROPFEN, ItemKind, Slot};
+use crate::stats::Stats;
+
+/// Ort im Abenteuer: Karte und Speicherpunkt bzw. Eingang.
+#[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
+pub struct Location {
+    pub map: String,
+    pub spawn: String,
+}
+
+/// Alles, was ein Spielstand enthält (P-33).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct SaveGame {
+    pub level: u32,
+    /// Erfahrung innerhalb der aktuellen Stufe.
+    pub xp: u32,
+    pub health: i32,
+    pub glanztropfen: u32,
+    /// Seit dem letzten Speicherpunkt gesammelt (Verlust beim Tod, E-220).
+    pub glanz_since_save: u32,
+    /// Zusätzliche Tautropfen-Punkte aus Aufgaben.
+    pub bonus_points: u32,
+    /// Gelernte Knoten mit Rang.
+    pub skills: BTreeMap<String, u8>,
+    pub inventory: BTreeMap<String, u32>,
+    pub equipped: BTreeMap<Slot, String>,
+    /// Besessene Waffen mit Ausbaustufe (0 = ohne Ausbau).
+    pub weapons: BTreeMap<Weapon, u8>,
+    /// Gebietsfähigkeiten (Bits von [`Abilities`]).
+    pub abilities: u8,
+    /// Weltzustand: Schalter, Türen, Truhen, Aufgaben, Folgen aus Gesprächen …
+    pub flags: BTreeMap<String, i64>,
+    /// Zerbrochener Bröckelboden je Karte (E-230).
+    pub broken: BTreeMap<String, BTreeSet<(i32, i32)>>,
+    /// Besiegte Bosse und besondere Gegner (E-235), z. B. `wiese-3:hummel`.
+    pub defeated: BTreeSet<String>,
+    pub location: Location,
+    pub play_time_secs: u64,
+}
+
+/// Was der Spieler sehen soll (Anzeige, Sound).
+#[derive(Debug, Clone, PartialEq)]
+pub enum Notice {
+    LevelUp { level: u32 },
+    Xp(u32),
+    Item { id: String, count: u32 },
+}
+
+/// Warum etwas nicht geht.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
+pub enum Refusal {
+    #[error("unbekannt")]
+    Unknown,
+    #[error("keine Punkte")]
+    NoPoints,
+    #[error("höchster Rang erreicht")]
+    MaxRank,
+    #[error("Knoten darüber fehlt")]
+    Locked,
+    #[error("Gebietsfähigkeit fehlt")]
+    NeedsAbility,
+    #[error("zu wenig Glanztropfen")]
+    TooExpensive,
+    #[error("Material fehlt")]
+    MissingMaterial,
+    #[error("nicht vorhanden")]
+    NotOwned,
+    #[error("passt nicht")]
+    WrongKind,
+    #[error("Tasche voll")]
+    Full,
+    #[error("Waffe fehlt")]
+    NoWeapon,
+    #[error("höchste Stufe erreicht")]
+    MaxLevel,
+}
+
+impl SaveGame {
+    /// Neues Spiel: Stufe 1, nur der Hammer, volle Leben.
+    pub fn new(content: &Content, start: Location) -> Self {
+        Self {
+            level: 1,
+            xp: 0,
+            health: content.progression.base_health,
+            glanztropfen: 0,
+            glanz_since_save: 0,
+            bonus_points: 0,
+            skills: BTreeMap::new(),
+            inventory: BTreeMap::new(),
+            equipped: BTreeMap::new(),
+            weapons: BTreeMap::from([(Weapon::Hammer, 0)]),
+            abilities: 0,
+            flags: BTreeMap::new(),
+            broken: BTreeMap::new(),
+            defeated: BTreeSet::new(),
+            location: start,
+            play_time_secs: 0,
+        }
+    }
+
+    pub fn abilities(&self) -> Abilities {
+        Abilities::from_bits(self.abilities)
+    }
+
+    pub fn grant_ability(&mut self, a: Ability) {
+        let mut set = self.abilities();
+        set.set(a, true);
+        self.abilities = set.bits();
+    }
+
+    pub fn flag(&self, key: &str) -> i64 {
+        self.flags.get(key).copied().unwrap_or(0)
+    }
+
+    pub fn set_flag(&mut self, key: &str, value: i64) {
+        if value == 0 {
+            self.flags.remove(key);
+        } else {
+            self.flags.insert(key.to_owned(), value);
+        }
+    }
+
+    pub fn count(&self, item: &str) -> u32 {
+        if item == GLANZTROPFEN {
+            self.glanztropfen
+        } else {
+            self.inventory.get(item).copied().unwrap_or(0)
+        }
+    }
+
+    // ------------------------------------------------------------ Stufen
+
+    /// Freie Tautropfen-Punkte.
+    pub fn free_points(&self) -> u32 {
+        let spent: u32 = self.skills.values().map(|&r| u32::from(r)).sum();
+        (self.level - 1 + self.bonus_points).saturating_sub(spent)
+    }
+
+    /// Erfahrung gutschreiben; liefert Stufenaufstiege. Auf der Höchststufe bleibt sie stehen.
+    pub fn add_xp(&mut self, content: &Content, amount: u32) -> Vec<Notice> {
+        let mut out = vec![Notice::Xp(amount)];
+        self.xp += amount;
+        while self.level < content.progression.max_level {
+            let need = content.xp_to_next(self.level);
+            if self.xp < need {
+                break;
+            }
+            self.xp -= need;
+            self.level += 1;
+            self.health = self.max_health(content);
+            out.push(Notice::LevelUp { level: self.level });
+        }
+        if self.level >= content.progression.max_level {
+            self.xp = 0;
+        }
+        out
+    }
+
+    /// Alle Werte aus Baum, Ausrüstung und Waffen-Ausbau.
+    pub fn stats(&self, content: &Content) -> Stats {
+        let mut s = Stats::default();
+        for (id, &rank) in &self.skills {
+            if let Some(n) = content.skill(id) {
+                for _ in 0..rank {
+                    for b in &n.per_rank {
+                        s.add(b);
+                    }
+                }
+            }
+        }
+        for id in self.equipped.values() {
+            if let Some(ItemKind::Equipment { bonuses, .. }) = content.item(id).map(|i| &i.kind) {
+                for b in bonuses {
+                    s.add(b);
+                }
+            }
+        }
+        for (&w, &lvl) in &self.weapons {
+            for l in 1..=lvl {
+                if let Some(u) = content.upgrade(w, l) {
+                    for b in &u.bonuses {
+                        s.add(b);
+                    }
+                }
+            }
+        }
+        s
+    }
+
+    /// Höchste Leben: Grundwert + alle `health_every` Stufen eins + Boni (E-241).
+    pub fn max_health(&self, content: &Content) -> i32 {
+        let p = &content.progression;
+        let from_level = i32::try_from((self.level - 1) / p.health_every.max(1)).unwrap_or(0);
+        p.base_health + from_level + self.stats(content).max_health
+    }
+
+    /// Tuning der Simulation für diesen Spielstand.
+    pub fn tuning(&self, content: &Content, base: &Tuning) -> Tuning {
+        let mut t = self.stats(content).apply(base);
+        t.max_health = self.max_health(content);
+        t
+    }
+
+    // ------------------------------------------------------------ Fähigkeitenbaum
+
+    /// Kann der Knoten um einen Rang wachsen?
+    ///
+    /// # Errors
+    /// Mit dem Grund, warum nicht.
+    pub fn can_learn(&self, content: &Content, id: &str) -> Result<(), Refusal> {
+        let n = content.skill(id).ok_or(Refusal::Unknown)?;
+        let rank = self.skills.get(id).copied().unwrap_or(0);
+        if rank >= n.ranks {
+            return Err(Refusal::MaxRank);
+        }
+        if let Some(req) = &n.requires
+            && self.skills.get(req).copied().unwrap_or(0) == 0
+        {
+            return Err(Refusal::Locked);
+        }
+        if let Some(a) = n.ability
+            && !self.abilities().has(a)
+        {
+            return Err(Refusal::NeedsAbility);
+        }
+        if self.free_points() == 0 {
+            return Err(Refusal::NoPoints);
+        }
+        Ok(())
+    }
+
+    /// # Errors
+    /// Siehe [`Self::can_learn`].
+    pub fn learn(&mut self, content: &Content, id: &str) -> Result<u8, Refusal> {
+        self.can_learn(content, id)?;
+        let r = self.skills.entry(id.to_owned()).or_insert(0);
+        *r += 1;
+        Ok(*r)
+    }
+
+    /// Knoten eines Zweigs in Baum-Reihenfolge.
+    pub fn branch(
+        content: &Content,
+        branch: Branch,
+    ) -> impl Iterator<Item = &crate::data::SkillNode> {
+        content.skills.iter().filter(move |n| n.branch == branch)
+    }
+
+    // ------------------------------------------------------------ Inventar
+
+    /// Gegenstand hinzufügen; Verbrauch höchstens `consumable_max` (P-25).
+    ///
+    /// # Errors
+    /// Unbekannter Gegenstand oder volle Tasche bei Verbrauchsgegenständen.
+    pub fn add_item(&mut self, content: &Content, id: &str, count: u32) -> Result<(), Refusal> {
+        let def = content.item(id).ok_or(Refusal::Unknown)?;
+        match def.kind {
+            ItemKind::Currency => {
+                self.glanztropfen += count;
+                self.glanz_since_save += count;
+            }
+            ItemKind::Consumable { .. } => {
+                let max = content.progression.consumable_max;
+                let have = self.count(id);
+                if have >= max {
+                    return Err(Refusal::Full);
+                }
+                *self.inventory.entry(id.to_owned()).or_insert(0) = (have + count).min(max);
+            }
+            _ => *self.inventory.entry(id.to_owned()).or_insert(0) += count,
+        }
+        Ok(())
+    }
+
+    /// # Errors
+    /// Wenn nicht genug vorhanden ist.
+    pub fn remove_item(&mut self, id: &str, count: u32) -> Result<(), Refusal> {
+        if id == GLANZTROPFEN {
+            self.glanztropfen = self
+                .glanztropfen
+                .checked_sub(count)
+                .ok_or(Refusal::TooExpensive)?;
+            return Ok(());
+        }
+        let have = self.inventory.get_mut(id).ok_or(Refusal::NotOwned)?;
+        *have = have.checked_sub(count).ok_or(Refusal::NotOwned)?;
+        if *have == 0 {
+            self.inventory.remove(id);
+        }
+        Ok(())
+    }
+
+    /// Verbrauchsgegenstand benutzen; die Wirkung setzt der Aufrufer um (Heilen in der Welt).
+    ///
+    /// # Errors
+    /// Nicht vorhanden oder kein Verbrauchsgegenstand.
+    pub fn use_item(&mut self, content: &Content, id: &str) -> Result<Effect, Refusal> {
+        let Some(ItemKind::Consumable { effect }) = content.item(id).map(|i| &i.kind) else {
+            return Err(Refusal::WrongKind);
+        };
+        let effect = *effect;
+        self.remove_item(id, 1)?;
+        if let Effect::Heal(h) = effect {
+            self.health = (self.health + h).min(self.max_health(content));
+        }
+        Ok(effect)
+    }
+
+    /// Ausrüstung anlegen; ein vorher getragenes Stück geht zurück ins Inventar.
+    ///
+    /// # Errors
+    /// Nicht vorhanden oder keine Ausrüstung.
+    pub fn equip(&mut self, content: &Content, id: &str) -> Result<(), Refusal> {
+        let Some(ItemKind::Equipment { slot, .. }) = content.item(id).map(|i| &i.kind) else {
+            return Err(Refusal::WrongKind);
+        };
+        let slot = *slot;
+        self.remove_item(id, 1)?;
+        if let Some(old) = self.equipped.insert(slot, id.to_owned()) {
+            *self.inventory.entry(old).or_insert(0) += 1;
+        }
+        self.health = self.health.min(self.max_health(content));
+        Ok(())
+    }
+
+    pub fn unequip(&mut self, content: &Content, slot: Slot) {
+        if let Some(old) = self.equipped.remove(&slot) {
+            *self.inventory.entry(old).or_insert(0) += 1;
+        }
+        self.health = self.health.min(self.max_health(content));
+    }
+
+    // ------------------------------------------------------------ Läden und Ausbau
+
+    /// # Errors
+    /// Unbekannter Laden oder Gegenstand, zu teuer, Tasche voll.
+    pub fn buy(&mut self, content: &Content, shop: &str, id: &str) -> Result<(), Refusal> {
+        let s = content.shops.get(shop).ok_or(Refusal::Unknown)?;
+        if !s.stock.iter().any(|i| i == id) {
+            return Err(Refusal::Unknown);
+        }
+        let price = content.item(id).ok_or(Refusal::Unknown)?.price;
+        if self.glanztropfen < price {
+            return Err(Refusal::TooExpensive);
+        }
+        self.add_item(content, id, 1)?;
+        self.glanztropfen -= price;
+        Ok(())
+    }
+
+    /// Verkaufspreis (P-26); Schlüssel und Währung sind unverkäuflich.
+    pub fn sell_price(content: &Content, id: &str) -> Option<u32> {
+        let d = content.item(id)?;
+        if matches!(d.kind, ItemKind::Key | ItemKind::Currency) {
+            return None;
+        }
+        Some(d.price * content.progression.sell_pct / 100)
+    }
+
+    /// # Errors
+    /// Unverkäuflich oder nicht vorhanden.
+    pub fn sell(&mut self, content: &Content, id: &str) -> Result<u32, Refusal> {
+        let price = Self::sell_price(content, id).ok_or(Refusal::WrongKind)?;
+        self.remove_item(id, 1)?;
+        self.glanztropfen += price;
+        Ok(price)
+    }
+
+    pub fn give_weapon(&mut self, w: Weapon) {
+        self.weapons.entry(w).or_insert(0);
+    }
+
+    /// Nächste Ausbaustufe bei Klonk (P-12, P-13).
+    ///
+    /// # Errors
+    /// Waffe fehlt, höchste Stufe, zu teuer, Material fehlt.
+    pub fn upgrade(&mut self, content: &Content, w: Weapon) -> Result<u8, Refusal> {
+        let level = *self.weapons.get(&w).ok_or(Refusal::NoWeapon)?;
+        let u = content.upgrade(w, level + 1).ok_or(Refusal::MaxLevel)?;
+        if self.glanztropfen < u.glanztropfen {
+            return Err(Refusal::TooExpensive);
+        }
+        if u.materials.iter().any(|m| self.count(&m.item) < m.count) {
+            return Err(Refusal::MissingMaterial);
+        }
+        self.glanztropfen -= u.glanztropfen;
+        for m in &u.materials {
+            self.remove_item(&m.item, m.count)?;
+        }
+        self.weapons.insert(w, level + 1);
+        Ok(level + 1)
+    }
+
+    // ------------------------------------------------------------ Tod und Speichern
+
+    /// Tod (E-220, P-30): Verlust eines Teils der seit dem Speichern gesammelten
+    /// Glanztropfen; liefert den Verlust. Zurück geht es zum letzten Speicherpunkt.
+    pub fn die(&mut self, content: &Content) -> u32 {
+        let lost = (self.glanz_since_save * content.progression.death_loss_pct / 100)
+            .min(self.glanztropfen);
+        self.glanztropfen -= lost;
+        self.glanz_since_save = 0;
+        self.health = self.max_health(content);
+        lost
+    }
+
+    /// Speicherpunkt (P-31): Leben auffüllen, Ort merken.
+    pub fn rest(&mut self, content: &Content, at: Location) {
+        self.health = self.max_health(content);
+        self.glanz_since_save = 0;
+        self.location = at;
+    }
+
+    // ------------------------------------------------------------ Ereignisse der Welt
+
+    /// Ereignis der Simulation für die eigene Figur `me` auswerten: Erfahrung aus besiegten
+    /// Gegnern, Beute (mit Glanz-Fund).
+    pub fn on_event(
+        &mut self,
+        content: &Content,
+        kinds: &[elora_sim::CreatureKind],
+        me: usize,
+        e: &Event,
+    ) -> Vec<Notice> {
+        match e {
+            Event::CreatureDeath {
+                kind,
+                killer: Some(k),
+                ..
+            } if *k == me => {
+                let xp = kinds.get(*kind).map_or(0, |k| k.xp);
+                if xp > 0 {
+                    self.add_xp(content, xp)
+                } else {
+                    Vec::new()
+                }
+            }
+            Event::LootCollect {
+                player,
+                item,
+                count,
+                ..
+            } if *player == me => {
+                let mut count = *count;
+                if item == GLANZTROPFEN {
+                    let pct = self.stats(content).drops_pct;
+                    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+                    let extra = (count as f32 * pct / 100.0).round().max(0.0) as u32;
+                    count += extra;
+                }
+                match self.add_item(content, item, count) {
+                    Ok(()) => vec![Notice::Item {
+                        id: item.clone(),
+                        count,
+                    }],
+                    Err(_) => Vec::new(),
+                }
+            }
+            _ => Vec::new(),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn game() -> (Content, SaveGame) {
+        let c = Content::builtin();
+        let g = SaveGame::new(&c, Location::default());
+        (c, g)
+    }
+
+    #[test]
+    fn levels_follow_the_curve_and_raise_health() {
+        let (c, mut g) = game();
+        assert_eq!(c.xp_to_next(1), 25);
+        let n = g.add_xp(&c, 25);
+        assert!(n.contains(&Notice::LevelUp { level: 2 }));
+        assert_eq!(g.free_points(), 1);
+        assert_eq!(g.max_health(&c), 10);
+        g.add_xp(&c, c.xp_to_next(2));
+        assert_eq!(
+            (g.level, g.max_health(&c)),
+            (3, 11),
+            "alle 2 Stufen +1 Leben (E-241)"
+        );
+        g.add_xp(&c, 1_000_000);
+        assert_eq!((g.level, g.xp), (30, 0));
+        assert_eq!(g.max_health(&c), 24);
+        assert_eq!(g.free_points(), 29);
+    }
+
+    #[test]
+    fn skill_tree_needs_points_order_and_ability() {
+        let (c, mut g) = game();
+        assert_eq!(g.can_learn(&c, "kraft"), Err(Refusal::NoPoints));
+        g.add_xp(&c, 100_000);
+        assert_eq!(g.can_learn(&c, "schnelle_hand"), Err(Refusal::Locked));
+        assert_eq!(
+            g.can_learn(&c, "schneller_ruck"),
+            Err(Refusal::NeedsAbility)
+        );
+        g.grant_ability(Ability::HookRuck);
+        assert_eq!(g.learn(&c, "schneller_ruck"), Ok(1));
+        for _ in 0..3 {
+            g.learn(&c, "kraft").unwrap();
+        }
+        assert_eq!(g.learn(&c, "kraft"), Err(Refusal::MaxRank));
+        let t = g.tuning(&c, &Tuning::default());
+        assert_eq!(t.ruck_cooldown, 650);
+        assert!(t.hammer_damage >= 4);
+        let total: u32 = c.skills.iter().map(|n| u32::from(n.ranks)).sum();
+        assert!(total > 29 + 2, "nicht alles erreichbar (E-242): {total}");
+    }
+
+    #[test]
+    fn items_shop_and_equipment() {
+        let (c, mut g) = game();
+        assert_eq!(g.buy(&c, "lotte", "heiltrank"), Err(Refusal::TooExpensive));
+        g.add_item(&c, GLANZTROPFEN, 300).unwrap();
+        g.buy(&c, "lotte", "strohhut").unwrap();
+        assert_eq!(g.glanztropfen, 100);
+        g.equip(&c, "strohhut").unwrap();
+        assert_eq!(g.max_health(&c), 11);
+        assert_eq!(g.count("strohhut"), 0);
+        g.unequip(&c, Slot::Hat);
+        assert_eq!(g.sell(&c, "strohhut"), Ok(80), "40 % von 200");
+        for _ in 0..5 {
+            g.buy(&c, "lotte", "heiltrank").unwrap();
+        }
+        assert_eq!(g.buy(&c, "lotte", "heiltrank"), Err(Refusal::Full));
+        g.health = 2;
+        assert_eq!(g.use_item(&c, "heiltrank"), Ok(Effect::Heal(5)));
+        assert_eq!(g.health, 7);
+    }
+
+    #[test]
+    fn weapon_upgrades_cost_glanz_and_material() {
+        let (c, mut g) = game();
+        assert_eq!(g.upgrade(&c, Weapon::Laser), Err(Refusal::NoWeapon));
+        g.add_item(&c, GLANZTROPFEN, 50).unwrap();
+        assert_eq!(g.upgrade(&c, Weapon::Hammer), Err(Refusal::MissingMaterial));
+        g.add_item(&c, "bernstein", 3).unwrap();
+        assert_eq!(g.upgrade(&c, Weapon::Hammer), Ok(1));
+        assert_eq!((g.glanztropfen, g.count("bernstein")), (10, 0));
+        assert_eq!(g.tuning(&c, &Tuning::default()).hammer_damage, 4);
+    }
+
+    #[test]
+    fn death_loses_a_quarter_since_last_save() {
+        let (c, mut g) = game();
+        g.add_item(&c, GLANZTROPFEN, 100).unwrap();
+        g.rest(&c, Location::default());
+        g.add_item(&c, GLANZTROPFEN, 40).unwrap();
+        assert_eq!(g.die(&c), 10);
+        assert_eq!(g.glanztropfen, 130);
+        assert_eq!(g.die(&c), 0, "nichts mehr seit dem Speichern");
+    }
+
+    #[test]
+    fn world_events_give_xp_and_loot() {
+        let (c, mut g) = game();
+        let kinds = &c.creatures;
+        let k = kinds
+            .iter()
+            .position(|k| k.name == "stachelkaefer")
+            .unwrap();
+        let death = Event::CreatureDeath {
+            id: 1,
+            kind: k,
+            pos: elora_sim::Vec2::ZERO,
+            killer: Some(0),
+        };
+        g.on_event(&c, kinds, 0, &death);
+        assert_eq!(g.xp, kinds[k].xp);
+        assert!(
+            g.on_event(&c, kinds, 1, &death).is_empty(),
+            "fremder Sieg zählt nicht"
+        );
+        let loot = Event::LootCollect {
+            player: 0,
+            item: "bernstein".into(),
+            count: 2,
+            pos: elora_sim::Vec2::ZERO,
+        };
+        g.on_event(&c, kinds, 0, &loot);
+        assert_eq!(g.count("bernstein"), 2);
+    }
+}

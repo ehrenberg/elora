@@ -8,6 +8,7 @@ members = [
     "crates/elora-net",
     "crates/elora-game",
     "crates/elora-audio",
+    "crates/elora-adventure",
     "apps/elora-client",
     "apps/elora-server",
     "apps/elora-master",
@@ -29,6 +30,7 @@ elora-audio = { path = "crates/elora-audio", default-features = false }
 elora-protocol = { path = "crates/elora-protocol" }
 elora-net = { path = "crates/elora-net" }
 elora-game = { path = "crates/elora-game" }
+elora-adventure = { path = "crates/elora-adventure" }
 
 serde = { version = "1.0.229", features = ["derive"] }
 toml = "1.1.6"

@@ -6,7 +6,7 @@ use crate::creature::{Behavior, Creature, CreatureShot, HookTarget, Loot, rng, r
 use crate::event::{DeathCause, Event};
 use crate::math::Vec2;
 use crate::tuning::ms_to_ticks;
-use crate::world::{HAMMER_RADIUS, World};
+use crate::world::World;
 
 /// Kantenlänge der Beute-Box.
 const LOOT_SIZE: f32 = 12.0;
@@ -104,15 +104,48 @@ impl World {
         best.map(|(i, at, _)| (i, at))
     }
 
-    /// Hammerschlag auf Gegner; liefert die Anzahl der Treffer.
+    /// Gegner auf der Strecke `from`–`to`, nach Entfernung sortiert (Id, Schnittpunkt).
+    pub(crate) fn creatures_on_line(&self, from: Vec2, to: Vec2) -> Vec<(u32, Vec2)> {
+        let mut hits: Vec<(u32, Vec2, f32)> = self
+            .creatures
+            .iter()
+            .filter_map(|c| {
+                let r = self.creature_kinds[c.kind].radius();
+                let at = Vec2::closest_point_on_segment(from, to, c.pos);
+                (c.pos.distance(at) < r).then(|| (c.id, at, from.distance(at)))
+            })
+            .collect();
+        hits.sort_by(|a, b| a.2.total_cmp(&b.2));
+        hits.into_iter().map(|(id, at, _)| (id, at)).collect()
+    }
+
+    /// Splitter (A-20): kleine Nach-Explosionen um den Einschlag, nur gegen Gegner.
+    pub(crate) fn grenade_shards(&mut self, pos: Vec2, owner: usize, max_damage: i32) {
+        let n = self.tuning.grenade_shards;
+        for k in 0..n {
+            #[allow(clippy::cast_precision_loss)]
+            let a = std::f32::consts::FRAC_PI_2 + k as f32 * std::f32::consts::TAU / n as f32;
+            let p = pos + Vec2::new(a.cos(), a.sin()) * 48.0;
+            self.events.push(Event::Explosion { owner, pos: p });
+            self.explode_creatures(p, owner, (max_damage / 3).max(1));
+        }
+    }
+
+    /// Hammerschlag auf Gegner; liefert die Anzahl der Treffer. Mit Schockwelle (A-19)
+    /// trifft er alle Gegner um Elora.
     pub(crate) fn hammer_creatures(&mut self, owner: usize, pos: Vec2, start: Vec2) -> usize {
+        let (reach, shockwave) = (self.tuning.hammer_reach, self.tuning.hammer_shockwave);
         let hits: Vec<(u32, Vec2)> = self
             .creatures
             .iter()
             .filter(|c| {
                 let r = self.creature_kinds[c.kind].radius();
-                c.pos.distance(start) < HAMMER_RADIUS + r
-                    && self.collision.intersect_line(start, c.pos).is_none()
+                let near = if shockwave {
+                    c.pos.distance(pos) < reach + PHYS_SIZE * 2.0 + r
+                } else {
+                    c.pos.distance(start) < reach + r
+                };
+                near && self.collision.intersect_line(pos, c.pos).is_none()
             })
             .map(|c| (c.id, c.pos))
             .collect();
@@ -126,6 +159,8 @@ impl World {
             };
             let force = (dir + Vec2::new(0.0, -1.1)).normalize() * knockback;
             if let Some(i) = self.creature_index(id) {
+                let stun = ms_to_ticks(self.tuning.hammer_stun);
+                self.creatures[i].stun = self.creatures[i].stun.max(stun);
                 self.damage_creature(i, force, damage, Some(owner));
             }
         }

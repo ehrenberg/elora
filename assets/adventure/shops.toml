@@ -1,0 +1,5 @@
+# Läden (P-26). Verkaufen geht überall, wo ein Laden ist.
+
+[[shop]]
+id = "lotte"
+stock = ["heiltrank", "tautrank", "sandstiefel", "gluecksanhaenger", "strohhut"]

@@ -426,3 +426,105 @@ fn without_creatures_multiplayer_is_unchanged() {
     w.step(&[]);
     assert!(w.events.is_empty());
 }
+
+// ---------------------------------------------------------------- Ausbau (A1.3, A-16 bis A-21)
+
+/// Stehende Gegner, die nicht schießen.
+fn still_turret(w: &mut World) {
+    w.creature_kinds[1].behavior = Behavior::Turret {
+        interval_ms: 1_000_000,
+        range: 0.0,
+        shot_speed: 1.0,
+        shot_damage: 0,
+    };
+    w.creature_kinds[1].health = 100;
+}
+
+fn hits(ev: &[Event]) -> Vec<u32> {
+    ev.iter()
+        .filter_map(|e| match e {
+            Event::CreatureHit { id, .. } => Some(*id),
+            _ => None,
+        })
+        .collect()
+}
+
+#[test]
+fn laser_pierce_hits_several_creatures() {
+    for (pierce, expected) in [(0, 1), (2, 3)] {
+        let mut w = world(|_| {});
+        still_turret(&mut w);
+        w.tuning.laser_pierce = pierce;
+        elora(&mut w, 15);
+        w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
+        w.character_mut(0)
+            .unwrap()
+            .arsenal
+            .give(Weapon::Laser, 10, 10);
+        w.character_mut(0).unwrap().arsenal.active = Weapon::Laser;
+        for x in [18, 20, 22, 24] {
+            w.add_creature(1, on_floor(x, 26.0)).unwrap();
+        }
+        let ev = run(&mut w, fire(100, 0, 1), 1);
+        let mut ids = hits(&ev);
+        ids.dedup();
+        assert_eq!(ids.len(), expected, "Durchschlag {pierce}");
+    }
+}
+
+#[test]
+fn hammer_reach_stun_and_shockwave() {
+    // Gegner hinter Elora: nur die Schockwelle trifft ihn
+    for shockwave in [false, true] {
+        let mut w = world(|_| {});
+        still_turret(&mut w);
+        w.tuning.hammer_shockwave = shockwave;
+        w.tuning.hammer_stun = 1000;
+        elora(&mut w, 30);
+        w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
+        w.add_creature(1, on_floor(28, 26.0)).unwrap();
+        let ev = run(&mut w, fire(100, 0, 1), 2);
+        assert_eq!(!hits(&ev).is_empty(), shockwave, "Schockwelle {shockwave}");
+        if shockwave {
+            assert!(w.creatures[0].stun > 0, "Hammer betäubt (A-17)");
+        }
+    }
+    // größere Reichweite trifft weiter entfernte Gegner
+    for (reach, hit) in [(14.0, false), (60.0, true)] {
+        let mut w = world(|_| {});
+        still_turret(&mut w);
+        w.tuning.hammer_reach = reach;
+        elora(&mut w, 30);
+        w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
+        w.add_creature(
+            1,
+            Vec2::new(30.0 * 32.0 + 16.0 + 90.0, on_floor(30, 26.0).y),
+        )
+        .unwrap();
+        let ev = run(&mut w, fire(100, 0, 1), 2);
+        assert_eq!(!hits(&ev).is_empty(), hit, "Reichweite {reach}");
+    }
+}
+
+#[test]
+fn grenade_shards_add_small_blasts() {
+    let mut w = world(|_| {});
+    still_turret(&mut w);
+    w.tuning.grenade_shards = 3;
+    elora(&mut w, 15);
+    w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
+    w.character_mut(0)
+        .unwrap()
+        .arsenal
+        .give(Weapon::Grenade, 10, 10);
+    w.character_mut(0).unwrap().arsenal.active = Weapon::Grenade;
+    w.add_creature(1, on_floor(22, 26.0)).unwrap();
+    // ein Schuss: drücken, loslassen (Granate feuert bei gehaltener Taste weiter)
+    let mut ev = run(&mut w, fire(100, 0, 1), 1);
+    ev.extend(run(&mut w, fire(100, 0, 2), 40));
+    let blasts = ev
+        .iter()
+        .filter(|e| matches!(e, Event::Explosion { .. }))
+        .count();
+    assert_eq!(blasts, 4, "Einschlag + 3 Splitter");
+}

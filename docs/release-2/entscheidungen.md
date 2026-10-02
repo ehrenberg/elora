@@ -48,6 +48,12 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-237 | 2026-10-02 | Eigenschaden im Abenteuer | **Kein Eigenschaden**, nur Rückstoß (Granatensprünge bleiben frei) | Entscheidung Projektinhaber |
 | E-238 | 2026-10-02 | Leben der Gegner | **Kleiner Balken nach einem Treffer** für ein paar Sekunden; Bosse mit großem Balken oben | Entscheidung Projektinhaber |
 | E-239 | 2026-10-02 | Eloras Leben im Abenteuer | **10 wie im Mehrspieler**, Stufen und Ausrüstung erhöhen später; Rüstung nur über Ausrüstung | Entscheidung Projektinhaber |
+| E-240 | 2026-10-02 | Abnahme A1.2 | Gegner im Playtest **angenommen**; Werte in `creatures.toml` und A-03, A-11 bis A-15 gelten als Startwerte | Entscheidung Projektinhaber |
+| E-241 | 2026-10-02 | Stufen (O-204) | Höchststufe 30, Erfahrung bis zur nächsten Stufe 15 + 10 × Stufe, je Stufe 1 Tautropfen-Punkt; **alle 2 Stufen +1 Leben** (10 → 24) | Entscheidung Projektinhaber |
+| E-242 | 2026-10-02 | Fähigkeitenbaum (O-204) | Drei Zweige, 16 Knoten, **nicht alles erreichbar** (nachgezählt: 35 Ränge, 31 Punkte bis Stufe 30) ([`fortschritt.md`](fortschritt.md) §2) | Entscheidung Projektinhaber |
+| E-243 | 2026-10-02 | Waffen im Abenteuer (O-204) | Start mit Hammer, Granatwerfer nach Kapitel 1, Laser nach Kapitel 3; **Munition wie im Mehrspieler nur über Pickups und Truhen**; je Waffe 3 Ausbaustufen mit Glanztropfen und Gebietsmaterial | Entscheidung Projektinhaber |
+| E-244 | 2026-10-02 | Ausrüstung, Inventar, Tod (O-204) | Wie vorgeschlagen: keine Platzgrenze, keine Tempo- oder Sprungboni, Verlust beim Tod 25 % der seit dem Speichern gesammelten Glanztropfen | Entscheidung Projektinhaber |
+| E-245 | 2026-10-02 | Spielstände (O-202) | **Keine lesbaren Dateien:** Spielstände werden gepackt mit Prüfsumme gespeichert | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 
@@ -65,7 +71,7 @@ Neu für Release 2 (Rollenspiel-Abenteuer, siehe [`roadmap.md`](roadmap.md)):
 - [x] ~~O-201 Rollenspiel als Spielmodus~~ → E-204
 - [x] ~~O-202 Fortschritt speichern~~ → E-219 (im PvP-Modus nur für die Runde, E-204)
 - [x] ~~O-203 Geschichte und Welt~~ → E-207 · Ausarbeitung: [`weltbuch.md`](weltbuch.md) (Entwurf)
-- [ ] **O-204 Fortschrittssystem** – Ausgestaltung von Stufen, Fähigkeitenbaum, Waffen-Ausbau, Beute, Währung (Umfang: E-206)
+- [x] ~~O-204 Fortschrittssystem~~ → E-241 bis E-244 ([`fortschritt.md`](fortschritt.md))
 - [ ] **O-205 NPCs und Gegner** – Verhalten, Dialoge, Händler, Begleiter; Grundlage sind die Bots
 - [ ] **O-206 Abenteuer im Editor** – NPCs, Auslöser, Dialoge und Aufgaben in Karten
 - [ ] **O-207 Weitere Waffen** – welche, für welche Modi

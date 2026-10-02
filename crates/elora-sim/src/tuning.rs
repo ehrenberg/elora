@@ -141,6 +141,20 @@ pub struct Tuning {
     pub stomp_stun: u32,
     /// A-15: Reichweite, aus der Beute zu Elora fliegt (Einheiten, E-236)
     pub loot_magnet: f32,
+
+    // Ausbau im Abenteuer (A1.3); Standardwerte = Mehrspieler
+    /// A-16: Radius des Hammer-Treffers (Original: halbe Körpergröße)
+    pub hammer_reach: f32,
+    /// A-17: Hammer betäubt Gegner (ms)
+    pub hammer_stun: u32,
+    /// A-18: Faktor für den Rückstoß auf Gegner
+    pub creature_knockback: f32,
+    /// A-19: Hammer trifft alle Gegner um Elora (Schockwelle)
+    pub hammer_shockwave: bool,
+    /// A-20: kleine Nach-Explosionen einer Granate
+    pub grenade_shards: u32,
+    /// A-21: Laser trifft so viele Gegner zusätzlich
+    pub laser_pierce: u32,
 }
 
 impl Default for Tuning {
@@ -210,6 +224,12 @@ impl Default for Tuning {
             stomp_damage: 3,
             stomp_stun: 1500,
             loot_magnet: 96.0,
+            hammer_reach: 14.0,
+            hammer_stun: 0,
+            creature_knockback: 1.0,
+            hammer_shockwave: false,
+            grenade_shards: 0,
+            laser_pierce: 0,
         }
     }
 }

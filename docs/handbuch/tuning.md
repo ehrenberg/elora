@@ -89,7 +89,7 @@ Nur im Abenteuer und im Quellenkampf (E-223). Startwerte zum Anspielen; die Sand
 |---|---|---|---|---|
 | A-01 | Tempo Hook-Ruck | **16** Einheiten/Tick | Deutlich über dem normalen Hook-Zug (T-15: 14) | ✅ Startwert (E-231) |
 | A-02 | Abklingzeit Hook-Ruck | **800 ms** | Ein Ruck je Schwung, kein Dauerfeuer | ✅ Startwert (E-231) |
-| A-03 | Zug Heranhooken | **2,5** Einheiten/Tick² | Kleine Gegner fliegen in etwa einer halben Sekunde heran | offen (Playtest) |
+| A-03 | Zug Heranhooken | **2,5** Einheiten/Tick² | Kleine Gegner fliegen in etwa einer halben Sekunde heran | ✅ Startwert (E-240) |
 | A-04 | Tempo Stampfen | **22** Einheiten/Tick | Klar schneller als freier Fall | ✅ Startwert (E-231) |
 | A-05 | Radius Stoßwelle | **64** (2 Tiles) | Bricht den Bröckelboden unter und neben Elora | ✅ Startwert (E-231) |
 | A-06 | Haftdauer Eisgriff | **1,0 s** | Kurz festhalten, dann rutscht Elora ab; Boden oder Wandsprung setzen zurück | ✅ Startwert (E-231) |
@@ -97,11 +97,17 @@ Nur im Abenteuer und im Quellenkampf (E-223). Startwerte zum Anspielen; die Sand
 | A-08 | Wandsprung seitlich / hoch | **9 / 12** Einheiten/Tick | Etwas schwächer als der Bodensprung (T-05: 13,6); Doppelsprung bleibt | ✅ Startwert (E-231) |
 | A-09 | max. Fallen beim Gleiten | **2,0** Einheiten/Tick | Etwa ein Fünftel des freien Falls | ✅ Startwert (E-231) |
 | A-10 | Luftsteuerung beim Gleiten | **7,0** (normal T-07: 5,0) | Weit treiben | ✅ Startwert (E-231) |
-| A-11 | Schutz nach Treffer | **1000 ms** | Blinken, kein Mehrfachtreffer (E-234) | offen (Playtest) |
-| A-12 | Rückstoß bei Berührung | **8** Einheiten/Tick (seitlich, dazu 60 % nach oben) | Elora wird spürbar weggestoßen | offen (Playtest) |
-| A-13 | Schaden der Stampf-Stoßwelle | **3** | Wie ein Hammerschlag | offen (Playtest) |
-| A-14 | Betäubung durch Stampfen | **1500 ms** | Zeit für ein, zwei Schläge | offen (Playtest) |
-| A-15 | Beute-Magnet | **96** (3 Tiles) | Beute fliegt aus der Nähe zu Elora (E-236) | offen (Playtest) |
+| A-11 | Schutz nach Treffer | **1000 ms** | Blinken, kein Mehrfachtreffer (E-234) | ✅ Startwert (E-240) |
+| A-12 | Rückstoß bei Berührung | **8** Einheiten/Tick (seitlich, dazu 60 % nach oben) | Elora wird spürbar weggestoßen | ✅ Startwert (E-240) |
+| A-13 | Schaden der Stampf-Stoßwelle | **3** | Wie ein Hammerschlag | ✅ Startwert (E-240) |
+| A-14 | Betäubung durch Stampfen | **1500 ms** | Zeit für ein, zwei Schläge | ✅ Startwert (E-240) |
+| A-15 | Beute-Magnet | **96** (3 Tiles) | Beute fliegt aus der Nähe zu Elora (E-236) | ✅ Startwert (E-240) |
+| A-16 | Reichweite Hammer | **14** (wie Mehrspieler) | Ausbau „Reichweite“ (+30 %) | Ausbau (E-243) |
+| A-17 | Hammer betäubt | **0 ms** | Knoten „Betäubender Hammer“ (500 ms) | Ausbau (E-242) |
+| A-18 | Rückstoß auf Gegner | **× 1,0** | Knoten „Wucht“ (+25 % je Rang) | Ausbau (E-242) |
+| A-19 | Hammer-Schockwelle | **aus** | Ausbau Hammer III: trifft alle Gegner um Elora | Ausbau (E-243) |
+| A-20 | Granaten-Splitter | **0** | Ausbau Granatwerfer II: 3 kleine Nach-Explosionen (⅓ Schaden, nur Gegner) | Ausbau (E-243) |
+| A-21 | Laser-Durchschlag | **0** | Ausbau Laser II: trifft bis zu 3 Gegner | Ausbau (E-243) |
 
 ## F. Regeln aus Folgeentscheidungen
 
