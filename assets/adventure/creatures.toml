@@ -1,0 +1,43 @@
+# Gegnerarten des Abenteuers (R2-M1, A1.2). Startwerte zum Anspielen.
+#
+# size          Kollisionsbox (Breite, Höhe) in Einheiten (Elora: 28 × 28)
+# health        Leben (Hammer 3, Granate bis 6, Laser 5, Stampfen 3)
+# touch_damage  Schaden bei Berührung (E-232)
+# small         mit Heranhooken zu Elora ziehbar (E-233)
+# boss          bleibt besiegt (E-235)
+# xp            Erfahrung beim Besiegen
+# loot          Beute: item, min, max, chance (0–1, Standard 1)
+# behavior      type = walker | hopper | turret | flyer und seine Werte
+# Grafik: assets/adventure/creatures/<name>.svg (Teile `idle`, beim Hüpfer zusätzlich `air`)
+
+[[creature]]
+name = "stachelkaefer"
+size = [40.0, 26.0]
+health = 6
+touch_damage = 2
+small = true
+xp = 5
+loot = [{ item = "glanztropfen", min = 2, max = 4 }]
+behavior = { type = "walker", speed = 1.5, turn_at_edges = true }
+
+[[creature]]
+name = "pollenblaeser"
+size = [36.0, 60.0]
+health = 8
+touch_damage = 1
+xp = 8
+loot = [
+    { item = "glanztropfen", min = 3, max = 5 },
+    { item = "bernstein", min = 1, max = 1, chance = 0.25 },
+]
+behavior = { type = "turret", interval_ms = 2000, range = 420.0, shot_speed = 4.0, shot_damage = 2 }
+
+[[creature]]
+name = "grashuepfer"
+size = [36.0, 28.0]
+health = 5
+touch_damage = 2
+small = true
+xp = 6
+loot = [{ item = "glanztropfen", min = 2, max = 3 }]
+behavior = { type = "hopper", wait_ms = 900, jump_x = 6.0, jump_y = 11.0, sight = 320.0 }

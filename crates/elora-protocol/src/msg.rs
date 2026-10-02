@@ -336,7 +336,15 @@ fn get_pickup(r: &mut Reader<'_>) -> DecodeResult<PickupKind> {
 
 /// Geht das Ereignis über das Netz? Fähigkeiten gibt es online erst im Quellenkampf (E-223).
 fn networked(e: &Event) -> bool {
-    !matches!(e, Event::Stomp { .. } | Event::TileBroken { .. })
+    !matches!(
+        e,
+        Event::Stomp { .. }
+            | Event::TileBroken { .. }
+            | Event::CreatureHit { .. }
+            | Event::CreatureDeath { .. }
+            | Event::CreatureFire { .. }
+            | Event::LootCollect { .. }
+    )
 }
 
 /// Ereignisse (für Effekte) – Positionen gerundet auf ganze Einheiten.
@@ -401,6 +409,7 @@ fn put_event(w: &mut Writer, e: &Event) {
                 DeathCause::World => w.u8(0xff),
                 DeathCause::Suicide => w.u8(0xfe),
                 DeathCause::Game => w.u8(0xfd),
+                DeathCause::Creature => w.u8(0xfc),
                 DeathCause::Weapon(x) => put_weapon(w, x),
             }
             put_vec(w, pos);
@@ -427,7 +436,12 @@ fn put_event(w: &mut Writer, e: &Event) {
         | Event::FlagCapture { .. } => {
             put_flag_event(w, e);
         }
-        Event::Stomp { .. } | Event::TileBroken { .. } => unreachable!("nicht im Netz"),
+        Event::Stomp { .. }
+        | Event::TileBroken { .. }
+        | Event::CreatureHit { .. }
+        | Event::CreatureDeath { .. }
+        | Event::CreatureFire { .. }
+        | Event::LootCollect { .. } => unreachable!("nicht im Netz"),
     }
 }
 
@@ -506,6 +520,7 @@ fn get_event(r: &mut Reader<'_>) -> DecodeResult<Event> {
                 0xff => DeathCause::World,
                 0xfe => DeathCause::Suicide,
                 0xfd => DeathCause::Game,
+                0xfc => DeathCause::Creature,
                 x => DeathCause::Weapon(
                     Weapon::ALL
                         .get(usize::from(x))

@@ -39,6 +39,15 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-228 | 2026-10-02 | Eisgriff (A1.1) | Haften nur an einem **eigenen Klettertile**; dieses ist eine **feste, nicht hookbare** Wand | Entscheidung Projektinhaber |
 | E-229 | 2026-10-02 | Gleiten (A1.1) | **Springen halten beim Fallen** (nach dem Doppelsprung bzw. wenn er verbraucht ist) | Entscheidung Projektinhaber |
 | E-230 | 2026-10-02 | Bröckelboden | Bricht beim Stampfen und **bleibt zerbrochen**; im Abenteuer im Spielstand gemerkt, im PvP bis Rundenende | Entscheidung Projektinhaber |
+| E-231 | 2026-10-02 | Abnahme A1.1 | Fähigkeiten im Playtest **angenommen**; A-01 bis A-10 gelten als Startwerte | Entscheidung Projektinhaber |
+| E-232 | 2026-10-02 | Draufspringen (A1.2) | **Kein Effekt:** Gegner werden nur mit Waffen und Stampfen getroffen; Berührung schadet Elora | Entscheidung Projektinhaber |
+| E-233 | 2026-10-02 | Hook und Gegner (A1.2) | Hook **greift Gegner und zieht Elora heran**; mit Heranhooken werden kleine Gegner zu Elora gezogen | Entscheidung Projektinhaber |
+| E-234 | 2026-10-02 | Schutz nach Treffer (A1.2) | **Kurz unverwundbar (blinkend) und Rückstoß** weg vom Gegner | Entscheidung Projektinhaber |
+| E-235 | 2026-10-02 | Wiederkehr der Gegner (A1.2) | **Beim erneuten Betreten der Karte**; Bosse und besondere Gegner bleiben besiegt | Entscheidung Projektinhaber |
+| E-236 | 2026-10-02 | Beute (A1.2) | **Springt heraus, Elora zieht sie aus der Nähe an** (kleiner Magnet); liegende Beute verschwindet nicht | Entscheidung Projektinhaber |
+| E-237 | 2026-10-02 | Eigenschaden im Abenteuer | **Kein Eigenschaden**, nur Rückstoß (Granatensprünge bleiben frei) | Entscheidung Projektinhaber |
+| E-238 | 2026-10-02 | Leben der Gegner | **Kleiner Balken nach einem Treffer** für ein paar Sekunden; Bosse mit großem Balken oben | Entscheidung Projektinhaber |
+| E-239 | 2026-10-02 | Eloras Leben im Abenteuer | **10 wie im Mehrspieler**, Stufen und Ausrüstung erhöhen später; Rüstung nur über Ausrüstung | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 

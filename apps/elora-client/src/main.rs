@@ -12,6 +12,7 @@ mod bindings;
 mod browser;
 mod connection;
 mod controls;
+mod creatures;
 mod debug_ui;
 mod draw;
 mod editor;
@@ -196,6 +197,7 @@ struct App {
     figures: figure::Figures,
     figure_art: figure::FigureArt,
     item_art: items::ItemArt,
+    creature_art: creatures::CreatureArt,
     map_view: map_view::MapView,
     /// Leere Skin-Tabelle für die Sandbox.
     no_skins: std::collections::BTreeMap<usize, elora_protocol::Skin>,
@@ -253,6 +255,7 @@ impl App {
             figures: figure::Figures::default(),
             figure_art: figure::FigureArt::load(),
             item_art: items::ItemArt::load(),
+            creature_art: creatures::CreatureArt::load(),
             map_view: map_view::MapView::default(),
             no_skins: std::collections::BTreeMap::new(),
             last_frame: Instant::now(),
@@ -657,6 +660,7 @@ impl App {
                 figures: &self.figures,
                 art: &self.figure_art,
                 items: &self.item_art,
+                creatures: &self.creature_art,
                 emotes: &self.emotes,
                 skins: self
                     .online

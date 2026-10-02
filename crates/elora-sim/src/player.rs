@@ -14,6 +14,8 @@ pub struct Character {
     pub health: i32,
     pub armor: i32,
     pub arsenal: Arsenal,
+    /// Im Abenteuer nach einem Treffer bis zu diesem Tick unverwundbar (E-234).
+    pub invulnerable_until: u64,
 }
 
 impl Character {
@@ -24,6 +26,7 @@ impl Character {
             health: max_health,
             armor: 0,
             arsenal: Arsenal::default(),
+            invulnerable_until: 0,
         }
     }
 }

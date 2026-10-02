@@ -74,6 +74,8 @@ pub struct NetUi {
     /// Modus der Sandbox (Auswahl im Panel).
     pub sandbox_mode: Option<Mode>,
     pub sandbox_instagib: bool,
+    /// Gewählte Gegnerart zum Setzen in der Sandbox (A1.2).
+    pub creature_kind: usize,
 }
 
 impl Default for NetUi {
@@ -95,6 +97,7 @@ impl Default for NetUi {
             vote_target: None,
             sandbox_mode: None,
             sandbox_instagib: false,
+            creature_kind: 0,
         }
     }
 }
@@ -166,6 +169,7 @@ pub fn panel(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
                     action = action.take().or(buttons(ui, cx.status));
                     ui.separator();
                     abilities(ui, sandbox);
+                    creatures(ui, sandbox, &mut cx.net.creature_kind);
                     ui.separator();
                     tuning(ui, &mut sandbox.world.tuning);
                 } else if !cx.status.is_empty() {
@@ -683,7 +687,56 @@ fn abilities(ui: &mut egui::Ui, s: &mut Sandbox) {
             if a != before {
                 s.world.set_abilities(s.player, a);
             }
-            ui.small("Heranhooken kommt mit den Kreaturen (A1.2).");
+        });
+}
+
+/// Gegner zum Ausprobieren (A1.2): Abenteuer-Regeln, Gegner setzen und entfernen.
+fn creatures(ui: &mut egui::Ui, s: &mut Sandbox, kind: &mut usize) {
+    egui::CollapsingHeader::new("Gegner (Abenteuer)")
+        .default_open(false)
+        .show(ui, |ui| {
+            ui.checkbox(
+                &mut s.world.adventure,
+                "Abenteuer-Regeln (Schutz nach Treffer, kein Eigenschaden)",
+            );
+            let names: Vec<String> = s
+                .world
+                .creature_kinds
+                .iter()
+                .map(|k| k.name.clone())
+                .collect();
+            if names.is_empty() {
+                return;
+            }
+            *kind = (*kind).min(names.len() - 1);
+            ui.horizontal(|ui| {
+                egui::ComboBox::from_id_salt("creature_kind")
+                    .selected_text(&names[*kind])
+                    .show_ui(ui, |ui| {
+                        for (i, n) in names.iter().enumerate() {
+                            ui.selectable_value(kind, i, n);
+                        }
+                    });
+                if ui.button("Setzen").clicked()
+                    && let Some(c) = s.world.character(s.player)
+                {
+                    // vor Elora, in Blickrichtung
+                    let a = c.core.angle as f32 / 256.0;
+                    let side = if a.cos() < 0.0 { -1.0 } else { 1.0 };
+                    let pos = c.core.pos + elora_sim::Vec2::new(side * 160.0, -40.0);
+                    s.world.add_creature(*kind, pos);
+                }
+                if ui.button("Alle entfernen").clicked() {
+                    s.world.creatures.clear();
+                    s.world.creature_shots.clear();
+                    s.world.loot.clear();
+                }
+            });
+            ui.small(format!(
+                "{} Gegner, {} Beute liegt herum",
+                s.world.creatures.len(),
+                s.world.loot.len()
+            ));
         });
 }
 
@@ -698,7 +751,7 @@ fn tuning(ui: &mut egui::Ui, t: &mut Tuning) {
     section(ui, "Tile-Arten (T-31 bis T-35)", false, |ui| {
         tiles(ui, t, &d);
     });
-    section(ui, "Fähigkeiten (A-01 bis A-10)", false, |ui| {
+    section(ui, "Fähigkeiten & Gegner (A-01 bis A-15)", false, |ui| {
         ability_values(ui, t, &d);
     });
     section(ui, "Waffen (T-18 bis T-27)", false, |ui| {
@@ -983,6 +1036,49 @@ fn ability_values(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
         &mut t.wall_jump_y,
         0.0..=30.0,
         d.wall_jump_y,
+    );
+    ui.label("Gegner (A1.2)");
+    slider(
+        ui,
+        "Heranhooken Zug",
+        &mut t.pull_accel,
+        0.0..=10.0,
+        d.pull_accel,
+    );
+    int(
+        ui,
+        "Schutz nach Treffer ms",
+        &mut t.hit_invulnerable,
+        0..=5000,
+        d.hit_invulnerable,
+    );
+    slider(
+        ui,
+        "Rückstoß Berührung",
+        &mut t.hit_knockback,
+        0.0..=30.0,
+        d.hit_knockback,
+    );
+    int(
+        ui,
+        "Stampf-Schaden",
+        &mut t.stomp_damage,
+        0..=20,
+        d.stomp_damage,
+    );
+    int(
+        ui,
+        "Betäubung ms",
+        &mut t.stomp_stun,
+        0..=5000,
+        d.stomp_stun,
+    );
+    slider(
+        ui,
+        "Beute-Magnet",
+        &mut t.loot_magnet,
+        0.0..=400.0,
+        d.loot_magnet,
     );
     ui.label("Gleiten");
     slider(

@@ -81,22 +81,27 @@ E-015 verlangt eine Abweichung, aber nur „etwas“. Deshalb gilt:
 | T-35 | Geschwindigkeit Beschleuniger | – | **4,0** Einheiten/Tick | Trägt spürbar, man kommt noch dagegen an | ✅ |
 | T-36 | Plattform | – | **von unten/seitlich durchlässig**; Hook, Granate, Laser fliegen hindurch | Wie Einbahn-Plattformen in anderen Spielen | ✅ |
 
-## E3. Fähigkeiten im Abenteuer (R2-M1, E-226 bis E-230)
+## E3. Fähigkeiten und Gegner im Abenteuer (R2-M1, E-226 bis E-239)
 
-Nur im Abenteuer und im Quellenkampf (E-223). Startwerte zum Anspielen; die Sandbox zeigt sie unter „Fähigkeiten (A-01 bis A-10)“.
+Nur im Abenteuer und im Quellenkampf (E-223). Startwerte zum Anspielen; die Sandbox zeigt sie unter „Fähigkeiten & Gegner (A-01 bis A-15)“. Die Werte der Gegnerarten stehen in `assets/adventure/creatures.toml`.
 
 | # | Wert | Vorschlag | Begründung | Entscheidung |
 |---|---|---|---|---|
-| A-01 | Tempo Hook-Ruck | **16** Einheiten/Tick | Deutlich über dem normalen Hook-Zug (T-15: 14) | offen (Playtest) |
-| A-02 | Abklingzeit Hook-Ruck | **800 ms** | Ein Ruck je Schwung, kein Dauerfeuer | offen (Playtest) |
-| A-03 | Zugkraft Heranhooken | – | kommt mit den Kreaturen (A1.2) | offen |
-| A-04 | Tempo Stampfen | **22** Einheiten/Tick | Klar schneller als freier Fall | offen (Playtest) |
-| A-05 | Radius Stoßwelle | **64** (2 Tiles) | Bricht den Bröckelboden unter und neben Elora | offen (Playtest) |
-| A-06 | Haftdauer Eisgriff | **1,0 s** | Kurz festhalten, dann rutscht Elora ab; Boden oder Wandsprung setzen zurück | offen (Playtest) |
-| A-07 | Rutschtempo beim Haften | **1,0** Einheiten/Tick | Langsames Abgleiten | offen (Playtest) |
-| A-08 | Wandsprung seitlich / hoch | **9 / 12** Einheiten/Tick | Etwas schwächer als der Bodensprung (T-05: 13,6); Doppelsprung bleibt | offen (Playtest) |
-| A-09 | max. Fallen beim Gleiten | **2,0** Einheiten/Tick | Etwa ein Fünftel des freien Falls | offen (Playtest) |
-| A-10 | Luftsteuerung beim Gleiten | **7,0** (normal T-07: 5,0) | Weit treiben | offen (Playtest) |
+| A-01 | Tempo Hook-Ruck | **16** Einheiten/Tick | Deutlich über dem normalen Hook-Zug (T-15: 14) | ✅ Startwert (E-231) |
+| A-02 | Abklingzeit Hook-Ruck | **800 ms** | Ein Ruck je Schwung, kein Dauerfeuer | ✅ Startwert (E-231) |
+| A-03 | Zug Heranhooken | **2,5** Einheiten/Tick² | Kleine Gegner fliegen in etwa einer halben Sekunde heran | offen (Playtest) |
+| A-04 | Tempo Stampfen | **22** Einheiten/Tick | Klar schneller als freier Fall | ✅ Startwert (E-231) |
+| A-05 | Radius Stoßwelle | **64** (2 Tiles) | Bricht den Bröckelboden unter und neben Elora | ✅ Startwert (E-231) |
+| A-06 | Haftdauer Eisgriff | **1,0 s** | Kurz festhalten, dann rutscht Elora ab; Boden oder Wandsprung setzen zurück | ✅ Startwert (E-231) |
+| A-07 | Rutschtempo beim Haften | **1,0** Einheiten/Tick | Langsames Abgleiten | ✅ Startwert (E-231) |
+| A-08 | Wandsprung seitlich / hoch | **9 / 12** Einheiten/Tick | Etwas schwächer als der Bodensprung (T-05: 13,6); Doppelsprung bleibt | ✅ Startwert (E-231) |
+| A-09 | max. Fallen beim Gleiten | **2,0** Einheiten/Tick | Etwa ein Fünftel des freien Falls | ✅ Startwert (E-231) |
+| A-10 | Luftsteuerung beim Gleiten | **7,0** (normal T-07: 5,0) | Weit treiben | ✅ Startwert (E-231) |
+| A-11 | Schutz nach Treffer | **1000 ms** | Blinken, kein Mehrfachtreffer (E-234) | offen (Playtest) |
+| A-12 | Rückstoß bei Berührung | **8** Einheiten/Tick (seitlich, dazu 60 % nach oben) | Elora wird spürbar weggestoßen | offen (Playtest) |
+| A-13 | Schaden der Stampf-Stoßwelle | **3** | Wie ein Hammerschlag | offen (Playtest) |
+| A-14 | Betäubung durch Stampfen | **1500 ms** | Zeit für ein, zwei Schläge | offen (Playtest) |
+| A-15 | Beute-Magnet | **96** (3 Tiles) | Beute fliegt aus der Nähe zu Elora (E-236) | offen (Playtest) |
 
 ## F. Regeln aus Folgeentscheidungen
 

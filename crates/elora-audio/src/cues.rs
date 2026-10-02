@@ -189,7 +189,9 @@ pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>)
             }
             cues
         }
-        Event::Death { pos, .. } => vec![Cue::at(Sound::Death, pos)],
+        Event::Death { pos, .. } | Event::CreatureDeath { pos, .. } => {
+            vec![Cue::at(Sound::Death, pos)]
+        }
         Event::Spawn { pos, .. } => vec![Cue::at(Sound::Spawn, pos)],
         Event::Pickup { kind, pos, .. } => vec![Cue::at(
             match kind {
@@ -209,6 +211,16 @@ pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>)
         Event::FlagReturn { .. } => vec![Cue::global(Sound::FlagReturn)],
         Event::FlagCapture { .. } => vec![Cue::global(Sound::FlagCapture)],
         Event::TileBroken { .. } => Vec::new(),
+        // Gegner (A1.2): vorerst vorhandene Sounds, eigene liefert der Projektinhaber (E-109)
+        Event::CreatureHit { pos, from, .. } => {
+            let mut cues = vec![Cue::at(Sound::PainShort, pos)];
+            if from.is_some() && from == l.local {
+                cues.push(Cue::global(Sound::HitConfirm));
+            }
+            cues
+        }
+        Event::CreatureFire { pos, .. } => vec![Cue::at(Sound::HookFire, pos)],
+        Event::LootCollect { pos, .. } => vec![Cue::at(Sound::PickupArmor, pos)],
     }
 }
 

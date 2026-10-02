@@ -13,6 +13,8 @@ pub enum DeathCause {
     Suicide,
     /// Durch das Spiel entfernt (Team-Wechsel, Neustart) – wird nicht gewertet.
     Game,
+    /// Von einem Gegner im Abenteuer (A1.2).
+    Creature,
 }
 
 /// Art eines Pickups.
@@ -115,6 +117,32 @@ pub enum Event {
     TileBroken {
         tx: i32,
         ty: i32,
+    },
+    /// Gegner getroffen (`from`: Spieler-Slot).
+    CreatureHit {
+        id: u32,
+        pos: Vec2,
+        damage: i32,
+        from: Option<usize>,
+    },
+    /// Gegner besiegt (`killer`: Spieler-Slot); `kind` ist der Index der Art.
+    CreatureDeath {
+        id: u32,
+        kind: usize,
+        pos: Vec2,
+        killer: Option<usize>,
+    },
+    /// Gegner hat geschossen.
+    CreatureFire {
+        id: u32,
+        pos: Vec2,
+    },
+    /// Beute eingesammelt.
+    LootCollect {
+        player: usize,
+        item: String,
+        count: u32,
+        pos: Vec2,
     },
 }
 

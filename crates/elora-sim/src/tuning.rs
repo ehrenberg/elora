@@ -127,6 +127,20 @@ pub struct Tuning {
     pub glide_fall_speed: f32,
     /// A-10: Luftsteuerung beim Gleiten (normal T-07)
     pub glide_control_speed: f32,
+
+    // Kreaturen im Abenteuer (A1.2)
+    /// A-03: Zug des Heranhookens auf kleine Gegner (Einheiten/Tick²)
+    pub pull_accel: f32,
+    /// A-11: Unverwundbar nach einem Treffer im Abenteuer (ms, E-234)
+    pub hit_invulnerable: u32,
+    /// A-12: Rückstoß bei Berührung eines Gegners (Einheiten/Tick)
+    pub hit_knockback: f32,
+    /// A-13: Schaden der Stampf-Stoßwelle an Gegnern
+    pub stomp_damage: i32,
+    /// A-14: Betäubung durch die Stoßwelle (ms)
+    pub stomp_stun: u32,
+    /// A-15: Reichweite, aus der Beute zu Elora fliegt (Einheiten, E-236)
+    pub loot_magnet: f32,
 }
 
 impl Default for Tuning {
@@ -190,6 +204,12 @@ impl Default for Tuning {
             wall_jump_y: 12.0,
             glide_fall_speed: 2.0,
             glide_control_speed: 7.0,
+            pull_accel: 2.5,
+            hit_invulnerable: 1000,
+            hit_knockback: 8.0,
+            stomp_damage: 3,
+            stomp_stun: 1500,
+            loot_magnet: 96.0,
         }
     }
 }

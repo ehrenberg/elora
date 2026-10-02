@@ -196,7 +196,7 @@ def stachelkaefer():
     return s
 
 
-def pollenblaeser():
+def pollenblaeser(shots=True):
     s = '<path d="M 0,0 Q -6,-40 0,-70" fill="none" stroke="#2b2b2b" stroke-width="10"/>'
     s += '<path d="M 0,0 Q -6,-40 0,-70" fill="none" stroke="#4f9a3a" stroke-width="5"/>'
     s += '<path d="M -3,-26 Q -36,-40 -40,-18 Q -20,-12 -3,-26 Z" fill="#6cbf4a" stroke="#2b2b2b" stroke-width="3.5"/>'
@@ -213,7 +213,7 @@ def pollenblaeser():
     # Blasrohr nach rechts
     s += f'<path d="M {cx + 10},{cy + 4} L {cx + 44},{cy - 2} L {cx + 50},{cy - 12} L {cx + 52},{cy + 14} L {cx + 44},{cy + 8} L {cx + 10},{cy + 12} Z" fill="#e0c89a" stroke="#2b2b2b" stroke-width="3.5" stroke-linejoin="round"/>'
     # Pollenkugeln (Geschoss)
-    for i, (px, r) in enumerate(((84, 9), (116, 7))):
+    for i, (px, r) in enumerate(((84, 9), (116, 7)) if shots else ()):
         py = cy + 2 - i * 3
         s += f'<circle cx="{px}" cy="{py}" r="{r + 5}" fill="#f2c14e" opacity="0.35"/>'
         s += f'<circle cx="{px}" cy="{py}" r="{r}" fill="#f8dd6e" stroke="#2b2b2b" stroke-width="2.5"/>'
@@ -223,9 +223,9 @@ def pollenblaeser():
     return s
 
 
-def grashuepfer(jump=False):
+def grashuepfer(jump=False, arc=True):
     s = ''
-    if jump:
+    if jump and arc:
         s += '<path d="M -80,30 Q -40,-60 10,-30" fill="none" stroke="#8a7a66" stroke-width="3" stroke-dasharray="6 7"/>'
     # Hinterbein
     leg = 'M -20,-34 L -46,-62 L -54,-6 L -36,-4' if not jump else 'M -20,-34 L -60,-46 L -86,-20 L -96,-28'

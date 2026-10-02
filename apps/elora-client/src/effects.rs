@@ -431,7 +431,7 @@ impl Effects {
             Event::Spawn { pos, .. } => {
                 self.burst(pos, WHITE, &SPAWN_GLITTER);
             }
-            Event::Pickup { pos, .. } => {
+            Event::Pickup { pos, .. } | Event::LootCollect { pos, .. } => {
                 self.burst(pos, GLITTER, &PICKUP_GLITTER);
             }
             Event::Stomp { player, pos } => {
@@ -439,6 +439,16 @@ impl Effects {
                 if is_local(player) {
                     self.add_shake(0.35);
                 }
+            }
+            Event::CreatureHit { pos, from, .. } => {
+                self.burst(pos, WHITE, &HAMMER_SPARKS);
+                if from.is_some_and(is_local) {
+                    self.hit();
+                }
+            }
+            Event::CreatureDeath { pos, .. } => {
+                self.burst(pos, SMOKE, &DEATH_SMOKE);
+                self.burst(pos, GLITTER, &SPAWN_GLITTER);
             }
             Event::TileBroken { tx, ty } => {
                 #[allow(clippy::cast_precision_loss)]

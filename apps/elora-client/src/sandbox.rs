@@ -48,6 +48,8 @@ pub struct Sandbox {
     pub recording: Option<Recording>,
     /// Ereignisse seit dem letzten Abholen (für Effekte).
     pending_events: Vec<Event>,
+    /// Positionen von Gegnern und Beute vor dem letzten Tick (Interpolation), Id → Position.
+    prev_creatures: std::collections::HashMap<u32, Vec2>,
     /// Spielmodus in der Sandbox (E-075); `None` = freies Spiel ohne Regeln.
     pub rules: Option<Rules>,
     /// Hinweise der Regeln (Rundenende usw.).
@@ -73,6 +75,7 @@ impl Sandbox {
             reload_error: None,
             recording: None,
             pending_events: Vec::new(),
+            prev_creatures: std::collections::HashMap::new(),
             rules: None,
             notices: std::collections::VecDeque::new(),
         };
@@ -95,6 +98,13 @@ impl Sandbox {
                     .and_then(|p| p.character.as_ref())
                     .map(|c| c.core.clone())
             })
+            .collect();
+        self.prev_creatures = self
+            .world
+            .creatures
+            .iter()
+            .map(|c| (c.id, c.pos))
+            .chain(self.world.loot.iter().map(|l| (l.id, l.pos)))
             .collect();
         if let Some(c) = self.character() {
             self.last_pos = c.core.pos;
@@ -389,6 +399,7 @@ impl Sandbox {
             });
         }
         scene.add_shots(&self.world, alpha, |_| true);
+        scene.add_creatures(&self.world, &self.prev_creatures, alpha);
         scene.add_pickups(&self.world);
         scene.add_flags(&self.world);
         scene
@@ -404,8 +415,17 @@ impl Sandbox {
 }
 
 /// Welt aus der Karte plus menschlicher Spieler am besten Spawnpunkt.
+/// Gegnerarten des Abenteuers (A1.2).
+const CREATURES_TOML: &str = include_str!("../../../assets/adventure/creatures.toml");
+
+pub fn creature_kinds() -> Vec<elora_sim::CreatureKind> {
+    elora_sim::creature::kinds_from_toml(CREATURES_TOML)
+        .unwrap_or_else(|e| panic!("assets/adventure/creatures.toml: {e}"))
+}
+
 fn fresh_world(map: &Map, tuning: Tuning) -> (World, usize) {
     let mut world = map.world(tuning);
+    world.creature_kinds = creature_kinds();
     let player = world.join();
     if let Some(pos) = world.best_spawn() {
         world.spawn_character(player, pos);

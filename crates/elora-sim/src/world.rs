@@ -10,6 +10,7 @@
 use crate::TICKS_PER_SECOND;
 use crate::character::{CharacterCore, PHYS_SIZE};
 use crate::collision::Collision;
+use crate::creature::{Creature, CreatureKind, CreatureShot, HookTarget, Loot};
 use crate::dummy::{DummyBrain, DummyPattern};
 use crate::entities::{Flag, Laser, Pickup, Projectile};
 use crate::event::{DeathCause, Event, PickupKind};
@@ -24,7 +25,7 @@ const NO_AMMO_DELAY_MS: u32 = 125;
 /// Sperre nach einem Hammer-Treffer (Original: 1/3 s).
 const HAMMER_HIT_DELAY: u32 = TICKS_PER_SECOND / 3;
 /// Radius des Hammer-Treffers um den Schlagpunkt (Original: halbe Körpergröße).
-const HAMMER_RADIUS: f32 = PHYS_SIZE * 0.5;
+pub(crate) const HAMMER_RADIUS: f32 = PHYS_SIZE * 0.5;
 /// Radius eines Projektils bei der Treffer-Prüfung.
 const PROJECTILE_RADIUS: f32 = 6.0;
 /// Aufnahme-Radius eines Pickups (Original: 20, effektiv < 40 durch `ClosestEntity`).
@@ -62,6 +63,15 @@ pub struct World {
     /// Client-Vorhersage (E-057): Kräfte wirken, aber kein Schaden, kein Tod, keine
     /// Pickups und kein Respawn – das entscheidet allein der Server.
     pub prediction: bool,
+    /// Abenteuer-Regeln: Schutz nach Treffern (E-234), kein Eigenschaden (E-237).
+    pub adventure: bool,
+    /// Gegnerarten (A1.2); Kreaturen verweisen per Index darauf.
+    pub creature_kinds: Vec<CreatureKind>,
+    pub creatures: Vec<Creature>,
+    pub creature_shots: Vec<CreatureShot>,
+    pub loot: Vec<Loot>,
+    /// Nächste Id für Kreaturen und Beute.
+    pub next_id: u32,
 }
 
 impl World {
@@ -83,6 +93,12 @@ impl World {
             paused: false,
             events: Vec::new(),
             prediction: false,
+            adventure: false,
+            creature_kinds: Vec::new(),
+            creatures: Vec::new(),
+            creature_shots: Vec::new(),
+            loot: Vec::new(),
+            next_id: 1,
         }
     }
 
@@ -200,6 +216,7 @@ impl World {
         self.tick_characters();
         self.tick_flags_physics();
         self.tick_characters_deferred();
+        self.tick_creatures();
         self.tick_respawns();
         self.tick_flags_rules();
     }
@@ -461,9 +478,15 @@ impl World {
                 Vec2::new(0.0, -1.0)
             };
             let force = Vec2::new(0.0, -1.0) + (dir + Vec2::new(0.0, -1.1)).normalize() * knockback;
-            self.take_damage(j, force, damage, Some(i), Weapon::Hammer);
+            self.take_damage(
+                j,
+                force,
+                damage,
+                Some(i),
+                DeathCause::Weapon(Weapon::Hammer),
+            );
         }
-        targets.len()
+        targets.len() + self.hammer_creatures(i, pos, start)
     }
 
     /// Erster Spieler auf der Strecke `from`–`to` (Abstand < Körper + `radius`),
@@ -506,14 +529,33 @@ impl World {
         let hit_wall = self.collision.intersect_line_detail(l.pos, to);
         let to = hit_wall.map_or(to, |h| h.before);
 
-        if let Some((target, at)) = self.intersect_character(l.pos, to, 0.0, owner) {
+        let player_hit = self.intersect_character(l.pos, to, 0.0, owner);
+        if let Some((c, at)) = self.intersect_creature(l.pos, to, 0.0)
+            && player_hit.is_none_or(|(_, p)| l.pos.distance(at) < l.pos.distance(p))
+        {
             l.from = l.pos;
             l.pos = at;
             l.energy = -1.0;
             let dir = (to - l.from).normalize();
             let (force, damage) = (dir * self.tuning.laser_knockback, self.tuning.laser_damage);
             self.lasers[idx] = l.clone();
-            self.take_damage(target, force, damage, Some(l.owner), Weapon::Laser);
+            self.damage_creature(c, force, damage, Some(l.owner));
+            return true;
+        }
+        if let Some((target, at)) = player_hit {
+            l.from = l.pos;
+            l.pos = at;
+            l.energy = -1.0;
+            let dir = (to - l.from).normalize();
+            let (force, damage) = (dir * self.tuning.laser_knockback, self.tuning.laser_damage);
+            self.lasers[idx] = l.clone();
+            self.take_damage(
+                target,
+                force,
+                damage,
+                Some(l.owner),
+                DeathCause::Weapon(Weapon::Laser),
+            );
             return true;
         }
         if hit_wall.is_some() {
@@ -572,8 +614,16 @@ impl World {
             if let Some((_, at)) = target {
                 cur = at;
             }
+            let creature = self.intersect_creature(prev, cur, PROJECTILE_RADIUS);
+            if let Some((_, at)) = creature {
+                cur = at;
+            }
             self.projectiles[i].lifespan -= 1;
-            if target.is_some() || wall.is_some() || self.projectiles[i].lifespan < 0 {
+            if target.is_some()
+                || creature.is_some()
+                || wall.is_some()
+                || self.projectiles[i].lifespan < 0
+            {
                 self.projectiles.remove(i);
                 self.explosion(cur, pr.owner, Weapon::Grenade, pr.damage);
             } else {
@@ -612,25 +662,35 @@ impl World {
             })
             .collect();
         for (j, force, damage) in hits {
-            self.take_damage(j, force, damage, Some(owner), weapon);
+            self.take_damage(j, force, damage, Some(owner), DeathCause::Weapon(weapon));
         }
+        self.explode_creatures(pos, owner, max_damage);
     }
 
     /// Schaden und Kraft auf Slot `i`. Liefert `true`, wenn die Figur gestorben ist.
-    fn take_damage(
+    pub(crate) fn take_damage(
         &mut self,
         i: usize,
         force: Vec2,
         damage: i32,
         from: Option<usize>,
-        weapon: Weapon,
+        cause: DeathCause,
     ) -> bool {
         let prediction = self.prediction;
+        let (tick, adventure) = (self.tick, self.adventure);
+        let invulnerable = u64::from(ms_to_ticks(self.tuning.hit_invulnerable));
         let Some(ch) = self.character_mut(i) else {
             return false;
         };
+        // Abenteuer: eigene Granaten nur mit Rückstoß (E-237), kurz unverwundbar nach Treffer (E-234)
+        if (adventure || cause == DeathCause::Creature)
+            && from != Some(i)
+            && tick < ch.invulnerable_until
+        {
+            return false;
+        }
         ch.core.vel += force;
-        if prediction {
+        if prediction || (adventure && from == Some(i)) {
             return false;
         }
         // Friendly Fire (E-069): ausgeschaltet → nur Rückstoß wie im Original
@@ -667,6 +727,9 @@ impl World {
             }
             ch.health -= dmg;
         }
+        if (adventure || cause == DeathCause::Creature) && ch.health < old_health {
+            ch.invulnerable_until = tick + invulnerable;
+        }
         let (health, armor, dead) = (old_health - ch.health, old_armor - ch.armor, ch.health <= 0);
         self.events.push(Event::Damage {
             player: i,
@@ -675,7 +738,7 @@ impl World {
             armor,
         });
         if dead {
-            self.die(i, from, DeathCause::Weapon(weapon));
+            self.die(i, from, cause);
         }
         dead
     }
@@ -772,6 +835,7 @@ impl World {
 
     fn tick_characters(&mut self) {
         let positions = self.positions();
+        let targets: Vec<HookTarget> = self.hook_targets();
         let mut drag = vec![Vec2::ZERO; self.players.len()];
         for i in 0..self.players.len() {
             let Some(p) = self.players[i].as_mut() else {
@@ -788,6 +852,7 @@ impl World {
                 &self.collision,
                 i,
                 &positions,
+                &targets,
                 &mut drag,
             );
             // Waffen: Reload herunterzählen, sonst Dauerfeuer
@@ -825,6 +890,7 @@ impl World {
     /// Stoßwelle beim Aufprall des Stampfens (A-05): bricht Bröckelboden im Radius (E-230).
     fn stomp_wave(&mut self, player: usize, pos: Vec2) {
         self.events.push(Event::Stomp { player, pos });
+        self.stomp_creatures(player, pos);
         if self.prediction {
             return;
         }

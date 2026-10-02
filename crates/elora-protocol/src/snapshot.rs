@@ -579,6 +579,7 @@ fn player_from(v: &[i64], controller: Controller) -> Player {
             health: v[17] as i32,
             armor: v[18] as i32,
             arsenal,
+            invulnerable_until: 0,
         });
     }
     p

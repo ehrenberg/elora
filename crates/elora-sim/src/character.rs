@@ -3,6 +3,7 @@
 
 use crate::ability::{Abilities, Ability};
 use crate::collision::{Collision, TILE_SIZE, Tile};
+use crate::creature::HookTarget;
 use crate::input::PlayerInput;
 use crate::math::{Vec2, round_to_int, saturated_add};
 use crate::tuning::{Tuning, ms_to_ticks};
@@ -91,6 +92,10 @@ pub struct CharacterCore {
     pub grip_ticks: u32,
     /// Gleitet gerade.
     pub gliding: bool,
+    /// Gehakte Kreatur (Id, E-233).
+    pub hooked_creature: Option<u32>,
+    /// Die gehakte Kreatur wird zu Elora gezogen (Heranhooken), statt Elora zu ihr.
+    pub pulling: bool,
 }
 
 impl CharacterCore {
@@ -138,7 +143,8 @@ impl CharacterCore {
     /// `others` enthält die Positionen aller Figuren der Welt (Index = Figur-Index,
     /// `None` = kein Spieler); der eigene Eintrag wird über `self_index` übersprungen.
     /// Hook-Kräfte auf andere Figuren werden in `drag_out` addiert.
-    #[allow(clippy::too_many_lines)] // bewusst nah an der Referenz gehalten
+    /// `creatures` sind die Kreaturen als Hook-Ziele (im Mehrspieler leer).
+    #[allow(clippy::too_many_lines, clippy::too_many_arguments)] // bewusst nah an der Referenz gehalten
     /// `input = None`: ohne Eingabe weiterrechnen (wie `Tick(false)` im Original:
     /// Laufrichtung bleibt, Sprung und Hook ändern sich nicht). Für fremde
     /// Figuren in der Client-Vorhersage.
@@ -149,6 +155,7 @@ impl CharacterCore {
         col: &Collision,
         self_index: usize,
         others: &[Option<Vec2>],
+        creatures: &[HookTarget],
         drag_out: &mut [Vec2],
     ) {
         self.triggered_events = 0;
@@ -273,12 +280,14 @@ impl CharacterCore {
                 self.hook_state = HookState::Retracting(step + 1);
             }
             HookState::Retracting(_) => self.hook_state = HookState::Retracted,
-            HookState::Flying => self.tick_flying_hook(tuning, col, self_index, others),
+            HookState::Flying => {
+                self.tick_flying_hook(tuning, col, self_index, others, creatures);
+            }
             HookState::Retracted | HookState::Grabbed => {}
         }
 
         if self.hook_state == HookState::Grabbed {
-            self.tick_grabbed_hook(tuning, others);
+            self.tick_grabbed_hook(tuning, others, creatures);
         }
 
         // Spieler untereinander: Kollision und Hook-Zug
@@ -319,6 +328,8 @@ impl CharacterCore {
 
     fn release_hook(&mut self, state: HookState) {
         self.hooked_player = None;
+        self.hooked_creature = None;
+        self.pulling = false;
         self.hook_state = state;
         self.hook_pos = self.pos;
     }
@@ -329,6 +340,7 @@ impl CharacterCore {
         col: &Collision,
         self_index: usize,
         others: &[Option<Vec2>],
+        creatures: &[HookTarget],
     ) {
         let mut new_pos = self.hook_pos + self.hook_dir * tuning.hook_fire_speed;
         if self.pos.distance(new_pos) > tuning.hook_length {
@@ -369,6 +381,24 @@ impl CharacterCore {
             }
         }
 
+        // dann Kreaturen (E-233)
+        if self.hook_state == HookState::Flying {
+            let mut best = f32::MAX;
+            for c in creatures {
+                let closest = Vec2::closest_point_on_segment(self.hook_pos, new_pos, c.pos);
+                let d = self.hook_pos.distance(c.pos);
+                if c.pos.distance(closest) < c.radius + 2.0 && d < best {
+                    best = d;
+                    self.triggered_events |= events::HOOK_ATTACH_PLAYER;
+                    self.hook_state = HookState::Grabbed;
+                    self.hooked_creature = Some(c.id);
+                    self.pulling = c.small && self.abilities.has(Ability::Pull);
+                    self.hook_tick = 0;
+                    self.hook_pos = c.pos;
+                }
+            }
+        }
+
         if self.hook_state == HookState::Flying {
             if hit_ground {
                 self.triggered_events |= events::HOOK_ATTACH_GROUND;
@@ -381,7 +411,19 @@ impl CharacterCore {
         }
     }
 
-    fn tick_grabbed_hook(&mut self, tuning: &Tuning, others: &[Option<Vec2>]) {
+    fn tick_grabbed_hook(
+        &mut self,
+        tuning: &Tuning,
+        others: &[Option<Vec2>],
+        creatures: &[HookTarget],
+    ) {
+        if let Some(id) = self.hooked_creature {
+            let Some(c) = creatures.iter().find(|c| c.id == id) else {
+                self.release_hook(HookState::Retracted);
+                return;
+            };
+            self.hook_pos = c.pos;
+        }
         if let Some(i) = self.hooked_player {
             let Some(p) = others.get(i).copied().flatten() else {
                 self.release_hook(HookState::Retracted);
@@ -390,8 +432,10 @@ impl CharacterCore {
             self.hook_pos = p;
         }
 
-        // Wand-Hook zieht die Figur
-        if self.hooked_player.is_none() && self.hook_pos.distance(self.pos) > HOOK_MIN_DRAG_DISTANCE
+        // Wand-Hook (oder Kreatur ohne Heranhooken) zieht die Figur
+        if self.hooked_player.is_none()
+            && !self.pulling
+            && self.hook_pos.distance(self.pos) > HOOK_MIN_DRAG_DISTANCE
         {
             let mut hook_vel = (self.hook_pos - self.pos).normalize() * tuning.hook_drag_accel;
             // nach oben zieht der Hook stärker als nach unten (leichter auf Plattformen)
@@ -410,7 +454,9 @@ impl CharacterCore {
         }
 
         self.hook_tick += 1;
-        if self.hooked_player.is_some() && self.hook_tick > tuning.player_hook_ticks {
+        if (self.hooked_player.is_some() || self.hooked_creature.is_some())
+            && self.hook_tick > tuning.player_hook_ticks
+        {
             self.release_hook(HookState::Retracted);
         }
     }
@@ -458,6 +504,7 @@ impl CharacterCore {
             && self.ruck_cooldown == 0
             && self.hook_state == HookState::Grabbed
             && self.hooked_player.is_none()
+            && !self.pulling
             && self.hook_pos.distance(self.pos) > HOOK_MIN_DRAG_DISTANCE
         {
             self.vel = (self.hook_pos - self.pos).normalize() * tuning.ruck_speed;

@@ -6,6 +6,7 @@ use std::collections::BTreeMap;
 
 use elora_protocol::Skin;
 
+use crate::creatures::CreatureArt;
 use crate::effects::Effects;
 use crate::emotes::Emotes;
 use crate::figure::{FigureArt, Figures};
@@ -19,6 +20,7 @@ pub struct Looks<'a> {
     pub figures: &'a Figures,
     pub art: &'a FigureArt,
     pub items: &'a ItemArt,
+    pub creatures: &'a CreatureArt,
     pub emotes: &'a Emotes,
     /// Skins der anderen Slots (online).
     pub skins: &'a BTreeMap<usize, Skin>,
@@ -45,6 +47,7 @@ const ARMOR: Color = Color::hex(0xe0b85a);
 const SPAWN: Color = Color::rgba(1.0, 1.0, 1.0, 0.35);
 
 /// Zeichnet Karte, Pickups, Figuren, Projektile, Laser, Effekte und Fadenkreuz.
+#[allow(clippy::too_many_lines)] // eine Zeichenreihenfolge, bewusst an einem Ort
 pub fn scene(
     batch: &mut ShapeBatch,
     scene: &Scene,
@@ -59,6 +62,7 @@ pub fn scene(
         figures,
         art,
         items,
+        creatures,
         emotes,
         skins,
         own_skin,
@@ -73,6 +77,12 @@ pub fn scene(
         map_view.draw_back(batch, map, camera, look_time);
     }
     spawns_and_pickups(batch, scene, items, time);
+    for (item, pos) in &scene.loot {
+        creatures.draw_loot(batch, item, *pos, time);
+    }
+    for c in &scene.creatures {
+        creatures.draw(batch, c, time);
+    }
 
     for c in &scene.chars {
         let pos = c.pos();
@@ -98,6 +108,10 @@ pub fn scene(
             skins.get(&c.slot).copied().unwrap_or_default()
         };
         let r = PHYS_SIZE / 2.0;
+        // Schutz nach Treffer im Abenteuer: Elora blinkt (E-234)
+        if c.ch.invulnerable_until > scene.tick && (scene.tick / 4).is_multiple_of(2) {
+            continue;
+        }
         figures.draw(
             batch,
             art,
@@ -132,6 +146,9 @@ pub fn scene(
     for &p in &scene.projectiles {
         batch.fill_circle(p, 7.0, OUTLINE);
         batch.fill_circle(p, 5.5, GRENADE);
+    }
+    for &p in &scene.creature_shots {
+        CreatureArt::draw_shot(batch, p);
     }
     for l in &scene.lasers {
         batch.stroke_line(
@@ -278,6 +295,7 @@ mod tests {
                 figures: &figures,
                 art: &FigureArt::load(),
                 items: &ItemArt::load(),
+                creatures: &CreatureArt::load(),
                 emotes: &Emotes::new(),
                 skins: &BTreeMap::new(),
                 own_skin: Skin::default(),

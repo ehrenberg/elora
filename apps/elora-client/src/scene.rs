@@ -46,8 +46,31 @@ pub struct SceneFlag {
     pub stand: Vec2,
 }
 
+/// Ein Gegner (A1.2).
+#[derive(Debug, Clone)]
+pub struct SceneCreature {
+    pub id: u32,
+    /// Name der Art (Grafik).
+    pub kind: String,
+    pub pos: Vec2,
+    pub facing: i8,
+    pub health: i32,
+    pub max_health: i32,
+    /// Ticks seit dem letzten Treffer (Lebensbalken, E-238).
+    pub since_hit: Option<u64>,
+    pub stunned: bool,
+    pub airborne: bool,
+    pub boss: bool,
+}
+
 #[derive(Debug, Clone, Default)]
 pub struct Scene {
+    /// Simulations-Tick (Blinken, Anzeigen).
+    pub tick: u64,
+    pub creatures: Vec<SceneCreature>,
+    pub creature_shots: Vec<Vec2>,
+    /// Beute: Gegenstand und Position.
+    pub loot: Vec<(String, Vec2)>,
     pub flags: Vec<SceneFlag>,
     pub chars: Vec<SceneChar>,
     pub projectiles: Vec<Vec2>,
@@ -98,6 +121,47 @@ impl Scene {
                 stand: f.stand,
             });
         }
+    }
+
+    /// Gegner, ihre Geschosse und Beute; `prev` sind die Positionen vor dem Tick (Id → Position).
+    pub fn add_creatures(
+        &mut self,
+        world: &World,
+        prev: &std::collections::HashMap<u32, Vec2>,
+        alpha: f32,
+    ) {
+        self.tick = world.tick;
+        for c in &world.creatures {
+            let kind = &world.creature_kinds[c.kind];
+            let from = prev.get(&c.id).copied().unwrap_or(c.pos);
+            self.creatures.push(SceneCreature {
+                id: c.id,
+                kind: kind.name.clone(),
+                pos: from.lerp(c.pos, alpha),
+                facing: c.facing,
+                health: c.health,
+                max_health: kind.health,
+                since_hit: c.hit_tick.map(|t| world.tick - t),
+                stunned: c.stun > 0,
+                airborne: !c.grounded,
+                boss: kind.boss,
+            });
+        }
+        self.creature_shots = world
+            .creature_shots
+            .iter()
+            .map(|s| s.pos + s.vel * (alpha - 1.0))
+            .collect();
+        self.loot = world
+            .loot
+            .iter()
+            .map(|l| {
+                (
+                    l.item.clone(),
+                    prev.get(&l.id).copied().unwrap_or(l.pos).lerp(l.pos, alpha),
+                )
+            })
+            .collect();
     }
 
     pub fn add_pickups(&mut self, world: &World) {
