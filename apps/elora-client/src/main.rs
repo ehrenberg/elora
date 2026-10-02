@@ -209,6 +209,10 @@ struct App {
     sounds: sound::Sounds,
     /// Zeitpunkt der neuesten Chat-Zeile, für die schon ein Sound kam.
     chat_heard: Option<Instant>,
+    /// Klänge aus dem Client selbst (Plapperlaute, Fenster), abgespielt im nächsten Frame.
+    ui_cues: Vec<elora_audio::Cue>,
+    /// Waffen der eigenen Figur im letzten Frame (Wechsel beim Aufheben, E-287).
+    owned_weapons: [bool; 3],
     effects: effects::Effects,
     figures: figure::Figures,
     figure_art: figure::FigureArt,
@@ -248,6 +252,7 @@ impl App {
     fn new(sandbox: Sandbox, file: &TuningFile, settings: Settings) -> Self {
         let mut controls = Controls::default();
         controls.sensitivity = settings.input.mouse_sensitivity;
+        controls.auto_switch = settings.input.auto_switch;
         let mut net = NetUi::default();
         net.name.clone_from(&settings.player.name);
         net.skin = settings.player.skin();
@@ -269,6 +274,8 @@ impl App {
             emotes: emotes::Emotes::new(),
             sounds: sound::Sounds::new(settings.audio),
             chat_heard: None,
+            ui_cues: Vec::new(),
+            owned_weapons: [false; 3],
             effects: effects::Effects::with_settings(settings.effects),
             figures: figure::Figures::default(),
             figure_art: figure::FigureArt::load(),
@@ -304,6 +311,7 @@ impl App {
         s.player.name.clone_from(&self.net.name);
         s.player.set_skin(self.net.skin);
         s.input.mouse_sensitivity = self.controls.sensitivity;
+        s.input.auto_switch = self.controls.auto_switch;
         s.effects = self.effects.settings;
         s.audio = self.sounds.settings;
         let path = settings::settings_path();
@@ -640,7 +648,32 @@ impl App {
             // schickt nur bei Änderung eine Nachricht
             o.client.set_skin(self.net.skin);
         }
+        self.auto_switch(scene, events);
         self.play_sounds(scene, events);
+    }
+
+    /// Zur aufgenommenen Waffe wechseln (E-287); `owned_weapons` merkt den Stand vor dem Frame.
+    fn auto_switch(&mut self, scene: &Scene, events: &[Event]) {
+        let Some(me) = scene.local() else {
+            self.owned_weapons = [false; 3];
+            return;
+        };
+        for e in events {
+            if let Event::Pickup {
+                player,
+                kind: elora_sim::PickupKind::Weapon(w),
+                ..
+            } = *e
+                && player == me.slot
+                && self
+                    .controls
+                    .auto_switch
+                    .wants(self.owned_weapons[w.index()])
+            {
+                self.controls.want_weapon(w);
+            }
+        }
+        self.owned_weapons = elora_sim::Weapon::ALL.map(|w| me.ch.arsenal.has(w));
     }
 
     /// Sounds des Frames: Ereignisse, Figuren, Landungen, neue Emotes und Chat-Zeilen.
@@ -663,6 +696,8 @@ impl App {
             }
             self.chat_heard = newest_chat;
         }
+        extra.extend(self.menu.ui.sounds.drain(..).map(elora_audio::Cue::global));
+        extra.append(&mut self.ui_cues);
         self.sounds
             .update(scene, events, self.figures.landings(), &extra, scene.camera);
     }

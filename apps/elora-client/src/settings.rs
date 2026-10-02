@@ -177,12 +177,48 @@ impl GraphicsSettings {
 pub struct InputSettings {
     /// Maus-Empfindlichkeit in Prozent.
     pub mouse_sensitivity: f32,
+    /// Zur aufgenommenen Waffe wechseln (E-287).
+    pub auto_switch: AutoSwitch,
 }
 
 impl Default for InputSettings {
     fn default() -> Self {
         Self {
             mouse_sensitivity: 100.0,
+            auto_switch: AutoSwitch::New,
+        }
+    }
+}
+
+/// Wechsel zur aufgenommenen Waffe (E-287).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum AutoSwitch {
+    Off,
+    /// Nur, wenn man die Waffe noch nicht hatte (wie im Original).
+    #[default]
+    New,
+    /// Auch bei Munition für eine vorhandene Waffe.
+    Always,
+}
+
+impl AutoSwitch {
+    pub const ALL: [Self; 3] = [Self::Off, Self::New, Self::Always];
+
+    /// Wechseln, wenn `w` aufgenommen wurde und vorher `had` galt?
+    pub fn wants(self, had: bool) -> bool {
+        match self {
+            Self::Off => false,
+            Self::New => !had,
+            Self::Always => true,
+        }
+    }
+
+    pub fn label_key(self) -> &'static str {
+        match self {
+            Self::Off => "settings.auto_switch_off",
+            Self::New => "settings.auto_switch_new",
+            Self::Always => "settings.auto_switch_always",
         }
     }
 }
@@ -227,6 +263,16 @@ impl Settings {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn auto_switch_modes() {
+        assert!(!AutoSwitch::Off.wants(false));
+        assert!(AutoSwitch::New.wants(false) && !AutoSwitch::New.wants(true));
+        assert!(AutoSwitch::Always.wants(true));
+        assert_eq!(Settings::default().input.auto_switch, AutoSwitch::New);
+        let s: Settings = toml::from_str("[input]\nauto_switch = \"always\"\n").unwrap();
+        assert_eq!(s.input.auto_switch, AutoSwitch::Always);
+    }
 
     #[test]
     fn roundtrip_through_file() {

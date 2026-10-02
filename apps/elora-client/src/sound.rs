@@ -5,6 +5,7 @@
 //! gesetzte Bits bzw. Wechsel des Hook-Zustands lösen einen Sound aus.
 
 use std::collections::HashMap;
+use std::sync::{Arc, OnceLock};
 
 use elora_audio::cues::{self, Cue, Listener, Sound};
 use elora_audio::{Audio, AudioSettings, Bank};
@@ -13,20 +14,29 @@ use elora_sim::{Event, HookState, Vec2};
 
 use crate::figure::Landing;
 
-/// Musik von der Platte laden; fehlt die Datei, bleibt das Menü still.
-fn load_music() -> Option<Vec<f32>> {
-    let data = std::fs::read(elora_server::paths::resolve(std::path::Path::new(
-        MENU_MUSIC,
-    )))
-    .ok()?;
-    match elora_audio::decode_wav(&data) {
-        Ok(samples) => Some(samples),
-        Err(e) => {
-            tracing::warn!("{MENU_MUSIC}: {e}");
-            None
+/// Musikstück `assets/music/<name>.ogg` (oder `.wav`) laden; fehlt es, bleibt es still.
+fn load_music(name: &str) -> Option<Vec<f32>> {
+    for ext in ["ogg", "wav"] {
+        let rel = format!("{MUSIC_DIR}/{name}.{ext}");
+        let Ok(data) = std::fs::read(elora_server::paths::resolve(std::path::Path::new(&rel)))
+        else {
+            continue;
+        };
+        let samples = if ext == "ogg" {
+            elora_audio::decode_ogg(&data)
+        } else {
+            elora_audio::decode_wav(&data).map_err(str::to_owned)
+        };
+        match samples {
+            Ok(s) => return Some(s),
+            Err(e) => tracing::warn!("{rel}: {e}"),
         }
     }
+    None
 }
+
+/// Ein Musikstück, das im Hintergrund geladen wird (Entpacken dauert einen Moment).
+type Track = Arc<OnceLock<Option<Vec<f32>>>>;
 
 #[derive(Debug)]
 pub struct Sounds {
@@ -34,12 +44,14 @@ pub struct Sounds {
     pub settings: AudioSettings,
     /// Zuletzt gesehene Bits und Hook-Zustand je Slot.
     last: HashMap<usize, (u16, HookState)>,
-    /// Menümusik (E-121), falls `assets/music/menu.wav` vorhanden ist.
-    music: Option<Vec<f32>>,
+    /// Geladene oder ladende Musikstücke (E-121, E-285).
+    tracks: HashMap<String, Track>,
+    /// Gerade laufendes Stück.
+    playing: Option<String>,
 }
 
-/// Datei der Menümusik (WAV, 16 Bit, 44,1 kHz; Mono oder Stereo).
-pub const MENU_MUSIC: &str = "assets/music/menu.wav";
+/// Ordner der Musik: `<name>.ogg` (Ogg Vorbis, 44,1 kHz) oder `<name>.wav`; `menu` im Hauptmenü.
+pub const MUSIC_DIR: &str = "assets/music";
 
 impl Sounds {
     /// # Panics
@@ -50,19 +62,49 @@ impl Sounds {
             audio: Audio::new(&bank),
             settings,
             last: HashMap::new(),
-            music: load_music(),
+            tracks: HashMap::new(),
+            playing: None,
         }
     }
 
     /// Menümusik an (im Menü) oder aus (im Spiel).
     pub fn menu_music(&mut self, on: bool) {
+        self.music(on.then_some("menu"));
+    }
+
+    /// Musikstück `name` spielen (jeden Frame aufrufen); ein anderes wird ausgeblendet,
+    /// `None` blendet aus. Fehlt das Stück, bleibt es still.
+    pub fn music(&mut self, name: Option<&str>) {
         self.audio.apply(self.settings);
-        match (&self.music, on) {
-            (Some(samples), true) => {
-                let volume = self.settings.music_volume.clamp(0.0, 1.0);
-                self.audio.play_music(samples, volume);
-            }
-            _ => self.audio.stop_music(),
+        if self.playing.as_deref() != name {
+            self.audio.stop_music();
+            self.playing = None;
+        }
+        let Some(name) = name else { return };
+        let track = self
+            .tracks
+            .entry(name.to_owned())
+            .or_insert_with(|| {
+                let track: Track = Arc::default();
+                let (slot, name) = (track.clone(), name.to_owned());
+                std::thread::spawn(move || {
+                    let _ = slot.set(load_music(&name));
+                });
+                track
+            })
+            .clone();
+        if let Some(Some(samples)) = track.get() {
+            let volume = self.settings.music_volume.clamp(0.0, 1.0);
+            self.audio.play_music(samples, volume);
+            self.playing = Some(name.to_owned());
+        }
+    }
+
+    /// Nicht räumliche Klänge (Oberfläche) sofort abspielen.
+    pub fn play_global(&mut self, cues: &[Cue]) {
+        self.audio.apply(self.settings);
+        for cue in cues {
+            self.audio.play(cue, Vec2::ZERO);
         }
     }
 

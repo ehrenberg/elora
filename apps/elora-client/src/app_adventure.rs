@@ -28,6 +28,12 @@ const BARK_SECS: f32 = 3.5;
 /// Vorausschau der Kamera in die zuletzt gelaufene Richtung (E-266, E-267): 3 Tiles, bleibt beim
 /// Stehenbleiben stehen und wechselt erst nach kurzem Laufen in die andere Richtung.
 const LOOKAHEAD: f32 = 96.0;
+/// Gesprächstext: Zeichen je Sekunde (E-286).
+const REVEAL_PER_SECOND: f32 = 48.0;
+/// Ein Plapperlaut je so viele Zeichen.
+const SYLLABLE: usize = 3;
+/// Tonhöhe von Eloras Stimme.
+const ELORA_VOICE: f32 = 1.25;
 /// Ab diesem Tempo (Einheiten/Tick) zählt Laufen als Richtung.
 const LOOKAHEAD_MIN_SPEED: f32 = 2.0;
 /// So lange (s) muss Elora in die andere Richtung laufen, bis die Kamera wechselt.
@@ -76,6 +82,10 @@ pub struct AdventureMode {
     pub menu: Option<crate::adventure_menu::MenuState>,
     /// Auswahl im Menü bleibt zwischen dem Öffnen erhalten.
     menu_memory: crate::adventure_menu::MenuState,
+    /// Gesprächstext erscheint nach und nach (E-286): angezeigte Zeichen, Gesamtlänge, Knoten.
+    reveal: f32,
+    reveal_total: usize,
+    reveal_key: (String, String),
 }
 
 pub fn saves_dir() -> PathBuf {
@@ -160,6 +170,9 @@ impl App {
             zone_center: Vec2::ZERO,
             menu: None,
             menu_memory: crate::adventure_menu::MenuState::default(),
+            reveal: 0.0,
+            reveal_total: 0,
+            reveal_key: (String::new(), String::new()),
         });
         if self.travel(&loc.map, &loc.spawn) {
             if new {
@@ -266,6 +279,9 @@ impl App {
             zone_center: Vec2::ZERO,
             menu: None,
             menu_memory: crate::adventure_menu::MenuState::default(),
+            reveal: 0.0,
+            reveal_total: 0,
+            reveal_key: (String::new(), String::new()),
         });
         if self.travel(&id, &spawn) {
             self.enter_game();
@@ -296,6 +312,10 @@ impl App {
     pub(crate) fn adventure_menu(&mut self, panel: Option<crate::adventure_menu::Panel>) {
         let Some(a) = &mut self.adventure else { return };
         if let Some(p) = panel {
+            if a.menu.is_none() {
+                self.ui_cues
+                    .push(elora_audio::Cue::global(elora_audio::Sound::UiOpen));
+            }
             let mut st = a.menu.take().unwrap_or_else(|| a.menu_memory.clone());
             st.panel = p;
             st.refusal = None;
@@ -304,6 +324,8 @@ impl App {
             self.set_cursor_grab(false);
         } else {
             if let Some(st) = a.menu.take() {
+                self.ui_cues
+                    .push(elora_audio::Cue::global(elora_audio::Sound::UiClose));
                 // Laden und Schmiede merken sich nicht als letzte Seite
                 if !matches!(
                     st.panel,
@@ -575,6 +597,8 @@ impl App {
             K::Digit6,
         ];
         if let Some(n) = digits.iter().position(|d| *d == code) {
+            self.ui_cues
+                .push(elora_audio::Cue::global(elora_audio::Sound::UiClick));
             self.dialog_choose(n);
         } else if matches!(code, K::KeyE | K::Space | K::Enter) {
             self.dialog_continue();
@@ -593,8 +617,25 @@ impl App {
         }
     }
 
+    /// Text noch nicht ganz da: auf einmal zeigen (`true`, dann nichts weiter tun).
+    fn reveal_rest(&mut self) -> bool {
+        let Some(a) = &mut self.adventure else {
+            return false;
+        };
+        #[allow(clippy::cast_precision_loss)]
+        let total = a.reveal_total as f32;
+        if a.conversation.is_some() && a.reveal < total {
+            a.reveal = total;
+            return true;
+        }
+        false
+    }
+
     /// Weiter ohne Auswahl (Knoten ohne Antworten).
     pub(crate) fn dialog_continue(&mut self) {
+        if self.reveal_rest() {
+            return;
+        }
         let Some(a) = &mut self.adventure else { return };
         let Some(conv) = &mut a.conversation else {
             return;
@@ -614,6 +655,9 @@ impl App {
 
     /// Antwort Nummer `n` (ab 0) der sichtbaren Antworten.
     pub(crate) fn dialog_choose(&mut self, n: usize) {
+        if self.reveal_rest() {
+            return;
+        }
         let Some(a) = &mut self.adventure else { return };
         let Some(conv) = &mut a.conversation else {
             return;
@@ -825,6 +869,42 @@ impl App {
             && let Some((d, node)) = conv.current(content)
         {
             let speaker = d.speaker_of(node);
+            // Text erscheint nach und nach, dazu Plapperlaute (E-286)
+            let key = (conv.dialog.clone(), conv.node.clone());
+            if a.reveal_key != key {
+                a.reveal_key = key;
+                a.reveal = 0.0;
+            }
+            let text: Vec<char> = crate::adventure_hud::with_keys(
+                node.text.get(code),
+                &self.settings.bindings,
+                &self.lang,
+            )
+            .chars()
+            .collect();
+            a.reveal_total = text.len();
+            #[allow(clippy::cast_precision_loss)]
+            let total = text.len() as f32;
+            let before = a.reveal;
+            a.reveal = (a.reveal + dt * REVEAL_PER_SECOND).min(total);
+            let voice = content
+                .characters
+                .get(speaker)
+                .map_or(ELORA_VOICE, |c| c.voice);
+            #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+            let (from, to) = (before as usize, a.reveal as usize);
+            if voice > 0.0 {
+                for i in from..to {
+                    if i % SYLLABLE == 0 && text.get(i).is_some_and(|c| c.is_alphanumeric()) {
+                        #[allow(clippy::cast_precision_loss)]
+                        let wobble = ((i * 7919) % 13) as f32 / 100.0 - 0.06;
+                        self.ui_cues.push(
+                            elora_audio::Cue::global(elora_audio::Sound::Voice)
+                                .pitched(voice * (1.0 + wobble)),
+                        );
+                    }
+                }
+            }
             let name = content
                 .characters
                 .get(speaker)
@@ -834,11 +914,13 @@ impl App {
                 .into_iter()
                 .map(|i| (i, &node.choice[i]))
                 .collect();
+            #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
             let view = crate::adventure_hud::DialogView {
                 speaker,
                 name,
                 text: &node.text,
                 choices,
+                shown: a.reveal as usize,
             };
             chosen = crate::adventure_hud::dialog(
                 &mut ui,

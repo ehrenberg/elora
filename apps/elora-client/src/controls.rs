@@ -28,6 +28,8 @@ pub struct Controls {
     pub mouse_pos: Vec2,
     /// Maus-Empfindlichkeit in Prozent (Original: `inp_mousesens`, 100).
     pub sensitivity: f32,
+    /// Zur aufgenommenen Waffe wechseln (E-287).
+    pub auto_switch: crate::settings::AutoSwitch,
 }
 
 impl Default for Controls {
@@ -45,6 +47,7 @@ impl Default for Controls {
             wanted_weapon: 0,
             mouse_pos: Vec2::new(100.0, 0.0),
             sensitivity: 100.0,
+            auto_switch: crate::settings::AutoSwitch::New,
         }
     }
 }
@@ -84,6 +87,11 @@ impl Controls {
     }
 
     /// Rohe Maus-Bewegung: wird direkt in Welteinheiten addiert (wie im Original).
+    /// Waffe wählen wie mit der Waffentaste (Wechsel beim Aufheben, E-287).
+    pub fn want_weapon(&mut self, w: elora_sim::Weapon) {
+        self.wanted_weapon = u8::try_from(w.index() + 1).unwrap_or(0);
+    }
+
     pub fn mouse_motion(&mut self, dx: f64, dy: f64) {
         let factor = self.sensitivity / 100.0;
         self.mouse_pos += Vec2::new(dx as f32, dy as f32) * factor;

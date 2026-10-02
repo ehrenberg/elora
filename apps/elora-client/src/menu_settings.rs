@@ -29,6 +29,8 @@ pub struct SettingsEdit<'a> {
     pub effects: &'a mut EffectSettings,
     /// Maus-Empfindlichkeit in Prozent.
     pub sensitivity: &'a mut f32,
+    /// Wechsel zur aufgenommenen Waffe (E-287).
+    pub auto_switch: &'a mut crate::settings::AutoSwitch,
     pub language: &'a mut Language,
     pub bindings: &'a mut Bindings,
     /// Aktion, die gerade auf eine neue Taste wartet.
@@ -94,7 +96,11 @@ fn about(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, page: Rect) {
         ),
         (
             "about.assets",
-            &["about.assets_sounds", "about.assets_fonts"],
+            &[
+                "about.assets_sounds",
+                "about.assets_music",
+                "about.assets_fonts",
+            ],
         ),
         (
             "about.thanks",
@@ -195,6 +201,32 @@ fn controls(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, page: Rect, edit: &mut SettingsEd
         10.0,
         400.0,
     );
+    // Wechsel zur aufgenommenen Waffe (E-287)
+    let ax = x + 340.0 * s;
+    ui.label(
+        lang.t("settings.auto_switch"),
+        Vec2::new(ax, y),
+        11.0,
+        TEXT_DIM,
+        Align::Left,
+    );
+    let modes = crate::settings::AutoSwitch::ALL;
+    let names: Vec<&str> = modes.iter().map(|m| lang.t(m.label_key())).collect();
+    let current = modes
+        .iter()
+        .position(|m| m == edit.auto_switch)
+        .unwrap_or(1);
+    if let Some(i) = ui.tabs(
+        "auto_switch",
+        Vec2::new(ax, y + 10.0 * s),
+        24.0 * s,
+        &names,
+        current,
+        &[BLUE],
+    ) {
+        *edit.auto_switch = modes[i];
+        changed = true;
+    }
     changed |= binding_list(
         ui,
         cx,

@@ -166,6 +166,33 @@ pub fn wav(samples: &[f32]) -> Vec<u8> {
     out
 }
 
+/// Liest Ogg Vorbis (Musik, E-285): 44,1 kHz, Mono oder Stereo, zu Mono gemischt.
+///
+/// # Errors
+/// Kein gültiges Ogg Vorbis oder andere Abtastrate.
+pub fn decode_ogg(data: &[u8]) -> Result<Vec<f32>, String> {
+    let mut reader = lewton::inside_ogg::OggStreamReader::new(std::io::Cursor::new(data))
+        .map_err(|e| e.to_string())?;
+    if reader.ident_hdr.audio_sample_rate != SAMPLE_RATE {
+        return Err(format!(
+            "Abtastrate {} Hz statt {SAMPLE_RATE} Hz",
+            reader.ident_hdr.audio_sample_rate
+        ));
+    }
+    let channels = usize::from(reader.ident_hdr.audio_channels).max(1);
+    #[allow(clippy::cast_precision_loss)]
+    let scale = 1.0 / (channels as f32 * 32768.0);
+    let mut out = Vec::new();
+    while let Some(packet) = reader.read_dec_packet_itl().map_err(|e| e.to_string())? {
+        out.extend(
+            packet
+                .chunks(channels)
+                .map(|f| f.iter().map(|&s| f32::from(s)).sum::<f32>() * scale),
+        );
+    }
+    Ok(out)
+}
+
 /// Liest 16-Bit-PCM-WAV (Mono oder Stereo, [`SAMPLE_RATE`]) als Mono-Samples.
 ///
 /// # Errors
@@ -251,6 +278,17 @@ impl Default for AudioSettings {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn shipped_music_decodes() {
+        let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../assets/music/menu.ogg");
+        let samples = decode_ogg(&std::fs::read(path).unwrap()).unwrap();
+        #[allow(clippy::cast_precision_loss)]
+        let secs = samples.len() as f32 / SAMPLE_RATE as f32;
+        assert!(secs > 60.0, "{secs} s");
+        assert!(samples.iter().all(|s| s.abs() <= 1.0));
+        assert!(decode_ogg(b"kein ogg").is_err());
+    }
 
     #[test]
     fn embedded_bank_is_complete_and_renders() {

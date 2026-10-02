@@ -153,6 +153,8 @@ pub struct UiState {
     claimed: bool,
     /// Laufzeit (blinkender Cursor).
     pub time: f32,
+    /// Klänge der Oberfläche seit dem letzten Abholen (E-285).
+    pub sounds: Vec<elora_audio::Sound>,
 }
 
 /// Zeichen- und Eingabekontext eines Frames.
@@ -203,7 +205,11 @@ impl Ui<'_> {
             self.state.claimed = true;
         }
         let was_active = self.state.active.as_deref() == Some(id);
-        was_active && hot && self.input.released
+        let clicked = was_active && hot && self.input.released;
+        if clicked {
+            self.state.sounds.push(elora_audio::Sound::UiClick);
+        }
+        clicked
     }
 
     fn pressing(&self, id: &str) -> bool {

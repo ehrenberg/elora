@@ -193,6 +193,25 @@ pub fn with_keys(text: &str, keys: &crate::bindings::Bindings, lang: &Lang) -> S
     out
 }
 
+/// Zeilen zeichnen, von denen erst `shown` Zeichen zu sehen sind; liefert die Höhe darunter.
+fn revealed_lines(ui: &mut Ui<'_>, lines: &[String], shown: usize, at: Vec2) -> f32 {
+    let mut y = at.y;
+    let mut left = shown;
+    for line in lines {
+        let n = line.chars().count();
+        if left >= n {
+            ui.label(line, Vec2::new(at.x, y), 13.0, ui::TEXT, Align::Left);
+        } else if left > 0 {
+            let part: String = line.chars().take(left).collect();
+            ui.label(&part, Vec2::new(at.x, y), 13.0, ui::TEXT, Align::Left);
+        }
+        // Umbruch verschluckt das Leerzeichen zwischen den Zeilen
+        left = left.saturating_sub(n + 1);
+        y += 19.0 * ui.s;
+    }
+    y
+}
+
 /// Zeilenumbruch an Wortgrenzen für die Breite `max` (Pixel).
 pub fn wrap(ui: &Ui<'_>, text: &str, size: f32, max: f32) -> Vec<String> {
     let mut lines = Vec::new();
@@ -223,6 +242,8 @@ pub struct DialogView<'a> {
     pub text: &'a Text,
     /// Sichtbare Antworten (Index im Knoten, Antwort).
     pub choices: Vec<(usize, &'a Choice)>,
+    /// So viele Zeichen des Texts sind schon zu sehen; Antworten erst, wenn alles da ist.
+    pub shown: usize,
 }
 
 fn tone_color(t: Option<Tone>) -> Color {
@@ -296,16 +317,14 @@ pub fn dialog(
 
     // Text
     let x = card.min.x + 150.0 * s;
-    let mut y = card.min.y + 34.0 * s;
-    for line in &lines {
-        ui.label(line, Vec2::new(x, y), 13.0, ui::TEXT, Align::Left);
-        y += 19.0 * s;
-    }
+    let mut y = revealed_lines(ui, &lines, v.shown, Vec2::new(x, card.min.y + 34.0 * s));
+    let complete = v.shown >= with_keys(v.text.get(code), keys, lang).chars().count();
 
     // Antworten
     let mut chosen = None;
     y += 8.0 * s;
-    for (k, (_, c)) in v.choices.iter().enumerate() {
+    let visible = if complete { v.choices.len() } else { 0 };
+    for (k, (_, c)) in v.choices.iter().enumerate().take(visible) {
         let r = Rect::new(x - 8.0 * s, y - 13.0 * s, text_w + 16.0 * s, 26.0 * s);
         if ui.hovered(r) {
             ui.batch
@@ -493,6 +512,7 @@ mod tests {
             name: "Oma Pfütze",
             text: &node.text,
             choices: choices.iter().map(|&i| (i, &node.choice[i])).collect(),
+            shown: usize::MAX,
         };
         dialog(
             &mut ui,

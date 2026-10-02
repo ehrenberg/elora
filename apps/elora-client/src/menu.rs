@@ -739,6 +739,7 @@ mod tests {
                 audio: &mut audio,
                 effects: &mut effects,
                 sensitivity: &mut sens,
+                auto_switch: &mut crate::settings::AutoSwitch::New,
                 language: &mut language,
                 bindings: &mut bindings,
                 capture: &mut capture,

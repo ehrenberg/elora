@@ -30,6 +30,13 @@ pub struct CharacterDef {
     /// Dreht sich nicht zu Elora (Schilder).
     #[serde(default)]
     pub fixed: bool,
+    /// Tonhöhe der Plapperlaute (E-286): 1 = mittel, kleiner = tiefer; 0 = stumm (Schilder).
+    #[serde(default = "default_voice")]
+    pub voice: f32,
+}
+
+fn default_voice() -> f32 {
+    1.0
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

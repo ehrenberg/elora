@@ -113,9 +113,19 @@ impl Audio {
         let Some(manager) = &mut self.manager else {
             return;
         };
-        let data = to_data(samples).loop_region(..).volume(decibels(volume));
+        // sanft einblenden
+        let data = to_data(samples).loop_region(..).volume(Decibels::SILENCE);
         match manager.play(data) {
-            Ok(handle) => self.music = Some((handle, volume)),
+            Ok(mut handle) => {
+                handle.set_volume(
+                    decibels(volume),
+                    Tween {
+                        duration: std::time::Duration::from_millis(1200),
+                        ..Tween::default()
+                    },
+                );
+                self.music = Some((handle, volume));
+            }
             Err(e) => tracing::debug!("Musik nicht abgespielt: {e}"),
         }
     }
@@ -145,7 +155,10 @@ impl Audio {
             },
             None => (1.0, 0.0),
         };
-        let sound = data.volume(decibels(gain)).panning(Panning(pan));
+        let sound = data
+            .volume(decibels(gain))
+            .panning(Panning(pan))
+            .playback_rate(kira::PlaybackRate(f64::from(cue.pitch)));
         if let Err(e) = manager.play(sound) {
             tracing::debug!("Sound `{}` nicht abgespielt: {e}", cue.sound.name());
         }

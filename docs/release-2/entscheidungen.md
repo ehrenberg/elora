@@ -92,6 +92,12 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-281 | 2026-10-02 | Übungsplatz (Playtest A1.9) | **Tüftels Hof im Dorf**, größer und verwinkelt: an der Decke hooken, über Lücken schwingen, Stein (Hook rutscht ab), Bröckelboden, oben eine Belohnung | Entscheidung Projektinhaber |
 | E-282 | 2026-10-02 | Blütenwiesen (Playtest A1.9) | **Auf Bewegung ausgelegt:** Höhenunterschiede (Klippen, Senken, Überhänge), Hook-Schluchten, mehrere Wege (oben schwerer mit Belohnungen, unten leichter); die Karten insgesamt voller | Entscheidung Projektinhaber |
 | E-283 | 2026-10-02 | Dornengruben | **Hineinfallen kostet Leben und setzt Elora an die Kante zurück**, kein Tod (Abenteuer) | Entscheidung Projektinhaber |
+| E-284 | 2026-10-02 | Abnahme R2-M1 (A1.10) | **Prolog angenommen** („das passt“), R2-M1 abgeschlossen | Entscheidung Projektinhaber |
+| E-285 | 2026-10-02 | Quelle neuer Sounds und Musik (ergänzt E-109) | **CC0 aus dem Netz:** Klicks aus Kenney „interface-sounds“, Musik aus CC0-Sammlungen; Musik wird vorher zum Anhören vorgelegt; Quellen in `assets/SOURCES.md` | Entscheidung Projektinhaber |
+| E-286 | 2026-10-02 | Sprechlaute | **Plapperlaute:** kurze, weiche Silbenlaute, während der Text erscheint, Tonhöhe je Figur | Entscheidung Projektinhaber |
+| E-287 | 2026-10-02 | Waffe beim Aufheben | **Einstellung mit drei Stufen:** aus / nur neue Waffen / immer; Standard: nur neue Waffen | Entscheidung Projektinhaber |
+| E-288 | 2026-10-02 | Verwischen bei schneller Bewegung (Playtest) | Beschreibung: **weiche Schlieren** (Bewegung flüssig, Bild unscharf); Ursache eingrenzen und Gegenmaßnahmen ausprobieren | Rückmeldung Projektinhaber |
+| E-289 | 2026-10-02 | Menümusik | **„FM fun“ von sla97** ([OpenGameArt](https://opengameart.org/content/fm-fun)) im Hauptmenü; Lizenz **CC BY 4.0** (Nennung in `SOURCES.md` und „Über“), Ausnahme zu E-285 auf Wunsch | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 

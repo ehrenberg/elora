@@ -42,10 +42,20 @@ pub enum Sound {
     FlagDrop,
     FlagReturn,
     FlagCapture,
+    /// Klick auf eine Schaltfläche oder Antwort (E-285).
+    UiClick,
+    /// Auswahl wechselt (Tastatur, Reiter).
+    UiSelect,
+    /// Fenster öffnet sich.
+    UiOpen,
+    /// Fenster schließt sich.
+    UiClose,
+    /// Plapperlaut beim Sprechen (E-286), Tonhöhe je Figur.
+    Voice,
 }
 
 impl Sound {
-    pub const ALL: [Self; 31] = [
+    pub const ALL: [Self; 36] = [
         Self::HammerFire,
         Self::HammerHit,
         Self::GrenadeFire,
@@ -77,6 +87,11 @@ impl Sound {
         Self::FlagDrop,
         Self::FlagReturn,
         Self::FlagCapture,
+        Self::UiClick,
+        Self::UiSelect,
+        Self::UiOpen,
+        Self::UiClose,
+        Self::Voice,
     ];
 
     pub fn name(self) -> &'static str {
@@ -112,6 +127,11 @@ impl Sound {
             Self::FlagDrop => "flag_drop",
             Self::FlagReturn => "flag_return",
             Self::FlagCapture => "flag_capture",
+            Self::UiClick => "ui_click",
+            Self::UiSelect => "ui_select",
+            Self::UiOpen => "ui_open",
+            Self::UiClose => "ui_close",
+            Self::Voice => "voice",
         }
     }
 
@@ -125,6 +145,8 @@ impl Sound {
 pub struct Cue {
     pub sound: Sound,
     pub pos: Option<Vec2>,
+    /// Abspielgeschwindigkeit (1 = unverändert, 2 = eine Oktave höher).
+    pub pitch: f32,
 }
 
 impl Cue {
@@ -132,11 +154,22 @@ impl Cue {
         Self {
             sound,
             pos: Some(pos),
+            pitch: 1.0,
         }
     }
 
     pub fn global(sound: Sound) -> Self {
-        Self { sound, pos: None }
+        Self {
+            sound,
+            pos: None,
+            pitch: 1.0,
+        }
+    }
+
+    /// Mit anderer Tonhöhe.
+    #[must_use]
+    pub fn pitched(self, pitch: f32) -> Self {
+        Self { pitch, ..self }
     }
 }
 

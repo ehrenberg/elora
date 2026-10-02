@@ -38,7 +38,20 @@ Anfang entfernt, Ende ausgeblendet, Spitze −1 dBFS, teils gekürzt).
 | `pickup_armor` | `metalLatch.ogg` | [Kenney – rpg-audio](https://kenney.nl/assets/rpg-audio) | Kenney (kenney.nl) | CC0 1.0 |
 | `pickup_health` | `pluck_001.ogg` | [Kenney – interface-sounds](https://kenney.nl/assets/interface-sounds) | Kenney (kenney.nl) | CC0 1.0 |
 | `pickup_respawn` | `bong_001.ogg` | [Kenney – interface-sounds](https://kenney.nl/assets/interface-sounds) | Kenney (kenney.nl) | CC0 1.0 |
+| `ui_click` | `drop_003.ogg` | [Kenney – interface-sounds](https://kenney.nl/assets/interface-sounds) | Kenney (kenney.nl) | CC0 1.0 |
+| `ui_select` | `select_006.ogg` (0–0,15 s) | [Kenney – interface-sounds](https://kenney.nl/assets/interface-sounds) | Kenney (kenney.nl) | CC0 1.0 |
+| `ui_open` | `maximize_008.ogg` | [Kenney – interface-sounds](https://kenney.nl/assets/interface-sounds) | Kenney (kenney.nl) | CC0 1.0 |
+| `ui_close` | `minimize_008.ogg` | [Kenney – interface-sounds](https://kenney.nl/assets/interface-sounds) | Kenney (kenney.nl) | CC0 1.0 |
+| `voice` | `drop_002.ogg` (0–0,09 s, Plapperlaut mit Tonhöhe je Figur, E-286) | [Kenney – interface-sounds](https://kenney.nl/assets/interface-sounds) | Kenney (kenney.nl) | CC0 1.0 |
 
 ## Schriften (`assets/fonts/`)
 
 Inter und JetBrains Mono unter SIL Open Font License 1.1, siehe `assets/fonts/*-OFL.txt` und `THIRD_PARTY_LICENSES`.
+
+## Musik (`assets/music/`)
+
+Per ffmpeg nach Ogg Vorbis umgewandelt (Mono, 44,1 kHz, Qualität 4).
+
+| Datei | Titel | Quelle | Autor | Lizenz |
+|---|---|---|---|---|
+| `menu.ogg` | „FM fun“ | [OpenGameArt – FM fun](https://opengameart.org/content/fm-fun) | sla97 | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |

@@ -33,7 +33,7 @@ neue Entscheidungen stehen im [Log von Release 2](../release-2/entscheidungen.md
 | Grafik | wgpu + winit, eigener 2D-Vektor-Renderer (lyon), Assets als SVG | E-011, E-030, E-033 |
 | Oberfläche | eigene Spiel-UI „hell & weich“; egui (dunkel) für Debug-Panel und Editor | E-031, E-150 |
 | Sprache | Deutsch und Englisch, Texte in `assets/lang/` | E-114 |
-| Ton | kira; Sounds aus CC0-Quellen (Kenney), neue Sounds liefert der Projektinhaber | E-032, E-108, E-109 |
+| Ton | kira; Sounds aus CC0-Quellen (Kenney), Musik als Ogg Vorbis aus freien Quellen (CC0, auf Wunsch CC BY mit Nennung in SOURCES.md und „Über“) | E-032, E-108, E-109, E-285, E-289 |
 | Netzwerk | eigenes UDP-Protokoll: Token, Noise-Verschlüsselung, Server-Schlüssel wie SSH, Snapshots mit Delta; IPv4 und IPv6 | E-012, E-061, E-062, E-063 |
 | Server-Liste | HTTP/JSON-Master über HTTPS, `https://elora.bastianswelt.de`; dedizierte Server tragen sich ein, gehostete nur auf Wunsch | E-112, E-127, E-166, E-170 |
 | Karten | binäres Format `.emap`, Editor im Spiel, automatischer Download, eigene Karten im Benutzerverzeichnis | E-129, E-136, E-146, E-152 |

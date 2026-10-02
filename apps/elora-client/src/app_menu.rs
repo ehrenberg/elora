@@ -46,6 +46,15 @@ impl App {
     /// Hauptmenü zeichnen (ersetzt das Spielbild).
     pub(crate) fn redraw_menu(&mut self, dt: f32) {
         self.sounds.menu_music(true);
+        let mut cues: Vec<elora_audio::Cue> = self
+            .menu
+            .ui
+            .sounds
+            .drain(..)
+            .map(elora_audio::Cue::global)
+            .collect();
+        cues.append(&mut self.ui_cues);
+        self.sounds.play_global(&cues);
         let (screen, s) = self.menu_ctx_parts();
         self.hud_batch.clear();
         let graphics_before = self.settings.graphics;
@@ -76,6 +85,7 @@ impl App {
             audio: &mut self.sounds.settings,
             effects: &mut self.effects.settings,
             sensitivity: &mut self.controls.sensitivity,
+            auto_switch: &mut self.controls.auto_switch,
             language: &mut self.settings.language,
             bindings: &mut self.settings.bindings,
             capture: &mut self.bind_capture,
@@ -161,6 +171,7 @@ impl App {
             audio: &mut self.sounds.settings,
             effects: &mut self.effects.settings,
             sensitivity: &mut self.controls.sensitivity,
+            auto_switch: &mut self.controls.auto_switch,
             language: &mut self.settings.language,
             bindings: &mut self.settings.bindings,
             capture: &mut self.bind_capture,
