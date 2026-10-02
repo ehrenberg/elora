@@ -83,7 +83,9 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-272 | 2026-10-02 | Prolog-Ablauf (A1.9) | **Wie im Entwurf** [`prolog.md`](prolog.md): Pip weckt Elora, Oma am Brunnen, Übungen bei Tüftel und Klonk, Lotte, Pips Nebenaufgabe, erster Abschnitt der Blütenwiesen bis zum Quellstein | Entscheidung Projektinhaber |
 | E-273 | 2026-10-02 | Erklärung der Steuerung | **Wegweiser-Schilder**, die man mit E liest | Entscheidung Projektinhaber |
 | E-274 | 2026-10-02 | Gebäude in Tauwinkel | **Erst Entwürfe zur Auswahl** (Häuser, Brunnen, Werkstatt, Schmiede, Laden, Baumhaus), dann die Karte | Entscheidung Projektinhaber |
-| E-275 | 2026-10-02 | Blässe des Dorfs (E-210) | **Entfärbter Look der Karte** über einen Farbfilter (Figuren bleiben bunt), wird mit jeder befreiten Quelle schwächer (Merker) | Entscheidung Projektinhaber |
+| E-275 | 2026-10-02 | Blässe des Dorfs (E-210) | ~~Entfärbter Look der Karte~~ (ersetzt durch E-277): über einen Farbfilter (Figuren bleiben bunt), wird mit jeder befreiten Quelle schwächer (Merker) | Entscheidung Projektinhaber |
+| E-276 | 2026-10-02 | Look der Gebäude (Entwürfe A1.9) | **Keine Tropfendächer**, nicht zu kindlich: kinderfreundlich, aber **ernst zu nehmen** (richtige Dächer, Fachwerk, Stein, Holz) | Entscheidung Projektinhaber |
+| E-277 | 2026-10-02 | Blässe des Dorfs (ersetzt E-275) | **Kein Farbfilter:** das Dorf bleibt normal gezeichnet, **einzelne Dinge sind verblasst** (Blumen, Fahnen, Beete, Brunnenplatz) und bekommen mit jeder befreiten Quelle ihre Farbe zurück (Deko-Varianten per Merker) | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 
