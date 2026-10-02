@@ -105,6 +105,12 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-294 | 2026-10-02 | Haken im Online-Spiel (Rückmeldung) | „Alles scheint ein gewisses Zittern/Ruckeln zu haben“ – Ursachen suchen und beheben | Rückmeldung Projektinhaber |
 | E-295 | 2026-10-02 | KI-Dienste für Inhalte | **Keine** (OpenAI, openart.ai, Recraft verworfen): Grafiken entstehen weiter über die Python-Skripte in `tools/design/`, Musik und Sounds aus freien Quellen (E-285) | Entscheidung Projektinhaber |
 | E-296 | 2026-10-02 | Aufteilung von R2-M2 | **Teil-Meilensteine je Kapitel:** M2.1 Blütenwiesen, M2.2 Murmelwald, M2.3 Glutsandwüste, M2.4 Frostspitzen, M2.5 Sternschlucht, M2.6 Finale; je Teil Plan → Entwürfe → Umsetzung → Abnahme | Entscheidung Projektinhaber |
+| E-297 | 2026-10-02 | Abschnitte Kapitel 1 | **Drei neue:** `wiese-2` (Imkerei, Riesenblumen, Bach), `wiese-3` (Höhlen unter den Wurzeln), `wiese-arena` (Blütenquelle) | Entscheidung Projektinhaber |
+| E-298 | 2026-10-02 | Kampf Brummbär-Hummel | **Schwerer:** Kreisen mit Pollen, Sturzflug mit Warnung, benommen am Boden; ab halbem Leben schneller, zwei Sturzflüge, Hook-Blüten welken abwechselnd; ab einem Drittel ruft sie verwirrte Bienen, die nach dem Kampf zu Wabe zurückfliegen | Entscheidung Projektinhaber |
+| E-299 | 2026-10-02 | Verwundbarkeit der Hummel | **Nur benommen am Boden**, in der Luft prallen Treffer ab | Entscheidung Projektinhaber |
+| E-300 | 2026-10-02 | Belohnung „Wabes Bienen“ | **Wabenhut** (Ausrüstung mit kleinem Bonus) und Erfahrung | Entscheidung Projektinhaber |
+| E-301 | 2026-10-02 | Dorf nach Kapitel 1 | **Kleine Feier:** Gespräch am Brunnen, Laternen, Girlanden und Festmusik, bis Elora weiterzieht; dazu mehr Farbe und neue Zurufe | Entscheidung Projektinhaber |
+| E-302 | 2026-10-02 | Hook-Ruck erklären | **Übungsplatz im Hof:** Tüftel erklärt und öffnet einen neuen Teil seines Hofs mit einer Strecke, die nur mit Hook-Ruck geht | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 

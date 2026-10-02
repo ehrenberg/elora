@@ -1,6 +1,6 @@
 # R2-M2.1 – Kapitel 1: Blütenwiesen – Umsetzungsplan
 
-Status: **Plan zur Freigabe** · Grundlage: [`weltbuch.md`](weltbuch.md) §4.1 und §5, [`prolog.md`](prolog.md), E-272 bis E-295
+Status: **Entscheidungen getroffen (E-297 bis E-302), Plan zur Freigabe** · Grundlage: [`weltbuch.md`](weltbuch.md) §4.1 und §5, [`prolog.md`](prolog.md), E-272 bis E-295
 
 ## Ziel
 
@@ -20,7 +20,7 @@ Das erste Kapitel ist von Anfang bis Ende spielbar: nach dem Prolog weiter durch
 
 | # | Schritt | Inhalt | Prüfung |
 |---|---|---|---|
-| M2.1.0 | Entwürfe | Imkerin Wabe (Figur und Bild im Gespräch), Brummbär-Hummel (Ruhe, Flug, Sturzflug, betäubt, besiegt), Biene (Sammelstück), Hook-Blüte (Hookpunkt in der Arena), Quellfunke (Gegenstand), Bienenstöcke und Imkerei als Deko, Blütenquelle (befreit/verdorrt) | Deine Auswahl |
+| M2.1.0 | Entwürfe | Imkerin Wabe (Figur und Bild im Gespräch), Brummbär-Hummel (Ruhe, Flug, Sturzflug, betäubt, besiegt), verwirrte Biene (Gegner der Phase 3), Biene (Sammelstück), Wabenhut, Girlanden und Festlaternen, Hook-Blüte (Hookpunkt in der Arena), Quellfunke (Gegenstand), Bienenstöcke und Imkerei als Deko, Blütenquelle (befreit/verdorrt) | Deine Auswahl |
 | M2.1.1 | Hüter-Technik | neues Verhalten **Boss** in der Simulation mit Phasen (Muster aus Schritten: kreisen, anvisieren, Sturzflug, betäubt am Boden), verwundbar nur in bestimmten Phasen; Lebensleiste mit Namen oben im HUD; Arena: Ein- und Ausgang schließen sich beim Kampf (Tür mit Bedingung, gibt es schon), Kamera-Zone „Festsetzen“; nach dem Sieg Ereignis für Aufgaben und Merker | Tests + Sandbox (F1 → Gegner) |
 | M2.1.2 | Hookpunkte | **Hook-Blüte**: einzelner Hookpunkt mitten in der Luft (Objekt der Karte, für die Simulation ein hookbares Tile ohne Kollision für Figuren), damit Elora in der Arena oben bleiben kann | Tests + Sichtprüfung |
 | M2.1.3 | Inhalte | Figur und Gespräch **Wabe**; Nebenaufgabe **„Wabes Bienen“** (fünf Bienen in den Abschnitten, teils hinter Hook-Stellen); Hauptaufgabe **„Die Blütenquelle“** in Schritten bis zum Quellfunken; neue Gespräche für Oma, Tüftel, Pip, Klonk und Lotte nach Kapitel 1; Zurufe im Dorf ändern sich | Tests (Inhaltsprüfung, Durchlauf) |
@@ -40,27 +40,28 @@ Das erste Kapitel ist von Anfang bis Ende spielbar: nach dem Prolog weiter durch
 | 4 | `wiese-3` | Höhlen unter den Wurzeln, Dornen; Quellstein vor dem Aufstieg; 2 Bienen |
 | 5 | `wiese-arena` | Blütenquelle verdorrt, die **Brummbär-Hummel** kreist darüber; Kampf |
 | 6 | `wiese-arena` | Sieg: Die Hummel landet erschöpft und war nur verwirrt (Gespräch); Quellfunke, die Quelle blüht auf |
-| 7 | Tauwinkel | Tüftel baut den **Hook-Ruck**; Fest am Brunnen; Oma erzählt von der zweiten Quelle (Ankündigung Murmelwald) |
-| 8 | frei | restliche Bienen (2 davon nur mit Hook-Ruck) zu Wabe bringen: Belohnung |
+| 7 | Tauwinkel | Tüftel baut den **Hook-Ruck** und öffnet den neuen Teil seines Hofs; **kleine Feier** am Brunnen (Laternen, Girlanden, Festmusik); Oma erzählt von der zweiten Quelle (Ankündigung Murmelwald) |
+| 8 | frei | restliche Bienen (2 davon nur mit Hook-Ruck) zu Wabe bringen: **Wabenhut** und Erfahrung |
 
 ## Der Kampf gegen die Brummbär-Hummel (Vorschlag)
 
 - **Phase 1 – Kreisen:** Die Hummel fliegt hoch über der Arena Kreise und lässt ab und zu Pollen fallen (wie Pollenbläser-Kugeln). Elora hält sich mit dem Hook an den **Hook-Blüten** oben.
 - **Phase 2 – Sturzflug:** Sie visiert Elora an (kurze Warnung: Brummen wird lauter, Schatten am Boden) und stürzt herab. Weicht Elora aus, bleibt die Hummel **kurz benommen am Boden** – jetzt trifft der Hammer voll, andere Waffen halb.
-- **Phase 3 – ab halbem Leben:** schneller, zwei Sturzflüge hintereinander, die Hook-Blüten welken abwechselnd.
-- Treffer in der Luft prallen ab (kleine Sternchen), damit das Ausweichen zählt.
+- **Phase 2b – ab halbem Leben:** schneller, zwei Sturzflüge hintereinander, die Hook-Blüten welken abwechselnd.
+- **Phase 3 – ab einem Drittel Leben:** Sie ruft **kleine, verwirrte Bienen**, die Elora umschwirren und leicht schaden (besiegbar). Nach dem Kampf fliegen sie zu Wabe zurück.
+- **Treffer nur, solange sie benommen ist** – in der Luft prallen sie ab (kleine Sternchen), damit das Ausweichen zählt (E-299).
 - Elora stirbt? Zurück zum Quellstein vor der Arena (E-261), die Hummel hat wieder volles Leben.
 
-## Entscheidungen zu R2-M2.1 (offen)
+## Entscheidungen zu R2-M2.1
 
-| # | Frage | Optionen |
+| # | Frage | Entscheidung |
 |---|---|---|
-| D-M21-01 | Zahl der neuen Abschnitte | zwei (`wiese-2`, Arena) / **drei** (`wiese-2`, `wiese-3`, Arena) / vier |
-| D-M21-02 | Kampf gegen die Hummel | wie oben vorgeschlagen / einfacher (nur Sturzflug und benommen) / schwerer (mehr Phasen) |
-| D-M21-03 | Wie die Hummel verwundbar ist | nur benommen am Boden / immer, am Boden mehr / nur mit Hammer |
-| D-M21-04 | Belohnung für die Bienen | Ausrüstungsstück (z. B. „Wabenhut“) / Glanztropfen und Erfahrung / Honig als Heiltrank-Ersatz |
-| D-M21-05 | Fest im Dorf nach Kapitel 1 | kurzes gemeinsames Gespräch am Brunnen / nur neue Zurufe und mehr Farbe / kleine Feier mit Laternen und Musik |
-| D-M21-06 | Hook-Ruck erklären | Wegweiser-Schild bei Tüftel / Tüftel erklärt im Gespräch / kleiner Übungsplatz im Hof |
+| D-M21-01 | Zahl der neuen Abschnitte | **Drei:** `wiese-2`, `wiese-3`, `wiese-arena` (E-297) |
+| D-M21-02 | Kampf gegen die Hummel | **Schwerer:** Kreisen mit Pollen, Sturzflug, benommen; ab halbem Leben schneller mit welkenden Hook-Blüten; dritte Phase mit gerufenen Bienen (E-298) |
+| D-M21-03 | Wie die Hummel verwundbar ist | **Nur benommen am Boden** (E-299) |
+| D-M21-04 | Belohnung für die Bienen | **Ausrüstung:** Wabenhut mit kleinem Bonus, dazu Erfahrung (E-300) |
+| D-M21-05 | Fest im Dorf nach Kapitel 1 | **Kleine Feier:** Gespräch am Brunnen, Laternen, Girlanden und Festmusik, bis Elora weiterzieht (E-301) |
+| D-M21-06 | Hook-Ruck erklären | **Übungsplatz im Hof:** Tüftel erklärt und öffnet einen neuen Teil seines Hofs (E-302) |
 
 ## Technische Festlegungen (Vorschlag)
 
