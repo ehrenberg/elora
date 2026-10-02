@@ -11,12 +11,14 @@ pub mod dialog;
 pub mod quest;
 pub mod save;
 pub mod script;
+pub mod session;
 pub mod state;
 pub mod stats;
 
 pub use data::{Content, GLANZTROPFEN};
 pub use dialog::{Conversation, Turn};
 pub use quest::Outcome;
+pub use session::{Session, SessionEvent};
 pub use state::{Location, Notice, Refusal, SaveGame};
 pub use stats::Stats;
 

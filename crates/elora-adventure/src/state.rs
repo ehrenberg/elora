@@ -50,6 +50,9 @@ pub struct SaveGame {
     /// Zuneigung je Figur (E-248).
     #[serde(default)]
     pub affection: BTreeMap<String, i32>,
+    /// Munition der Waffen (E-243).
+    #[serde(default)]
+    pub ammo: BTreeMap<Weapon, i32>,
 }
 
 /// Was der Spieler sehen soll (Anzeige, Sound).
@@ -115,6 +118,7 @@ impl SaveGame {
             play_time_secs: 0,
             quests: BTreeMap::new(),
             affection: BTreeMap::new(),
+            ammo: BTreeMap::new(),
         }
     }
 
@@ -279,6 +283,8 @@ impl SaveGame {
                 self.glanztropfen += count;
                 self.glanz_since_save += count;
             }
+            // Munition füllt die Waffe in der Welt auf (Sitzung), nicht das Inventar
+            ItemKind::Ammo { .. } => {}
             ItemKind::Consumable { .. } => {
                 let max = content.progression.consumable_max;
                 let have = self.count(id);
@@ -389,7 +395,7 @@ impl SaveGame {
         let d = content.item(id)?;
         if matches!(
             d.kind,
-            ItemKind::Key | ItemKind::Currency | ItemKind::Collectible
+            ItemKind::Key | ItemKind::Currency | ItemKind::Collectible | ItemKind::Ammo { .. }
         ) {
             return None;
         }

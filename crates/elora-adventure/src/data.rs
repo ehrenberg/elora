@@ -127,6 +127,10 @@ pub enum ItemKind {
     Key,
     /// Sammelstück (Glitzerstein, Erinnerungsrune …): nicht verkaufbar, wird gezählt.
     Collectible,
+    /// Munition aus Truhen (E-243): füllt die Waffe auf, kommt nicht ins Inventar.
+    Ammo {
+        weapon: Weapon,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -222,6 +226,8 @@ pub struct Progression {
     pub consumable_max: u32,
     pub sell_pct: u32,
     pub death_loss_pct: u32,
+    pub start_map: String,
+    pub start_spawn: String,
 }
 
 /// Fehler in den Inhaltsdateien.

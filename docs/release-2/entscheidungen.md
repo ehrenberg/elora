@@ -68,6 +68,9 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-257 | 2026-10-02 | NPCs | **Stehen, drehen sich zu Elora**, rufen Zurufe; einzelne mit kurzem Laufweg | Entscheidung Projektinhaber |
 | E-258 | 2026-10-02 | Heilpflanzen | **Berühren heilt** (Grundwert 2 Leben, mehr mit „Heilblumen“), **wachsen beim Wiederbetreten der Karte nach** | Entscheidung Projektinhaber |
 | E-259 | 2026-10-02 | Kamera-Zonen | **Festsetzen** (fester Ausschnitt, z. B. Bossraum) **oder Begrenzen** (Kamera bleibt im Bereich), sanfter Übergang | Entscheidung Projektinhaber |
+| E-260 | 2026-10-02 | Abenteuer verlassen (A1.6) | Fortschritt **gilt bis zum letzten Speichern** (Kartenwechsel, Quellstein); das Pause-Menü warnt | Entscheidung Projektinhaber |
+| E-261 | 2026-10-02 | Tod im Abenteuer (A1.6) | **Eigener Bildschirm mit Auswahl:** „Weiter am Quellstein“ oder „Hauptmenü“ (Verlust nach E-220) | Entscheidung Projektinhaber |
+| E-262 | 2026-10-02 | Ablage der Abenteuer-Karten | **Eigener Ordner `maps/abenteuer/`**, nicht in Server- und Abstimmungslisten | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 

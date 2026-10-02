@@ -816,6 +816,7 @@ impl World {
             }
             let Some((j, _)) = best else { continue };
             let t = self.tuning.clone();
+            let adventure = self.adventure;
             let ch = self.character_mut(j).expect("lebt");
             let picked = match pk.kind {
                 PickupKind::Health if ch.health < t.max_health => {
@@ -826,6 +827,8 @@ impl World {
                     ch.armor = (ch.armor + 1).min(t.max_armor);
                     true
                 }
+                // Abenteuer: Waffen gibt es nur über den Fortschritt, Pickups füllen Munition (E-243)
+                PickupKind::Weapon(w) if adventure && !ch.arsenal.has(w) => false,
                 PickupKind::Weapon(w) => ch.arsenal.give(w, t.max_ammo, t.max_ammo),
                 _ => false,
             };

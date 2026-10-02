@@ -97,3 +97,16 @@ id = "glitzerstein"
 type = "collectible"
 name = { de = "Glitzerstein", en = "Glitter stone" }
 desc = { de = "Pip sammelt sie.", en = "Pip collects them." }
+
+# Munition aus Truhen (E-243): füllt die Waffe auf
+[[item]]
+id = "munition_granate"
+type = "ammo"
+weapon = "Grenade"
+name = { de = "Granaten", en = "Grenades" }
+
+[[item]]
+id = "munition_laser"
+type = "ammo"
+weapon = "Laser"
+name = { de = "Laser-Ladung", en = "Laser charge" }
