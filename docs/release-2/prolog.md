@@ -27,7 +27,9 @@ Status: **Ablauf angenommen** (E-272 bis E-275) · Grundlage: [Weltbuch](weltbuc
 
 | Karte | Größe (Tiles) | Inhalt |
 |---|---|---|
-| `tauwinkel` | etwa 140 × 34 | Dorf in einer Senke: West (Eloras Haus), Brunnenplatz in der Mitte (Quellstein), Werkstatt, Schmiede, Laden, Baumhaus, Ostpfad; Übungsstellen für Hook und Hammer |
-| `wiese-1` | etwa 180 × 40 | sanfte Hügel, Plattformen, Bach mit Brücke, Hook-Stellen, versteckte Nische, Quellstein am Ende |
+| `tauwinkel` | 450 × 50 (E-280) | Steilhang im Westen, Eloras Haus und Pips Baumhaus, Hecke, Steg, Brunnenplatz (Quellstein), Werkstatt mit Tüftels Hof (E-281: Decke über Grube, Felsbogen mit Stein und Erde, Bröckelbrücke, hoher Sitz mit Truhe), Oberdorf mit Schmiede, Strohpuppen und Laden, Ostpfad mit offenem Übergang (E-279) |
+| `wiese-1` | 300 × 60 (E-282) | Hügel, Tal mit Dornengrube und Hook-Decke zum Sims (oberer Weg), Brücke über eine Dornenschlucht, Hügelkamm, Bröckelboden über Dornen, Hook-Felsen zum Plateau mit dem Glitzerstein, Quellstein am Wiesenrand, Wald am Osthang |
+
+Dornen (E-283): Hineinfallen kostet 2 Leben (A-22) und setzt Elora auf den letzten sicheren Boden.
 
 Aussehen: Material Erde/Wiese, Hintergründe Tag (Wolken, Hügel), Deko aus dem Bestand; **Tauwinkel ist blass** (E-210: Farben kehren erst mit den Quellen zurück).

@@ -16,6 +16,8 @@ pub struct Character {
     pub arsenal: Arsenal,
     /// Im Abenteuer nach einem Treffer bis zu diesem Tick unverwundbar (E-234).
     pub invulnerable_until: u64,
+    /// Zuletzt sicher betretener Boden: hierher setzen Dornen im Abenteuer zurück (E-283).
+    pub safe_pos: Vec2,
 }
 
 impl Character {
@@ -27,6 +29,7 @@ impl Character {
             armor: 0,
             arsenal: Arsenal::default(),
             invulnerable_until: 0,
+            safe_pos: pos,
         }
     }
 }

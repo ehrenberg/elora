@@ -575,6 +575,7 @@ fn player_from(v: &[i64], controller: Controller) -> Player {
             arsenal.slots[i] = ammo_slot(v[22 + i]);
         }
         p.character = Some(Character {
+            safe_pos: core.pos,
             core,
             health: v[17] as i32,
             armor: v[18] as i32,

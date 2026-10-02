@@ -155,6 +155,8 @@ pub struct Tuning {
     pub grenade_shards: u32,
     /// A-21: Laser trifft so viele Gegner zusätzlich
     pub laser_pierce: u32,
+    /// A-22: Schaden durch Dornen (Todes-Tiles im Abenteuer, E-283)
+    pub thorn_damage: i32,
 }
 
 impl Default for Tuning {
@@ -230,6 +232,7 @@ impl Default for Tuning {
             hammer_shockwave: false,
             grenade_shards: 0,
             laser_pierce: 0,
+            thorn_damage: 2,
         }
     }
 }

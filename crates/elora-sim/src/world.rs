@@ -214,6 +214,9 @@ impl World {
         self.tick_characters();
         self.tick_flags_physics();
         self.tick_characters_deferred();
+        if self.adventure {
+            self.remember_safe_ground();
+        }
         self.tick_creatures();
         self.tick_respawns();
         self.tick_flags_rules();
@@ -892,9 +895,58 @@ impl World {
             let landed = ch.core.triggered_events & crate::character::events::STOMP_LAND != 0;
             let feet = ch.core.pos + Vec2::new(0.0, PHYS_SIZE / 2.0);
             if ch.core.death && !self.prediction {
-                self.die(i, None, DeathCause::World);
+                if self.adventure {
+                    self.thorns(i);
+                } else {
+                    self.die(i, None, DeathCause::World);
+                }
             } else if landed {
                 self.stomp_wave(i, feet);
+            }
+        }
+    }
+
+    /// Dornen im Abenteuer (E-283): Schaden, dann zurück auf den letzten sicheren Boden.
+    fn thorns(&mut self, i: usize) {
+        let damage = self.tuning.thorn_damage;
+        if self.take_damage(i, Vec2::ZERO, damage, None, DeathCause::World) {
+            return;
+        }
+        let Some(ch) = self.character_mut(i) else {
+            return;
+        };
+        let core = CharacterCore {
+            direction: ch.core.direction,
+            angle: ch.core.angle,
+            abilities: ch.core.abilities,
+            ..CharacterCore::new(ch.safe_pos)
+        };
+        ch.core = core;
+    }
+
+    /// Sicheren Boden merken: fester Boden ohne Todes-Tiles in der Nähe.
+    fn remember_safe_ground(&mut self) {
+        let collision = &self.collision;
+        for p in self.players.iter_mut().flatten() {
+            let Some(ch) = p.character.as_mut() else {
+                continue;
+            };
+            let core = &ch.core;
+            if !matches!(
+                core.ground_tile(collision),
+                Some(crate::Tile::Solid | crate::Tile::Unhookable | crate::Tile::Ice)
+            ) {
+                continue;
+            }
+            let ts = crate::TILE_SIZE as f32;
+            let near_thorns = (-2..=2).any(|dx: i8| {
+                (0..=3).any(|dy: i8| {
+                    let at = core.pos + Vec2::new(f32::from(dx) * ts, f32::from(dy) * ts);
+                    collision.tile_at(at) == crate::Tile::Death
+                })
+            });
+            if !near_thorns {
+                ch.safe_pos = core.pos;
             }
         }
     }

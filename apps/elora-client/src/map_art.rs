@@ -43,6 +43,9 @@ pub const DECOR_FILES: &[(&str, &[u8])] = assets!("decor":
     "haus-elora", "haus-oma", "brunnen", "werkstatt", "schmiede", "laden", "baumhaus",
     "anschlagbrett", "wegweiser", "blumenkasten-blass", "blumenkasten-bunt", "beet-blass",
     "beet-bunt", "kraeuterbeet-blass", "kraeuterbeet-bunt", "fahne-blass", "fahne-bunt",
+    // Requisiten und Dornen (Playtest A1.9, E-283)
+    "dornen", "bank", "laterne", "faesser", "holzstapel", "karren", "waescheleine", "heuballen",
+    "mauer",
 );
 
 /// Eingebaute Hintergrund-Grafik (ebenfalls über [`Art::Builtin`] benutzt).

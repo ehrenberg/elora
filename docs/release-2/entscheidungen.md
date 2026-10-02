@@ -87,6 +87,11 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-276 | 2026-10-02 | Look der Gebäude (Entwürfe A1.9) | **Keine Tropfendächer**, nicht zu kindlich: kinderfreundlich, aber **ernst zu nehmen** (richtige Dächer, Fachwerk, Stein, Holz) | Entscheidung Projektinhaber |
 | E-277 | 2026-10-02 | Blässe des Dorfs (ersetzt E-275) | **Kein Farbfilter:** das Dorf bleibt normal gezeichnet, **einzelne Dinge sind verblasst** (Blumen, Fahnen, Beete, Brunnenplatz) und bekommen mit jeder befreiten Quelle ihre Farbe zurück (Deko-Varianten per Merker) | Entscheidung Projektinhaber |
 | E-278 | 2026-10-02 | Gebäude von Tauwinkel | **Zweite Fassung angenommen** (`design/tauwinkel-gebaeude.png`) | Entscheidung Projektinhaber |
+| E-279 | 2026-10-02 | Kartenränder (Playtest A1.9) | **Offen, wo es weitergeht:** der Weg läuft aus dem Bild, der Übergang reicht über die ganze Höhe; **wo die Welt endet, eine natürliche Grenze** (Steilhang, Felsen, dichter Wald), keine Wände | Entscheidung Projektinhaber |
+| E-280 | 2026-10-02 | Größe von Tauwinkel (Playtest A1.9) | **Etwa 450 Tiles breit**, Häuser und Figuren mit großen Abständen, längere Wege zwischen den Orten | Entscheidung Projektinhaber |
+| E-281 | 2026-10-02 | Übungsplatz (Playtest A1.9) | **Tüftels Hof im Dorf**, größer und verwinkelt: an der Decke hooken, über Lücken schwingen, Stein (Hook rutscht ab), Bröckelboden, oben eine Belohnung | Entscheidung Projektinhaber |
+| E-282 | 2026-10-02 | Blütenwiesen (Playtest A1.9) | **Auf Bewegung ausgelegt:** Höhenunterschiede (Klippen, Senken, Überhänge), Hook-Schluchten, mehrere Wege (oben schwerer mit Belohnungen, unten leichter); die Karten insgesamt voller | Entscheidung Projektinhaber |
+| E-283 | 2026-10-02 | Dornengruben | **Hineinfallen kostet Leben und setzt Elora an die Kante zurück**, kein Tod (Abenteuer) | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 

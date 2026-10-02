@@ -4,7 +4,11 @@
 //! `cargo test -p elora-client --bin elora write_prolog_maps -- --ignored` schreibt
 //! `maps/abenteuer/*.emap`.
 
-#![allow(clippy::cast_precision_loss, clippy::many_single_char_names)]
+#![allow(
+    clippy::cast_precision_loss,
+    clippy::many_single_char_names,
+    clippy::too_many_lines
+)]
 
 use std::time::Instant;
 
@@ -17,15 +21,15 @@ use super::release::{self, Theme};
 
 const T: f32 = TILE_SIZE as f32;
 
-/// Zeichenraster der Karte; außen links und rechts Wand, unten ab `floor` Boden.
+/// Zeichenraster der Karte; unten ab `floor` Boden, an den Seiten offen (E-279).
 struct Grid(Vec<Vec<char>>);
 
 impl Grid {
     fn new(w: usize, h: usize, floor: usize) -> Self {
         let mut g = vec![vec!['.'; w]; h];
         for (y, row) in g.iter_mut().enumerate() {
-            for (x, c) in row.iter_mut().enumerate() {
-                if y >= floor || x == 0 || x == w - 1 {
+            for c in row.iter_mut() {
+                if y >= floor {
                     *c = '#';
                 }
             }
@@ -38,6 +42,15 @@ impl Grid {
         for row in &mut self.0[y.0..=y.1] {
             for cell in &mut row[x.0..=x.1] {
                 *cell = c;
+            }
+        }
+    }
+
+    /// Boden der Spalten `x0..=x1` auf Zeile `top` setzen (darüber Luft).
+    fn ground(&mut self, x0: usize, x1: usize, top: usize) {
+        for (y, row) in self.0.iter_mut().enumerate() {
+            for cell in &mut row[x0..=x1] {
+                *cell = if y >= top { '#' } else { '.' };
             }
         }
     }
@@ -158,176 +171,308 @@ fn finish(map: Map, theme: &Theme) -> Map {
     editor.map.decor_front.clear();
     editor.apply_preset(Preset::Day, Instant::now());
     release::place(theme, &mut editor.map);
+    // große Deko nur auf durchgehendem Boden (nicht auf Hook-Felsen und Simsen)
+    let auto = std::mem::take(&mut editor.map.decor_back);
+    let map = &editor.map;
+    let grounded = |d: &Decor| {
+        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+        let (tx, ty) = ((d.pos.x / T) as usize, (d.pos.y / T) as usize);
+        (ty..map.height).all(|y| map.tiles[y * map.width + tx] != elora_sim::Tile::Air)
+    };
+    let back: Vec<Decor> = back
+        .into_iter()
+        .chain(auto.into_iter().filter(|d| grounded(d)))
+        .collect();
+    editor.map.decor_back = back;
     // eigene Deko zuerst (hinter der automatischen)
-    editor.map.decor_back.splice(0..0, back);
     editor.map.decor_front.splice(0..0, front);
     editor.map
 }
 
-/// Tauwinkel, etwa 140 × 34: West (Eloras Haus, Baumhaus), Hecke, Steg, Brunnenplatz,
-/// Werkstatt mit Hook-Übung, Schmiede mit Strohpuppen, Laden, Ostpfad.
+/// Tauwinkel, 450 × 50 (E-280): Steilhang im Westen, Eloras Garten mit Baumhaus, Hecke,
+/// Steg, Brunnenplatz, Werkstatt und Tüftels Hof (E-281), Aufstieg ins Oberdorf mit Schmiede,
+/// Strohpuppen und Laden, Ostpfad hinunter zum offenen Übergang (E-279).
 pub fn tauwinkel() -> Map {
-    let (w, h, f) = (140, 34, 28);
-    let mut g = Grid::new(w, h, f);
+    let (w, h) = (450, 50);
+    let mut g = Grid::new(w, h, 40);
+    // Westen: Steilhang aus Stein als natürliches Ende
+    g.fill((0, 3), (0, h - 1), '%');
+    g.fill((4, 6), (18, h - 1), '%');
+    g.fill((7, 8), (29, h - 1), '%');
+    // Baumhaus: Plattform 5 Tiles über dem Boden
+    g.fill((40, 44), (35, 35), '=');
     // Hecke: nur mit Doppelsprung
-    g.fill((30, 32), (21, f - 1), '#');
-    // Steg über einer Mulde (Runter zum Durchfallen, unten eine Truhe)
-    g.fill((35, 43), (f, f + 2), '.');
-    g.fill((35, 43), (f, f), '=');
-    // Hook-Übung: Überhang und hoher Sims hinter der Werkstatt
-    g.fill((78, 93), (8, 9), '#');
-    g.fill((84, 89), (15, 15), '#');
+    g.fill((54, 56), (33, 39), '#');
+    // Wiesenweg zwei Tiles höher, Mulde mit Steg (Runter zum Durchfallen)
+    g.ground(67, 180, 38);
+    g.fill((75, 85), (38, 40), '.');
+    g.fill((75, 85), (38, 38), '=');
+    // Tüftels Hof: Grube unter einer Decke, Felsbogen mit Stein- und Erd-Überhang,
+    // Bröckelbrücke, Block und hoher Sitz unter einem Überhang
+    g.ground(181, 252, 38);
+    g.fill((186, 203), (38, 41), '.');
+    g.fill((185, 204), (29, 30), '#');
+    g.fill((211, 221), (26, 34), '#');
+    g.fill((205, 212), (15, 16), '%');
+    g.fill((213, 225), (15, 16), '#');
+    g.fill((222, 229), (26, 26), ':');
+    g.fill((230, 236), (26, 27), '#');
+    g.fill((241, 247), (15, 15), '#');
+    g.fill((236, 251), (5, 6), '#');
+    // Aufstieg ins Oberdorf und Ostpfad hinunter
+    g.ground(253, 256, 36);
+    g.ground(257, 260, 34);
+    g.ground(261, 350, 32);
+    g.ground(351, 356, 34);
+    g.ground(357, 362, 36);
+    g.ground(363, w - 1, 38);
+    g.ground(404, 417, 36);
     let mut m = g.map("Tauwinkel");
     m.adventure.objects = vec![
-        o("start", at(12, f, 28.0), ObjectKind::Spawn),
-        sign("schild-start", 15, f),
-        npc("pip", 19, f, -1, 0.0),
-        sign("schild-hecke", 28, f),
-        sign("schild-plattform", 37, f),
-        chest("truhe-1", 41, f + 3, &[("glanztropfen", 20)]),
-        sign("schild-brunnen", 47, f),
-        o("brunnen", at(50, f, 40.0), ObjectKind::SavePoint),
-        npc("oma", 57, f, -1, 0.0),
-        npc("tueftel", 69, f, 1, 24.0),
-        sign("schild-hook", 77, f),
+        o("start", at(23, 40, 28.0), ObjectKind::Spawn),
+        sign("schild-start", 26, 40),
+        npc("pip", 37, 40, -1, 0.0),
+        chest("truhe-baumhaus", 41, 35, &[("glanztropfen", 10)]),
+        sign("schild-hecke", 51, 40),
+        sign("schild-plattform", 72, 38),
+        chest("truhe-1", 83, 41, &[("glanztropfen", 20)]),
+        sign("schild-brunnen", 102, 38),
+        o("brunnen", at(110, 38, 40.0), ObjectKind::SavePoint),
+        npc("oma", 123, 38, -1, 0.0),
+        npc("tueftel", 158, 38, 1, 32.0),
+        sign("schild-hook", 182, 38),
         chest(
             "truhe-hook",
-            87,
+            244,
             15,
-            &[("glanztropfen", 15), ("heiltrank", 1)],
+            &[("glanztropfen", 25), ("heiltrank", 1)],
         ),
-        npc("klonk", 95, f, 1, 0.0),
-        sign("schild-hammer", 101, f),
-        creature("puppe-1", "strohpuppe", 104, f, 40.0),
-        creature("puppe-2", "strohpuppe", 107, f, 40.0),
-        creature("puppe-3", "strohpuppe", 110, f, 40.0),
-        npc("lotte", 119, f, -1, 0.0),
-        sign("schild-ostpfad", 128, f),
-        o("ost", at(132, f, 28.0), ObjectKind::Spawn),
+        npc("klonk", 281, 32, 1, 0.0),
+        sign("schild-hammer", 285, 32),
+        creature("puppe-1", "strohpuppe", 290, 32, 40.0),
+        creature("puppe-2", "strohpuppe", 295, 32, 40.0),
+        creature("puppe-3", "strohpuppe", 300, 32, 40.0),
+        npc("lotte", 321, 32, -1, 0.0),
+        sign("schild-ostpfad", 398, 38),
+        o("ost", at(436, 38, 28.0), ObjectKind::Spawn),
         o(
             "weg-wiese",
-            corner(137, f - 8),
+            corner(w - 3, 0),
             ObjectKind::Exit {
-                size: Vec2::new(2.0 * T, 8.0 * T),
+                size: Vec2::new(3.0 * T, h as f32 * T),
                 map: "wiese-1".into(),
                 spawn: "west".into(),
                 on_touch: true,
             },
         ),
     ];
+    let mut baumhaus = decor("baumhaus", 42.0, 40);
+    baumhaus.pos.y += 8.0;
     m.decor_back = vec![
-        decor("tree-round", 3.0, f),
-        decor("haus-elora", 9.0, f),
-        decor("baumhaus", 23.0, f),
-        decor("fence", 27.0, f),
-        decor("fahne-blass", 45.0, f),
-        decor("brunnen", 53.5, f),
-        decor("haus-oma", 61.0, f),
-        decor("fahne-blass", 65.5, f),
-        decor("werkstatt", 72.0, f),
-        decor("schmiede", 97.0, f),
-        decor("laden", 117.0, f),
-        decor("anschlagbrett", 123.5, f),
-        decor("fahne-blass", 126.0, f),
-        decor("tree-round", 134.0, f),
+        decor("tree-pine", 5.0, 18),
+        decor("tree-round", 8.0, 29),
+        decor("tree-round", 11.0, 40),
+        decor("haus-elora", 18.0, 40),
+        decor("waescheleine", 31.0, 40),
+        baumhaus,
+        decor("fence", 48.0, 40),
+        decor("tree-round", 62.0, 40),
+        decor("fence", 69.0, 38),
+        decor("bank", 90.0, 38),
+        decor("laterne", 93.0, 38),
+        decor("anschlagbrett", 99.0, 38),
+        decor("fahne-blass", 106.0, 38),
+        decor("brunnen", 115.0, 38),
+        decor("haus-oma", 132.0, 38),
+        decor("bank", 140.0, 38),
+        decor("fahne-blass", 144.0, 38),
+        decor("laterne", 148.0, 38),
+        decor("werkstatt", 166.0, 38),
+        decor("holzstapel", 174.0, 38),
+        decor("faesser", 177.5, 38),
+        decor("tree-round", 208.0, 38),
+        decor("tree-pine", 255.0, 36),
+        decor("schmiede", 272.0, 32),
+        decor("holzstapel", 309.0, 32),
+        decor("laden", 328.0, 32),
+        decor("faesser", 336.0, 32),
+        decor("karren", 341.0, 32),
+        decor("bank", 347.0, 32),
+        decor("laterne", 350.0, 32),
+        decor("tree-round", 368.0, 38),
+        decor("tree-pine", 384.0, 38),
+        decor("fence", 390.0, 38),
+        decor("fahne-blass", 401.0, 38),
+        decor("tree-round", 411.0, 36),
+        decor("tree-pine", 422.0, 38),
+        decor("tree-round", 444.0, 38),
     ];
     m.decor_front = vec![
-        decor("bush-2", 30.0, 21),
-        decor("bush-2", 31.5, 21),
-        decor("bush-2", 32.5, 21),
-        decor("beet-blass", 6.0, f),
-        decor("blumenkasten-blass", 13.5, f),
-        decor("beet-blass", 52.0, f),
-        decor("kraeuterbeet-blass", 59.5, f),
-        decor("kraeuterbeet-blass", 63.0, f),
-        decor("blumenkasten-blass", 114.0, f),
-        decor("beet-blass", 121.5, f),
+        decor("bush-2", 9.0, 40),
+        decor("beet-blass", 14.0, 40),
+        decor("blumenkasten-blass", 21.5, 40),
+        decor("kraeuterbeet-blass", 28.0, 40),
+        decor("bush-1", 55.0, 33),
+        decor("heuballen", 79.0, 41),
+        decor("beet-blass", 113.0, 38),
+        decor("beet-blass", 119.0, 38),
+        decor("kraeuterbeet-blass", 128.5, 38),
+        decor("kraeuterbeet-blass", 135.5, 38),
+        decor("mauer", 151.0, 38),
+        decor("heuballen", 191.0, 42),
+        decor("heuballen", 198.0, 42),
+        decor("heuballen", 306.0, 32),
+        decor("blumenkasten-blass", 325.5, 32),
+        decor("beet-blass", 332.0, 32),
+        decor("mauer", 374.0, 38),
+        decor("rock-2", 380.0, 38),
+        decor("bush-2", 395.0, 38),
+        decor("heuballen", 407.0, 36),
+        decor("rock-1", 415.0, 36),
+        decor("bush-1", 419.0, 38),
+        decor("fence", 427.0, 38),
+        decor("fence", 429.0, 38),
+        decor("bush-1", 430.0, 38),
+        decor("rock-2", 440.0, 38),
     ];
+    // Hecke aus Büschen vor dem Block
+    for k in 0..6 {
+        let y = 40.0 * T - k as f32 * 38.0;
+        let x = 55.0 * T + T / 2.0 + if k % 2 == 0 { -12.0 } else { 12.0 };
+        let mut d = Decor::new(Art::Builtin("bush-2".into()), Vec2::new(x, y));
+        d.flip_x = k % 2 == 1;
+        m.decor_front.push(d);
+    }
     finish(m, &GRASS)
 }
 
-/// Blütenwiesen 1, etwa 180 × 40: Hügel, Plattformen mit Truhe, Bach mit Brücke (drei
-/// Stachelkäfer), Pollenbläser, hoher Glitzerstein (Hook), Bröckelboden, Quellstein am Wiesenrand.
+/// Blütenwiesen 1, 300 × 60 (E-282): Hügel, Tal mit Dornengrube und Hook-Decke darüber,
+/// Brücke über einer Dornenschlucht (Stachelkäfer), Hügelkamm mit Pollenbläser,
+/// Bröckelboden, Hook-Felsen zum hohen Plateau mit dem Glitzerstein, Quellstein am Wiesenrand.
 pub fn wiese() -> Map {
-    let (w, h, f) = (180, 40, 32);
-    let mut g = Grid::new(w, h, f);
+    let (w, h) = (300, 60);
+    let mut g = Grid::new(w, h, 44);
     // Hügel
-    g.fill((14, 15), (f - 1, f - 1), '#');
-    g.fill((16, 24), (f - 2, f - 1), '#');
-    g.fill((25, 26), (f - 1, f - 1), '#');
-    // Plattformen hinauf zur Truhe
-    g.fill((44, 50), (27, 27), '=');
-    g.fill((51, 57), (22, 22), '=');
-    // Bach mit Brücke
-    g.fill((62, 73), (f, f + 3), '.');
-    g.fill((62, 73), (f, f), '=');
-    // großer Hügel
-    g.fill((110, 111), (f - 1, f - 1), '#');
-    g.fill((112, 128), (f - 3, f - 1), '#');
-    g.fill((129, 130), (f - 1, f - 1), '#');
-    // hoher Glitzerstein: Überhang zum Hooken, Sims darunter
-    g.fill((134, 150), (11, 12), '#');
-    g.fill((140, 145), (18, 18), '#');
-    // Bröckelboden über einer Grube
-    g.fill((150, 153), (f, f + 3), '.');
-    g.fill((150, 153), (f, f), ':');
+    g.ground(22, 29, 42);
+    g.ground(30, 38, 39);
+    g.ground(39, 47, 41);
+    // Tal mit Dornengrube; oben eine Decke zum Hooken und ein Sims mit Truhe
+    g.ground(60, 95, 50);
+    g.fill((72, 78), (50, 52), '.');
+    g.fill((72, 78), (53, 53), '^');
+    g.ground(96, 99, 47);
+    g.fill((62, 69), (32, 33), '#');
+    g.fill((72, 80), (32, 33), '#');
+    g.fill((84, 92), (38, 39), '#');
+    // Dornenschlucht mit Brücke
+    g.ground(112, 134, 55);
+    g.fill((113, 133), (54, 54), '^');
+    g.fill((112, 134), (44, 44), '=');
+    // Hügelkamm, dahinter ein Tal mit Bröckelboden über Dornen
+    g.ground(150, 160, 40);
+    g.ground(161, 170, 36);
+    g.ground(171, 186, 32);
+    g.ground(187, 230, 46);
+    g.fill((196, 203), (46, 46), ':');
+    g.fill((196, 203), (47, 49), '.');
+    g.fill((196, 203), (50, 50), '^');
+    // Hook-Felsen hinüber zum hohen Plateau (mit Durchgang darunter)
+    g.fill((189, 192), (22, 23), '#');
+    g.fill((197, 200), (22, 23), '#');
+    g.fill((205, 208), (22, 23), '#');
+    g.fill((215, 230), (30, 40), '#');
+    // Anstieg zum Wiesenrand, im Osten dichter Wald am Hang
+    g.ground(241, 250, 43);
+    g.ground(251, w - 1, 40);
+    g.fill((294, 295), (34, h - 1), '%');
+    g.fill((296, 297), (26, h - 1), '%');
+    g.fill((298, 299), (0, h - 1), '%');
     let mut m = g.map("Blütenwiesen 1");
     m.adventure.objects = vec![
-        o("west", at(5, f, 28.0), ObjectKind::Spawn),
         o(
             "weg-dorf",
-            corner(1, f - 8),
+            corner(0, 0),
             ObjectKind::Exit {
-                size: Vec2::new(T, 8.0 * T),
+                size: Vec2::new(2.0 * T, h as f32 * T),
                 map: "tauwinkel".into(),
                 spawn: "ost".into(),
                 on_touch: true,
             },
         ),
-        sign("schild-wiese", 9, f),
-        plant("blume-1", 20, f - 2),
-        creature("kaefer-1", "stachelkaefer", 32, f, 26.0),
-        creature("huepfer-1", "grashuepfer", 40, f, 28.0),
+        o("west", at(6, 44, 28.0), ObjectKind::Spawn),
+        sign("schild-wiese", 10, 44),
+        plant("blume-1", 34, 39),
+        creature("huepfer-1", "grashuepfer", 43, 41, 28.0),
+        creature("kaefer-1", "stachelkaefer", 53, 44, 26.0),
+        creature("kaefer-2", "stachelkaefer", 66, 50, 26.0),
+        plant("blume-2", 83, 50),
+        creature("huepfer-2", "grashuepfer", 89, 50, 28.0),
         chest(
-            "truhe-wiese",
-            54,
-            22,
-            &[("glanztropfen", 25), ("heiltrank", 1)],
+            "truhe-oben-1",
+            88,
+            38,
+            &[("glanztropfen", 30), ("heiltrank", 1)],
         ),
         o(
             "bruecke",
-            corner(58, f - 8),
+            corner(108, 34),
             ObjectKind::Zone {
-                size: Vec2::new(28.0 * T, 12.0 * T),
+                size: Vec2::new(30.0 * T, 10.0 * T),
             },
         ),
-        creature("kaefer-2", "stachelkaefer", 70, f, 26.0),
-        creature("kaefer-3", "stachelkaefer", 78, f, 26.0),
-        creature("kaefer-4", "stachelkaefer", 83, f, 26.0),
-        plant("blume-2", 67, f + 4),
-        creature("blaeser", "pollenblaeser", 95, f, 60.0),
-        creature("huepfer-2", "grashuepfer", 104, f, 28.0),
-        plant("blume-3", 120, f - 3),
-        creature("huepfer-3", "grashuepfer", 136, f, 28.0),
+        creature("kaefer-3", "stachelkaefer", 117, 44, 26.0),
+        creature("kaefer-4", "stachelkaefer", 128, 44, 26.0),
+        creature("kaefer-5", "stachelkaefer", 140, 44, 26.0),
+        plant("blume-3", 146, 44),
+        creature("blaeser", "pollenblaeser", 180, 32, 60.0),
+        creature("huepfer-3", "grashuepfer", 209, 46, 28.0),
         o(
             "glitzerstein",
-            at(142, 18, 28.0),
+            at(224, 30, 28.0),
             ObjectKind::Collectible {
                 item: "glitzerstein".into(),
             },
         ),
-        plant("blume-4", 157, f),
+        chest(
+            "truhe-oben-2",
+            228,
+            30,
+            &[("glanztropfen", 40), ("bernstein", 2)],
+        ),
+        plant("blume-4", 236, 46),
+        creature("kaefer-6", "stachelkaefer", 245, 43, 26.0),
+        creature("huepfer-4", "grashuepfer", 256, 40, 28.0),
         o(
             "wiesenrand",
-            corner(162, f - 10),
+            corner(266, 30),
             ObjectKind::Zone {
-                size: Vec2::new(16.0 * T, 10.0 * T),
+                size: Vec2::new(28.0 * T, 10.0 * T),
             },
         ),
-        o("quellstein", at(170, f, 40.0), ObjectKind::SavePoint),
+        o("quellstein", at(280, 40, 40.0), ObjectKind::SavePoint),
     ];
-    m.decor_back = vec![decor("tree-round", 166.0, f)];
-    m.decor_front = vec![decor("bush-2", 141.0, 18), decor("bush-1", 144.5, 18)];
+    m.decor_back = vec![
+        decor("tree-round", 15.0, 44),
+        decor("tree-round", 64.0, 50),
+        decor("tree-round", 104.0, 44),
+        decor("tree-round", 165.0, 36),
+        decor("tree-round", 239.0, 46),
+        decor("tree-pine", 289.0, 40),
+        decor("tree-pine", 295.0, 34),
+        decor("tree-pine", 297.0, 26),
+    ];
+    m.decor_front = vec![
+        decor("bush-2", 222.5, 30),
+        decor("bush-1", 225.5, 30),
+        decor("bush-2", 292.0, 40),
+    ];
+    for (y, x0, x1) in [(54, 72, 78), (55, 113, 133), (51, 196, 203)] {
+        let mut x = x0;
+        while x < x1 {
+            m.decor_front.push(decor("dornen", x as f32 + 0.5, y));
+            x += 2;
+        }
+    }
     finish(m, &release::THEMES[0])
 }
 

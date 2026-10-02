@@ -528,3 +528,48 @@ fn grenade_shards_add_small_blasts() {
         .count();
     assert_eq!(blasts, 4, "Einschlag + 3 Splitter");
 }
+
+#[test]
+fn thorns_hurt_and_put_elora_back_on_safe_ground() {
+    // Grube mit Dornen in Spalte 20 bis 24
+    let mut w = world(|t| {
+        for x in 20..=24 {
+            set(t, x, FLOOR, Tile::Air);
+            set(t, x, FLOOR + 1, Tile::Death);
+        }
+    });
+    elora(&mut w, 10);
+    let right = PlayerInput {
+        direction: 1,
+        ..PlayerInput::default()
+    };
+    run(&mut w, PlayerInput::default(), 10);
+    let mut hurt = false;
+    for _ in 0..200 {
+        let ev = run(&mut w, right, 1);
+        if ev.iter().any(|e| matches!(e, Event::Damage { .. })) {
+            hurt = true;
+            break;
+        }
+    }
+    assert!(hurt, "in die Dornen gefallen");
+    let ch = w.character(0).expect("lebt noch (E-283)");
+    assert_eq!(ch.health, 10 - Tuning::default().thorn_damage);
+    assert!(
+        ch.core.pos.x < 18.0 * 32.0,
+        "zurück vor der Grube: {:?}",
+        ch.core.pos
+    );
+    assert!(ch.core.pos.y < FLOOR as f32 * 32.0);
+    // Ohne Abenteuer bleibt es beim Tod
+    let mut w = world(|t| {
+        for x in 20..=24 {
+            set(t, x, FLOOR, Tile::Air);
+            set(t, x, FLOOR + 1, Tile::Death);
+        }
+    });
+    w.adventure = false;
+    elora(&mut w, 22);
+    run(&mut w, PlayerInput::default(), 40);
+    assert!(w.character(0).is_none());
+}
