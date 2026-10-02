@@ -144,6 +144,36 @@ impl Sandbox {
         }
     }
 
+    /// Andere Karte aus einer Datei laden (Debug-Panel); Tuning, Fähigkeiten und Spielmodus
+    /// bleiben, Hot-Reload beobachtet die neue Datei.
+    ///
+    /// # Errors
+    /// Wenn die Karte nicht lesbar oder ungültig ist.
+    pub fn switch_map(&mut self, path: &Path) -> anyhow::Result<()> {
+        let map = load_map(path)?;
+        self.stop_recording("Karte gewechselt");
+        let abilities = self.abilities();
+        let adventure = self.world.adventure;
+        let (mut world, player) = fresh_world(&map, self.world.tuning.clone());
+        world.set_abilities(player, abilities);
+        world.adventure = adventure;
+        self.world = world;
+        self.player = player;
+        self.map = map;
+        self.map_path = path.to_path_buf();
+        self.watcher = MapWatcher::new(path)
+            .inspect_err(|e| tracing::warn!("Hot-Reload nicht verfügbar: {e:#}"))
+            .ok();
+        self.reload_error = None;
+        self.notices.clear();
+        self.accumulator = Duration::ZERO;
+        if let Some(cfg) = self.rules.as_ref().map(|r| r.cfg.clone()) {
+            self.rules = Some(Rules::new(cfg, &mut self.world, false));
+        }
+        self.sync_prev();
+        Ok(())
+    }
+
     /// Karte aus dem Speicher spielen (Testspielen aus dem Editor, M6.9): frische Welt im
     /// freien Spiel. Liefert die bisherige Karte zum Wiederherstellen.
     pub fn play_map(&mut self, map: Map) -> Map {

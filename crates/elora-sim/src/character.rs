@@ -161,6 +161,8 @@ impl CharacterCore {
         self.triggered_events = 0;
         // „Runter“ frisch gedrückt (vor dem Überschreiben von `drop_through`)
         let down_pressed = input.is_some_and(|i| i.down && !self.drop_through);
+        // Stand die Figur vor diesem Druck? Dann fällt sie durch die Plattform statt zu stampfen
+        let stood = self.is_grounded(col);
         if let Some(input) = input {
             // beim Stampfen landet die Figur auch auf Plattformen
             self.drop_through = input.down && !self.stomping;
@@ -171,7 +173,7 @@ impl CharacterCore {
         self.vel.y += tuning.gravity;
 
         if let Some(input) = input {
-            self.tick_abilities(input, tuning, col, grounded, down_pressed);
+            self.tick_abilities(input, tuning, col, grounded, down_pressed && !stood);
         }
 
         let (max_speed, accel, friction) = if ground == Some(Tile::Ice) {

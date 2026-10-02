@@ -130,7 +130,6 @@ fn main() -> anyhow::Result<()> {
     let mut app = App::new(sandbox, &file, settings);
     if direct {
         app.screen = Screen::Game;
-        app.show_panel = true;
     }
     if let Some(address) = connect {
         app.net.address = address;
@@ -335,6 +334,12 @@ impl App {
             Action::Save => {
                 self.status = match self.tuning_file().save(path) {
                     Ok(()) => format!("Gespeichert in {TUNING_FILE}"),
+                    Err(e) => format!("Fehler: {e:#}"),
+                };
+            }
+            Action::SwitchMap(path) => {
+                self.status = match self.sandbox.switch_map(&path) {
+                    Ok(()) => format!("Karte {} geladen", path.display()),
                     Err(e) => format!("Fehler: {e:#}"),
                 };
             }
@@ -913,7 +918,9 @@ impl App {
                 KeyCode::Escape if self.testing_map() => return self.leave_editor_test(),
                 KeyCode::Escape => return self.toggle_pause(),
                 KeyCode::F1 => {
+                    // Panel offen: Maus frei zum Bedienen; zu: zurück ins Spiel
                     self.show_panel = !self.show_panel;
+                    self.set_cursor_grab(!self.show_panel && !self.menu.paused);
                     return;
                 }
                 KeyCode::KeyR if unbound && !online => return self.apply(Action::Respawn),

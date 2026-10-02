@@ -317,3 +317,18 @@ fn no_glide_while_air_jump_unused() {
     run(&mut w, input(0, true, false), 45);
     assert!(!core(&w).gliding);
 }
+
+#[test]
+fn down_on_platform_still_drops_through_with_stomp() {
+    let mut w = world(|t| (20..26).for_each(|x| set(t, x, 20, Tile::Platform)));
+    spawn(&mut w, standing(22, 20), with(Ability::Stomp));
+    run(&mut w, PlayerInput::default(), 10);
+    assert!(core(&w).is_grounded(&w.collision));
+    run(&mut w, input(0, false, true), 30);
+    assert!(!core(&w).stomping);
+    assert!(
+        core(&w).pos.y > 21.0 * 32.0,
+        "durch die Plattform gefallen: {:?}",
+        core(&w).pos
+    );
+}

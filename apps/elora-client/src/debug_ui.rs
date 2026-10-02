@@ -27,6 +27,8 @@ pub enum Action {
     SandboxMode(Option<RulesConfig>),
     Save,
     Load,
+    /// Andere Karte in der Sandbox laden.
+    SwitchMap(std::path::PathBuf),
     Respawn,
     Connect,
     Disconnect,
@@ -76,6 +78,8 @@ pub struct NetUi {
     pub sandbox_instagib: bool,
     /// Gewählte Gegnerart zum Setzen in der Sandbox (A1.2).
     pub creature_kind: usize,
+    /// Gewählte Karte zum Wechseln in der Sandbox.
+    pub map_choice: Option<std::path::PathBuf>,
 }
 
 impl Default for NetUi {
@@ -98,6 +102,7 @@ impl Default for NetUi {
             sandbox_mode: None,
             sandbox_instagib: false,
             creature_kind: 0,
+            map_choice: None,
         }
     }
 }
@@ -154,9 +159,9 @@ pub fn panel(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
                     "Elora – Sandbox"
                 });
                 if cx.cursor_grabbed {
-                    ui.label("Esc: Maus freigeben, um das Panel zu bedienen");
+                    ui.label("F1 zweimal: Maus wieder für das Panel freigeben");
                 } else {
-                    ui.label("Ins Spielfeld klicken, um weiterzuspielen");
+                    ui.label("Ins Spielfeld klicken, um weiterzuspielen; F1 schließt das Panel");
                 }
                 ui.separator();
                 action = network(ui, cx);
@@ -164,6 +169,9 @@ pub fn panel(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
                 action = action.take().or(game_section(ui, cx));
                 ui.separator();
                 if let Some(sandbox) = cx.sandbox.as_deref_mut() {
+                    action = action
+                        .take()
+                        .or(map_picker(ui, sandbox, &mut cx.net.map_choice));
                     state(ui, sandbox, cx.fps);
                     ui.separator();
                     action = action.take().or(buttons(ui, cx.status));
@@ -229,7 +237,7 @@ pub fn panel(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
 fn network(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
     let mut action = None;
     egui::CollapsingHeader::new("Netzwerk")
-        .default_open(true)
+        .default_open(false)
         .show(ui, |ui| {
             if let Some(o) = &cx.online {
                 online_state(ui, o);
@@ -279,7 +287,7 @@ fn network(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
 fn game_section(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
     let mut action = None;
     egui::CollapsingHeader::new("Spiel")
-        .default_open(true)
+        .default_open(false)
         .show(ui, |ui| {
             let online = cx.online.is_some();
             if !online {
@@ -690,6 +698,42 @@ fn abilities(ui: &mut egui::Ui, s: &mut Sandbox) {
         });
 }
 
+/// Karte wechseln: alle mitgelieferten und eigenen Karten (`hosting::available_maps`).
+fn map_picker(
+    ui: &mut egui::Ui,
+    s: &Sandbox,
+    choice: &mut Option<std::path::PathBuf>,
+) -> Option<Action> {
+    let mut action = None;
+    egui::CollapsingHeader::new("Karte")
+        .default_open(false)
+        .show(ui, |ui| {
+            let maps = crate::hosting::available_maps();
+            let name = |p: &std::path::Path| {
+                p.file_stem()
+                    .map_or_else(String::new, |n| n.to_string_lossy().into_owned())
+            };
+            let current = choice.clone().unwrap_or_else(|| s.map_path.clone());
+            ui.horizontal(|ui| {
+                egui::ComboBox::from_id_salt("map_choice")
+                    .selected_text(name(&current))
+                    .show_ui(ui, |ui| {
+                        for m in &maps {
+                            if ui.selectable_label(*m == current, name(m)).clicked() {
+                                *choice = Some(m.clone());
+                            }
+                        }
+                    });
+                if ui.button("Laden").clicked() {
+                    action = Some(Action::SwitchMap(current.clone()));
+                    *choice = None;
+                }
+            });
+            ui.small(format!("Aktuell: {}", s.map_path.display()));
+        });
+    action
+}
+
 /// Gegner zum Ausprobieren (A1.2): Abenteuer-Regeln, Gegner setzen und entfernen.
 fn creatures(ui: &mut egui::Ui, s: &mut Sandbox, kind: &mut usize) {
     egui::CollapsingHeader::new("Gegner (Abenteuer)")
@@ -745,9 +789,9 @@ fn tuning(ui: &mut egui::Ui, t: &mut Tuning) {
     if ui.button("Alle Werte auf Standard").clicked() {
         *t = d.clone();
     }
-    section(ui, "Boden (T-02 bis T-05)", true, |ui| ground(ui, t, &d));
-    section(ui, "Luft (T-06 bis T-10)", true, |ui| air(ui, t, &d));
-    section(ui, "Hook (T-12 bis T-17)", true, |ui| hook(ui, t, &d));
+    section(ui, "Boden (T-02 bis T-05)", false, |ui| ground(ui, t, &d));
+    section(ui, "Luft (T-06 bis T-10)", false, |ui| air(ui, t, &d));
+    section(ui, "Hook (T-12 bis T-17)", false, |ui| hook(ui, t, &d));
     section(ui, "Tile-Arten (T-31 bis T-35)", false, |ui| {
         tiles(ui, t, &d);
     });
@@ -1202,7 +1246,7 @@ fn view(ui: &mut egui::Ui, v: &mut ViewSettings) {
 
 fn help(ui: &mut egui::Ui) {
     egui::CollapsingHeader::new("Steuerung")
-        .default_open(true)
+        .default_open(false)
         .show(ui, |ui| {
             ui.label("A / D – laufen");
             ui.label("Leertaste – springen / Doppelsprung");
