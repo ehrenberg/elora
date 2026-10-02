@@ -6,6 +6,9 @@ use std::collections::BTreeMap;
 use elora_sim::{Ability, CreatureKind, Weapon};
 use serde::{Deserialize, Serialize};
 
+use crate::dialog::{CharacterDef, Dialog};
+use crate::quest::QuestDef;
+
 /// Text in beiden Sprachen (E-217).
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct Text {
@@ -186,10 +189,22 @@ pub struct Upgrade {
     pub bonuses: Vec<Bonus>,
 }
 
+/// Rabatt ab einer Zuneigung zur Ladenbesitzerin (E-248).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Discount {
+    pub affection: i32,
+    pub pct: u32,
+}
+
 /// Laden (z. B. Lotte).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Shop {
     pub id: String,
+    /// Figur, deren Zuneigung den Rabatt bestimmt.
+    #[serde(default)]
+    pub owner: Option<String>,
+    #[serde(default)]
+    pub discount: Vec<Discount>,
     pub stock: Vec<String>,
 }
 
@@ -232,6 +247,22 @@ struct UpgradesFile {
 struct ShopsFile {
     shop: Vec<Shop>,
 }
+#[derive(Debug, Deserialize)]
+struct QuestsFile {
+    quest: Vec<QuestDef>,
+}
+#[derive(Debug, Deserialize)]
+struct CharactersFile {
+    character: Vec<CharacterDef>,
+}
+
+/// Mitgelieferte Gespräche (`assets/adventure/dialogs/<id>.toml`).
+macro_rules! dialogs {
+    ($($name:literal),* $(,)?) => {
+        &[$(($name, include_str!(concat!("../../../assets/adventure/dialogs/", $name, ".toml")))),*]
+    };
+}
+const DIALOG_FILES: &[(&str, &str)] = dialogs!("oma", "tueftel");
 
 /// Quelltexte der Inhaltsdateien.
 #[derive(Debug, Clone, Copy)]
@@ -242,6 +273,10 @@ pub struct Sources<'a> {
     pub shops: &'a str,
     pub progression: &'a str,
     pub creatures: &'a str,
+    pub quests: &'a str,
+    pub characters: &'a str,
+    /// Gespräche: Id und Inhalt.
+    pub dialogs: &'a [(&'a str, &'a str)],
 }
 
 impl Sources<'static> {
@@ -254,6 +289,9 @@ impl Sources<'static> {
             shops: include_str!("../../../assets/adventure/shops.toml"),
             progression: include_str!("../../../assets/adventure/progression.toml"),
             creatures: include_str!("../../../assets/adventure/creatures.toml"),
+            quests: include_str!("../../../assets/adventure/quests.toml"),
+            characters: include_str!("../../../assets/adventure/characters.toml"),
+            dialogs: DIALOG_FILES,
         }
     }
 }
@@ -267,6 +305,9 @@ pub struct Content {
     pub shops: BTreeMap<String, Shop>,
     pub progression: Progression,
     pub creatures: Vec<CreatureKind>,
+    pub quests: Vec<QuestDef>,
+    pub characters: BTreeMap<String, CharacterDef>,
+    pub dialogs: BTreeMap<String, Dialog>,
 }
 
 /// Id der Währung.
@@ -304,6 +345,15 @@ impl Content {
                 msg,
             }
         })?;
+        let quests: QuestsFile = parse("quests.toml", src.quests)?;
+        let characters: CharactersFile = parse("characters.toml", src.characters)?;
+        let mut dialogs = BTreeMap::new();
+        for &(id, text) in src.dialogs {
+            let mut d: Dialog = toml::from_str(text)
+                .map_err(|e| ContentError::Invalid(format!("dialogs/{id}.toml: {e}")))?;
+            id.clone_into(&mut d.id);
+            dialogs.insert(id.to_owned(), d);
+        }
         let mut map = BTreeMap::new();
         for it in items.item {
             if let Some(old) = map.insert(it.id.clone(), it) {
@@ -320,8 +370,16 @@ impl Content {
             shops: shops.shop.into_iter().map(|s| (s.id.clone(), s)).collect(),
             progression,
             creatures,
+            quests: quests.quest,
+            characters: characters
+                .character
+                .into_iter()
+                .map(|c| (c.id.clone(), c))
+                .collect(),
+            dialogs,
         };
         c.validate()?;
+        crate::check::story(&c).map_err(ContentError::Invalid)?;
         Ok(c)
     }
 
@@ -399,6 +457,14 @@ impl Content {
             }
         }
         Ok(())
+    }
+
+    pub fn quest(&self, id: &str) -> Option<&QuestDef> {
+        self.quests.iter().find(|q| q.id == id)
+    }
+
+    pub fn dialog(&self, id: &str) -> Option<&Dialog> {
+        self.dialogs.get(id)
     }
 
     pub fn item(&self, id: &str) -> Option<&ItemDef> {

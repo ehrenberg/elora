@@ -1,0 +1,42 @@
+# Tüftel (A1.4) – Entwurf für den Prolog, Feinschliff mit A1.9.
+speaker = "tueftel"
+
+[[start]]
+if = "quest brunnen schritt tueftel"
+node = "rat"
+
+[[start]]
+node = "werkstatt"
+
+[[node]]
+id = "rat"
+text = { de = "Zur Quelle? Wenn man den Hook … nein, warte … ja! Halt dich an Wänden fest und zieh. Und der Hammer – feste drauf!", en = "To the spring? If you take the hook … no, wait … yes! Grab the walls and pull. And the hammer – give it a good whack!" }
+
+[[node.choice]]
+tone = "neugierig"
+text = { de = "Und was ist das da auf deinem Kopf?", en = "And what's that on your head?" }
+next = "birne"
+
+[[node.choice]]
+tone = "freundlich"
+text = { de = "Danke, Tüftel!", en = "Thanks, Tüftel!" }
+
+[[node]]
+id = "birne"
+text = { de = "Meine Ideen-Birne! Leuchtet, wenn … na, du weißt schon.", en = "My idea bulb! It lights up when … well, you know." }
+do = ["zuneigung tueftel +1"]
+
+[[node]]
+id = "werkstatt"
+text = { de = "Wenn ich nur … hmm. Komm später wieder, ich tüftle gerade.", en = "If only I … hmm. Come back later, I'm tinkering." }
+
+[[node.choice]]
+text = { de = "Zeig mir den Fähigkeitenbaum.", en = "Show me the skill tree." }
+if = "stufe >= 2"
+do = ["baum"]
+
+[[node.choice]]
+text = { de = "Bis später!", en = "See you later!" }
+
+[[bark]]
+text = { de = "Hmm … ja … nein …", en = "Hmm … yes … no …" }

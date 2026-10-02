@@ -5,12 +5,18 @@
 //! Die Simulation (`elora-sim`) bekommt daraus ein Tuning, die Fähigkeiten und den Stand der
 //! Figur; Ereignisse der Welt fließen über [`SaveGame::on_event`] zurück.
 
+mod check;
 pub mod data;
+pub mod dialog;
+pub mod quest;
 pub mod save;
+pub mod script;
 pub mod state;
 pub mod stats;
 
 pub use data::{Content, GLANZTROPFEN};
+pub use dialog::{Conversation, Turn};
+pub use quest::Outcome;
 pub use state::{Location, Notice, Refusal, SaveGame};
 pub use stats::Stats;
 

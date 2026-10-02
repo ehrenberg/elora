@@ -54,6 +54,12 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-243 | 2026-10-02 | Waffen im Abenteuer (O-204) | Start mit Hammer, Granatwerfer nach Kapitel 1, Laser nach Kapitel 3; **Munition wie im Mehrspieler nur über Pickups und Truhen**; je Waffe 3 Ausbaustufen mit Glanztropfen und Gebietsmaterial | Entscheidung Projektinhaber |
 | E-244 | 2026-10-02 | Ausrüstung, Inventar, Tod (O-204) | Wie vorgeschlagen: keine Platzgrenze, keine Tempo- oder Sprungboni, Verlust beim Tod 25 % der seit dem Speichern gesammelten Glanztropfen | Entscheidung Projektinhaber |
 | E-245 | 2026-10-02 | Spielstände (O-202) | **Keine lesbaren Dateien:** Spielstände werden gepackt mit Prüfsumme gespeichert | Entscheidung Projektinhaber |
+| E-246 | 2026-10-02 | Format der Gespräche (A1.4) | **TOML wie die übrigen Daten** | Entscheidung Projektinhaber |
+| E-247 | 2026-10-02 | Übersetzungen (A1.4) | **Beide Sprachen nebeneinander** in derselben Datei; fehlende Übersetzungen meldet die Prüfung | Entscheidung Projektinhaber |
+| E-248 | 2026-10-02 | Folgen von Entscheidungen (E-213) | **Zuneigung je Figur** (öffnet Extras), **Belohnungen**, **Merker im Weltzustand**, **Aufgaben starten und abschließen** | Entscheidung Projektinhaber |
+| E-249 | 2026-10-02 | Aufgaben-Schritte (A1.4) | Sprechen mit, Ort erreichen, Gegner besiegen, Sammeln, Bringen, Auslöser in der Welt | Entscheidung Projektinhaber |
+| E-250 | 2026-10-02 | Scheitern von Aufgaben | **Manche Aufgaben können scheitern** (durch Entscheidungen oder Bedingungen) | Entscheidung Projektinhaber |
+| E-251 | 2026-10-02 | Aufgabenbuch | Zeigt **erledigte Schritte und den aktuellen**, weitere als „?“ | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 

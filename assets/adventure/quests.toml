@@ -1,0 +1,45 @@
+# Aufgaben (A1.4, E-249 bis E-251). Bedingungen und Folgen: crates/elora-adventure/src/script.rs
+# goal.type = talk | reach | defeat | collect | bring | flag | manual
+# Entwurf für den Prolog – Feinschliff mit A1.9.
+
+[[quest]]
+id = "brunnen"
+kind = "main"
+giver = "oma"
+name = { de = "Der blasse Brunnen", en = "The Pale Well" }
+desc = { de = "Die Blumen am Dorfbrunnen verlieren ihre Farbe. Oma Pfütze glaubt, die Blütenquelle sei verstummt.", en = "The flowers by the village well are losing their colour. Oma Pfütze believes the Blossom Spring has fallen silent." }
+reward = { xp = 50, glanztropfen = 30 }
+
+[[quest.step]]
+id = "tueftel"
+text = { de = "Bei Tüftel vorbeischauen", en = "Drop by Tüftel's workshop" }
+goal = { type = "talk", who = "tueftel" }
+
+[[quest.step]]
+id = "bruecke"
+text = { de = "Den Wiesenpfad bis zur Brücke gehen", en = "Follow the meadow path to the bridge" }
+goal = { type = "reach", map = "wiese-1", zone = "bruecke" }
+
+[[quest.step]]
+id = "kaefer"
+text = { de = "Drei Stachelkäfer von der Brücke vertreiben", en = "Drive three Stachelkäfer off the bridge" }
+goal = { type = "defeat", kind = "stachelkaefer", count = 3 }
+
+[[quest.step]]
+id = "quelle"
+text = { de = "Die Blütenquelle finden", en = "Find the Blossom Spring" }
+goal = { type = "reach", map = "wiese-1", zone = "quelle" }
+
+# Beispiel einer Nebenaufgabe, die scheitern kann (E-250)
+[[quest]]
+id = "pips_stein"
+kind = "side"
+giver = "pip"
+name = { de = "Der Glitzerstein im Gras", en = "The Glitter Stone in the Grass" }
+reward = { xp = 30, items = [{ item = "heiltrank", count = 1 }] }
+fail_if = "merker pip.verpetzt"
+
+[[quest.step]]
+id = "bringen"
+text = { de = "Pip drei Bernsteine bringen", en = "Bring Pip three pieces of amber" }
+goal = { type = "bring", item = "bernstein", count = 3, to = "pip" }

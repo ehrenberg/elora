@@ -44,6 +44,12 @@ pub struct SaveGame {
     pub defeated: BTreeSet<String>,
     pub location: Location,
     pub play_time_secs: u64,
+    /// Begonnene Aufgaben (A1.4).
+    #[serde(default)]
+    pub quests: BTreeMap<String, crate::quest::QuestState>,
+    /// Zuneigung je Figur (E-248).
+    #[serde(default)]
+    pub affection: BTreeMap<String, i32>,
 }
 
 /// Was der Spieler sehen soll (Anzeige, Sound).
@@ -52,6 +58,10 @@ pub enum Notice {
     LevelUp { level: u32 },
     Xp(u32),
     Item { id: String, count: u32 },
+    QuestStarted(String),
+    QuestStep(String),
+    QuestDone(String),
+    QuestFailed(String),
 }
 
 /// Warum etwas nicht geht.
@@ -103,6 +113,8 @@ impl SaveGame {
             defeated: BTreeSet::new(),
             location: start,
             play_time_secs: 0,
+            quests: BTreeMap::new(),
+            affection: BTreeMap::new(),
         }
     }
 
@@ -347,13 +359,29 @@ impl SaveGame {
         if !s.stock.iter().any(|i| i == id) {
             return Err(Refusal::Unknown);
         }
-        let price = content.item(id).ok_or(Refusal::Unknown)?.price;
+        let price = self.price(content, shop, id).ok_or(Refusal::Unknown)?;
         if self.glanztropfen < price {
             return Err(Refusal::TooExpensive);
         }
         self.add_item(content, id, 1)?;
         self.glanztropfen -= price;
         Ok(())
+    }
+
+    /// Kaufpreis mit Rabatt nach Zuneigung zur Besitzerin (E-248).
+    pub fn price(&self, content: &Content, shop: &str, id: &str) -> Option<u32> {
+        let s = content.shops.get(shop)?;
+        let base = content.item(id)?.price;
+        let pct = s.owner.as_deref().map_or(0, |o| {
+            let a = self.affection(o);
+            s.discount
+                .iter()
+                .filter(|d| a >= d.affection)
+                .map(|d| d.pct)
+                .max()
+                .unwrap_or(0)
+        });
+        Some(base - base * pct.min(100) / 100)
     }
 
     /// Verkaufspreis (P-26); Schlüssel und Währung sind unverkäuflich.
@@ -436,12 +464,21 @@ impl SaveGame {
                 killer: Some(k),
                 ..
             } if *k == me => {
-                let xp = kinds.get(*kind).map_or(0, |k| k.xp);
-                if xp > 0 {
-                    self.add_xp(content, xp)
+                let Some(k) = kinds.get(*kind) else {
+                    return Vec::new();
+                };
+                let mut out = if k.xp > 0 {
+                    self.add_xp(content, k.xp)
                 } else {
                     Vec::new()
+                };
+                let map = self.location.map.clone();
+                for o in self.on_defeat(content, &k.name, &map) {
+                    if let crate::quest::Outcome::Notice(n) = o {
+                        out.push(n);
+                    }
                 }
+                out
             }
             Event::LootCollect {
                 player,
@@ -456,13 +493,19 @@ impl SaveGame {
                     let extra = (count as f32 * pct / 100.0).round().max(0.0) as u32;
                     count += extra;
                 }
-                match self.add_item(content, item, count) {
+                let mut out = match self.add_item(content, item, count) {
                     Ok(()) => vec![Notice::Item {
                         id: item.clone(),
                         count,
                     }],
                     Err(_) => Vec::new(),
+                };
+                for o in self.update_quests(content) {
+                    if let crate::quest::Outcome::Notice(n) = o {
+                        out.push(n);
+                    }
                 }
+                out
             }
             _ => Vec::new(),
         }

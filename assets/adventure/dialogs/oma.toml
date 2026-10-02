@@ -1,0 +1,75 @@
+# Oma Pfütze (A1.4) – Entwurf für den Prolog, Feinschliff mit A1.9.
+speaker = "oma"
+
+[[start]]
+if = "quest brunnen erledigt"
+node = "danach"
+
+[[start]]
+if = "quest brunnen aktiv"
+node = "erinnerung"
+
+[[start]]
+node = "begruessung"
+
+[[node]]
+id = "begruessung"
+text = { de = "Ach, Elora, Kind. Siehst du, wie blass die Blumen am Brunnen sind? Als ich so klein war wie du, sang die Blütenquelle noch Morgenlieder …", en = "Oh, Elora, dear. Do you see how pale the flowers by the well are? When I was as small as you, the Blossom Spring still sang morning songs …" }
+
+[[node.choice]]
+tone = "freundlich"
+text = { de = "Ich finde heraus, was mit der Quelle los ist, versprochen!", en = "I'll find out what's wrong with the spring, I promise!" }
+next = "zusage"
+do = ["quest brunnen start", "zuneigung oma +1"]
+
+[[node.choice]]
+tone = "neugierig"
+text = { de = "Morgenlieder? Erzähl mir mehr von den Quellen.", en = "Morning songs? Tell me more about the springs." }
+next = "quellen"
+
+[[node.choice]]
+tone = "frech"
+text = { de = "Vielleicht sind die Blumen einfach müde, Oma.", en = "Maybe the flowers are just tired, Granny." }
+next = "frech"
+do = ["merker oma.frech = 1"]
+
+[[node]]
+id = "quellen"
+text = { de = "Fünf Quellen gibt es im Tauland, und jede singt ihr eigenes Lied. Die Blütenquelle liegt hinter den Wiesen, gleich über die Brücke.", en = "There are five springs in the Tauland, and each sings its own song. The Blossom Spring lies beyond the meadows, just over the bridge." }
+next = "bitte"
+do = ["zuneigung oma +1"]
+
+[[node]]
+id = "frech"
+text = { de = "Hmpf. Müde Blumen singen nicht. Und blasse schon gar nicht.", en = "Hmph. Tired flowers don't sing. And pale ones even less." }
+next = "bitte"
+
+[[node]]
+id = "bitte"
+text = { de = "Würdest du nach der Quelle sehen? Hol dir aber zuerst bei Tüftel ein paar Ratschläge.", en = "Would you look in on the spring? But get some advice from Tüftel first." }
+
+[[node.choice]]
+tone = "freundlich"
+text = { de = "Mach ich!", en = "Will do!" }
+next = "zusage"
+do = ["quest brunnen start"]
+
+[[node]]
+id = "zusage"
+text = { de = "Du bist ein gutes Kind. Hier, nimm das mit – für unterwegs.", en = "You're a good child. Here, take this – for the road." }
+do = ["gib heiltrank 1"]
+
+[[node]]
+id = "erinnerung"
+text = { de = "Die Blütenquelle, Kind. Über die Brücke. Und sei vorsichtig mit den Käfern!", en = "The Blossom Spring, dear. Over the bridge. And watch out for the beetles!" }
+
+[[node]]
+id = "danach"
+text = { de = "Hörst du das? Die Blumen summen wieder. Danke, Elora.", en = "Do you hear that? The flowers are humming again. Thank you, Elora." }
+
+[[bark]]
+if = "quest brunnen aktiv"
+text = { de = "Pass auf dich auf!", en = "Take care of yourself!" }
+
+[[bark]]
+text = { de = "Hallo, Elora!", en = "Hello, Elora!" }

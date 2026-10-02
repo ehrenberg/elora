@@ -1,5 +1,8 @@
 # Läden (P-26). Verkaufen geht überall, wo ein Laden ist.
+# discount: Rabatt ab einer Zuneigung zur Besitzerin (E-248)
 
 [[shop]]
 id = "lotte"
+owner = "lotte"
+discount = [{ affection = 5, pct = 10 }, { affection = 10, pct = 20 }]
 stock = ["heiltrank", "tautrank", "sandstiefel", "gluecksanhaenger", "strohhut"]

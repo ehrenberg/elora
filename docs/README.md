@@ -18,6 +18,7 @@ Elora ist ein schnelles 2D-Multiplayer-Spiel nach dem Vorbild von Teeworlds; „
 |---|---|
 | [release-2/roadmap.md](release-2/roadmap.md) | Ziele, Abhängigkeiten, Meilensteine |
 | [release-2/a1-plan.md](release-2/a1-plan.md) | Plan R2-M1 Abenteuer-Grundlage |
+| [handbuch/abenteuer-inhalte.md](handbuch/abenteuer-inhalte.md) | Gespräche, Aufgaben und Abenteuer-Daten schreiben |
 | [release-2/fortschritt.md](release-2/fortschritt.md) | Fortschrittssystem: Stufen, Fähigkeitenbaum, Waffen, Ausrüstung, Tod, Spielstände |
 | [release-2/entscheidungen.md](release-2/entscheidungen.md) | Entscheidungslog ab E-200, offene Punkte |
 | [release-2/geschichte-entwuerfe.md](release-2/geschichte-entwuerfe.md) | Drei Entwürfe für Geschichte und Welt (gewählt: A) |

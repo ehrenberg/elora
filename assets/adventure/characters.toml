@@ -1,0 +1,27 @@
+# Figuren, die sprechen (A1.4). Eloras eigene Zeilen: speaker = "elora" (ohne Eintrag hier).
+# portrait = Grafik im Gesprächsfeld (kommt mit der Oberfläche, A1.7)
+
+[[character]]
+id = "oma"
+name = { de = "Oma Pfütze", en = "Oma Pfütze" }
+portrait = "oma"
+
+[[character]]
+id = "klonk"
+name = { de = "Klonk", en = "Klonk" }
+portrait = "klonk"
+
+[[character]]
+id = "lotte"
+name = { de = "Lotte Lichtblau", en = "Lotte Lichtblau" }
+portrait = "lotte"
+
+[[character]]
+id = "tueftel"
+name = { de = "Tüftel", en = "Tüftel" }
+portrait = "tueftel"
+
+[[character]]
+id = "pip"
+name = { de = "Pip", en = "Pip" }
+portrait = "pip"
