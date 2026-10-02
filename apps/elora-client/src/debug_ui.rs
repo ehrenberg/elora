@@ -136,6 +136,7 @@ pub struct Context<'a> {
     pub audio: AudioUi<'a>,
     pub controls: &'a mut Controls,
     pub fps: f32,
+    pub frames: FrameStats,
     pub status: &'a str,
     pub cursor_grabbed: bool,
     /// Namen und eigener Slot (für den Spiel-Abschnitt).
@@ -172,7 +173,7 @@ pub fn panel(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
                     action = action
                         .take()
                         .or(map_picker(ui, sandbox, &mut cx.net.map_choice));
-                    state(ui, sandbox, cx.fps);
+                    state(ui, sandbox, cx.fps, &cx.frames);
                     ui.separator();
                     action = action.take().or(buttons(ui, cx.status));
                     ui.separator();
@@ -551,7 +552,38 @@ fn key_warning_window(ctx: &egui::Context, net: &mut NetUi, w: &KeyWarning) -> O
     action
 }
 
-fn state(ui: &mut egui::Ui, s: &Sandbox, fps: f32) {
+/// Bildzeiten der letzten Frames (Verwischen eingrenzen, E-288).
+#[derive(Debug, Clone, Copy, Default)]
+pub struct FrameStats {
+    pub min_ms: f32,
+    pub avg_ms: f32,
+    pub max_ms: f32,
+    /// Bildwiederholrate des Bildschirms, falls bekannt.
+    pub refresh_hz: Option<f32>,
+    pub vsync: bool,
+}
+
+impl FrameStats {
+    pub fn of(
+        times: &std::collections::VecDeque<f32>,
+        millihertz: Option<u32>,
+        vsync: bool,
+    ) -> Self {
+        let n = times.len().max(1);
+        #[allow(clippy::cast_precision_loss)]
+        let avg_ms = times.iter().sum::<f32>() / n as f32;
+        #[allow(clippy::cast_precision_loss)]
+        Self {
+            min_ms: times.iter().copied().fold(f32::INFINITY, f32::min),
+            avg_ms,
+            max_ms: times.iter().copied().fold(0.0, f32::max),
+            refresh_hz: millihertz.map(|m| m as f32 / 1000.0),
+            vsync,
+        }
+    }
+}
+
+fn state(ui: &mut egui::Ui, s: &Sandbox, fps: f32, frames: &FrameStats) {
     let tps = TICKS_PER_SECOND as f32;
     let tiles_per_s = |v: f32| v * tps / TILE_SIZE as f32;
     egui::Grid::new("state")
@@ -564,6 +596,23 @@ fn state(ui: &mut egui::Ui, s: &Sandbox, fps: f32) {
                 ui.end_row();
             };
             row("FPS / Tick", format!("{:.0} / {}", fps, s.world.tick));
+            row(
+                "Bildzeit min/Ø/max",
+                format!(
+                    "{:.1} / {:.1} / {:.1} ms",
+                    frames.min_ms, frames.avg_ms, frames.max_ms
+                ),
+            );
+            row(
+                "Bildschirm",
+                format!(
+                    "{} · VSync {}",
+                    frames
+                        .refresh_hz
+                        .map_or_else(|| "? Hz".to_owned(), |h| format!("{h:.0} Hz")),
+                    if frames.vsync { "an" } else { "aus" }
+                ),
+            );
             if let Some(ch) = s.character() {
                 let c = &ch.core;
                 let hook = match c.hook_state {

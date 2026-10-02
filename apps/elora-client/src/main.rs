@@ -223,6 +223,8 @@ struct App {
     no_skins: std::collections::BTreeMap<usize, elora_protocol::Skin>,
     last_frame: Instant,
     fps: f32,
+    /// Letzte Bildzeiten in ms (Anzeige im Debug-Panel, E-288).
+    frame_times: std::collections::VecDeque<f32>,
     cursor_grabbed: bool,
     show_panel: bool,
     status: String,
@@ -285,6 +287,7 @@ impl App {
             no_skins: std::collections::BTreeMap::new(),
             last_frame: Instant::now(),
             fps: 0.0,
+            frame_times: std::collections::VecDeque::new(),
             cursor_grabbed: false,
             show_panel: false,
             status: String::new(),
@@ -618,6 +621,10 @@ impl App {
         if elapsed.as_secs_f32() > 0.0 {
             self.fps = self.fps * 0.95 + (1.0 / elapsed.as_secs_f32()) * 0.05;
         }
+        if self.frame_times.len() >= 240 {
+            self.frame_times.pop_front();
+        }
+        self.frame_times.push_back(elapsed.as_secs_f32() * 1000.0);
         elapsed
     }
 
@@ -835,7 +842,18 @@ impl App {
             return;
         };
         let center = self.adventure_camera(scene.camera, self.view.view_size(aspect), dt);
-        let camera = Camera::new(center + self.effects.camera_offset(), &self.view, aspect);
+        let mut camera = Camera::new(center + self.effects.camera_offset(), &self.view, aspect);
+        // auf ganze Bildschirmpixel einrasten: feine Linien bleiben beim Scrollen ruhig (E-288)
+        if let Some(gfx) = &self.gfx {
+            #[allow(clippy::cast_precision_loss)]
+            let px = gfx.renderer.size().0 as f32 / camera.size.x;
+            if px > 0.0 {
+                camera.center = Vec2::new(
+                    (camera.center.x * px).round() / px,
+                    (camera.center.y * px).round() / px,
+                );
+            }
+        }
         self.build_batch(&scene, &tuning, &camera, info.tick);
         let screen = self.build_hud(&scene, &tuning, &info);
         let death_choice = if self.adventure.is_some() && !self.menu.paused {
@@ -904,6 +922,14 @@ impl App {
             },
             controls: &mut self.controls,
             fps: self.fps,
+            frames: debug_ui::FrameStats::of(
+                &self.frame_times,
+                self.gfx
+                    .as_ref()
+                    .and_then(|g| g.window.current_monitor())
+                    .and_then(|m| m.refresh_rate_millihertz()),
+                self.settings.graphics.vsync,
+            ),
             status: &self.status,
             cursor_grabbed: self.cursor_grabbed,
             names: &info.names,
