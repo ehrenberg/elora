@@ -687,3 +687,18 @@ fn angry_diver_dives_twice_and_summons_helpers() {
     let helpers = w.creatures.iter().filter(|c| c.kind == 3).count();
     assert!((1..=2).contains(&helpers), "{helpers} Helfer (höchstens 2)");
 }
+
+#[test]
+fn hook_flowers_wilt_while_the_diver_is_angry() {
+    let (mut w, id) = boss_world();
+    run(&mut w, PlayerInput::default(), 5);
+    assert_eq!(w.collision.hook_wilt, None, "noch nicht wütend");
+    w.creatures.iter_mut().find(|c| c.id == id).unwrap().health = 10;
+    run(&mut w, PlayerInput::default(), 1);
+    let first = w.collision.hook_wilt.expect("welkt");
+    run(&mut w, PlayerInput::default(), 125);
+    assert_eq!(w.collision.hook_wilt, Some(!first), "die andere Hälfte");
+    w.creatures.clear();
+    run(&mut w, PlayerInput::default(), 1);
+    assert_eq!(w.collision.hook_wilt, None, "nach dem Kampf alle frisch");
+}

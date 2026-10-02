@@ -64,10 +64,13 @@ pub enum Tile {
     Climb,
     /// Bröckelboden: fest und hookbar; bricht beim Stampfen (E-230).
     Crumble,
+    /// Hookpunkt in der Luft (Hook-Blüte, R2-M2.1): der Hook greift in der Mitte, alles andere
+    /// fliegt und läuft hindurch. Kann zeitweise welk sein ([`Collision::hook_wilt`]).
+    HookPoint,
 }
 
 /// Zeichen der Tile-Arten im Textformat und in Aufzeichnungen (E-024, M6.1).
-const TILE_CHARS: [(char, Tile); 13] = [
+const TILE_CHARS: [(char, Tile); 14] = [
     ('.', Tile::Air),
     ('#', Tile::Solid),
     ('%', Tile::Unhookable),
@@ -81,12 +84,13 @@ const TILE_CHARS: [(char, Tile); 13] = [
     ('>', Tile::Conveyor(BeltDir::Right)),
     ('|', Tile::Climb),
     (':', Tile::Crumble),
+    ('*', Tile::HookPoint),
 ];
 
 impl Tile {
     /// Zeichen im Textformat (`.` Luft, `#` Wand, `%` unhookable, `^` Tod, `=` Plattform,
     /// `~` Eis, `!` `\` `/` Sprungfeld hoch/schräg links/schräg rechts, `<` `>` Beschleuniger,
-    /// `|` Kletterwand, `:` Bröckelboden).
+    /// `|` Kletterwand, `:` Bröckelboden, `*` Hookpunkt).
     pub fn to_char(self) -> char {
         TILE_CHARS
             .iter()
@@ -134,6 +138,9 @@ pub struct Collision {
     width: usize,
     height: usize,
     tiles: Vec<Tile>,
+    /// Welke Hookpunkte (Hüter wütend, E-298): `Some(gerade)` = Hookpunkte in Spalten mit
+    /// `tx % 2 == 0` (bzw. ungerade) greifen gerade nicht; `None` = alle frisch.
+    pub hook_wilt: Option<bool>,
 }
 
 impl Collision {
@@ -151,7 +158,35 @@ impl Collision {
             width,
             height,
             tiles,
+            hook_wilt: None,
         }
+    }
+
+    /// Greift der Hookpunkt in Spalte `tx` gerade (nicht welk)?
+    pub fn hook_point_active(&self, tx: i32) -> bool {
+        self.hook_wilt
+            .is_none_or(|even| (tx.rem_euclid(2) == 0) != even)
+    }
+
+    /// Mitte des ersten greifenden Hookpunkts auf der Strecke `from`–`to`.
+    pub fn intersect_hook_point(&self, from: Vec2, to: Vec2) -> Option<Vec2> {
+        let end = from.distance(to) as i32 + 1;
+        let inv = 1.0 / end as f32;
+        for i in 0..=end {
+            let p = from.lerp(to, i as f32 * inv);
+            let (tx, ty) = (
+                round_to_int(p.x).div_euclid(TILE_SIZE),
+                round_to_int(p.y).div_euclid(TILE_SIZE),
+            );
+            if self.tile(tx, ty) == Tile::HookPoint && self.hook_point_active(tx) {
+                let ts = TILE_SIZE as f32;
+                return Some(Vec2::new(
+                    tx as f32 * ts + ts / 2.0,
+                    ty as f32 * ts + ts / 2.0,
+                ));
+            }
+        }
+        None
     }
 
     pub fn width(&self) -> usize {

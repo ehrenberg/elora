@@ -28,6 +28,8 @@ pub struct LookTime {
     pub local_ms: i64,
     /// Spielzeit des Servers (ms) – für an den Server gebundene Animationen.
     pub server_ms: i64,
+    /// Welke Hook-Blüten aus der Welt ([`elora_sim::Collision::hook_wilt`]).
+    pub hook_wilt: Option<bool>,
 }
 
 /// Was sich an der Karte ändern muss, damit neu aufgebaut wird.
@@ -83,6 +85,8 @@ struct Cache {
     /// Eingebettete SVGs als Meshes; ungültige bleiben leer.
     images: Vec<Mesh>,
     belts: Vec<(Vec2, BeltDir)>,
+    /// Hook-Blüten: Ecke und Spalte (je Frame gezeichnet, sie welken).
+    hook_points: Vec<(Vec2, i32)>,
 }
 
 impl Cache {
@@ -135,6 +139,17 @@ impl Cache {
             chunks: HashMap::new(),
             images,
             belts,
+            hook_points: map
+                .tiles
+                .iter()
+                .enumerate()
+                .filter(|(_, t)| **t == Tile::HookPoint)
+                .map(|(i, _)| {
+                    let (x, y) = (i % map.width, i / map.width);
+                    #[allow(clippy::cast_precision_loss, clippy::cast_possible_wrap)]
+                    (Vec2::new(x as f32 * ts, y as f32 * ts), x as i32)
+                })
+                .collect(),
         }
     }
 
@@ -364,6 +379,20 @@ impl MapView {
                 && pos.y <= max.y
             {
                 map_art::draw_belt_arrow(batch, &self.art, pos, dir, phase);
+            }
+        }
+        #[allow(clippy::cast_precision_loss)]
+        let secs = time.local_ms as f32 / 1000.0;
+        for &(pos, tx) in &cache.hook_points {
+            if pos.x + TILE_SIZE as f32 >= min.x
+                && pos.x <= max.x
+                && pos.y + TILE_SIZE as f32 >= min.y
+                && pos.y <= max.y
+            {
+                let active = time
+                    .hook_wilt
+                    .is_none_or(|even| (tx.rem_euclid(2) == 0) != even);
+                map_art::draw_hook_point(batch, &self.art, pos, active, secs);
             }
         }
     }
@@ -658,6 +687,7 @@ mod tests {
         let t = LookTime {
             local_ms: 900,
             server_ms: 20_000,
+            hook_wilt: None,
         };
         view.draw_back(&mut batch, &map, &cam, t);
         view.draw_front(&mut batch, &map, &cam, t);
@@ -710,6 +740,7 @@ mod tests {
             LookTime {
                 local_ms: 1800,
                 server_ms: 0,
+                hook_wilt: None,
             },
         );
         assert!((a.rotation + 2.0).abs() < 1e-4 && (b.rotation - 2.0).abs() < 1e-4);
@@ -720,6 +751,7 @@ mod tests {
             LookTime {
                 local_ms: 0,
                 server_ms: 45_000,
+                hook_wilt: None,
             },
         );
         assert!(
@@ -733,6 +765,7 @@ mod tests {
             LookTime {
                 local_ms: 1200,
                 server_ms: 0,
+                hook_wilt: None,
             },
         );
         assert!((g.color[3] - 0.75).abs() < 1e-4);

@@ -61,6 +61,7 @@ pub fn draw(
     let look_time = LookTime {
         local_ms: (f64::from(time) * 1000.0) as i64,
         server_ms: (f64::from(time) * 1000.0) as i64,
+        hook_wilt: None,
     };
     // Himmel nur innerhalb der Karte; draußen bleibt es dunkel
     batch.fill_rect_vgradient(

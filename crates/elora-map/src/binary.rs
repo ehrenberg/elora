@@ -79,7 +79,7 @@ type Result<T> = std::result::Result<T, MapError>;
 
 // ---------------------------------------------------------------- Kodierung der Aufzählungen
 
-const TILES: [Tile; 13] = [
+const TILES: [Tile; 14] = [
     Tile::Air,
     Tile::Solid,
     Tile::Unhookable,
@@ -93,6 +93,7 @@ const TILES: [Tile; 13] = [
     Tile::Conveyor(BeltDir::Right),
     Tile::Climb,
     Tile::Crumble,
+    Tile::HookPoint,
 ];
 
 const ENTITIES: [EntityKind; 13] = [

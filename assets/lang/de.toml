@@ -412,6 +412,7 @@ tile_conveyor_left = "Beschleuniger links"
 tile_conveyor_right = "Beschleuniger rechts"
 tile_climb = "Kletterwand (Eisgriff)"
 tile_crumble = "Bröckelboden (Stampfen)"
+tile_hook_point = "Hook-Blüte"
 
 [msg]
 joined = "{name} ist beigetreten"

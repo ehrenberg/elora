@@ -288,6 +288,17 @@ impl CharacterCore {
             HookState::Retracted | HookState::Grabbed => {}
         }
 
+        // Hook-Blüte welkt: loslassen
+        if self.hook_state == HookState::Grabbed
+            && self.hooked_player.is_none()
+            && self.hooked_creature.is_none()
+            && col.tile_at(self.hook_pos) == Tile::HookPoint
+            && !col.hook_point_active(
+                crate::math::round_to_int(self.hook_pos.x).div_euclid(crate::TILE_SIZE),
+            )
+        {
+            self.release_hook(HookState::Retracting(1));
+        }
         if self.hook_state == HookState::Grabbed {
             self.tick_grabbed_hook(tuning, others, creatures);
         }
@@ -360,6 +371,12 @@ impl CharacterCore {
             } else {
                 hit_unhookable = true;
             }
+        }
+        // Hook-Blüte davor: greift in ihrer Mitte (R2-M2.1)
+        if let Some(p) = col.intersect_hook_point(self.hook_pos, new_pos) {
+            new_pos = p;
+            hit_ground = true;
+            hit_unhookable = false;
         }
 
         // zuerst andere Spieler prüfen

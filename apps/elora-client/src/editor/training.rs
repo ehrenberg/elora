@@ -50,6 +50,10 @@ pub fn training() -> Map {
     g.fill((41, 56), (37, 37), '^');
     g.fill((40, 57), (14, 15), '#');
     g.fill((46, 50), (14, 15), '%');
+    // Hook-Blüten (R2-M2.1): Hookpunkte mitten in der Luft
+    for (x, y) in [(44, 22), (49, 20), (54, 22)] {
+        put(&mut g, x, y, '*');
+    }
     put(&mut g, 58, f - 1, 'D');
 
     // Fähigkeiten: Kletterschacht (Halten), Bröckelboden (Stampfen), Gleiten zum Sims
@@ -162,6 +166,7 @@ mod tests {
         for t in [
             Tile::Climb,
             Tile::Crumble,
+            Tile::HookPoint,
             Tile::Death,
             Tile::Ice,
             Tile::Platform,

@@ -18,6 +18,8 @@ const LOOT_MAGNET_SPEED: f32 = 12.0;
 const LOOT_PIECES: u32 = 8;
 /// Radius eines Gegner-Geschosses.
 const SHOT_RADIUS: f32 = 8.0;
+/// So lange bleibt eine Hälfte der Hook-Blüten welk (Ticks, 2,5 s).
+const WILT_TICKS: u64 = 125;
 /// Lebensdauer eines Gegner-Geschosses (Ticks).
 const SHOT_LIFETIME: u32 = 150;
 
@@ -38,6 +40,24 @@ fn grounded(col: &Collision, pos: Vec2, size: Vec2) -> bool {
 }
 
 impl World {
+    /// Hook-Blüten welken abwechselnd, solange ein Hüter aus der Luft wütend ist (E-298).
+    pub(crate) fn update_hook_wilt(&mut self) {
+        let angry = self.creatures.iter().any(|c| {
+            let k = &self.creature_kinds[c.kind];
+            match &k.behavior {
+                Behavior::Diver(d) => {
+                    #[allow(clippy::cast_precision_loss)]
+                    let life = c.health as f32 / k.health.max(1) as f32;
+                    c.mode != crate::creature::diver::SLEEP
+                        && d.enrage_at > 0.0
+                        && life <= d.enrage_at
+                }
+                _ => false,
+            }
+        });
+        self.collision.hook_wilt = angry.then(|| (self.tick / WILT_TICKS).is_multiple_of(2));
+    }
+
     /// Index einer Gegnerart nach Name.
     pub fn creature_kind(&self, name: &str) -> Option<usize> {
         self.creature_kinds.iter().position(|k| k.name == name)

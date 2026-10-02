@@ -99,6 +99,8 @@ struct Specials {
     jump_diag: Mesh,
     belt: Mesh,
     belt_arrow: Mesh,
+    /// Hook-Blüte frisch und welk (R2-M2.1).
+    hook_point: [Mesh; 2],
 }
 
 /// Alle eingebauten Kartengrafiken.
@@ -183,6 +185,10 @@ impl MapArt {
             include_bytes!("../../../assets/map/tiles/conveyor.svg"),
             "conveyor",
         );
+        let hook = svg(
+            include_bytes!("../../../assets/map/tiles/hookpoint.svg"),
+            "hookpoint",
+        );
         let specials = Specials {
             spikes: part(&death, "up", &file("death")),
             planks: ["mid", "left", "right", "single"].map(|p| part(&plank, p, &file("platform"))),
@@ -190,6 +196,7 @@ impl MapArt {
             jump_diag: part(&jump, "diag", &file("jump")),
             belt: part(&belt, "base", &file("conveyor")),
             belt_arrow: part(&belt, "arrow", &file("conveyor")),
+            hook_point: ["fresh", "wilted"].map(|p| part(&hook, p, &file("hookpoint"))),
         };
         let builtin = DECOR_FILES
             .iter()
@@ -543,6 +550,17 @@ pub fn draw_belt_arrow(batch: &mut ShapeBatch, art: &MapArt, min: Vec2, dir: Bel
         ..Tint::default()
     };
     batch.draw_mesh(&art.specials.belt_arrow, &t, &tint);
+}
+
+/// Hook-Blüte im Tile `min`; `active` = frisch (greift), sonst welk. Wiegt sich leicht.
+pub fn draw_hook_point(batch: &mut ShapeBatch, art: &MapArt, min: Vec2, active: bool, time: f32) {
+    let half = TILE_SIZE as f32 / 2.0;
+    let sway = (time * 1.3 + min.x * 0.01).sin() * 3.0;
+    let t = Affine::translate(min + Vec2::new(half, half))
+        .then(Affine::rotate(sway.to_radians()))
+        .then(Affine::translate(Vec2::new(-half, -half)));
+    let mesh = &art.specials.hook_point[usize::from(!active)];
+    batch.draw_mesh(mesh, &t, &Tint::default());
 }
 
 /// Wirkung der Animationen auf ein Deko-Objekt.

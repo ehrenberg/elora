@@ -727,6 +727,12 @@ impl App {
         let look_time = map_view::LookTime {
             local_ms: (f64::from(self.figures.time()) * 1000.0) as i64,
             server_ms: (tick * 1000 / u64::from(elora_sim::TICKS_PER_SECOND)) as i64,
+            // nur im eigenen Spiel (Abenteuer, Training); online ohne Hüter
+            hook_wilt: self
+                .online
+                .is_none()
+                .then_some(self.sandbox.world.collision.hook_wilt)
+                .flatten(),
         };
         draw::scene(
             &mut self.batch,

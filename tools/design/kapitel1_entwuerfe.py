@@ -382,6 +382,17 @@ def sheet():
     return '\n'.join(o)
 
 
+def export():
+    """Spielgrafiken aus den angenommenen Entwürfen (E-303): Hook-Blüte als Tile."""
+    parts = ''.join(f'<g id="{k}"><g transform="translate(16,24) scale(0.4)">{hookbluete(v)}</g></g>'
+                    for k, v in (('fresh', True), ('wilted', False)))
+    with open('assets/map/tiles/hookpoint.svg', 'w') as f:
+        f.write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">\n'
+                '  <!-- Hookpunkt „Hook-Blüte“ (R2-M2.1, aus tools/design/kapitel1_entwuerfe.py): frisch und welk. -->\n'
+                f'  {parts}\n</svg>\n')
+
+
 if __name__ == '__main__':
     os.makedirs('docs/release-2/design', exist_ok=True)
     open('docs/release-2/design/kapitel1-entwuerfe.svg', 'w').write(sheet())
+    export()

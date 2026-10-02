@@ -332,3 +332,33 @@ fn down_on_platform_still_drops_through_with_stomp() {
         core(&w).pos
     );
 }
+
+#[test]
+fn hook_grabs_hook_point_and_passes_through_it_otherwise() {
+    // Hook-Blüte zwei Tiles über Elora, Decke weit darüber
+    let mut w = world(|t| set(t, 10, 24, Tile::HookPoint));
+    let i = w.join();
+    w.spawn_character(i, standing(10, FLOOR));
+    run(&mut w, PlayerInput::default(), 5);
+    let hook = PlayerInput {
+        hook: true,
+        target_x: 0,
+        target_y: -100,
+        ..PlayerInput::default()
+    };
+    run(&mut w, hook, 12);
+    let core = &w.character(i).unwrap().core;
+    assert_eq!(core.hook_state, HookState::Grabbed);
+    assert_eq!(
+        core.hook_pos,
+        Vec2::new(10.0 * 32.0 + 16.0, 24.0 * 32.0 + 16.0)
+    );
+    // Figuren laufen hindurch, sie ist nicht fest
+    assert!(!Tile::HookPoint.is_solid());
+    // welk (nur beim Hüter, siehe creatures.rs): Spalten wechseln sich ab
+    let mut c = w.collision.clone();
+    c.hook_wilt = Some(true);
+    assert!(!c.hook_point_active(10) && c.hook_point_active(11));
+    c.hook_wilt = Some(false);
+    assert!(c.hook_point_active(10) && !c.hook_point_active(11));
+}

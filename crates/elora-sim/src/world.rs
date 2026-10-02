@@ -211,6 +211,7 @@ impl World {
         self.tick_projectiles();
         self.tick_lasers();
         self.tick_pickups();
+        self.update_hook_wilt();
         self.tick_characters();
         self.tick_flags_physics();
         self.tick_characters_deferred();
