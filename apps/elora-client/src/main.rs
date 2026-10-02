@@ -34,6 +34,7 @@ mod menu;
 mod menu_adventure;
 mod menu_browser;
 mod menu_pause;
+mod menu_scene;
 mod menu_settings;
 mod sandbox;
 mod settings;

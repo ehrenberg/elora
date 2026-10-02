@@ -99,6 +99,10 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-288 | 2026-10-02 | Verwischen bei schneller Bewegung (Playtest) | Beschreibung: **weiche Schlieren** (Bewegung flüssig, Bild unscharf); Ursache eingrenzen und Gegenmaßnahmen ausprobieren | Rückmeldung Projektinhaber |
 | E-289 | 2026-10-02 | Menümusik | **„FM fun“ von sla97** ([OpenGameArt](https://opengameart.org/content/fm-fun)) im Hauptmenü; Lizenz **CC BY 4.0** (Nennung in `SOURCES.md` und „Über“), Ausnahme zu E-285 auf Wunsch | Entscheidung Projektinhaber |
 | E-290 | 2026-10-02 | Musik je Gebiet | **Tauwinkel: „Heavenly Loop“** (isaiah658), **Blütenwiesen: „Sunset Plains“** (yoiyami), beide CC0 von OpenGameArt; Feld `music` je Gebiet in `worldmap.toml` | Entscheidung Projektinhaber |
+| E-291 | 2026-10-02 | Tageszeit im Hauptmenü | **4 Phasen nach Systemuhr:** Morgen (6–10 Uhr), Tag (10–17), Abend (17–21, Laternen an), Nacht (21–6, Sterne, Mond, leuchtende Fenster); weiche Übergänge | Entscheidung Projektinhaber |
+| E-292 | 2026-10-02 | Menü-Hintergrund verspielter | **Bestehende Grafiken:** Dorfszene (Häuser, Brunnen, Bäume, Requisiten), Figuren (Elora im Skin, Pip, Oma, Tüftel, Klonk, Lotte; einige laufen), Tiere und Bewegung (Schmetterlinge, Vögel, Rauch, Wolken, Fahnen), Gegner (Stachelkäfer, Gras-Hüpfer) | Entscheidung Projektinhaber |
+| E-293 | 2026-10-02 | Trainingskarte | **Etwa 120 × 40** mit allen Neuerungen (Kletterwände, Bröckelboden, Dornen, Sondertiles, Gegner-Übungsplatz) und verspielter Deko | Entscheidung Projektinhaber |
+| E-294 | 2026-10-02 | Haken im Online-Spiel (Rückmeldung) | „Alles scheint ein gewisses Zittern/Ruckeln zu haben“ – Ursachen suchen und beheben | Rückmeldung Projektinhaber |
 
 ## Offene Punkte
 

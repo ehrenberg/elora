@@ -192,6 +192,17 @@ impl CreatureArt {
         }
     }
 
+    /// Grafik einer Figur (Ursprung am Boden), z. B. für das Hauptmenü.
+    pub fn character_mesh(&self, id: &str) -> Option<&Mesh> {
+        self.characters.get(id)
+    }
+
+    /// Grafik einer Gegnerart (Ursprung in der Mitte); `air` = Sprung-Pose, falls vorhanden.
+    pub fn creature_mesh(&self, kind: &str, air: bool) -> Option<&Mesh> {
+        let look = self.looks.get(kind)?;
+        Some(look.air.as_ref().filter(|_| air).unwrap_or(&look.idle))
+    }
+
     /// NPC am Boden `ground`, Blick `facing`; `scale` 1 = Spielgröße. `false`, wenn die
     /// Figur keine eigene Grafik hat.
     pub fn draw_character(

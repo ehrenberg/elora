@@ -90,6 +90,9 @@ pub struct MenuCtx<'a> {
     pub font: &'a Font,
     pub lang: &'a Lang,
     pub art: &'a FigureArt,
+    /// Karten-Deko und Figuren für den Hintergrund (E-292).
+    pub map_art: &'a crate::map_art::MapArt,
+    pub creatures: &'a crate::creatures::CreatureArt,
     pub last_server: Option<&'a str>,
     pub favorites: &'a [String],
     /// Kartennamen für „Server erstellen“.
@@ -139,7 +142,7 @@ impl Menu {
         cx: &MenuCtx<'_>,
         edit: &mut SettingsEdit<'_>,
     ) -> (Option<MenuAction>, bool) {
-        background(batch, cx, *edit.skin);
+        background(batch, cx, *edit.skin, self.ui.time);
         let mut ui = Ui {
             batch,
             font: cx.font,
@@ -248,32 +251,17 @@ impl Menu {
     }
 }
 
-/// Ruhiges Hintergrundbild (E-113): Himmel, Wolken, Hügel, zwei Eloras.
-fn background(batch: &mut ShapeBatch, cx: &MenuCtx<'_>, skin: Skin) {
+/// Hintergrundbild (E-113, E-291, E-292): Tauwinkel zur Tageszeit, davor zwei Eloras.
+fn background(batch: &mut ShapeBatch, cx: &MenuCtx<'_>, skin: Skin, time: f32) {
     let (w, h, s) = (cx.screen.x, cx.screen.y, cx.s);
-    batch.fill_rect_vgradient(
-        Vec2::default(),
+    crate::menu_scene::draw(
+        batch,
+        cx.map_art,
+        cx.creatures,
         cx.screen,
-        Color::hex(0xa9cde8),
-        Color::hex(0xe8f1f7),
-    );
-    let cloud = Color::rgba(1.0, 1.0, 1.0, 0.8);
-    for (x, y, r) in [(0.55, 0.16, 1.0), (0.82, 0.12, 1.3), (0.2, 0.3, 0.8)] {
-        let c = Vec2::new(w * x, h * y);
-        let r = 26.0 * s * r;
-        batch.fill_circle(c, r, cloud);
-        batch.fill_circle(c + Vec2::new(r * 0.9, r * 0.25), r * 0.75, cloud);
-        batch.fill_circle(c - Vec2::new(r * 0.9, -r * 0.3), r * 0.7, cloud);
-    }
-    batch.fill_circle(
-        Vec2::new(w * 0.25, h + 240.0 * s),
-        420.0 * s,
-        Color::hex(0x8fbf7a),
-    );
-    batch.fill_circle(
-        Vec2::new(w * 0.85, h + 260.0 * s),
-        440.0 * s,
-        Color::hex(0x7aae6a),
+        s,
+        time,
+        crate::menu_scene::local_hour(),
     );
     let tint = crate::skins::tint(skin, Team::None, false, crate::draw::team_color);
     cx.art.draw_pose(
@@ -601,6 +589,8 @@ mod tests {
         let font = Font::new(include_bytes!("../../../assets/fonts/Inter-Regular.ttf")).unwrap();
         let lang = Lang::new(Language::De);
         let art = FigureArt::load();
+        let map_art = crate::map_art::MapArt::load();
+        let creatures = crate::creatures::CreatureArt::load();
         let favorites = vec!["127.0.0.1:8303".to_owned(), "192.168.0.20:8303".to_owned()];
         let maps = vec!["ctf-test".to_owned(), "sandbox".to_owned()];
         for (name, page) in [
@@ -703,6 +693,8 @@ mod tests {
                 font: &font,
                 lang: &lang,
                 art: &art,
+                map_art: &map_art,
+                creatures: &creatures,
                 last_server: Some("127.0.0.1:8303"),
                 favorites: &favorites,
                 maps: &maps,
