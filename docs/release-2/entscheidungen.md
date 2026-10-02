@@ -104,6 +104,7 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-293 | 2026-10-02 | Trainingskarte | **Etwa 120 × 40** mit allen Neuerungen (Kletterwände, Bröckelboden, Dornen, Sondertiles, Gegner-Übungsplatz) und verspielter Deko | Entscheidung Projektinhaber |
 | E-294 | 2026-10-02 | Haken im Online-Spiel (Rückmeldung) | „Alles scheint ein gewisses Zittern/Ruckeln zu haben“ – Ursachen suchen und beheben | Rückmeldung Projektinhaber |
 | E-295 | 2026-10-02 | KI-Dienste für Inhalte | **Keine** (OpenAI, openart.ai, Recraft verworfen): Grafiken entstehen weiter über die Python-Skripte in `tools/design/`, Musik und Sounds aus freien Quellen (E-285) | Entscheidung Projektinhaber |
+| E-296 | 2026-10-02 | Aufteilung von R2-M2 | **Teil-Meilensteine je Kapitel:** M2.1 Blütenwiesen, M2.2 Murmelwald, M2.3 Glutsandwüste, M2.4 Frostspitzen, M2.5 Sternschlucht, M2.6 Finale; je Teil Plan → Entwürfe → Umsetzung → Abnahme | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 
