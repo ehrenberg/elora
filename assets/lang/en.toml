@@ -609,3 +609,7 @@ wrong_kind = "does not fit"
 full = "bag full"
 no_weapon = "weapon missing"
 max_level = "highest level reached"
+
+[creature]
+brummbaer = "Bumblebear"
+wirrbiene = "Confused bee"

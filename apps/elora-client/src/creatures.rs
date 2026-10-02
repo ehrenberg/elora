@@ -23,6 +23,9 @@ const STUN: Color = Color::hex(0xf2c14e);
 struct Look {
     idle: Mesh,
     air: Option<Mesh>,
+    /// Hüter: Sturzflug und benommen (R2-M2.1).
+    dive: Option<Mesh>,
+    stunned: Option<Mesh>,
 }
 
 #[derive(Debug)]
@@ -82,7 +85,9 @@ const CREATURE_FILES: &[(&str, &[u8])] = creatures!(
     "stachelkaefer",
     "pollenblaeser",
     "grashuepfer",
-    "strohpuppe"
+    "strohpuppe",
+    "brummbaer",
+    "wirrbiene"
 );
 
 impl CreatureArt {
@@ -102,6 +107,8 @@ impl CreatureArt {
                     Look {
                         idle,
                         air: a.part("air").cloned(),
+                        dive: a.part("dive").cloned(),
+                        stunned: a.part("stunned").cloned(),
                     },
                 )
             })
@@ -164,11 +171,14 @@ impl CreatureArt {
             Tint::default()
         };
         if let Some(look) = self.looks.get(c.kind.as_str()) {
-            let mesh = look
-                .air
-                .as_ref()
-                .filter(|_| c.airborne)
-                .unwrap_or(&look.idle);
+            use elora_sim::creature::diver;
+            let mesh = match c.mode {
+                diver::DIVE | diver::AIM => look.dive.as_ref(),
+                diver::STUNNED => look.stunned.as_ref(),
+                _ => None,
+            }
+            .or_else(|| look.air.as_ref().filter(|_| c.airborne))
+            .unwrap_or(&look.idle);
             batch.draw_mesh(mesh, &t, &tint);
         } else {
             batch.fill_circle(c.pos, 16.0, OUTLINE);
@@ -292,52 +302,60 @@ mod tests {
 
     #[test]
     #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
+    #[allow(clippy::too_many_lines)]
     fn creature_sheet() {
+        use elora_sim::creature::diver;
         let art = CreatureArt::load();
         let kinds = crate::sandbox::creature_kinds();
         let mut batch = ShapeBatch::default();
         let ground = 200.0;
         batch.fill_rect(
             Vec2::new(0.0, ground),
-            Vec2::new(900.0, ground + 40.0),
+            Vec2::new(2000.0, ground + 40.0),
             Color::hex(0x8fbf7a),
         );
         let mut x = 60.0;
-        let mut put = |name: &str, airborne: bool, stunned: bool, hit: Option<u64>, facing: i8| {
-            let k = kinds.iter().find(|k| k.name == name).unwrap();
-            let c = SceneCreature {
-                id: 0,
-                kind: name.into(),
-                pos: Vec2::new(
-                    x,
-                    ground - k.size[1] / 2.0 - if airborne { 30.0 } else { 0.0 },
-                ),
-                facing,
-                health: k.health / 2,
-                max_health: k.health,
-                since_hit: hit,
-                stunned,
-                airborne,
-                boss: false,
+        let mut put =
+            |name: &str, airborne: bool, stunned: bool, hit: Option<u64>, facing: i8, mode: u8| {
+                let k = kinds.iter().find(|k| k.name == name).unwrap();
+                let c = SceneCreature {
+                    id: 0,
+                    kind: name.into(),
+                    pos: Vec2::new(
+                        x,
+                        ground - k.size[1] / 2.0 - if airborne { 30.0 } else { 0.0 },
+                    ),
+                    facing,
+                    health: k.health / 2,
+                    max_health: k.health,
+                    since_hit: hit,
+                    stunned,
+                    airborne,
+                    boss: false,
+                    mode,
+                };
+                // Kollisionsbox zur Kontrolle
+                let (hx, hy) = (k.size[0] / 2.0, k.size[1] / 2.0);
+                let corners = [
+                    c.pos + Vec2::new(-hx, -hy),
+                    c.pos + Vec2::new(hx, -hy),
+                    c.pos + Vec2::new(hx, hy),
+                    c.pos + Vec2::new(-hx, hy),
+                    c.pos + Vec2::new(-hx, -hy),
+                ];
+                batch.stroke_polyline(&corners, 1.0, Color::rgba(1.0, 0.0, 0.0, 0.5));
+                art.draw(&mut batch, &c, 0.3);
+                x += k.size[0].max(60.0) + 40.0;
             };
-            // Kollisionsbox zur Kontrolle
-            let (hx, hy) = (k.size[0] / 2.0, k.size[1] / 2.0);
-            let corners = [
-                c.pos + Vec2::new(-hx, -hy),
-                c.pos + Vec2::new(hx, -hy),
-                c.pos + Vec2::new(hx, hy),
-                c.pos + Vec2::new(-hx, hy),
-                c.pos + Vec2::new(-hx, -hy),
-            ];
-            batch.stroke_polyline(&corners, 1.0, Color::rgba(1.0, 0.0, 0.0, 0.5));
-            art.draw(&mut batch, &c, 0.3);
-            x += 100.0;
-        };
-        put("stachelkaefer", false, false, None, 1);
-        put("stachelkaefer", false, true, Some(20), -1);
-        put("pollenblaeser", false, false, None, 1);
-        put("grashuepfer", false, false, None, 1);
-        put("grashuepfer", true, false, None, 1);
+        put("stachelkaefer", false, false, None, 1, 0);
+        put("stachelkaefer", false, true, Some(20), -1, 0);
+        put("pollenblaeser", false, false, None, 1, 0);
+        put("grashuepfer", false, false, None, 1, 0);
+        put("grashuepfer", true, false, None, 1, 0);
+        put("wirrbiene", true, false, None, 1, 0);
+        put("brummbaer", true, false, None, 1, diver::CIRCLE);
+        put("brummbaer", true, false, None, 1, diver::DIVE);
+        put("brummbaer", false, false, Some(10), -1, diver::STUNNED);
         // Elora zum Größenvergleich (Box 28)
         batch.fill_circle(Vec2::new(x, ground - 14.0), 14.0, Color::hex(0xf2c14e));
         CreatureArt::draw_shot(&mut batch, Vec2::new(x + 80.0, ground - 60.0));
@@ -386,7 +404,7 @@ mod tests {
             let x = 480.0 + i as f32 * 52.0;
             art.draw_object(&mut batch, name, Vec2::new(x, ground2), *on);
         }
-        let svg = batch.debug_svg(Vec2::ZERO, Vec2::new(900.0, 480.0), Color::hex(0xa9cde8));
+        let svg = batch.debug_svg(Vec2::ZERO, Vec2::new(1800.0, 480.0), Color::hex(0xa9cde8));
         std::fs::write(
             concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/creatures.svg"),
             svg,

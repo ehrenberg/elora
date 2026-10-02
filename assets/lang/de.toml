@@ -609,3 +609,7 @@ wrong_kind = "passt nicht"
 full = "Tasche voll"
 no_weapon = "Waffe fehlt"
 max_level = "höchste Stufe erreicht"
+
+[creature]
+brummbaer = "Brummbär-Hummel"
+wirrbiene = "Verwirrte Biene"

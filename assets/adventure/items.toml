@@ -93,6 +93,12 @@ desc = { de = "Riecht ein bisschen nach Morgen.", en = "Smells a little like mor
 
 # Sammelstücke (Weltbuch §8)
 [[item]]
+id = "quellfunke"
+type = "key"
+name = { de = "Quellfunke", en = "Spring spark" }
+desc = { de = "Ein Funke der Blütenquelle. Tüftel kann daraus etwas bauen.", en = "A spark of the Blossom Spring. Tüftel can build something from it." }
+
+[[item]]
 id = "glitzerstein"
 type = "collectible"
 name = { de = "Glitzerstein", en = "Glitter stone" }

@@ -573,3 +573,117 @@ fn thorns_hurt_and_put_elora_back_on_safe_ground() {
     run(&mut w, PlayerInput::default(), 40);
     assert!(w.character(0).is_none());
 }
+
+// ---------------------------------------------------------------- Hüter aus der Luft (R2-M2.1)
+
+fn diver_def() -> elora_sim::DiverDef {
+    elora_sim::DiverDef {
+        sight: 900.0,
+        circle: [160.0, 40.0],
+        speed: 3.0,
+        circle_ms: 1000,
+        aim_ms: 400,
+        dive_speed: 14.0,
+        stun_ms: 1500,
+        drop_ms: 300,
+        drop_speed: 5.0,
+        drop_damage: 1,
+        enrage_at: 0.5,
+        summon_at: 0.34,
+        summon: "flyer".into(),
+        summon_max: 2,
+        summon_ms: 500,
+    }
+}
+
+/// Welt mit einem Hüter (Art 4) hoch über der Mitte und Elora am Boden.
+fn boss_world() -> (World, u32) {
+    let mut w = world(|_| {});
+    let mut k = w.creature_kinds[0].clone();
+    k.name = "hueter".into();
+    k.size = [120.0, 100.0];
+    k.health = 30;
+    k.boss = true;
+    k.behavior = Behavior::Diver(Box::new(diver_def()));
+    w.creature_kinds.push(k);
+    elora(&mut w, 30);
+    w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
+    let id = w
+        .add_creature(4, elora_sim::Vec2::new(30.0 * 32.0, 10.0 * 32.0))
+        .unwrap();
+    (w, id)
+}
+
+fn boss(w: &World, id: u32) -> &elora_sim::Creature {
+    w.creatures.iter().find(|c| c.id == id).expect("lebt")
+}
+
+#[test]
+fn diver_circles_aims_dives_and_lies_stunned() {
+    use elora_sim::creature::diver;
+    let (mut w, id) = boss_world();
+    let mut seen = Vec::new();
+    let mut dropped = false;
+    for _ in 0..400 {
+        let ev = run(&mut w, PlayerInput::default(), 1);
+        dropped |= ev.iter().any(|e| matches!(e, Event::CreatureFire { .. }));
+        let m = boss(&w, id).mode;
+        if seen.last() != Some(&m) {
+            seen.push(m);
+        }
+    }
+    assert_eq!(
+        &seen[..5],
+        &[
+            diver::CIRCLE,
+            diver::AIM,
+            diver::DIVE,
+            diver::STUNNED,
+            diver::RISE
+        ],
+        "{seen:?}"
+    );
+    assert!(dropped, "lässt beim Kreisen Pollen fallen");
+}
+
+#[test]
+fn diver_takes_damage_only_while_stunned() {
+    use elora_sim::creature::diver;
+    let (mut w, id) = boss_world();
+    run(&mut w, PlayerInput::default(), 5);
+    w.hurt_creature(id, 5);
+    assert_eq!(boss(&w, id).health, 30, "in der Luft prallt es ab");
+    // bis er benommen ist
+    for _ in 0..400 {
+        run(&mut w, PlayerInput::default(), 1);
+        if boss(&w, id).mode == diver::STUNNED {
+            break;
+        }
+    }
+    assert_eq!(boss(&w, id).mode, diver::STUNNED);
+    w.hurt_creature(id, 5);
+    assert_eq!(boss(&w, id).health, 25);
+}
+
+#[test]
+fn angry_diver_dives_twice_and_summons_helpers() {
+    use elora_sim::creature::diver;
+    let (mut w, id) = boss_world();
+    w.creatures.iter_mut().find(|c| c.id == id).unwrap().health = 9;
+    let mut dives = 0;
+    let mut last = diver::SLEEP;
+    for _ in 0..300 {
+        run(&mut w, PlayerInput::default(), 1);
+        let m = boss(&w, id).mode;
+        if m == diver::DIVE && last != diver::DIVE {
+            dives += 1;
+        }
+        if m == diver::STUNNED {
+            break;
+        }
+        last = m;
+    }
+    assert_eq!(dives, 2, "zwei Sturzflüge vor dem Liegen");
+    let helpers = w.creatures.iter().filter(|c| c.kind == 3).count();
+    assert!((1..=2).contains(&helpers), "{helpers} Helfer (höchstens 2)");
+}

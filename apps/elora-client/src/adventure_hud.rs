@@ -24,6 +24,8 @@ const WHITE: Color = Color::rgb(1.0, 1.0, 1.0);
 const WHITE_DIM: Color = Color::rgba(1.0, 1.0, 1.0, 0.75);
 const GOLD: Color = Color::hex(0xf2c14e);
 const XP: Color = Color::hex(0x7fd99a);
+/// Lebensleiste eines Hüters.
+const BOSS: Color = Color::hex(0xe8685a);
 const TONE_FRIENDLY: Color = Color::hex(0xf2c14e);
 const TONE_CURIOUS: Color = Color::hex(0x5aaee8);
 const TONE_CHEEKY: Color = Color::hex(0xe8685a);
@@ -173,6 +175,34 @@ pub fn status(
 
 /// Platzhalter `{taste:<aktion>}` durch die belegte Taste ersetzen (Schilder, E-273),
 /// z. B. `{taste:jump}` → „Leertaste“.
+/// Lebensleiste eines Hüters oben in der Mitte mit Namen (R2-M2.1); `frac` 0..1.
+pub fn boss_bar(ui: &mut Ui<'_>, name: &str, frac: f32, screen: Vec2) {
+    let s = ui.s;
+    let w = (screen.x * 0.5).min(520.0 * s);
+    let bar = Rect::new((screen.x - w) / 2.0, 54.0 * s, w, 16.0 * s);
+    ui.label(
+        name,
+        Vec2::new(screen.x / 2.0, bar.min.y - 12.0 * s),
+        14.0,
+        WHITE,
+        Align::Center,
+    );
+    let pad = Vec2::new(3.0 * s, 3.0 * s);
+    ui.batch
+        .fill_rounded_rect(bar.min - pad, bar.max + pad, 11.0 * s, PANEL);
+    ui.batch
+        .fill_rounded_rect(bar.min, bar.max, 8.0 * s, Color::rgba(1.0, 1.0, 1.0, 0.15));
+    let f = frac.clamp(0.0, 1.0);
+    if f > 0.0 {
+        ui.batch.fill_rounded_rect(
+            bar.min,
+            Vec2::new(bar.min.x + w * f, bar.max.y),
+            8.0 * s,
+            BOSS,
+        );
+    }
+}
+
 pub fn with_keys(text: &str, keys: &crate::bindings::Bindings, lang: &Lang) -> String {
     let mut out = String::with_capacity(text.len());
     let mut rest = text;

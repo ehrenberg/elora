@@ -187,3 +187,22 @@ fn locked_chest_needs_condition() {
         count: 3
     })));
 }
+
+#[test]
+fn defeated_boss_sets_a_flag() {
+    let (mut s, mut w) = start();
+    let kind = w
+        .creature_kind("brummbaer")
+        .expect("Hüter in creatures.toml");
+    let id = w.add_creature(kind, Vec2::new(300.0, 200.0)).unwrap();
+    w.step(&[PlayerInput::default()]);
+    w.events.push(elora_sim::Event::CreatureDeath {
+        id,
+        kind,
+        pos: Vec2::ZERO,
+        killer: Some(s.player),
+    });
+    s.tick(&mut w, false);
+    assert_eq!(s.save.flag("besiegt.brummbaer"), 1);
+    assert!(s.save.holds(&s.content, "merker besiegt.brummbaer"));
+}

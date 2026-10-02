@@ -92,6 +92,8 @@ pub struct SceneCreature {
     pub stunned: bool,
     pub airborne: bool,
     pub boss: bool,
+    /// Zustand mehrstufiger Verhalten (Hüter: Sturzflug, benommen; `elora_sim::creature::diver`).
+    pub mode: u8,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -186,6 +188,7 @@ impl Scene {
                 stunned: c.stun > 0,
                 airborne: !c.grounded,
                 boss: kind.boss,
+                mode: c.mode,
             });
         }
         self.creature_shots = world

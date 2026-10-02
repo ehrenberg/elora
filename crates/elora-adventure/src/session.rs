@@ -308,6 +308,11 @@ impl Session {
                                 .insert(key("gegner", &self.map_name, &obj));
                         }
                     }
+                    // Hüter besiegt: Merker für Türen, Gespräche und Aufgaben (R2-M2.1)
+                    if let Some(k) = world.creature_kinds.get(*kind).filter(|k| k.boss) {
+                        self.save.set_flag(&format!("besiegt.{}", k.name), 1);
+                        out.extend(outcomes(self.save.update_quests(&self.content)));
+                    }
                     let n = self
                         .save
                         .on_event(&self.content, &world.creature_kinds, me, e);

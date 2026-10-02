@@ -32,7 +32,7 @@ mod tests {
         assert!(c.items.len() >= 10);
         assert_eq!(c.skills.len(), 16, "E-242: 16 Knoten");
         assert_eq!(c.upgrades.len(), 9, "3 Waffen × 3 Stufen");
-        assert_eq!(c.creatures.len(), 4);
+        assert_eq!(c.creatures.len(), 6);
     }
 
     #[test]

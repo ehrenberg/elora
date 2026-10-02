@@ -111,6 +111,7 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-300 | 2026-10-02 | Belohnung „Wabes Bienen“ | **Wabenhut** (Ausrüstung mit kleinem Bonus) und Erfahrung | Entscheidung Projektinhaber |
 | E-301 | 2026-10-02 | Dorf nach Kapitel 1 | **Kleine Feier:** Gespräch am Brunnen, Laternen, Girlanden und Festmusik, bis Elora weiterzieht; dazu mehr Farbe und neue Zurufe | Entscheidung Projektinhaber |
 | E-302 | 2026-10-02 | Hook-Ruck erklären | **Übungsplatz im Hof:** Tüftel erklärt und öffnet einen neuen Teil seines Hofs mit einer Strecke, die nur mit Hook-Ruck geht | Entscheidung Projektinhaber |
+| E-303 | 2026-10-03 | Entwürfe Kapitel 1 (M2.1.0) | **Angenommen** wie vorgelegt ([`design/kapitel1-entwuerfe.png`](design/kapitel1-entwuerfe.png)) | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 

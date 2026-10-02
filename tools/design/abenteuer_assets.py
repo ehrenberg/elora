@@ -15,6 +15,9 @@ import re  # noqa: E402
 from abenteuer_figuren import (glanztropfen, glitzerstein, grashuepfer, klonk, lotte, oma_pfuetze, pip,  # noqa: E402
                                pollenblaeser, quellstein, schalter, stachelkaefer, truhe, tueftel)
 
+from kapitel1_entwuerfe import biene, hummel  # noqa: E402
+
+
 def strohpuppe():
     """Übungspuppe bei Klonk (A1.9): Pfahl, Strohsack, Zielscheibe."""
     s = '<path d="M 0,0 V -20" stroke="#2b2b2b" stroke-width="10"/><path d="M 0,0 V -20" stroke="#a87a52" stroke-width="5"/>'
@@ -43,6 +46,11 @@ CREATURES = {
     'pollenblaeser': (60, 0.42, {'idle': pollenblaeser(shots=False)}),
     'grashuepfer': (28, 0.36, {'idle': grashuepfer(), 'air': grashuepfer(True, arc=False)}),
     'strohpuppe': (40, 0.5, {'idle': strohpuppe()}),
+    # Kapitel 1 (R2-M2.1): Hüter mit Flug-, Sturz- und Benommen-Pose, verwirrte Biene
+    'brummbaer': (120, 0.62, {'idle': f'<g transform="translate(0,-26)">{hummel("flug")}</g>',
+                              'dive': f'<g transform="translate(0,-40)">{hummel("sturz")}</g>',
+                              'stunned': hummel('benommen')}),
+    'wirrbiene': (24, 0.5, {'idle': f'<g transform="translate(0,-6)">{biene(1.0, 0, 0, angry=True)}</g>'}),
 }
 
 
@@ -96,9 +104,9 @@ def plain(art):
     return re.sub(r' id="tint-[^"]*"', '', art)
 
 
-def svg(parts, comment):
+def svg(parts, comment, half=48):
     body = ''.join(f'<g id="{k}">{v}</g>' for k, v in parts.items())
-    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="-48 -48 96 96">\n'
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{-half} {-half} {2 * half} {2 * half}">\n'
             f'  <!-- {comment} -->\n  {body}\n</svg>\n')
 
 
@@ -108,7 +116,8 @@ def main():
     for name, (h, scale, parts) in CREATURES.items():
         placed = {k: f'<g transform="translate(0,{h / 2}) scale({scale})">{v}</g>' for k, v in parts.items()}
         with open(f'{out}/{name}.svg', 'w') as f:
-            f.write(svg(placed, f'{name} (A1.2, aus tools/design/abenteuer_assets.py). Ursprung = Boxmitte, Blick nach rechts.'))
+            f.write(svg(placed, f'{name} (A1.2, aus tools/design/abenteuer_assets.py). Ursprung = Boxmitte, Blick nach rechts.',
+                        max(48, round(h * 1.2))))
     for folder, table in (('characters', {k: (v[0] * 0.36, {'figure': v[1]}) for k, v in CHARACTERS.items()}),
                           ('objects', OBJECTS)):
         out = f'assets/adventure/{folder}'

@@ -440,6 +440,8 @@ impl Effects {
                     self.add_shake(0.35);
                 }
             }
+            // abgeprallt (Hüter in der Luft): nur Sternchen, keine Treffer-Rückmeldung
+            Event::CreatureHit { pos, damage: 0, .. } => self.burst(pos, GLITTER, &HAMMER_SPARKS),
             Event::CreatureHit { pos, from, .. } => {
                 self.burst(pos, WHITE, &HAMMER_SPARKS);
                 if from.is_some_and(is_local) {

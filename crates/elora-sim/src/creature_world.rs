@@ -2,7 +2,7 @@
 
 use crate::character::PHYS_SIZE;
 use crate::collision::{Collision, Tile};
-use crate::creature::{Behavior, Creature, CreatureShot, HookTarget, Loot, rng, rng_f32};
+use crate::creature::{Behavior, Creature, CreatureShot, DiverDef, HookTarget, Loot, rng, rng_f32};
 use crate::event::{DeathCause, Event};
 use crate::math::Vec2;
 use crate::tuning::ms_to_ticks;
@@ -60,6 +60,9 @@ impl World {
             stun: 0,
             hit_tick: None,
             grounded: false,
+            mode: 0,
+            goal: pos,
+            count: 0,
         });
         Some(id)
     }
@@ -225,6 +228,13 @@ impl World {
         }
     }
 
+    /// Schaden an Gegner `id` ohne Rückstoß (Tests, Werkzeuge); prallt an Hütern in der Luft ab.
+    pub fn hurt_creature(&mut self, id: u32, damage: i32) {
+        if let Some(i) = self.creature_index(id) {
+            self.damage_creature(i, Vec2::ZERO, damage, None);
+        }
+    }
+
     /// Schaden an Gegner `i`; besiegt ihn bei 0 Leben.
     pub(crate) fn damage_creature(
         &mut self,
@@ -238,10 +248,18 @@ impl World {
         }
         let tick = self.tick;
         let c = &mut self.creatures[i];
-        if !matches!(
-            self.creature_kinds[c.kind].behavior,
-            Behavior::Turret { .. }
-        ) {
+        let kind = &self.creature_kinds[c.kind];
+        // Hüter in der Luft: Treffer prallen ab (E-299)
+        if !c.vulnerable(kind) {
+            self.events.push(Event::CreatureHit {
+                id: c.id,
+                pos: c.pos,
+                damage: 0,
+                from,
+            });
+            return;
+        }
+        if !matches!(kind.behavior, Behavior::Turret { .. } | Behavior::Diver(_)) {
             c.vel += force;
         }
         c.health -= damage;
@@ -355,6 +373,7 @@ impl World {
         } = self;
         let gravity = tuning.gravity;
         let mut died = Vec::new();
+        let mut summons: Vec<(u32, String, u32, Vec2)> = Vec::new();
         for c in creatures.iter_mut() {
             let kind = &creature_kinds[c.kind];
             let size = kind.size();
@@ -437,6 +456,16 @@ impl World {
                         }
                     }
                 }
+                Behavior::Diver(ref d) => {
+                    if let Some(s) =
+                        tick_diver(c, d, kind.health, target, collision, creature_shots, events)
+                    {
+                        summons.push((c.id, d.summon.clone(), d.summon_max, s));
+                    }
+                    if c.mode == crate::creature::diver::SLEEP {
+                        continue;
+                    }
+                }
                 Behavior::Flyer { speed, sight } => {
                     let goal = match target {
                         Some((p, d)) if d <= sight && active => p,
@@ -463,7 +492,9 @@ impl World {
             }
             let wanted_x = c.vel.x;
             let (mut pos, mut vel) = (c.pos, c.vel);
-            let death = collision.move_box_platforms(&mut pos, &mut vel, size, 0.0, true);
+            let diving = matches!(kind.behavior, Behavior::Diver(_));
+            let death =
+                collision.move_box_platforms(&mut pos, &mut vel, size, 0.0, !diving) && !diving;
             if matches!(kind.behavior, Behavior::Walker { .. }) && wanted_x != 0.0 && vel.x == 0.0 {
                 c.facing = -c.facing;
             }
@@ -477,6 +508,19 @@ impl World {
         for id in died {
             if let Some(i) = self.creature_index(id) {
                 self.kill_creature(i, None, false);
+            }
+        }
+        // Helfer der Hüter, höchstens `max` zugleich
+        for (owner, name, max, pos) in summons {
+            let Some(kind) = self.creature_kind(&name) else {
+                continue;
+            };
+            let alive = self.creatures.iter().filter(|c| c.kind == kind).count();
+            if alive < max as usize
+                && let Some(id) = self.add_creature(kind, pos)
+            {
+                self.events.push(Event::CreatureFire { id: owner, pos });
+                let _ = id;
             }
         }
     }
@@ -512,7 +556,11 @@ impl World {
         let mut hits = Vec::new();
         for c in &self.creatures {
             let k = &self.creature_kinds[c.kind];
-            if k.touch_damage <= 0 {
+            // benommene Hüter schaden nicht (Elora soll zuschlagen können)
+            if k.touch_damage <= 0
+                || (matches!(k.behavior, Behavior::Diver(_))
+                    && c.mode == crate::creature::diver::STUNNED)
+            {
                 continue;
             }
             for &(j, p) in chars {
@@ -574,4 +622,131 @@ impl World {
             }
         }
     }
+}
+
+/// Ein Tick des Hüters aus der Luft; liefert eine Position, wenn er einen Helfer ruft.
+#[allow(clippy::too_many_arguments, clippy::too_many_lines)]
+fn tick_diver(
+    c: &mut Creature,
+    d: &DiverDef,
+    max_health: i32,
+    target: Option<(Vec2, f32)>,
+    collision: &Collision,
+    shots: &mut Vec<CreatureShot>,
+    events: &mut Vec<Event>,
+) -> Option<Vec2> {
+    use crate::creature::diver::{AIM, CIRCLE, DIVE, RISE, SLEEP, STUNNED};
+    #[allow(clippy::cast_precision_loss)]
+    let life = c.health as f32 / max_health.max(1) as f32;
+    let angry = d.enrage_at > 0.0 && life <= d.enrage_at;
+    let pace = if angry { 1.35 } else { 1.0 };
+    let ticks = |ms: u32| {
+        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+        let t = (ms_to_ticks(ms) as f32 / pace) as u32;
+        t.max(1)
+    };
+    c.stun = 0;
+    c.timer = c.timer.saturating_add(1);
+    let mut summon = None;
+    // Helfer rufen (in jedem wachen Zustand)
+    if d.summon_at > 0.0
+        && life <= d.summon_at
+        && c.mode != SLEEP
+        && d.summon_ms > 0
+        && c.timer.is_multiple_of(ms_to_ticks(d.summon_ms).max(1))
+    {
+        summon = Some(c.pos + Vec2::new(f32::from(c.facing) * 40.0, -30.0));
+    }
+    match c.mode {
+        SLEEP => {
+            c.vel = Vec2::ZERO;
+            if target.is_some_and(|(_, dist)| dist <= d.sight) {
+                c.mode = CIRCLE;
+                c.timer = 0;
+            }
+        }
+        CIRCLE => {
+            // Ellipse über dem Startpunkt
+            c.count = (c.count + 1) % 100_000;
+            #[allow(clippy::cast_precision_loss)]
+            let a = c.count as f32 * d.speed * pace / d.circle[0].max(1.0);
+            let want = c.home + Vec2::new(a.cos() * d.circle[0], a.sin() * d.circle[1]);
+            c.vel = (want - c.pos) * 0.2;
+            if c.vel.x.abs() > 0.3 {
+                c.facing = sign(c.vel.x);
+            }
+            if d.drop_ms > 0 && c.timer.is_multiple_of(ticks(d.drop_ms)) {
+                let pos = c.pos + Vec2::new(0.0, SHOT_RADIUS + 20.0);
+                shots.push(CreatureShot {
+                    owner: c.id,
+                    pos,
+                    vel: Vec2::new(0.0, d.drop_speed),
+                    damage: d.drop_damage,
+                    ticks: 0,
+                });
+                events.push(Event::CreatureFire { id: c.id, pos });
+            }
+            if c.timer >= ticks(d.circle_ms) && target.is_some() {
+                c.mode = AIM;
+                c.timer = 0;
+                // ab hier zählt `count` die Sturzflüge
+                c.count = 0;
+            }
+        }
+        AIM => {
+            c.vel = Vec2::ZERO;
+            if let Some((p, _)) = target {
+                c.goal = p;
+                c.facing = sign(p.x - c.pos.x);
+            }
+            if c.timer >= ticks(d.aim_ms) {
+                c.mode = DIVE;
+                c.timer = 0;
+            }
+        }
+        DIVE => {
+            let to = c.goal - c.pos;
+            let dir = if to.length() > 1.0 {
+                to.normalize()
+            } else {
+                Vec2::new(0.0, 1.0)
+            };
+            c.vel = dir * d.dive_speed * pace;
+            // Boden erreicht oder zu lange unterwegs
+            let ahead = c.pos + c.vel;
+            if collision.is_solid(ahead) || c.grounded || c.timer > 150 {
+                c.vel = Vec2::ZERO;
+                if angry && c.count == 0 {
+                    // gleich noch einmal
+                    c.count = 1;
+                    c.mode = AIM;
+                } else {
+                    c.count = 0;
+                    c.mode = STUNNED;
+                }
+                c.timer = 0;
+            }
+        }
+        STUNNED => {
+            c.vel = Vec2::new(0.0, 4.0);
+            if c.timer >= ms_to_ticks(d.stun_ms) {
+                c.mode = RISE;
+                c.timer = 0;
+            }
+        }
+        _ => {
+            // RISE: zurück zum Kreis
+            let to = c.home - c.pos;
+            c.vel = if to.length() > 8.0 {
+                to.normalize() * d.speed * 1.5 * pace
+            } else {
+                Vec2::ZERO
+            };
+            if to.length() <= 8.0 || c.timer > 250 {
+                c.mode = CIRCLE;
+                c.timer = 0;
+            }
+        }
+    }
+    summon
 }

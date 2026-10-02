@@ -825,6 +825,20 @@ impl App {
                 screen,
             );
         }
+        // Lebensleiste eines wachen Hüters (R2-M2.1)
+        if a.conversation.is_none()
+            && a.menu.is_none()
+            && let Some((c, k)) = world
+                .creatures
+                .iter()
+                .map(|c| (c, &world.creature_kinds[c.kind]))
+                .find(|(c, k)| k.boss && c.mode != elora_sim::creature::diver::SLEEP)
+        {
+            #[allow(clippy::cast_precision_loss)]
+            let frac = c.health as f32 / k.health.max(1) as f32;
+            let name = self.lang.t(&format!("creature.{}", k.name)).to_owned();
+            crate::adventure_hud::boss_bar(&mut ui, &name, frac, screen);
+        }
         // Zurufe über den Figuren
         let npcs = session.npcs(world);
         for (npc, text, _) in &a.barks {

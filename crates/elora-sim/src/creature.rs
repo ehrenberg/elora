@@ -66,6 +66,61 @@ pub enum Behavior {
     },
     /// Schwebt um den Startpunkt und verfolgt Elora in Sichtweite.
     Flyer { speed: f32, sight: f32 },
+    /// Hüter aus der Luft (R2-M2.1, E-298, E-299): kreist über dem Startpunkt und lässt
+    /// Geschosse fallen, visiert Elora an und stürzt herab; danach liegt er benommen am
+    /// Boden – **nur dann verwundbar** – und steigt wieder auf. Ab `enrage_at` (Anteil des
+    /// Lebens) schneller und zwei Sturzflüge hintereinander, ab `summon_at` ruft er Helfer.
+    Diver(Box<DiverDef>),
+}
+
+/// Werte des Hüters aus der Luft ([`Behavior::Diver`]).
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct DiverDef {
+    /// Wacht auf, sobald Elora so nah ist.
+    pub sight: f32,
+    /// Kreis über dem Startpunkt: halbe Breite und Höhe, Tempo (Einheiten/Tick).
+    pub circle: [f32; 2],
+    pub speed: f32,
+    /// So lange kreisen, bevor er anvisiert.
+    pub circle_ms: u32,
+    /// Warnung vor dem Sturzflug (bleibt stehen und zittert).
+    pub aim_ms: u32,
+    pub dive_speed: f32,
+    /// Benommen am Boden.
+    pub stun_ms: u32,
+    /// Geschosse beim Kreisen (fallen nach unten); 0 = keine.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub drop_ms: u32,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub drop_speed: f32,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub drop_damage: i32,
+    /// Ab diesem Anteil des Lebens wütend (1,35-faches Tempo, doppelter Sturzflug); 0 = nie.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub enrage_at: f32,
+    /// Ab diesem Anteil des Lebens ruft er `summon` (Art), höchstens `summon_max` zugleich.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub summon_at: f32,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub summon: String,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub summon_max: u32,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub summon_ms: u32,
+}
+
+/// Zustand eines Hüters aus der Luft (in [`Creature::mode`]).
+pub mod diver {
+    /// Wartet, bis Elora kommt.
+    pub const SLEEP: u8 = 0;
+    pub const CIRCLE: u8 = 1;
+    pub const AIM: u8 = 2;
+    pub const DIVE: u8 = 3;
+    /// Benommen am Boden: verwundbar.
+    pub const STUNNED: u8 = 4;
+    /// Steigt zurück zum Kreis.
+    pub const RISE: u8 = 5;
 }
 
 /// Eintrag der Beutetabelle: `min`–`max` Stück mit Wahrscheinlichkeit `chance`.
@@ -104,6 +159,19 @@ pub struct Creature {
     /// Tick des letzten Treffers (Lebensbalken, E-238).
     pub hit_tick: Option<u64>,
     pub grounded: bool,
+    /// Zustand mehrstufiger Verhalten (Hüter, [`diver`]).
+    pub mode: u8,
+    /// Ziel des Verhaltens (Sturzflug-Richtung).
+    pub goal: Vec2,
+    /// Zähler im Zustand (Sturzflüge hintereinander, Winkel beim Kreisen in 1/1000).
+    pub count: u32,
+}
+
+impl Creature {
+    /// Kann der Gegner gerade Schaden nehmen? Hüter aus der Luft nur benommen (E-299).
+    pub fn vulnerable(&self, kind: &CreatureKind) -> bool {
+        !matches!(kind.behavior, Behavior::Diver(_)) || self.mode == diver::STUNNED
+    }
 }
 
 /// Geschoss eines Gegners (z. B. Pollenkugel): fliegt gerade.

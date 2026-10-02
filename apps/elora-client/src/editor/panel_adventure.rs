@@ -853,6 +853,7 @@ pub fn draw(
                     stunned: false,
                     airborne: false,
                     boss: *persistent,
+                    mode: 0,
                 };
                 art.draw(batch, &c, time);
                 if *persistent {

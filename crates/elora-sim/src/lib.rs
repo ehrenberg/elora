@@ -24,7 +24,7 @@ pub mod world;
 pub use ability::{Abilities, Ability};
 pub use character::{CharacterCore, HookState, PHYS_SIZE};
 pub use collision::{BeltDir, Collision, JumpDir, TILE_SIZE, Tile};
-pub use creature::{Behavior, Creature, CreatureKind, LootEntry};
+pub use creature::{Behavior, Creature, CreatureKind, DiverDef, LootEntry};
 pub use dummy::DummyPattern;
 pub use event::{DeathCause, Event, PickupKind};
 pub use input::PlayerInput;
