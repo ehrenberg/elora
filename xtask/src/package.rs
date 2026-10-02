@@ -6,7 +6,7 @@
 //! ```text
 //! elora-<version>-<system>-<arch>/
 //!   elora, elora-server, elora-master   Programme
-//!   maps/                               Release-Karten + Trainingskarte
+//!   maps/                               Release-Karten + Trainingskarte, abenteuer/ mit den Abenteuer-Karten
 //!   assets/music/                       Menümusik (falls vorhanden)
 //!   LICENSE, THIRD_PARTY_LICENSES, SOURCES.md, LIESMICH.txt
 //!   elora.png                           Programmsymbol (256 × 256)
@@ -105,6 +105,12 @@ fn fill(dir: &Path, bin_dir: &Path, data_dir: &Path) -> Result<(), String> {
             .and_then(|s| s.to_str())
             .is_some_and(|s| SHIPPED_MAPS.contains(&s))
     })?;
+    // Abenteuer-Karten (E-262)
+    copy_dir(
+        Path::new("maps/abenteuer"),
+        &data_dir.join("maps/abenteuer"),
+        &|p| p.extension().is_some_and(|e| e == "emap"),
+    )?;
     if Path::new("assets/music").is_dir() {
         copy_dir(
             Path::new("assets/music"),

@@ -18,6 +18,7 @@ path = "src/main.rs"
 [dependencies]
 elora-sim = { workspace = true, features = ["serde"] }
 elora-map.workspace = true
+elora-adventure.workspace = true
 elora-render.workspace = true
 elora-audio = { workspace = true, features = ["playback"] }
 winit.workspace = true

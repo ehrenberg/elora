@@ -748,6 +748,7 @@ dependencies = [
  "egui",
  "egui-wgpu",
  "egui-winit",
+ "elora-adventure",
  "elora-audio",
  "elora-game",
  "elora-map",

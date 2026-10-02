@@ -46,6 +46,23 @@ pub struct SceneFlag {
     pub stand: Vec2,
 }
 
+/// Aussehen eines Abenteuer-Objekts (A1.6).
+#[derive(Debug, Clone, PartialEq)]
+pub enum ObjectLook {
+    Npc { character: String, facing: i8 },
+    Chest { open: bool },
+    Switch { on: bool },
+    SavePoint,
+    HealPlant { used: bool },
+    Collectible { item: String },
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct SceneObject {
+    pub look: ObjectLook,
+    pub pos: Vec2,
+}
+
 /// Ein Gegner (A1.2).
 #[derive(Debug, Clone)]
 pub struct SceneCreature {
@@ -71,6 +88,8 @@ pub struct Scene {
     pub creature_shots: Vec<Vec2>,
     /// Beute: Gegenstand und Position.
     pub loot: Vec<(String, Vec2)>,
+    /// Abenteuer-Objekte (NPCs, Truhen, Schalter …).
+    pub objects: Vec<SceneObject>,
     pub flags: Vec<SceneFlag>,
     pub chars: Vec<SceneChar>,
     pub projectiles: Vec<Vec2>,

@@ -25,6 +25,8 @@ pub struct PauseCtx<'a> {
     pub vote: Option<&'a VoteInfo>,
     /// „Karte · Modus“ zur Orientierung.
     pub server_line: String,
+    /// Abenteuer läuft (A1.6): Hinweis zum Speichern statt Training.
+    pub adventure: bool,
 }
 
 /// Zustand des Pause-Menüs zwischen Frames.
@@ -96,6 +98,16 @@ pub fn content(
         card.max.x - card.min.x - 274.0 * s,
         card.h() - 100.0 * s,
     );
+    if p.adventure {
+        ui.label(
+            lang.t("adventure.pause_warning"),
+            Vec2::new(right.min.x, right.min.y + 8.0 * s),
+            12.0,
+            TEXT_DIM,
+            Align::Left,
+        );
+        return action;
+    }
     if !p.online {
         ui.label(
             lang.t("pause.training"),

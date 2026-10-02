@@ -30,7 +30,7 @@ pub fn map_names() -> Vec<String> {
 impl App {
     /// Ist gerade eine Menü-Oberfläche (Haupt- oder Pause-Menü) aktiv?
     pub(crate) fn menu_active(&self) -> bool {
-        self.screen == Screen::Menu || self.menu.paused
+        self.screen == Screen::Menu || self.menu.paused || self.adventure_halted()
     }
 
     fn menu_ctx_parts(&self) -> (Vec2, f32) {
@@ -51,6 +51,11 @@ impl App {
         let graphics_before = self.settings.graphics;
         let language_before = self.settings.language;
         let audio_device = self.sounds.has_device();
+        let slots = if self.menu.page == crate::menu::Page::Adventure {
+            crate::app_adventure::slot_views()
+        } else {
+            Vec::new()
+        };
         let cx = MenuCtx {
             font: self.hud.font(),
             lang: &self.lang,
@@ -59,6 +64,7 @@ impl App {
             favorites: &self.settings.favorites,
             maps: &self.maps,
             status: &self.status,
+            slots: &slots,
             screen,
             s,
             dt,
@@ -122,6 +128,7 @@ impl App {
             .unwrap_or_default();
         let server_line = match &info.view {
             Some(v) if self.online.is_some() => format!("{} · {}", self.net.address, v.title()),
+            _ if self.adventure.is_some() => self.lang.t("adventure.tab").to_owned(),
             _ => self.lang.t("pause.training").to_owned(),
         };
         let p = crate::menu_pause::PauseCtx {
@@ -132,6 +139,7 @@ impl App {
             local: info.local,
             vote: info.vote.as_ref(),
             server_line,
+            adventure: self.adventure.is_some(),
         };
         let cx = MenuCtx {
             font: self.hud.font(),
@@ -141,6 +149,7 @@ impl App {
             favorites: &[],
             maps: &[],
             status: "",
+            slots: &[],
             screen,
             s,
             dt,
@@ -263,6 +272,13 @@ impl App {
                 self.set_cursor_grab(true);
             }
             MenuAction::ToMenu if self.testing_map() => self.leave_editor_test(),
+            MenuAction::ToMenu if self.adventure.is_some() => self.leave_adventure(),
+            MenuAction::AdventureNew(slot) | MenuAction::AdventureContinue(slot) => {
+                self.online = None;
+                self.status.clear();
+                self.start_adventure(slot, matches!(action, MenuAction::AdventureNew(_)));
+            }
+            MenuAction::AdventureDelete(slot) => self.delete_slot(slot),
             MenuAction::ToMenu => {
                 self.online = None;
                 self.menu.paused = false;

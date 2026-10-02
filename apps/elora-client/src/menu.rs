@@ -24,6 +24,8 @@ use crate::ui::{
 pub enum Page {
     #[default]
     Play,
+    /// Abenteuer mit Spielständen (A1.6).
+    Adventure,
     Create,
     Settings,
 }
@@ -49,6 +51,10 @@ pub enum MenuAction {
     Resume,
     ToMenu,
     Quit,
+    /// Abenteuer: neu auf Platz, fortsetzen, löschen (A1.6).
+    AdventureNew(usize),
+    AdventureContinue(usize),
+    AdventureDelete(usize),
 }
 
 /// Formular „Server erstellen“ (E-122).
@@ -90,6 +96,8 @@ pub struct MenuCtx<'a> {
     pub maps: &'a [String],
     /// Statuszeile (Verbindung, Hosting, Fehler).
     pub status: &'a str,
+    /// Spielstand-Plätze (nur auf der Seite „Abenteuer“ gefüllt).
+    pub slots: &'a [crate::app_adventure::SlotView],
     pub screen: Vec2,
     pub s: f32,
     pub dt: f32,
@@ -116,10 +124,12 @@ pub struct Menu {
     pub save_pending: bool,
     /// Letzter Klick (Zeit, Ort) für die Doppelklick-Erkennung.
     pub last_click: Option<(std::time::Instant, Vec2)>,
+    /// Platz, dessen Löschen gerade bestätigt werden soll.
+    pub confirm_delete: Option<usize>,
 }
 
 /// Farbe des gewählten Reiters (Editor, Training und Beenden sind Aktionen und nie gewählt).
-const TAB_COLORS: [Color; 6] = [GREEN, BLUE, VIOLET, GRAY, ORANGE, GRAY];
+const TAB_COLORS: [Color; 7] = [GREEN, LOGO, BLUE, VIOLET, GRAY, ORANGE, GRAY];
 
 impl Menu {
     /// Hauptmenü zeichnen; liefert eine Aktion und ob Einstellungen geändert wurden.
@@ -158,6 +168,9 @@ impl Menu {
                     master_input: &mut self.master_input,
                 };
                 play_page(&mut ui, cx, content, edit.name, &mut be)
+            }
+            Page::Adventure => {
+                crate::menu_adventure::page(&mut ui, cx, content, &mut self.confirm_delete)
             }
             Page::Create => create_page(&mut ui, cx, content, &mut self.create),
             Page::Settings => {
@@ -307,6 +320,7 @@ fn top_bar(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, page: &mut Page) -> Option<MenuAct
     let lang = cx.lang;
     let items = [
         lang.t("menu.play"),
+        lang.t("adventure.tab"),
         lang.t("menu.training"),
         lang.t("menu.create"),
         lang.t("menu.editor"),
@@ -315,8 +329,9 @@ fn top_bar(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, page: &mut Page) -> Option<MenuAct
     ];
     let selected = match page {
         Page::Play => 0,
-        Page::Create => 2,
-        Page::Settings => 4,
+        Page::Adventure => 1,
+        Page::Create => 3,
+        Page::Settings => 5,
     };
     match ui.tabs(
         "top",
@@ -327,11 +342,12 @@ fn top_bar(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, page: &mut Page) -> Option<MenuAct
         &[TAB_COLORS[selected]],
     ) {
         Some(0) => *page = Page::Play,
-        Some(1) => return Some(MenuAction::Training),
-        Some(2) => *page = Page::Create,
-        Some(3) => return Some(MenuAction::Editor),
-        Some(4) => *page = Page::Settings,
-        Some(5) => return Some(MenuAction::Quit),
+        Some(1) => *page = Page::Adventure,
+        Some(2) => return Some(MenuAction::Training),
+        Some(3) => *page = Page::Create,
+        Some(4) => return Some(MenuAction::Editor),
+        Some(5) => *page = Page::Settings,
+        Some(6) => return Some(MenuAction::Quit),
         _ => {}
     }
     None
@@ -589,6 +605,7 @@ mod tests {
         let maps = vec!["ctf-test".to_owned(), "sandbox".to_owned()];
         for (name, page) in [
             ("spielen", Page::Play),
+            ("abenteuer", Page::Adventure),
             ("erstellen", Page::Create),
             ("einstellungen", Page::Settings),
             ("grafik", Page::Settings),
@@ -690,6 +707,16 @@ mod tests {
                 favorites: &favorites,
                 maps: &maps,
                 status: "",
+                slots: &[
+                    crate::app_adventure::SlotView::Saved {
+                        level: 4,
+                        map: "wiese-1".into(),
+                        play_secs: 4520,
+                        glanz: 128,
+                    },
+                    crate::app_adventure::SlotView::Empty,
+                    crate::app_adventure::SlotView::Damaged("Prüfsumme".into()),
+                ],
                 screen: Vec2::new(1280.0, 720.0),
                 s: 1.0,
                 dt: 0.016,
@@ -735,6 +762,7 @@ mod tests {
                     local: Some(0),
                     vote: None,
                     server_line: "127.0.0.1:8303 · CTF".into(),
+                    adventure: false,
                 };
                 menu.draw_pause(&mut batch, &cx, &p, &mut edit);
             } else {

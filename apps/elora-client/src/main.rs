@@ -6,6 +6,7 @@
 //! Aufruf: `elora [karte.emap] [--mode dm|tdm|ctf|lms|lts] [--instagib] [--connect adresse:port]`
 //! (Standardkarte: `maps/sandbox.emap`)
 
+mod app_adventure;
 mod app_editor;
 mod app_menu;
 mod bindings;
@@ -28,6 +29,7 @@ mod lang;
 mod map_art;
 mod map_view;
 mod menu;
+mod menu_adventure;
 mod menu_browser;
 mod menu_pause;
 mod menu_settings;
@@ -135,6 +137,19 @@ fn main() -> anyhow::Result<()> {
         app.net.address = address;
         app.connect();
     }
+    // Entwicklung: direkt ins Abenteuer auf Platz 1–3 (fortsetzen oder neu)
+    if let Some(i) = args.iter().position(|a| a == "--abenteuer") {
+        let slot: usize = args
+            .get(i + 1)
+            .and_then(|n| n.parse().ok())
+            .filter(|n| (1..=3).contains(n))
+            .context("--abenteuer erwartet einen Platz 1, 2 oder 3")?;
+        let new = matches!(
+            app_adventure::slot_views()[slot - 1],
+            app_adventure::SlotView::Empty
+        );
+        app.start_adventure(slot - 1, new);
+    }
     event_loop.run_app(&mut app)?;
     app.error.map_or(Ok(()), Err)
 }
@@ -223,6 +238,8 @@ struct App {
     maps: Vec<String>,
     /// Aktion, die gerade neu belegt wird (nächste Taste zählt).
     bind_capture: Option<GameAction>,
+    /// Laufendes Abenteuer (A1.6).
+    adventure: Option<app_adventure::AdventureMode>,
 }
 
 impl App {
@@ -275,6 +292,7 @@ impl App {
             menu: menu::Menu::default(),
             maps: app_menu::map_names(),
             bind_capture: None,
+            adventure: None,
         }
     }
 
@@ -512,6 +530,16 @@ impl App {
                     Vec::new(),
                 ),
             }
+        } else if self.adventure.is_some() {
+            self.advance_adventure(elapsed);
+            let mut scene = self.sandbox.scene();
+            self.adventure_scene(&mut scene);
+            (
+                scene,
+                self.sandbox.world.collision.clone(),
+                self.sandbox.world.tuning.clone(),
+                self.sandbox.take_events(),
+            )
         } else {
             self.sandbox.poll_reload();
             if self
@@ -776,6 +804,12 @@ impl App {
         );
         self.build_batch(&scene, &tuning, &camera, info.tick);
         let screen = self.build_hud(&scene, &tuning, &info);
+        let death_choice = if self.adventure.is_some() && !self.menu.paused {
+            let s = hud::scale(screen, self.settings.graphics.ui_scale());
+            self.draw_adventure_hud(&camera, screen, s, dt)
+        } else {
+            None
+        };
         let pause_action = if self.menu.paused {
             self.draw_pause(dt, &info)
         } else {
@@ -800,6 +834,11 @@ impl App {
         }
         if let Some(a) = pause_action {
             self.apply_menu(a);
+        }
+        match death_choice {
+            Some(true) => self.adventure_respawn(),
+            Some(false) => self.leave_adventure(),
+            None => {}
         }
     }
 
@@ -895,6 +934,12 @@ impl App {
         if self.screen == Screen::Editor {
             return; // Tastatur gehört egui (Kürzel im Editor)
         }
+        if self.adventure_halted() && !self.menu.paused {
+            if pressed && !event.repeat {
+                self.adventure_key(code);
+            }
+            return;
+        }
         if self.menu_active() {
             if code == KeyCode::F1 && pressed && !event.repeat {
                 self.show_panel = !self.show_panel;
@@ -923,8 +968,10 @@ impl App {
                     self.set_cursor_grab(!self.show_panel && !self.menu.paused);
                     return;
                 }
-                KeyCode::KeyR if unbound && !online => return self.apply(Action::Respawn),
-                KeyCode::F5 if unbound && !online => {
+                KeyCode::KeyR if unbound && !online && self.adventure.is_none() => {
+                    return self.apply(Action::Respawn);
+                }
+                KeyCode::F5 if unbound && !online && self.adventure.is_none() => {
                     self.status = if self.sandbox.rules.is_some() {
                         "Aufzeichnung nur ohne Spielmodus (Golden-Tests = reine Simulation)".into()
                     } else {
@@ -977,7 +1024,8 @@ impl App {
                     text: String::new(),
                 };
             }
-            GameAction::Kill if down => self.apply(Action::Kill),
+            GameAction::Kill if down && self.adventure.is_none() => self.apply(Action::Kill),
+            GameAction::Interact if down => self.adventure_interact(),
             GameAction::VoteYes if down => self.apply(Action::Vote(true)),
             GameAction::VoteNo if down => self.apply(Action::Vote(false)),
             _ => {}

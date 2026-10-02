@@ -174,6 +174,28 @@ impl Sandbox {
         Ok(())
     }
 
+    /// Fertig aufgebaute Welt spielen (Abenteuer, A1.6); ohne Hot-Reload, Regeln und
+    /// Aufzeichnung. Liefert die bisherige Karte zum Wiederherstellen.
+    pub fn play_world(&mut self, map: Map, world: World, player: usize) -> Map {
+        self.stop_recording("Abenteuer");
+        self.world = world;
+        self.player = player;
+        self.rules = None;
+        self.watcher = None;
+        self.reload_error = None;
+        self.notices.clear();
+        self.accumulator = Duration::ZERO;
+        self.sync_prev();
+        std::mem::replace(&mut self.map, map)
+    }
+
+    /// Hot-Reload der aktuellen Kartendatei wieder einschalten (nach dem Abenteuer).
+    pub fn watch_again(&mut self) {
+        self.watcher = MapWatcher::new(&self.map_path)
+            .inspect_err(|e| tracing::warn!("Hot-Reload nicht verfügbar: {e:#}"))
+            .ok();
+    }
+
     /// Karte aus dem Speicher spielen (Testspielen aus dem Editor, M6.9): frische Welt im
     /// freien Spiel. Liefert die bisherige Karte zum Wiederherstellen.
     pub fn play_map(&mut self, map: Map) -> Map {
@@ -346,6 +368,16 @@ impl Sandbox {
 
     /// Lässt die Simulation um die vergangene Echtzeit laufen.
     pub fn advance(&mut self, elapsed: Duration, controls: &mut Controls) {
+        self.advance_with(elapsed, controls, |_| {});
+    }
+
+    /// Wie [`Self::advance`]; `after` läuft nach jedem Tick (Abenteuer-Sitzung, A1.6).
+    pub fn advance_with(
+        &mut self,
+        elapsed: Duration,
+        controls: &mut Controls,
+        mut after: impl FnMut(&mut World),
+    ) {
         self.accumulator += elapsed;
         let mut ticks = 0;
         while self.accumulator >= TICK {
@@ -363,6 +395,7 @@ impl Sandbox {
             let mut inputs = vec![PlayerInput::default(); self.world.players.len()];
             inputs[self.player] = input;
             self.world.step(&inputs);
+            after(&mut self.world);
             if let Some(r) = &mut self.rules {
                 r.update(&mut self.world);
             }
