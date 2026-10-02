@@ -4,8 +4,10 @@
 //! Hier liegen Zustand und Logik (ohne egui, testbar); [`panel`] baut die Oberfläche,
 //! [`view`] zeichnet Karte, Raster und Entities.
 
+pub mod adventure;
 pub mod look;
 pub mod panel;
+pub mod panel_adventure;
 pub mod panel_look;
 #[cfg(test)]
 mod release;
@@ -79,6 +81,8 @@ pub enum Request {
     Leave,
     /// Karte testspielen (M6.9).
     Test,
+    /// Abenteuer-Karte im Abenteuer testen (A1.8, E-269).
+    TestAdventure,
 }
 
 /// Eine Karte zum Öffnen.
@@ -93,6 +97,18 @@ pub struct MapFile {
 #[derive(Debug)]
 pub struct Editor {
     pub map: Map,
+    /// Werkzeug „Abenteuer“ (A1.8).
+    pub adventure: adventure::AdventureTool,
+    /// Name der Abenteuer-Karte (Dateiname unter `abenteuer/`, Ziel von Übergängen, E-271).
+    pub adventure_id: String,
+    /// Weltpunkt unter der Maus (Testspiel „an der Maus“).
+    pub mouse_world: Option<Vec2>,
+    /// Inhalte des Abenteuers (neu ladbar) bzw. der Fehler beim Laden.
+    pub adventure_content: Option<Result<elora_adventure::Content, String>>,
+    /// Teststand für das Testspiel und den Gesprächstest (E-269).
+    pub adventure_test: panel_adventure::TestSetup,
+    /// Offenes Testfenster eines Gesprächs (E-270).
+    pub dialog_test: Option<panel_adventure::DialogTest>,
     /// Datei im Benutzerverzeichnis, in die zuletzt gespeichert wurde.
     pub file: Option<PathBuf>,
     /// Kartenpunkt in der Mitte der Kartenfläche.
@@ -167,6 +183,12 @@ impl Editor {
         let mut e = Self {
             resize: (map.width, map.height),
             map,
+            adventure: adventure::AdventureTool::default(),
+            adventure_id: String::new(),
+            mouse_world: None,
+            adventure_content: None,
+            adventure_test: panel_adventure::TestSetup::default(),
+            dialog_test: None,
             file: None,
             center: Vec2::ZERO,
             zoom: 1.0,
@@ -204,7 +226,7 @@ impl Editor {
         e
     }
 
-    fn note(&mut self, key: &'static str, arg: impl Into<String>) {
+    pub fn note(&mut self, key: &'static str, arg: impl Into<String>) {
         self.status = Some((key, arg.into()));
     }
 
@@ -355,6 +377,8 @@ impl Editor {
 
     fn replace_map(&mut self, map: Map, file: Option<PathBuf>) {
         self.map = map;
+        self.adventure.selected = None;
+        self.adventure_id.clear();
         self.file = file;
         self.undo.clear();
         self.redo.clear();
@@ -378,14 +402,39 @@ impl Editor {
             Ok(map) => {
                 self.note("editor.opened", file.path.display().to_string());
                 self.replace_map(map, file.own.then(|| file.path.clone()));
+                // Abenteuer-Karten heißen wie ihre Datei (Ziel von Übergängen)
+                if file
+                    .path
+                    .parent()
+                    .and_then(Path::file_name)
+                    .is_some_and(|d| d == "abenteuer")
+                {
+                    self.adventure_id = file
+                        .path
+                        .file_stem()
+                        .map(|s| s.to_string_lossy().into_owned())
+                        .unwrap_or_default();
+                }
             }
             Err(e) => self.note("editor.open_failed", e),
         }
     }
 
-    /// Zieldatei im Benutzerverzeichnis (nach dem Kartennamen).
+    /// Zieldatei im Benutzerverzeichnis (nach dem Kartennamen); Abenteuer-Karten unter
+    /// `abenteuer/` nach ihrem Namen (E-271).
     pub fn target_path(&self) -> Option<PathBuf> {
         let dir = self.user_dir.as_ref()?;
+        if self.is_adventure_map() {
+            let id = if self.adventure_id.is_empty() {
+                elora_client::map_store::safe_name(&self.map.name)
+            } else {
+                elora_client::map_store::safe_name(&self.adventure_id)
+            };
+            return Some(
+                dir.join("abenteuer")
+                    .join(format!("{id}.{}", elora_map::EXTENSION)),
+            );
+        }
         Some(dir.join(format!(
             "{}.{}",
             elora_client::map_store::safe_name(&self.map.name),
@@ -443,11 +492,29 @@ impl Editor {
             .map(|d| list(d, true))
             .unwrap_or_default();
         all.extend(list(&self.bundled_dir, false));
+        // Abenteuer-Karten (E-262, E-271)
+        let adventure = |dir: &Path, own: bool| {
+            list(&dir.join("abenteuer"), own).into_iter().map(|mut f| {
+                f.name = format!("abenteuer/{}", f.name);
+                f
+            })
+        };
+        if let Some(d) = self.user_dir.as_deref() {
+            all.extend(adventure(d, true));
+        }
+        all.extend(adventure(&self.bundled_dir, false));
         all
     }
 
     /// Testspielen anfordern; eine unspielbare Karte (z. B. ohne Spawn) wird gemeldet.
     pub fn request_test(&mut self) {
+        if self.is_adventure_map() {
+            match elora_map::validate(&self.map) {
+                Ok(()) => self.request = Some(Request::TestAdventure),
+                Err(e) => self.note("editor.test_unplayable", e.to_string()),
+            }
+            return;
+        }
         match elora_map::validate(&self.map) {
             Ok(()) => self.request = Some(Request::Test),
             Err(e) => self.note("editor.test_unplayable", e.to_string()),

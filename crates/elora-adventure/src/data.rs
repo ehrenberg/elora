@@ -358,6 +358,57 @@ impl Content {
         Self::load(&Sources::builtin()).unwrap_or_else(|e| panic!("assets/adventure: {e}"))
     }
 
+    /// Inhalte aus einem Ordner (`assets/adventure`) lesen – für den Editor (Neu laden ohne
+    /// Neustart, E-270). Gespräche: alle `dialogs/*.toml`.
+    ///
+    /// # Errors
+    /// Fehlende oder ungültige Dateien.
+    pub fn from_dir(dir: &std::path::Path) -> Result<Self, ContentError> {
+        let read = |name: &str| {
+            std::fs::read_to_string(dir.join(name))
+                .map_err(|e| ContentError::Invalid(format!("{name}: {e}")))
+        };
+        let (items, skills, upgrades, shops, progression, creatures, quests, characters, world_map) = (
+            read("items.toml")?,
+            read("skills.toml")?,
+            read("upgrades.toml")?,
+            read("shops.toml")?,
+            read("progression.toml")?,
+            read("creatures.toml")?,
+            read("quests.toml")?,
+            read("characters.toml")?,
+            read("worldmap.toml")?,
+        );
+        let mut dialogs: Vec<(String, String)> = std::fs::read_dir(dir.join("dialogs"))
+            .map_err(|e| ContentError::Invalid(format!("dialogs: {e}")))?
+            .filter_map(Result::ok)
+            .map(|e| e.path())
+            .filter(|p| p.extension().is_some_and(|x| x == "toml"))
+            .filter_map(|p| {
+                let id = p.file_stem()?.to_str()?.to_owned();
+                Some(std::fs::read_to_string(&p).map(|t| (id, t)))
+            })
+            .collect::<Result<_, _>>()
+            .map_err(|e| ContentError::Invalid(format!("dialogs: {e}")))?;
+        dialogs.sort();
+        let refs: Vec<(&str, &str)> = dialogs
+            .iter()
+            .map(|(a, b)| (a.as_str(), b.as_str()))
+            .collect();
+        Self::load(&Sources {
+            items: &items,
+            skills: &skills,
+            upgrades: &upgrades,
+            shops: &shops,
+            progression: &progression,
+            creatures: &creatures,
+            quests: &quests,
+            characters: &characters,
+            dialogs: &refs,
+            world_map: &world_map,
+        })
+    }
+
     /// Liest und prüft die Inhalte.
     ///
     /// # Errors

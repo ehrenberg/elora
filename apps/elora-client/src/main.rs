@@ -960,6 +960,7 @@ impl App {
         if pressed && !event.repeat {
             match code {
                 KeyCode::Escape if self.testing_map() => return self.leave_editor_test(),
+                KeyCode::Escape if self.testing_adventure() => return self.leave_adventure(),
                 KeyCode::Escape => return self.toggle_pause(),
                 KeyCode::F1 => {
                     // Panel offen: Maus frei zum Bedienen; zu: zurück ins Spiel

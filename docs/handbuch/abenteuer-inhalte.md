@@ -98,3 +98,10 @@ goal = { type = "talk", who = "tueftel" }
 | `manual` | – | ein Gespräch `quest <id> weiter` ausführt |
 
 Das Aufgabenbuch zeigt erledigte Schritte und den aktuellen, weitere als „?“ (E-251).
+
+## Abenteuer-Karten im Editor (A1.8)
+
+Werkzeug **9 „Abenteuer“** (E-268): Art in der Seitenleiste wählen, Klick setzt das Objekt auf den Boden unter der Maus (Sammelstücke schweben in der Tile-Mitte), Tür, Übergang, Zone und Kamera werden aufgezogen. Klick auf ein Objekt wählt es, Ziehen verschiebt (auf ganze Tiles), Rechtsklick oder Entf löscht; Rückgängig wie gewohnt. Rechts stehen die Werte des gewählten Objekts, bei NPCs die Vorschau des Gesprächs und **„Gespräch testen“** (Fenster mit Änderungen an Merkern, Aufgaben, Zuneigung und Gegenständen, E-270). „Inhalte neu laden“ liest `assets/adventure` ohne Neustart; die **Prüfung** zeigt fehlende Gegnerarten, Figuren, Gespräche, Gegenstände, falsche Bedingungen und Übergänge ohne Ziel.
+
+- **Kartenname** = Dateiname und Ziel von Übergängen (z. B. `wiese-1`). Gespeichert wird nach `<Benutzerverzeichnis>/maps/abenteuer/<name>.emap`; das Spiel nimmt diese Datei vor der mitgelieferten gleichen Namens (E-271).
+- **F5** testet im Abenteuer mit dem **Teststand** (Stufe, Fähigkeiten, Waffen, Merker wie `tor.dorf=1, oma.frech`; Start an einem Eingang/Quellstein oder an der Maus). Es wird nichts gespeichert; Übergänge laden die anderen Karten, die gerade bearbeitete auch ungespeichert. Esc kehrt in den Editor zurück (E-269).

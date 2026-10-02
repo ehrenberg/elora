@@ -36,6 +36,22 @@ mod tests {
     }
 
     #[test]
+    fn content_from_dir_matches_builtin() {
+        let dir = std::path::Path::new(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../assets/adventure"
+        ));
+        let c = Content::from_dir(dir).unwrap();
+        let b = Content::builtin();
+        assert_eq!(
+            c.dialogs.len(),
+            b.dialogs.len(),
+            "alle Gespräche eingetragen (data.rs)"
+        );
+        assert_eq!(c.quests, b.quests);
+    }
+
+    #[test]
     fn broken_references_are_rejected() {
         let mut src = data::Sources::builtin();
         let shops = "[[shop]]\nid = \"x\"\nstock = [\"gibt-es-nicht\"]\n";

@@ -53,7 +53,10 @@ pub enum SlotView {
 #[derive(Debug)]
 pub struct AdventureMode {
     pub session: Session,
-    pub slot: usize,
+    /// Spielstand-Platz; `None` beim Testspiel aus dem Editor (es wird nicht gespeichert, E-269).
+    pub slot: Option<usize>,
+    /// Testspiel aus dem Editor: diese Karte (ungespeichert) statt der Datei gleichen Namens.
+    editor_map: Option<(String, Map)>,
     pub conversation: Option<Conversation>,
     /// Elora ist erschöpft (E-261): verlorene Glanztropfen.
     pub dead: Option<u32>,
@@ -83,11 +86,16 @@ fn slots() -> Slots {
     Slots::new(saves_dir())
 }
 
-/// Abenteuer-Karte `name` aus `maps/abenteuer/` (E-262).
+/// Abenteuer-Karte `name`: zuerst aus dem Benutzerordner `maps/abenteuer/` (E-271), sonst die
+/// mitgelieferte (E-262).
 fn load_map(name: &str) -> anyhow::Result<Map> {
-    let path =
-        elora_server::paths::resolve(Path::new("maps/abenteuer")).join(format!("{name}.emap"));
-    Map::load(&path)
+    let file = format!("{name}.emap");
+    if let Some(own) = crate::settings::user_maps_dir().map(|d| d.join("abenteuer").join(&file))
+        && own.is_file()
+    {
+        return Map::load(&own);
+    }
+    Map::load(&elora_server::paths::resolve(Path::new("maps/abenteuer")).join(file))
 }
 
 /// Übersicht aller Plätze.
@@ -138,7 +146,8 @@ impl App {
         let loc = session.save.location.clone();
         self.adventure = Some(AdventureMode {
             session,
-            slot,
+            slot: Some(slot),
+            editor_map: None,
             conversation: None,
             dead: None,
             barks: Vec::new(),
@@ -167,7 +176,12 @@ impl App {
         let Some(a) = &mut self.adventure else {
             return false;
         };
-        let m = match load_map(map) {
+        let editor_map = a
+            .editor_map
+            .as_ref()
+            .filter(|(n, _)| n == map)
+            .map(|(_, m)| Ok(m.clone()));
+        let m = match editor_map.unwrap_or_else(|| load_map(map)) {
             Ok(m) => m,
             Err(e) => {
                 tracing::warn!("Abenteuer-Karte {map}: {e:#}");
@@ -187,7 +201,8 @@ impl App {
 
     pub(crate) fn save_adventure(&mut self) {
         let Some(a) = &self.adventure else { return };
-        if let Err(e) = slots().save(a.slot, &a.session.save, false) {
+        let Some(slot) = a.slot else { return };
+        if let Err(e) = slots().save(slot, &a.session.save, false) {
             self.status = self.lang.f("adventure.save_failed", &[("e", &e)]);
         }
     }
@@ -195,6 +210,7 @@ impl App {
     /// Zurück ins Hauptmenü: Trainingskarte wiederherstellen. Fortschritt seit dem letzten
     /// Speichern verfällt (E-260).
     pub(crate) fn leave_adventure(&mut self) {
+        let from_editor = self.adventure.as_ref().is_some_and(|a| a.slot.is_none());
         if let Some(a) = self.adventure.take()
             && let Some(prev) = a.previous
         {
@@ -202,8 +218,65 @@ impl App {
             self.sandbox.watch_again();
         }
         self.menu.paused = false;
-        self.screen = Screen::Menu;
+        self.screen = if from_editor {
+            Screen::Editor
+        } else {
+            Screen::Menu
+        };
         self.set_cursor_grab(false);
+    }
+
+    /// Testspiel aus dem Editor (E-269): Teststand, ungespeicherte Karte, kein Spielstand.
+    pub(crate) fn start_adventure_test(&mut self) {
+        let Some(editor) = &self.editor else { return };
+        let content = editor.content().cloned().unwrap_or_else(Content::builtin);
+        let id = if editor.adventure_id.is_empty() {
+            "editor-test".to_owned()
+        } else {
+            editor.adventure_id.clone()
+        };
+        let mut map = editor.map.clone();
+        let spawn = if let Some(s) = &editor.adventure_test.start {
+            s.clone()
+        } else {
+            // an der Maus: vorübergehender Eingang
+            let pos = editor.mouse_world.unwrap_or(Vec2::new(64.0, 64.0));
+            map.adventure.objects.push(elora_map::Object {
+                id: "editor-maus".into(),
+                pos,
+                kind: ObjectKind::Spawn,
+            });
+            "editor-maus".to_owned()
+        };
+        let save = editor.adventure_test.save(&content, &id, &spawn);
+        self.online = None;
+        self.adventure = Some(AdventureMode {
+            session: Session::new(content, save),
+            slot: None,
+            editor_map: Some((id.clone(), map)),
+            conversation: None,
+            dead: None,
+            barks: Vec::new(),
+            interact: false,
+            previous: None,
+            look: 0.0,
+            look_dir: 0,
+            look_turn: 0.0,
+            zone_mix: 0.0,
+            zone_center: Vec2::ZERO,
+            menu: None,
+            menu_memory: crate::adventure_menu::MenuState::default(),
+        });
+        if self.travel(&id, &spawn) {
+            self.enter_game();
+        } else {
+            self.leave_adventure();
+        }
+    }
+
+    /// Läuft ein Testspiel aus dem Editor?
+    pub(crate) fn testing_adventure(&self) -> bool {
+        self.adventure.as_ref().is_some_and(|a| a.slot.is_none())
     }
 
     pub(crate) fn delete_slot(&mut self, slot: usize) {

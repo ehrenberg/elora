@@ -116,6 +116,7 @@ pub fn ui(
         .show(ui, |ui| area(ui, editor, map_view, window, ppp, now))
         .inner;
     dialogs(ui.ctx(), editor, lang);
+    super::panel_adventure::dialog_window(ui.ctx(), editor, lang);
     info
 }
 
@@ -175,6 +176,7 @@ fn shortcuts(ui: &egui::Ui, editor: &mut Editor, now: Instant) {
             Key::Num6,
             Key::Num7,
             Key::Num8,
+            Key::Num9,
         ];
         for (k, tool) in digits.into_iter().zip(Tool::ALL) {
             if i.consume_key(Modifiers::NONE, k) {
@@ -191,6 +193,11 @@ fn shortcuts(ui: &egui::Ui, editor: &mut Editor, now: Instant) {
         if i.consume_key(Modifiers::NONE, Key::Delete) {
             match (editor.tool, editor.selected_decor) {
                 (Tool::Decor, Some(r)) => editor.remove_decor(r, now),
+                (Tool::Adventure, _) => {
+                    if let Some(id) = editor.adventure.selected.clone() {
+                        editor.remove_object(&id, now);
+                    }
+                }
                 _ => editor.delete_selection(now),
             }
         }
@@ -308,6 +315,7 @@ fn tools(ui: &mut egui::Ui, editor: &mut Editor, lang: &Lang, now: Instant) {
         }
         Tool::Material => material_choice(ui, editor, lang),
         Tool::Decor => panel_look::decor_tool(ui, editor, lang, now),
+        Tool::Adventure => super::panel_adventure::tool(ui, editor, lang, now),
         Tool::Select => {
             ui.horizontal_wrapped(|ui| {
                 let has = editor.selection.is_some();
@@ -474,7 +482,13 @@ fn area(
     let pressed = !space
         && response.hovered()
         && ui.input(|i| i.pointer.primary_pressed() || i.pointer.secondary_pressed());
-    if editor.tool == Tool::Decor {
+    editor.mouse_world = Some(world);
+    if editor.tool == Tool::Adventure || editor.is_adventure_map() {
+        super::panel_adventure::labels(ui, editor, &camera, window, ppp);
+    }
+    if editor.tool == Tool::Adventure {
+        super::panel_adventure::interact(editor, &mut info, world, (pressed, primary, down), now);
+    } else if editor.tool == Tool::Decor {
         panel_look::decor_interact(
             editor,
             map_view,
@@ -565,7 +579,7 @@ fn use_tool(
                 editor.flood_fill(x, y, tile, now);
             }
         }
-        Tool::Decor => {}
+        Tool::Decor | Tool::Adventure => {}
         Tool::Entity => {
             info.preview = Preview::Cells(Cells::span((x, y), (x, y)));
             if pressed {

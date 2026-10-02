@@ -24,10 +24,12 @@ pub enum Tool {
     Material,
     /// Deko platzieren und bearbeiten (M6.8).
     Decor,
+    /// Abenteuer-Objekte (A1.8, E-268).
+    Adventure,
 }
 
 impl Tool {
-    pub const ALL: [Self; 8] = [
+    pub const ALL: [Self; 9] = [
         Self::Brush,
         Self::Rect,
         Self::Fill,
@@ -36,6 +38,7 @@ impl Tool {
         Self::Entity,
         Self::Material,
         Self::Decor,
+        Self::Adventure,
     ];
 
     /// Sprachschlüssel.
@@ -49,6 +52,7 @@ impl Tool {
             Self::Entity => "editor.tool_entity",
             Self::Material => "editor.tool_material",
             Self::Decor => "editor.tool_decor",
+            Self::Adventure => "editor.tool_adventure",
         }
     }
 }

@@ -82,6 +82,14 @@ impl App {
             self.figures.time(),
             self.editor_area.preview,
         );
+        if editor.visible.entities {
+            crate::editor::panel_adventure::draw(
+                &mut self.batch,
+                editor,
+                &self.creature_art,
+                self.figures.time(),
+            );
+        }
         let Some(mut frame) = gfx.renderer.begin_frame() else {
             return;
         };
@@ -100,6 +108,7 @@ impl App {
         self.editor_area = area;
         match editor.request.take() {
             Some(crate::editor::Request::Test) => self.start_editor_test(),
+            Some(crate::editor::Request::TestAdventure) => self.start_adventure_test(),
             Some(crate::editor::Request::Leave) => self.leave_editor(),
             None => {}
         }
