@@ -100,6 +100,8 @@ pub struct Session {
     tau_until: u64,
     hook_armed: bool,
     ticks: u64,
+    /// Aktuelle Lage der NPCs (Laufweg), Id → Position.
+    npc_pos: BTreeMap<String, Vec2>,
     pending: Vec<SessionEvent>,
     pub dead: bool,
 }
@@ -148,6 +150,7 @@ impl Session {
             tau_until: 0,
             hook_armed: true,
             ticks: 0,
+            npc_pos: BTreeMap::new(),
             pending: Vec::new(),
             dead: false,
         }
@@ -378,6 +381,11 @@ impl Session {
             self.hook_armed = true;
         }
 
+        self.npc_pos = self
+            .npcs(world)
+            .into_iter()
+            .map(|n| (n.id, n.pos))
+            .collect();
         out.extend(self.touch(world, pos));
         out.extend(self.areas(pos));
         out.extend(self.barks(pos));
@@ -553,7 +561,7 @@ impl Session {
                 };
                 let center = match o.kind.area() {
                     Some(s) if !matches!(o.kind, ObjectKind::Door { .. }) => o.pos + s * 0.5,
-                    _ => o.pos,
+                    _ => self.npc_pos.get(&o.id).copied().unwrap_or(o.pos),
                 };
                 let d = center.distance(pos);
                 let reach = o
@@ -692,6 +700,16 @@ impl Session {
                 _ => None,
             })
             .collect()
+    }
+
+    /// Wo der Hinweis zur Aktionstaste steht: über NPCs (auf ihrem Laufweg) und Objekten,
+    /// bei Bereichen über der Mitte der Oberkante.
+    pub fn anchor(&self, id: &str) -> Option<Vec2> {
+        let o = self.map.adventure.object(id)?;
+        Some(match o.kind.area() {
+            Some(size) => o.pos + Vec2::new(size.x / 2.0, 0.0),
+            None => self.npc_pos.get(id).copied().unwrap_or(o.pos),
+        })
     }
 
     /// Ist die Truhe schon offen, der Schalter umgelegt, das Sammelstück gefunden …?

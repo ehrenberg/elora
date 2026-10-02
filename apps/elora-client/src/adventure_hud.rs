@@ -213,7 +213,7 @@ fn tone_color(t: Option<Tone>) -> Color {
 }
 
 /// Farbe des Namensschilds je Figur (aus den Entwürfen).
-fn name_color(speaker: &str) -> Color {
+pub fn name_color(speaker: &str) -> Color {
     match speaker {
         "oma" => Color::hex(0xa77be0),
         "klonk" => Color::hex(0xa8744a),
@@ -379,6 +379,29 @@ pub fn prompt(ui: &mut Ui<'_>, key: &str, text: &str, p: Vec2) {
         12.0,
         WHITE,
         Align::Left,
+    );
+}
+
+/// Namensschild über einer Figur (beim Herantreten, zusätzlich zum Hinweis).
+pub fn name_tag(ui: &mut Ui<'_>, name: &str, speaker: &str, p: Vec2) {
+    let s = ui.s;
+    let w = ui.text_width(name, 11.0) + 22.0 * s;
+    let r = Rect::new(p.x - w / 2.0, p.y - 22.0 * s, w, 20.0 * s);
+    let edge = 1.5 * s;
+    ui.batch.fill_rounded_rect(
+        r.min - Vec2::new(edge, edge),
+        r.max + Vec2::new(edge, edge),
+        10.0 * s + edge,
+        ui::OUTLINE,
+    );
+    ui.batch
+        .fill_rounded_rect(r.min, r.max, 10.0 * s, name_color(speaker));
+    ui.label(
+        name,
+        r.center(),
+        11.0,
+        Color::rgb(1.0, 1.0, 1.0),
+        Align::Center,
     );
 }
 

@@ -477,6 +477,17 @@ impl App {
     /// Tasten während Gespräch oder Erschöpfung: Ziffern wählen, E/Leertaste/Enter weiter.
     pub(crate) fn adventure_key(&mut self, code: winit::keyboard::KeyCode) {
         use winit::keyboard::KeyCode as K;
+        // Abenteuer-Menü, Laden, Schmiede: Tab (belegte Taste) oder Esc schließt
+        if self.adventure.as_ref().is_some_and(|a| a.menu.is_some()) {
+            let tab = self
+                .settings
+                .bindings
+                .trigger(crate::bindings::GameAction::Scoreboard);
+            if code == K::Escape || crate::bindings::Trigger::Key(code) == tab {
+                self.adventure_menu(None);
+            }
+            return;
+        }
         let digits = [
             K::Digit1,
             K::Digit2,
@@ -714,10 +725,7 @@ impl App {
                 Prompt::Enter => "adventure.prompt_enter",
                 Prompt::Rest => "adventure.prompt_rest",
             };
-            let anchor = o
-                .kind
-                .area()
-                .map_or(o.pos, |sz| o.pos + Vec2::new(sz.x / 2.0, 0.0));
+            let anchor = session.anchor(&id).unwrap_or(o.pos);
             let p = to_screen(anchor - Vec2::new(0.0, 40.0));
             let label = self
                 .settings
@@ -725,6 +733,13 @@ impl App {
                 .trigger(crate::bindings::GameAction::Interact)
                 .label(&self.lang);
             crate::adventure_hud::prompt(&mut ui, &label, self.lang.t(key), p);
+            // Name der Figur über dem Hinweis
+            if let ObjectKind::Npc { character, .. } = &o.kind
+                && let Some(c) = content.characters.get(character)
+            {
+                let above = p - Vec2::new(0.0, 34.0 * s);
+                crate::adventure_hud::name_tag(&mut ui, c.name.get(code), character, above);
+            }
         }
         // Gespräch (E-222)
         let mut chosen = None;
