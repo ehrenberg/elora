@@ -54,12 +54,20 @@ pub struct Sandbox {
     pub rules: Option<Rules>,
     /// Hinweise der Regeln (Rundenende usw.).
     pub notices: std::collections::VecDeque<ChatLine>,
+    /// Gegner aus der Karte (Training, E-293): lebende Id oder Tick der Rückkehr.
+    trainees: Vec<(Option<u32>, u64)>,
+    trainee_tick: u64,
 }
+
+/// Besiegte Gegner im Training kehren nach so vielen Ticks zurück (5 s).
+const TRAINEE_RESPAWN: u64 = 5 * TICKS_PER_SECOND as u64;
 
 impl Sandbox {
     pub fn load(map_path: &Path, tuning: Tuning) -> anyhow::Result<Self> {
         let map = load_map(map_path)?;
-        let (world, player) = fresh_world(&map, tuning);
+        let (mut world, player) = fresh_world(&map, tuning);
+        // Training: alle Fähigkeiten an (E-293), im Panel abschaltbar
+        world.set_abilities(player, elora_sim::Abilities::ALL);
         let watcher = MapWatcher::new(map_path)
             .inspect_err(|e| tracing::warn!("Hot-Reload nicht verfügbar: {e:#}"))
             .ok();
@@ -78,9 +86,48 @@ impl Sandbox {
             prev_creatures: std::collections::HashMap::new(),
             rules: None,
             notices: std::collections::VecDeque::new(),
+            trainees: Vec::new(),
+            trainee_tick: 0,
         };
         s.sync_prev();
         Ok(s)
+    }
+
+    /// Gegner-Objekte der Karte setzen und besiegte nach [`TRAINEE_RESPAWN`] zurückholen
+    /// (nur im freien Spiel; das Abenteuer verwaltet seine Gegner selbst).
+    fn tick_trainees(&mut self) {
+        if self.world.adventure {
+            return;
+        }
+        let objects: Vec<(usize, Vec2)> = self
+            .map
+            .adventure
+            .objects
+            .iter()
+            .filter_map(|o| match &o.kind {
+                elora_map::ObjectKind::Creature { kind, .. } => {
+                    Some((self.world.creature_kind(kind)?, o.pos))
+                }
+                _ => None,
+            })
+            .collect();
+        let tick = self.world.tick;
+        // neue Welt (Karte, Modus, Neustart): von vorn
+        if tick < self.trainee_tick || self.trainees.len() != objects.len() {
+            self.trainees = vec![(None, tick); objects.len()];
+        }
+        self.trainee_tick = tick;
+        for (k, &(kind, pos)) in objects.iter().enumerate() {
+            let (id, due) = &mut self.trainees[k];
+            if let Some(i) = *id {
+                if !self.world.creatures.iter().any(|c| c.id == i) {
+                    *id = None;
+                    *due = tick + TRAINEE_RESPAWN;
+                }
+            } else if tick >= *due {
+                *id = self.world.add_creature(kind, pos);
+            }
+        }
     }
 
     /// Elora, falls sie lebt.
@@ -396,6 +443,7 @@ impl Sandbox {
             inputs[self.player] = input;
             self.world.step(&inputs);
             after(&mut self.world);
+            self.tick_trainees();
             if let Some(r) = &mut self.rules {
                 r.update(&mut self.world);
             }
@@ -550,6 +598,29 @@ impl MapWatcher {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn training_map_brings_creatures_back() {
+        let path = std::path::Path::new(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../maps/training.emap"
+        ));
+        let mut sb = Sandbox::load(path, Tuning::default()).unwrap();
+        let mut controls = Controls::default();
+        sb.advance(TICK * 2, &mut controls);
+        assert_eq!(sb.world.creatures.len(), 5, "Gegner aus der Karte");
+        assert_eq!(
+            sb.world.character(sb.player).unwrap().core.abilities,
+            elora_sim::Abilities::ALL
+        );
+        sb.world.creatures.remove(0);
+        sb.advance(TICK * 10, &mut controls);
+        assert_eq!(sb.world.creatures.len(), 4);
+        for _ in 0..TRAINEE_RESPAWN {
+            sb.advance(TICK, &mut controls);
+        }
+        assert_eq!(sb.world.creatures.len(), 5, "nach 5 s zurück");
+    }
 
     #[test]
     fn play_map_swaps_and_restores() {

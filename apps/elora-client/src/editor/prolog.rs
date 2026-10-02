@@ -23,10 +23,10 @@ use super::release::{self, Theme};
 const T: f32 = TILE_SIZE as f32;
 
 /// Zeichenraster der Karte; unten ab `floor` Boden, an den Seiten offen (E-279).
-struct Grid(Vec<Vec<char>>);
+pub(super) struct Grid(pub(super) Vec<Vec<char>>);
 
 impl Grid {
-    fn new(w: usize, h: usize, floor: usize) -> Self {
+    pub(super) fn new(w: usize, h: usize, floor: usize) -> Self {
         let mut g = vec![vec!['.'; w]; h];
         for (y, row) in g.iter_mut().enumerate() {
             for c in row.iter_mut() {
@@ -39,7 +39,7 @@ impl Grid {
     }
 
     /// Rechteck (Spalten `x`, Zeilen `y`, jeweils einschließlich) füllen.
-    fn fill(&mut self, x: (usize, usize), y: (usize, usize), c: char) {
+    pub(super) fn fill(&mut self, x: (usize, usize), y: (usize, usize), c: char) {
         for row in &mut self.0[y.0..=y.1] {
             for cell in &mut row[x.0..=x.1] {
                 *cell = c;
@@ -48,7 +48,7 @@ impl Grid {
     }
 
     /// Boden der Spalten `x0..=x1` auf Zeile `top` setzen (darüber Luft).
-    fn ground(&mut self, x0: usize, x1: usize, top: usize) {
+    pub(super) fn ground(&mut self, x0: usize, x1: usize, top: usize) {
         for (y, row) in self.0.iter_mut().enumerate() {
             for cell in &mut row[x0..=x1] {
                 *cell = if y >= top { '#' } else { '.' };
@@ -69,7 +69,7 @@ impl Grid {
 }
 
 /// Mitte über dem Boden (Oberkante von Zeile `ty`) in Spalte `tx` für ein Objekt der Höhe `h`.
-fn at(tx: usize, ty: usize, h: f32) -> Vec2 {
+pub(super) fn at(tx: usize, ty: usize, h: f32) -> Vec2 {
     Vec2::new(tx as f32 * T + T / 2.0, ty as f32 * T - h / 2.0 - 1.0)
 }
 
@@ -112,7 +112,7 @@ fn sign(dialog: &str, tx: usize, ty: usize) -> Object {
     )
 }
 
-fn creature(id: &str, kind: &str, tx: usize, ty: usize, h: f32) -> Object {
+pub(super) fn creature(id: &str, kind: &str, tx: usize, ty: usize, h: f32) -> Object {
     o(
         id,
         at(tx, ty, h),
@@ -139,7 +139,7 @@ fn plant(id: &str, tx: usize, ty: usize) -> Object {
 }
 
 /// Deko auf dem Boden (Oberkante von Zeile `ty`), Mitte in Spalte `tx` (halbe Tiles erlaubt).
-fn decor(name: &str, tx: f32, ty: usize) -> Decor {
+pub(super) fn decor(name: &str, tx: f32, ty: usize) -> Decor {
     Decor::new(
         Art::Builtin(name.into()),
         Vec2::new(tx * T + T / 2.0, ty as f32 * T),
@@ -170,7 +170,7 @@ fn envelope(map: &mut Map, name: &str, kind: EnvKind, points: &[(u32, [f32; 4], 
 }
 
 /// Kleine Bewegungen (Detail): Schmetterlinge flattern, Rauch steigt, Fahnen wehen.
-fn animate(map: &mut Map, smoke: &[Vec2]) {
+pub(super) fn animate(map: &mut Map, smoke: &[Vec2]) {
     use Curve::{Linear, Smooth};
     let flutter = envelope(
         map,
@@ -270,7 +270,7 @@ const GRASS: Theme = Theme {
     back_spacing: 1000,
 };
 
-fn finish(map: Map, theme: &Theme) -> Map {
+pub(super) fn finish(map: Map, theme: &Theme) -> Map {
     let mut editor = Editor::new(None, std::path::PathBuf::from("maps"));
     let (back, front) = (map.decor_back.clone(), map.decor_front.clone());
     editor.map = map;

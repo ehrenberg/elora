@@ -16,6 +16,8 @@ mod release;
 #[cfg(test)]
 mod release_layouts;
 pub mod tools;
+#[cfg(test)]
+mod training;
 pub mod view;
 
 use std::path::{Path, PathBuf};

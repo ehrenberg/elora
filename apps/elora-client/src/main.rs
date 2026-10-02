@@ -4,7 +4,7 @@
 //! Elora-Client: lokale Sandbox (M1/M2) oder online mit einem Server (M3).
 //!
 //! Aufruf: `elora [karte.emap] [--mode dm|tdm|ctf|lms|lts] [--instagib] [--connect adresse:port]`
-//! (Standardkarte: `maps/sandbox.emap`)
+//! (Standardkarte: `maps/training.emap`)
 
 mod adventure_hud;
 mod adventure_menu;
@@ -70,7 +70,7 @@ use sandbox::Sandbox;
 use settings::Settings;
 use tuning_file::{TUNING_FILE, TuningFile};
 
-const DEFAULT_MAP: &str = "maps/sandbox.emap";
+const DEFAULT_MAP: &str = "maps/training.emap";
 
 /// Tuning- und Server-Schlüssel-Dateien im Einstellungsordner (M8.2).
 fn tuning_path() -> PathBuf {
