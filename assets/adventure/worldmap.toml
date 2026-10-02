@@ -1,0 +1,43 @@
+# Weltkarte des Taulands (E-264, Weltbuch §2). pos: Lage 0..1; maps: Kartennamen beginnen so.
+
+[[area]]
+id = "tauwinkel"
+name = { de = "Tauwinkel", en = "Tauwinkel" }
+pos = [0.5, 0.56]
+color = "#f2c14e"
+maps = "tauwinkel"
+
+[[area]]
+id = "bluetenwiesen"
+name = { de = "Blütenwiesen", en = "Blütenwiesen" }
+pos = [0.24, 0.72]
+color = "#ef7fb0"
+maps = "wiese-"
+
+[[area]]
+id = "murmelwald"
+name = { de = "Murmelwald", en = "Murmelwald" }
+pos = [0.18, 0.32]
+color = "#6cbf4a"
+maps = "wald-"
+
+[[area]]
+id = "glutsandwueste"
+name = { de = "Glutsandwüste", en = "Glutsandwüste" }
+pos = [0.5, 0.18]
+color = "#e0b85a"
+maps = "wueste-"
+
+[[area]]
+id = "frostspitzen"
+name = { de = "Frostspitzen", en = "Frostspitzen" }
+pos = [0.82, 0.3]
+color = "#8fd0f0"
+maps = "frost-"
+
+[[area]]
+id = "sternschlucht"
+name = { de = "Sternschlucht", en = "Sternschlucht" }
+pos = [0.8, 0.74]
+color = "#a77be0"
+maps = "schlucht-"

@@ -7,6 +7,7 @@
 //! (Standardkarte: `maps/sandbox.emap`)
 
 mod adventure_hud;
+mod adventure_menu;
 mod app_adventure;
 mod app_editor;
 mod app_menu;
@@ -798,11 +799,8 @@ impl App {
         let Some(aspect) = self.gfx.as_ref().map(|g| g.renderer.aspect()) else {
             return;
         };
-        let camera = Camera::new(
-            scene.camera + self.effects.camera_offset(),
-            &self.view,
-            aspect,
-        );
+        let center = self.adventure_camera(scene.camera, self.view.view_size(aspect), dt);
+        let camera = Camera::new(center + self.effects.camera_offset(), &self.view, aspect);
         self.build_batch(&scene, &tuning, &camera, info.tick);
         let screen = self.build_hud(&scene, &tuning, &info);
         let death_choice = if self.adventure.is_some() && !self.menu.paused {
@@ -1005,8 +1003,15 @@ impl App {
         }
         let online = self.online.is_some();
         match action {
+            // im Abenteuer öffnet Tab das Abenteuer-Menü (E-263)
+            GameAction::Scoreboard if self.adventure.is_some() => {
+                if down {
+                    self.toggle_adventure_menu();
+                }
+            }
             // Scoreboard solange gehalten (E-078)
             GameAction::Scoreboard => self.scoreboard = down,
+            GameAction::QuickHeal if down => self.quick_heal(),
             // Emote-Rad solange gehalten (E-091); beim Loslassen wählen
             GameAction::Emote => {
                 if down {

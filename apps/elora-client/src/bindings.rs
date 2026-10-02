@@ -45,13 +45,15 @@ pub enum GameAction {
     Emote,
     /// Aktionstaste: Sprechen, Öffnen, Benutzen (E-253).
     Interact,
+    /// Heiltrank trinken (E-265).
+    QuickHeal,
     Kill,
     VoteYes,
     VoteNo,
 }
 
 impl GameAction {
-    pub const ALL: [Self; 20] = [
+    pub const ALL: [Self; 21] = [
         Self::Left,
         Self::Right,
         Self::Jump,
@@ -69,6 +71,7 @@ impl GameAction {
         Self::Scoreboard,
         Self::Emote,
         Self::Interact,
+        Self::QuickHeal,
         Self::Kill,
         Self::VoteYes,
         Self::VoteNo,
@@ -94,6 +97,7 @@ impl GameAction {
             Self::Scoreboard => "scoreboard",
             Self::Emote => "emote",
             Self::Interact => "interact",
+            Self::QuickHeal => "quick_heal",
             Self::Kill => "kill",
             Self::VoteYes => "vote_yes",
             Self::VoteNo => "vote_no",
@@ -104,7 +108,7 @@ impl GameAction {
         Self::ALL.into_iter().find(|a| a.name() == name)
     }
 
-    /// Standardbelegung (E-043, E-051, E-078, E-091, E-141, E-226, E-253).
+    /// Standardbelegung (E-043, E-051, E-078, E-091, E-141, E-226, E-253, E-265).
     fn default_trigger(self) -> Trigger {
         use KeyCode as K;
         match self {
@@ -125,6 +129,7 @@ impl GameAction {
             Self::Scoreboard => Trigger::Key(K::Tab),
             Self::Emote => Trigger::Key(K::ControlLeft),
             Self::Interact => Trigger::Key(K::KeyE),
+            Self::QuickHeal => Trigger::Key(K::KeyQ),
             Self::Kill => Trigger::Key(K::KeyK),
             Self::VoteYes => Trigger::Key(K::F3),
             Self::VoteNo => Trigger::Key(K::F4),

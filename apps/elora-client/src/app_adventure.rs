@@ -25,6 +25,12 @@ use crate::{App, Screen};
 
 /// Wie lange ein Zuruf über der Figur steht.
 const BARK_SECS: f32 = 3.5;
+/// Vorausschau der Kamera in Laufrichtung (E-266): höchstens 3 Tiles, je Einheit/Tick Tempo.
+const LOOKAHEAD_MAX: f32 = 96.0;
+const LOOKAHEAD_PER_SPEED: f32 = 9.0;
+/// Nachziehen je Sekunde (Vorausschau, Übergang in Kamera-Zonen).
+const LOOKAHEAD_RATE: f32 = 2.5;
+const ZONE_RATE: f32 = 3.0;
 
 /// Übersicht eines Platzes für das Menü.
 #[derive(Debug, Clone, PartialEq)]
@@ -52,6 +58,14 @@ pub struct AdventureMode {
     interact: bool,
     /// Trainingskarte vor dem Abenteuer.
     previous: Option<Map>,
+    /// Vorausschau der Kamera (Einheiten) und Anteil der Kamera-Zone (0..1, weicher Übergang).
+    look: f32,
+    zone_mix: f32,
+    zone_center: Vec2,
+    /// Abenteuer-Menü offen (Tab, Laden, Schmiede, E-263).
+    pub menu: Option<crate::adventure_menu::MenuState>,
+    /// Auswahl im Menü bleibt zwischen dem Öffnen erhalten.
+    menu_memory: crate::adventure_menu::MenuState,
 }
 
 pub fn saves_dir() -> PathBuf {
@@ -123,6 +137,11 @@ impl App {
             barks: Vec::new(),
             interact: false,
             previous: None,
+            look: 0.0,
+            zone_mix: 0.0,
+            zone_center: Vec2::ZERO,
+            menu: None,
+            menu_memory: crate::adventure_menu::MenuState::default(),
         });
         if self.travel(&loc.map, &loc.spawn) {
             if new {
@@ -188,7 +207,100 @@ impl App {
     pub(crate) fn adventure_halted(&self) -> bool {
         self.adventure
             .as_ref()
-            .is_some_and(|a| a.conversation.is_some() || a.dead.is_some())
+            .is_some_and(|a| a.conversation.is_some() || a.dead.is_some() || a.menu.is_some())
+    }
+
+    /// Abenteuer-Menü öffnen (`panel`) oder schließen (`None`).
+    pub(crate) fn adventure_menu(&mut self, panel: Option<crate::adventure_menu::Panel>) {
+        let Some(a) = &mut self.adventure else { return };
+        if let Some(p) = panel {
+            let mut st = a.menu.take().unwrap_or_else(|| a.menu_memory.clone());
+            st.panel = p;
+            st.refusal = None;
+            a.menu = Some(st);
+            self.controls.release_all();
+            self.set_cursor_grab(false);
+        } else {
+            if let Some(st) = a.menu.take() {
+                // Laden und Schmiede merken sich nicht als letzte Seite
+                if !matches!(
+                    st.panel,
+                    crate::adventure_menu::Panel::Shop(_) | crate::adventure_menu::Panel::Forge
+                ) {
+                    a.menu_memory = st;
+                }
+            }
+            self.after_dialog();
+        }
+    }
+
+    /// Tab: Abenteuer-Menü auf/zu (E-263).
+    pub(crate) fn toggle_adventure_menu(&mut self) {
+        let Some(a) = &self.adventure else { return };
+        if a.conversation.is_some() || a.dead.is_some() {
+            return;
+        }
+        if a.menu.is_some() {
+            self.adventure_menu(None);
+        } else {
+            let p = a.menu_memory.panel.clone();
+            self.adventure_menu(Some(p));
+        }
+    }
+
+    /// Q: Heiltrank trinken (E-265).
+    pub(crate) fn quick_heal(&mut self) {
+        let Some(a) = &mut self.adventure else { return };
+        if a.session.save.count("heiltrank") == 0 {
+            return;
+        }
+        let full = self
+            .sandbox
+            .world
+            .character(a.session.player)
+            .is_none_or(|c| c.health >= a.session.save.max_health(&a.session.content));
+        if !full {
+            let _ = a.session.use_item(&mut self.sandbox.world, "heiltrank");
+        }
+    }
+
+    /// Befehl aus dem Abenteuer-Menü ausführen.
+    fn adventure_command(&mut self, cmd: crate::adventure_menu::Command) {
+        use crate::adventure_menu::Command as C;
+        let Some(a) = &mut self.adventure else { return };
+        let world = &mut self.sandbox.world;
+        let s = &mut a.session;
+        let c = s.content.clone();
+        let result = match cmd {
+            C::Close => {
+                self.adventure_menu(None);
+                return;
+            }
+            C::Equip(id) => s.save.equip(&c, &id),
+            C::Unequip(slot) => {
+                s.save.unequip(&c, slot);
+                Ok(())
+            }
+            C::Use(id) => s.use_item(world, &id),
+            C::Learn(id) => s.save.learn(&c, &id).map(|_| ()),
+            C::Buy(shop, id) => s.save.buy(&c, &shop, &id),
+            C::Sell(id) => s.save.sell(&c, &id).map(|_| ()),
+            C::Upgrade(w) => s.save.upgrade(&c, w).map(|_| ()),
+        };
+        if let Some(m) = &mut a.menu {
+            m.refusal = result.err();
+        }
+        // Werte aus Baum, Ausrüstung und Ausbau sofort in die Welt (Tuning, Leben, Rüstung)
+        let base = elora_sim::Tuning::default();
+        world.tuning = s.save.tuning(&c, &base);
+        let max = s.save.max_health(&c);
+        let armor = s.save.stats(&c).armor.max(0);
+        if let Some(ch) = world.character_mut(s.player) {
+            ch.health = ch.health.min(max);
+            // neue Rüstung füllt sich erst am Quellstein (P-23)
+            ch.armor = ch.armor.min(armor);
+        }
+        s.save.health = s.save.health.min(max);
     }
 
     /// Aktionstaste im Spiel.
@@ -303,8 +415,20 @@ impl App {
                     self.sandbox.map.tiles.clone_from(&a.session.map.tiles);
                 }
             }
-            // Laden, Schmiede und Baum kommen mit der Oberfläche (A1.7)
-            SessionEvent::Open(_) => {}
+            SessionEvent::Open(o) => {
+                use crate::adventure_menu::Panel;
+                use elora_adventure::script::Open;
+                let panel = match o {
+                    Open::Shop(id) => Panel::Shop(id),
+                    Open::Forge => Panel::Forge,
+                    Open::Skills => Panel::Skills,
+                };
+                // nach dem Gespräch öffnen
+                if let Some(a) = &mut self.adventure {
+                    a.conversation = None;
+                }
+                self.adventure_menu(Some(panel));
+            }
         }
     }
 
@@ -411,6 +535,64 @@ impl App {
 
     // ------------------------------------------------------------ Darstellung
 
+    /// Kameramitte im Abenteuer (E-224, E-259, E-266): `center` folgt Elora, dazu Vorausschau
+    /// in Laufrichtung; Kamera-Zonen setzen den Ausschnitt fest oder begrenzen ihn.
+    pub(crate) fn adventure_camera(&mut self, center: Vec2, view: Vec2, dt: f32) -> Vec2 {
+        use elora_map::adventure::CameraMode;
+        let Some(a) = &mut self.adventure else {
+            return center;
+        };
+        let vel = self
+            .sandbox
+            .world
+            .character(a.session.player)
+            .map_or(Vec2::ZERO, |c| c.core.vel);
+        let target = (vel.x * LOOKAHEAD_PER_SPEED).clamp(-LOOKAHEAD_MAX, LOOKAHEAD_MAX);
+        if a.conversation.is_none() {
+            a.look += (target - a.look) * (dt * LOOKAHEAD_RATE).min(1.0);
+        }
+        let free = center + Vec2::new(a.look, 0.0);
+        let zone = a
+            .session
+            .map
+            .adventure
+            .objects
+            .iter()
+            .find_map(|o| match &o.kind {
+                ObjectKind::Camera { size, mode }
+                    if center.x >= o.pos.x
+                        && center.y >= o.pos.y
+                        && center.x <= o.pos.x + size.x
+                        && center.y <= o.pos.y + size.y =>
+                {
+                    Some(match mode {
+                        CameraMode::Fixed => o.pos + *size * 0.5,
+                        CameraMode::Bounds => {
+                            // Ausschnitt bleibt im Bereich; ist er kleiner als die Sicht, mittig
+                            let clamp = |v: f32, min: f32, len: f32, half: f32| {
+                                if len <= half * 2.0 {
+                                    min + len / 2.0
+                                } else {
+                                    v.clamp(min + half, min + len - half)
+                                }
+                            };
+                            Vec2::new(
+                                clamp(free.x, o.pos.x, size.x, view.x / 2.0),
+                                clamp(free.y, o.pos.y, size.y, view.y / 2.0),
+                            )
+                        }
+                    })
+                }
+                _ => None,
+            });
+        let goal = if zone.is_some() { 1.0 } else { 0.0 };
+        if let Some(z) = zone {
+            a.zone_center = z;
+        }
+        a.zone_mix += (goal - a.zone_mix) * (dt * ZONE_RATE).min(1.0);
+        free.lerp(a.zone_center, a.zone_mix.clamp(0.0, 1.0))
+    }
+
     /// NPCs und Objekte in die Szene.
     pub(crate) fn adventure_scene(&self, scene: &mut Scene) {
         let Some(a) = &self.adventure else { return };
@@ -476,7 +658,7 @@ impl App {
         };
         ui.begin(dt);
         let content = &session.content;
-        if a.conversation.is_none() && a.dead.is_none() {
+        if a.conversation.is_none() && a.dead.is_none() && a.menu.is_none() {
             crate::adventure_hud::status(
                 &mut ui,
                 &self.creature_art,
@@ -551,6 +733,27 @@ impl App {
                 screen,
             );
         }
+        // Abenteuer-Menü
+        let mut menu_cmd = None;
+        if let Some(st) = &mut a.menu {
+            let tint = crate::skins::tint(
+                self.net.skin,
+                elora_sim::Team::None,
+                false,
+                crate::draw::team_color,
+            );
+            let data = crate::adventure_menu::MenuData {
+                lang: &self.lang,
+                code,
+                content: &session.content,
+                save: &session.save,
+                art: &self.creature_art,
+                figure: &self.figure_art,
+                tint: &tint,
+                screen,
+            };
+            menu_cmd = crate::adventure_menu::draw(&mut ui, &data, st);
+        }
         // Erschöpft (E-261)
         let mut death = None;
         if let Some(lost) = a.dead {
@@ -604,6 +807,9 @@ impl App {
         if let Some(k) = chosen {
             self.dialog_choose(k);
             self.after_dialog();
+        }
+        if let Some(c) = menu_cmd {
+            self.adventure_command(c);
         }
         death
     }

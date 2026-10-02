@@ -244,6 +244,8 @@ impl Session {
             map: name.to_owned(),
             spawn: spawn.to_owned(),
         };
+        // für die Weltkarte (E-264)
+        self.save.set_flag(&format!("besucht:{name}"), 1);
         let reached = self.save.on_reach(&self.content, name, None);
         self.push_outcomes(reached);
         world

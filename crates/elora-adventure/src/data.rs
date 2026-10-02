@@ -230,6 +230,19 @@ pub struct Progression {
     pub start_spawn: String,
 }
 
+/// Gebiet auf der Weltkarte (E-264).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Area {
+    pub id: String,
+    pub name: Text,
+    /// Lage auf der Karte (0..1, links oben = 0, 0).
+    pub pos: [f32; 2],
+    /// Farbe als `#rrggbb`.
+    pub color: String,
+    /// Karten dieses Gebiets beginnen so (`wiese-` → `wiese-1`, `wiese-2` …).
+    pub maps: String,
+}
+
 /// Fehler in den Inhaltsdateien.
 #[derive(Debug, thiserror::Error)]
 pub enum ContentError {
@@ -254,6 +267,10 @@ struct UpgradesFile {
 #[derive(Debug, Deserialize)]
 struct ShopsFile {
     shop: Vec<Shop>,
+}
+#[derive(Debug, Deserialize)]
+struct WorldMapFile {
+    area: Vec<Area>,
 }
 #[derive(Debug, Deserialize)]
 struct QuestsFile {
@@ -285,6 +302,7 @@ pub struct Sources<'a> {
     pub characters: &'a str,
     /// Gespräche: Id und Inhalt.
     pub dialogs: &'a [(&'a str, &'a str)],
+    pub world_map: &'a str,
 }
 
 impl Sources<'static> {
@@ -300,6 +318,7 @@ impl Sources<'static> {
             quests: include_str!("../../../assets/adventure/quests.toml"),
             characters: include_str!("../../../assets/adventure/characters.toml"),
             dialogs: DIALOG_FILES,
+            world_map: include_str!("../../../assets/adventure/worldmap.toml"),
         }
     }
 }
@@ -316,6 +335,8 @@ pub struct Content {
     pub quests: Vec<QuestDef>,
     pub characters: BTreeMap<String, CharacterDef>,
     pub dialogs: BTreeMap<String, Dialog>,
+    /// Gebiete der Weltkarte (E-264).
+    pub areas: Vec<Area>,
 }
 
 /// Id der Währung.
@@ -354,6 +375,7 @@ impl Content {
             }
         })?;
         let quests: QuestsFile = parse("quests.toml", src.quests)?;
+        let world_map: WorldMapFile = parse("worldmap.toml", src.world_map)?;
         let characters: CharactersFile = parse("characters.toml", src.characters)?;
         let mut dialogs = BTreeMap::new();
         for &(id, text) in src.dialogs {
@@ -385,6 +407,7 @@ impl Content {
                 .map(|c| (c.id.clone(), c))
                 .collect(),
             dialogs,
+            areas: world_map.area,
         };
         c.validate()?;
         crate::check::story(&c).map_err(ContentError::Invalid)?;
@@ -465,6 +488,11 @@ impl Content {
             }
         }
         Ok(())
+    }
+
+    /// Gebiet, zu dem eine Karte gehört.
+    pub fn area_of(&self, map: &str) -> Option<&Area> {
+        self.areas.iter().find(|a| map.starts_with(&a.maps))
     }
 
     pub fn quest(&self, id: &str) -> Option<&QuestDef> {
