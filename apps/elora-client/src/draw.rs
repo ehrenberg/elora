@@ -181,20 +181,8 @@ pub fn scene(
     }
 }
 
-/// Farben der NPCs (Körper, Füße) aus den Entwürfen (E-225); Zubehör kommt mit A1.7.
-fn npc_colors(character: &str) -> (Color, Color, f32) {
-    match character {
-        "oma" => (Color::hex(0xb9a3e3), Color::hex(0x8a6fb8), 0.95),
-        "klonk" => (Color::hex(0xa8744a), Color::hex(0x6b4a32), 1.2),
-        "lotte" => (Color::hex(0x8fd0f0), Color::hex(0x5aaee8), 1.0),
-        "tueftel" => (Color::hex(0x7fd99a), Color::hex(0x3fc1b0), 1.0),
-        "pip" => (Color::hex(0xf28c3a), Color::hex(0xd94a4a), 0.7),
-        _ => (Color::hex(0x9aa4ae), Color::hex(0x5a5a5a), 1.0),
-    }
-}
-
-/// Abenteuer-Objekte (A1.6) – schlichte Formen bis zu den eigenen Grafiken.
-#[allow(clippy::too_many_lines)]
+/// Abenteuer-Objekte (A1.6, Grafik A1.7). `pos` ist die Mitte; der Boden liegt bei der
+/// halben Höhe des jeweiligen Objekts darunter (wie auf den Karten gesetzt).
 fn draw_objects(
     batch: &mut ShapeBatch,
     scene: &Scene,
@@ -203,118 +191,34 @@ fn draw_objects(
     time: f32,
 ) {
     use elora_client::scene::ObjectLook;
-    use elora_render::Tint;
-    let wood = Color::hex(0xa8744a);
-    let dark_wood = Color::hex(0x8a5a36);
-    let gold = Color::hex(0xe0b85a);
-    let stone = Color::hex(0xb8bfc6);
-    let spring = Color::hex(0x5ad0e8);
+    let ground = |p: Vec2, h: f32| p + Vec2::new(0.0, h / 2.0 + 1.0);
     for o in &scene.objects {
         let p = o.pos;
         match &o.look {
             ObjectLook::Npc { character, facing } => {
-                let (body, feet, scale) = npc_colors(character);
-                let mut colors = vec![OUTLINE; 3];
-                colors[crate::figure::KEY_EYES] = OUTLINE;
-                colors[crate::figure::KEY_BODY] = body;
-                colors[crate::figure::KEY_FEET] = feet;
-                art.draw_pose(
-                    batch,
-                    p + Vec2::new(0.0, PHYS_SIZE / 2.0),
-                    47.0 * scale,
-                    f32::from(*facing),
-                    &Tint::new(colors),
-                );
+                let g = ground(p, PHYS_SIZE);
+                if !creatures.draw_character(batch, character, g, *facing, 1.0) {
+                    // Figur ohne eigene Grafik: graue Elora
+                    let tint = crate::skins::tint(
+                        elora_protocol::Skin::default(),
+                        Team::None,
+                        true,
+                        team_color,
+                    );
+                    art.draw_pose(batch, g, 47.0, f32::from(*facing), &tint);
+                }
             }
             ObjectLook::Chest { open } => {
-                let base = p + Vec2::new(-16.0, -6.0);
-                batch.fill_rect(
-                    base - Vec2::new(1.5, 1.5),
-                    base + Vec2::new(33.5, 20.5),
-                    OUTLINE,
-                );
-                batch.fill_rect(base, base + Vec2::new(32.0, 19.0), wood);
-                let lid = if *open {
-                    base + Vec2::new(0.0, -14.0)
-                } else {
-                    base + Vec2::new(0.0, -8.0)
-                };
-                batch.fill_rect(
-                    lid - Vec2::new(1.5, 1.5),
-                    lid + Vec2::new(33.5, 9.5),
-                    OUTLINE,
-                );
-                batch.fill_rect(lid, lid + Vec2::new(32.0, 8.0), dark_wood);
-                if !*open {
-                    batch.fill_rect(
-                        base + Vec2::new(13.0, -3.0),
-                        base + Vec2::new(19.0, 4.0),
-                        gold,
-                    );
-                }
+                creatures.draw_object(batch, "truhe", ground(p, 26.0), *open);
             }
             ObjectLook::Switch { on } => {
-                let foot = p + Vec2::new(0.0, 14.0);
-                let dir = if *on { 0.5_f32 } else { -0.5 };
-                let tip = foot + Vec2::new(dir.sin() * 22.0, -dir.cos() * 22.0);
-                batch.stroke_line(foot, tip, 5.0, OUTLINE);
-                batch.stroke_line(foot, tip, 3.0, wood);
-                batch.fill_circle(tip, 5.0, OUTLINE);
-                batch.fill_circle(
-                    tip,
-                    3.8,
-                    if *on {
-                        Color::hex(0x6cbf4a)
-                    } else {
-                        Color::hex(0xe8685a)
-                    },
-                );
-                batch.fill_rect(
-                    foot + Vec2::new(-12.0, -4.0),
-                    foot + Vec2::new(12.0, 2.0),
-                    OUTLINE,
-                );
-                batch.fill_rect(
-                    foot + Vec2::new(-11.0, -3.0),
-                    foot + Vec2::new(11.0, 1.0),
-                    Color::hex(0x9aa4ae),
-                );
+                creatures.draw_object(batch, "schalter", ground(p, 30.0), *on);
             }
-            ObjectLook::SavePoint => {
-                let glow = 0.25 + 0.1 * (time * 2.0).sin();
-                batch.fill_circle(p, 28.0, Color::rgba(0.5, 0.89, 0.94, glow));
-                batch.fill_rect(
-                    p + Vec2::new(-13.0, -18.0),
-                    p + Vec2::new(13.0, 20.0),
-                    OUTLINE,
-                );
-                batch.fill_rect(
-                    p + Vec2::new(-11.5, -16.5),
-                    p + Vec2::new(11.5, 18.5),
-                    stone,
-                );
-                batch.fill_circle(p + Vec2::new(0.0, -2.0), 6.0, OUTLINE);
-                batch.fill_circle(p + Vec2::new(0.0, -2.0), 4.6, spring);
+            ObjectLook::SavePoint { active } => {
+                creatures.draw_object(batch, "quellstein", ground(p, 40.0), *active);
             }
             ObjectLook::HealPlant { used } => {
-                let foot = p + Vec2::new(0.0, 8.0);
-                let blossom = if *used {
-                    Color::hex(0xb8b0a8)
-                } else {
-                    Color::hex(0xef7fb0)
-                };
-                let h = if *used { 8.0 } else { 14.0 };
-                batch.stroke_line(foot, foot - Vec2::new(0.0, h), 2.5, Color::hex(0x4f9a3a));
-                for k in 0..5 {
-                    #[allow(clippy::cast_precision_loss)]
-                    let a = k as f32 * std::f32::consts::TAU / 5.0;
-                    batch.fill_circle(
-                        foot - Vec2::new(-a.cos() * 4.0, h + a.sin() * 4.0),
-                        3.5,
-                        blossom,
-                    );
-                }
-                batch.fill_circle(foot - Vec2::new(0.0, h), 2.5, gold);
+                creatures.draw_object(batch, "heilpflanze", ground(p, 16.0), *used);
             }
             ObjectLook::Collectible { item } => creatures.draw_loot(batch, item, p, time),
         }

@@ -429,7 +429,9 @@ impl App {
             let look = match &o.kind {
                 ObjectKind::Chest { .. } => ObjectLook::Chest { open: done },
                 ObjectKind::Switch { .. } => ObjectLook::Switch { on: done },
-                ObjectKind::SavePoint => ObjectLook::SavePoint,
+                ObjectKind::SavePoint => ObjectLook::SavePoint {
+                    active: s.save.location.map == s.map_name && s.save.location.spawn == o.id,
+                },
                 ObjectKind::HealPlant { .. } => ObjectLook::HealPlant { used: done },
                 ObjectKind::Collectible { item } if !done => {
                     ObjectLook::Collectible { item: item.clone() }

@@ -49,12 +49,26 @@ pub struct SceneFlag {
 /// Aussehen eines Abenteuer-Objekts (A1.6).
 #[derive(Debug, Clone, PartialEq)]
 pub enum ObjectLook {
-    Npc { character: String, facing: i8 },
-    Chest { open: bool },
-    Switch { on: bool },
-    SavePoint,
-    HealPlant { used: bool },
-    Collectible { item: String },
+    Npc {
+        character: String,
+        facing: i8,
+    },
+    Chest {
+        open: bool,
+    },
+    Switch {
+        on: bool,
+    },
+    /// `active`: hier wurde zuletzt gerastet.
+    SavePoint {
+        active: bool,
+    },
+    HealPlant {
+        used: bool,
+    },
+    Collectible {
+        item: String,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq)]

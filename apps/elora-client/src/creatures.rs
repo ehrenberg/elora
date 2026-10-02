@@ -30,7 +30,43 @@ pub struct CreatureArt {
     looks: HashMap<&'static str, Look>,
     glanztropfen: Mesh,
     item: Mesh,
+    /// NPCs (A1.7), Ursprung am Boden.
+    characters: HashMap<&'static str, Mesh>,
+    /// Objekte mit zwei Zuständen (aus, an), Ursprung am Boden.
+    objects: HashMap<&'static str, (Mesh, Mesh)>,
 }
+
+macro_rules! adventure_svgs {
+    ($dir:literal: $($name:literal),* $(,)?) => {
+        &[$(($name, include_bytes!(concat!("../../../assets/adventure/", $dir, "/", $name, ".svg")))),*]
+    };
+}
+
+const CHARACTER_FILES: &[(&str, &[u8])] =
+    adventure_svgs!("characters": "oma", "klonk", "lotte", "tueftel", "pip");
+/// Objekt und die Namen seiner beiden Teile (aus, an).
+const OBJECT_FILES: &[(&str, &[u8], [&str; 2])] = &[
+    (
+        "truhe",
+        include_bytes!("../../../assets/adventure/objects/truhe.svg"),
+        ["closed", "open"],
+    ),
+    (
+        "quellstein",
+        include_bytes!("../../../assets/adventure/objects/quellstein.svg"),
+        ["off", "on"],
+    ),
+    (
+        "schalter",
+        include_bytes!("../../../assets/adventure/objects/schalter.svg"),
+        ["off", "on"],
+    ),
+    (
+        "heilpflanze",
+        include_bytes!("../../../assets/adventure/objects/heilpflanze.svg"),
+        ["fresh", "used"],
+    ),
+];
 
 fn load(data: &[u8], file: &str) -> SvgAsset {
     SvgAsset::load(data, 0.08).unwrap_or_else(|e| panic!("assets/adventure/{file}: {e}"))
@@ -72,8 +108,33 @@ impl CreatureArt {
                 .cloned()
                 .unwrap_or_else(|| panic!("{file} ist leer"))
         };
+        let characters = CHARACTER_FILES
+            .iter()
+            .map(|&(name, data)| {
+                let a = load(data, &format!("characters/{name}.svg"));
+                let m = a
+                    .part("figure")
+                    .cloned()
+                    .unwrap_or_else(|| panic!("{name}.svg: Teil `figure` fehlt"));
+                (name, m)
+            })
+            .collect();
+        let objects = OBJECT_FILES
+            .iter()
+            .map(|&(name, data, [off, on])| {
+                let a = load(data, &format!("objects/{name}.svg"));
+                let part = |p: &str| {
+                    a.part(p)
+                        .cloned()
+                        .unwrap_or_else(|| panic!("{name}.svg: Teil `{p}` fehlt"))
+                };
+                (name, (part(off), part(on)))
+            })
+            .collect();
         Self {
             looks,
+            characters,
+            objects,
             glanztropfen: whole(
                 include_bytes!("../../../assets/adventure/items/glanztropfen.svg"),
                 "items/glanztropfen.svg",
@@ -127,6 +188,36 @@ impl CreatureArt {
         }
     }
 
+    /// NPC am Boden `ground`, Blick `facing`; `scale` 1 = Spielgröße. `false`, wenn die
+    /// Figur keine eigene Grafik hat.
+    pub fn draw_character(
+        &self,
+        batch: &mut ShapeBatch,
+        id: &str,
+        ground: Vec2,
+        facing: i8,
+        scale: f32,
+    ) -> bool {
+        let Some(m) = self.characters.get(id) else {
+            return false;
+        };
+        let flip = if facing < 0 { -1.0 } else { 1.0 };
+        let t = Affine::translate(ground).then(Affine::scale(flip * scale, scale));
+        batch.draw_mesh(m, &t, &Tint::default());
+        true
+    }
+
+    /// Objekt `name` (`truhe`, `quellstein`, `schalter`, `heilpflanze`) am Boden `ground`.
+    pub fn draw_object(&self, batch: &mut ShapeBatch, name: &str, ground: Vec2, on: bool) {
+        if let Some((off, on_mesh)) = self.objects.get(name) {
+            batch.draw_mesh(
+                if on { on_mesh } else { off },
+                &Affine::translate(ground),
+                &Tint::default(),
+            );
+        }
+    }
+
     pub fn draw_shot(batch: &mut ShapeBatch, pos: Vec2) {
         batch.fill_circle(pos, 11.0, POLLEN_GLOW);
         batch.fill_circle(pos, 7.5, OUTLINE);
@@ -164,6 +255,13 @@ mod tests {
             );
         }
         assert!(art.looks["grashuepfer"].air.is_some());
+        for c in elora_adventure::Content::builtin().characters.keys() {
+            assert!(
+                art.characters.contains_key(c.as_str()),
+                "Grafik für NPC {c} fehlt"
+            );
+        }
+        assert_eq!(art.objects.len(), 4);
     }
 
     #[test]
@@ -229,7 +327,40 @@ mod tests {
             Vec2::new(x + 180.0, ground - 8.0),
             0.0,
         );
-        let svg = batch.debug_svg(Vec2::ZERO, Vec2::new(900.0, 260.0), Color::hex(0xa9cde8));
+        // NPCs und Objekte (A1.7) auf einer zweiten Bodenlinie
+        let ground2 = 420.0;
+        batch.fill_rect(
+            Vec2::new(0.0, ground2),
+            Vec2::new(900.0, ground2 + 40.0),
+            Color::hex(0x8fbf7a),
+        );
+        for (i, c) in ["oma", "klonk", "lotte", "tueftel", "pip"]
+            .iter()
+            .enumerate()
+        {
+            #[allow(clippy::cast_precision_loss)]
+            let x = 60.0 + i as f32 * 70.0;
+            art.draw_character(&mut batch, c, Vec2::new(x, ground2), 1, 1.0);
+        }
+        batch.fill_circle(Vec2::new(420.0, ground2 - 14.0), 14.0, Color::hex(0xf2c14e));
+        for (i, (name, on)) in [
+            ("truhe", false),
+            ("truhe", true),
+            ("quellstein", false),
+            ("quellstein", true),
+            ("schalter", false),
+            ("schalter", true),
+            ("heilpflanze", false),
+            ("heilpflanze", true),
+        ]
+        .iter()
+        .enumerate()
+        {
+            #[allow(clippy::cast_precision_loss)]
+            let x = 480.0 + i as f32 * 52.0;
+            art.draw_object(&mut batch, name, Vec2::new(x, ground2), *on);
+        }
+        let svg = batch.debug_svg(Vec2::ZERO, Vec2::new(900.0, 480.0), Color::hex(0xa9cde8));
         std::fs::write(
             concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/creatures.svg"),
             svg,

@@ -71,6 +71,10 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-260 | 2026-10-02 | Abenteuer verlassen (A1.6) | Fortschritt **gilt bis zum letzten Speichern** (Kartenwechsel, Quellstein); das Pause-Menü warnt | Entscheidung Projektinhaber |
 | E-261 | 2026-10-02 | Tod im Abenteuer (A1.6) | **Eigener Bildschirm mit Auswahl:** „Weiter am Quellstein“ oder „Hauptmenü“ (Verlust nach E-220) | Entscheidung Projektinhaber |
 | E-262 | 2026-10-02 | Ablage der Abenteuer-Karten | **Eigener Ordner `maps/abenteuer/`**, nicht in Server- und Abstimmungslisten | Entscheidung Projektinhaber |
+| E-263 | 2026-10-02 | Abenteuer-Menü (A1.7) | Öffnet mit **Tab** (im Abenteuer gibt es kein Scoreboard), das Spiel steht solange still | Entscheidung Projektinhaber |
+| E-264 | 2026-10-02 | Reiter „Karte“ | **Weltkarte des Taulands:** Tauwinkel und die fünf Gebiete, freigeschaltete farbig, Eloras Ort, Abschnitte des aktuellen Gebiets | Entscheidung Projektinhaber |
+| E-265 | 2026-10-02 | Heiltränke | **Schnelltaste Q** trinkt einen Heiltrank, andere Verbrauchsgegenstände über das Inventar | Entscheidung Projektinhaber |
+| E-266 | 2026-10-02 | Vorausschauende Kamera (E-224) | **Leicht nach Laufrichtung** (bis etwa 3 Tiles, sanft), dazu Mausblick und Kamera-Zonen | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 
