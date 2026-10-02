@@ -225,6 +225,17 @@ impl CreatureArt {
     }
 
     /// Beute: Glanztropfen schweben leicht, andere Gegenstände als Glitzerstein.
+    /// Symbol eines Gegenstands (HUD, Menüs), Mitte `pos`, `scale` 1 = Spielgröße.
+    pub fn draw_loot_icon(&self, batch: &mut ShapeBatch, item: &str, pos: Vec2, scale: f32) {
+        let mesh = if item == "glanztropfen" {
+            &self.glanztropfen
+        } else {
+            &self.item
+        };
+        let t = Affine::translate(pos).then(Affine::scale(scale, scale));
+        batch.draw_mesh(mesh, &t, &Tint::default());
+    }
+
     pub fn draw_loot(&self, batch: &mut ShapeBatch, item: &str, pos: Vec2, time: f32) {
         let mesh = if item == "glanztropfen" {
             &self.glanztropfen

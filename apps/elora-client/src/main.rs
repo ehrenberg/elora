@@ -6,6 +6,7 @@
 //! Aufruf: `elora [karte.emap] [--mode dm|tdm|ctf|lms|lts] [--instagib] [--connect adresse:port]`
 //! (Standardkarte: `maps/sandbox.emap`)
 
+mod adventure_hud;
 mod app_adventure;
 mod app_editor;
 mod app_menu;

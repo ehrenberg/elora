@@ -475,12 +475,24 @@ impl App {
             s,
         };
         ui.begin(dt);
+        let content = &session.content;
+        if a.conversation.is_none() && a.dead.is_none() {
+            crate::adventure_hud::status(
+                &mut ui,
+                &self.creature_art,
+                &self.lang,
+                code,
+                content,
+                &session.save,
+                screen,
+            );
+        }
         // Zurufe über den Figuren
         let npcs = session.npcs(world);
         for (npc, text, _) in &a.barks {
             if let Some(n) = npcs.iter().find(|n| &n.id == npc) {
-                let p = to_screen(n.pos - Vec2::new(0.0, 46.0));
-                bubble(&mut ui, text, p, s);
+                let p = to_screen(n.pos - Vec2::new(0.0, 44.0));
+                crate::adventure_hud::bubble(&mut ui, text, p);
             }
         }
         // Hinweis zur Aktionstaste
@@ -502,65 +514,42 @@ impl App {
                 .area()
                 .map_or(o.pos, |sz| o.pos + Vec2::new(sz.x / 2.0, 0.0));
             let p = to_screen(anchor - Vec2::new(0.0, 40.0));
-            bubble(&mut ui, &format!("E  {}", self.lang.t(key)), p, s);
+            let label = self
+                .settings
+                .bindings
+                .trigger(crate::bindings::GameAction::Interact)
+                .label(&self.lang);
+            crate::adventure_hud::prompt(&mut ui, &label, self.lang.t(key), p);
         }
-        // Gespräch (schlichte Fassung bis A1.7)
+        // Gespräch (E-222)
         let mut chosen = None;
         if let Some(conv) = &a.conversation
-            && let Some((d, node)) = conv.current(&session.content)
+            && let Some((d, node)) = conv.current(content)
         {
-            let w = (screen.x - 80.0 * s).min(900.0 * s);
-            let choices = conv.choices(&session.content, &session.save);
-            #[allow(clippy::cast_precision_loss)]
-            let h = (110.0 + choices.len() as f32 * 30.0) * s;
-            let card = Rect::new((screen.x - w) / 2.0, screen.y - h - 24.0 * s, w, h);
-            ui.card(card);
             let speaker = d.speaker_of(node);
-            let name = session
-                .content
+            let name = content
                 .characters
                 .get(speaker)
                 .map_or("Elora", |c| c.name.get(code));
-            ui.label(
+            let choices = conv
+                .choices(content, &session.save)
+                .into_iter()
+                .map(|i| (i, &node.choice[i]))
+                .collect();
+            let view = crate::adventure_hud::DialogView {
+                speaker,
                 name,
-                card.min + Vec2::new(20.0 * s, 24.0 * s),
-                14.0,
-                ui::VIOLET,
-                Align::Left,
+                text: &node.text,
+                choices,
+            };
+            chosen = crate::adventure_hud::dialog(
+                &mut ui,
+                &self.creature_art,
+                &self.lang,
+                code,
+                &view,
+                screen,
             );
-            let mut y = card.min.y + 50.0 * s;
-            for line in wrap(&ui, node.text.get(code), 13.0, w - 40.0 * s) {
-                ui.label(
-                    &line,
-                    Vec2::new(card.min.x + 20.0 * s, y),
-                    13.0,
-                    ui::TEXT,
-                    Align::Left,
-                );
-                y += 19.0 * s;
-            }
-            if choices.is_empty() {
-                ui.label(
-                    &format!("E  {}", self.lang.t("adventure.dialog_continue")),
-                    Vec2::new(card.max.x - 20.0 * s, card.max.y - 16.0 * s),
-                    11.0,
-                    ui::TEXT_DIM,
-                    Align::Right,
-                );
-            }
-            for (k, &i) in choices.iter().enumerate() {
-                #[allow(clippy::cast_precision_loss)]
-                let r = Rect::new(
-                    card.min.x + 16.0 * s,
-                    card.max.y - (choices.len() - k) as f32 * 30.0 * s - 10.0 * s,
-                    w - 32.0 * s,
-                    26.0 * s,
-                );
-                let text = format!("{}  {}", k + 1, node.choice[i].text.get(code));
-                if ui.button(&format!("dlg{k}"), r, &text, ui::SAND) {
-                    chosen = Some(k);
-                }
-            }
         }
         // Erschöpft (E-261)
         let mut death = None;
@@ -625,43 +614,6 @@ fn outcome_event(o: elora_adventure::Outcome) -> SessionEvent {
         elora_adventure::Outcome::Notice(n) => SessionEvent::Notice(n),
         elora_adventure::Outcome::Open(x) => SessionEvent::Open(x),
     }
-}
-
-/// Sprechblase mit Text, unten mittig an `p`.
-fn bubble(ui: &mut Ui<'_>, text: &str, p: Vec2, s: f32) {
-    let w = ui.text_width(text, 12.0) + 20.0 * s;
-    let r = Rect::new(p.x - w / 2.0, p.y - 26.0 * s, w, 24.0 * s);
-    ui.batch.fill_rounded_rect(
-        r.min - Vec2::new(1.5 * s, 1.5 * s),
-        r.max + Vec2::new(1.5 * s, 1.5 * s),
-        12.0 * s,
-        ui::OUTLINE,
-    );
-    ui.batch
-        .fill_rounded_rect(r.min, r.max, 11.0 * s, ui::FIELD);
-    ui.label(text, r.center(), 12.0, ui::TEXT, Align::Center);
-}
-
-/// Zeilenumbruch an Wortgrenzen für die Breite `max` (Pixel).
-fn wrap(ui: &Ui<'_>, text: &str, size: f32, max: f32) -> Vec<String> {
-    let mut lines = Vec::new();
-    let mut line = String::new();
-    for word in text.split_whitespace() {
-        let next = if line.is_empty() {
-            word.to_owned()
-        } else {
-            format!("{line} {word}")
-        };
-        if ui.text_width(&next, size) > max && !line.is_empty() {
-            lines.push(std::mem::replace(&mut line, word.to_owned()));
-        } else {
-            line = next;
-        }
-    }
-    if !line.is_empty() {
-        lines.push(line);
-    }
-    lines
 }
 
 /// Text zur Zeit `secs` (Menü).

@@ -191,12 +191,12 @@ impl Ui<'_> {
         }
     }
 
-    fn hovered(&self, r: Rect) -> bool {
+    pub fn hovered(&self, r: Rect) -> bool {
         r.contains(self.input.mouse)
     }
 
     /// Gemeinsame Klick-Logik: `true`, wenn auf `r` gedrückt und dort losgelassen wurde.
-    fn click(&mut self, id: &str, r: Rect) -> bool {
+    pub fn click(&mut self, id: &str, r: Rect) -> bool {
         let hot = self.hovered(r);
         if hot && self.input.pressed {
             self.state.active = Some(id.to_owned());
