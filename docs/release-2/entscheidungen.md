@@ -98,6 +98,7 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-287 | 2026-10-02 | Waffe beim Aufheben | **Einstellung mit drei Stufen:** aus / nur neue Waffen / immer; Standard: nur neue Waffen | Entscheidung Projektinhaber |
 | E-288 | 2026-10-02 | Verwischen bei schneller Bewegung (Playtest) | Beschreibung: **weiche Schlieren** (Bewegung flüssig, Bild unscharf); Ursache eingrenzen und Gegenmaßnahmen ausprobieren | Rückmeldung Projektinhaber |
 | E-289 | 2026-10-02 | Menümusik | **„FM fun“ von sla97** ([OpenGameArt](https://opengameart.org/content/fm-fun)) im Hauptmenü; Lizenz **CC BY 4.0** (Nennung in `SOURCES.md` und „Über“), Ausnahme zu E-285 auf Wunsch | Entscheidung Projektinhaber |
+| E-290 | 2026-10-02 | Musik je Gebiet | **Tauwinkel: „Heavenly Loop“** (isaiah658), **Blütenwiesen: „Sunset Plains“** (yoiyami), beide CC0 von OpenGameArt; Feld `music` je Gebiet in `worldmap.toml` | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 

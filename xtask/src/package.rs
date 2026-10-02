@@ -7,7 +7,7 @@
 //! elora-<version>-<system>-<arch>/
 //!   elora, elora-server, elora-master   Programme
 //!   maps/                               Release-Karten + Trainingskarte, abenteuer/ mit den Abenteuer-Karten
-//!   assets/music/                       Menümusik (falls vorhanden)
+//!   assets/music/                       Musik (Menü, Gebiete)
 //!   LICENSE, THIRD_PARTY_LICENSES, SOURCES.md, LIESMICH.txt
 //!   elora.png                           Programmsymbol (256 × 256)
 //! ```

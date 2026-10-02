@@ -1,4 +1,5 @@
-# Weltkarte des Taulands (E-264, Weltbuch §2). pos: Lage 0..1; maps: Kartennamen beginnen so.
+# Weltkarte des Taulands (E-264, Weltbuch §2). pos: Lage 0..1; maps: Kartennamen beginnen so;
+# music: Hintergrundmusik assets/music/<name>.ogg (E-285).
 
 [[area]]
 id = "tauwinkel"
@@ -6,6 +7,7 @@ name = { de = "Tauwinkel", en = "Tauwinkel" }
 pos = [0.5, 0.56]
 color = "#f2c14e"
 maps = "tauwinkel"
+music = "tauwinkel"
 
 [[area]]
 id = "bluetenwiesen"
@@ -13,6 +15,7 @@ name = { de = "Blütenwiesen", en = "Blütenwiesen" }
 pos = [0.24, 0.72]
 color = "#ef7fb0"
 maps = "wiese-"
+music = "bluetenwiesen"
 
 [[area]]
 id = "murmelwald"

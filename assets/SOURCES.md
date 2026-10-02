@@ -50,8 +50,10 @@ Inter und JetBrains Mono unter SIL Open Font License 1.1, siehe `assets/fonts/*-
 
 ## Musik (`assets/music/`)
 
-Per ffmpeg nach Ogg Vorbis umgewandelt (Mono, 44,1 kHz, Qualität 4).
+Per ffmpeg nach Ogg Vorbis umgewandelt (Stereo, 44,1 kHz, Qualität 4); das Spiel entpackt beim Abspielen.
 
 | Datei | Titel | Quelle | Autor | Lizenz |
 |---|---|---|---|---|
 | `menu.ogg` | „FM fun“ | [OpenGameArt – FM fun](https://opengameart.org/content/fm-fun) | sla97 | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
+| `tauwinkel.ogg` | „Heavenly Loop“ | [OpenGameArt – Heavenly Loop](https://opengameart.org/content/heavenly-loop) | isaiah658 | CC0 1.0 |
+| `bluetenwiesen.ogg` | „Sunset Plains“ | [OpenGameArt – Sunset Plains](https://opengameart.org/content/sunset-plains) | yoiyami | CC0 1.0 |

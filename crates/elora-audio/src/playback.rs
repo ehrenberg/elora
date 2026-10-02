@@ -4,7 +4,9 @@ use std::collections::BTreeMap;
 use std::sync::Arc;
 
 use elora_sim::Vec2;
-use kira::sound::static_sound::{StaticSoundData, StaticSoundHandle, StaticSoundSettings};
+use kira::sound::FromFileError;
+use kira::sound::static_sound::{StaticSoundData, StaticSoundSettings};
+use kira::sound::streaming::{StreamingSoundData, StreamingSoundHandle};
 use kira::{AudioManager, AudioManagerSettings, Decibels, DefaultBackend, Frame, Panning, Tween};
 
 use crate::{AudioSettings, Bank, Cue, SAMPLE_RATE, Sound, spatial};
@@ -15,7 +17,7 @@ pub struct Audio {
     sounds: BTreeMap<Sound, StaticSoundData>,
     applied: Option<AudioSettings>,
     /// Laufende Musik (Schleife) und ihre Lautstärke.
-    music: Option<(StaticSoundHandle, f32)>,
+    music: Option<(StreamingSoundHandle<FromFileError>, f32)>,
 }
 
 impl std::fmt::Debug for Audio {
@@ -96,9 +98,12 @@ impl Audio {
         }
     }
 
-    /// Musik (Mono-Samples, [`SAMPLE_RATE`]) in Schleife starten, falls noch keine läuft;
-    /// `volume` 0..1 wird bei Änderung sanft nachgeführt.
-    pub fn play_music(&mut self, samples: &[f32], volume: f32) {
+    /// Musik (Ogg Vorbis oder WAV, beim Abspielen entpackt) in Schleife starten, falls noch
+    /// keine läuft; `volume` 0..1 wird bei Änderung sanft nachgeführt.
+    ///
+    /// # Errors
+    /// Die Datei ist keine lesbare Musik (ohne Audiogerät: nie).
+    pub fn play_music(&mut self, data: &Arc<[u8]>, volume: f32) -> Result<(), String> {
         let tween = Tween {
             duration: std::time::Duration::from_millis(300),
             ..Tween::default()
@@ -108,14 +113,17 @@ impl Audio {
                 handle.set_volume(decibels(volume), tween);
                 *v = volume;
             }
-            return;
+            return Ok(());
         }
         let Some(manager) = &mut self.manager else {
-            return;
+            return Ok(());
         };
-        // sanft einblenden
-        let data = to_data(samples).loop_region(..).volume(Decibels::SILENCE);
-        match manager.play(data) {
+        let sound = StreamingSoundData::from_cursor(std::io::Cursor::new(data.clone()))
+            .map_err(|e| e.to_string())?
+            .loop_region(..)
+            .volume(Decibels::SILENCE);
+        match manager.play(sound) {
+            // sanft einblenden
             Ok(mut handle) => {
                 handle.set_volume(
                     decibels(volume),
@@ -128,6 +136,7 @@ impl Audio {
             }
             Err(e) => tracing::debug!("Musik nicht abgespielt: {e}"),
         }
+        Ok(())
     }
 
     /// Musik ausblenden und beenden.
@@ -162,5 +171,24 @@ impl Audio {
         if let Err(e) = manager.play(sound) {
             tracing::debug!("Sound `{}` nicht abgespielt: {e}", cue.sound.name());
         }
+    }
+}
+
+#[cfg(test)]
+mod music_tests {
+    use super::*;
+
+    #[test]
+    fn shipped_music_can_be_streamed() {
+        let dir = concat!(env!("CARGO_MANIFEST_DIR"), "/../../assets/music");
+        for name in ["menu", "tauwinkel", "bluetenwiesen"] {
+            let data: Arc<[u8]> = std::fs::read(format!("{dir}/{name}.ogg")).unwrap().into();
+            assert!(
+                StreamingSoundData::from_cursor(std::io::Cursor::new(data)).is_ok(),
+                "{name}"
+            );
+        }
+        let junk: Arc<[u8]> = Arc::from(&b"keine Musik"[..]);
+        assert!(StreamingSoundData::from_cursor(std::io::Cursor::new(junk)).is_err());
     }
 }

@@ -241,6 +241,9 @@ pub struct Area {
     pub color: String,
     /// Karten dieses Gebiets beginnen so (`wiese-` → `wiese-1`, `wiese-2` …).
     pub maps: String,
+    /// Hintergrundmusik: `assets/music/<music>.ogg` (E-285).
+    #[serde(default)]
+    pub music: Option<String>,
 }
 
 /// Fehler in den Inhaltsdateien.

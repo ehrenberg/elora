@@ -5,7 +5,7 @@
 //! gesetzte Bits bzw. Wechsel des Hook-Zustands lösen einen Sound aus.
 
 use std::collections::HashMap;
-use std::sync::{Arc, OnceLock};
+use std::sync::Arc;
 
 use elora_audio::cues::{self, Cue, Listener, Sound};
 use elora_audio::{Audio, AudioSettings, Bank};
@@ -14,29 +14,15 @@ use elora_sim::{Event, HookState, Vec2};
 
 use crate::figure::Landing;
 
-/// Musikstück `assets/music/<name>.ogg` (oder `.wav`) laden; fehlt es, bleibt es still.
-fn load_music(name: &str) -> Option<Vec<f32>> {
-    for ext in ["ogg", "wav"] {
+/// Musikstück `assets/music/<name>.ogg` (oder `.wav`) lesen; fehlt es, bleibt es still.
+fn load_music(name: &str) -> Option<Arc<[u8]>> {
+    ["ogg", "wav"].iter().find_map(|ext| {
         let rel = format!("{MUSIC_DIR}/{name}.{ext}");
-        let Ok(data) = std::fs::read(elora_server::paths::resolve(std::path::Path::new(&rel)))
-        else {
-            continue;
-        };
-        let samples = if ext == "ogg" {
-            elora_audio::decode_ogg(&data)
-        } else {
-            elora_audio::decode_wav(&data).map_err(str::to_owned)
-        };
-        match samples {
-            Ok(s) => return Some(s),
-            Err(e) => tracing::warn!("{rel}: {e}"),
-        }
-    }
-    None
+        std::fs::read(elora_server::paths::resolve(std::path::Path::new(&rel)))
+            .ok()
+            .map(Arc::from)
+    })
 }
-
-/// Ein Musikstück, das im Hintergrund geladen wird (Entpacken dauert einen Moment).
-type Track = Arc<OnceLock<Option<Vec<f32>>>>;
 
 #[derive(Debug)]
 pub struct Sounds {
@@ -44,8 +30,8 @@ pub struct Sounds {
     pub settings: AudioSettings,
     /// Zuletzt gesehene Bits und Hook-Zustand je Slot.
     last: HashMap<usize, (u16, HookState)>,
-    /// Geladene oder ladende Musikstücke (E-121, E-285).
-    tracks: HashMap<String, Track>,
+    /// Gelesene Musikstücke, gepackt (E-121, E-285); `None`: fehlt oder unlesbar.
+    tracks: HashMap<String, Option<Arc<[u8]>>>,
     /// Gerade laufendes Stück.
     playing: Option<String>,
 }
@@ -84,19 +70,15 @@ impl Sounds {
         let track = self
             .tracks
             .entry(name.to_owned())
-            .or_insert_with(|| {
-                let track: Track = Arc::default();
-                let (slot, name) = (track.clone(), name.to_owned());
-                std::thread::spawn(move || {
-                    let _ = slot.set(load_music(&name));
-                });
-                track
-            })
-            .clone();
-        if let Some(Some(samples)) = track.get() {
-            let volume = self.settings.music_volume.clamp(0.0, 1.0);
-            self.audio.play_music(samples, volume);
-            self.playing = Some(name.to_owned());
+            .or_insert_with(|| load_music(name));
+        let Some(data) = track.clone() else { return };
+        let volume = self.settings.music_volume.clamp(0.0, 1.0);
+        match self.audio.play_music(&data, volume) {
+            Ok(()) => self.playing = Some(name.to_owned()),
+            Err(e) => {
+                tracing::warn!("{MUSIC_DIR}/{name}: {e}");
+                *track = None;
+            }
         }
     }
 

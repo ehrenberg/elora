@@ -685,6 +685,12 @@ impl App {
 
     /// Sounds des Frames: Ereignisse, Figuren, Landungen, neue Emotes und Chat-Zeilen.
     fn play_sounds(&mut self, scene: &Scene, events: &[Event]) {
+        // Musik des Gebiets im Abenteuer (E-285), sonst still
+        let track = self.adventure.as_ref().and_then(|a| {
+            let s = &a.session;
+            s.content.area_of(&s.map_name)?.music.clone()
+        });
+        self.sounds.music(track.as_deref());
         let mut extra: Vec<elora_audio::Cue> = self
             .emotes
             .take_new()

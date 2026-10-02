@@ -10,7 +10,6 @@ publish.workspace = true
 [dependencies]
 elora-sim.workspace = true
 kira = { workspace = true, optional = true }
-lewton.workspace = true
 serde.workspace = true
 toml.workspace = true
 thiserror.workspace = true
