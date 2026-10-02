@@ -80,6 +80,10 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-269 | 2026-10-02 | Testspiel im Editor (A1.8) | **Teststand wählbar:** Stufe, Fähigkeiten, Waffen, Merker; Start am gewählten Eingang oder an der Maus; kein Spielstand wird verändert, Übergänge laden andere Karten mit | Entscheidung Projektinhaber |
 | E-270 | 2026-10-02 | Gespräche im Editor (E-218) | **Vorschau und Testfenster:** Einstiege, Knoten, Antworten und Bedingungen je NPC; Gespräch im Fenster mit dem Teststand durchspielen, Änderungen an Merkern, Aufgaben und Zuneigung sehen; Fehler anzeigen, Dateien ohne Neustart neu laden | Entscheidung Projektinhaber |
 | E-271 | 2026-10-02 | Speicherort der Abenteuer-Karten | **Benutzerordner `maps/abenteuer/`**, geht vor der mitgelieferten Karte gleichen Namens; ins Projekt nach Freigabe | Entscheidung Projektinhaber |
+| E-272 | 2026-10-02 | Prolog-Ablauf (A1.9) | **Wie im Entwurf** [`prolog.md`](prolog.md): Pip weckt Elora, Oma am Brunnen, Übungen bei Tüftel und Klonk, Lotte, Pips Nebenaufgabe, erster Abschnitt der Blütenwiesen bis zum Quellstein | Entscheidung Projektinhaber |
+| E-273 | 2026-10-02 | Erklärung der Steuerung | **Wegweiser-Schilder**, die man mit E liest | Entscheidung Projektinhaber |
+| E-274 | 2026-10-02 | Gebäude in Tauwinkel | **Erst Entwürfe zur Auswahl** (Häuser, Brunnen, Werkstatt, Schmiede, Laden, Baumhaus), dann die Karte | Entscheidung Projektinhaber |
+| E-275 | 2026-10-02 | Blässe des Dorfs (E-210) | **Entfärbter Look der Karte** über einen Farbfilter (Figuren bleiben bunt), wird mit jeder befreiten Quelle schwächer (Merker) | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 
