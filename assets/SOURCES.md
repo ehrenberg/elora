@@ -62,3 +62,5 @@ Per ffmpeg nach Ogg Vorbis umgewandelt (Stereo, 44,1 kHz, Qualität 4); das Spie
 | `menu.ogg` | „FM fun“ | [OpenGameArt – FM fun](https://opengameart.org/content/fm-fun) | sla97 | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/) |
 | `tauwinkel.ogg` | „Heavenly Loop“ | [OpenGameArt – Heavenly Loop](https://opengameart.org/content/heavenly-loop) | isaiah658 | CC0 1.0 |
 | `bluetenwiesen.ogg` | „Sunset Plains“ | [OpenGameArt – Sunset Plains](https://opengameart.org/content/sunset-plains) | yoiyami | CC0 1.0 |
+| `boss.ogg` | „Urban Boss Battle“ | [OpenGameArt – Urban Boss Battle](https://opengameart.org/content/urban-boss-battle) | mintodog | CC0 1.0 |
+| `fest.ogg` | „Medieval: Minstrel Dance“ (Loop-Fassung) | [OpenGameArt – Minstrel Dance](https://opengameart.org/content/medieval-minstrel-dance) | randommind | CC0 1.0 |

@@ -255,7 +255,7 @@ mod tests {
     #[test]
     fn shipped_music_is_ogg_vorbis() {
         let dir = concat!(env!("CARGO_MANIFEST_DIR"), "/../../assets/music");
-        for name in ["menu", "tauwinkel", "bluetenwiesen"] {
+        for name in ["menu", "tauwinkel", "bluetenwiesen", "boss", "fest"] {
             let data = std::fs::read(format!("{dir}/{name}.ogg")).unwrap();
             assert_eq!(&data[..4], b"OggS", "{name}");
         }
