@@ -480,6 +480,21 @@ impl App {
     fn adventure_event(&mut self, e: SessionEvent) {
         match e {
             SessionEvent::Notice(n) => {
+                // Klang zu Funden und erledigten Aufgaben (R2-M2.1)
+                use elora_adventure::data::ItemKind;
+                use elora_audio::{Cue, Sound};
+                let sound = match &n {
+                    Notice::QuestDone(_) => Some(Sound::QuestDone),
+                    Notice::Item { id, .. } => self.adventure.as_ref().and_then(|a| {
+                        match a.session.content.item(id).map(|i| &i.kind) {
+                            Some(ItemKind::Key) => Some(Sound::Fanfare),
+                            Some(ItemKind::Collectible) => Some(Sound::Collect),
+                            _ => None,
+                        }
+                    }),
+                    _ => None,
+                };
+                self.ui_cues.extend(sound.map(Cue::global));
                 if let Some(t) = self.notice_text(&n) {
                     self.notice(t);
                 }

@@ -3,6 +3,7 @@
 use crate::character::PHYS_SIZE;
 use crate::collision::{Collision, Tile};
 use crate::creature::{Behavior, Creature, CreatureShot, DiverDef, HookTarget, Loot, rng, rng_f32};
+use crate::event::CreatureAct;
 use crate::event::{DeathCause, Event};
 use crate::math::Vec2;
 use crate::tuning::ms_to_ticks;
@@ -683,6 +684,11 @@ fn tick_diver(
             if target.is_some_and(|(_, dist)| dist <= d.sight) {
                 c.mode = CIRCLE;
                 c.timer = 0;
+                events.push(Event::CreatureAct {
+                    id: c.id,
+                    pos: c.pos,
+                    act: CreatureAct::Wake,
+                });
             }
         }
         CIRCLE => {
@@ -722,6 +728,11 @@ fn tick_diver(
             if c.timer >= ticks(d.aim_ms) {
                 c.mode = DIVE;
                 c.timer = 0;
+                events.push(Event::CreatureAct {
+                    id: c.id,
+                    pos: c.pos,
+                    act: CreatureAct::Dive,
+                });
             }
         }
         DIVE => {
@@ -736,6 +747,11 @@ fn tick_diver(
             let ahead = c.pos + c.vel;
             if collision.is_solid(ahead) || c.grounded || c.timer > 150 {
                 c.vel = Vec2::ZERO;
+                events.push(Event::CreatureAct {
+                    id: c.id,
+                    pos: c.pos,
+                    act: CreatureAct::Land,
+                });
                 if angry && c.count == 0 {
                     // gleich noch einmal
                     c.count = 1;

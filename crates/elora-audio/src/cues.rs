@@ -2,7 +2,7 @@
 //! dieselben Ereignisse speisen auch Effekte und Killfeed.
 
 use elora_sim::character::events as bits;
-use elora_sim::{Event, HookState, PickupKind, Team, Vec2, Weapon};
+use elora_sim::{CreatureAct, Event, HookState, PickupKind, Team, Vec2, Weapon};
 
 /// Alle Sounds des Spiels. Die Namen (`snake_case`) sind die Schlüssel in
 /// `assets/sounds/sounds.toml`.
@@ -52,10 +52,24 @@ pub enum Sound {
     UiClose,
     /// Plapperlaut beim Sprechen (E-286), Tonhöhe je Figur.
     Voice,
+    /// Hüter erwacht (Brummen, R2-M2.1).
+    BossWake,
+    /// Sturzflug eines Hüters.
+    BossDive,
+    /// Hüter prallt auf.
+    BossLand,
+    /// Treffer prallt ab (Hüter in der Luft, E-299).
+    Deflect,
+    /// Sammelstück gefunden (Biene, Glitzerstein).
+    Collect,
+    /// Besonderer Fund (Quellfunke) oder neue Fähigkeit.
+    Fanfare,
+    /// Aufgabe erledigt.
+    QuestDone,
 }
 
 impl Sound {
-    pub const ALL: [Self; 36] = [
+    pub const ALL: [Self; 43] = [
         Self::HammerFire,
         Self::HammerHit,
         Self::GrenadeFire,
@@ -92,6 +106,13 @@ impl Sound {
         Self::UiOpen,
         Self::UiClose,
         Self::Voice,
+        Self::BossWake,
+        Self::BossDive,
+        Self::BossLand,
+        Self::Deflect,
+        Self::Collect,
+        Self::Fanfare,
+        Self::QuestDone,
     ];
 
     pub fn name(self) -> &'static str {
@@ -132,6 +153,13 @@ impl Sound {
             Self::UiOpen => "ui_open",
             Self::UiClose => "ui_close",
             Self::Voice => "voice",
+            Self::BossWake => "boss_wake",
+            Self::BossDive => "boss_dive",
+            Self::BossLand => "boss_land",
+            Self::Deflect => "deflect",
+            Self::Collect => "collect",
+            Self::Fanfare => "fanfare",
+            Self::QuestDone => "quest_done",
         }
     }
 
@@ -245,6 +273,8 @@ pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>)
         Event::FlagCapture { .. } => vec![Cue::global(Sound::FlagCapture)],
         Event::TileBroken { .. } => Vec::new(),
         // Gegner (A1.2): vorerst vorhandene Sounds, eigene liefert der Projektinhaber (E-109)
+        // Hüter in der Luft: Treffer prallt ab (E-299)
+        Event::CreatureHit { pos, damage: 0, .. } => vec![Cue::at(Sound::Deflect, pos)],
         Event::CreatureHit { pos, from, .. } => {
             let mut cues = vec![Cue::at(Sound::PainShort, pos)];
             if from.is_some() && from == l.local {
@@ -253,6 +283,14 @@ pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>)
             cues
         }
         Event::CreatureFire { pos, .. } => vec![Cue::at(Sound::HookFire, pos)],
+        Event::CreatureAct { pos, act, .. } => vec![Cue::at(
+            match act {
+                CreatureAct::Wake => Sound::BossWake,
+                CreatureAct::Dive => Sound::BossDive,
+                CreatureAct::Land => Sound::BossLand,
+            },
+            pos,
+        )],
         Event::LootCollect { pos, .. } => vec![Cue::at(Sound::PickupArmor, pos)],
     }
 }

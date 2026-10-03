@@ -343,6 +343,7 @@ fn networked(e: &Event) -> bool {
             | Event::CreatureHit { .. }
             | Event::CreatureDeath { .. }
             | Event::CreatureFire { .. }
+            | Event::CreatureAct { .. }
             | Event::LootCollect { .. }
     )
 }
@@ -441,6 +442,7 @@ fn put_event(w: &mut Writer, e: &Event) {
         | Event::CreatureHit { .. }
         | Event::CreatureDeath { .. }
         | Event::CreatureFire { .. }
+        | Event::CreatureAct { .. }
         | Event::LootCollect { .. } => unreachable!("nicht im Netz"),
     }
 }

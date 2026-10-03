@@ -44,6 +44,11 @@ ui_select = 0.35
 ui_open = 0.45
 ui_close = 0.4
 voice = 0.35
+boss_land = 0.8
+deflect = 0.45
+collect = 0.55
+fanfare = 0.7
+quest_done = 0.6
 
 # ── Prozedural ───────────────────────────────────────────────────────────
 
@@ -115,3 +120,46 @@ freq = 150
 delay = 0.08
 sustain = 0.02
 decay = 0.1
+
+# Hüter (R2-M2.1): tiefes Brummen beim Erwachen, pfeifender Sturzflug
+[boss_wake]
+volume = 0.5
+[[boss_wake.layer]]
+wave = "saw"
+freq = 95
+vibrato = 0.12
+vibrato_hz = 28
+attack = 0.15
+sustain = 0.6
+decay = 0.35
+lowpass = 900
+[[boss_wake.layer]]
+wave = "square"
+freq = 190
+duty = 0.3
+vibrato = 0.1
+vibrato_hz = 31
+attack = 0.2
+sustain = 0.5
+decay = 0.3
+lowpass = 1200
+volume = 0.4
+
+[boss_dive]
+volume = 0.4
+[[boss_dive.layer]]
+wave = "sine"
+freq = 1400
+slide = -1.6
+attack = 0.02
+sustain = 0.35
+decay = 0.15
+[[boss_dive.layer]]
+wave = "saw"
+freq = 110
+vibrato = 0.15
+vibrato_hz = 30
+sustain = 0.4
+decay = 0.2
+lowpass = 800
+volume = 0.5

@@ -70,6 +70,8 @@ use sandbox::Sandbox;
 use settings::Settings;
 use tuning_file::{TUNING_FILE, TuningFile};
 
+/// Musik, solange ein Hüter wach ist (`assets/music/boss.ogg`).
+const BOSS_MUSIC: &str = "boss";
 const DEFAULT_MAP: &str = "maps/training.emap";
 
 /// Tuning- und Server-Schlüssel-Dateien im Einstellungsordner (M8.2).
@@ -689,6 +691,15 @@ impl App {
         // Musik des Gebiets im Abenteuer (E-285), sonst still
         let track = self.adventure.as_ref().and_then(|a| {
             let s = &a.session;
+            // wacher Hüter: Kampfmusik (R2-M2.1)
+            let world = &self.sandbox.world;
+            let boss = world.creatures.iter().any(|c| {
+                world.creature_kinds.get(c.kind).is_some_and(|k| k.boss)
+                    && c.mode != elora_sim::creature::diver::SLEEP
+            });
+            if boss {
+                return Some(BOSS_MUSIC.to_owned());
+            }
             let area = s.content.area_of(&s.map_name)?;
             let party = s.save.flag(elora_adventure::session::PARTY) != 0;
             party

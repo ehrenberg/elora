@@ -137,6 +137,12 @@ pub enum Event {
         id: u32,
         pos: Vec2,
     },
+    /// Ein Hüter wechselt die Phase (Sound und Effekte, R2-M2.1).
+    CreatureAct {
+        id: u32,
+        pos: Vec2,
+        act: CreatureAct,
+    },
     /// Beute eingesammelt.
     LootCollect {
         player: usize,
@@ -144,6 +150,18 @@ pub enum Event {
         count: u32,
         pos: Vec2,
     },
+}
+
+/// Phasenwechsel eines Hüters.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub enum CreatureAct {
+    /// Aufgewacht, der Kampf beginnt.
+    Wake,
+    /// Sturzflug beginnt.
+    Dive,
+    /// Aufgeprallt (benommen oder gleich wieder hoch).
+    Land,
 }
 
 impl Event {
