@@ -939,8 +939,20 @@ fn world_map(ui: &mut Ui<'_>, d: &MenuData<'_>, area: Rect) {
             ui::TEXT,
             Align::Center,
         );
+        // befreite Quelle: Lichtkranz und Hinweis
+        let freed = a.freed(d.save);
+        if freed {
+            for k in 0..8 {
+                #[allow(clippy::cast_precision_loss)]
+                let ang = k as f32 * std::f32::consts::TAU / 8.0;
+                let q = p + Vec2::new(ang.cos(), ang.sin()) * 54.0 * s;
+                ui.batch.fill_circle(q, 5.0 * s, Color::hex(0xfff2b0));
+            }
+        }
         let sub = if !known {
             lang.t("adventure.map_unknown").to_owned()
+        } else if freed {
+            lang.t("adventure.map_freed").to_owned()
         } else if a.id == d.content.areas[0].id {
             String::new()
         } else {

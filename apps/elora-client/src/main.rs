@@ -689,7 +689,12 @@ impl App {
         // Musik des Gebiets im Abenteuer (E-285), sonst still
         let track = self.adventure.as_ref().and_then(|a| {
             let s = &a.session;
-            s.content.area_of(&s.map_name)?.music.clone()
+            let area = s.content.area_of(&s.map_name)?;
+            let party = s.save.flag(elora_adventure::session::PARTY) != 0;
+            party
+                .then(|| area.party_music.clone())
+                .flatten()
+                .or_else(|| area.music.clone())
         });
         self.sounds.music(track.as_deref());
         let mut extra: Vec<elora_audio::Cue> = self

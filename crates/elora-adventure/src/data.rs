@@ -244,6 +244,21 @@ pub struct Area {
     /// Hintergrundmusik: `assets/music/<music>.ogg` (E-285).
     #[serde(default)]
     pub music: Option<String>,
+    /// Musik während eines Fests (Merker `fest`, E-301).
+    #[serde(default)]
+    pub party_music: Option<String>,
+    /// Quelle des Gebiets: befreit, sobald der Merker `befreit.<spring>` gesetzt ist.
+    #[serde(default)]
+    pub spring: Option<String>,
+}
+
+impl Area {
+    /// Ist die Quelle dieses Gebiets befreit?
+    pub fn freed(&self, save: &crate::SaveGame) -> bool {
+        self.spring
+            .as_ref()
+            .is_some_and(|s| save.flag(&format!("befreit.{s}")) != 0)
+    }
 }
 
 /// Fehler in den Inhaltsdateien.

@@ -191,6 +191,11 @@ impl Session {
                 }
             }
         }
+        // das Fest dauert, bis Elora das Dorf verlässt (E-301)
+        let hub = c.areas.first().map(|a| a.id.as_str());
+        if self.save.flag(PARTY) != 0 && c.area_of(name).map(|a| a.id.as_str()) != hub {
+            self.save.set_flag(PARTY, 0);
+        }
         self.base_decor = (map.decor_back.clone(), map.decor_front.clone());
         adapt_decor(&mut map, &self.save);
         let tuning = self.save.tuning(c, base);
@@ -839,6 +844,31 @@ mod tests {
         assert!(!s.present("hummel"), "erst nach dem Kampf");
         s.save.set_flag("besiegt.brummbaer", 1);
         assert!(s.present("hummel"));
+    }
+
+    #[test]
+    fn party_decor_and_freed_spring_follow_the_flags() {
+        let mut m = Map::new("t", 4, 4);
+        m.decor_back = vec![
+            Decor::new(Art::Builtin("girlande-fest".into()), Vec2::ZERO),
+            Decor::new(Art::Builtin("bluetenquelle-verdorrt".into()), Vec2::ZERO),
+        ];
+        let mut save = Session::new_game(crate::Content::builtin()).save;
+        let mut a = m.clone();
+        adapt_decor(&mut a, &save);
+        assert_eq!(a.decor_back.len(), 1, "ohne Fest kein Schmuck");
+        assert_eq!(
+            a.decor_back[0].art,
+            Art::Builtin("bluetenquelle-verdorrt".into())
+        );
+        save.set_flag(PARTY, 1);
+        save.set_flag("befreit.bluetenquelle", 1);
+        adapt_decor(&mut m, &save);
+        assert_eq!(m.decor_back.len(), 2);
+        assert_eq!(
+            m.decor_back[1].art,
+            Art::Builtin("bluetenquelle-befreit".into())
+        );
     }
 
     #[test]

@@ -507,6 +507,19 @@ pub fn tauwinkel() -> Map {
         decor("schmetterling", 420.0, 35),
         decor("loewenzahn", 433.0, 38),
     ]);
+    // Festschmuck nach Kapitel 1 (E-301): nur mit Merker `fest` zu sehen
+    for tx in [104.0, 119.0, 141.0, 286.0, 312.0] {
+        m.decor_back
+            .push(decor("girlande-fest", tx, if tx > 250.0 { 32 } else { 38 }));
+    }
+    // Laternen hängen an den Girlanden (Schnur bei −120, Leine dort bei etwa −133)
+    for (k, tx) in [104.0, 119.0, 141.0, 286.0, 312.0].into_iter().enumerate() {
+        let g = ground(tx, if tx > 250.0 { 32 } else { 38 });
+        for (side, name) in [(-40.0, "festlaterne-fest"), (40.0, "festlaterne-gelb-fest")] {
+            let flip = if k % 2 == 0 { side } else { -side };
+            m.decor_back.push(decor_px(name, g.x + flip, g.y - 13.0));
+        }
+    }
     // Vögel auf den Dächern
     for (tx, ty, dy) in [(18.0, 40, 246.0), (115.0, 38, 178.0)] {
         let p = ground(tx, ty);
