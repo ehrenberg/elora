@@ -404,6 +404,7 @@ fn chapter_one_runs_from_wabe_to_the_party() {
     assert!(g.abilities().has(elora_sim::Ability::HookRuck));
     assert_eq!(g.count("quellfunke"), 0, "abgegeben");
     assert_eq!(g.flag("quellen_befreit"), 1);
+    assert_eq!(g.flag("fest"), 1);
     assert!(g.holds(&c, "quest bluetenquelle schritt fest"));
     // Fest bei Oma: Kapitel fertig, Kapitel 2 angekündigt
     let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();

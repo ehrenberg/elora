@@ -49,7 +49,7 @@ text = { de = "Hmpf. Die Hummel beruhigt, ja? Dann bist du so weit. Hier, mein a
 do = ["waffe granate", "gib munition_granate 1", "merker klonk.granate = 1"]
 
 [[bark]]
-if = "merker fest.kapitel1"
+if = "merker fest"
 text = { de = "*klong* … Festlaternen schmieden ist auch Arbeit.", en = "*clang* … forging party lanterns is work too." }
 
 [[bark]]

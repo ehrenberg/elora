@@ -306,6 +306,7 @@ const DIALOG_FILES: &[(&str, &str)] = dialogs!(
     "schild-wiese",
     "wabe",
     "hummel",
+    "schild-wurzeln",
 );
 
 /// Quelltexte der Inhaltsdateien.

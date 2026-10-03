@@ -135,7 +135,7 @@ id = "murmelwald"
 text = { de = "Der Murmelwald wartet. Aber ruh dich ruhig noch ein bisschen aus – das Fest war lang.", en = "The Murmelwald is waiting. But do rest a little longer – it was a long party." }
 
 [[bark]]
-if = "merker fest.kapitel1"
+if = "merker fest"
 text = { de = "Was für ein schönes Fest!", en = "What a lovely party!" }
 
 [[bark]]

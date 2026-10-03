@@ -608,6 +608,19 @@ impl App {
 
     /// Nach dem Gespräch die Maus wieder fangen.
     fn after_dialog(&mut self) {
+        // Gespräche setzen Merker: Deko nachziehen (Quelle blüht, Festschmuck)
+        if let Some(a) = &mut self.adventure
+            && a.session.refresh_decor()
+        {
+            self.sandbox
+                .map
+                .decor_back
+                .clone_from(&a.session.map.decor_back);
+            self.sandbox
+                .map
+                .decor_front
+                .clone_from(&a.session.map.decor_front);
+        }
         if self
             .adventure
             .as_ref()

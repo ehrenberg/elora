@@ -5,6 +5,8 @@
 //! [`view`] zeichnet Karte, Raster und Entities.
 
 pub mod adventure;
+#[cfg(test)]
+mod kapitel1;
 pub mod look;
 pub mod panel;
 pub mod panel_adventure;

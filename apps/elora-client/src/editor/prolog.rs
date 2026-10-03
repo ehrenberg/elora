@@ -20,7 +20,7 @@ use super::Editor;
 use super::look::Preset;
 use super::release::{self, Theme};
 
-const T: f32 = TILE_SIZE as f32;
+pub(super) const T: f32 = TILE_SIZE as f32;
 
 /// Zeichenraster der Karte; unten ab `floor` Boden, an den Seiten offen (E-279).
 pub(super) struct Grid(pub(super) Vec<Vec<char>>);
@@ -57,7 +57,7 @@ impl Grid {
     }
 
     /// Karte aus dem Raster; das `S` braucht nur das Textformat, die Karte nutzt Eingänge.
-    fn map(&self, name: &str) -> Map {
+    pub(super) fn map(&self, name: &str) -> Map {
         let mut g = self.0.clone();
         g[0][1] = 'S';
         let rows: Vec<String> = g.iter().map(|r| r.iter().collect()).collect();
@@ -73,11 +73,11 @@ pub(super) fn at(tx: usize, ty: usize, h: f32) -> Vec2 {
     Vec2::new(tx as f32 * T + T / 2.0, ty as f32 * T - h / 2.0 - 1.0)
 }
 
-fn corner(tx: usize, ty: usize) -> Vec2 {
+pub(super) fn corner(tx: usize, ty: usize) -> Vec2 {
     Vec2::new(tx as f32 * T, ty as f32 * T)
 }
 
-fn o(id: &str, pos: Vec2, kind: ObjectKind) -> Object {
+pub(super) fn o(id: &str, pos: Vec2, kind: ObjectKind) -> Object {
     Object {
         id: id.into(),
         pos,
@@ -85,7 +85,7 @@ fn o(id: &str, pos: Vec2, kind: ObjectKind) -> Object {
     }
 }
 
-fn npc(id: &str, tx: usize, ty: usize, facing: i8, walk: f32) -> Object {
+pub(super) fn npc(id: &str, tx: usize, ty: usize, facing: i8, walk: f32) -> Object {
     o(
         id,
         at(tx, ty, 28.0),
@@ -99,7 +99,7 @@ fn npc(id: &str, tx: usize, ty: usize, facing: i8, walk: f32) -> Object {
 }
 
 /// Wegweiser-Schild mit Hinweis (E-273).
-fn sign(dialog: &str, tx: usize, ty: usize) -> Object {
+pub(super) fn sign(dialog: &str, tx: usize, ty: usize) -> Object {
     o(
         dialog,
         at(tx, ty, 28.0),
@@ -123,7 +123,7 @@ pub(super) fn creature(id: &str, kind: &str, tx: usize, ty: usize, h: f32) -> Ob
     )
 }
 
-fn chest(id: &str, tx: usize, ty: usize, contents: &[(&str, u32)]) -> Object {
+pub(super) fn chest(id: &str, tx: usize, ty: usize, contents: &[(&str, u32)]) -> Object {
     o(
         id,
         at(tx, ty, 26.0),
@@ -134,7 +134,7 @@ fn chest(id: &str, tx: usize, ty: usize, contents: &[(&str, u32)]) -> Object {
     )
 }
 
-fn plant(id: &str, tx: usize, ty: usize) -> Object {
+pub(super) fn plant(id: &str, tx: usize, ty: usize) -> Object {
     o(id, at(tx, ty, 16.0), ObjectKind::HealPlant { heal: 2 })
 }
 
@@ -147,7 +147,7 @@ pub(super) fn decor(name: &str, tx: f32, ty: usize) -> Decor {
 }
 
 /// Deko an einer Weltposition (Pixel), z. B. auf Dächern und Bänken.
-fn decor_px(name: &str, x: f32, y: f32) -> Decor {
+pub(super) fn decor_px(name: &str, x: f32, y: f32) -> Decor {
     Decor::new(Art::Builtin(name.into()), Vec2::new(x, y))
 }
 
@@ -536,9 +536,6 @@ pub fn wiese() -> Map {
     // Anstieg zum Wiesenrand, im Osten dichter Wald am Hang
     g.ground(241, 250, 43);
     g.ground(251, w - 1, 40);
-    g.fill((294, 295), (34, h - 1), '%');
-    g.fill((296, 297), (26, h - 1), '%');
-    g.fill((298, 299), (0, h - 1), '%');
     let mut m = g.map("Blütenwiesen 1");
     m.adventure.objects = vec![
         o(
@@ -602,6 +599,18 @@ pub fn wiese() -> Map {
             },
         ),
         o("quellstein", at(280, 40, 40.0), ObjectKind::SavePoint),
+        // weiter in die Blütenwiesen (Kapitel 1)
+        o("ost", at(292, 40, 28.0), ObjectKind::Spawn),
+        o(
+            "weg-wiese-2",
+            corner(w - 2, 0),
+            ObjectKind::Exit {
+                size: Vec2::new(2.0 * T, h as f32 * T),
+                map: "wiese-2".into(),
+                spawn: "west".into(),
+                on_touch: true,
+            },
+        ),
     ];
     m.decor_back = vec![
         decor("tree-round", 15.0, 44),
@@ -609,14 +618,13 @@ pub fn wiese() -> Map {
         decor("tree-round", 104.0, 44),
         decor("tree-round", 165.0, 36),
         decor("tree-round", 239.0, 46),
-        decor("tree-pine", 289.0, 40),
-        decor("tree-pine", 295.0, 34),
-        decor("tree-pine", 297.0, 26),
+        decor("tree-pine", 286.0, 40),
+        decor("riesenblume-rosa", 296.0, 40),
     ];
     m.decor_front = vec![
         decor("bush-2", 222.5, 30),
         decor("bush-1", 225.5, 30),
-        decor("bush-2", 292.0, 40),
+        decor("bush-2", 289.0, 40),
     ];
     for (y, x0, x1) in [(54, 72, 78), (55, 113, 133), (51, 196, 203)] {
         let mut x = x0;
@@ -692,8 +700,8 @@ mod tests {
             assert!(errors.is_empty(), "{}: {errors:?}", m.name);
             assert!(!back.decor_back.is_empty() && !back.backgrounds.is_empty());
         }
-        let errors = map_links(&[("tauwinkel", &a), ("wiese-1", &b)]);
-        assert!(errors.is_empty(), "{errors:?}");
+        // Übergänge prüft kapitel1::tests über alle Abenteuer-Karten
+        let _ = map_links;
         assert!(a.adventure.object(&c.progression.start_spawn).is_some());
         // Zonen und Gegner der Hauptaufgabe
         assert!(b.adventure.object("wiesenrand").is_some());

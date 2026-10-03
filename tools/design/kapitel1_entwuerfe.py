@@ -392,7 +392,33 @@ def export():
                 f'  {parts}\n</svg>\n')
 
 
+# Deko für die Karten von Kapitel 1 (E-303): Name: (Zeichnung, viewBox), Ursprung unten in der Mitte.
+# `-fest` hängt nur beim Fest, `-verdorrt` wird nach `befreit.<name>` zu `-befreit` (Session).
+DECOR = {
+    'bienenstock': (bienenstock(), '-40 -84 80 86'),
+    'beutenstapel': (beutenstapel(), '-40 -88 80 90'),
+    'honigstand': (honigstand(), '-70 -126 140 128'),
+    'riesenblume-rosa': (riesenblume(PINK), '-110 -310 220 312'),
+    'riesenblume-gelb': (riesenblume('#f2c14e'), '-110 -310 220 312'),
+    'riesenblume-lila': (riesenblume('#a77be0'), '-110 -310 220 312'),
+    'girlande-fest': (girlande(), '-116 -156 232 158'),
+    'festlaterne-fest': (festlaterne(), '-36 -124 72 86'),
+    'festlaterne-gelb-fest': (festlaterne('#f2c14e'), '-36 -124 72 86'),
+    'bluetenquelle-verdorrt': (bluetenquelle(False), '-150 -180 300 182'),
+    'bluetenquelle-befreit': (bluetenquelle(True), '-150 -180 300 182'),
+}
+
+
+def export_decor():
+    for name, (art, vb) in DECOR.items():
+        with open(f'assets/map/decor/{name}.svg', 'w') as f:
+            f.write(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{vb}">\n'
+                    f'  <!-- Kapitel 1: {name} (R2-M2.1, aus tools/design/kapitel1_entwuerfe.py). Ursprung unten in der Mitte. -->\n'
+                    f'  {art}\n</svg>\n')
+
+
 if __name__ == '__main__':
     os.makedirs('docs/release-2/design', exist_ok=True)
     open('docs/release-2/design/kapitel1-entwuerfe.svg', 'w').write(sheet())
     export()
+    export_decor()

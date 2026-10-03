@@ -42,7 +42,7 @@ next = "danke"
 [[node]]
 id = "danke"
 text = { de = "Die Quelle singt wieder. Nimm den Funken mit – er gehört nach Tauwinkel. Und grüß Wabe von mir.", en = "The spring is singing again. Take the spark with you – it belongs in Tauwinkel. And say hello to Wabe for me." }
-do = ["merker hummel.gesprochen = 1"]
+do = ["merker hummel.gesprochen = 1", "merker befreit.bluetenquelle = 1"]
 
 [[node]]
 id = "spaeter"

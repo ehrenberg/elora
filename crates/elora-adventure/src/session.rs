@@ -90,6 +90,8 @@ pub struct Session {
     pub map_name: String,
     /// Karte mit dem aktuellen Zustand von Türen und Bröckelboden.
     pub map: Map,
+    /// Deko der Karte, wie sie in der Datei steht (für [`Self::refresh_decor`]).
+    base_decor: (Vec<elora_map::Decor>, Vec<elora_map::Decor>),
     pub player: usize,
     /// Gegner-Id der Welt → Objekt-Id der Karte.
     creatures: BTreeMap<u32, String>,
@@ -151,6 +153,7 @@ impl Session {
             hook_armed: true,
             ticks: 0,
             npc_pos: BTreeMap::new(),
+            base_decor: (Vec::new(), Vec::new()),
             pending: Vec::new(),
             dead: false,
         }
@@ -188,7 +191,8 @@ impl Session {
                 }
             }
         }
-        recolor(&mut map, self.save.flag(SPRINGS_FREED));
+        self.base_decor = (map.decor_back.clone(), map.decor_front.clone());
+        adapt_decor(&mut map, &self.save);
         let tuning = self.save.tuning(c, base);
         let mut world = map.world(tuning);
         world.creature_kinds.clone_from(&c.creatures);
@@ -543,6 +547,16 @@ impl Session {
         outcomes(self.save.update_quests(&self.content))
     }
 
+    /// Deko neu nach dem Weltzustand richten (nach Gesprächen, die Merker setzen);
+    /// `true`, wenn sie sich geändert hat.
+    pub fn refresh_decor(&mut self) -> bool {
+        let before = (self.map.decor_front.clone(), self.map.decor_back.clone());
+        self.map.decor_back.clone_from(&self.base_decor.0);
+        self.map.decor_front.clone_from(&self.base_decor.1);
+        adapt_decor(&mut self.map, &self.save);
+        before.0 != self.map.decor_front || before.1 != self.map.decor_back
+    }
+
     /// Ist die Figur gerade zu sehen (`show_if` in `characters.toml`)?
     pub fn present(&self, character: &str) -> bool {
         self.content
@@ -757,6 +771,29 @@ pub const SPRINGS_FREED: &str = "quellen_befreit";
 
 /// Verblasste Deko (`…-blass`) bekommt mit jeder befreiten Quelle zum Teil ihre Farbe zurück
 /// (`…-bunt`, E-277): je Stück fest über seine Lage verteilt, nach fünf Quellen alles.
+/// Merker eines Fests im Dorf: Deko `…-fest` (Girlanden, Laternen) hängt nur dann (E-301).
+pub const PARTY: &str = "fest";
+
+/// Deko nach dem Weltzustand: verblasste Blumen werden bunt (E-277), verdorrte Quellen
+/// blühen nach `befreit.<name>` (`…-verdorrt` → `…-befreit`), Festschmuck nur beim Fest.
+fn adapt_decor(map: &mut Map, save: &SaveGame) {
+    use elora_map::Art;
+    recolor(map, save.flag(SPRINGS_FREED));
+    let party = save.flag(PARTY) != 0;
+    let keep =
+        |d: &elora_map::Decor| party || !matches!(&d.art, Art::Builtin(n) if n.ends_with("-fest"));
+    map.decor_back.retain(keep);
+    map.decor_front.retain(keep);
+    for d in map.decor_back.iter_mut().chain(map.decor_front.iter_mut()) {
+        if let Art::Builtin(name) = &d.art
+            && let Some(stem) = name.strip_suffix("-verdorrt")
+            && save.flag(&format!("befreit.{stem}")) != 0
+        {
+            d.art = Art::Builtin(format!("{stem}-befreit"));
+        }
+    }
+}
+
 fn recolor(map: &mut Map, freed: i64) {
     use elora_map::Art;
     let mut fix = |d: &mut elora_map::Decor| {

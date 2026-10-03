@@ -48,6 +48,10 @@ pub const DECOR_FILES: &[(&str, &[u8])] = assets!("decor":
     "mauer", "giesskanne", "vogelhaus", "briefkasten", "korb", "kuerbisse", "katze", "vogel",
     "schmetterling", "rauch", "baumstumpf", "farn", "beerenbusch", "loewenzahn", "trittsteine",
     "blumentopf-blass", "blumentopf-bunt",
+    // Kapitel 1 (R2-M2.1)
+    "bienenstock", "beutenstapel", "honigstand", "riesenblume-rosa", "riesenblume-gelb",
+    "riesenblume-lila", "girlande-fest", "festlaterne-fest", "festlaterne-gelb-fest",
+    "bluetenquelle-verdorrt", "bluetenquelle-befreit",
 );
 
 /// Eingebaute Hintergrund-Grafik (ebenfalls über [`Art::Builtin`] benutzt).
