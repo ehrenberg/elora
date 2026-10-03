@@ -362,3 +362,89 @@ fn hook_grabs_hook_point_and_passes_through_it_otherwise() {
     c.hook_wilt = Some(false);
     assert!(c.hook_point_active(10) && !c.hook_point_active(11));
 }
+
+/// Ruck-Stelle (R2-M2.1, M2.1.5): Schacht aus Stein, eine Hook-Blüte 12 Tiles über dem
+/// Boden und dicht an der rechten Wand, rechts ein Steinturm 9 Tiles über der Blüte
+/// (unten ein Durchgang).
+/// Ohne Hook-Ruck kommt Elora nicht hinauf, mit ihm schon. Die Karten bauen die Stelle
+/// genauso (`apps/elora-client/src/editor/kapitel1.rs`, `ruck_gate`).
+fn ruck_gate_world() -> (elora_sim::World, f32) {
+    use elora_sim::{Collision, Tile, Tuning, World};
+    let (w, h) = (24, 40);
+    let floor = h - 2;
+    let mut t = vec![Tile::Air; w * h];
+    for x in 0..w {
+        for y in floor..h {
+            t[y * w + x] = Tile::Solid;
+        }
+    }
+    // Schacht: Wände x = 7 und x = 13 (Stein), Sims rechts ab x = 13
+    let flower_y = floor - 12;
+    let ledge_y = flower_y - 9;
+    for y in ledge_y..floor - 3 {
+        t[y * w + 7] = Tile::Unhookable;
+    }
+    // Turm mit Durchgang unten (3 Tiles), wie in den Karten
+    for y in ledge_y..floor - 3 {
+        for x in 13..20 {
+            t[y * w + x] = Tile::Unhookable;
+        }
+    }
+    t[flower_y * w + 12] = Tile::HookPoint;
+    let world = World::new(Tuning::default(), Collision::new(w, h, t));
+    (world, ledge_y as f32 * 32.0)
+}
+
+/// Kommt Elora mit diesen Zeitpunkten auf den Sims?
+fn ruck_gate_try(ruck: bool, release: u32, ruck_at: u32, jump_at: u32, right_at: u32) -> bool {
+    use elora_sim::{Abilities, PlayerInput, Vec2};
+    let (mut w, ledge_top) = ruck_gate_world();
+    let i = w.join();
+    w.spawn_character(i, Vec2::new(10.0 * 32.0 + 16.0, 38.0 * 32.0 - 15.0));
+    if ruck {
+        w.set_abilities(i, Abilities::ALL);
+    }
+    for _ in 0..10 {
+        w.step(&[PlayerInput::default()]);
+    }
+    for t in 0..160u32 {
+        let c = &w.character(i).expect("lebt").core;
+        // steht (Füße über der Kante) über dem Sims
+        if c.pos.y < ledge_top - 14.0 && c.pos.x > 13.0 * 32.0 + 8.0 && c.pos.x < 20.0 * 32.0 {
+            return true;
+        }
+        let input = PlayerInput {
+            target_x: 60,
+            target_y: -300,
+            hook: t < release,
+            ability: ruck && t == ruck_at,
+            jump: t == jump_at || t == 0,
+            direction: i8::from(t >= right_at),
+            ..PlayerInput::default()
+        };
+        w.step(&[input]);
+    }
+    false
+}
+
+#[test]
+fn ruck_gate_needs_the_hook_ruck() {
+    let reach = |ruck: bool| {
+        (5..60).any(|release| {
+            let rucks: Vec<u32> = if ruck {
+                (1..release).step_by(2).collect()
+            } else {
+                vec![0]
+            };
+            rucks.into_iter().any(|ruck_at| {
+                (10..100).step_by(3).any(|jump_at| {
+                    (0..110)
+                        .step_by(6)
+                        .any(|right_at| ruck_gate_try(ruck, release, ruck_at, jump_at, right_at))
+                })
+            })
+        })
+    };
+    assert!(!reach(false), "ohne Hook-Ruck erreichbar");
+    assert!(reach(true), "mit Hook-Ruck nicht erreichbar");
+}

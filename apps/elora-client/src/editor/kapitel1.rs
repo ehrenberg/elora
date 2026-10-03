@@ -16,7 +16,7 @@ use elora_map::{Map, ObjectKind};
 use elora_sim::Vec2;
 
 use super::prolog::{
-    Grid, T, animate, at, chest, corner, creature, decor, finish, npc, o, plant, sign,
+    Grid, T, animate, at, chest, corner, creature, decor, finish, npc, o, plant, ruck_gate, sign,
 };
 use super::release;
 
@@ -98,8 +98,8 @@ pub fn wiese_2() -> Map {
         g.fill((x, x), (39, 39), '*');
     }
     g.ground(215, 230, 44);
-    // hoher Sims über der Strecke: Biene 4 (Hook-Ruck, M2.1.5)
-    g.fill((186, 192), (22, 22), '#');
+    // alter Steinturm am Ende: Ruck-Stelle mit Biene 4 (M2.1.5)
+    let ruck_top = ruck_gate(&mut g, 276, 42);
     // Hügel, Quellstein und Weg nach wiese-3
     g.ground(231, 250, 40);
     g.ground(251, w - 1, 42);
@@ -124,11 +124,11 @@ pub fn wiese_2() -> Map {
         creature("kaefer-3", "stachelkaefer", 145, 49, 26.0),
         plant("blume-2", 152, 44),
         creature("blaeser-2", "pollenblaeser", 220, 44, 60.0),
-        bee("biene-4", 189, 22),
+        bee("biene-4", 285, ruck_top),
         plant("blume-3", 228, 44),
         creature("huepfer-2", "grashuepfer", 240, 40, 28.0),
         creature("kaefer-4", "stachelkaefer", 262, 42, 26.0),
-        o("quellstein", at(272, 42, 40.0), ObjectKind::SavePoint),
+        o("quellstein", at(266, 42, 40.0), ObjectKind::SavePoint),
         o("ost", at(292, 42, 28.0), ObjectKind::Spawn),
         edge_exit("weg-wiese-3", w - 2, h, "wiese-3", "west"),
     ];
@@ -147,7 +147,7 @@ pub fn wiese_2() -> Map {
         decor("tree-round", 152.0, 44),
         big("riesenblume-lila", 222.0, 44, 1.6),
         decor("tree-round", 246.0, 40),
-        big("riesenblume-rosa", 284.0, 42, 1.6),
+        big("riesenblume-rosa", 272.0, 42, 1.4),
     ];
     m.decor_front = vec![
         decor("blumentopf-bunt", 20.0, 42),
@@ -157,7 +157,7 @@ pub fn wiese_2() -> Map {
         decor("farn", 144.0, 49),
         decor("loewenzahn", 236.0, 40),
         decor("beerenbusch", 256.0, 42),
-        decor("farn", 278.0, 42),
+        decor("farn", 292.0, 42),
     ];
     thorn_decor(&mut m, 55, 158, 214);
     for (tx, ty) in [

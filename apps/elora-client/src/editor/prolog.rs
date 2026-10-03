@@ -68,6 +68,21 @@ impl Grid {
     }
 }
 
+/// Ruck-Stelle (M2.1.5): Steinwand links, Schacht 5 Tiles breit,
+/// Hook-Blüte 12 Tiles über dem Boden an der rechten Seite, rechts ein Steinturm 7 Tiles breit,
+/// dessen Oberkante 9 Tiles über der Blüte liegt – nur mit Hook-Ruck erreichbar. Geprüft in
+/// `crates/elora-sim/tests/abilities.rs` (`ruck_gate_needs_the_hook_ruck`). Unten führt ein
+/// Durchgang (3 Tiles hoch) durch Wand und Turm, damit der Weg frei bleibt. Liefert die Zeile
+/// der Turm-Oberkante.
+pub(super) fn ruck_gate(g: &mut Grid, x0: usize, floor: usize) -> usize {
+    let top = floor - 21;
+    g.fill((x0, x0), (top, floor - 4), '%');
+    g.fill((x0 + 1, x0 + 5), (top, floor - 1), '.');
+    g.fill((x0 + 5, x0 + 5), (floor - 12, floor - 12), '*');
+    g.fill((x0 + 6, x0 + 12), (top, floor - 4), '%');
+    top
+}
+
 /// Mitte über dem Boden (Oberkante von Zeile `ty`) in Spalte `tx` für ein Objekt der Höhe `h`.
 pub(super) fn at(tx: usize, ty: usize, h: f32) -> Vec2 {
     Vec2::new(tx as f32 * T + T / 2.0, ty as f32 * T - h / 2.0 - 1.0)
@@ -318,6 +333,8 @@ pub fn tauwinkel() -> Map {
     // Tüftels Hof: Grube unter einer Decke, Felsbogen mit Stein- und Erd-Überhang,
     // Bröckelbrücke, Block und hoher Sitz unter einem Überhang
     g.ground(181, 252, 38);
+    // Ruck-Strecke hinter der Werkstatt: Tor öffnet sich, wenn Tüftel den Hook-Ruck gebaut hat
+    let ruck_top = ruck_gate(&mut g, 170, 38);
     g.fill((186, 203), (38, 41), '.');
     g.fill((185, 204), (29, 30), '#');
     g.fill((211, 221), (26, 34), '#');
@@ -348,7 +365,14 @@ pub fn tauwinkel() -> Map {
         o("brunnen", at(110, 38, 40.0), ObjectKind::SavePoint),
         npc("oma", 123, 38, -1, 0.0),
         npc("tueftel", 158, 38, 1, 32.0),
-        sign("schild-hook", 182, 38),
+        sign("schild-hook", 184, 38),
+        sign("schild-ruck", 172, 38),
+        chest(
+            "truhe-ruck",
+            179,
+            ruck_top,
+            &[("glanztropfen", 40), ("tautrank", 1)],
+        ),
         chest(
             "truhe-hook",
             244,
@@ -396,8 +420,8 @@ pub fn tauwinkel() -> Map {
         decor("fahne-blass", 144.0, 38),
         decor("laterne", 148.0, 38),
         decor("werkstatt", 166.0, 38),
-        decor("holzstapel", 174.0, 38),
-        decor("faesser", 177.5, 38),
+        decor("holzstapel", 148.0, 38),
+        decor("faesser", 151.5, 38),
         decor("tree-round", 208.0, 38),
         decor("tree-pine", 255.0, 36),
         decor("schmiede", 272.0, 32),
@@ -536,6 +560,8 @@ pub fn wiese() -> Map {
     // Anstieg zum Wiesenrand, im Osten dichter Wald am Hang
     g.ground(241, 250, 43);
     g.ground(251, w - 1, 40);
+    // Ruck-Stelle mit Biene 5 (Rückkehr nach Kapitel 1)
+    let ruck_top = ruck_gate(&mut g, 252, 40);
     let mut m = g.map("Blütenwiesen 1");
     m.adventure.objects = vec![
         o(
@@ -590,7 +616,7 @@ pub fn wiese() -> Map {
         ),
         plant("blume-4", 236, 46),
         creature("kaefer-6", "stachelkaefer", 245, 43, 26.0),
-        creature("huepfer-4", "grashuepfer", 256, 40, 28.0),
+        creature("huepfer-4", "grashuepfer", 270, 40, 28.0),
         o(
             "wiesenrand",
             corner(266, 30),
@@ -601,6 +627,13 @@ pub fn wiese() -> Map {
         o("quellstein", at(280, 40, 40.0), ObjectKind::SavePoint),
         // weiter in die Blütenwiesen (Kapitel 1)
         o("ost", at(292, 40, 28.0), ObjectKind::Spawn),
+        o(
+            "biene-5",
+            at(261, ruck_top, 24.0),
+            ObjectKind::Collectible {
+                item: "biene".into(),
+            },
+        ),
         o(
             "weg-wiese-2",
             corner(w - 2, 0),
@@ -651,7 +684,7 @@ pub fn wiese() -> Map {
         decor("farn", 219.0, 30),
         decor("baumstumpf", 233.0, 46),
         decor("beerenbusch", 248.0, 43),
-        decor("loewenzahn", 262.0, 40),
+        decor("loewenzahn", 268.0, 40),
         decor("farn", 274.0, 40),
         decor("beerenbusch", 287.0, 40),
     ]);
