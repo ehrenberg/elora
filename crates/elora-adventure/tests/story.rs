@@ -356,3 +356,80 @@ fn exits_must_lead_to_existing_entrances() {
     let errors = map_links(&[("dorf", &a)]);
     assert!(errors[0].contains("Zielkarte `wiese-1` fehlt"));
 }
+
+/// Kapitel 1 (R2-M2.1): Wabe, Hummel, Quellfunke bei Tüftel, Fest bei Oma, Granatwerfer.
+#[test]
+fn chapter_one_runs_from_wabe_to_the_party() {
+    let (c, mut g) = game();
+    g.run(&c, &["quest bluetenquelle start".into()]);
+    g.on_reach(&c, "wiese-2", None);
+    assert!(g.holds(&c, "quest bluetenquelle schritt wabe"));
+    // Wabe: Hauptaufgabe weiter, Nebenaufgabe beginnt
+    let (mut conv, _) = Conversation::start(&c, &mut g, "wabe").unwrap();
+    assert_eq!(conv.node, "begruessung");
+    conv.choose(&c, &mut g, 0);
+    assert!(g.holds(&c, "quest wabes_bienen aktiv"));
+    assert!(g.holds(&c, "quest bluetenquelle schritt wurzeln"));
+    g.on_reach(&c, "wiese-3", None);
+    g.on_reach(&c, "wiese-arena", None);
+    assert!(g.holds(&c, "quest bluetenquelle schritt hueter"));
+    // Hüter besiegt (Merker setzt die Sitzung), Quellfunke als Beute
+    g.location.map = "wiese-arena".into();
+    g.set_flag("besiegt.brummbaer", 1);
+    let kind = c
+        .creatures
+        .iter()
+        .position(|k| k.name == "brummbaer")
+        .unwrap();
+    g.on_event(
+        &c,
+        &c.creatures,
+        0,
+        &Event::CreatureDeath {
+            id: 1,
+            kind,
+            pos: Vec2::ZERO,
+            killer: Some(0),
+        },
+    );
+    g.add_item(&c, "quellfunke", 1).unwrap();
+    assert!(g.holds(&c, "quest bluetenquelle schritt funke"));
+    // die Hummel spricht und deutet auf den Dürren
+    let (mut conv, _) = Conversation::start(&c, &mut g, "hummel").unwrap();
+    conv.choose(&c, &mut g, 1);
+    assert_eq!(g.flag("duerrer.gesehen"), 1);
+    // Tüftel baut den Hook-Ruck
+    let (conv, _) = Conversation::start(&c, &mut g, "tueftel").unwrap();
+    assert_eq!(conv.node, "funke");
+    assert!(g.abilities().has(elora_sim::Ability::HookRuck));
+    assert_eq!(g.count("quellfunke"), 0, "abgegeben");
+    assert_eq!(g.flag("quellen_befreit"), 1);
+    assert!(g.holds(&c, "quest bluetenquelle schritt fest"));
+    // Fest bei Oma: Kapitel fertig, Kapitel 2 angekündigt
+    let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
+    assert_eq!(conv.node, "fest");
+    assert!(g.holds(&c, "quest bluetenquelle erledigt"));
+    assert!(g.holds(&c, "quest murmelwald aktiv"));
+    // Klonk gibt den Granatwerfer (E-243), nur einmal
+    let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
+    assert_eq!(conv.node, "granate");
+    assert!(g.weapons.contains_key(&elora_sim::Weapon::Grenade));
+    let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
+    assert_ne!(conv.node, "granate");
+}
+
+#[test]
+fn wabes_bees_give_the_honeycomb_hat() {
+    let (c, mut g) = game();
+    g.run(&c, &["quest wabes_bienen start".into()]);
+    g.add_item(&c, "biene", 4).unwrap();
+    g.update_quests(&c);
+    assert!(g.holds(&c, "quest wabes_bienen schritt sammeln"));
+    g.add_item(&c, "biene", 1).unwrap();
+    g.update_quests(&c);
+    let (conv, _) = Conversation::start(&c, &mut g, "wabe").unwrap();
+    assert_eq!(conv.node, "bienen_da");
+    assert!(g.holds(&c, "quest wabes_bienen erledigt"));
+    assert_eq!(g.count("wabenhut"), 1);
+    assert_eq!(g.count("biene"), 0);
+}

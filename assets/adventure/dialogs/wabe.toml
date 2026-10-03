@@ -1,0 +1,96 @@
+# Imkerin Wabe (R2-M2.1, Kapitel 1)
+speaker = "wabe"
+
+[[start]]
+if = "quest wabes_bienen erledigt"
+node = "danke"
+
+[[start]]
+if = "quest wabes_bienen schritt bringen"
+node = "bienen_da"
+
+[[start]]
+if = "quest wabes_bienen aktiv und merker besiegt.brummbaer"
+node = "zurueck"
+
+[[start]]
+if = "quest wabes_bienen aktiv"
+node = "erinnerung"
+
+[[start]]
+node = "begruessung"
+
+[[node]]
+id = "begruessung"
+text = { de = "Oh! Ein Besuch! Entschuldige das Durcheinander – die große Hummel tobt seit Tagen über der Blütenquelle, und meine Bienen sind vor Schreck ausgeschwärmt. Fünf finde ich einfach nicht mehr.", en = "Oh! A visitor! Sorry about the mess – the big bumblebee has been raging over the Blossom Spring for days, and my bees swarmed off in fright. I just can't find five of them." }
+
+[[node.choice]]
+tone = "freundlich"
+text = { de = "Ich halte die Augen offen und bringe sie dir!", en = "I'll keep my eyes open and bring them to you!" }
+next = "danke_vorab"
+do = ["quest wabes_bienen start", "zuneigung wabe +1"]
+
+[[node.choice]]
+tone = "neugierig"
+text = { de = "Die Hummel tobt? Warum denn?", en = "The bumblebee is raging? Why?" }
+next = "hummel"
+
+[[node.choice]]
+tone = "frech"
+text = { de = "Bienen? Die stechen doch.", en = "Bees? But they sting." }
+next = "stechen"
+
+[[node]]
+id = "hummel"
+text = { de = "Ich weiß es nicht. Früher hat sie die Quelle bewacht und gesummt wie eine alte Großmutter. Jetzt ist sie ganz grau im Gesicht und brummt jeden an.", en = "I don't know. She used to guard the spring and hum like an old grandmother. Now her face is all grey and she grumbles at everyone." }
+next = "bitte"
+
+[[node]]
+id = "stechen"
+text = { de = "Nur wenn man sie ärgert. Genau wie ich.", en = "Only if you annoy them. Just like me." }
+next = "bitte"
+
+[[node]]
+id = "bitte"
+text = { de = "Würdest du nach meinen Bienen Ausschau halten? Manche sitzen bestimmt da oben, wo nur dein Hook hinkommt.", en = "Would you look out for my bees? Some are surely sitting up high where only your hook can reach." }
+
+[[node.choice]]
+tone = "freundlich"
+text = { de = "Na klar.", en = "Of course." }
+next = "danke_vorab"
+do = ["quest wabes_bienen start"]
+
+[[node.choice]]
+text = { de = "Vielleicht später.", en = "Maybe later." }
+
+[[node]]
+id = "danke_vorab"
+text = { de = "Du bist ein Schatz! Und sei vorsichtig da oben bei der Quelle.", en = "You're a treasure! And be careful up there by the spring." }
+
+[[node]]
+id = "erinnerung"
+text = { de = "Hast du meine Bienen gesehen? Fünf Stück, kleine gelbe Pelzknäuel.", en = "Have you seen my bees? Five of them, little yellow furballs." }
+
+[[node]]
+id = "zurueck"
+text = { de = "Die wilden Bienen von der Quelle sind zurückgeflogen – ganz brav! Du hast die Hummel beruhigt, oder? Fehlen nur noch meine fünf Ausreißer.", en = "The wild bees from the spring have flown back – very well behaved! You calmed the bumblebee, didn't you? Only my five runaways are still missing." }
+
+[[node]]
+id = "bienen_da"
+text = { de = "Da sind sie ja alle! Ich könnte dich drücken! Hier, mein Wabenhut – Heilblumen mögen ihn, du wirst sehen.", en = "There they all are! I could hug you! Here, my honeycomb hat – healing blossoms like it, you'll see." }
+do = ["zuneigung wabe +2"]
+
+[[node]]
+id = "danke"
+text = { de = "Hörst du das Summen? Ganz zufrieden. Danke dir, Elora.", en = "Hear that humming? Perfectly content. Thank you, Elora." }
+
+[[bark]]
+if = "quest wabes_bienen aktiv"
+text = { de = "Summ, summ … wo seid ihr nur?", en = "Buzz, buzz … where are you?" }
+
+[[bark]]
+if = "quest wabes_bienen erledigt"
+text = { de = "Meine Bienen summen wieder!", en = "My bees are humming again!" }
+
+[[bark]]
+text = { de = "Hallo! Vorsicht, nicht in die Stöcke greifen!", en = "Hello! Careful, don't reach into the hives!" }

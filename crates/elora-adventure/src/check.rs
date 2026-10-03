@@ -227,6 +227,11 @@ fn quests(c: &Content) -> Result<(), String> {
             cond(c, f, &format!("{at} fail_if"))?;
         }
     }
+    for (id, ch) in &c.characters {
+        if let Some(s) = &ch.show_if {
+            cond(c, s, &format!("characters.toml `{id}` show_if"))?;
+        }
+    }
     Ok(())
 }
 

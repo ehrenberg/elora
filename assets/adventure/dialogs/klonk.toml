@@ -2,6 +2,10 @@
 speaker = "klonk"
 
 [[start]]
+if = "quest bluetenquelle erledigt und nicht merker klonk.granate"
+node = "granate"
+
+[[start]]
 if = "quest brunnen schritt klonk"
 node = "uebung"
 
@@ -38,6 +42,15 @@ do = ["schmied"]
 
 [[node.choice]]
 text = { de = "Nur mal schauen.", en = "Just looking." }
+
+[[node]]
+id = "granate"
+text = { de = "Hmpf. Die Hummel beruhigt, ja? Dann bist du so weit. Hier, mein alter Granatwerfer. Mit {taste:grenade} nimmst du ihn in die Hand. Pass auf Omas Beete auf.", en = "Hmph. Calmed the bumblebee, did you? Then you're ready. Here, my old grenade launcher. Press {taste:grenade} to pick it up. Mind Oma's flowerbeds." }
+do = ["waffe granate", "gib munition_granate 1", "merker klonk.granate = 1"]
+
+[[bark]]
+if = "merker fest.kapitel1"
+text = { de = "*klong* … Festlaternen schmieden ist auch Arbeit.", en = "*clang* … forging party lanterns is work too." }
 
 [[bark]]
 text = { de = "*klong* *klong*", en = "*clang* *clang*" }

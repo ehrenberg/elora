@@ -2,6 +2,10 @@
 speaker = "tueftel"
 
 [[start]]
+if = "quest bluetenquelle schritt funke"
+node = "funke"
+
+[[start]]
 if = "quest brunnen schritt tueftel"
 node = "rat"
 
@@ -43,6 +47,20 @@ do = ["baum"]
 
 [[node.choice]]
 text = { de = "Bis später!", en = "See you later!" }
+
+[[node]]
+id = "funke"
+text = { de = "Ein Quellfunke! Wenn man den … und dann … ja! Fertig! Dein Hook hat jetzt einen Ruck: Hängt er fest, drück {taste:ability}, und du schnellst hin.", en = "A spring spark! If you take it … and then … yes! Done! Your hook now has a jolt: once it's attached, press {taste:ability} and you shoot towards it." }
+next = "hof"
+do = ["faehigkeit hook-ruck", "merker quellen_befreit = 1", "merker fest.kapitel1 = 1", "merker hof.ruck = 1", "zuneigung tueftel +1"]
+
+[[node]]
+id = "hof"
+text = { de = "Hinten in meinem Hof hab ich was aufgemacht. Eine Strecke, die schafft man nur mit Ruck. Probier's aus! Und dann – ab zu Oma, die will feiern.", en = "I've opened something at the back of my yard. A course you can only manage with a jolt. Give it a try! And then – off to Oma, she wants to celebrate." }
+
+[[bark]]
+if = "merker hof.ruck"
+text = { de = "Hast du den Ruck schon ausprobiert?", en = "Have you tried the jolt yet?" }
 
 [[bark]]
 text = { de = "Hmm … ja … nein …", en = "Hmm … yes … no …" }

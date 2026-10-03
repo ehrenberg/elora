@@ -36,19 +36,83 @@ id = "wiesenrand"
 text = { de = "Den Quellstein am Wiesenrand erreichen", en = "Reach the spring stone at the edge of the meadow" }
 goal = { type = "reach", map = "wiese-1", zone = "wiesenrand" }
 
-# Kapitel 1 – beginnt nach dem Prolog, Fortsetzung mit dem nächsten Abschnitt
+# Kapitel 1 – Blütenwiesen (R2-M2.1, docs/release-2/m2-1-plan.md)
 [[quest]]
 id = "bluetenquelle"
 kind = "main"
 giver = "oma"
 name = { de = "Die Blütenquelle", en = "The Blossom Spring" }
-desc = { de = "Die Blütenquelle liegt tief in den Blütenwiesen. Irgendwo dort brummt die alte Hummel.", en = "The Blossom Spring lies deep in the Blütenwiesen. Somewhere there, the old bumblebee is buzzing." }
-reward = { xp = 100 }
+desc = { de = "Die Blütenquelle liegt tief in den Blütenwiesen. Irgendwo dort brummt die alte Hummel – und sie klingt gar nicht glücklich.", en = "The Blossom Spring lies deep in the Blütenwiesen. Somewhere there, the old bumblebee is buzzing – and it doesn't sound happy at all." }
+reward = { xp = 150, glanztropfen = 80 }
+next = "murmelwald"
 
 [[quest.step]]
 id = "tiefer"
 text = { de = "Tiefer in die Blütenwiesen vordringen", en = "Venture deeper into the Blütenwiesen" }
+goal = { type = "reach", map = "wiese-2" }
+
+[[quest.step]]
+id = "wabe"
+text = { de = "Mit der Imkerin an den Bienenstöcken sprechen", en = "Talk to the beekeeper by the beehives" }
+goal = { type = "talk", who = "wabe" }
+
+[[quest.step]]
+id = "wurzeln"
+text = { de = "Unter den Wurzeln hindurch nach oben", en = "Pass beneath the roots and climb up" }
+goal = { type = "reach", map = "wiese-3" }
+
+[[quest.step]]
+id = "quelle"
+text = { de = "Die Blütenquelle erreichen", en = "Reach the Blossom Spring" }
+goal = { type = "reach", map = "wiese-arena" }
+
+[[quest.step]]
+id = "hueter"
+text = { de = "Die Brummbär-Hummel beruhigen", en = "Calm the Bumblebear" }
+goal = { type = "defeat", kind = "brummbaer", count = 1, map = "wiese-arena" }
+
+[[quest.step]]
+id = "funke"
+text = { de = "Tüftel den Quellfunken bringen", en = "Bring Tüftel the spring spark" }
+goal = { type = "bring", item = "quellfunke", count = 1, to = "tueftel" }
+
+[[quest.step]]
+id = "fest"
+text = { de = "Mit Oma Pfütze am Brunnen feiern", en = "Celebrate with Oma Pfütze at the well" }
+goal = { type = "talk", who = "oma" }
+
+# Kapitel 2 – Ankündigung, Fortsetzung mit R2-M2.2
+[[quest]]
+id = "murmelwald"
+kind = "main"
+giver = "oma"
+name = { de = "Das Flüstern im Murmelwald", en = "Whispers in the Murmelwald" }
+desc = { de = "Die zweite Quelle liegt im Murmelwald. Oma sagt, die Wurzeln dort erzählen alte Geschichten.", en = "The second spring lies in the Murmelwald. Oma says the roots there tell old stories." }
+reward = { xp = 100 }
+
+[[quest.step]]
+id = "aufbruch"
+text = { de = "In den Murmelwald aufbrechen (bald)", en = "Set out for the Murmelwald (soon)" }
 goal = { type = "manual" }
+
+# Nebenaufgabe in Kapitel 1 (E-300)
+[[quest]]
+id = "wabes_bienen"
+kind = "side"
+giver = "wabe"
+name = { de = "Wabes Bienen", en = "Wabe's Bees" }
+desc = { de = "Die Hummel hat Wabes Bienen aufgescheucht. Fünf haben sich in den Blütenwiesen verirrt – manche an Stellen, an die man nur mit dem Hook kommt.", en = "The bumblebee scared off Wabe's bees. Five have got lost in the Blütenwiesen – some in places only the hook can reach." }
+reward = { xp = 60, items = [{ item = "wabenhut", count = 1 }] }
+
+[[quest.step]]
+id = "sammeln"
+text = { de = "Fünf Bienen finden", en = "Find five bees" }
+goal = { type = "collect", item = "biene", count = 5 }
+
+[[quest.step]]
+id = "bringen"
+text = { de = "Wabe die Bienen bringen", en = "Bring Wabe the bees" }
+goal = { type = "bring", item = "biene", count = 5, to = "wabe" }
 
 # Nebenaufgabe, die scheitern kann (E-250)
 [[quest]]

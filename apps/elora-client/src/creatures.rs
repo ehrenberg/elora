@@ -33,6 +33,8 @@ pub struct CreatureArt {
     looks: HashMap<&'static str, Look>,
     glanztropfen: Mesh,
     item: Mesh,
+    /// Eigene Bilder einzelner Gegenstände.
+    items: HashMap<&'static str, Mesh>,
     /// NPCs (A1.7), Ursprung am Boden.
     characters: HashMap<&'static str, Mesh>,
     /// Objekte mit zwei Zuständen (aus, an), Ursprung am Boden.
@@ -45,8 +47,9 @@ macro_rules! adventure_svgs {
     };
 }
 
-const CHARACTER_FILES: &[(&str, &[u8])] =
-    adventure_svgs!("characters": "oma", "klonk", "lotte", "tueftel", "pip", "wegweiser");
+const CHARACTER_FILES: &[(&str, &[u8])] = adventure_svgs!("characters": "oma", "klonk", "lotte", "tueftel", "pip", "wegweiser", "wabe", "hummel");
+/// Gegenstände mit eigenem Bild (R2-M2.1); alle anderen zeigen `item.svg`.
+const ITEM_FILES: &[(&str, &[u8])] = adventure_svgs!("items": "biene", "quellfunke", "wabenhut");
 /// Objekt und die Namen seiner beiden Teile (aus, an).
 const OBJECT_FILES: &[(&str, &[u8], [&str; 2])] = &[
     (
@@ -150,6 +153,10 @@ impl CreatureArt {
                 include_bytes!("../../../assets/adventure/items/glanztropfen.svg"),
                 "items/glanztropfen.svg",
             ),
+            items: ITEM_FILES
+                .iter()
+                .map(|&(name, data)| (name, whole(data, &format!("items/{name}.svg"))))
+                .collect(),
             item: whole(
                 include_bytes!("../../../assets/adventure/items/item.svg"),
                 "items/item.svg",
@@ -251,22 +258,23 @@ impl CreatureArt {
 
     /// Beute: Glanztropfen schweben leicht, andere Gegenstände als Glitzerstein.
     /// Symbol eines Gegenstands (HUD, Menüs), Mitte `pos`, `scale` 1 = Spielgröße.
-    pub fn draw_loot_icon(&self, batch: &mut ShapeBatch, item: &str, pos: Vec2, scale: f32) {
-        let mesh = if item == "glanztropfen" {
+    /// Bild eines Gegenstands (eigenes, Glanztropfen oder das allgemeine).
+    fn item_mesh(&self, item: &str) -> &Mesh {
+        if item == "glanztropfen" {
             &self.glanztropfen
         } else {
-            &self.item
-        };
+            self.items.get(item).unwrap_or(&self.item)
+        }
+    }
+
+    pub fn draw_loot_icon(&self, batch: &mut ShapeBatch, item: &str, pos: Vec2, scale: f32) {
+        let mesh = self.item_mesh(item);
         let t = Affine::translate(pos).then(Affine::scale(scale, scale));
         batch.draw_mesh(mesh, &t, &Tint::default());
     }
 
     pub fn draw_loot(&self, batch: &mut ShapeBatch, item: &str, pos: Vec2, time: f32) {
-        let mesh = if item == "glanztropfen" {
-            &self.glanztropfen
-        } else {
-            &self.item
-        };
+        let mesh = self.item_mesh(item);
         let bob = (time * 4.0 + pos.x * 0.05).sin() * 1.5;
         batch.draw_mesh(
             mesh,

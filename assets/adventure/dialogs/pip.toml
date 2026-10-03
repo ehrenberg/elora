@@ -109,6 +109,10 @@ id = "beleidigt"
 text = { de = "Du hast mich bei Oma verpetzt. Ich rede nicht mit dir. … Na gut, ein bisschen. Aber nur ein bisschen.", en = "You told on me to Oma. I'm not talking to you. … Oh, all right, a little. But only a little." }
 
 [[bark]]
+if = "merker besiegt.brummbaer"
+text = { de = "Du hast die Riesenhummel geschafft? Wahnsinn!", en = "You beat the giant bumblebee? Amazing!" }
+
+[[bark]]
 if = "quest brunnen neu"
 text = { de = "Elora! Komm schnell!", en = "Elora! Come quick!" }
 

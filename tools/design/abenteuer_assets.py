@@ -15,7 +15,7 @@ import re  # noqa: E402
 from abenteuer_figuren import (glanztropfen, glitzerstein, grashuepfer, klonk, lotte, oma_pfuetze, pip,  # noqa: E402
                                pollenblaeser, quellstein, schalter, stachelkaefer, truhe, tueftel)
 
-from kapitel1_entwuerfe import biene, hummel  # noqa: E402
+from kapitel1_entwuerfe import biene, hummel, quellfunke, wabe, wabenhut  # noqa: E402
 
 
 def strohpuppe():
@@ -63,6 +63,9 @@ CHARACTERS = {
     'pip': (0.7, pip()),
     # gleiche Größe wie die Deko (Welteinheiten): 1 / 0,36
     'wegweiser': (1 / 0.36 * 0.55, wegweiser_npc()),
+    # Kapitel 1 (R2-M2.1): Imkerin Wabe, Hummel als Sprecherin nach dem Kampf
+    'wabe': (1.0, wabe()),
+    'hummel': (0.6, f'<g transform="translate(0,-60)">{hummel("ruhig")}</g>'),
 }
 
 
@@ -131,9 +134,12 @@ def main():
                         f'  {body}\n</svg>\n')
     items = 'assets/adventure/items'
     os.makedirs(items, exist_ok=True)
-    for name, art, scale in (('glanztropfen', glanztropfen(), 0.5), ('item', glitzerstein(), 0.4)):
+    for name, art, scale in (('glanztropfen', glanztropfen(), 0.5), ('item', glitzerstein(), 0.4),
+                             # eigene Bilder je Gegenstand (R2-M2.1), sonst gilt `item`
+                             ('biene', biene(1.0, 0, 0), 0.9), ('quellfunke', quellfunke(), 0.45),
+                             ('wabenhut', wabenhut(), 0.45)):
         with open(f'{items}/{name}.svg', 'w') as f:
-            dy = 8 if name == 'item' else 3
+            dy = {'item': 8, 'glanztropfen': 3}.get(name, 0)
             f.write(svg({'': f'<g transform="translate(0,{dy}) scale({scale})">{art}</g>'},
                         f'Beute „{name}“ (A1.2). Ursprung = Mitte.'))
 

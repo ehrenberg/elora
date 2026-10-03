@@ -91,12 +91,27 @@ bonuses = [{ max_health = 1 }, { glide_fall = -0.2 }]
 name = { de = "Tauumhang", en = "Dew cape" }
 desc = { de = "Riecht ein bisschen nach Morgen.", en = "Smells a little like morning." }
 
+[[item]]
+id = "wabenhut"
+type = "equipment"
+slot = "hat"
+rarity = "rare"
+bonuses = [{ heal_bonus = 1 }]
+name = { de = "Wabenhut", en = "Honeycomb hat" }
+desc = { de = "Von Imkerin Wabe. Heilblumen mögen ihn – sie heilen etwas mehr.", en = "From beekeeper Wabe. Healing blossoms like it – they heal a little more." }
+
 # Sammelstücke (Weltbuch §8)
 [[item]]
 id = "quellfunke"
 type = "key"
 name = { de = "Quellfunke", en = "Spring spark" }
 desc = { de = "Ein Funke der Blütenquelle. Tüftel kann daraus etwas bauen.", en = "A spark of the Blossom Spring. Tüftel can build something from it." }
+
+[[item]]
+id = "biene"
+type = "collectible"
+name = { de = "Biene", en = "Bee" }
+desc = { de = "Eine von Wabes ausgeschwärmten Bienen. Sie summt leise vor sich hin.", en = "One of Wabe's swarmed-out bees. It hums quietly to itself." }
 
 [[item]]
 id = "glitzerstein"

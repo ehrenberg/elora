@@ -1,6 +1,7 @@
 # Figuren, die sprechen (A1.4). Eloras eigene Zeilen: speaker = "elora" (ohne Eintrag hier).
 # portrait = Grafik im Gesprächsfeld; fixed = dreht sich nicht zu Elora (Schilder);
 # voice = Tonhöhe der Plapperlaute (1 = mittel, 0 = stumm, E-286). Elora spricht mit 1,25.
+# show_if = Figur nur zu sehen, solange die Bedingung gilt.
 
 [[character]]
 id = "oma"
@@ -39,3 +40,18 @@ name = { de = "Wegweiser", en = "Signpost" }
 portrait = "wegweiser"
 fixed = true
 voice = 0.0
+
+# Kapitel 1 (R2-M2.1)
+[[character]]
+id = "wabe"
+name = { de = "Imkerin Wabe", en = "Beekeeper Wabe" }
+portrait = "wabe"
+voice = 1.05
+
+# erst nach dem Kampf an der Blütenquelle zu sehen (show_if)
+[[character]]
+id = "hummel"
+name = { de = "Brummbär-Hummel", en = "Bumblebear" }
+portrait = "hummel"
+voice = 0.55
+show_if = "merker besiegt.brummbaer"

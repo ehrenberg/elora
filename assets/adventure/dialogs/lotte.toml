@@ -37,4 +37,8 @@ id = "hut"
 text = { de = "Ach, du! Für dich gibt's bestimmt bald einen Freundschaftspreis.", en = "Oh, you! I'm sure there'll be a friendship price for you soon." }
 
 [[bark]]
+if = "merker fest.kapitel1"
+text = { de = "Honigkuchen! Frisch aus dem Ofen!", en = "Honey cake! Fresh from the oven!" }
+
+[[bark]]
 text = { de = "Glitzerkram! Frisch reingekommen!", en = "Shiny stuff! Fresh in!" }

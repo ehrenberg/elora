@@ -496,7 +496,10 @@ impl Session {
     fn barks(&mut self, pos: Vec2) -> Vec<SessionEvent> {
         let mut out = Vec::new();
         for o in &self.map.adventure.objects {
-            if let ObjectKind::Npc { dialog, .. } = &o.kind
+            if let ObjectKind::Npc {
+                dialog, character, ..
+            } = &o.kind
+                && self.present(character)
                 && o.pos.distance(pos) < BARK_RANGE
                 && !self.barked.contains(&o.id)
             {
@@ -540,6 +543,15 @@ impl Session {
         outcomes(self.save.update_quests(&self.content))
     }
 
+    /// Ist die Figur gerade zu sehen (`show_if` in `characters.toml`)?
+    pub fn present(&self, character: &str) -> bool {
+        self.content
+            .characters
+            .get(character)
+            .and_then(|c| c.show_if.as_deref())
+            .is_none_or(|s| self.save.holds(&self.content, s))
+    }
+
     /// Nächstes Objekt in Reichweite der Aktionstaste mit Hinweis.
     pub fn interactable(&self, pos: Vec2) -> Option<(String, Prompt)> {
         self.map
@@ -548,7 +560,7 @@ impl Session {
             .iter()
             .filter_map(|o| {
                 let prompt = match &o.kind {
-                    ObjectKind::Npc { .. } => Prompt::Talk,
+                    ObjectKind::Npc { character, .. } if self.present(character) => Prompt::Talk,
                     ObjectKind::Chest { .. }
                         if self.save.flag(&key("truhe", &self.map_name, &o.id)) == 0 =>
                     {
@@ -679,7 +691,7 @@ impl Session {
                     facing,
                     walk,
                     ..
-                } => {
+                } if self.present(character) => {
                     let offset = if *walk > 0.0 {
                         (t * 0.4).sin() * walk
                     } else {
@@ -782,6 +794,15 @@ fn world_max_health(save: &SaveGame, c: &Content) -> i32 {
 mod tests {
     use super::*;
     use elora_map::{Art, Decor};
+
+    #[test]
+    fn characters_appear_when_their_condition_holds() {
+        let mut s = Session::new_game(crate::Content::builtin());
+        assert!(s.present("oma"));
+        assert!(!s.present("hummel"), "erst nach dem Kampf");
+        s.save.set_flag("besiegt.brummbaer", 1);
+        assert!(s.present("hummel"));
+    }
 
     #[test]
     fn freed_springs_bring_colour_back() {

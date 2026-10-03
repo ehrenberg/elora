@@ -2,6 +2,18 @@
 speaker = "oma"
 
 [[start]]
+if = "quest bluetenquelle schritt fest"
+node = "fest"
+
+[[start]]
+if = "quest murmelwald aktiv"
+node = "murmelwald"
+
+[[start]]
+if = "quest bluetenquelle aktiv und merker besiegt.brummbaer"
+node = "funke"
+
+[[start]]
 if = "quest brunnen erledigt"
 node = "danach"
 
@@ -79,6 +91,52 @@ text = { de = "So, so. Na, dem werde ich was erzählen. Aber du, Kind, kümmere 
 [[node]]
 id = "danach"
 text = { de = "Du warst schon am Wiesenrand? Dann bist du bereit für mehr. Die Blütenquelle liegt tief in den Wiesen – dort, wo die alte Hummel brummt.", en = "You've already been to the edge of the meadow? Then you're ready for more. The Blossom Spring lies deep in the meadows – where the old bumblebee hums." }
+
+[[node]]
+id = "fest"
+text = { de = "Elora! Sieh nur, die Beete am Brunnen blühen wieder! Hörst du? Die Blütenquelle singt. Heute Abend feiern wir – mit Laternen und Musik!", en = "Elora! Look, the flowerbeds by the well are blooming again! Can you hear it? The Blossom Spring is singing. Tonight we celebrate – with lanterns and music!" }
+
+[[node.choice]]
+tone = "freundlich"
+text = { de = "Die Hummel war gar nicht böse. Sie war nur ganz verwirrt.", en = "The bumblebee wasn't evil at all. It was just very confused." }
+next = "verwirrt"
+do = ["zuneigung oma +1"]
+
+[[node.choice]]
+tone = "neugierig"
+text = { de = "Und die anderen Quellen? Sind die auch verstummt?", en = "And the other springs? Have they gone silent too?" }
+next = "zweite"
+
+[[node.choice]]
+tone = "frech"
+text = { de = "Gibt es beim Fest auch Kuchen?", en = "Will there be cake at the party?" }
+next = "kuchen"
+
+[[node]]
+id = "verwirrt"
+text = { de = "Verwirrt? Hm. Dann ist das Grau nicht von allein gekommen. Jemand – oder etwas – nimmt den Quellen die Farbe.", en = "Confused? Hm. Then the grey didn't come by itself. Someone – or something – is taking the colour from the springs." }
+next = "zweite"
+
+[[node]]
+id = "kuchen"
+text = { de = "Lotte backt Honigkuchen. Mit Honig von Wabe, versteht sich.", en = "Lotte is baking honey cake. With Wabe's honey, of course." }
+next = "zweite"
+
+[[node]]
+id = "zweite"
+text = { de = "Die zweite Quelle liegt im Murmelwald, im Westen. Die Wurzeln dort flüstern alte Geschichten. Aber heute wird gefeiert – morgen ist auch noch ein Tag.", en = "The second spring lies in the Murmelwald, to the west. The roots there whisper old stories. But today we celebrate – tomorrow is another day." }
+
+[[node]]
+id = "funke"
+text = { de = "Ein Quellfunke! Bring ihn schnell zu Tüftel, Kind. Der weiß, was man damit anfängt.", en = "A spring spark! Take it to Tüftel quickly, dear. He'll know what to do with it." }
+
+[[node]]
+id = "murmelwald"
+text = { de = "Der Murmelwald wartet. Aber ruh dich ruhig noch ein bisschen aus – das Fest war lang.", en = "The Murmelwald is waiting. But do rest a little longer – it was a long party." }
+
+[[bark]]
+if = "merker fest.kapitel1"
+text = { de = "Was für ein schönes Fest!", en = "What a lovely party!" }
 
 [[bark]]
 if = "quest brunnen neu"

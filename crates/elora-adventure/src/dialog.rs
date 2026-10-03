@@ -30,6 +30,9 @@ pub struct CharacterDef {
     /// Dreht sich nicht zu Elora (Schilder).
     #[serde(default)]
     pub fixed: bool,
+    /// Figur ist nur zu sehen, solange die Bedingung gilt (z. B. erst nach einem Kampf).
+    #[serde(default)]
+    pub show_if: Option<String>,
     /// Tonhöhe der Plapperlaute (E-286): 1 = mittel, kleiner = tiefer; 0 = stumm (Schilder).
     #[serde(default = "default_voice")]
     pub voice: f32,
