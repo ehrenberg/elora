@@ -1,6 +1,6 @@
 # R2-M2.1 – Kapitel 1: Blütenwiesen – Umsetzungsplan
 
-Status: **Freigegeben, in Umsetzung** (Entscheidungen E-297 bis E-303) · Grundlage: [`weltbuch.md`](weltbuch.md) §4.1 und §5, [`prolog.md`](prolog.md), E-272 bis E-295
+Status: **Abgeschlossen, vorerst angenommen (E-305)** · Entscheidungen E-297 bis E-304 · Grundlage: [`weltbuch.md`](weltbuch.md) §4.1 und §5, [`prolog.md`](prolog.md), E-272 bis E-295
 
 ## Ziel
 
@@ -28,7 +28,7 @@ Das erste Kapitel ist von Anfang bis Ende spielbar: nach dem Prolog weiter durch
 | M2.1.5 ✅ | Quellfunke und Hook-Ruck | Sieg → Quellfunke; bei Tüftel abgeben → Fähigkeit **Hook-Ruck** (Folge `faehigkeit hook-ruck`) mit Erklärung per Wegweiser-Text; erste Stelle, die nur mit Hook-Ruck geht (Rückkehr nach `wiese-1` lohnt sich: verstecktes Sammelstück) | Tests |
 | M2.1.6 ✅ | Dorf nach Kapitel 1 | Merker `quellen_befreit = 1`: Teil der Beete, Blumenkästen und Fahnen bunt; Fest-Moment am Brunnen (kurzes Gespräch mit allen); Weltkarte zeigt die Blütenwiesen als befreit | Sichtprüfung |
 | M2.1.7 ✅ | Musik und Sounds | Boss-Musik (CC0 oder CC BY, zum Anhören vorgelegt, E-285); Sounds für Hummel (Brummen, Sturzflug, Treffer), Biene (Sammeln), Quellfunke (Fanfare) aus Kenney oder anderen freien Quellen | Deine Hörprobe |
-| M2.1.8 | Abnahme | Kapitel 1 durchspielen, speichern, fortsetzen | Deine Abnahme |
+| M2.1.8 ✅ | Abnahme | Kapitel 1 durchspielen, speichern, fortsetzen | Deine Abnahme |
 
 **Stand M2.1.1:** Verhalten `diver` (Hüter aus der Luft) in der Simulation: schläft, bis Elora kommt; kreist und lässt Pollen fallen, visiert an, stürzt herab, liegt benommen (nur dann verwundbar, sonst prallen Treffer mit Sternchen ab, keine Berührungsschäden) und steigt wieder auf; ab halbem Leben schneller mit zwei Sturzflügen, ab einem Drittel ruft er verwirrte Bienen (höchstens 3). Werte in `creatures.toml` (`brummbaer`, `wirrbiene`), Grafik mit Flug-, Sturz- und Benommen-Pose, Lebensleiste mit Namen oben im HUD, Merker `besiegt.<art>` nach dem Sieg (für Türen, Gespräche, Aufgaben), Beute Quellfunke. Arena (Ein- und Ausgang) entsteht mit den Karten (M2.1.4): Hinunterspringen in die Arena, der Ausgang öffnet sich mit `merker besiegt.brummbaer` (Türen bleiben offen, E-254). Ausprobieren: Training, F1 → „Gegner (Abenteuer)“ → `brummbaer`.
 

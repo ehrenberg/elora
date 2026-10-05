@@ -113,6 +113,7 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-302 | 2026-10-02 | Hook-Ruck erklären | **Übungsplatz im Hof:** Tüftel erklärt und öffnet einen neuen Teil seines Hofs mit einer Strecke, die nur mit Hook-Ruck geht | Entscheidung Projektinhaber |
 | E-303 | 2026-10-03 | Entwürfe Kapitel 1 (M2.1.0) | **Angenommen** wie vorgelegt ([`design/kapitel1-entwuerfe.png`](design/kapitel1-entwuerfe.png)) | Entscheidung Projektinhaber |
 | E-304 | 2026-10-04 | Musik Kapitel 1 | **Kampf: „Urban Boss Battle“** (mintodog), **Fest: „Minstrel Dance“** (randommind), beide CC0 von OpenGameArt | Entscheidung Projektinhaber |
+| E-305 | 2026-10-05 | Abnahme R2-M2.1 | **Vorerst angenommen** („erst einmal so belassen“) nach den Korrekturen aus dem Playtest (Hook-Ruck sofort, Symbolgrößen, Kartenliste); weiter mit R2-M2.2 | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 
