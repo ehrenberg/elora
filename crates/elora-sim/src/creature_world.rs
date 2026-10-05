@@ -3,7 +3,8 @@
 use crate::character::PHYS_SIZE;
 use crate::collision::{Collision, Tile};
 use crate::creature::{
-    Behavior, Creature, CreatureShot, DiverDef, HookTarget, Loot, WardenDef, rng, rng_f32,
+    Behavior, Creature, CreatureShot, DiverDef, HookTarget, Loot, SerpentDef, WardenDef, rng,
+    rng_f32,
 };
 use crate::event::CreatureAct;
 use crate::event::{DeathCause, Event};
@@ -259,6 +260,12 @@ impl World {
             let force = Vec2::new(f32::from(sign(p.x - pos.x)) * 4.0, -6.0);
             if let Some(i) = self.creature_index(id) {
                 self.creatures[i].stun = stun;
+                // die Sandschlange trifft Stampfen doppelt (E-316)
+                let serpent = matches!(
+                    self.creature_kinds[self.creatures[i].kind].behavior,
+                    Behavior::Serpent(_)
+                );
+                let damage = if serpent { damage * 2 } else { damage };
                 self.damage_creature(i, force, damage, Some(player), None);
             }
         }
@@ -296,7 +303,10 @@ impl World {
             });
             return;
         }
-        if !matches!(kind.behavior, Behavior::Turret { .. } | Behavior::Diver(_)) {
+        if !matches!(
+            kind.behavior,
+            Behavior::Turret { .. } | Behavior::Diver(_) | Behavior::Serpent(_)
+        ) {
             c.vel += force;
         }
         c.health -= damage;
@@ -447,6 +457,8 @@ impl World {
         // Wurzelstöße (Mitte am Boden, Breite, Höhe, Schaden) und Wurzelwände (Fuß, Höhe, Dauer)
         let mut spikes: Vec<(Vec2, f32, f32, i32)> = Vec::new();
         let mut walls: Vec<(Vec2, u32, u32)> = Vec::new();
+        // Treibsand der Sandschlange (Mitte am Boden, Breite in Tiles, Dauer)
+        let mut sands: Vec<(Vec2, u32, u32)> = Vec::new();
         for c in creatures.iter_mut() {
             let kind = &creature_kinds[c.kind];
             let size = kind.size();
@@ -660,6 +672,16 @@ impl World {
                         c.vel.x *= 0.7;
                     }
                 }
+                Behavior::Serpent(ref d) => {
+                    let feet = c.pos.y + size.y / 2.0;
+                    if let Some(p) = tick_serpent(c, d, kind.health, gravity, feet, target, events)
+                    {
+                        sands.push((p, d.sand_width, d.sand_ms));
+                    }
+                    if c.mode == crate::creature::serpent::SLEEP {
+                        continue;
+                    }
+                }
                 Behavior::Leaper {
                     sight,
                     speed,
@@ -760,6 +782,7 @@ impl World {
         }
         self.root_spikes(&spikes, chars);
         self.root_walls(&walls, chars);
+        self.quicksand_patches(&sands);
         // Helfer der Hüter, höchstens `max` zugleich
         for (owner, name, max, pos) in summons {
             let Some(kind) = self.creature_kind(&name) else {
@@ -823,6 +846,38 @@ impl World {
                     tx,
                     ty,
                     tile: Tile::Unhookable,
+                });
+            }
+        }
+    }
+
+    /// Treibsand im Kessel (Sandschlange, wütend): die Oberfläche des Bodens um `at` wird für
+    /// eine Weile zu Treibsand (nur feste Tiles mit Luft darüber und festem Grund darunter).
+    fn quicksand_patches(&mut self, patches: &[(Vec2, u32, u32)]) {
+        let ts = crate::TILE_SIZE;
+        for &(at, width, ms) in patches {
+            #[allow(clippy::cast_possible_truncation)]
+            let (cx, ty) = (
+                (at.x as i32).div_euclid(ts),
+                (at.y as i32 + 4).div_euclid(ts),
+            );
+            let until = self.tick + u64::from(ms_to_ticks(ms));
+            #[allow(clippy::cast_possible_wrap)]
+            let half = width as i32 / 2;
+            for tx in cx - half..=cx + half {
+                let t = self.collision.tile(tx, ty);
+                if !matches!(t, Tile::Solid | Tile::Unhookable)
+                    || self.collision.tile(tx, ty - 1) != Tile::Air
+                    || !self.collision.tile(tx, ty + 1).is_solid()
+                {
+                    continue;
+                }
+                self.collision.set_tile(tx, ty, Tile::Quicksand);
+                self.temp_tiles.push((tx, ty, t, until));
+                self.events.push(Event::TileSet {
+                    tx,
+                    ty,
+                    tile: Tile::Quicksand,
                 });
             }
         }
@@ -954,6 +1009,133 @@ impl World {
             }
         }
     }
+}
+
+/// Ein Tick des Hüters im Sand; liefert eine Stelle für Treibsand, wenn er wütend ist.
+#[allow(clippy::too_many_lines)]
+fn tick_serpent(
+    c: &mut Creature,
+    d: &SerpentDef,
+    max_health: i32,
+    gravity: f32,
+    feet: f32,
+    target: Option<(Vec2, f32)>,
+    events: &mut Vec<Event>,
+) -> Option<Vec2> {
+    use crate::creature::serpent::{LEAP, SLEEP, STUNNED, TRAIL, WARN};
+    #[allow(clippy::cast_precision_loss)]
+    let life = c.health as f32 / max_health.max(1) as f32;
+    let angry = d.enrage_at > 0.0 && life <= d.enrage_at;
+    let double = d.double_at > 0.0 && life <= d.double_at;
+    let pace = if angry { 1.35 } else { 1.0 };
+    let ticks = |ms: u32| {
+        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+        let t = (ms_to_ticks(ms) as f32 / pace) as u32;
+        t.max(1)
+    };
+    let id = c.id;
+    let act = |events: &mut Vec<Event>, pos: Vec2, act: CreatureAct| {
+        events.push(Event::CreatureAct { id, pos, act });
+    };
+    c.stun = 0;
+    c.timer = c.timer.saturating_add(1);
+    c.vel.y += gravity;
+    let mut sand = None;
+    match c.mode {
+        SLEEP => {
+            c.vel = Vec2::ZERO;
+            if target.is_some_and(|(_, dist)| dist <= d.sight) {
+                c.mode = TRAIL;
+                c.timer = 0;
+                act(events, c.pos, CreatureAct::Wake);
+            }
+            return None;
+        }
+        TRAIL => {
+            let Some((p, _)) = target else {
+                c.vel.x = 0.0;
+                return None;
+            };
+            let dx = p.x - c.pos.x;
+            c.facing = sign(dx);
+            c.vel.x = if dx.abs() < 6.0 {
+                0.0
+            } else {
+                f32::from(c.facing) * (d.speed * pace).min(dx.abs())
+            };
+            if c.timer >= ticks(d.trail_ms) && dx.abs() < 20.0 && c.grounded {
+                c.mode = WARN;
+                c.timer = 0;
+                c.goal = Vec2::new(c.pos.x, feet);
+                c.vel.x = 0.0;
+                act(events, c.goal, CreatureAct::Warn);
+            }
+        }
+        WARN => {
+            c.vel.x = 0.0;
+            if c.timer >= ticks(d.warn_ms) {
+                leap(c, d, pace);
+                act(events, c.pos, CreatureAct::Emerge);
+            }
+        }
+        LEAP => {
+            if c.vel.x.abs() > 0.1 {
+                c.facing = sign(c.vel.x);
+            }
+            if c.grounded && c.timer > 4 && c.vel.y >= 0.0 {
+                c.vel.x = 0.0;
+                act(events, c.pos, CreatureAct::Land);
+                if double && c.count == 0 {
+                    // gleich noch ein Bogen
+                    c.count = 1;
+                    leap(c, d, pace);
+                    act(events, c.pos, CreatureAct::Emerge);
+                } else {
+                    c.count = 0;
+                    c.mode = STUNNED;
+                    c.timer = 0;
+                }
+            }
+        }
+        _ => {
+            // STUNNED: benommen, dann wieder unter den Sand
+            c.vel.x = 0.0;
+            if c.timer >= ms_to_ticks(d.stun_ms) {
+                c.mode = TRAIL;
+                c.timer = 0;
+                act(events, c.pos, CreatureAct::Burrow);
+            }
+        }
+    }
+    // wütend: Teile des Kessels werden zu Treibsand, abwechselnd links und rechts von Elora
+    if angry && d.sand_every_ms > 0 && matches!(c.mode, TRAIL | WARN) {
+        c.wall_timer += 1;
+        if c.wall_timer >= ms_to_ticks(d.sand_every_ms)
+            && let Some((p, _)) = target
+        {
+            c.wall_timer = 0;
+            c.tug = 1 - c.tug.min(1);
+            let side = if c.tug == 0 { -1.0 } else { 1.0 };
+            #[allow(clippy::cast_precision_loss)]
+            let at = Vec2::new(p.x + side * 5.0 * crate::TILE_SIZE as f32, feet);
+            sand = Some(at);
+        }
+    }
+    sand
+}
+
+/// Sprung der Sandschlange: hoch und zur Mitte des Kessels (Startpunkt).
+fn leap(c: &mut Creature, d: &SerpentDef, pace: f32) {
+    use crate::creature::serpent::LEAP;
+    let toward = if (c.home.x - c.pos.x).abs() > 1.0 {
+        sign(c.home.x - c.pos.x)
+    } else {
+        -c.facing
+    };
+    c.facing = toward;
+    c.vel = Vec2::new(f32::from(toward) * d.jump_x * pace.sqrt(), -d.jump_y);
+    c.mode = LEAP;
+    c.timer = 0;
 }
 
 /// Werte des Dünenwurms (aus [`Behavior::Leaper`]).

@@ -1254,3 +1254,203 @@ fn full_heat_bar_slows_elora() {
     let expected = normal * Tuning::default().heat_speed;
     assert!((hot - expected).abs() < 0.5, "{hot} statt {expected}");
 }
+
+fn serpent_def() -> elora_sim::SerpentDef {
+    elora_sim::SerpentDef {
+        sight: 500.0,
+        speed: 3.0,
+        trail_ms: 800,
+        warn_ms: 600,
+        jump_x: 5.0,
+        jump_y: 13.0,
+        stun_ms: 1500,
+        enrage_at: 0.5,
+        double_at: 0.25,
+        sand_every_ms: 1000,
+        sand_ms: 2000,
+        sand_width: 3,
+    }
+}
+
+/// Kessel mit doppelt dickem Boden (Treibsand braucht festen Grund darunter).
+fn serpent_world() -> (World, usize) {
+    let mut w = world(|t| (0..W).for_each(|x| set(t, x, FLOOR - 1, Tile::Solid)));
+    let mut k = kinds()[0].clone();
+    k.name = "sandschlange".into();
+    k.size = [90.0, 60.0];
+    k.health = 20;
+    k.boss = true;
+    k.small = false;
+    k.behavior = Behavior::Serpent(Box::new(serpent_def()));
+    w.creature_kinds.push(k);
+    let kind = w.creature_kinds.len() - 1;
+    (w, kind)
+}
+
+/// Mitte über dem (angehobenen) Boden für eine Box der Höhe `h`.
+fn on_sand(tx: usize, h: f32) -> Vec2 {
+    on_floor(tx, h) - Vec2::new(0.0, 32.0)
+}
+
+fn modes_over(w: &mut World, id: u32, ticks: u32) -> (Vec<u8>, Vec<Event>) {
+    let mut modes = Vec::new();
+    let mut all = Vec::new();
+    for _ in 0..ticks {
+        all.extend(run(w, PlayerInput::default(), 1));
+        let m = w.creatures.iter().find(|c| c.id == id).unwrap().mode;
+        if modes.last() != Some(&m) {
+            modes.push(m);
+        }
+    }
+    (modes, all)
+}
+
+#[test]
+fn sand_serpent_trails_warns_leaps_and_lies_stunned() {
+    use elora_sim::creature::serpent;
+    let (mut w, kind) = serpent_world();
+    let id = w.add_creature(kind, on_sand(30, 60.0)).unwrap();
+    let i = elora(&mut w, 5);
+    w.spawn_character(i, on_sand(5, 28.0));
+    w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
+    run(&mut w, PlayerInput::default(), 20);
+    let get = |w: &World| w.creatures.iter().find(|c| c.id == id).unwrap().clone();
+    assert_eq!(get(&w).mode, serpent::SLEEP, "Elora ist weit weg");
+    // Elora kommt in den Kessel
+    w.spawn_character(i, on_sand(22, 28.0));
+    w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
+    run(&mut w, PlayerInput::default(), 3);
+    let c = get(&w);
+    assert_eq!(c.mode, serpent::TRAIL, "wacht auf");
+    assert!(!c.vulnerable(&w.creature_kinds[kind]) && !c.harmful(&w.creature_kinds[kind]));
+    w.hurt_creature(id, 3);
+    assert_eq!(get(&w).health, 20, "unter dem Sand nicht zu treffen");
+    let (modes, ev) = modes_over(&mut w, id, 400);
+    assert!(
+        modes.windows(4).any(|m| m
+            == [
+                serpent::TRAIL,
+                serpent::WARN,
+                serpent::LEAP,
+                serpent::STUNNED
+            ]),
+        "Spur, Beben, Bogen, benommen: {modes:?}"
+    );
+    assert!(
+        modes
+            .windows(2)
+            .any(|m| m == [serpent::STUNNED, serpent::TRAIL]),
+        "taucht wieder ein"
+    );
+    // die Warnung kam unter Elora
+    let warn = ev
+        .iter()
+        .find_map(|e| match e {
+            Event::CreatureAct {
+                act: elora_sim::CreatureAct::Warn,
+                pos,
+                ..
+            } => Some(*pos),
+            _ => None,
+        })
+        .expect("Warnung");
+    assert!(
+        (warn.x - on_sand(22, 28.0).x).abs() < 24.0,
+        "bebt unter Elora"
+    );
+}
+
+#[test]
+fn sand_serpent_is_hit_only_in_the_air_or_stunned_and_stomp_hits_double() {
+    use elora_sim::creature::serpent;
+    let (mut w, kind) = serpent_world();
+    let id = w.add_creature(kind, on_sand(31, 60.0)).unwrap();
+    let i = elora(&mut w, 30);
+    w.spawn_character(i, on_sand(30, 28.0) - Vec2::new(0.0, 120.0));
+    w.set_abilities(i, Abilities::NONE.with(Ability::Stomp));
+    w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
+    // benommen am Boden: verwundbar
+    {
+        let c = w.creatures.iter_mut().find(|c| c.id == id).unwrap();
+        c.mode = serpent::STUNNED;
+        c.timer = 0;
+    }
+    assert!(w.creatures[0].vulnerable(&w.creature_kinds[kind]));
+    let ev = run(
+        &mut w,
+        PlayerInput {
+            down: true,
+            ..PlayerInput::default()
+        },
+        30,
+    );
+    assert!(ev.iter().any(|e| matches!(e, Event::Stomp { .. })));
+    let c = w.creatures.iter().find(|c| c.id == id).unwrap();
+    assert_eq!(
+        c.health,
+        20 - 2 * Tuning::default().stomp_damage,
+        "Stampfen doppelt"
+    );
+}
+
+#[test]
+fn angry_serpent_turns_the_basin_to_quicksand_and_leaps_twice() {
+    use elora_sim::creature::serpent;
+    let (mut w, kind) = serpent_world();
+    let id = w.add_creature(kind, on_sand(30, 60.0)).unwrap();
+    let i = elora(&mut w, 22);
+    w.spawn_character(i, on_sand(22, 28.0));
+    w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
+    w.creatures.iter_mut().find(|c| c.id == id).unwrap().health = 9;
+    let (_, ev) = modes_over(&mut w, id, 120);
+    let sand = ev
+        .iter()
+        .filter(|e| {
+            matches!(
+                e,
+                Event::TileSet {
+                    tile: Tile::Quicksand,
+                    ..
+                }
+            )
+        })
+        .count();
+    assert!(sand > 0, "wütend: Treibsand im Kessel");
+    let (_, ev) = modes_over(&mut w, id, 200);
+    assert!(
+        ev.iter()
+            .any(|e| matches!(e, Event::TileSet { tile, .. } if *tile != Tile::Quicksand)),
+        "Treibsand vergeht wieder"
+    );
+    // letztes Viertel: zwei Bögen, bevor sie benommen liegt
+    let (mut w, kind) = serpent_world();
+    let id = w.add_creature(kind, on_sand(30, 60.0)).unwrap();
+    let i = elora(&mut w, 22);
+    w.spawn_character(i, on_sand(22, 28.0));
+    w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
+    w.creatures.iter_mut().find(|c| c.id == id).unwrap().health = 4;
+    w.creature_kinds[kind].behavior = Behavior::Serpent(Box::new(elora_sim::SerpentDef {
+        sand_every_ms: 0,
+        ..serpent_def()
+    }));
+    let mut emerges = 0;
+    for _ in 0..500 {
+        let ev = run(&mut w, PlayerInput::default(), 1);
+        emerges += ev
+            .iter()
+            .filter(|e| {
+                matches!(
+                    e,
+                    Event::CreatureAct {
+                        act: elora_sim::CreatureAct::Emerge,
+                        ..
+                    }
+                )
+            })
+            .count();
+        if w.creatures.iter().find(|c| c.id == id).unwrap().mode == serpent::STUNNED {
+            break;
+        }
+    }
+    assert_eq!(emerges, 2, "zwei Bögen hintereinander");
+}

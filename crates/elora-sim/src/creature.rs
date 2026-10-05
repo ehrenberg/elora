@@ -113,6 +113,11 @@ pub enum Behavior {
     /// Begleiter (Pilzkind, E-308): folgt Elora am Boden, springt über Stufen, wartet an
     /// Lücken und Gefahren; unverwundbar und harmlos.
     Follower { speed: f32, jump: f32 },
+    /// Hüter im Sand (Sandschlange, R2-M2.3, E-316): zieht als Sandspur zu Elora, der Sand
+    /// bebt, dann schießt sie im Bogen heraus und liegt nach der Landung benommen am Boden –
+    /// **nur im Bogen und benommen verwundbar**. Ab `enrage_at` schneller und Treibsand im
+    /// Kessel, ab `double_at` zwei Bögen hintereinander. Stampfen trifft doppelt.
+    Serpent(Box<SerpentDef>),
     /// Wandert unter dem Sand (nur die Sandspur ist zu sehen) auf Elora zu, kündigt sich
     /// `warn_ms` lang an und springt im Bogen auf sie zu (Dünenwurm, R2-M2.3); nach der
     /// Landung taucht er ein und ruht `rest_ms`. **Nur im Sprung verwundbar und gefährlich.**
@@ -191,6 +196,50 @@ pub struct WardenDef {
     pub wall_ms: u32,
     #[cfg_attr(feature = "serde", serde(default))]
     pub wall_height: u32,
+}
+
+/// Werte des Hüters im Sand ([`Behavior::Serpent`]).
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct SerpentDef {
+    /// Wacht auf, sobald Elora so nah ist.
+    pub sight: f32,
+    /// Tempo der Sandspur (Einheiten/Tick) und Mindestzeit unter dem Sand.
+    pub speed: f32,
+    pub trail_ms: u32,
+    /// Sand bebt so lange, bevor sie herausschießt.
+    pub warn_ms: u32,
+    /// Sprung: waagerecht (zur Mitte des Kessels) und nach oben.
+    pub jump_x: f32,
+    pub jump_y: f32,
+    /// Benommen am Boden nach der Landung.
+    pub stun_ms: u32,
+    /// Ab diesem Anteil des Lebens wütend: schneller, Treibsand im Kessel; 0 = nie.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub enrage_at: f32,
+    /// Ab diesem Anteil des Lebens zwei Bögen hintereinander; 0 = nie.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub double_at: f32,
+    /// Treibsand: alle `sand_every_ms` für `sand_ms`, so viele Tiles breit.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub sand_every_ms: u32,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub sand_ms: u32,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub sand_width: u32,
+}
+
+/// Zustand des Hüters im Sand (in [`Creature::mode`]).
+pub mod serpent {
+    pub const SLEEP: u8 = 0;
+    /// Unter dem Sand, nur die Spur ist zu sehen.
+    pub const TRAIL: u8 = 1;
+    /// Sand bebt an [`super::Creature::goal`].
+    pub const WARN: u8 = 2;
+    /// Im Bogen durch die Luft: gefährlich und verwundbar.
+    pub const LEAP: u8 = 3;
+    /// Benommen am Boden: verwundbar.
+    pub const STUNNED: u8 = 4;
 }
 
 /// Zustand des Hüters am Boden (in [`Creature::mode`]).
@@ -291,6 +340,7 @@ impl Creature {
             Behavior::Warden(_) => self.mode == warden::OPEN,
             Behavior::Follower { .. } => false,
             Behavior::Leaper { .. } => self.mode == leaper::LEAP,
+            Behavior::Serpent(_) => matches!(self.mode, serpent::LEAP | serpent::STUNNED),
             _ => true,
         }
     }
@@ -303,6 +353,7 @@ impl Creature {
             Behavior::Warden(_) => !matches!(self.mode, warden::OPEN | warden::SLEEP),
             Behavior::Follower { .. } => false,
             Behavior::Leaper { .. } => self.mode == leaper::LEAP,
+            Behavior::Serpent(_) => self.mode == serpent::LEAP,
             _ => true,
         }
     }
@@ -313,6 +364,7 @@ impl Creature {
             Behavior::Burrower { .. } => self.mode == burrow::OUT,
             Behavior::Follower { .. } => false,
             Behavior::Leaper { .. } => self.mode == leaper::LEAP,
+            Behavior::Serpent(_) => matches!(self.mode, serpent::LEAP | serpent::STUNNED),
             _ => true,
         }
     }

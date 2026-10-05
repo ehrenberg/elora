@@ -106,7 +106,8 @@ const CREATURE_FILES: &[(&str, &[u8])] = creatures!(
     "wurzelwaechter",
     "sandkrabbe",
     "duenenwurm",
-    "funkenmotte"
+    "funkenmotte",
+    "sandschlange"
 );
 
 impl CreatureArt {
@@ -370,7 +371,7 @@ mod tests {
         let ground = 200.0;
         batch.fill_rect(
             Vec2::new(0.0, ground),
-            Vec2::new(3200.0, ground + 40.0),
+            Vec2::new(4000.0, ground + 40.0),
             Color::hex(0x8fbf7a),
         );
         let mut x = 60.0;
@@ -430,6 +431,9 @@ mod tests {
         put("duenenwurm", false, false, None, 1, 1);
         put("duenenwurm", true, false, None, 1, 2);
         put("funkenmotte", true, false, None, 1, 0);
+        for mode in [1, 2, 3, 4] {
+            put("sandschlange", mode == 3, false, None, 1, mode);
+        }
         // Elora zum Größenvergleich (Box 28)
         batch.fill_circle(Vec2::new(x, ground - 14.0), 14.0, Color::hex(0xf2c14e));
         CreatureArt::draw_shot(&mut batch, Vec2::new(x + 80.0, ground - 60.0), None, 0.0);
@@ -490,7 +494,7 @@ mod tests {
             let x = 480.0 + i as f32 * 52.0;
             art.draw_object(&mut batch, name, Vec2::new(x, ground2), *on);
         }
-        let svg = batch.debug_svg(Vec2::ZERO, Vec2::new(3200.0, 480.0), Color::hex(0xa9cde8));
+        let svg = batch.debug_svg(Vec2::ZERO, Vec2::new(4000.0, 480.0), Color::hex(0xa9cde8));
         std::fs::write(
             concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/creatures.svg"),
             svg,

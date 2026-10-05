@@ -159,15 +159,23 @@ def funkenmotte(sparks=True):
 def sandschlange(pose='bogen'):
     """Sandschlange: große Schlange mit Sandschuppen und Rautenmuster, gelbe Augen.
     Posen: spur (nur Sandwelle), auftauchen, bogen (in der Luft), benommen, ruhig."""
-    if pose == 'spur':
+    if pose in ('spur', 'beben'):
         s = f'<path d="M -150,0 Q -110,-30 -70,-12 Q -30,-36 10,-12 Q 50,-36 90,-12 Q 130,-30 150,0 Z" fill="{SAND}" {st(4)}/>'
         s += '<path d="M -120,-8 q 20,-10 40,0 M 40,-8 q 20,-10 40,0" fill="none" stroke="#c9a25e" stroke-width="3"/>'
+        if pose == 'beben':
+            # Sand wölbt sich und spritzt: gleich schießt sie heraus
+            s += f'<path d="M -70,-12 Q -40,-70 0,-74 Q 40,-70 70,-12 Z" fill="{SAND}" {st(4)}/>'
+            s += f'<path d="M -20,-60 l 8,10 l -6,8 M 18,-62 l -6,12 l 8,6" fill="none" stroke="{SAND_DARK}" stroke-width="3"/>'
+            for (x, y, r) in ((-60, -60, 7), (50, -84, 6), (-20, -100, 8), (70, -46, 5), (10, -110, 5)):
+                s += f'<circle cx="{x}" cy="{y}" r="{r}" fill="{SAND_LIGHT}" stroke="{OUT}" stroke-width="2.5"/>'
         return s
     body = {
         'auftauchen': [(0, 0), (6, -60), (-4, -120), (10, -170), (36, -200)],
         'bogen': [(-180, 0), (-140, -110), (-60, -190), (40, -200), (120, -150), (170, -60)],
         'benommen': [(-150, -14), (-90, -24), (-30, -14), (30, -24), (90, -16), (140, -24)],
         'ruhig': [(-130, -14), (-70, -30), (-10, -20), (40, -50), (60, -110), (80, -140)],
+        # im Spiel: kompakter Körper im Flug, Kopf voran
+        'flug': [(-150, 70), (-100, 20), (-40, -10), (20, -10), (80, -40)],
     }[pose]
     s = ''
     if pose == 'auftauchen':
