@@ -1,6 +1,6 @@
 # R2-M2.3 – Kapitel 3: Glutsandwüste – Umsetzungsplan
 
-Status: **Plan zur Freigabe** · Grundlage: [`weltbuch.md`](weltbuch.md) §4.3 und §5, [`m2-2-plan.md`](m2-2-plan.md), E-243, E-296, E-314
+Status: **Entscheidungen getroffen (E-315 bis E-320), Plan zur Freigabe** · Grundlage: [`weltbuch.md`](weltbuch.md) §4.3 und §5, [`m2-2-plan.md`](m2-2-plan.md), E-243, E-296, E-314
 
 ## Ziel
 
@@ -22,7 +22,7 @@ Kapitel 3 ist von Anfang bis Ende spielbar: aus Tauwinkel in die Glutsandwüste,
 |---|---|---|---|
 | M2.3.0 | Entwürfe | Sirup und seine Karawane (Kamel o. ä.), Oasen-Hüterin (Figur der Nebenaufgabe), Sandkrabbe, Dünenwurm, Funkenmotte, Sandschlange (unter dem Sand, Auftauchen, Bogen durch die Luft, benommen, besiegt), Wasserschlauch, Ruinen-Steintafel, Quelle (verdorrt/befreit), Deko: Dünen, Felsbögen, Ruinen (Säulen, Tore, Treppen), Kakteen, Palmen, Oase, Zelte | Deine Auswahl |
 | M2.3.1 | Neue Gegner | **Sandkrabbe**: gepanzert, Treffer von der Seite prallen ab, verwundbar von oben (Hammer von oben, Stampfen, Granate darüber). **Dünenwurm**: wandert unter dem Sand (Sandspur), springt in einem Bogen heraus und taucht wieder ein. **Funkenmotte**: fliegt, lässt Funken fallen, die kurz am Boden glühen | Tests + Sandbox |
-| M2.3.2 | Treibsand und Hitze | neues Tile **Treibsand**: Elora sinkt langsam ein und läuft langsamer, Springen befreit; optional **Hitzeflimmern** als Bildeffekt | Tests |
+| M2.3.2 | Treibsand und Hitze | neues Tile **Treibsand**: Elora sinkt langsam ein und läuft langsamer, Springen befreit, tief eingesunken kleiner Schaden und zurück an den Rand (E-318); **Hitzeflimmern** als Bildeffekt und **Hitze-Leiste** im HUD: Sonne füllt, Schatten (Zonen/Dächer) und Oase kühlen, voll = langsamer (E-320) | Tests |
 | M2.3.3 | Hüter-Technik | **Sandschlange**: taucht unter dem Sand (nur Sandspur sichtbar), schießt an Eloras Stelle hoch, fliegt im Bogen und taucht wieder ein; verwundbar nur aufgetaucht; ab halbem Leben schneller, zum Schluss zwei Bögen hintereinander | Tests + Sandbox |
 | M2.3.4 | Inhalte | Figuren Sirup und Oasen-Hüterin; Hauptaufgabe „Spuren im Sand“ bis zum Quellfunken; Nebenaufgaben **„Wasser für die Oase“** und **„Die verschüttete Ruine“**; Spuren des grauen Wanderers (Story); Gespräche im Dorf nach Kapitel 3; Klonk gibt den Laser | Tests |
 | M2.3.5 | Karten | Weg aus Tauwinkel in die Wüste; `wueste-1` bis `wueste-3` und `wueste-arena`: Dünen, Treibsand-Laufbänder, Ruinen mit Bröckelböden (Rückkehr mit Stampfen), Oase, Karawanenlager, Stachelgruben; Ruck- und Zugstellen | Sichtprüfung + Durchlauf-Test |
@@ -49,18 +49,18 @@ Kapitel 3 ist von Anfang bis Ende spielbar: aus Tauwinkel in die Glutsandwüste,
 - **Phase 1:** Nur eine Sandspur wandert durch den Kessel. Unter Elora bebt der Sand (Warnung), dann schießt die Schlange hoch, fliegt in einem Bogen und taucht wieder ein. Solange sie in der Luft und kurz danach benommen am Boden liegt, ist sie verwundbar.
 - **Phase 2 – ab halbem Leben:** schneller, Teile des Kessels werden zu Treibsand.
 - **Phase 3 – letztes Viertel:** zwei Bögen hintereinander.
-- Hammer und Granaten treffen; mit Stampfen (sobald vorhanden, z. B. in einer späteren Rückkehr) doppelter Schaden.
+- Hammer und Granaten treffen; mit Stampfen (sobald vorhanden, z. B. in einer späteren Rückkehr) doppelter Schaden (E-316).
 
-## Entscheidungen zu R2-M2.3 (offen)
+## Entscheidungen zu R2-M2.3
 
-| # | Frage | Optionen |
+| # | Frage | Entscheidung |
 |---|---|---|
-| D-M23-01 | Weg in die Wüste | Ostpfad weiter (neuer Abzweig hinter dem Wiesen-Übergang) / aus dem Oberdorf nach Süden / Kartenwechsel über einen Wegweiser |
-| D-M23-02 | Sandschlange und Stampfen (das Weltbuch verlangt Stampfen im Kampf, die Fähigkeit gibt es erst danach) | Hammer und Granaten treffen, Stampfen gibt später doppelten Schaden / Stampfen schon vorher von Sirup als Leihgabe / Kampf wie im Weltbuch, Stampfen vor dem Kampf freischalten |
-| D-M23-03 | Sandkrabbe | nur von oben verwundbar / von oben voller, von der Seite kleiner Schaden / Panzer bricht nach drei Treffern |
-| D-M23-04 | Treibsand | sinkt langsam ein und verlangsamt (Springen befreit) / nur verlangsamen / zieht wie ein Laufband zur Mitte |
-| D-M23-05 | Oasen-Aufgabe | Wasser in Krügen tragen (Begleiter-Technik: Krug, der nicht fallen darf) / Wasserschlauch füllen und an drei Stellen abgeben / Quelle freilegen mit Stampfen |
-| D-M23-06 | Hitze | Hitzeflimmern als Bildeffekt / zusätzlich Hitze-Leiste (Schatten suchen) / gar keine Hitze-Wirkung |
+| D-M23-01 | Weg in die Wüste | **Abzweig am Ostpfad:** hinter dem Ostpfad gabelt sich der Weg, nach Süden ein Hohlweg hinab in die Wüste (E-315) |
+| D-M23-02 | Sandschlange und Stampfen | **Hammer und Granaten treffen** die aufgetauchte Schlange; Stampfen (nach dem Kampf) macht später doppelten Schaden (E-316) |
+| D-M23-03 | Sandkrabbe | **Nur von oben verwundbar** (Schlag von oben, Stampfen, Granate darauf), von der Seite prallen Treffer ab (E-317) |
+| D-M23-04 | Treibsand | **Sinkt langsam ein und verlangsamt, Springen befreit;** tief eingesunken kleiner Schaden und zurück an den Rand (E-318) |
+| D-M23-05 | Oasen-Aufgabe | **Wasserschlauch:** an einer Quelle in den Ruinen füllen und an drei verdorrten Stellen der Oase gießen, jede blüht auf (E-319) |
+| D-M23-06 | Hitze | **Hitzeflimmern als Bildeffekt und eine Hitze-Leiste:** in der prallen Sonne füllt sie sich, im Schatten und an der Oase kühlt sie ab; voll = Elora wird langsamer (E-320) |
 
 ## Technische Festlegungen (Vorschlag)
 

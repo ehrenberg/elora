@@ -123,6 +123,12 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-312 | 2026-10-05 | Entwürfe Kapitel 2 (M2.2.0) | **Angenommen** ([`design/kapitel2-entwuerfe.png`](design/kapitel2-entwuerfe.png)); der Wurzelwächter als wandelnder Baumriese mit Rindengesicht und Moosbart (Anlehnung an Baumbart) | Entscheidung Projektinhaber |
 | E-313 | 2026-10-05 | Musik Kapitel 2 | **Murmelwald: „Woodland Fantasy“** (Matthew Pablo, CC BY 3.0, Nennung in `SOURCES.md` und „Über“), **Wurzelwächter: „Bamboo Blitz“** (Tsorthan Grove, CC0) | Entscheidung Projektinhaber |
 | E-314 | 2026-10-05 | Abnahme R2-M2.2 | **Angenommen** („passt so“); weiter mit R2-M2.3 Glutsandwüste | Entscheidung Projektinhaber |
+| E-315 | 2026-10-05 | Weg in die Glutsandwüste | **Abzweig am Ostpfad:** Hohlweg nach Süden hinab in die Wüste | Entscheidung Projektinhaber |
+| E-316 | 2026-10-05 | Sandschlange und Stampfen | **Hammer und Granaten treffen** die aufgetauchte Schlange; Stampfen (nach dem Kampf) macht später doppelten Schaden | Entscheidung Projektinhaber |
+| E-317 | 2026-10-05 | Sandkrabbe | **Nur von oben verwundbar**, von der Seite prallen Treffer ab | Entscheidung Projektinhaber |
+| E-318 | 2026-10-05 | Treibsand | **Sinkt langsam ein, verlangsamt, Springen befreit;** tief eingesunken kleiner Schaden und zurück an den Rand | Entscheidung Projektinhaber |
+| E-319 | 2026-10-05 | Oasen-Aufgabe | **Wasserschlauch** in den Ruinen füllen, an drei verdorrten Stellen der Oase gießen | Entscheidung Projektinhaber |
+| E-320 | 2026-10-05 | Hitze in der Wüste | **Hitzeflimmern und Hitze-Leiste:** Sonne füllt, Schatten und Oase kühlen, voll = Elora wird langsamer | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 
