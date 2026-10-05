@@ -121,8 +121,8 @@ $checked = date('H:i', (int) $status['time']);
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Elora – schnelles 2D-Multiplayer mit Hook, Hammer und Granate</title>
-<meta name="description" content="Elora ist ein schnelles 2D-Multiplayer-Spiel: hooken, schwingen, sprengen. Open Source, mit Karten-Editor, für Linux, Windows und macOS.">
+<title>Elora – schnelles 2D-Multiplayer mit Hook, Hammer und Granate – und ein Abenteuer</title>
+<meta name="description" content="Elora ist ein schnelles 2D-Multiplayer-Spiel: hooken, schwingen, sprengen – jetzt auch mit dem Abenteuer „Die verstummten Quellen“. Open Source, mit Karten-Editor, für Linux, Windows und macOS.">
 <link rel="icon" href="assets/elora.svg" type="image/svg+xml">
 <style>
 @font-face { font-family: "Inter"; src: url("assets/Inter-Regular.ttf") format("truetype"); font-display: swap; }
@@ -235,7 +235,7 @@ section { padding: 84px 0; }
 
 .modes { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 28px; }
 .mode { display: flex; align-items: center; gap: 14px; padding: 14px 20px 14px 14px; }
-.mode .tag { font-family: var(--head); font-weight: 900; font-size: 18px; width: 64px; height: 48px; display: grid; place-items: center; border-radius: 14px; color: #fff; border: 3px solid var(--line); }
+.mode .tag, .chapter .tag { font-family: var(--head); font-weight: 900; font-size: 18px; width: 64px; height: 48px; display: grid; place-items: center; border-radius: 14px; color: #fff; border: 3px solid var(--line); }
 .mode div { line-height: 1.3; } .mode small { color: var(--ink-soft); font-size: 14px; }
 
 .maps { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 18px; margin-top: 30px; }
@@ -258,6 +258,17 @@ section { padding: 84px 0; }
 .ticks li { padding-left: 34px; position: relative; color: var(--ink-soft); }
 .ticks li::before { content: ""; position: absolute; left: 0; top: 4px; width: 20px; height: 20px; border-radius: 7px; background: var(--grass); border: 2.5px solid var(--line); }
 .ticks b { color: var(--ink); }
+.new { display: inline-block; background: var(--sun); color: var(--line); font-weight: 700; font-size: 13px; border-radius: 999px; padding: 3px 12px; margin-bottom: 10px; border: 2.5px solid var(--line); }
+.chapters { display: grid; gap: 12px; margin: 22px 0 0; }
+.chapter { display: flex; gap: 14px; align-items: flex-start; padding: 14px 18px; }
+.chapter .tag { flex: none; width: 44px; height: 44px; font-size: 17px; border-radius: 12px; }
+.chapter p { margin: 2px 0 0; color: var(--ink-soft); font-size: 15px; }
+.adv-scene { position: relative; height: 330px; overflow: hidden; background: linear-gradient(#f7d9a8, #fbeedc); }
+.adv-scene .sun { position: absolute; right: 12%; top: 34px; width: 74px; height: 74px; border-radius: 50%; background: #ffd27a; box-shadow: 0 0 0 14px rgba(255,210,122,.35), 0 0 0 30px rgba(255,210,122,.15); }
+.adv-scene .floor { position: absolute; left: 0; right: 0; bottom: 0; height: 64px; background: var(--earth); border-top: 3px solid var(--line); box-shadow: inset 0 10px 0 var(--grass); }
+.adv-scene .fig { position: absolute; bottom: calc(64px - 17px); width: 200px; }
+.adv-scene .fig.flip { transform: scaleX(-1); }
+.adv-scene .elora { left: 36%; position: absolute; bottom: calc(64px - 6px); width: 72px; animation: hop 2.8s ease-in-out infinite; transform-origin: 50% 100%; }
 .panel { position: relative; height: 330px; overflow: hidden; background: linear-gradient(#a9cde8, #e6f2f8); }
 .panel .grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,.35) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.35) 1px, transparent 1px); background-size: 32px 32px; }
 .panel .blk { position: absolute; background: var(--earth); border: 3px solid var(--line); border-radius: 10px; box-shadow: inset 0 10px 0 var(--grass); }
@@ -294,6 +305,7 @@ footer .logo { font-family: var(--head); font-weight: 900; font-size: 34px; colo
   .badge { font-size: 13px; }
   .scene .hide-sm { display: none; }
   .editor { grid-template-columns: 1fr; }
+  .adv-scene .fig.hide-sm { display: none; }
   .oss { grid-template-columns: 1fr; text-align: center; }
   .oss .elora { margin: 0 auto; }
   .oss .badges { justify-content: center; }
@@ -319,9 +331,9 @@ footer .logo { font-family: var(--head); font-weight: 900; font-size: 34px; colo
   <div class="layer hills-near" data-depth="0.5"></div>
 
   <div class="intro">
-    <span class="badge"><b>Version 0.9 Beta</b> · Open Source · Linux, Windows, macOS</span>
+    <span class="badge"><b>Version 0.9.1 Beta</b> · Neu: Abenteuer · Open Source · Linux, Windows, macOS</span>
     <h1 class="title">Elora</h1>
-    <p class="tagline">Schnelles 2D-Multiplayer: hooken, schwingen, sprengen – mit Freunden im Internet oder im LAN.</p>
+    <p class="tagline">Schnelles 2D-Multiplayer: hooken, schwingen, sprengen – mit Freunden im Internet oder im LAN. Und jetzt auch allein im Abenteuer.</p>
     <div class="buttons">
       <a class="btn primary" href="<?= GITHUB ?>/releases">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 20h16"/></svg>
@@ -392,6 +404,38 @@ footer .logo { font-family: var(--head); font-weight: 900; font-size: 34px; colo
         </div>
       <?php endif; ?>
       <p class="note">Stand <?= h($checked) ?> Uhr · aktualisiert sich alle <?= STATUS_TTL ?> Sekunden beim Neuladen. Im Spiel findest du alle Server unter „Spielen“.</p>
+    </div>
+  </div>
+</section>
+
+<section id="abenteuer" style="background:#fff">
+  <div class="wrap editor">
+    <div>
+      <span class="new reveal">Neu in 0.9.1 · Vorschau</span>
+      <h2 class="reveal">Das Abenteuer: Die verstummten Quellen</h2>
+      <p class="lead reveal">Die Quellen des Taulands verstummen, und die Farben weichen aus dem Dorf Tauwinkel. Elora zieht los – allein, mit Hook, Hammer und einer Menge Mut.</p>
+      <div class="chapters">
+        <div class="card chapter reveal"><span class="tag" style="background:var(--sun)">P</span><div><b>Tauwinkel</b><p>Oma Pfütze, Tüftel, Klonk, Lotte und Pip – hier lernst du alles, was du brauchst.</p></div></div>
+        <div class="card chapter reveal"><span class="tag" style="background:var(--pink)">1</span><div><b>Blütenwiesen</b><p>Verirrte Bienen und eine sehr schlecht gelaunte Brummbär-Hummel.</p></div></div>
+        <div class="card chapter reveal"><span class="tag" style="background:var(--green)">2</span><div><b>Murmelwald</b><p>Ein Uhu voller Geschichten, ein Pilzkind auf dem Heimweg und der Wurzelwächter.</p></div></div>
+        <div class="card chapter reveal"><span class="tag" style="background:#e0b85a">3</span><div><b>Glutsandwüste</b><p>Sirups Karawane, Treibsand, flirrende Hitze und die Sandschlange.</p></div></div>
+      </div>
+      <ul class="ticks reveal" style="margin-top:22px">
+        <li><b>Neue Fähigkeiten</b> aus jeder Quelle: Hook-Ruck, Heranhooken, Stampfen</li>
+        <li><b>Stufen, Fähigkeitenbaum, Ausrüstung</b> und Waffen-Ausbau bei Klonk</li>
+        <li><b>Aufgaben und Gespräche</b> – und ein Dorf, das mit jeder Quelle bunter wird</li>
+      </ul>
+      <p class="reveal" style="color:var(--ink-soft)">Frostspitzen, Sternschlucht und das Finale folgen mit den nächsten Versionen.</p>
+    </div>
+    <div class="card adv-scene reveal" aria-hidden="true">
+      <div class="sun"></div>
+      <img src="assets/figur-oma.svg" class="fig" style="left:-12%" alt="">
+      <img src="assets/figur-pip.svg" class="fig hide-sm" style="left:8%" alt="">
+      <?= elora('sun', 'adv') ?>
+      <img src="assets/figur-tueftel.svg" class="fig flip" style="left:36%" alt="">
+      <img src="assets/figur-sirup.svg" class="fig flip hide-sm" style="left:56%" alt="">
+      <img src="assets/figur-palma.svg" class="fig flip" style="left:70%" alt="">
+      <div class="floor"></div>
     </div>
   </div>
 </section>

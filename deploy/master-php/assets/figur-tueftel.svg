@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-60 -80 120 90">
+  <!-- tueftel (A1.7, aus tools/design/abenteuer_assets.py). Ursprung = Boden, Blick nach rechts. -->
+  <g id="figure"><g transform="scale(0.36)"><path d="M 19,-128 q 10,-6 0,-12 q -10,-6 0,-12 q 10,-6 0,-12" fill="none" stroke="#2b2b2b" stroke-width="3.5"/><circle cx="19" cy="-168" r="7" fill="#f2c14e" stroke="#2b2b2b" stroke-width="3"/>
+  
+  <g id="foot-back">
+    <ellipse cx="-20" cy="-8" rx="14" ry="8" fill="#3fc1b0" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse cx="22" cy="-8" rx="14" ry="8" fill="#3fc1b0" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#7fd99a" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#b9eac7"/>
+  </g>
+  <g id="eyes">
+    <ellipse cx="2" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <ellipse cx="26" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    
+  </g>
+<path d="M 10,-41 Q 16,-37 24,-43" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/><path d="M 21,-42 Q 23,-36 26,-41" fill="#e8685a" stroke="#2b2b2b" stroke-width="2"/><path d="M -36,-94 Q 6,-104 42,-90" fill="none" stroke="#6b4a32" stroke-width="7"/><circle cx="4" cy="-96" r="11" fill="#bfe6f5" stroke="#2b2b2b" stroke-width="4"/><path d="M -1,-99 Q 2,-103 6,-102" fill="none" stroke="#ffffff" stroke-width="2.5"/><circle cx="28" cy="-96" r="11" fill="#bfe6f5" stroke="#2b2b2b" stroke-width="4"/><path d="M 23,-99 Q 26,-103 30,-102" fill="none" stroke="#ffffff" stroke-width="2.5"/><path d="M 44,-20 L 62,-62" stroke="#2b2b2b" stroke-width="10" stroke-linecap="round"/><path d="M 44,-20 L 62,-62" stroke="#c8ced6" stroke-width="5" stroke-linecap="round"/><path d="M 56,-62 a 11,11 0 1 1 14,4 l -4,-9 l -6,3 Z" fill="#c8ced6" stroke="#2b2b2b" stroke-width="3.5" stroke-linejoin="round"/><ellipse cx="-24" cy="-62" rx="7" ry="5" fill="#3fa090" opacity="0.7"/></g></g>
+</svg>

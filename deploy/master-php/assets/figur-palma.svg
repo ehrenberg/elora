@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-60 -80 120 90">
+  <!-- palma (A1.7, aus tools/design/abenteuer_assets.py). Ursprung = Boden, Blick nach rechts. -->
+  <g id="figure"><g transform="scale(0.36)">
+  
+  <g id="foot-back">
+    <ellipse cx="-20" cy="-8" rx="14" ry="8" fill="#4f9ac0" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse cx="22" cy="-8" rx="14" ry="8" fill="#4f9ac0" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#7fc8e8" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#b9e1f2"/>
+  </g>
+  <g id="eyes">
+    <ellipse cx="2" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <ellipse cx="26" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    <path d="M 10,-41 Q 16,-36 22,-41" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+<path d="M -52,-104 Q -50,-150 0,-152 Q 50,-150 52,-104 Q 54,-80 46,-60 Q 30,-110 0,-112 Q -30,-110 -46,-60 Q -54,-80 -52,-104 Z" fill="#f2c14e" stroke="#2b2b2b" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><circle cx="-30" cy="-132" r="3" fill="#e8685a"/><circle cx="-10" cy="-132" r="3" fill="#e8685a"/><circle cx="10" cy="-132" r="3" fill="#e8685a"/><circle cx="30" cy="-132" r="3" fill="#e8685a"/><path d="M -70,-110 Q -86,-80 -70,-60 L -52,-66 Q -60,-84 -50,-104 Z" fill="#c87a4a" stroke="#2b2b2b" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="-62" cy="-112" rx="14" ry="6" fill="#a8603a" stroke="#2b2b2b" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M -66,-118 q -4,-10 4,-14" fill="none" stroke="#5fc8e8" stroke-width="4" stroke-linecap="round"/></g></g>
+</svg>

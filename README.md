@@ -2,7 +2,7 @@
 
 Ein 2D-Multiplayer-Arena-Shooter nach dem Vorbild von [Teeworlds](https://teeworlds.com) – eigene Figur, eigener Stil, gleiches Spielgefühl. Elora ist zugleich der Name der spielbaren Figur.
 
-**Stand:** Release 1 als **0.9.0 Beta** fertig (Bewegung, Hook, Waffen, Netzwerk, Spielmodi, Look & Sound, Menüs & Server-Browser, Karten & Editor). Release 2 wird geplant: [Roadmap (Entwurf)](docs/release-2/roadmap.md).
+**Stand:** **0.9.1 Beta** – Mehrspieler aus Release 1 (Bewegung, Hook, Waffen, Netzwerk, Spielmodi, Look & Sound, Menüs & Server-Browser, Karten & Editor) und als Vorschau das Abenteuer „Die verstummten Quellen“ mit Prolog und Kapitel 1–3 ([Release-Notizen](docs/releases/v0.9.1.md)). Release 2 läuft: [Roadmap](docs/release-2/roadmap.md).
 
 ## Einrichtung unter Arch Linux
 

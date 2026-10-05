@@ -728,7 +728,7 @@ checksum = "252afb9ae5eaa683babdc6a068b3f5726eb19e05070c731f9b2a23a7c3e8ed34"
 
 [[package]]
 name = "elora-adventure"
-version = "0.9.0"
+version = "0.9.1"
 dependencies = [
  "blake2",
  "elora-map",
@@ -741,7 +741,7 @@ dependencies = [
 
 [[package]]
 name = "elora-audio"
-version = "0.9.0"
+version = "0.9.1"
 dependencies = [
  "elora-sim",
  "kira",
@@ -753,7 +753,7 @@ dependencies = [
 
 [[package]]
 name = "elora-client"
-version = "0.9.0"
+version = "0.9.1"
 dependencies = [
  "anyhow",
  "chrono",
@@ -782,7 +782,7 @@ dependencies = [
 
 [[package]]
 name = "elora-game"
-version = "0.9.0"
+version = "0.9.1"
 dependencies = [
  "elora-sim",
  "serde",
@@ -790,7 +790,7 @@ dependencies = [
 
 [[package]]
 name = "elora-map"
-version = "0.9.0"
+version = "0.9.1"
 dependencies = [
  "anyhow",
  "blake2",
@@ -801,7 +801,7 @@ dependencies = [
 
 [[package]]
 name = "elora-master"
-version = "0.9.0"
+version = "0.9.1"
 dependencies = [
  "anyhow",
  "elora-net",
@@ -816,7 +816,7 @@ dependencies = [
 
 [[package]]
 name = "elora-net"
-version = "0.9.0"
+version = "0.9.1"
 dependencies = [
  "snow",
  "socket2",
@@ -826,7 +826,7 @@ dependencies = [
 
 [[package]]
 name = "elora-protocol"
-version = "0.9.0"
+version = "0.9.1"
 dependencies = [
  "elora-game",
  "elora-sim",
@@ -836,7 +836,7 @@ dependencies = [
 
 [[package]]
 name = "elora-render"
-version = "0.9.0"
+version = "0.9.1"
 dependencies = [
  "bytemuck",
  "elora-sim",
@@ -850,7 +850,7 @@ dependencies = [
 
 [[package]]
 name = "elora-server"
-version = "0.9.0"
+version = "0.9.1"
 dependencies = [
  "anyhow",
  "elora-game",
@@ -867,7 +867,7 @@ dependencies = [
 
 [[package]]
 name = "elora-sim"
-version = "0.9.0"
+version = "0.9.1"
 dependencies = [
  "serde",
  "toml",
@@ -4368,7 +4368,7 @@ checksum = "ec7a2a501ed189703dba8b08142f057e887dfc4b2cc4db2d343ac6376ba3e0b9"
 
 [[package]]
 name = "xtask"
-version = "0.9.0"
+version = "0.9.1"
 dependencies = [
  "elora-audio",
  "elora-map",
