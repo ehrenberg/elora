@@ -16,7 +16,8 @@ use elora_map::{Map, ObjectKind};
 use elora_sim::Vec2;
 
 use super::prolog::{
-    Grid, T, animate, at, chest, corner, creature, decor, finish, npc, o, plant, ruck_gate, sign,
+    Grid, T, animate, at, chest, corner, creature, decor, finish, npc, o, plant, pull_vault,
+    ruck_gate, sign,
 };
 use super::release;
 
@@ -100,6 +101,15 @@ pub fn wiese_2() -> Map {
     g.ground(215, 230, 44);
     // alter Steinturm am Ende: Ruck-Stelle mit Biene 4 (M2.1.5)
     let ruck_top = ruck_gate(&mut g, 276, 42);
+    // Zugtruhe für die Rückkehr mit Heranhooken (M2.2.6)
+    let zug = pull_vault(
+        &mut g,
+        "wiese2",
+        244,
+        40,
+        "wiese2.zug",
+        &[("glanztropfen", 50), ("heiltrank", 2)],
+    );
     // Hügel, Quellstein und Weg nach wiese-3
     g.ground(231, 250, 40);
     g.ground(251, w - 1, 42);
@@ -126,12 +136,13 @@ pub fn wiese_2() -> Map {
         creature("blaeser-2", "pollenblaeser", 220, 44, 60.0),
         bee("biene-4", 285, ruck_top),
         plant("blume-3", 228, 44),
-        creature("huepfer-2", "grashuepfer", 240, 40, 28.0),
+        creature("huepfer-2", "grashuepfer", 236, 40, 28.0),
         creature("kaefer-4", "stachelkaefer", 262, 42, 26.0),
         o("quellstein", at(266, 42, 40.0), ObjectKind::SavePoint),
         o("ost", at(292, 42, 28.0), ObjectKind::Spawn),
         edge_exit("weg-wiese-3", w - 2, h, "wiese-3", "west"),
     ];
+    m.adventure.objects.extend(zug);
     m.decor_back = vec![
         decor("honigstand", 24.0, 42),
         decor("bienenstock", 34.0, 42),

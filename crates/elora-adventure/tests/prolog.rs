@@ -162,32 +162,39 @@ fn prologue_from_start_to_the_meadow_edge_and_back() {
     assert!(holds(&s, "quest pips_stein erledigt"));
 }
 
-/// Zugschalter in `wald-3` mit einem echten Hook-Schuss nach oben (R2-M2.2).
+/// Zugschalter mit einem echten Hook-Schuss von unten umlegen (R2-M2.2): in `wald-3` und an
+/// den Zugtruhen in Tüftels Hof, `wiese-1` und `wiese-2`.
 #[test]
-fn pull_lever_in_the_root_caves_opens_the_chamber() {
-    let tuning = Tuning::default();
-    let mut s = Session::new_game(Content::builtin());
-    let mut w = s.enter("wald-3", load("wald-3"), "ost", &tuning);
-    s.save
-        .run(&s.content.clone(), &["faehigkeit heranhooken".into()]);
-    s.sync_world(&mut w);
-    let lever = s.map.adventure.object("zug").unwrap().pos;
-    // Elora unter den Schalter auf den Höhlenboden
-    w.spawn_character(s.player, Vec2::new(lever.x, lever.y + 200.0));
-    for _ in 0..40 {
-        step(&mut s, &mut w, PlayerInput::default(), false);
+fn pull_levers_flip_with_a_real_hook_shot() {
+    for (map, spawn, lever, flag) in [
+        ("wald-3", "ost", "zug", "zug.wald3"),
+        ("tauwinkel", "start", "hof-zug", "hof.zugtor"),
+        ("wiese-1", "west", "wiese1-zug", "wiese1.zug"),
+        ("wiese-2", "west", "wiese2-zug", "wiese2.zug"),
+    ] {
+        let tuning = Tuning::default();
+        let mut s = Session::new_game(Content::builtin());
+        let mut w = s.enter(map, load(map), spawn, &tuning);
+        s.save
+            .run(&s.content.clone(), &["faehigkeit heranhooken".into()]);
+        s.sync_world(&mut w);
+        let at = s.map.adventure.object(lever).unwrap().pos;
+        // Elora darunter auf den Boden fallen lassen
+        w.spawn_character(s.player, Vec2::new(at.x - 40.0, at.y + 120.0));
+        for _ in 0..60 {
+            step(&mut s, &mut w, PlayerInput::default(), false);
+        }
+        let me = w.character(s.player).unwrap().core.pos;
+        let aim = at - me;
+        for _ in 0..40 {
+            let input = PlayerInput {
+                hook: true,
+                target_x: aim.x as i32,
+                target_y: aim.y as i32,
+                ..PlayerInput::default()
+            };
+            step(&mut s, &mut w, input, false);
+        }
+        assert_eq!(s.save.flag(flag), 1, "{map}: Schalter {lever}");
     }
-    let me = w.character(s.player).unwrap().core.pos;
-    let aim = lever - me;
-    let mut events = Vec::new();
-    for _ in 0..40 {
-        let input = PlayerInput {
-            hook: true,
-            target_x: aim.x as i32,
-            target_y: aim.y as i32,
-            ..PlayerInput::default()
-        };
-        events.extend(step(&mut s, &mut w, input, false));
-    }
-    assert_eq!(s.save.flag("zug.wald3"), 1, "Schalter umgelegt: {events:?}");
 }

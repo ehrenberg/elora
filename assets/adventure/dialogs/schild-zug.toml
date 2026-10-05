@@ -1,0 +1,9 @@
+# Wegweiser (E-273, R2-M2.2, M2.2.6)
+speaker = "wegweiser"
+
+[[start]]
+node = "text"
+
+[[node]]
+id = "text"
+text = { de = "Tüftels Zugtruhe: Hook nach oben an die Wurzel mit dem Hebel ({taste:hook}) – mit Heranhooken legst du ihn um, und das Tor geht auf.", en = "Tüftel's pull chest: hook up at the root with the lever ({taste:hook}) – with the pull hook you flip it, and the gate opens." }

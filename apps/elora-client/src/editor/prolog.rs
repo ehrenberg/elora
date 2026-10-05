@@ -83,6 +83,43 @@ pub(super) fn ruck_gate(g: &mut Grid, x0: usize, floor: usize) -> usize {
     top
 }
 
+/// Zugtruhe (R2-M2.2, M2.2.6): kleine Steinhütte (Spalten `x0..x0+4`) mit Tor links und Truhe
+/// innen; 10 Tiles über dem Boden hängt eine Wurzel mit einem Zugschalter (`merker <flag>`).
+/// Nur mit Heranhooken zu öffnen. Liefert Schalter, Tor und Truhe.
+pub(super) fn pull_vault(
+    g: &mut Grid,
+    id: &str,
+    x0: usize,
+    floor: usize,
+    flag: &str,
+    contents: &[(&str, u32)],
+) -> Vec<Object> {
+    g.fill((x0, x0 + 4), (floor - 4, floor - 4), '%');
+    g.fill((x0 + 4, x0 + 4), (floor - 4, floor - 1), '%');
+    g.fill((x0 + 1, x0 + 3), (floor - 3, floor - 1), '.');
+    g.fill((x0 + 2, x0 + 2), (floor - 12, floor - 11), '#');
+    vec![
+        o(
+            &format!("{id}-zug"),
+            Vec2::new((x0 as f32 + 2.5) * T, (floor - 10) as f32 * T + 14.0),
+            ObjectKind::Switch {
+                flag: flag.into(),
+                once: true,
+                trigger: elora_map::adventure::SwitchTrigger::Hook,
+            },
+        ),
+        o(
+            &format!("{id}-tor"),
+            corner(x0, floor - 3),
+            ObjectKind::Door {
+                size: (1, 3),
+                open_if: format!("merker {flag}"),
+            },
+        ),
+        chest(&format!("{id}-truhe"), x0 + 2, floor, contents),
+    ]
+}
+
 /// Mitte über dem Boden (Oberkante von Zeile `ty`) in Spalte `tx` für ein Objekt der Höhe `h`.
 pub(super) fn at(tx: usize, ty: usize, h: f32) -> Vec2 {
     Vec2::new(tx as f32 * T + T / 2.0, ty as f32 * T - h / 2.0 - 1.0)
@@ -356,6 +393,15 @@ pub fn tauwinkel() -> Map {
     g.ground(181, 252, 38);
     // Ruck-Strecke hinter der Werkstatt: Tor öffnet sich, wenn Tüftel den Hook-Ruck gebaut hat
     let ruck_top = ruck_gate(&mut g, 170, 38);
+    // Tüftels Zugtruhe: Übung für Heranhooken (M2.2.6)
+    let zug = pull_vault(
+        &mut g,
+        "hof",
+        238,
+        38,
+        "hof.zugtor",
+        &[("glanztropfen", 50), ("tautrank", 1)],
+    );
     g.fill((186, 203), (38, 41), '.');
     g.fill((185, 204), (29, 30), '#');
     g.fill((211, 221), (26, 34), '#');
@@ -400,6 +446,7 @@ pub fn tauwinkel() -> Map {
         npc("tueftel", 158, 38, 1, 32.0),
         sign("schild-hook", 184, 38),
         sign("schild-ruck", 172, 38),
+        sign("schild-zug", 236, 38),
         chest(
             "truhe-ruck",
             179,
@@ -431,6 +478,7 @@ pub fn tauwinkel() -> Map {
             },
         ),
     ];
+    m.adventure.objects.extend(zug);
     let mut baumhaus = decor("baumhaus", 42.0, 40);
     baumhaus.pos.y += 8.0;
     m.decor_back = vec![
@@ -608,6 +656,15 @@ pub fn wiese() -> Map {
     g.ground(251, w - 1, 40);
     // Ruck-Stelle mit Biene 5 (Rückkehr nach Kapitel 1)
     let ruck_top = ruck_gate(&mut g, 252, 40);
+    // Zugtruhe für die Rückkehr mit Heranhooken (M2.2.6)
+    let zug = pull_vault(
+        &mut g,
+        "wiese1",
+        241,
+        43,
+        "wiese1.zug",
+        &[("glanztropfen", 45), ("bernstein", 2)],
+    );
     let mut m = g.map("Blütenwiesen 1");
     m.adventure.objects = vec![
         o(
@@ -661,7 +718,7 @@ pub fn wiese() -> Map {
             &[("glanztropfen", 40), ("bernstein", 2)],
         ),
         plant("blume-4", 236, 46),
-        creature("kaefer-6", "stachelkaefer", 245, 43, 26.0),
+        creature("kaefer-6", "stachelkaefer", 237, 44, 26.0),
         creature("huepfer-4", "grashuepfer", 270, 40, 28.0),
         o(
             "wiesenrand",
@@ -691,6 +748,7 @@ pub fn wiese() -> Map {
             },
         ),
     ];
+    m.adventure.objects.extend(zug);
     m.decor_back = vec![
         decor("tree-round", 15.0, 44),
         decor("tree-round", 64.0, 50),
