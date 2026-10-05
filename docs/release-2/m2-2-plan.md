@@ -1,6 +1,6 @@
 # R2-M2.2 – Kapitel 2: Murmelwald – Umsetzungsplan
 
-Status: **Plan zur Freigabe** · Grundlage: [`weltbuch.md`](weltbuch.md) §4.2 und §5, [`m2-1-plan.md`](m2-1-plan.md), E-296, E-305
+Status: **Entscheidungen getroffen (E-306 bis E-311), Plan zur Freigabe** · Grundlage: [`weltbuch.md`](weltbuch.md) §4.2 und §5, [`m2-1-plan.md`](m2-1-plan.md), E-296, E-305
 
 ## Ziel
 
@@ -20,7 +20,7 @@ Kapitel 2 ist von Anfang bis Ende spielbar: aus Tauwinkel in den Murmelwald, der
 | # | Schritt | Inhalt | Prüfung |
 |---|---|---|---|
 | M2.2.0 | Entwürfe | Uhu Plumm, Pilzkind, Wurzelschlange, Eichhornpirat (mit Nuss), Pilzwicht, Wurzelwächter (Ruhe, Wurzelangriff, Kern offen, besiegt), Erinnerungsrune, Kern, Waldquelle (verdorrt/befreit), Deko des Waldes (hohe Bäume, Baumhäuser, Hängebrücken, leuchtende Pilze, Wurzeln, Moos) | Deine Auswahl |
-| M2.2.1 | Neue Gegner | **Wurzelschlange**: versteckt im Boden, schießt hoch, wenn Elora nah ist, zieht sich zurück (verwundbar nur draußen). **Eichhornpirat**: sitzt auf Ästen, wirft Nüsse im Bogen. **Pilzwicht**: läuft, beim Treffen kurz „benebelt“ (Elora langsamer) | Tests + Sandbox |
+| M2.2.1 | Neue Gegner | **Wurzelschlange**: versteckt im Boden, schießt hoch, wenn Elora nah ist, zieht sich zurück (verwundbar nur draußen). **Eichhornpirat**: sitzt auf Ästen, wirft Nüsse im Bogen. **Pilzwicht**: läuft, bei Berührung ein bunter Rausch (Elora regenbogenfarben und langsamer, E-311); **Begleiter** für das Pilzkind (folgt Elora, wartet an schwierigen Stellen, E-308) | Tests + Sandbox |
 | M2.2.2 | Heranhooken erweitern | Hook zieht **Gegenstände** (Truhen-Inhalt, Kerne, Sammelstücke) und **Hook-Schalter** (Hebel, die man nur mit Heranhooken umlegt) zu Elora; neue Schalter-Art „Zugschalter“ in Karte und Editor | Tests |
 | M2.2.3 | Hüter-Technik | **Wurzelwächter**: großer Hüter am Boden, verschließt Wege mit Wurzeln (zeitweise feste Tiles), schlägt mit Wurzeln aus dem Boden; **Kerne** in seiner Rinde: Hook daran und wegziehen (Tauziehen) legt einen Kern frei, dann verwundbar | Tests + Sandbox |
 | M2.2.4 | Inhalte | Figuren Plumm und Pilzkind; Hauptaufgabe „Das Flüstern im Murmelwald“ bis zum Quellfunken; Nebenaufgaben **„Erinnerungsrunen“** (Runen erzählen in Bruchstücken von der sechsten Quelle) und **„Das verirrte Pilzkind“**; Gespräche im Dorf nach Kapitel 2 | Tests |
@@ -50,16 +50,16 @@ Kapitel 2 ist von Anfang bis Ende spielbar: aus Tauwinkel in den Murmelwald, der
 - **Phase 3 – letzter Kern:** schneller, Wurzeln an zwei Stellen gleichzeitig.
 - Treffer nur, solange ein Kern gelöst ist.
 
-## Entscheidungen zu R2-M2.2 (offen)
+## Entscheidungen zu R2-M2.2
 
-| # | Frage | Optionen |
+| # | Frage | Entscheidung |
 |---|---|---|
-| D-M22-01 | Weg in den Murmelwald | über den Steilhang im Westen von Tauwinkel (neuer Pfad hinauf) / aus dem Oberdorf nach Norden / eigener Übergang auf der Weltkarte |
-| D-M22-02 | Kampf gegen den Wurzelwächter | wie vorgeschlagen / einfacher / schwerer |
-| D-M22-03 | Pilzkind nach Hause bringen | Pilzkind folgt Elora (neue Technik: Begleiter) / Gespräch genügt, es läuft allein heim / es sitzt in einem Korb, den Elora tragen muss |
-| D-M22-04 | Belohnung für die Runen | Geschichte über die sechste Quelle + Ausrüstungsstück / Tautropfen-Punkt / Lied, das Oma später erkennt (Finale) |
-| D-M22-05 | Fest nach Kapitel 2 | wie nach Kapitel 1 / nur mehr Farbe und Zurufe |
-| D-M22-06 | Pilzwicht-Wirkung | Elora kurz langsamer / Steuerung kurz vertauscht / Sicht kurz verschwommen |
+| D-M22-01 | Weg in den Murmelwald | **Pfad am Westhang** von Tauwinkel hinauf (Stufen, Hook-Stellen), oben beginnt der Wald (E-306) |
+| D-M22-02 | Kampf gegen den Wurzelwächter | **Wie vorgeschlagen** (E-307) |
+| D-M22-03 | Pilzkind nach Hause bringen | **Es folgt Elora** (neue Technik Begleiter, wartet an schwierigen Stellen) (E-308) |
+| D-M22-04 | Belohnung für die Runen | **Ausrüstungsstück und ein Tautropfen-Punkt**, dazu die Geschichte der sechsten Quelle (E-309) |
+| D-M22-05 | Fest nach Kapitel 2 | **Wie nach Kapitel 1** (E-310) |
+| D-M22-06 | Pilzwicht-Wirkung | **Bunter Rausch:** Elora schimmert ein paar Sekunden in Regenbogenfarben und läuft langsamer, die Welt wabert leicht (kindgerecht, ohne Bezug auf Drogen im Spiel) (E-311) |
 
 ## Technische Festlegungen (Vorschlag)
 

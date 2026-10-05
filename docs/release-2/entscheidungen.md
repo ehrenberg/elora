@@ -114,6 +114,12 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-303 | 2026-10-03 | Entwürfe Kapitel 1 (M2.1.0) | **Angenommen** wie vorgelegt ([`design/kapitel1-entwuerfe.png`](design/kapitel1-entwuerfe.png)) | Entscheidung Projektinhaber |
 | E-304 | 2026-10-04 | Musik Kapitel 1 | **Kampf: „Urban Boss Battle“** (mintodog), **Fest: „Minstrel Dance“** (randommind), beide CC0 von OpenGameArt | Entscheidung Projektinhaber |
 | E-305 | 2026-10-05 | Abnahme R2-M2.1 | **Vorerst angenommen** („erst einmal so belassen“) nach den Korrekturen aus dem Playtest (Hook-Ruck sofort, Symbolgrößen, Kartenliste); weiter mit R2-M2.2 | Entscheidung Projektinhaber |
+| E-306 | 2026-10-05 | Weg in den Murmelwald | **Pfad am Westhang** von Tauwinkel hinauf, oben beginnt der Wald | Entscheidung Projektinhaber |
+| E-307 | 2026-10-05 | Kampf Wurzelwächter | **Wie vorgeschlagen:** Wurzeln aus dem Boden mit Warnung, Kerne herausziehen macht ihn verwundbar, ab halbem Leben Wurzelwände, zum Schluss schneller | Entscheidung Projektinhaber |
+| E-308 | 2026-10-05 | Pilzkind | **Folgt Elora** als Begleiter, wartet an schwierigen Stellen | Entscheidung Projektinhaber |
+| E-309 | 2026-10-05 | Belohnung Erinnerungsrunen | **Ausrüstungsstück und ein Tautropfen-Punkt** | Entscheidung Projektinhaber |
+| E-310 | 2026-10-05 | Fest nach Kapitel 2 | **Wie nach Kapitel 1** | Entscheidung Projektinhaber |
+| E-311 | 2026-10-05 | Pilzwicht-Wirkung | **Bunter Rausch:** Elora regenbogenfarben und langsamer für ein paar Sekunden, die Welt wabert leicht; kindgerecht | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 
