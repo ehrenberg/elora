@@ -113,13 +113,13 @@ pub fn scene(
         if c.ch.invulnerable_until > scene.tick && (scene.tick / 4).is_multiple_of(2) {
             continue;
         }
-        figures.draw(
-            batch,
-            art,
-            c,
-            aim,
-            &skins::tint(skin, c.team, c.dummy, team_color),
-        );
+        let mut tint = skins::tint(skin, c.team, c.dummy, team_color);
+        if c.ch.core.dazed > 0 {
+            #[allow(clippy::cast_precision_loss)]
+            let t = scene.tick as f32 / elora_sim::TICKS_PER_SECOND as f32;
+            tint = skins::rainbow(tint, t);
+        }
+        figures.draw(batch, art, c, aim, &tint);
         let facing = if aim.x < 0.0 { -1.0 } else { 1.0 };
         let swing = figures.weapon_swing(c.slot, facing);
         items.draw_weapon(batch, pos, aim, swing, c.ch.arsenal.active);

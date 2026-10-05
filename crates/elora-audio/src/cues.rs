@@ -283,14 +283,14 @@ pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>)
             cues
         }
         Event::CreatureFire { pos, .. } => vec![Cue::at(Sound::HookFire, pos)],
-        Event::CreatureAct { pos, act, .. } => vec![Cue::at(
-            match act {
-                CreatureAct::Wake => Sound::BossWake,
-                CreatureAct::Dive => Sound::BossDive,
-                CreatureAct::Land => Sound::BossLand,
-            },
-            pos,
-        )],
+        Event::CreatureAct { pos, act, .. } => match act {
+            CreatureAct::Wake => vec![Cue::at(Sound::BossWake, pos)],
+            CreatureAct::Dive => vec![Cue::at(Sound::BossDive, pos)],
+            CreatureAct::Land => vec![Cue::at(Sound::BossLand, pos)],
+            // eigene Klänge der Waldgegner folgen mit M2.2.8
+            CreatureAct::Emerge => vec![Cue::at(Sound::Land, pos)],
+            CreatureAct::Burrow => Vec::new(),
+        },
         Event::LootCollect { pos, .. } => vec![Cue::at(Sound::PickupArmor, pos)],
     }
 }

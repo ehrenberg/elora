@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-60 -80 120 90">
+  <!-- pilzkind (A1.7, aus tools/design/abenteuer_assets.py). Ursprung = Boden, Blick nach rechts. -->
+  <g id="figure"><g transform="scale(0.216)">
+  
+  <g id="foot-back">
+    <ellipse cx="-20" cy="-8" rx="14" ry="8" fill="#d8c8a8" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse cx="22" cy="-8" rx="14" ry="8" fill="#d8c8a8" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#f6efdf" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#faf6ed"/>
+  </g>
+  <g id="eyes">
+    <ellipse cx="2" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <ellipse cx="26" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    <path d="M 10,-41 Q 16,-36 22,-41" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+<path d="M -70,-92 Q -60,-150 0,-156 Q 60,-150 70,-92 Q 0,-104 -70,-92 Z" fill="#e8685a" stroke="#2b2b2b" stroke-width="4.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="-34" cy="-126" r="9" fill="#fff6e8" stroke="#2b2b2b" stroke-width="2"/><circle cx="6" cy="-140" r="11" fill="#fff6e8" stroke="#2b2b2b" stroke-width="2"/><circle cx="38" cy="-118" r="8" fill="#fff6e8" stroke="#2b2b2b" stroke-width="2"/><circle cx="-6" cy="-112" r="6" fill="#fff6e8" stroke="#2b2b2b" stroke-width="2"/><path d="M 2,-58 q 3,10 0,16" fill="none" stroke="#7fc8e8" stroke-width="5" stroke-linecap="round"/><path d="M 30,-58 q 3,10 0,16" fill="none" stroke="#7fc8e8" stroke-width="5" stroke-linecap="round"/></g></g>
+</svg>

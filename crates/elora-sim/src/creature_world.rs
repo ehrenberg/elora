@@ -91,6 +91,7 @@ impl World {
     pub(crate) fn hook_targets(&self) -> Vec<HookTarget> {
         self.creatures
             .iter()
+            .filter(|c| c.hookable(&self.creature_kinds[c.kind]))
             .map(|c| {
                 let k = &self.creature_kinds[c.kind];
                 HookTarget {
@@ -451,6 +452,7 @@ impl World {
                     range,
                     shot_speed,
                     shot_damage,
+                    lob,
                 } => {
                     fixed = true;
                     c.vel = Vec2::ZERO;
@@ -461,16 +463,31 @@ impl World {
                     {
                         c.facing = sign(p.x - c.pos.x);
                         if c.timer >= ms_to_ticks(interval_ms)
-                            && collision.intersect_line(c.pos, p).is_none()
+                            && (lob || collision.intersect_line(c.pos, p).is_none())
                         {
                             let dir = (p - c.pos).normalize();
-                            let pos = c.pos + dir * (kind.radius() + SHOT_RADIUS);
+                            let (pos, vel, g) = if lob {
+                                // Bogen: waagerecht mit `shot_speed`, senkrecht so, dass die
+                                // Nuss bei Elora ankommt (flache Würfe mindestens etwas hoch)
+                                let pos = c.pos + Vec2::new(0.0, -(kind.radius() + SHOT_RADIUS));
+                                let d = p - pos;
+                                let t = (d.x.abs() / shot_speed).max(12.0);
+                                let vy = (d.y - 0.5 * gravity * t * t) / t;
+                                (pos, Vec2::new(d.x / t, vy.min(-3.0)), gravity)
+                            } else {
+                                (
+                                    c.pos + dir * (kind.radius() + SHOT_RADIUS),
+                                    dir * shot_speed,
+                                    0.0,
+                                )
+                            };
                             creature_shots.push(CreatureShot {
                                 owner: c.id,
                                 pos,
-                                vel: dir * shot_speed,
+                                vel,
                                 damage: shot_damage,
                                 ticks: 0,
+                                gravity: g,
                             });
                             events.push(Event::CreatureFire { id: c.id, pos });
                             c.timer = 0;
@@ -485,6 +502,80 @@ impl World {
                     }
                     if c.mode == crate::creature::diver::SLEEP {
                         continue;
+                    }
+                }
+                Behavior::Burrower {
+                    sight,
+                    out_ms,
+                    hide_ms,
+                } => {
+                    use crate::creature::burrow::{HIDDEN, OUT};
+                    fixed = true;
+                    c.vel = Vec2::ZERO;
+                    c.timer = c.timer.saturating_add(1);
+                    if let Some((p, _)) = target {
+                        c.facing = sign(p.x - c.pos.x);
+                    }
+                    match c.mode {
+                        HIDDEN => {
+                            if active
+                                && c.timer >= ms_to_ticks(hide_ms)
+                                && target.is_some_and(|(_, d)| d <= sight)
+                            {
+                                c.mode = OUT;
+                                c.timer = 0;
+                                events.push(Event::CreatureAct {
+                                    id: c.id,
+                                    pos: c.pos,
+                                    act: CreatureAct::Emerge,
+                                });
+                            }
+                        }
+                        _ => {
+                            if c.timer >= ms_to_ticks(out_ms) {
+                                c.mode = HIDDEN;
+                                c.timer = 0;
+                                events.push(Event::CreatureAct {
+                                    id: c.id,
+                                    pos: c.pos,
+                                    act: CreatureAct::Burrow,
+                                });
+                            }
+                        }
+                    }
+                }
+                Behavior::Follower { speed, jump } => {
+                    c.vel.y += gravity;
+                    let Some((p, d)) = target else {
+                        c.vel.x *= 0.7;
+                        continue;
+                    };
+                    if d > 64.0 && (p.x - c.pos.x).abs() > 24.0 {
+                        let dir = sign(p.x - c.pos.x);
+                        c.facing = dir;
+                        let front = c.pos.x + f32::from(dir) * (size.x / 2.0 + 4.0);
+                        let feet = c.pos.y + size.y / 2.0;
+                        // Lücke oder Gefahr vor den Füßen: warten (E-308). Unter der
+                        // Fußspitze muss das erste Tile (bis 2 Tiles tief) tragen.
+                        let below = (0..5).find_map(|k| {
+                            #[allow(clippy::cast_precision_loss)]
+                            let y = feet + 4.0 + k as f32 * 16.0;
+                            let t = collision.tile_at(Vec2::new(front, y));
+                            (t != crate::Tile::Air).then_some(t)
+                        });
+                        let danger = below == Some(crate::Tile::Death);
+                        let ground_ahead = below.is_some() && !danger;
+                        let wall = collision.is_solid(Vec2::new(front, feet - 8.0));
+                        if c.grounded && (danger || (!ground_ahead && p.y <= c.pos.y + 32.0)) {
+                            c.vel.x = 0.0;
+                        } else {
+                            c.vel.x = f32::from(dir) * speed;
+                            if wall && c.grounded {
+                                c.vel.y = -jump;
+                            }
+                        }
+                    } else {
+                        c.vel.x *= 0.7;
                     }
                 }
                 Behavior::Flyer { speed, sight } => {
@@ -514,8 +605,10 @@ impl World {
             let wanted_x = c.vel.x;
             let (mut pos, mut vel) = (c.pos, c.vel);
             let diving = matches!(kind.behavior, Behavior::Diver(_));
-            let death =
-                collision.move_box_platforms(&mut pos, &mut vel, size, 0.0, !diving) && !diving;
+            let follower = matches!(kind.behavior, Behavior::Follower { .. });
+            let death = collision.move_box_platforms(&mut pos, &mut vel, size, 0.0, !diving)
+                && !diving
+                && !follower;
             if matches!(kind.behavior, Behavior::Walker { .. }) && wanted_x != 0.0 && vel.x == 0.0 {
                 c.facing = -c.facing;
             }
@@ -551,6 +644,7 @@ impl World {
         let mut i = 0;
         while i < self.creature_shots.len() {
             let s = &mut self.creature_shots[i];
+            s.vel.y += s.gravity;
             s.pos += s.vel;
             s.ticks += 1;
             let (pos, vel, damage) = (s.pos, s.vel, s.damage);
@@ -575,13 +669,11 @@ impl World {
     fn tick_contact(&mut self, chars: &[(usize, Vec2)]) {
         let kb = self.tuning.hit_knockback;
         let mut hits = Vec::new();
+        let mut dazes = Vec::new();
         for c in &self.creatures {
             let k = &self.creature_kinds[c.kind];
-            // benommene Hüter schaden nicht (Elora soll zuschlagen können)
-            if k.touch_damage <= 0
-                || (matches!(k.behavior, Behavior::Diver(_))
-                    && c.mode == crate::creature::diver::STUNNED)
-            {
+            // benommene Hüter, versteckte Schlangen und Begleiter schaden nicht
+            if (k.touch_damage <= 0 && k.daze_ms == 0) || !c.harmful(k) {
                 continue;
             }
             for &(j, p) in chars {
@@ -591,11 +683,24 @@ impl World {
                 {
                     let force = Vec2::new(f32::from(sign(d.x)) * kb, -kb * 0.6);
                     hits.push((j, force, k.touch_damage));
+                    if k.daze_ms > 0 {
+                        dazes.push((j, ms_to_ticks(k.daze_ms)));
+                    }
                 }
             }
         }
         for (j, force, damage) in hits {
-            self.take_damage(j, force, damage, None, DeathCause::Creature);
+            if damage > 0 {
+                self.take_damage(j, force, damage, None, DeathCause::Creature);
+            }
+        }
+        // bunter Rausch (E-311): nicht nachladen, solange er noch wirkt
+        for (j, ticks) in dazes {
+            if let Some(ch) = self.character_mut(j)
+                && ch.core.dazed == 0
+            {
+                ch.core.dazed = ticks;
+            }
         }
     }
 
@@ -709,6 +814,7 @@ fn tick_diver(
                     vel: Vec2::new(0.0, d.drop_speed),
                     damage: d.drop_damage,
                     ticks: 0,
+                    gravity: 0.0,
                 });
                 events.push(Event::CreatureFire { id: c.id, pos });
             }

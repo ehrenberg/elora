@@ -26,6 +26,8 @@ struct Look {
     /// Hüter: Sturzflug und benommen (R2-M2.1).
     dive: Option<Mesh>,
     stunned: Option<Mesh>,
+    /// Versteckt im Boden (Wurzelschlange, Zustand 0).
+    hidden: Option<Mesh>,
 }
 
 #[derive(Debug)]
@@ -47,7 +49,7 @@ macro_rules! adventure_svgs {
     };
 }
 
-const CHARACTER_FILES: &[(&str, &[u8])] = adventure_svgs!("characters": "oma", "klonk", "lotte", "tueftel", "pip", "wegweiser", "wabe", "hummel");
+const CHARACTER_FILES: &[(&str, &[u8])] = adventure_svgs!("characters": "oma", "klonk", "lotte", "tueftel", "pip", "wegweiser", "wabe", "hummel", "plumm", "pilzkind");
 /// Gegenstände mit eigenem Bild (R2-M2.1); alle anderen zeigen `item.svg`.
 const ITEM_FILES: &[(&str, &[u8])] = adventure_svgs!("items": "biene", "quellfunke", "wabenhut");
 /// Objekt und die Namen seiner beiden Teile (aus, an).
@@ -90,7 +92,11 @@ const CREATURE_FILES: &[(&str, &[u8])] = creatures!(
     "grashuepfer",
     "strohpuppe",
     "brummbaer",
-    "wirrbiene"
+    "wirrbiene",
+    "wurzelschlange",
+    "eichhornpirat",
+    "pilzwicht",
+    "pilzkind"
 );
 
 impl CreatureArt {
@@ -112,6 +118,7 @@ impl CreatureArt {
                         air: a.part("air").cloned(),
                         dive: a.part("dive").cloned(),
                         stunned: a.part("stunned").cloned(),
+                        hidden: a.part("hidden").cloned(),
                     },
                 )
             })
@@ -180,6 +187,7 @@ impl CreatureArt {
         if let Some(look) = self.looks.get(c.kind.as_str()) {
             use elora_sim::creature::diver;
             let mesh = match c.mode {
+                elora_sim::creature::burrow::HIDDEN => look.hidden.as_ref(),
                 diver::DIVE | diver::AIM => look.dive.as_ref(),
                 diver::STUNNED => look.stunned.as_ref(),
                 _ => None,
@@ -364,6 +372,11 @@ mod tests {
         put("brummbaer", true, false, None, 1, diver::CIRCLE);
         put("brummbaer", true, false, None, 1, diver::DIVE);
         put("brummbaer", false, false, Some(10), -1, diver::STUNNED);
+        put("wurzelschlange", false, false, None, 1, 0);
+        put("wurzelschlange", false, false, None, -1, 1);
+        put("eichhornpirat", false, false, None, -1, 0);
+        put("pilzwicht", false, false, None, 1, 0);
+        put("pilzkind", false, false, None, 1, 0);
         // Elora zum Größenvergleich (Box 28)
         batch.fill_circle(Vec2::new(x, ground - 14.0), 14.0, Color::hex(0xf2c14e));
         CreatureArt::draw_shot(&mut batch, Vec2::new(x + 80.0, ground - 60.0));
@@ -412,7 +425,7 @@ mod tests {
             let x = 480.0 + i as f32 * 52.0;
             art.draw_object(&mut batch, name, Vec2::new(x, ground2), *on);
         }
-        let svg = batch.debug_svg(Vec2::ZERO, Vec2::new(1800.0, 480.0), Color::hex(0xa9cde8));
+        let svg = batch.debug_svg(Vec2::ZERO, Vec2::new(2000.0, 480.0), Color::hex(0xa9cde8));
         std::fs::write(
             concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/creatures.svg"),
             svg,

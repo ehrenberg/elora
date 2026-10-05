@@ -29,6 +29,9 @@ pub struct CreatureKind {
     pub xp: u32,
     #[cfg_attr(feature = "serde", serde(default))]
     pub loot: Vec<LootEntry>,
+    /// Berührung löst den bunten Rausch aus (so viele ms, E-311): Elora läuft langsamer.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub daze_ms: u32,
     pub behavior: Behavior,
 }
 
@@ -63,6 +66,9 @@ pub enum Behavior {
         range: f32,
         shot_speed: f32,
         shot_damage: i32,
+        /// Wirft im Bogen (Schwerkraft) statt gerade zu schießen (Eichhornpirat, R2-M2.2).
+        #[cfg_attr(feature = "serde", serde(default))]
+        lob: bool,
     },
     /// Schwebt um den Startpunkt und verfolgt Elora in Sichtweite.
     Flyer { speed: f32, sight: f32 },
@@ -71,6 +77,17 @@ pub enum Behavior {
     /// Boden – **nur dann verwundbar** – und steigt wieder auf. Ab `enrage_at` (Anteil des
     /// Lebens) schneller und zwei Sturzflüge hintereinander, ab `summon_at` ruft er Helfer.
     Diver(Box<DiverDef>),
+    /// Steckt im Boden und schießt hoch, wenn Elora näher als `sight` ist (Wurzelschlange,
+    /// R2-M2.2); bleibt `out_ms` draußen – **nur dann verwundbar und gefährlich** – und
+    /// wartet danach mindestens `hide_ms` versteckt.
+    Burrower {
+        sight: f32,
+        out_ms: u32,
+        hide_ms: u32,
+    },
+    /// Begleiter (Pilzkind, E-308): folgt Elora am Boden, springt über Stufen, wartet an
+    /// Lücken und Gefahren; unverwundbar und harmlos.
+    Follower { speed: f32, jump: f32 },
 }
 
 /// Werte des Hüters aus der Luft ([`Behavior::Diver`]).
@@ -123,6 +140,12 @@ pub mod diver {
     pub const RISE: u8 = 5;
 }
 
+/// Zustand der Wurzelschlange (in [`Creature::mode`]).
+pub mod burrow {
+    pub const HIDDEN: u8 = 0;
+    pub const OUT: u8 = 1;
+}
+
 /// Eintrag der Beutetabelle: `min`–`max` Stück mit Wahrscheinlichkeit `chance`.
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -170,7 +193,31 @@ pub struct Creature {
 impl Creature {
     /// Kann der Gegner gerade Schaden nehmen? Hüter aus der Luft nur benommen (E-299).
     pub fn vulnerable(&self, kind: &CreatureKind) -> bool {
-        !matches!(kind.behavior, Behavior::Diver(_)) || self.mode == diver::STUNNED
+        match kind.behavior {
+            Behavior::Diver(_) => self.mode == diver::STUNNED,
+            Behavior::Burrower { .. } => self.mode == burrow::OUT,
+            Behavior::Follower { .. } => false,
+            _ => true,
+        }
+    }
+
+    /// Schadet die Berührung gerade? (Wurzelschlange nur draußen, Begleiter nie.)
+    pub fn harmful(&self, kind: &CreatureKind) -> bool {
+        match kind.behavior {
+            Behavior::Diver(_) => self.mode != diver::STUNNED,
+            Behavior::Burrower { .. } => self.mode == burrow::OUT,
+            Behavior::Follower { .. } => false,
+            _ => true,
+        }
+    }
+
+    /// Kann der Hook ihn greifen? (Versteckte Schlangen und Begleiter nicht.)
+    pub fn hookable(&self, kind: &CreatureKind) -> bool {
+        match kind.behavior {
+            Behavior::Burrower { .. } => self.mode == burrow::OUT,
+            Behavior::Follower { .. } => false,
+            _ => true,
+        }
     }
 }
 
@@ -182,6 +229,8 @@ pub struct CreatureShot {
     pub vel: Vec2,
     pub damage: i32,
     pub ticks: u32,
+    /// Schwerkraft je Tick (0 = fliegt gerade; Nüsse im Bogen).
+    pub gravity: f32,
 }
 
 /// Herumliegende Beute (E-236).

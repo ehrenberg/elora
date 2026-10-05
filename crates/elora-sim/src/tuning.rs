@@ -157,6 +157,8 @@ pub struct Tuning {
     pub laser_pierce: u32,
     /// A-22: Schaden durch Dornen (Todes-Tiles im Abenteuer, E-283)
     pub thorn_damage: i32,
+    /// A-23: Laufgeschwindigkeit im bunten Rausch (Faktor, E-311)
+    pub daze_speed: f32,
 }
 
 impl Default for Tuning {
@@ -233,6 +235,7 @@ impl Default for Tuning {
             grenade_shards: 0,
             laser_pierce: 0,
             thorn_damage: 2,
+            daze_speed: 0.55,
         }
     }
 }

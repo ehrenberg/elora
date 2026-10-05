@@ -96,6 +96,8 @@ pub struct CharacterCore {
     pub hooked_creature: Option<u32>,
     /// Die gehakte Kreatur wird zu Elora gezogen (Heranhooken), statt Elora zu ihr.
     pub pulling: bool,
+    /// Bunter Rausch (Pilzwicht, E-311): noch so viele Ticks langsamer.
+    pub dazed: u32,
 }
 
 impl CharacterCore {
@@ -200,6 +202,14 @@ impl CharacterCore {
                 tuning.air_control_accel,
                 tuning.air_friction,
             )
+        };
+
+        // bunter Rausch: langsamer laufen (A-23)
+        self.dazed = self.dazed.saturating_sub(1);
+        let max_speed = if self.dazed > 0 {
+            max_speed * tuning.daze_speed
+        } else {
+            max_speed
         };
 
         // Eingabe

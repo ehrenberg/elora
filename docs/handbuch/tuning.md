@@ -109,6 +109,7 @@ Nur im Abenteuer und im Quellenkampf (E-223). Startwerte zum Anspielen; die Sand
 | A-20 | Granaten-Splitter | **0** | Ausbau Granatwerfer II: 3 kleine Nach-Explosionen (⅓ Schaden, nur Gegner) | Ausbau (E-243) |
 | A-21 | Laser-Durchschlag | **0** | Ausbau Laser II: trifft bis zu 3 Gegner | Ausbau (E-243) |
 | A-22 | Dornen-Schaden | **2 Leben** | Todes-Tiles im Abenteuer: Schaden, zurück auf den letzten sicheren Boden | E-283 |
+| A-23 | Tempo im bunten Rausch | **× 0,55** | Pilzwicht (E-311): so viel langsamer, solange der Rausch wirkt | E-311 |
 
 ## F. Regeln aus Folgeentscheidungen
 

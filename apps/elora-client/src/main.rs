@@ -871,7 +871,21 @@ impl App {
             return;
         };
         let center = self.adventure_camera(scene.camera, self.view.view_size(aspect), dt);
-        let mut camera = Camera::new(center + self.effects.camera_offset(), &self.view, aspect);
+        // bunter Rausch: die Welt wabert leicht (E-311)
+        let wobble = scene
+            .local()
+            .filter(|c| c.ch.core.dazed > 0)
+            .map_or(Vec2::ZERO, |c| {
+                #[allow(clippy::cast_precision_loss)]
+                let t = info.tick as f32 / elora_sim::TICKS_PER_SECOND as f32;
+                let fade = (c.ch.core.dazed as f32 / 25.0).min(1.0);
+                Vec2::new((t * 2.3).sin() * 7.0, (t * 1.7).cos() * 4.0) * fade
+            });
+        let mut camera = Camera::new(
+            center + self.effects.camera_offset() + wobble,
+            &self.view,
+            aspect,
+        );
         // auf ganze Bildschirmpixel einrasten: feine Linien bleiben beim Scrollen ruhig (E-288)
         if let Some(gfx) = &self.gfx {
             #[allow(clippy::cast_precision_loss)]

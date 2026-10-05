@@ -25,6 +25,7 @@ fn kinds() -> Vec<CreatureKind> {
             max: 3,
             chance: 1.0,
         }],
+        daze_ms: 0,
         behavior,
     };
     vec![
@@ -42,6 +43,7 @@ fn kinds() -> Vec<CreatureKind> {
                 range: 400.0,
                 shot_speed: 6.0,
                 shot_damage: 2,
+                lob: false,
             },
         ),
         kind(
@@ -309,6 +311,7 @@ fn hook_grabs_creature_and_pulls_elora() {
         range: 0.0,
         shot_speed: 1.0,
         shot_damage: 0,
+        lob: false,
     };
     hook_at(&mut w, 100, 0);
     let core = &w.character(0).unwrap().core;
@@ -436,6 +439,7 @@ fn still_turret(w: &mut World) {
         range: 0.0,
         shot_speed: 1.0,
         shot_damage: 0,
+        lob: false,
     };
     w.creature_kinds[1].health = 100;
 }
@@ -701,4 +705,139 @@ fn hook_flowers_wilt_while_the_diver_is_angry() {
     w.creatures.clear();
     run(&mut w, PlayerInput::default(), 1);
     assert_eq!(w.collision.hook_wilt, None, "nach dem Kampf alle frisch");
+}
+
+// ---------------------------------------------------------------- Kapitel 2 (R2-M2.2)
+
+fn add_kind(w: &mut World, name: &str, behavior: Behavior) -> usize {
+    let mut k = kinds()[0].clone();
+    k.name = name.into();
+    k.behavior = behavior;
+    w.creature_kinds.push(k);
+    w.creature_kinds.len() - 1
+}
+
+#[test]
+fn burrower_hides_until_elora_comes_and_only_then_is_dangerous() {
+    use elora_sim::creature::burrow;
+    let mut w = world(|_| {});
+    let kind = add_kind(
+        &mut w,
+        "schlange",
+        Behavior::Burrower {
+            sight: 150.0,
+            out_ms: 1000,
+            hide_ms: 600,
+        },
+    );
+    let id = w.add_creature(kind, on_floor(30, 26.0)).unwrap();
+    elora(&mut w, 10);
+    run(&mut w, PlayerInput::default(), 60);
+    let c = w.creatures.iter().find(|c| c.id == id).unwrap();
+    assert_eq!(c.mode, burrow::HIDDEN, "Elora ist weit weg");
+    assert!(!c.vulnerable(&w.creature_kinds[kind]));
+    // Elora kommt näher: die Schlange schießt hoch
+    w.spawn_character(0, on_floor(26, 28.0));
+    let ev = run(&mut w, PlayerInput::default(), 5);
+    assert!(ev.iter().any(|e| matches!(e, Event::CreatureAct { .. })));
+    let c = w.creatures.iter().find(|c| c.id == id).unwrap();
+    assert_eq!(c.mode, burrow::OUT);
+    // nach out_ms wieder versteckt
+    w.spawn_character(0, on_floor(5, 28.0));
+    run(&mut w, PlayerInput::default(), 60);
+    let c = w.creatures.iter().find(|c| c.id == id).unwrap();
+    assert_eq!(c.mode, burrow::HIDDEN);
+}
+
+#[test]
+fn lobbed_nuts_fly_in_an_arc() {
+    let mut w = world(|_| {});
+    let kind = add_kind(
+        &mut w,
+        "pirat",
+        Behavior::Turret {
+            interval_ms: 400,
+            range: 600.0,
+            shot_speed: 6.0,
+            shot_damage: 1,
+            lob: true,
+        },
+    );
+    w.add_creature(kind, on_floor(30, 26.0)).unwrap();
+    elora(&mut w, 18);
+    let mut ys = Vec::new();
+    for _ in 0..80 {
+        run(&mut w, PlayerInput::default(), 1);
+        if let Some(s) = w.creature_shots.first() {
+            ys.push(s.vel.y);
+        }
+    }
+    assert!(ys.len() > 5, "Nuss geworfen");
+    assert!(ys[0] < 0.0, "erst nach oben");
+    assert!(ys.windows(2).any(|v| v[1] > v[0]), "Schwerkraft wirkt");
+}
+
+#[test]
+fn mushroom_touch_dazes_and_slows_elora() {
+    let mut w = world(|_| {});
+    let mut k = kinds()[0].clone();
+    k.name = "pilzwicht".into();
+    k.daze_ms = 2000;
+    k.touch_damage = 0;
+    k.behavior = Behavior::Walker {
+        speed: 0.0,
+        turn_at_edges: false,
+    };
+    w.creature_kinds.push(k);
+    let kind = w.creature_kinds.len() - 1;
+    w.add_creature(kind, on_floor(12, 26.0)).unwrap();
+    elora(&mut w, 11);
+    run(&mut w, PlayerInput::default(), 3);
+    let dazed = w.character(0).unwrap().core.dazed;
+    assert!(dazed > 0, "Rausch");
+    assert_eq!(health(&w), 10, "kein Schaden");
+    // langsamer laufen
+    let right = PlayerInput {
+        direction: 1,
+        ..PlayerInput::default()
+    };
+    w.spawn_character(0, on_floor(30, 28.0));
+    w.character_mut(0).unwrap().core.dazed = 500;
+    run(&mut w, right, 40);
+    let slow = w.character(0).unwrap().core.vel.x;
+    w.character_mut(0).unwrap().core.dazed = 0;
+    run(&mut w, right, 40);
+    let fast = w.character(0).unwrap().core.vel.x;
+    assert!(slow < fast * 0.7, "{slow} / {fast}");
+}
+
+#[test]
+fn follower_follows_waits_at_gaps_and_never_hurts() {
+    // Lücke mit Dornen in Spalte 30 bis 33
+    let mut w = world(|t| {
+        for x in 30..=33 {
+            set(t, x, FLOOR, Tile::Air);
+            set(t, x, FLOOR + 1, Tile::Death);
+        }
+    });
+    let kind = add_kind(
+        &mut w,
+        "pilzkind",
+        Behavior::Follower {
+            speed: 4.0,
+            jump: 9.0,
+        },
+    );
+    let id = w.add_creature(kind, on_floor(10, 26.0)).unwrap();
+    elora(&mut w, 25);
+    run(&mut w, PlayerInput::default(), 150);
+    let c = w.creatures.iter().find(|c| c.id == id).unwrap();
+    assert!(c.pos.x > 20.0 * 32.0, "folgt: {}", c.pos.x);
+    assert_eq!(health(&w), 10, "harmlos");
+    // Elora auf der anderen Seite der Lücke: das Kind wartet an der Kante
+    w.spawn_character(0, on_floor(40, 28.0));
+    run(&mut w, PlayerInput::default(), 200);
+    let c = w.creatures.iter().find(|c| c.id == id).expect("lebt noch");
+    assert!(c.pos.x < 30.0 * 32.0, "wartet: {}", c.pos.x);
+    assert!(!c.vulnerable(&w.creature_kinds[kind]));
 }

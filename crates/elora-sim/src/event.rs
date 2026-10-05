@@ -162,6 +162,10 @@ pub enum CreatureAct {
     Dive,
     /// Aufgeprallt (benommen oder gleich wieder hoch).
     Land,
+    /// Aus dem Boden geschossen (Wurzelschlange, R2-M2.2).
+    Emerge,
+    /// Zurück in den Boden.
+    Burrow,
 }
 
 impl Event {

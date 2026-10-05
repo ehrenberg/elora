@@ -16,6 +16,7 @@ from abenteuer_figuren import (glanztropfen, glitzerstein, grashuepfer, klonk, l
                                pollenblaeser, quellstein, schalter, stachelkaefer, truhe, tueftel)
 
 from kapitel1_entwuerfe import biene, hummel, quellfunke, wabe, wabenhut  # noqa: E402
+from kapitel2_entwuerfe import eichhornpirat, pilzkind, pilzwicht, plumm, wurzelschlange  # noqa: E402
 
 
 def strohpuppe():
@@ -51,6 +52,11 @@ CREATURES = {
                               'dive': f'<g transform="translate(0,-40)">{hummel("sturz")}</g>',
                               'stunned': hummel('benommen')}),
     'wirrbiene': (24, 0.5, {'idle': f'<g transform="translate(0,-6)">{biene(1.0, 0, 0, angry=True)}</g>'}),
+    # Kapitel 2 (R2-M2.2): Wurzelschlange draußen / versteckt, Eichhornpirat, Pilzwicht, Pilzkind
+    'wurzelschlange': (110, 0.72, {'idle': wurzelschlange(True), 'hidden': wurzelschlange(False)}),
+    'eichhornpirat': (52, 0.4, {'idle': eichhornpirat()}),
+    'pilzwicht': (40, 0.4, {'idle': pilzwicht()}),
+    'pilzkind': (34, 0.21, {'idle': pilzkind(False)}),
 }
 
 
@@ -66,6 +72,9 @@ CHARACTERS = {
     # Kapitel 1 (R2-M2.1): Imkerin Wabe, Hummel als Sprecherin nach dem Kampf
     'wabe': (1.0, wabe()),
     'hummel': (0.6, f'<g transform="translate(0,-60)">{hummel("ruhig")}</g>'),
+    # Kapitel 2 (R2-M2.2)
+    'plumm': (1.0, plumm()),
+    'pilzkind': (0.6, pilzkind(True)),
 }
 
 
@@ -117,7 +126,7 @@ def main():
     out = 'assets/adventure/creatures'
     os.makedirs(out, exist_ok=True)
     for name, (h, scale, parts) in CREATURES.items():
-        placed = {k: f'<g transform="translate(0,{h / 2}) scale({scale})">{v}</g>' for k, v in parts.items()}
+        placed = {k: f'<g transform="translate(0,{h / 2}) scale({scale})">{plain(v)}</g>' for k, v in parts.items()}
         with open(f'{out}/{name}.svg', 'w') as f:
             f.write(svg(placed, f'{name} (A1.2, aus tools/design/abenteuer_assets.py). Ursprung = Boxmitte, Blick nach rechts.',
                         max(48, round(h * 1.2))))

@@ -62,6 +62,34 @@ pub fn tint(skin: Skin, team: Team, dummy: bool, team_color: impl Fn(Team) -> Co
     Tint::new(colors)
 }
 
+/// Bunter Rausch (E-311): Körper und Füße wandern durch die Regenbogenfarben (`t` in s).
+#[allow(
+    clippy::many_single_char_names,
+    clippy::cast_possible_truncation,
+    clippy::cast_sign_loss
+)]
+pub fn rainbow(mut tint: Tint, t: f32) -> Tint {
+    let hue = |h: f32| {
+        let h = h.rem_euclid(1.0) * 6.0;
+        let x = 1.0 - (h % 2.0 - 1.0).abs();
+        let (r, g, b) = match h as u32 {
+            0 => (1.0, x, 0.0),
+            1 => (x, 1.0, 0.0),
+            2 => (0.0, 1.0, x),
+            3 => (0.0, x, 1.0),
+            4 => (x, 0.0, 1.0),
+            _ => (1.0, 0.0, x),
+        };
+        // pastellig wie der Rest des Spiels
+        Color::rgb(0.45 + 0.55 * r, 0.45 + 0.55 * g, 0.45 + 0.55 * b)
+    };
+    if tint.colors.len() > KEY_BODY.max(KEY_FEET) {
+        tint.colors[KEY_BODY] = hue(t * 0.6);
+        tint.colors[KEY_FEET] = hue(t * 0.6 + 0.3);
+    }
+    tint
+}
+
 /// Auswahl im Panel; `true` bei Änderung.
 pub fn picker(ui: &mut egui::Ui, skin: &mut Skin) -> bool {
     let mut changed = false;
