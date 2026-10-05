@@ -100,6 +100,10 @@ pub struct CharacterCore {
     pub pulling: bool,
     /// Bunter Rausch (Pilzwicht, E-311): noch so viele Ticks langsamer.
     pub dazed: u32,
+    /// Hitze-Leiste voll (E-320, setzt das Abenteuer): langsamer.
+    pub overheated: bool,
+    /// Ticks im Treibsand (Positionen sind ganzzahlig: Einsinken in ganzen Einheiten).
+    pub sand_ticks: u32,
 }
 
 impl CharacterCore {
@@ -142,6 +146,16 @@ impl CharacterCore {
             .max_by_key(|t| rank(*t))
     }
 
+    /// Stecken die Füße im Treibsand (E-318)?
+    pub fn in_quicksand(&self, col: &Collision) -> bool {
+        col.tile_at(Vec2::new(self.pos.x, self.pos.y + PHYS_SIZE / 2.0 - 1.0)) == Tile::Quicksand
+    }
+
+    /// Ist die Figur ganz eingesunken (Kopf im Treibsand)?
+    pub fn buried(&self, col: &Collision) -> bool {
+        col.tile_at(Vec2::new(self.pos.x, self.pos.y - PHYS_SIZE / 2.0 + 4.0)) == Tile::Quicksand
+    }
+
     /// Erste Tick-Phase: Eingabe, Kräfte, Hook.
     ///
     /// `others` enthält die Positionen aller Figuren der Welt (Index = Figur-Index,
@@ -173,6 +187,7 @@ impl CharacterCore {
         }
         let ground = self.ground_tile(col);
         let grounded = ground.is_some();
+        let in_sand = self.in_quicksand(col);
 
         self.vel.y += tuning.gravity;
 
@@ -186,7 +201,7 @@ impl CharacterCore {
                 tuning.ice_accel,
                 tuning.ice_friction,
             )
-        } else if grounded {
+        } else if grounded || in_sand {
             (
                 tuning.ground_control_speed,
                 tuning.ground_control_accel,
@@ -213,6 +228,14 @@ impl CharacterCore {
         } else {
             max_speed
         };
+        // Treibsand und volle Hitze-Leiste (E-318, E-320)
+        let max_speed = max_speed
+            * if in_sand { tuning.quicksand_speed } else { 1.0 }
+            * if self.overheated {
+                tuning.heat_speed
+            } else {
+                1.0
+            };
 
         // Eingabe
         if let Some(input) = input {
@@ -233,7 +256,8 @@ impl CharacterCore {
                         self.jumped |= 1;
                         self.grip = 0;
                         self.grip_ticks = 0;
-                    } else if grounded {
+                    } else if grounded || in_sand {
+                        // aus dem Treibsand befreit ein Sprung (E-318)
                         self.triggered_events |= events::GROUND_JUMP;
                         self.vel.y = -tuning.ground_jump_impulse;
                         self.jumped |= 1;
@@ -267,12 +291,26 @@ impl CharacterCore {
             _ => self.vel.x *= friction,
         }
 
-        if grounded {
+        if grounded || in_sand {
             self.jumped &= !2;
             self.grip_ticks = 0;
         }
         if self.stomping {
             self.vel = Vec2::new(0.0, self.vel.y.max(tuning.stomp_speed));
+        }
+        // im Treibsand langsam einsinken: alle paar Ticks eine ganze Einheit
+        if in_sand {
+            self.sand_ticks += 1;
+            #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+            let every = (1.0 / tuning.quicksand_sink.max(0.01)).round().max(1.0) as u32;
+            let step = if self.sand_ticks.is_multiple_of(every) {
+                1.0
+            } else {
+                0.0
+            };
+            self.vel.y = self.vel.y.min(step);
+        } else {
+            self.sand_ticks = 0;
         }
 
         // Spezial-Tiles unter den Füßen (M6.1)

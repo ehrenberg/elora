@@ -173,6 +173,95 @@ pub fn status(
     }
 }
 
+/// Hitze-Leiste unter den Glanztropfen (E-320): Sonne und Füllstand von Gelb nach Rot;
+/// voll (Elora ist langsamer) pulsiert sie, bis sie wieder unter die Hälfte fällt.
+pub fn heat_bar(ui: &mut Ui<'_>, heat: f32, overheated: bool, time: f32) {
+    let s = ui.s;
+    let pill = Rect::new(14.0 * s, 52.0 * s, 104.0 * s, 24.0 * s);
+    ui.batch
+        .fill_rounded_rect(pill.min, pill.max, 12.0 * s, PANEL);
+    // Sonne
+    let sun = pill.min + Vec2::new(15.0 * s, 12.0 * s);
+    for k in 0..8 {
+        #[allow(clippy::cast_precision_loss)]
+        let a = k as f32 * std::f32::consts::TAU / 8.0 + time * 0.6;
+        let d = Vec2::new(a.cos(), a.sin());
+        ui.batch
+            .stroke_line(sun + d * (7.0 * s), sun + d * (10.0 * s), 1.6 * s, GOLD);
+    }
+    ui.batch.fill_circle(sun, 5.5 * s, GOLD);
+    // Füllstand
+    let (x0, x1) = (pill.min.x + 30.0 * s, pill.max.x - 10.0 * s);
+    let (y0, y1) = (pill.min.y + 8.0 * s, pill.max.y - 8.0 * s);
+    let r = (y1 - y0) / 2.0;
+    ui.batch.fill_rounded_rect(
+        Vec2::new(x0, y0),
+        Vec2::new(x1, y1),
+        r,
+        Color::rgba(1.0, 1.0, 1.0, 0.2),
+    );
+    let h = heat.clamp(0.0, 1.0);
+    if h > 0.0 {
+        let mix = |a: f32, b: f32| a + (b - a) * h;
+        let (hot, warm) = (Color::hex(0xe8685a).0, GOLD.0);
+        let mut c = Color::rgb(
+            mix(warm[0], hot[0]),
+            mix(warm[1], hot[1]),
+            mix(warm[2], hot[2]),
+        );
+        if overheated {
+            c.0[3] = 0.65 + 0.35 * (time * 8.0).sin();
+        }
+        ui.batch.fill_rounded_rect(
+            Vec2::new(x0, y0),
+            Vec2::new((x0 + (x1 - x0) * h).max(x0 + 2.0 * r), y1),
+            r,
+            c,
+        );
+    }
+}
+
+/// Hitzeflimmern über dem Bild (E-320): feine, aufsteigende Wellenlinien und ein warmer
+/// Schleier; `strength` 0..1.
+pub fn heat_haze(
+    batch: &mut elora_render::ShapeBatch,
+    screen: Vec2,
+    s: f32,
+    time: f32,
+    strength: f32,
+) {
+    if strength <= 0.0 {
+        return;
+    }
+    batch.fill_rect(
+        Vec2::ZERO,
+        screen,
+        Color::rgba(1.0, 0.72, 0.35, 0.06 * strength),
+    );
+    let lines = 9;
+    for i in 0..lines {
+        #[allow(clippy::cast_precision_loss)]
+        let f = i as f32 / lines as f32;
+        // steigt langsam auf, unten kräftiger als oben
+        let y = (1.0 - (f + time * 0.04).fract()) * screen.y;
+        let fade = (y / screen.y).powf(1.5);
+        let pts: Vec<Vec2> = (0..=40)
+            .map(|k| {
+                #[allow(clippy::cast_precision_loss)]
+                let x = k as f32 / 40.0 * screen.x;
+                let wave = (x * 0.012 / s + time * 2.6 + f * 9.0).sin() * 3.0 * s
+                    + (x * 0.031 / s - time * 1.7).sin() * 1.5 * s;
+                Vec2::new(x, y + wave)
+            })
+            .collect();
+        batch.stroke_polyline(
+            &pts,
+            5.0 * s,
+            Color::rgba(1.0, 0.97, 0.88, 0.11 * strength * fade),
+        );
+    }
+}
+
 /// Platzhalter `{taste:<aktion>}` durch die belegte Taste ersetzen (Schilder, E-273),
 /// z. B. `{taste:jump}` → „Leertaste“.
 /// Lebensleiste eines Hüters oben in der Mitte mit Namen (R2-M2.1); `frac` 0..1.
@@ -526,6 +615,7 @@ mod tests {
         batch.fill_rect(Vec2::new(0.0, 560.0), screen, Color::hex(0x8fbf7a));
         let input = crate::ui::UiInput::default();
         let mut state = crate::ui::UiState::default();
+        heat_haze(&mut batch, screen, 1.0, 3.0, 0.8);
         let mut ui = Ui {
             batch: &mut batch,
             font: &font,
@@ -555,6 +645,7 @@ mod tests {
         );
         conv.choose(&c, &mut save, 0);
         status(&mut ui, &art, &lang, "de", &c, &save, screen);
+        heat_bar(&mut ui, 0.7, false, 1.0);
         bubble(&mut ui, "Hallo, Elora!", Vec2::new(300.0, 200.0));
         prompt(&mut ui, "E", "Sprechen", Vec2::new(600.0, 200.0));
         ui.end();

@@ -22,7 +22,7 @@ const MAX_BRUSH: usize = 9;
 const PANEL_WIDTH: f32 = 290.0;
 
 /// Tile-Arten des Pinsels mit Sprachschlüssel und Farbe der Vorschau.
-pub const BRUSHES: [(Tile, &str, u32); 14] = [
+pub const BRUSHES: [(Tile, &str, u32); 15] = [
     (Tile::Air, "editor.tile_air", 0x3a3f47),
     (Tile::Solid, "editor.tile_solid", 0xa87a52),
     (Tile::Unhookable, "editor.tile_unhookable", 0x566068),
@@ -53,6 +53,7 @@ pub const BRUSHES: [(Tile, &str, u32); 14] = [
     (Tile::Climb, "editor.tile_climb", 0x5f8a9a),
     (Tile::Crumble, "editor.tile_crumble", 0xc49a68),
     (Tile::HookPoint, "editor.tile_hook_point", 0xef7fb0),
+    (Tile::Quicksand, "editor.tile_quicksand", 0xe2bf7c),
 ];
 
 /// Ergebnis eines Frames für die Ansicht.

@@ -898,9 +898,15 @@ impl World {
                 .apply_drag_and_move(&self.tuning, &self.collision, i, &positions);
             let landed = ch.core.triggered_events & crate::character::events::STOMP_LAND != 0;
             let feet = ch.core.pos + Vec2::new(0.0, PHYS_SIZE / 2.0);
-            if ch.core.death && !self.prediction {
+            let buried = ch.core.buried(&self.collision);
+            if (ch.core.death || buried) && !self.prediction {
+                let damage = if ch.core.death {
+                    self.tuning.thorn_damage
+                } else {
+                    self.tuning.quicksand_damage
+                };
                 if self.adventure {
-                    self.thorns(i);
+                    self.back_to_safe_ground(i, damage);
                 } else {
                     self.die(i, None, DeathCause::World);
                 }
@@ -910,9 +916,9 @@ impl World {
         }
     }
 
-    /// Dornen im Abenteuer (E-283): Schaden, dann zurück auf den letzten sicheren Boden.
-    fn thorns(&mut self, i: usize) {
-        let damage = self.tuning.thorn_damage;
+    /// Dornen und Treibsand im Abenteuer (E-283, E-318): Schaden, dann zurück auf den letzten
+    /// sicheren Boden.
+    fn back_to_safe_ground(&mut self, i: usize, damage: i32) {
         if self.take_damage(i, Vec2::ZERO, damage, None, DeathCause::World) {
             return;
         }
@@ -928,7 +934,7 @@ impl World {
         ch.core = core;
     }
 
-    /// Sicheren Boden merken: fester Boden ohne Todes-Tiles in der Nähe.
+    /// Sicheren Boden merken: fester Boden ohne Dornen und Treibsand in der Nähe.
     fn remember_safe_ground(&mut self) {
         let collision = &self.collision;
         for p in self.players.iter_mut().flatten() {
@@ -946,7 +952,10 @@ impl World {
             let near_thorns = (-2..=2).any(|dx: i8| {
                 (0..=3).any(|dy: i8| {
                     let at = core.pos + Vec2::new(f32::from(dx) * ts, f32::from(dy) * ts);
-                    collision.tile_at(at) == crate::Tile::Death
+                    matches!(
+                        collision.tile_at(at),
+                        crate::Tile::Death | crate::Tile::Quicksand
+                    )
                 })
             });
             if !near_thorns {

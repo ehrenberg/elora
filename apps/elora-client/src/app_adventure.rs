@@ -847,6 +847,14 @@ impl App {
         };
         ui.begin(dt);
         let content = &session.content;
+        // Wüste (E-320): Flimmern, in der prallen Sonne und mit steigender Hitze stärker
+        #[allow(clippy::cast_precision_loss)]
+        let secs = world.tick as f32 / elora_sim::TICKS_PER_SECOND as f32;
+        let hot = session.hot();
+        if hot {
+            let strength = if session.in_sun { 0.6 } else { 0.3 } + 0.4 * session.heat;
+            crate::adventure_hud::heat_haze(ui.batch, screen, s, secs, strength);
+        }
         if a.conversation.is_none() && a.dead.is_none() && a.menu.is_none() {
             crate::adventure_hud::status(
                 &mut ui,
@@ -857,6 +865,9 @@ impl App {
                 &session.save,
                 screen,
             );
+            if hot {
+                crate::adventure_hud::heat_bar(&mut ui, session.heat, session.overheated, secs);
+            }
         }
         // Lebensleiste eines wachen Hüters (R2-M2.1)
         if a.conversation.is_none()

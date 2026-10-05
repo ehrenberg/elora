@@ -29,6 +29,14 @@ const MUSHROOM_RANGE: Vec2 = Vec2::new(40.0, 40.0);
 const MUSHROOM_DAZE_MS: u32 = 5500;
 /// So lange muss Elora in den Pilzen stehen.
 const MUSHROOM_DELAY_MS: u32 = 1200;
+/// Hitze-Leiste (E-320): so lange in der Sonne bis voll, im Schatten und an der Oase bis leer.
+const HEAT_FILL_MS: u32 = 20_000;
+const HEAT_SHADE_MS: u32 = 8_000;
+const HEAT_OASIS_MS: u32 = 2_500;
+/// Ist sie voll, bleibt Elora langsamer, bis die Leiste wieder unter diesen Anteil fällt.
+const HEAT_RECOVER: f32 = 0.5;
+/// Ein Dach (festes Tile oder Plattform) so viele Tiles über Elora spendet Schatten.
+const SHADE_TILES: i32 = 10;
 /// So nah muss der Hook an einem Sammelstück oder an Beute sein (Heranhooken).
 const HOOK_PICK_RANGE: f32 = 28.0;
 /// Leben nach „Zweite Chance“ (Knoten, P-xx).
@@ -90,6 +98,7 @@ pub struct NpcView {
 
 /// Das laufende Abenteuer.
 #[derive(Debug, Clone)]
+#[allow(clippy::struct_excessive_bools)] // unabhängige Zustände der Sitzung
 pub struct Session {
     pub content: Content,
     /// Arbeitsstand; geschrieben wird er nur bei [`SessionEvent::Save`] und Kartenwechsel.
@@ -101,6 +110,12 @@ pub struct Session {
     last_hook: Option<Vec2>,
     /// So viele Ticks steht Elora schon in Leuchtpilzen (bunter Rausch nach 1,2 s).
     in_mushrooms: u32,
+    /// Hitze-Leiste 0..1 (E-320); nur in heißen Gebieten.
+    pub heat: f32,
+    /// Leiste war voll: Elora ist langsamer, bis sie sich abgekühlt hat.
+    pub overheated: bool,
+    /// Elora steht gerade in der prallen Sonne (Flimmern stärker).
+    pub in_sun: bool,
     /// Begleiter in der Welt: Figur → Gegner-Id (E-308).
     followers: BTreeMap<String, u32>,
     /// Deko der Karte, wie sie in der Datei steht (für [`Self::refresh_decor`]).
@@ -169,6 +184,9 @@ impl Session {
             base_decor: (Vec::new(), Vec::new()),
             followers: BTreeMap::new(),
             in_mushrooms: 0,
+            heat: 0.0,
+            overheated: false,
+            in_sun: false,
             last_hook: None,
             pending: Vec::new(),
             dead: false,
@@ -437,6 +455,7 @@ impl Session {
             .collect();
         out.extend(self.followers_home(world));
         self.mushroom_daze(world, pos);
+        self.heat(world, pos);
         out.extend(self.touch(world, pos));
         out.extend(self.areas(pos));
         out.extend(self.barks(pos));
@@ -692,6 +711,50 @@ impl Session {
             {
                 ch.core.dazed = ticks;
             }
+        }
+    }
+
+    /// Ist die Karte ein heißes Gebiet (Wüste, E-320)?
+    pub fn hot(&self) -> bool {
+        self.content.area_of(&self.map_name).is_some_and(|a| a.hot)
+    }
+
+    /// Hitze-Leiste (E-320): Sonne füllt; Schatten (Dach über Elora, Zonen `schatten…`) und
+    /// Oase (Zonen `oase…`) kühlen. Voll = Elora wird langsamer, bis sie abgekühlt ist.
+    fn heat(&mut self, world: &mut World, pos: Vec2) {
+        let zone = |prefix: &str| {
+            self.map.adventure.objects.iter().any(|o| {
+                o.id.starts_with(prefix)
+                    && matches!(o.kind, ObjectKind::Zone { size } if inside(pos, o.pos, size))
+            })
+        };
+        let roof = (1..=SHADE_TILES).any(|k| {
+            #[allow(clippy::cast_precision_loss)]
+            let p = pos - Vec2::new(0.0, (k * TILE_SIZE) as f32);
+            let t = world.collision.tile_at(p);
+            t.is_solid() || t == Tile::Platform
+        });
+        #[allow(clippy::cast_precision_loss)]
+        let step = |ms: u32| 1.0 / elora_sim::tuning::ms_to_ticks(ms).max(1) as f32;
+        self.in_sun = false;
+        if !self.hot() {
+            self.heat = 0.0;
+        } else if zone("oase") {
+            self.heat -= step(HEAT_OASIS_MS);
+        } else if roof || zone("schatten") {
+            self.heat -= step(HEAT_SHADE_MS);
+        } else {
+            self.in_sun = true;
+            self.heat += step(HEAT_FILL_MS);
+        }
+        self.heat = self.heat.clamp(0.0, 1.0);
+        if self.heat >= 1.0 {
+            self.overheated = true;
+        } else if self.heat < HEAT_RECOVER {
+            self.overheated = false;
+        }
+        if let Some(ch) = world.character_mut(self.player) {
+            ch.core.overheated = self.overheated;
         }
     }
 

@@ -159,6 +159,14 @@ pub struct Tuning {
     pub thorn_damage: i32,
     /// A-23: Laufgeschwindigkeit im bunten Rausch (Faktor, E-311)
     pub daze_speed: f32,
+    /// A-24: Einsinken im Treibsand (Einheiten je Tick, E-318)
+    pub quicksand_sink: f32,
+    /// A-25: Laufgeschwindigkeit im Treibsand (Faktor)
+    pub quicksand_speed: f32,
+    /// A-26: Schaden, wenn Elora ganz einsinkt (danach zurück an den Rand)
+    pub quicksand_damage: i32,
+    /// A-27: Laufgeschwindigkeit bei voller Hitze-Leiste (Faktor, E-320)
+    pub heat_speed: f32,
 }
 
 impl Default for Tuning {
@@ -236,6 +244,10 @@ impl Default for Tuning {
             laser_pierce: 0,
             thorn_damage: 2,
             daze_speed: 0.55,
+            quicksand_sink: 0.22,
+            quicksand_speed: 0.4,
+            quicksand_damage: 1,
+            heat_speed: 0.7,
         }
     }
 }

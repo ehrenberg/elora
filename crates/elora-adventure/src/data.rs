@@ -253,6 +253,9 @@ pub struct Area {
     /// Quelle des Gebiets: befreit, sobald der Merker `befreit.<spring>` gesetzt ist.
     #[serde(default)]
     pub spring: Option<String>,
+    /// Heißes Gebiet (Wüste, E-320): Hitze-Leiste und Flimmern.
+    #[serde(default)]
+    pub hot: bool,
 }
 
 impl Area {

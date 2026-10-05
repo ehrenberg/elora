@@ -333,3 +333,68 @@ fn standing_in_glowing_mushrooms_dazes() {
     }
     assert!(w.character(s.player).unwrap().core.dazed > 0);
 }
+
+/// Hitze-Leiste (E-320): Sonne füllt, voll = langsamer; Oase kühlt; Dach spendet Schatten.
+#[test]
+fn heat_fills_in_the_sun_and_cools_in_shade_and_at_the_oasis() {
+    use elora_map::ObjectKind;
+    // eine Karte der Wiese, aber als Wüste
+    let mut map = load("wiese-1");
+    let spawn = map.adventure.object("west").unwrap().pos;
+    map.adventure.objects.push(elora_map::Object {
+        id: "oase-1".into(),
+        pos: spawn + Vec2::new(-80.0, -2000.0),
+        kind: ObjectKind::Zone {
+            size: Vec2::new(40.0, 40.0),
+        },
+    });
+    let mut s = Session::new_game(Content::builtin());
+    let mut w = s.enter("wueste-1", map, "west", &Tuning::default());
+    assert!(s.hot());
+    let sky_above = (1..=10).all(|k| {
+        #[allow(clippy::cast_precision_loss)]
+        let p = w.character(s.player).unwrap().core.pos - Vec2::new(0.0, k as f32 * 32.0);
+        !w.collision.tile_at(p).is_solid()
+    });
+    assert!(sky_above, "Testkarte: freier Himmel über dem Eingang");
+    for _ in 0..500 {
+        step(&mut s, &mut w, PlayerInput::default(), false);
+    }
+    assert!(
+        s.in_sun && s.heat > 0.45 && s.heat < 0.55,
+        "halb voll: {}",
+        s.heat
+    );
+    for _ in 0..520 {
+        step(&mut s, &mut w, PlayerInput::default(), false);
+    }
+    assert!(s.overheated && w.character(s.player).unwrap().core.overheated);
+    // Dach über Elora: Schatten kühlt
+    let pos = w.character(s.player).unwrap().core.pos;
+    #[allow(clippy::cast_possible_truncation)]
+    let (tx, ty) = ((pos.x / 32.0) as i32, (pos.y / 32.0) as i32 - 4);
+    w.collision.set_tile(tx, ty, Tile::Solid);
+    for _ in 0..100 {
+        step(&mut s, &mut w, PlayerInput::default(), false);
+    }
+    assert!(!s.in_sun && s.heat < 0.9, "kühlt im Schatten: {}", s.heat);
+    assert!(s.overheated, "bleibt langsam, bis die Hälfte erreicht ist");
+    // Oase kühlt schnell
+    w.collision.set_tile(tx, ty, Tile::Air);
+    s.map.adventure.objects.last_mut().unwrap().pos = pos - Vec2::new(20.0, 20.0);
+    for _ in 0..50 {
+        step(&mut s, &mut w, PlayerInput::default(), false);
+    }
+    assert!(s.heat < 0.5 && !s.overheated, "an der Oase: {}", s.heat);
+    assert!(!w.character(s.player).unwrap().core.overheated);
+}
+
+#[test]
+fn no_heat_outside_the_desert() {
+    let (mut s, mut w) = start();
+    assert!(!s.hot());
+    for _ in 0..200 {
+        step(&mut s, &mut w, PlayerInput::default(), false);
+    }
+    assert!(s.heat == 0.0 && !s.in_sun);
+}

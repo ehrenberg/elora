@@ -95,12 +95,13 @@ pub fn draw(
             decor_front: false,
         };
         map_view.draw_back_layers(batch, map, camera, look_time, terrain);
+        map_view.draw_quicksand(batch, map, camera, look_time);
     }
     if editor.visible.entities {
         entities(batch, editor, items, time);
     }
     if editor.visible.layers.decor_front {
-        map_view.draw_front(batch, map, camera, look_time);
+        map_view.draw_decor_front(batch, map, camera, look_time);
     }
     if editor.tool == super::tools::Tool::Decor
         && let Some(r) = editor.selected_decor

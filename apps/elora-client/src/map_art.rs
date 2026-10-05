@@ -559,6 +559,54 @@ pub fn draw_belt_arrow(batch: &mut ShapeBatch, art: &MapArt, min: Vec2, dir: Bel
     batch.draw_mesh(&art.specials.belt_arrow, &t, &tint);
 }
 
+const SAND: Color = Color::hex(0xe2bf7c);
+const SAND_DARK: Color = Color::hex(0xc49a58);
+const SAND_LIGHT: Color = Color::hex(0xf3dcaa);
+
+/// Treibsand im Tile `min`; `top` = Oberfläche (wellt sich langsam), Körner wandern nach unten.
+pub fn draw_quicksand(batch: &mut ShapeBatch, min: Vec2, top: bool, time: f32) {
+    let ts = TILE_SIZE as f32;
+    let y0 = if top { min.y + 6.0 } else { min.y - SEAM };
+    batch.fill_rect(
+        Vec2::new(min.x - SEAM, y0),
+        min + Vec2::new(ts + SEAM, ts + SEAM),
+        SAND,
+    );
+    if top {
+        // Wellen der Oberfläche
+        let wave = |x: f32| min.y + 5.0 + (time * 1.6 + x * 0.12).sin() * 1.6;
+        let pts: Vec<Vec2> = (0..=8)
+            .map(|i| {
+                #[allow(clippy::cast_precision_loss)]
+                let x = min.x + i as f32 * ts / 8.0;
+                Vec2::new(x, wave(x))
+            })
+            .collect();
+        for w in pts.windows(2) {
+            let mid = (w[0] + w[1]) * 0.5;
+            batch.fill_circle(Vec2::new(mid.x, mid.y + 2.5), 3.2, SAND);
+        }
+        batch.stroke_polyline(&pts, 2.0, SAND_DARK);
+        let crest: Vec<Vec2> = pts.iter().map(|p| *p + Vec2::new(0.0, 3.0)).collect();
+        batch.stroke_polyline(&crest, 1.2, SAND_LIGHT);
+    }
+    // Körner sinken langsam (zeigt: hier zieht es nach unten)
+    #[allow(clippy::cast_possible_truncation)]
+    let h = hash((min.x / ts).round() as i32, (min.y / ts).round() as i32);
+    for k in 0..3u32 {
+        let r = h.rotate_left(k * 9);
+        #[allow(clippy::cast_precision_loss)]
+        let (fx, fy) = ((r % 97) as f32 / 97.0, (r / 97 % 89) as f32 / 89.0);
+        let y = (fy + time * 0.08).fract();
+        let p = min
+            + Vec2::new(
+                4.0 + fx * (ts - 8.0),
+                (if top { 10.0 } else { 2.0 }) + y * (ts - 12.0),
+            );
+        batch.fill_circle(p, 1.4, SAND_DARK);
+    }
+}
+
 /// Hook-Blüte im Tile `min`; `active` = frisch (greift), sonst welk. Wiegt sich leicht.
 pub fn draw_hook_point(batch: &mut ShapeBatch, art: &MapArt, min: Vec2, active: bool, time: f32) {
     let half = TILE_SIZE as f32 / 2.0;

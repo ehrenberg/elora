@@ -87,6 +87,8 @@ struct Cache {
     belts: Vec<(Vec2, BeltDir)>,
     /// Hook-Blüten: Ecke und Spalte (je Frame gezeichnet, sie welken).
     hook_points: Vec<(Vec2, i32)>,
+    /// Treibsand: Ecke und ob oben frei (vor den Figuren gezeichnet, sie sinken ein).
+    quicksand: Vec<(Vec2, bool)>,
 }
 
 impl Cache {
@@ -132,7 +134,20 @@ impl Cache {
                 _ => None,
             })
             .collect();
+        let quicksand = map
+            .tiles
+            .iter()
+            .enumerate()
+            .filter(|(_, t)| **t == Tile::Quicksand)
+            .map(|(i, _)| {
+                let (x, y) = (i % map.width, i / map.width);
+                let top = y == 0 || map.tiles[i - map.width] != Tile::Quicksand;
+                #[allow(clippy::cast_precision_loss)]
+                (Vec2::new(x as f32 * ts, y as f32 * ts), top)
+            })
+            .collect();
         Self {
+            quicksand,
             key: Key::of(map),
             col: map.collision(),
             materials,
@@ -338,8 +353,43 @@ impl MapView {
         camera: &Camera,
         time: LookTime,
     ) {
+        self.draw_quicksand(batch, map, camera, time);
+        self.draw_decor_front(batch, map, camera, time);
+    }
+
+    /// Nur die Deko vor den Figuren (Editor).
+    pub fn draw_decor_front(
+        &mut self,
+        batch: &mut ShapeBatch,
+        map: &Map,
+        camera: &Camera,
+        time: LookTime,
+    ) {
         self.sync(map);
         self.decor(batch, map, &map.decor_front, camera, time);
+    }
+
+    /// Treibsand vor den Figuren (E-318): wer einsinkt, verschwindet darin.
+    pub fn draw_quicksand(
+        &mut self,
+        batch: &mut ShapeBatch,
+        map: &Map,
+        camera: &Camera,
+        time: LookTime,
+    ) {
+        let cache = self.sync(map);
+        let (min, max) = visible(camera, TILE_SIZE as f32);
+        #[allow(clippy::cast_precision_loss)]
+        let secs = time.local_ms as f32 / 1000.0;
+        for &(pos, top) in &cache.quicksand {
+            if pos.x + TILE_SIZE as f32 >= min.x
+                && pos.x <= max.x
+                && pos.y + TILE_SIZE as f32 >= min.y
+                && pos.y <= max.y
+            {
+                map_art::draw_quicksand(batch, pos, top, secs);
+            }
+        }
     }
 
     fn terrain(&mut self, batch: &mut ShapeBatch, camera: &Camera, time: LookTime) {
@@ -706,6 +756,49 @@ mod tests {
         let svg = batch.debug_svg(tl, tl + cam.size, elora_render::Color::hex(0x8fb8d9));
         std::fs::write(
             concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/look.svg"),
+            svg,
+        )
+        .unwrap();
+    }
+
+    /// Treibsand-Grube zur Sichtprüfung: `… quicksand_sheet -- --ignored`, danach
+    /// `cargo xtask svg-preview target/quicksand.svg target/quicksand.png 800`.
+    #[test]
+    #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
+    fn quicksand_sheet() {
+        let mut map = Map::from_rows(
+            "Treibsand",
+            &[
+                "............",
+                "............",
+                ".S..........",
+                "###&&&&&####",
+                "###&&&&&####",
+                "############",
+            ],
+        )
+        .expect("gültig");
+        map.materials = vec!["sand".into()];
+        map.material_map = vec![1; map.tiles.len()];
+        let mut view = MapView::default();
+        let mut batch = ShapeBatch::default();
+        let cam = Camera {
+            center: Vec2::new(192.0, 96.0),
+            size: Vec2::new(384.0, 192.0),
+        };
+        let t = LookTime::default();
+        view.draw_back(&mut batch, &map, &cam, t);
+        // halb eingesunkene Figur
+        batch.fill_circle(
+            Vec2::new(150.0, 100.0),
+            14.0,
+            elora_render::Color::hex(0xf2c14e),
+        );
+        view.draw_front(&mut batch, &map, &cam, t);
+        let tl = cam.top_left();
+        let svg = batch.debug_svg(tl, tl + cam.size, elora_render::Color::hex(0xf3d9a8));
+        std::fs::write(
+            concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/quicksand.svg"),
             svg,
         )
         .unwrap();

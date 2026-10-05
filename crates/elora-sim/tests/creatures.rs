@@ -1165,3 +1165,92 @@ fn glowing_spark_burns_elora() {
     run(&mut w, PlayerInput::default(), 2);
     assert!(health(&w) < before, "glühender Funke brennt");
 }
+
+/// Treibsand-Grube in Spalte 20 bis 26 (eine Tile-Reihe statt Boden).
+fn quicksand_world() -> World {
+    world(|t| (20..=26).for_each(|x| set(t, x, FLOOR, Tile::Quicksand)))
+}
+
+#[test]
+fn quicksand_sinks_slowly_slows_and_a_jump_frees() {
+    let mut w = quicksand_world();
+    elora(&mut w, 10);
+    let surface = FLOOR as f32 * 32.0;
+    // zuerst auf festem Boden: so schnell läuft Elora
+    let right = PlayerInput {
+        direction: 1,
+        ..PlayerInput::default()
+    };
+    run(&mut w, right, 20);
+    let fast = w.character(0).unwrap().core.vel.x;
+    w.spawn_character(0, on_floor(23, 28.0));
+    run(&mut w, PlayerInput::default(), 20);
+    let ch = w.character(0).unwrap();
+    assert!(ch.core.in_quicksand(&w.collision), "steckt im Sand");
+    let sunk = ch.core.pos.y + 14.0 - surface;
+    assert!(sunk > 1.0 && sunk < 8.0, "sinkt langsam ein: {sunk}");
+    run(&mut w, right, 10);
+    let slow = w.character(0).unwrap().core.vel.x;
+    assert!(
+        slow > 0.0 && slow < fast * 0.5,
+        "langsamer: {slow} statt {fast}"
+    );
+    // Springen befreit
+    let jump = PlayerInput {
+        jump: true,
+        ..PlayerInput::default()
+    };
+    run(&mut w, jump, 1);
+    run(&mut w, PlayerInput::default(), 10);
+    let ch = w.character(0).unwrap();
+    assert!(ch.core.pos.y + 14.0 < surface - 32.0, "frei gesprungen");
+}
+
+#[test]
+fn sinking_deep_hurts_a_little_and_puts_elora_back_at_the_edge() {
+    let mut w = quicksand_world();
+    elora(&mut w, 17);
+    run(&mut w, PlayerInput::default(), 10);
+    let right = PlayerInput {
+        direction: 1,
+        ..PlayerInput::default()
+    };
+    let mut hurt = false;
+    for _ in 0..400 {
+        let ev = run(&mut w, right, 1);
+        if ev.iter().any(|e| matches!(e, Event::Damage { .. })) {
+            hurt = true;
+            break;
+        }
+    }
+    assert!(hurt, "ganz eingesunken");
+    let ch = w.character(0).expect("lebt");
+    assert_eq!(ch.health, 10 - Tuning::default().quicksand_damage);
+    assert!(ch.core.pos.x < 20.0 * 32.0, "am Rand: {:?}", ch.core.pos);
+    assert!(!ch.core.in_quicksand(&w.collision));
+}
+
+#[test]
+fn quicksand_survives_the_map_formats() {
+    assert_eq!(Tile::from_char('&'), Some(Tile::Quicksand));
+    assert_eq!(Tile::Quicksand.to_char(), '&');
+    assert!(!Tile::Quicksand.is_solid());
+}
+
+#[test]
+fn full_heat_bar_slows_elora() {
+    let speed = |overheated: bool| {
+        let mut w = world(|_| {});
+        elora(&mut w, 10);
+        w.character_mut(0).unwrap().core.overheated = overheated;
+        let right = PlayerInput {
+            direction: 1,
+            ..PlayerInput::default()
+        };
+        run(&mut w, right, 30);
+        w.character(0).unwrap().core.vel.x
+    };
+    let (normal, hot) = (speed(false), speed(true));
+    let expected = normal * Tuning::default().heat_speed;
+    assert!((hot - expected).abs() < 0.5, "{hot} statt {expected}");
+}

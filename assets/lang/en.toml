@@ -413,6 +413,7 @@ tile_conveyor_right = "Conveyor right"
 tile_climb = "Climbing wall (ice grip)"
 tile_crumble = "Crumbling floor (stomp)"
 tile_hook_point = "Hook flower"
+tile_quicksand = "Quicksand"
 
 [msg]
 joined = "{name} joined"

@@ -67,10 +67,13 @@ pub enum Tile {
     /// Hookpunkt in der Luft (Hook-Blüte, R2-M2.1): der Hook greift in der Mitte, alles andere
     /// fliegt und läuft hindurch. Kann zeitweise welk sein ([`Collision::hook_wilt`]).
     HookPoint,
+    /// Treibsand (R2-M2.3, E-318): nicht fest; Figuren sinken langsam ein und laufen
+    /// langsamer, Springen befreit, tief eingesunken kleiner Schaden und zurück an den Rand.
+    Quicksand,
 }
 
 /// Zeichen der Tile-Arten im Textformat und in Aufzeichnungen (E-024, M6.1).
-const TILE_CHARS: [(char, Tile); 14] = [
+const TILE_CHARS: [(char, Tile); 15] = [
     ('.', Tile::Air),
     ('#', Tile::Solid),
     ('%', Tile::Unhookable),
@@ -85,12 +88,13 @@ const TILE_CHARS: [(char, Tile); 14] = [
     ('|', Tile::Climb),
     (':', Tile::Crumble),
     ('*', Tile::HookPoint),
+    ('&', Tile::Quicksand),
 ];
 
 impl Tile {
     /// Zeichen im Textformat (`.` Luft, `#` Wand, `%` unhookable, `^` Tod, `=` Plattform,
     /// `~` Eis, `!` `\` `/` Sprungfeld hoch/schräg links/schräg rechts, `<` `>` Beschleuniger,
-    /// `|` Kletterwand, `:` Bröckelboden, `*` Hookpunkt).
+    /// `|` Kletterwand, `:` Bröckelboden, `*` Hookpunkt, `&` Treibsand).
     pub fn to_char(self) -> char {
         TILE_CHARS
             .iter()
