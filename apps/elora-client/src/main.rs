@@ -654,6 +654,20 @@ impl App {
                 };
                 skins::tint(skin, c.team, c.dummy, draw::team_color).colors[figure::KEY_BODY]
             });
+        // Leuchtpilze in der Nähe der Kamera lassen Sternchen aufsteigen (R2-M2.2)
+        if self.online.is_none() {
+            let near: Vec<elora_sim::Vec2> = self
+                .sandbox
+                .map
+                .decor_front
+                .iter()
+                .chain(&self.sandbox.map.decor_back)
+                .filter(|d| d.art == elora_map::Art::Builtin("leuchtpilze".into()))
+                .map(|d| d.pos)
+                .filter(|p| p.distance(scene.camera) < 1100.0)
+                .collect();
+            self.effects.glow_spores(dt, &near);
+        }
         if let Some(o) = &mut self.online {
             // schickt nur bei Änderung eine Nachricht
             o.client.set_skin(self.net.skin);

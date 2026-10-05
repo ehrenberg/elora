@@ -59,6 +59,12 @@ impl Abilities {
         self
     }
 
+    /// Beide zusammen.
+    #[must_use]
+    pub fn union(self, other: Self) -> Self {
+        Self(self.0 | other.0)
+    }
+
     pub fn bits(self) -> u8 {
         self.0
     }

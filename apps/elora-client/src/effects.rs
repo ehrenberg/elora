@@ -164,6 +164,8 @@ struct Particle {
     gravity: f32,
     /// Anteil der Geschwindigkeit, der pro Sekunde verloren geht.
     drag: f32,
+    /// Als kleines Sternchen zeichnen (Leuchtpilze) statt als Kreis.
+    star: bool,
 }
 
 /// Kurzer, heller Kreis (Explosionsblitz).
@@ -242,6 +244,8 @@ const LASER_SPARK: Color = Color::rgb(0.6, 0.95, 1.0);
 const GLITTER: Color = Color::rgb(1.0, 0.95, 0.6);
 const FALLBACK_BODY: Color = Color::hex(0xf2c14e);
 const CRUMB: Color = Color::hex(0xb08a5e);
+/// Sternchen der Leuchtpilze.
+const SPORE: Color = Color::rgba(0.55, 0.85, 1.0, 0.95);
 /// So lange steht ein Wurzelstoß (s).
 const ROOT_LIFE: f32 = 0.7;
 
@@ -286,6 +290,32 @@ impl Effects {
                 color,
                 gravity: b.gravity,
                 drag: b.drag,
+                star: false,
+            });
+        }
+    }
+
+    /// Leuchtpilze in der Nähe: kleine blaue Sternchen steigen auf (R2-M2.2).
+    pub fn glow_spores(&mut self, dt: f32, sources: &[Vec2]) {
+        let dt = dt.min(0.05);
+        for &p in sources {
+            // etwa 3 Sternchen je Sekunde und Pilzgruppe
+            if self.range(0.0, 1.0) > dt * 3.0 {
+                continue;
+            }
+            let pos = p + Vec2::new(self.range(-26.0, 26.0), -self.range(10.0, 40.0));
+            let vel = Vec2::new(self.range(-8.0, 8.0), -self.range(14.0, 30.0));
+            let life = self.range(1.2, 2.2);
+            self.particles.push(Particle {
+                pos,
+                vel,
+                age: 0.0,
+                life,
+                size: (3.2, 1.6),
+                color: SPORE,
+                gravity: -4.0,
+                drag: 0.3,
+                star: true,
             });
         }
     }
@@ -341,6 +371,7 @@ impl Effects {
                         color: SMOKE,
                         gravity: 0.0,
                         drag: 4.0,
+                        star: false,
                     });
                 }
             }
@@ -362,6 +393,7 @@ impl Effects {
                             color: DUST,
                             gravity: 0.0,
                             drag: 3.0,
+                            star: false,
                         });
                     }
                 }
@@ -383,6 +415,7 @@ impl Effects {
                     color: Color::rgba(0.9, 0.9, 0.88, 0.45),
                     gravity: 0.0,
                     drag: 1.0,
+                    star: false,
                 });
             }
         }
@@ -561,6 +594,23 @@ impl Effects {
             let r = p.size.0 + (p.size.1 - p.size.0) * t;
             let mut c = p.color;
             c.0[3] *= 1.0 - t * t;
+            if p.star {
+                // vierzackiges Sternchen, funkelt leicht
+                let twinkle = 1.0 + 0.35 * (p.age * 9.0 + p.pos.x).sin();
+                let (tip, side) = (r * 2.4 * twinkle, r * 0.7);
+                let pts = [
+                    p.pos + Vec2::new(0.0, -tip),
+                    p.pos + Vec2::new(side, -side),
+                    p.pos + Vec2::new(tip, 0.0),
+                    p.pos + Vec2::new(side, side),
+                    p.pos + Vec2::new(0.0, tip),
+                    p.pos + Vec2::new(-side, side),
+                    p.pos + Vec2::new(-tip, 0.0),
+                    p.pos + Vec2::new(-side, -side),
+                ];
+                batch.fill_polygon(&pts, c);
+                continue;
+            }
             tint.colors[0] = c;
             batch.draw_mesh(
                 &self.circle,

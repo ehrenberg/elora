@@ -34,6 +34,12 @@ pub enum Preset {
 
 /// Kamera-Mitte (y) ganz oben in einer Karte: etwa eine halbe Sichthöhe (675) unter der Oberkante.
 const HIGHEST_CAMERA: f32 = 340.0;
+/// Kamera ganz unten: so hoch über dem Boden steht ihre Mitte etwa.
+const LOWEST_CAMERA_ABOVE_GROUND: f32 = 300.0;
+/// Hohe Karten: so weit wandern die Ebenen im Bild, wenn die Kamera vom Boden nach oben fährt …
+const TALL_LAYER_TRAVEL: f32 = 150.0;
+/// … und so weit unter der Bildmitte liegt ihr Fuß bei Kamera am Boden.
+const TALL_LAYER_BELOW: f32 = 170.0;
 
 /// Höchstwerte wie im Kartenformat.
 const MAX_BACKGROUNDS: usize = 16;
@@ -236,12 +242,25 @@ impl Editor {
             d.tint = tint;
             d
         };
-        let layer = |name: &str, p: f32, items: Vec<Decor>| Background {
-            name: name.into(),
-            parallax: Vec2::new(p, p),
-            offset: Vec2::new(0.0, ground - cam_y * (1.0 - p)),
-            repeat_x: Some(1024.0),
-            items,
+        // Hohe Karten (Abenteuer): Die Kamera wandert weit nach oben. Damit die Ebenen dann
+        // nicht unter dem Bild verschwinden, folgen sie der Kamera senkrecht stärker (kleinere
+        // Parallaxe in y) und liegen bei Kamera am Boden etwas unter der Bildmitte.
+        let cam_low = ground - LOWEST_CAMERA_ABOVE_GROUND;
+        let span = (cam_low - cam_y).max(1.0);
+        let layer = |name: &str, p: f32, items: Vec<Decor>| {
+            let tall_py = TALL_LAYER_TRAVEL / span;
+            let (py, oy) = if tall_py < p {
+                (tall_py, TALL_LAYER_BELOW + cam_low * tall_py)
+            } else {
+                (p, ground - cam_y * (1.0 - p))
+            };
+            Background {
+                name: name.into(),
+                parallax: Vec2::new(p, py),
+                offset: Vec2::new(0.0, oy),
+                repeat_x: Some(1024.0),
+                items,
+            }
         };
         let night = preset == Preset::Night;
         let dim = |c: u32| if night { Rgba::hex(c) } else { Rgba::WHITE };
@@ -534,6 +553,26 @@ mod tests {
             Some(Vec2::new(1524.0, 100.0)),
             "nächste Wiederholung"
         );
+    }
+
+    /// Hohe Karten (R2-M2.2): Die Ebenen bleiben im Bild, egal wie hoch die Kamera steht.
+    #[test]
+    fn layers_stay_in_view_on_tall_maps() {
+        let mut e = editor();
+        e.map = elora_map::Map::new("hoch", 100, 90);
+        e.apply_preset(Preset::Day, Instant::now());
+        let ground = 88.0 * TILE_SIZE as f32;
+        for bg in e.map.backgrounds.iter().filter(|b| b.name != "Wolken") {
+            // Fuß der Ebene relativ zur Kameramitte, Kamera ganz unten und ganz oben
+            for cam in [ground - LOWEST_CAMERA_ABOVE_GROUND, HIGHEST_CAMERA] {
+                let foot = bg.offset.y + cam * (1.0 - bg.parallax.y) - cam;
+                assert!(
+                    (100.0..=400.0).contains(&foot),
+                    "{}: {foot} bei {cam}",
+                    bg.name
+                );
+            }
+        }
     }
 
     #[test]

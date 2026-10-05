@@ -722,6 +722,10 @@ fn abilities(ui: &mut egui::Ui, s: &mut Sandbox) {
                     Ability::HookRuck,
                     "Hook-Ruck (Fähigkeit-Taste bei hängendem Hook)",
                 ),
+                (
+                    Ability::Pull,
+                    "Heranhooken (Hook zieht Gegner, Dinge, Zugschalter)",
+                ),
                 (Ability::Stomp, "Stampfen (Runter in der Luft)"),
                 (Ability::Grip, "Eisgriff (gegen Kletterwand laufen)"),
                 (

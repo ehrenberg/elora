@@ -84,6 +84,8 @@ pub struct CharacterCore {
     pub ability_held: bool,
     /// Ticks bis zum nächsten Hook-Ruck (A-02).
     pub ruck_cooldown: u32,
+    /// Fähigkeitstaste gedrückt, während der Hook noch flog: Ruck, sobald er greift.
+    pub ruck_queued: bool,
     /// Stampft gerade (bis zum Aufprall).
     pub stomping: bool,
     /// Haftet an einer Kletterwand: -1 links, 1 rechts, 0 nicht.
@@ -527,9 +529,16 @@ impl CharacterCore {
         self.ability_held = input.ability;
         self.ruck_cooldown = self.ruck_cooldown.saturating_sub(1);
 
-        // Hook-Ruck (E-226): nur an einer Wand, nicht an Spielern
+        // Hook-Ruck (E-226): nur an einer Wand, nicht an Spielern; früh gedrückt (Hook fliegt
+        // noch) zählt, sobald er greift
+        if ability_pressed && self.hook_state == HookState::Flying {
+            self.ruck_queued = true;
+        }
+        if !matches!(self.hook_state, HookState::Flying | HookState::Grabbed) {
+            self.ruck_queued = false;
+        }
         if a.has(Ability::HookRuck)
-            && ability_pressed
+            && (ability_pressed || self.ruck_queued)
             && self.ruck_cooldown == 0
             && self.hook_state == HookState::Grabbed
             && self.hooked_player.is_none()
@@ -538,6 +547,7 @@ impl CharacterCore {
         {
             self.vel = (self.hook_pos - self.pos).normalize() * tuning.ruck_speed;
             self.ruck_cooldown = ms_to_ticks(tuning.ruck_cooldown);
+            self.ruck_queued = false;
             self.triggered_events |= events::HOOK_RUCK;
         }
 

@@ -312,3 +312,24 @@ fn follower_appears_follows_and_stays_home() {
     assert_eq!(s.save.flag("pilzkind.daheim"), 1);
     assert!(kid(&w).is_none(), "bleibt daheim");
 }
+
+/// 2 s in Leuchtpilzen: bunter Rausch (E-311).
+#[test]
+fn standing_in_glowing_mushrooms_dazes() {
+    let mut map = load("wiese-1");
+    let spawn = map.adventure.object("west").unwrap().pos;
+    map.decor_front.push(elora_map::Decor::new(
+        elora_map::Art::Builtin("leuchtpilze".into()),
+        spawn + Vec2::new(0.0, 14.0),
+    ));
+    let mut s = Session::new_game(Content::builtin());
+    let mut w = s.enter("wiese-1", map, "west", &Tuning::default());
+    for _ in 0..90 {
+        step(&mut s, &mut w, PlayerInput::default(), false);
+    }
+    assert_eq!(w.character(s.player).unwrap().core.dazed, 0, "noch nicht");
+    for _ in 0..15 {
+        step(&mut s, &mut w, PlayerInput::default(), false);
+    }
+    assert!(w.character(s.player).unwrap().core.dazed > 0);
+}

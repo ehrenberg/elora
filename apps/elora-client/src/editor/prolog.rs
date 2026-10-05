@@ -228,6 +228,17 @@ pub(super) fn animate(map: &mut Map, smoke: &[Vec2]) {
             (3000, [1.0, 1.0, 1.0, 0.0], Linear),
         ],
     );
+    // Leuchtpilze pulsieren (R2-M2.2)
+    let pulse = envelope(
+        map,
+        "Leuchten der Pilze",
+        EnvKind::Color,
+        &[
+            (0, [1.0, 1.0, 1.0, 1.0], Smooth),
+            (1300, [0.82, 0.92, 1.0, 0.85], Smooth),
+            (2600, [1.0, 1.0, 1.0, 1.0], Smooth),
+        ],
+    );
     let mut k = 0;
     for d in map.decor_front.iter_mut().chain(map.decor_back.iter_mut()) {
         let Art::Builtin(name) = &d.art else {
@@ -240,6 +251,12 @@ pub(super) fn animate(map: &mut Map, smoke: &[Vec2]) {
                 d.pos_env = Some(EnvRef {
                     index: flutter,
                     offset_ms,
+                });
+            }
+            "leuchtpilze" => {
+                d.color_env = Some(EnvRef {
+                    index: pulse,
+                    offset_ms: offset_ms % 2600,
                 });
             }
             n if n.starts_with("fahne-") => {

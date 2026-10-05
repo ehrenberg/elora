@@ -24,6 +24,9 @@ pub const BARK_RANGE: f32 = 160.0;
 const TOUCH_RANGE: f32 = PHYS_SIZE;
 /// Abstand des Hooks zu einem Hook-Schalter.
 const HOOK_SWITCH_RANGE: f32 = 24.0;
+/// Leuchtpilze: so nah (halbe Breite, halbe Höhe um ihren Fuß) und so lange der Rausch.
+const MUSHROOM_RANGE: Vec2 = Vec2::new(40.0, 40.0);
+const MUSHROOM_DAZE_MS: u32 = 5500;
 /// So nah muss der Hook an einem Sammelstück oder an Beute sein (Heranhooken).
 const HOOK_PICK_RANGE: f32 = 28.0;
 /// Leben nach „Zweite Chance“ (Knoten, P-xx).
@@ -92,6 +95,8 @@ pub struct Session {
     pub map_name: String,
     /// Karte mit dem aktuellen Zustand von Türen und Bröckelboden.
     pub map: Map,
+    /// So viele Ticks steht Elora schon in Leuchtpilzen (bunter Rausch nach 2 s).
+    in_mushrooms: u32,
     /// Begleiter in der Welt: Figur → Gegner-Id (E-308).
     followers: BTreeMap<String, u32>,
     /// Deko der Karte, wie sie in der Datei steht (für [`Self::refresh_decor`]).
@@ -159,6 +164,7 @@ impl Session {
             npc_pos: BTreeMap::new(),
             base_decor: (Vec::new(), Vec::new()),
             followers: BTreeMap::new(),
+            in_mushrooms: 0,
             pending: Vec::new(),
             dead: false,
         }
@@ -396,7 +402,10 @@ impl Session {
         }
 
         // Heranhooken (R2-M2.2): Zugschalter einmal je Schuss, Sammelstücke und Beute am Hook
-        let pull = self.save.abilities().has(elora_sim::Ability::Pull);
+        // Fähigkeiten der Figur (Spielstand, im Testspiel auch über F1 eingeschaltet)
+        let pull = world
+            .character(me)
+            .is_some_and(|c| c.core.abilities.has(elora_sim::Ability::Pull));
         if pull && matches!(hook_state, HookState::Flying | HookState::Grabbed) {
             out.extend(self.hook_pickups(world, hook_pos, pos));
         }
@@ -418,6 +427,7 @@ impl Session {
             .map(|n| (n.id, n.pos))
             .collect();
         out.extend(self.followers_home(world));
+        self.mushroom_daze(world, pos);
         out.extend(self.touch(world, pos));
         out.extend(self.areas(pos));
         out.extend(self.barks(pos));
@@ -631,6 +641,30 @@ impl Session {
         }
     }
 
+    /// Wer 2 s in Leuchtpilzen steht, bekommt den bunten Rausch (E-311).
+    fn mushroom_daze(&mut self, world: &mut World, pos: Vec2) {
+        let inside = self
+            .map
+            .decor_front
+            .iter()
+            .chain(&self.map.decor_back)
+            .any(|d| {
+                d.art == elora_map::Art::Builtin("leuchtpilze".into())
+                    && (d.pos.x - pos.x).abs() < MUSHROOM_RANGE.x
+                    && (d.pos.y - pos.y).abs() < MUSHROOM_RANGE.y
+            });
+        self.in_mushrooms = if inside { self.in_mushrooms + 1 } else { 0 };
+        if self.in_mushrooms >= elora_sim::TICKS_PER_SECOND * 2 {
+            self.in_mushrooms = 0;
+            let ticks = elora_sim::tuning::ms_to_ticks(MUSHROOM_DAZE_MS);
+            if let Some(ch) = world.character_mut(self.player)
+                && ch.core.dazed == 0
+            {
+                ch.core.dazed = ticks;
+            }
+        }
+    }
+
     /// Begleiter in ihrer Heimat-Zone: Merker `<id>.daheim`, der Begleiter bleibt dort.
     fn followers_home(&mut self, world: &mut World) -> Vec<SessionEvent> {
         let mut out = Vec::new();
@@ -660,7 +694,11 @@ impl Session {
     /// Begleiter erscheinen lassen.
     pub fn sync_world(&mut self, world: &mut World) {
         self.sync_followers(world);
-        world.set_abilities(self.player, self.save.abilities());
+        // dazu, was schon in der Welt gilt (im Testspiel über F1 eingeschaltet)
+        let current = world
+            .player(self.player)
+            .map_or(elora_sim::Abilities::NONE, |p| p.abilities);
+        world.set_abilities(self.player, self.save.abilities().union(current));
         let max_ammo = world.tuning.max_ammo;
         if let Some(ch) = world.character_mut(self.player) {
             for &w in self.save.weapons.keys() {

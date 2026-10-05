@@ -338,12 +338,39 @@ def waldquelle(freed=True):
 
 
 def waldbaum():
-    """Hoher Waldbaum (Hintergrund, viel Vertikale)."""
-    s = f'<path d="M -34,0 Q -26,-200 -20,-420 H 20 Q 26,-200 34,0 Z" fill="{BARK}" {st(5)}/>'
-    s += f'<path d="M -8,-60 Q -14,-200 -6,-380 M 10,-120 Q 6,-240 12,-360" fill="none" stroke="{BARK_DARK}" stroke-width="3"/>'
-    for (x, y, rx, ry, c) in ((-70, -420, 90, 70, LEAF), (60, -450, 100, 80, LEAF), (0, -520, 110, 80, LEAF_LIGHT),
-                              (-40, -330, 60, 40, LEAF), (60, -340, 60, 40, LEAF_LIGHT)):
-        s += blob(x, y, rx, ry, c, 30, 0.1)
+    """Hoher Waldbaum (viel Vertikale): breite Wurzeln, gefurchte Rinde mit Astloch und Moos,
+    Seitenäste, Krone aus mehreren Blattwolken mit Licht und Schatten, ein paar Blätter."""
+    s = ''
+    # Wurzeln
+    for (x, dx) in ((-34, -50), (-20, -26), (22, 30), (34, 54)):
+        s += f'<path d="M {x},-40 Q {x + dx * 0.4},-10 {x + dx},4 L {x + dx * 0.7},4 Q {x + dx * 0.2},-6 {x * 0.6},-20 Z" fill="{BARK}" {st(4)}/>'
+    # Stamm, leicht geschwungen
+    s += f'<path d="M -40,0 Q -30,-140 -26,-260 Q -24,-360 -18,-430 H 18 Q 26,-360 28,-260 Q 32,-140 42,0 Z" fill="{BARK}" {st(5)}/>'
+    # Furchen und Licht auf der Rinde
+    for (x0, c, w) in ((-24, -8, 3.5), (-10, 6, 3), (6, -6, 3), (20, 8, 3.5)):
+        s += f'<path d="M {x0},-12 Q {x0 + c},-140 {x0 - c * 0.5},-250 Q {x0 + c * 0.6},-330 {x0 * 0.5},-420" fill="none" stroke="{BARK_DARK}" stroke-width="{w}" stroke-linecap="round"/>'
+    s += '<path d="M -30,-30 Q -24,-160 -20,-300" fill="none" stroke="#a57a54" stroke-width="5" stroke-linecap="round" opacity="0.7"/>'
+    # Astloch und Moos
+    s += f'<ellipse cx="10" cy="-190" rx="11" ry="15" fill="#4a3222" {st(3)}/><ellipse cx="10" cy="-186" rx="6" ry="9" fill="#2b1e14"/>'
+    s += blob(-26, -24, 22, 10, MOSS, 14, 0.25, 3) + blob(30, -110, 14, 8, MOSS, 12, 0.25, 2.5)
+    # Seitenäste
+    for (x, y, dx, dy) in ((-20, -330, -90, -60), (22, -360, 100, -50), (-18, -400, -60, -80)):
+        s += f'<path d="M {x},{y} q {dx * 0.5},{dy * 0.2} {dx},{dy}" fill="none" stroke="{OUT}" stroke-width="18" stroke-linecap="round"/>'
+        s += f'<path d="M {x},{y} q {dx * 0.5},{dy * 0.2} {dx},{dy}" fill="none" stroke="{BARK}" stroke-width="11" stroke-linecap="round"/>'
+    # Krone: dunkle Schatten hinten, helle Wolken vorn, Lichtkanten
+    back = ((-110, -430, 70, 52), (110, -440, 76, 54), (-60, -520, 84, 62), (60, -530, 90, 64), (0, -600, 86, 56))
+    for (x, y, rx, ry) in back:
+        s += blob(x, y, rx, ry, '#3f7a30', 32, 0.12)
+    front = ((-80, -470, 60, 44, LEAF), (80, -480, 64, 46, LEAF), (-20, -540, 70, 52, LEAF_LIGHT),
+             (40, -580, 60, 44, LEAF_LIGHT), (-90, -540, 46, 36, LEAF), (0, -460, 56, 40, LEAF))
+    for (x, y, rx, ry, c) in front:
+        s += blob(x, y, rx, ry, c, 28, 0.12)
+        s += f'<path d="M {x - rx * 0.6},{y - ry * 0.3} q {rx * 0.3},{-ry * 0.5} {rx * 0.7},{-ry * 0.4}" fill="none" stroke="#9fdc7a" stroke-width="5" stroke-linecap="round" opacity="0.8"/>'
+    # einzelne Blätter und Beeren
+    for (x, y, a) in ((-130, -380, 30), (126, -392, -20), (-40, -620, 10), (70, -620, -30)):
+        s += f'<ellipse cx="{x}" cy="{y}" rx="10" ry="5" fill="{LEAF_LIGHT}" stroke="{OUT}" stroke-width="2" transform="rotate({a} {x} {y})"/>'
+    for (x, y) in ((-40, -500), (30, -520), (-90, -450), (90, -470)):
+        s += f'<circle cx="{x}" cy="{y}" r="5" fill="#e8685a" stroke="{OUT}" stroke-width="1.6"/>'
     return s
 
 
@@ -373,10 +400,17 @@ def haengebruecke():
 
 
 def leuchtpilze():
-    s = '<ellipse cx="0" cy="-20" rx="50" ry="26" fill="#9ff2d8" opacity="0.25"/>'
-    for (x, h, r, c) in ((-22, 26, 14, '#5fd8c8'), (0, 38, 18, '#7ff2d8'), (22, 22, 12, '#5fd8c8')):
-        s += f'<path d="M {x},0 V {-h}" stroke="{OUT}" stroke-width="7"/><path d="M {x},0 V {-h}" stroke="#e8f8f0" stroke-width="3.5"/>'
-        s += f'<path d="M {x - r},{-h} Q {x},{-h - r * 1.4} {x + r},{-h} Z" fill="{c}" {st(3)}/>'
+    """Leuchtpilze: kräftiger Lichtschein, leuchtende Hüte mit hellen Punkten (Sternchen steigen
+    im Spiel als Teilchen auf)."""
+    s = '<ellipse cx="0" cy="-26" rx="70" ry="44" fill="#9ff2ff" opacity="0.22"/>'
+    s += '<ellipse cx="0" cy="-22" rx="46" ry="28" fill="#c8f8ff" opacity="0.3"/>'
+    for (x, h, r, c) in ((-26, 26, 14, '#5fd8e8'), (0, 40, 19, '#8ff0ff'), (24, 22, 12, '#5fd8e8'), (-12, 14, 8, '#8ff0ff')):
+        s += f'<path d="M {x},0 V {-h}" stroke="{OUT}" stroke-width="7"/><path d="M {x},0 V {-h}" stroke="#e8fbff" stroke-width="3.5"/>'
+        s += f'<path d="M {x - r},{-h} Q {x},{-h - r * 1.5} {x + r},{-h} Z" fill="{c}" {st(3)}/>'
+        s += f'<path d="M {x - r * 0.6},{-h - r * 0.3} Q {x},{-h - r * 1.1} {x + r * 0.5},{-h - r * 0.5}" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" opacity="0.9"/>'
+        s += f'<circle cx="{x - r * 0.3}" cy="{-h - r * 0.55}" r="2.4" fill="#ffffff"/>'
+    for (x, y) in ((-44, -54), (36, -64), (8, -78)):
+        s += star(x, y, 5, '#bff4ff')
     return s
 
 
@@ -465,10 +499,10 @@ def pilzring():
 
 # Deko für die Karten von Kapitel 2 (E-312): Name: (Zeichnung, viewBox), Ursprung unten in der Mitte.
 DECOR = {
-    'waldbaum': (waldbaum(), '-150 -620 300 622'),
+    'waldbaum': (waldbaum(), '-200 -680 400 690'),
     'waldhaus': (baumhaus(), '-100 -160 200 204'),
     'haengebruecke': (haengebruecke(), '-160 -70 320 72'),
-    'leuchtpilze': (leuchtpilze(), '-56 -60 112 62'),
+    'leuchtpilze': (leuchtpilze(), '-74 -92 148 94'),
     'wurzelbogen': (wurzelbogen(), '-140 -180 280 182'),
     'pilzring': (pilzring(), '-130 -56 260 58'),
     'waldquelle-verdorrt': (waldquelle(False), '-160 -160 320 162'),
