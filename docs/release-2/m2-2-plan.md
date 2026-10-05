@@ -1,6 +1,6 @@
 # R2-M2.2 – Kapitel 2: Murmelwald – Umsetzungsplan
 
-Status: **Freigegeben, in Umsetzung** (Entscheidungen E-306 bis E-311) · Grundlage: [`weltbuch.md`](weltbuch.md) §4.2 und §5, [`m2-1-plan.md`](m2-1-plan.md), E-296, E-305
+Status: **Abgeschlossen, angenommen (E-314)** · Entscheidungen E-306 bis E-313 · Grundlage: [`weltbuch.md`](weltbuch.md) §4.2 und §5, [`m2-1-plan.md`](m2-1-plan.md), E-296, E-305
 
 ## Ziel
 
@@ -28,7 +28,7 @@ Kapitel 2 ist von Anfang bis Ende spielbar: aus Tauwinkel in den Murmelwald, der
 | M2.2.6 ✅ | Quellfunke und Heranhooken | Sieg → Quellfunke → Tüftel baut **Heranhooken**; Übungsstelle in Tüftels Hof; Stellen in Kapitel 1, die erst mit Heranhooken gehen (Rückkehr lohnt sich) | Tests |
 | M2.2.7 ✅ | Dorf nach Kapitel 2 | `quellen_befreit = 2` (mehr Farbe), Gespräche und Zurufe, Weltkarte; ggf. kleines Fest wie nach Kapitel 1 | Sichtprüfung |
 | M2.2.8 ✅ | Musik und Sounds | Musik des Waldes und des Hüters (zum Anhören vorgelegt), Klänge für Schlange, Nüsse, Pilzwicht, Wurzeln, Kerne | Deine Hörprobe |
-| M2.2.9 | Abnahme | Kapitel 2 durchspielen, speichern, fortsetzen | Deine Abnahme |
+| M2.2.9 ✅ | Abnahme | Kapitel 2 durchspielen, speichern, fortsetzen | Deine Abnahme |
 
 **Stand M2.2.1:** Neue Verhalten in der Simulation: `burrower` (Wurzelschlange: versteckt, wächst ab gut 6 Tiles Abstand in 0,7 s aus dem Boden, nur draußen verwundbar, gefährlich und hookbar), Wurf im Bogen für Schützen (`lob`, Eichhornpirat), Berührung mit `daze_ms` (Pilzwicht: bunter Rausch für 5,5 s, Elora läuft mit A-23 = × 0,55, schimmert in Regenbogenfarben, die Welt wabert leicht), `follower` (Pilzkind: folgt Elora, springt über Stufen, wartet an Lücken und Dornen, unverwundbar, harmlos). Arten in `creatures.toml` (`wurzelschlange`, `eichhornpirat`, `pilzwicht`, `pilzkind`), Grafiken aus den Entwürfen (E-312), dazu Plumm und das Pilzkind als Figuren. Ausprobieren: Training, F1 → „Gegner (Abenteuer)“.
 

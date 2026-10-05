@@ -122,6 +122,7 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-311 | 2026-10-05 | Pilzwicht-Wirkung | **Bunter Rausch:** Elora regenbogenfarben und langsamer für ein paar Sekunden, die Welt wabert leicht; kindgerecht | Entscheidung Projektinhaber |
 | E-312 | 2026-10-05 | Entwürfe Kapitel 2 (M2.2.0) | **Angenommen** ([`design/kapitel2-entwuerfe.png`](design/kapitel2-entwuerfe.png)); der Wurzelwächter als wandelnder Baumriese mit Rindengesicht und Moosbart (Anlehnung an Baumbart) | Entscheidung Projektinhaber |
 | E-313 | 2026-10-05 | Musik Kapitel 2 | **Murmelwald: „Woodland Fantasy“** (Matthew Pablo, CC BY 3.0, Nennung in `SOURCES.md` und „Über“), **Wurzelwächter: „Bamboo Blitz“** (Tsorthan Grove, CC0) | Entscheidung Projektinhaber |
+| E-314 | 2026-10-05 | Abnahme R2-M2.2 | **Angenommen** („passt so“); weiter mit R2-M2.3 Glutsandwüste | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 
