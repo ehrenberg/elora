@@ -1,6 +1,6 @@
 # R2-M2.3 – Kapitel 3: Glutsandwüste – Umsetzungsplan
 
-Status: **Entscheidungen getroffen (E-315 bis E-320), Plan zur Freigabe** · Grundlage: [`weltbuch.md`](weltbuch.md) §4.3 und §5, [`m2-2-plan.md`](m2-2-plan.md), E-243, E-296, E-314
+Status: **Freigegeben, in Umsetzung** (Entscheidungen E-315 bis E-320) · Grundlage: [`weltbuch.md`](weltbuch.md) §4.3 und §5, [`m2-2-plan.md`](m2-2-plan.md), E-243, E-296, E-314
 
 ## Ziel
 
