@@ -21,7 +21,7 @@ Kapitel 2 ist von Anfang bis Ende spielbar: aus Tauwinkel in den Murmelwald, der
 |---|---|---|---|
 | M2.2.0 ✅ | Entwürfe ([`design/kapitel2-entwuerfe.png`](design/kapitel2-entwuerfe.png), E-312) | Uhu Plumm, Pilzkind, Wurzelschlange, Eichhornpirat (mit Nuss), Pilzwicht, Wurzelwächter (Ruhe, Wurzelangriff, Kern offen, besiegt), Erinnerungsrune, Kern, Waldquelle (verdorrt/befreit), Deko des Waldes (hohe Bäume, Baumhäuser, Hängebrücken, leuchtende Pilze, Wurzeln, Moos) | Deine Auswahl |
 | M2.2.1 ✅ | Neue Gegner | **Wurzelschlange**: versteckt im Boden, schießt hoch, wenn Elora nah ist, zieht sich zurück (verwundbar nur draußen). **Eichhornpirat**: sitzt auf Ästen, wirft Nüsse im Bogen. **Pilzwicht**: läuft, bei Berührung ein bunter Rausch (Elora regenbogenfarben und langsamer, E-311); **Begleiter** für das Pilzkind (folgt Elora, wartet an schwierigen Stellen, E-308) | Tests + Sandbox |
-| M2.2.2 | Heranhooken erweitern | Hook zieht **Gegenstände** (Truhen-Inhalt, Kerne, Sammelstücke) und **Hook-Schalter** (Hebel, die man nur mit Heranhooken umlegt) zu Elora; neue Schalter-Art „Zugschalter“ in Karte und Editor | Tests |
+| M2.2.2 ✅ | Heranhooken erweitern | Hook zieht **Gegenstände** (Truhen-Inhalt, Kerne, Sammelstücke) und **Hook-Schalter** (Hebel, die man nur mit Heranhooken umlegt) zu Elora; neue Schalter-Art „Zugschalter“ in Karte und Editor | Tests |
 | M2.2.3 | Hüter-Technik | **Wurzelwächter**: großer Hüter am Boden, verschließt Wege mit Wurzeln (zeitweise feste Tiles), schlägt mit Wurzeln aus dem Boden; **Kerne** in seiner Rinde: Hook daran und wegziehen (Tauziehen) legt einen Kern frei, dann verwundbar | Tests + Sandbox |
 | M2.2.4 | Inhalte | Figuren Plumm und Pilzkind; Hauptaufgabe „Das Flüstern im Murmelwald“ bis zum Quellfunken; Nebenaufgaben **„Erinnerungsrunen“** (Runen erzählen in Bruchstücken von der sechsten Quelle) und **„Das verirrte Pilzkind“**; Gespräche im Dorf nach Kapitel 2 | Tests |
 | M2.2.5 | Karten | Weg aus Tauwinkel in den Wald; `wald-1` bis `wald-3` und `wald-arena`: viel Vertikale, Baumhäuser, Hängebrücken, dunkle Höhlen unter Wurzeln, Abkürzungen, Rückkehr-Stellen für spätere Fähigkeiten; Ruck- und Hook-Stellen | Sichtprüfung + Durchlauf-Test |
@@ -31,6 +31,8 @@ Kapitel 2 ist von Anfang bis Ende spielbar: aus Tauwinkel in den Murmelwald, der
 | M2.2.9 | Abnahme | Kapitel 2 durchspielen, speichern, fortsetzen | Deine Abnahme |
 
 **Stand M2.2.1:** Neue Verhalten in der Simulation: `burrower` (Wurzelschlange: versteckt, wächst ab gut 6 Tiles Abstand in 0,7 s aus dem Boden, nur draußen verwundbar, gefährlich und hookbar), Wurf im Bogen für Schützen (`lob`, Eichhornpirat), Berührung mit `daze_ms` (Pilzwicht: bunter Rausch für 5,5 s, Elora läuft mit A-23 = × 0,55, schimmert in Regenbogenfarben, die Welt wabert leicht), `follower` (Pilzkind: folgt Elora, springt über Stufen, wartet an Lücken und Dornen, unverwundbar, harmlos). Arten in `creatures.toml` (`wurzelschlange`, `eichhornpirat`, `pilzwicht`, `pilzkind`), Grafiken aus den Entwürfen (E-312), dazu Plumm und das Pilzkind als Figuren. Ausprobieren: Training, F1 → „Gegner (Abenteuer)“.
+
+**Stand M2.2.2:** Mit **Heranhooken** greift der Hook Sammelstücke (Bienen, Runen, Glitzersteine …) aus der Entfernung, Beute fliegt sofort zu Elora, und Hook-Schalter („Zugschalter“, im Editor unter den Auslösern des Schalters) reagieren nur noch mit dieser Fähigkeit – einmal je Hook-Schuss. Die Kerne des Wurzelwächters folgen mit dem Hüter (M2.2.3).
 
 ## Ablauf von Kapitel 2 (Vorschlag)
 

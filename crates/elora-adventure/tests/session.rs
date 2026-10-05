@@ -223,3 +223,49 @@ fn unlocks_from_dialogs_reach_the_running_world() {
     assert!(ch.core.abilities.has(elora_sim::Ability::HookRuck));
     assert!(ch.arsenal.has(elora_sim::Weapon::Grenade));
 }
+
+/// Heranhooken (R2-M2.2): Sammelstücke am Hook werden eingesammelt, Beute fliegt zu Elora.
+#[test]
+fn pulling_hook_grabs_collectibles_and_loot() {
+    let mut s = Session::new_game(Content::builtin());
+    let mut w = s.enter("wiese-1", load("wiese-1"), "west", &Tuning::default());
+    let stone = s.map.adventure.object("stein").unwrap().pos;
+    let hook_at = |w: &mut World, s: &Session, at: Vec2| {
+        let ch = w.character_mut(s.player).unwrap();
+        ch.core.hook_state = elora_sim::HookState::Flying;
+        ch.core.hook_pos = at;
+    };
+    // ohne Heranhooken: nichts
+    hook_at(&mut w, &s, stone);
+    s.tick(&mut w, false);
+    assert_eq!(s.save.count("glitzerstein"), 0);
+    // mit Heranhooken: eingesammelt
+    s.save
+        .run(&s.content.clone(), &["faehigkeit heranhooken".into()]);
+    s.sync_world(&mut w);
+    hook_at(&mut w, &s, stone);
+    s.tick(&mut w, false);
+    assert_eq!(s.save.count("glitzerstein"), 1);
+    // Beute am Hook landet bei Elora
+    let far = Vec2::new(40.0 * 32.0, 10.0 * 32.0);
+    w.loot.push(elora_sim::creature::Loot {
+        id: 999,
+        item: "glanztropfen".into(),
+        count: 5,
+        pos: far,
+        vel: Vec2::ZERO,
+        age: 100,
+    });
+    hook_at(&mut w, &s, far);
+    s.tick(&mut w, false);
+    let elora = w.character(s.player).unwrap().core.pos;
+    assert!(
+        w.loot
+            .iter()
+            .find(|l| l.id == 999)
+            .unwrap()
+            .pos
+            .distance(elora)
+            < 1.0
+    );
+}

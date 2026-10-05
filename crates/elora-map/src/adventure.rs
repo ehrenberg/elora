@@ -20,7 +20,7 @@ pub enum SwitchTrigger {
     Interact,
     /// Hammer-Treffer.
     Hammer,
-    /// Heranhooken.
+    /// Hook mit der Fähigkeit Heranhooken (Zugschalter, R2-M2.2).
     Hook,
 }
 

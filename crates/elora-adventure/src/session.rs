@@ -24,6 +24,8 @@ pub const BARK_RANGE: f32 = 160.0;
 const TOUCH_RANGE: f32 = PHYS_SIZE;
 /// Abstand des Hooks zu einem Hook-Schalter.
 const HOOK_SWITCH_RANGE: f32 = 24.0;
+/// So nah muss der Hook an einem Sammelstück oder an Beute sein (Heranhooken).
+const HOOK_PICK_RANGE: f32 = 28.0;
 /// Leben nach „Zweite Chance“ (Knoten, P-xx).
 const SECOND_CHANCE_HEALTH: i32 = 3;
 
@@ -383,8 +385,12 @@ impl Session {
             ch.core.ruck_cooldown = 0;
         }
 
-        // Hook-Schalter: einmal je Schuss
-        if matches!(hook_state, HookState::Flying | HookState::Grabbed) {
+        // Heranhooken (R2-M2.2): Zugschalter einmal je Schuss, Sammelstücke und Beute am Hook
+        let pull = self.save.abilities().has(elora_sim::Ability::Pull);
+        if pull && matches!(hook_state, HookState::Flying | HookState::Grabbed) {
+            out.extend(self.hook_pickups(world, hook_pos, pos));
+        }
+        if matches!(hook_state, HookState::Flying | HookState::Grabbed) && pull {
             if self.hook_armed {
                 let hits = self.switches_at(hook_pos, SwitchTrigger::Hook, HOOK_SWITCH_RANGE);
                 if !hits.is_empty() {
@@ -412,6 +418,53 @@ impl Session {
         out
     }
 
+    /// Heranhooken: Sammelstücke am Hook werden eingesammelt, Beute fliegt zu Elora.
+    fn hook_pickups(&mut self, world: &mut World, hook: Vec2, elora: Vec2) -> Vec<SessionEvent> {
+        let mut out = Vec::new();
+        let near: Vec<String> = self
+            .map
+            .adventure
+            .objects
+            .iter()
+            .filter(|o| {
+                matches!(o.kind, ObjectKind::Collectible { .. })
+                    && o.pos.distance(hook) < HOOK_PICK_RANGE
+            })
+            .map(|o| o.id.clone())
+            .collect();
+        for id in near {
+            out.extend(self.collect(&id));
+        }
+        for l in &mut world.loot {
+            if l.pos.distance(hook) < HOOK_PICK_RANGE {
+                l.pos = elora;
+                l.vel = Vec2::ZERO;
+            }
+        }
+        out
+    }
+
+    /// Sammelstück `id` einsammeln (einmalig je Spielstand).
+    fn collect(&mut self, id: &str) -> Vec<SessionEvent> {
+        let mut out = Vec::new();
+        let Some(ObjectKind::Collectible { item }) =
+            self.map.adventure.object(id).map(|o| o.kind.clone())
+        else {
+            return out;
+        };
+        let k = key("fund", &self.map_name, id);
+        if self.save.flag(&k) == 0 && self.save.add_item(&self.content, &item, 1).is_ok() {
+            self.save.set_flag(&k, 1);
+            out.push(SessionEvent::Notice(Notice::Item {
+                id: item.clone(),
+                count: 1,
+            }));
+            let up = self.save.update_quests(&self.content);
+            out.extend(outcomes(up));
+        }
+        out
+    }
+
     /// Heilpflanzen und Sammelstücke bei Berührung.
     fn touch(&mut self, world: &mut World, pos: Vec2) -> Vec<SessionEvent> {
         let mut out = Vec::new();
@@ -431,19 +484,7 @@ impl Session {
                         self.plants_used.insert(o.id.clone());
                     }
                 }
-                ObjectKind::Collectible { item } => {
-                    let k = key("fund", &self.map_name, &o.id);
-                    if self.save.flag(&k) == 0 && self.save.add_item(&self.content, item, 1).is_ok()
-                    {
-                        self.save.set_flag(&k, 1);
-                        out.push(SessionEvent::Notice(Notice::Item {
-                            id: item.clone(),
-                            count: 1,
-                        }));
-                        let up = self.save.update_quests(&self.content);
-                        out.extend(outcomes(up));
-                    }
-                }
+                ObjectKind::Collectible { .. } => out.extend(self.collect(&o.id)),
                 _ => {}
             }
         }
