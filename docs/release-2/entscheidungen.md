@@ -129,6 +129,11 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-318 | 2026-10-05 | Treibsand | **Sinkt langsam ein, verlangsamt, Springen befreit;** tief eingesunken kleiner Schaden und zurück an den Rand | Entscheidung Projektinhaber |
 | E-319 | 2026-10-05 | Oasen-Aufgabe | **Wasserschlauch** in den Ruinen füllen, an drei verdorrten Stellen der Oase gießen | Entscheidung Projektinhaber |
 | E-320 | 2026-10-05 | Hitze in der Wüste | **Hitzeflimmern und Hitze-Leiste:** Sonne füllt, Schatten und Oase kühlen, voll = Elora wird langsamer | Entscheidung Projektinhaber |
+| E-321 | 2026-10-05 | Entwürfe Kapitel 3 (M2.3.0) | **Angenommen** ([`design/kapitel3-entwuerfe.png`](design/kapitel3-entwuerfe.png)); Hitzeflimmern als Shader (Nachbearbeitung der Welt), nicht als gezeichnetes Overlay | Entscheidung Projektinhaber |
+| E-322 | 2026-10-06 | Wasserschlauch | **Drei Füllungen:** einmal an der Ruinenquelle füllen, reicht für alle drei verdorrten Stellen | Entscheidung Projektinhaber |
+| E-323 | 2026-10-06 | Nebenaufgabe Ruine | **Sirup** gibt sie; in der verschütteten Kammer (mit Stampfen) eine Steintafel und als Lohn der **Sonnenschleier** (Hut: Hitze-Leiste füllt sich langsamer) | Entscheidung Projektinhaber |
+| E-324 | 2026-10-06 | Sirups Laden | **Kleiner Laden mit seltenen Waren** (Verbrauchsgut, Material, ein Schmuckstück) | Entscheidung Projektinhaber |
+| E-325 | 2026-10-06 | Der graue Wanderer in Kapitel 3 | **Spuren und Berichte:** graue Fußspuren, Ruinentafeln, Sirup sah nachts eine graue Gestalt an der Oase trinken; kein Auftritt | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 
