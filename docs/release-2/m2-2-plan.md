@@ -1,6 +1,6 @@
 # R2-M2.2 – Kapitel 2: Murmelwald – Umsetzungsplan
 
-Status: **Entscheidungen getroffen (E-306 bis E-311), Plan zur Freigabe** · Grundlage: [`weltbuch.md`](weltbuch.md) §4.2 und §5, [`m2-1-plan.md`](m2-1-plan.md), E-296, E-305
+Status: **Freigegeben, in Umsetzung** (Entscheidungen E-306 bis E-311) · Grundlage: [`weltbuch.md`](weltbuch.md) §4.2 und §5, [`m2-1-plan.md`](m2-1-plan.md), E-296, E-305
 
 ## Ziel
 
