@@ -27,7 +27,7 @@ Kapitel 2 ist von Anfang bis Ende spielbar: aus Tauwinkel in den Murmelwald, der
 | M2.2.5 ✅ | Karten | Weg aus Tauwinkel in den Wald; `wald-1` bis `wald-3` und `wald-arena`: viel Vertikale, Baumhäuser, Hängebrücken, dunkle Höhlen unter Wurzeln, Abkürzungen, Rückkehr-Stellen für spätere Fähigkeiten; Ruck- und Hook-Stellen | Sichtprüfung + Durchlauf-Test |
 | M2.2.6 ✅ | Quellfunke und Heranhooken | Sieg → Quellfunke → Tüftel baut **Heranhooken**; Übungsstelle in Tüftels Hof; Stellen in Kapitel 1, die erst mit Heranhooken gehen (Rückkehr lohnt sich) | Tests |
 | M2.2.7 ✅ | Dorf nach Kapitel 2 | `quellen_befreit = 2` (mehr Farbe), Gespräche und Zurufe, Weltkarte; ggf. kleines Fest wie nach Kapitel 1 | Sichtprüfung |
-| M2.2.8 | Musik und Sounds | Musik des Waldes und des Hüters (zum Anhören vorgelegt), Klänge für Schlange, Nüsse, Pilzwicht, Wurzeln, Kerne | Deine Hörprobe |
+| M2.2.8 ✅ | Musik und Sounds | Musik des Waldes und des Hüters (zum Anhören vorgelegt), Klänge für Schlange, Nüsse, Pilzwicht, Wurzeln, Kerne | Deine Hörprobe |
 | M2.2.9 | Abnahme | Kapitel 2 durchspielen, speichern, fortsetzen | Deine Abnahme |
 
 **Stand M2.2.1:** Neue Verhalten in der Simulation: `burrower` (Wurzelschlange: versteckt, wächst ab gut 6 Tiles Abstand in 0,7 s aus dem Boden, nur draußen verwundbar, gefährlich und hookbar), Wurf im Bogen für Schützen (`lob`, Eichhornpirat), Berührung mit `daze_ms` (Pilzwicht: bunter Rausch für 5,5 s, Elora läuft mit A-23 = × 0,55, schimmert in Regenbogenfarben, die Welt wabert leicht), `follower` (Pilzkind: folgt Elora, springt über Stufen, wartet an Lücken und Dornen, unverwundbar, harmlos). Arten in `creatures.toml` (`wurzelschlange`, `eichhornpirat`, `pilzwicht`, `pilzkind`), Grafiken aus den Entwürfen (E-312), dazu Plumm und das Pilzkind als Figuren. Ausprobieren: Training, F1 → „Gegner (Abenteuer)“.
@@ -43,6 +43,8 @@ Kapitel 2 ist von Anfang bis Ende spielbar: aus Tauwinkel in den Murmelwald, der
 **Stand M2.2.6:** Sieg → Quellfunke → Tüftel baut **Heranhooken** (M2.2.4). Baustein **Zugtruhe** (`pull_vault` in `editor/prolog.rs`): Steinhütte mit Tor und Truhe, 10 Tiles darüber eine Wurzel mit Zugschalter. Übung in Tüftels Hof (mit Schild „schild-zug“), Rückkehr-Belohnungen in `wiese-1` und `wiese-2`; im Wald zusätzlich Rune 2 (Steinsäule) und Rune 5 (Kammer in `wald-3`). Heranhooken prüft die ganze Strecke der Hook-Spitze. Test: alle Zugschalter mit einem echten Hook-Schuss (`tests/prolog.rs`).
 
 **Stand M2.2.7:** Nach dem Heranhooken: `quellen_befreit = 2` (mehr Beete, Blumenkästen, Blumentöpfe und Fahnen bunt), Fest mit Girlanden, Laternen und Festmusik bis Elora das Dorf verlässt, Oma beim Fest (sechste Quelle, grauer Wanderer, Ankündigung Glutsandwüste), Lotte schenkt Pilzsuppe (neu: heilt 8), Klonk spricht vom Harz für den Waffen-Ausbau, neue Zurufe von Pip und Lotte. Weltkarte: Murmelwald mit Lichtkranz „Quelle befreit“ (Tüftel setzt `befreit.<quelle>` zur Sicherheit mit, falls Elora nach dem Kampf nicht mit dem Hüter spricht).
+
+**Stand M2.2.8:** Musik (E-313): Murmelwald „Woodland Fantasy“ (Matthew Pablo, CC BY 3.0), Wurzelwächter „Bamboo Blitz“ (Tsorthan Grove, CC0) – Kampfmusik jetzt je Gebiet (`boss_music` in `worldmap.toml`). Klänge: Wurzelschlange knarrt beim Auftauchen und Abtauchen, der Boden grollt vor dem Wurzelstoß, Holz kracht beim Stoß, ein Plopp beim gelösten Kern (Kenney CC0 und prozedural), schillerndes Glitzern, wenn der bunte Rausch beginnt.
 
 ## Ablauf von Kapitel 2 (Vorschlag)
 

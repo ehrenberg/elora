@@ -49,6 +49,8 @@ deflect = 0.45
 collect = 0.55
 fanfare = 0.7
 quest_done = 0.6
+root_emerge = 0.5
+root_strike = 0.8
 
 # ── Prozedural ───────────────────────────────────────────────────────────
 
@@ -162,4 +164,65 @@ vibrato_hz = 30
 sustain = 0.4
 decay = 0.2
 lowpass = 800
+volume = 0.5
+
+# Wurzelwächter (R2-M2.2): tiefes Grollen vor dem Stoß, Plopp beim gelösten Kern
+[root_rumble]
+volume = 0.55
+[[root_rumble.layer]]
+wave = "noise"
+freq = 140
+attack = 0.1
+sustain = 0.5
+decay = 0.3
+lowpass = 400
+[[root_rumble.layer]]
+wave = "sine"
+freq = 55
+vibrato = 0.2
+vibrato_hz = 9
+attack = 0.1
+sustain = 0.5
+decay = 0.3
+volume = 0.7
+
+[core_pull]
+volume = 0.5
+[[core_pull.layer]]
+wave = "sine"
+freq = 300
+slide = 1.8
+sustain = 0.06
+decay = 0.12
+[[core_pull.layer]]
+wave = "triangle"
+freq = 900
+delay = 0.08
+arp = 1.5
+arp_after = 0.06
+sustain = 0.08
+decay = 0.25
+volume = 0.6
+
+# bunter Rausch: schillerndes Glitzern
+[daze]
+volume = 0.35
+[[daze.layer]]
+wave = "triangle"
+freq = 700
+vibrato = 0.3
+vibrato_hz = 7
+arp = 1.26
+arp_after = 0.1
+repeat = 0.3
+sustain = 0.6
+decay = 0.4
+[[daze.layer]]
+wave = "sine"
+freq = 1050
+vibrato = 0.4
+vibrato_hz = 5
+delay = 0.05
+sustain = 0.6
+decay = 0.4
 volume = 0.5

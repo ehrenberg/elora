@@ -48,6 +48,8 @@ Anfang entfernt, Ende ausgeblendet, Spitze −1 dBFS, teils gekürzt).
 | `collect` | `confirmation_001.ogg` | [Kenney – interface-sounds](https://kenney.nl/assets/interface-sounds) | Kenney (kenney.nl) | CC0 1.0 |
 | `fanfare` | `jingles_STEEL01.ogg` | [Kenney – music-jingles](https://kenney.nl/assets/music-jingles) | Kenney (kenney.nl) | CC0 1.0 |
 | `quest_done` | `jingles_PIZZI01.ogg` | [Kenney – music-jingles](https://kenney.nl/assets/music-jingles) | Kenney (kenney.nl) | CC0 1.0 |
+| `root_emerge` | `creak3.ogg` | [Kenney – rpg-audio](https://kenney.nl/assets/rpg-audio) | Kenney (kenney.nl) | CC0 1.0 |
+| `root_strike` | `impactWood_heavy_000.ogg` | [Kenney – impact-sounds](https://kenney.nl/assets/impact-sounds) | Kenney (kenney.nl) | CC0 1.0 |
 
 ## Schriften (`assets/fonts/`)
 
@@ -64,3 +66,5 @@ Per ffmpeg nach Ogg Vorbis umgewandelt (Stereo, 44,1 kHz, Qualität 4); das Spie
 | `bluetenwiesen.ogg` | „Sunset Plains“ | [OpenGameArt – Sunset Plains](https://opengameart.org/content/sunset-plains) | yoiyami | CC0 1.0 |
 | `boss.ogg` | „Urban Boss Battle“ | [OpenGameArt – Urban Boss Battle](https://opengameart.org/content/urban-boss-battle) | mintodog | CC0 1.0 |
 | `fest.ogg` | „Medieval: Minstrel Dance“ (Loop-Fassung) | [OpenGameArt – Minstrel Dance](https://opengameart.org/content/medieval-minstrel-dance) | randommind | CC0 1.0 |
+| `murmelwald.ogg` | „Woodland Fantasy“ | [OpenGameArt – Woodland Fantasy](https://opengameart.org/content/woodland-fantasy) | Matthew Pablo | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) |
+| `boss-wald.ogg` | „Bamboo Blitz“ | [OpenGameArt – Bamboo Blitz](https://opengameart.org/content/bamboo-blitz) | Tsorthan Grove | CC0 1.0 |

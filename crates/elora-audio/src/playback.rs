@@ -181,7 +181,15 @@ mod music_tests {
     #[test]
     fn shipped_music_can_be_streamed() {
         let dir = concat!(env!("CARGO_MANIFEST_DIR"), "/../../assets/music");
-        for name in ["menu", "tauwinkel", "bluetenwiesen", "boss", "fest"] {
+        for name in [
+            "menu",
+            "tauwinkel",
+            "bluetenwiesen",
+            "boss",
+            "fest",
+            "murmelwald",
+            "boss-wald",
+        ] {
             let data: Arc<[u8]> = std::fs::read(format!("{dir}/{name}.ogg")).unwrap().into();
             assert!(
                 StreamingSoundData::from_cursor(std::io::Cursor::new(data)).is_ok(),

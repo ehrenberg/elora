@@ -66,10 +66,20 @@ pub enum Sound {
     Fanfare,
     /// Aufgabe erledigt.
     QuestDone,
+    /// Wurzelschlange taucht auf (knarrendes Holz, R2-M2.2).
+    RootEmerge,
+    /// Boden bebt vor einem Wurzelstoß.
+    RootRumble,
+    /// Wurzelstoß bricht aus dem Boden.
+    RootStrike,
+    /// Kern löst sich aus der Rinde.
+    CorePull,
+    /// Bunter Rausch beginnt (E-311).
+    Daze,
 }
 
 impl Sound {
-    pub const ALL: [Self; 43] = [
+    pub const ALL: [Self; 48] = [
         Self::HammerFire,
         Self::HammerHit,
         Self::GrenadeFire,
@@ -113,6 +123,11 @@ impl Sound {
         Self::Collect,
         Self::Fanfare,
         Self::QuestDone,
+        Self::RootEmerge,
+        Self::RootRumble,
+        Self::RootStrike,
+        Self::CorePull,
+        Self::Daze,
     ];
 
     pub fn name(self) -> &'static str {
@@ -160,6 +175,11 @@ impl Sound {
             Self::Collect => "collect",
             Self::Fanfare => "fanfare",
             Self::QuestDone => "quest_done",
+            Self::RootEmerge => "root_emerge",
+            Self::RootRumble => "root_rumble",
+            Self::RootStrike => "root_strike",
+            Self::CorePull => "core_pull",
+            Self::Daze => "daze",
         }
     }
 
@@ -283,16 +303,20 @@ pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>)
             cues
         }
         Event::CreatureFire { pos, .. } => vec![Cue::at(Sound::HookFire, pos)],
-        Event::CreatureAct { pos, act, .. } => match act {
-            CreatureAct::Wake => vec![Cue::at(Sound::BossWake, pos)],
-            CreatureAct::Dive => vec![Cue::at(Sound::BossDive, pos)],
-            // Wurzelwächter-Stoß wie der Aufprall; Beben und Auftauchen wie eine Landung
-            // (eigene Klänge der Waldgegner mit M2.2.8)
-            CreatureAct::Land | CreatureAct::Strike => vec![Cue::at(Sound::BossLand, pos)],
-            CreatureAct::Emerge | CreatureAct::Warn => vec![Cue::at(Sound::Land, pos)],
-            CreatureAct::Burrow => Vec::new(),
-            CreatureAct::Core => vec![Cue::at(Sound::Fanfare, pos)],
-        },
+        Event::CreatureAct { pos, act, .. } => vec![Cue::at(
+            match act {
+                CreatureAct::Wake => Sound::BossWake,
+                CreatureAct::Dive => Sound::BossDive,
+                CreatureAct::Land => Sound::BossLand,
+                CreatureAct::Emerge => Sound::RootEmerge,
+                // zurück in den Boden: leiser Nachklang des Auftauchens
+                CreatureAct::Burrow => return vec![Cue::at(Sound::RootEmerge, pos).pitched(0.8)],
+                CreatureAct::Warn => Sound::RootRumble,
+                CreatureAct::Strike => Sound::RootStrike,
+                CreatureAct::Core => Sound::CorePull,
+            },
+            pos,
+        )],
         Event::LootCollect { pos, .. } => vec![Cue::at(Sound::PickupArmor, pos)],
     }
 }

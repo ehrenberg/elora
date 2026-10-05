@@ -247,6 +247,9 @@ pub struct Area {
     /// Musik während eines Fests (Merker `fest`, E-301).
     #[serde(default)]
     pub party_music: Option<String>,
+    /// Kampfmusik, solange ein Hüter wach ist (sonst `boss`).
+    #[serde(default)]
+    pub boss_music: Option<String>,
     /// Quelle des Gebiets: befreit, sobald der Merker `befreit.<spring>` gesetzt ist.
     #[serde(default)]
     pub spring: Option<String>,

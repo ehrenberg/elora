@@ -1,6 +1,6 @@
 # Weltkarte des Taulands (E-264, Weltbuch §2). pos: Lage 0..1; maps: Kartennamen beginnen so;
 # music: Hintergrundmusik assets/music/<name>.ogg (E-285); party_music: beim Fest (Merker fest);
-# spring: Quelle des Gebiets, befreit mit Merker befreit.<spring>.
+# spring: Quelle des Gebiets, befreit mit Merker befreit.<spring>; boss_music: Kampfmusik (sonst boss).
 
 [[area]]
 id = "tauwinkel"
@@ -27,6 +27,7 @@ pos = [0.18, 0.32]
 color = "#6cbf4a"
 maps = "wald-"
 music = "murmelwald"
+boss_music = "boss-wald"
 spring = "waldquelle"
 
 [[area]]

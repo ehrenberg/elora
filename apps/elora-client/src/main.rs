@@ -196,6 +196,7 @@ struct FrameInfo {
     loading: Option<(String, usize, usize)>,
 }
 
+#[allow(clippy::struct_excessive_bools)] // unabhängige Zustände der Anwendung
 struct App {
     gfx: Option<Gfx>,
     sandbox: Sandbox,
@@ -216,6 +217,8 @@ struct App {
     ui_cues: Vec<elora_audio::Cue>,
     /// Waffen der eigenen Figur im letzten Frame (Wechsel beim Aufheben, E-287).
     owned_weapons: [bool; 3],
+    /// Eigene Figur war im letzten Frame im bunten Rausch (Klang beim Beginn).
+    was_dazed: bool,
     effects: effects::Effects,
     figures: figure::Figures,
     figure_art: figure::FigureArt,
@@ -281,6 +284,7 @@ impl App {
             chat_heard: None,
             ui_cues: Vec::new(),
             owned_weapons: [false; 3],
+            was_dazed: false,
             effects: effects::Effects::with_settings(settings.effects),
             figures: figure::Figures::default(),
             figure_art: figure::FigureArt::load(),
@@ -711,10 +715,14 @@ impl App {
                 world.creature_kinds.get(c.kind).is_some_and(|k| k.boss)
                     && c.mode != elora_sim::creature::diver::SLEEP
             });
-            if boss {
-                return Some(BOSS_MUSIC.to_owned());
-            }
             let area = s.content.area_of(&s.map_name)?;
+            if boss {
+                return Some(
+                    area.boss_music
+                        .clone()
+                        .unwrap_or_else(|| BOSS_MUSIC.to_owned()),
+                );
+            }
             let party = s.save.flag(elora_adventure::session::PARTY) != 0;
             party
                 .then(|| area.party_music.clone())
@@ -740,6 +748,11 @@ impl App {
             }
             self.chat_heard = newest_chat;
         }
+        let dazed = scene.local().is_some_and(|c| c.ch.core.dazed > 0);
+        if dazed && !self.was_dazed {
+            extra.push(elora_audio::Cue::global(elora_audio::Sound::Daze));
+        }
+        self.was_dazed = dazed;
         extra.extend(self.menu.ui.sounds.drain(..).map(elora_audio::Cue::global));
         extra.append(&mut self.ui_cues);
         self.sounds
