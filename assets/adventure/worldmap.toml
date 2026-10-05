@@ -39,6 +39,8 @@ color = "#e0b85a"
 maps = "wueste-"
 hot = true
 spring = "glutquelle"
+music = "wueste"
+boss_music = "boss-wueste"
 
 [[area]]
 id = "frostspitzen"

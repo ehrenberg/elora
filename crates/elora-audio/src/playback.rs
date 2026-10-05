@@ -189,6 +189,8 @@ mod music_tests {
             "fest",
             "murmelwald",
             "boss-wald",
+            "wueste",
+            "boss-wueste",
         ] {
             let data: Arc<[u8]> = std::fs::read(format!("{dir}/{name}.ogg")).unwrap().into();
             assert!(

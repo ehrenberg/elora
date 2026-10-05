@@ -70,3 +70,5 @@ Per ffmpeg nach Ogg Vorbis umgewandelt (Stereo, 44,1 kHz, Qualität 4); das Spie
 | `fest.ogg` | „Medieval: Minstrel Dance“ (Loop-Fassung) | [OpenGameArt – Minstrel Dance](https://opengameart.org/content/medieval-minstrel-dance) | randommind | CC0 1.0 |
 | `murmelwald.ogg` | „Woodland Fantasy“ | [OpenGameArt – Woodland Fantasy](https://opengameart.org/content/woodland-fantasy) | Matthew Pablo | [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/) |
 | `boss-wald.ogg` | „Bamboo Blitz“ | [OpenGameArt – Bamboo Blitz](https://opengameart.org/content/bamboo-blitz) | Tsorthan Grove | CC0 1.0 |
+| `wueste.ogg` | „Desert Loop“ | [OpenGameArt – Desert Loop](https://opengameart.org/content/desert-loop) | iamoneabe | CC0 1.0 |
+| `boss-wueste.ogg` | „Hard Boss Battle 1“ | [OpenGameArt – Hard Boss Battle 1](https://opengameart.org/content/hard-boss-battle-1) | MintoDog | CC0 1.0 |

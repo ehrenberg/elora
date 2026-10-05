@@ -134,6 +134,7 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-323 | 2026-10-06 | Nebenaufgabe Ruine | **Sirup** gibt sie; in der verschütteten Kammer (mit Stampfen) eine Steintafel und als Lohn der **Sonnenschleier** (Hut: Hitze-Leiste füllt sich langsamer) | Entscheidung Projektinhaber |
 | E-324 | 2026-10-06 | Sirups Laden | **Kleiner Laden mit seltenen Waren** (Verbrauchsgut, Material, ein Schmuckstück) | Entscheidung Projektinhaber |
 | E-325 | 2026-10-06 | Der graue Wanderer in Kapitel 3 | **Spuren und Berichte:** graue Fußspuren, Ruinentafeln, Sirup sah nachts eine graue Gestalt an der Oase trinken; kein Auftritt | Entscheidung Projektinhaber |
+| E-326 | 2026-10-06 | Musik Kapitel 3 | **Glutsandwüste: „Desert Loop“** (iamoneabe, CC0), **Sandschlange: „Hard Boss Battle 1“** (MintoDog, CC0) | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 
