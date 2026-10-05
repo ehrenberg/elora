@@ -72,6 +72,22 @@ pub struct Renderer {
     layout: wgpu::BindGroupLayout,
     /// Mehrfach abgetastetes Ziel, wird in die Surface aufgelöst.
     msaa: Option<wgpu::TextureView>,
+    /// Nachbearbeitung der Welt (Hitzeflimmern); Stärke 0 = aus.
+    post: Post,
+}
+
+/// Hitzeflimmern (R2-M2.3, E-320): die Welt wird zuerst in `scene` gezeichnet und dann
+/// verzerrt in den Frame übertragen; das Overlay (HUD) bleibt unverzerrt.
+#[derive(Debug)]
+struct Post {
+    pipeline: wgpu::RenderPipeline,
+    layout: wgpu::BindGroupLayout,
+    sampler: wgpu::Sampler,
+    uniform: wgpu::Buffer,
+    /// Zwischenbild in Surface-Größe samt Bind-Group (neu bei Größenänderung).
+    scene: Option<(wgpu::TextureView, wgpu::BindGroup)>,
+    strength: f32,
+    time: f32,
 }
 
 /// Ein laufender Frame: Ziel-Textur und Command-Encoder.
@@ -142,6 +158,7 @@ impl Renderer {
         let world = Layer::new(&device, &layout, "world");
         let overlay = Layer::new(&device, &layout, "overlay");
         let msaa = create_msaa(&device, &config, samples);
+        let post = Post::new(&device, config.format, samples);
 
         Ok(Self {
             surface,
@@ -155,6 +172,7 @@ impl Renderer {
             max_samples,
             layout,
             msaa,
+            post,
         })
     }
 
@@ -179,7 +197,15 @@ impl Renderer {
             self.pipeline =
                 create_pipeline(&self.device, self.config.format, samples, &self.layout);
             self.msaa = create_msaa(&self.device, &self.config, samples);
+            self.post.pipeline =
+                create_post_pipeline(&self.device, self.config.format, samples, &self.post.layout);
         }
+    }
+
+    /// Hitzeflimmern für die nächsten Frames: `strength` 0..1 (0 = aus), `time` in Sekunden.
+    pub fn set_heat_haze(&mut self, strength: f32, time: f32) {
+        self.post.strength = strength.clamp(0.0, 1.0);
+        self.post.time = time;
     }
 
     /// MSAA-Stufe (1 = aus).
@@ -217,6 +243,7 @@ impl Renderer {
         self.config.height = height;
         self.surface.configure(&self.device, &self.config);
         self.msaa = create_msaa(&self.device, &self.config, self.samples);
+        self.post.scene = None;
     }
 
     /// Beginnt einen Frame. `None`, wenn gerade nicht gezeichnet werden kann
@@ -257,7 +284,68 @@ impl Renderer {
         batch: &ShapeBatch,
         clear: Color,
     ) {
-        self.draw_layer(frame, false, camera, batch, Some(clear));
+        if self.post.strength <= 0.0 {
+            self.draw_layer(frame, false, camera, batch, Some(clear));
+            return;
+        }
+        // erst in das Zwischenbild, dann verzerrt in den Frame
+        if self.post.scene.is_none() {
+            self.post.scene = Some(self.post.create_scene(&self.device, &self.config));
+        }
+        let (scene, bind_group) = self.post.scene.as_ref().expect("eben angelegt");
+        self.world.upload(&self.device, &self.queue, camera, batch);
+        let [r, g, b, a] = clear.0.map(f64::from);
+        {
+            let mut pass = frame
+                .encoder
+                .begin_render_pass(&wgpu::RenderPassDescriptor {
+                    label: Some("shapes"),
+                    color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                        view: self.msaa.as_ref().unwrap_or(scene),
+                        depth_slice: None,
+                        resolve_target: self.msaa.as_ref().map(|_| scene),
+                        ops: wgpu::Operations {
+                            load: wgpu::LoadOp::Clear(wgpu::Color { r, g, b, a }),
+                            store: wgpu::StoreOp::Store,
+                        },
+                    })],
+                    depth_stencil_attachment: None,
+                    timestamp_writes: None,
+                    occlusion_query_set: None,
+                    multiview_mask: None,
+                });
+            self.world.draw(&mut pass, &self.pipeline, batch);
+        }
+        #[allow(clippy::cast_precision_loss)]
+        let params = [
+            self.post.time,
+            self.post.strength,
+            self.config.width as f32 / self.config.height.max(1) as f32,
+            0.0,
+        ];
+        self.queue
+            .write_buffer(&self.post.uniform, 0, bytemuck::cast_slice(&params));
+        let mut pass = frame
+            .encoder
+            .begin_render_pass(&wgpu::RenderPassDescriptor {
+                label: Some("heat haze"),
+                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                    view: self.msaa.as_ref().unwrap_or(&frame.view),
+                    depth_slice: None,
+                    resolve_target: self.msaa.as_ref().map(|_| &frame.view),
+                    ops: wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(wgpu::Color { r, g, b, a }),
+                        store: wgpu::StoreOp::Store,
+                    },
+                })],
+                depth_stencil_attachment: None,
+                timestamp_writes: None,
+                occlusion_query_set: None,
+                multiview_mask: None,
+            });
+        pass.set_pipeline(&self.post.pipeline);
+        pass.set_bind_group(0, bind_group, &[]);
+        pass.draw(0..3, 0..1);
     }
 
     /// Zeichnet `batch` über den bisherigen Frame (nach [`Renderer::draw_shapes`]),
@@ -309,14 +397,7 @@ impl Renderer {
                 occlusion_query_set: None,
                 multiview_mask: None,
             });
-        if !batch.is_empty() {
-            let count = u32::try_from(batch.geometry.indices.len()).expect("zu viele Indizes");
-            pass.set_pipeline(&self.pipeline);
-            pass.set_bind_group(0, &layer.bind_group, &[]);
-            pass.set_vertex_buffer(0, layer.vertices.slice(..));
-            pass.set_index_buffer(layer.indices.slice(..), wgpu::IndexFormat::Uint32);
-            pass.draw_indexed(0..count, 0, 0..1);
-        }
+        layer.draw(&mut pass, &self.pipeline, batch);
     }
 
     /// Schickt den Frame ab und zeigt ihn an.
@@ -428,6 +509,23 @@ impl Layer {
         }
     }
 
+    fn draw(
+        &self,
+        pass: &mut wgpu::RenderPass<'_>,
+        pipeline: &wgpu::RenderPipeline,
+        batch: &ShapeBatch,
+    ) {
+        if batch.is_empty() {
+            return;
+        }
+        let count = u32::try_from(batch.geometry.indices.len()).expect("zu viele Indizes");
+        pass.set_pipeline(pipeline);
+        pass.set_bind_group(0, &self.bind_group, &[]);
+        pass.set_vertex_buffer(0, self.vertices.slice(..));
+        pass.set_index_buffer(self.indices.slice(..), wgpu::IndexFormat::Uint32);
+        pass.draw_indexed(0..count, 0, 0..1);
+    }
+
     fn upload(
         &mut self,
         device: &wgpu::Device,
@@ -457,6 +555,146 @@ impl Layer {
         queue.write_buffer(&self.vertices, 0, vertices);
         queue.write_buffer(&self.indices, 0, indices);
     }
+}
+
+impl Post {
+    fn new(device: &wgpu::Device, format: wgpu::TextureFormat, samples: u32) -> Self {
+        let layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            label: Some("post"),
+            entries: &[
+                wgpu::BindGroupLayoutEntry {
+                    binding: 0,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
+                    ty: wgpu::BindingType::Texture {
+                        sample_type: wgpu::TextureSampleType::Float { filterable: true },
+                        view_dimension: wgpu::TextureViewDimension::D2,
+                        multisampled: false,
+                    },
+                    count: None,
+                },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 1,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
+                    ty: wgpu::BindingType::Sampler(wgpu::SamplerBindingType::Filtering),
+                    count: None,
+                },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 2,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                },
+            ],
+        });
+        let filter = device.create_sampler(&wgpu::SamplerDescriptor {
+            label: Some("post"),
+            address_mode_u: wgpu::AddressMode::ClampToEdge,
+            address_mode_v: wgpu::AddressMode::ClampToEdge,
+            mag_filter: wgpu::FilterMode::Linear,
+            min_filter: wgpu::FilterMode::Linear,
+            ..Default::default()
+        });
+        Self {
+            pipeline: create_post_pipeline(device, format, samples, &layout),
+            layout,
+            sampler: filter,
+            uniform: create_buffer(device, "post", 16, wgpu::BufferUsages::UNIFORM),
+            scene: None,
+            strength: 0.0,
+            time: 0.0,
+        }
+    }
+
+    /// Zwischenbild in Surface-Größe und die Bind-Group dazu.
+    fn create_scene(
+        &self,
+        device: &wgpu::Device,
+        config: &wgpu::SurfaceConfiguration,
+    ) -> (wgpu::TextureView, wgpu::BindGroup) {
+        let view = device
+            .create_texture(&wgpu::TextureDescriptor {
+                label: Some("scene"),
+                size: wgpu::Extent3d {
+                    width: config.width,
+                    height: config.height,
+                    depth_or_array_layers: 1,
+                },
+                mip_level_count: 1,
+                sample_count: 1,
+                dimension: wgpu::TextureDimension::D2,
+                format: config.format,
+                usage: wgpu::TextureUsages::RENDER_ATTACHMENT
+                    | wgpu::TextureUsages::TEXTURE_BINDING,
+                view_formats: &[],
+            })
+            .create_view(&wgpu::TextureViewDescriptor::default());
+        let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
+            label: Some("post"),
+            layout: &self.layout,
+            entries: &[
+                wgpu::BindGroupEntry {
+                    binding: 0,
+                    resource: wgpu::BindingResource::TextureView(&view),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 1,
+                    resource: wgpu::BindingResource::Sampler(&self.sampler),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 2,
+                    resource: self.uniform.as_entire_binding(),
+                },
+            ],
+        });
+        (view, bind_group)
+    }
+}
+
+/// Pipeline der Nachbearbeitung: ein bildschirmfüllendes Dreieck, das `scene` verzerrt.
+fn create_post_pipeline(
+    device: &wgpu::Device,
+    format: wgpu::TextureFormat,
+    samples: u32,
+    layout: &wgpu::BindGroupLayout,
+) -> wgpu::RenderPipeline {
+    let shader = device.create_shader_module(wgpu::include_wgsl!("post.wgsl"));
+    let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
+        label: Some("post"),
+        bind_group_layouts: &[Some(layout)],
+        immediate_size: 0,
+    });
+    device.create_render_pipeline(&wgpu::RenderPipelineDescriptor {
+        label: Some("post"),
+        layout: Some(&pipeline_layout),
+        vertex: wgpu::VertexState {
+            module: &shader,
+            entry_point: Some("vs_main"),
+            compilation_options: wgpu::PipelineCompilationOptions::default(),
+            buffers: &[],
+        },
+        primitive: wgpu::PrimitiveState::default(),
+        depth_stencil: None,
+        multisample: wgpu::MultisampleState {
+            count: samples,
+            ..Default::default()
+        },
+        fragment: Some(wgpu::FragmentState {
+            module: &shader,
+            entry_point: Some("fs_main"),
+            compilation_options: wgpu::PipelineCompilationOptions::default(),
+            targets: &[Some(wgpu::ColorTargetState {
+                format,
+                blend: None,
+                write_mask: wgpu::ColorWrites::ALL,
+            })],
+        }),
+        multiview_mask: None,
+        cache: None,
+    })
 }
 
 /// MSAA-Ziel in Surface-Größe; `None` ohne MSAA.
@@ -513,4 +751,25 @@ fn ensure_capacity(
     }
     let size = needed.next_power_of_two();
     *buffer = create_buffer(device, label, size, usage);
+}
+
+#[cfg(test)]
+mod tests {
+    /// Shader parsen und validieren wie wgpu (ohne Grafikkarte).
+    #[test]
+    fn shaders_are_valid() {
+        for (name, src) in [
+            ("shader.wgsl", include_str!("shader.wgsl")),
+            ("post.wgsl", include_str!("post.wgsl")),
+        ] {
+            let module = naga::front::wgsl::parse_str(src)
+                .unwrap_or_else(|e| panic!("{name}: {}", e.emit_to_string(src)));
+            naga::valid::Validator::new(
+                naga::valid::ValidationFlags::all(),
+                naga::valid::Capabilities::empty(),
+            )
+            .validate(&module)
+            .unwrap_or_else(|e| panic!("{name}: {e:?}"));
+        }
+    }
 }

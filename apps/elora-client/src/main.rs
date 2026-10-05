@@ -942,6 +942,16 @@ impl App {
         let Some(mut frame) = gfx.renderer.begin_frame() else {
             return;
         };
+        // Hitzeflimmern in der Wüste (E-320): in der prallen Sonne und mit der Hitze stärker
+        let haze = self
+            .adventure
+            .as_ref()
+            .map(|a| &a.session)
+            .filter(|s| s.hot())
+            .map_or(0.0, |s| (if s.in_sun { 0.6 } else { 0.3 }) + 0.4 * s.heat);
+        #[allow(clippy::cast_precision_loss)]
+        let secs = info.tick as f32 / elora_sim::TICKS_PER_SECOND as f32;
+        gfx.renderer.set_heat_haze(haze, secs);
         gfx.renderer
             .draw_shapes(&mut frame, &camera, &self.batch, draw::BACKGROUND);
         let screen_camera = Camera {

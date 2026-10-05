@@ -841,6 +841,7 @@ dependencies = [
  "bytemuck",
  "elora-sim",
  "lyon",
+ "naga",
  "thiserror 2.0.21",
  "ttf-parser",
  "usvg",

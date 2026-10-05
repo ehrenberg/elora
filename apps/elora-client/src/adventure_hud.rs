@@ -221,47 +221,6 @@ pub fn heat_bar(ui: &mut Ui<'_>, heat: f32, overheated: bool, time: f32) {
     }
 }
 
-/// Hitzeflimmern über dem Bild (E-320): feine, aufsteigende Wellenlinien und ein warmer
-/// Schleier; `strength` 0..1.
-pub fn heat_haze(
-    batch: &mut elora_render::ShapeBatch,
-    screen: Vec2,
-    s: f32,
-    time: f32,
-    strength: f32,
-) {
-    if strength <= 0.0 {
-        return;
-    }
-    batch.fill_rect(
-        Vec2::ZERO,
-        screen,
-        Color::rgba(1.0, 0.72, 0.35, 0.06 * strength),
-    );
-    let lines = 9;
-    for i in 0..lines {
-        #[allow(clippy::cast_precision_loss)]
-        let f = i as f32 / lines as f32;
-        // steigt langsam auf, unten kräftiger als oben
-        let y = (1.0 - (f + time * 0.04).fract()) * screen.y;
-        let fade = (y / screen.y).powf(1.5);
-        let pts: Vec<Vec2> = (0..=40)
-            .map(|k| {
-                #[allow(clippy::cast_precision_loss)]
-                let x = k as f32 / 40.0 * screen.x;
-                let wave = (x * 0.012 / s + time * 2.6 + f * 9.0).sin() * 3.0 * s
-                    + (x * 0.031 / s - time * 1.7).sin() * 1.5 * s;
-                Vec2::new(x, y + wave)
-            })
-            .collect();
-        batch.stroke_polyline(
-            &pts,
-            5.0 * s,
-            Color::rgba(1.0, 0.97, 0.88, 0.11 * strength * fade),
-        );
-    }
-}
-
 /// Platzhalter `{taste:<aktion>}` durch die belegte Taste ersetzen (Schilder, E-273),
 /// z. B. `{taste:jump}` → „Leertaste“.
 /// Lebensleiste eines Hüters oben in der Mitte mit Namen (R2-M2.1); `frac` 0..1.
@@ -615,7 +574,6 @@ mod tests {
         batch.fill_rect(Vec2::new(0.0, 560.0), screen, Color::hex(0x8fbf7a));
         let input = crate::ui::UiInput::default();
         let mut state = crate::ui::UiState::default();
-        heat_haze(&mut batch, screen, 1.0, 3.0, 0.8);
         let mut ui = Ui {
             batch: &mut batch,
             font: &font,

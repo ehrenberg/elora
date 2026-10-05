@@ -18,3 +18,7 @@ thiserror.workspace = true
 
 [lints]
 workspace = true
+
+[dev-dependencies]
+# gleiche Version wie in wgpu: prüft die Shader ohne Grafikkarte
+naga = { version = "30.0.1", features = ["wgsl-in"] }
