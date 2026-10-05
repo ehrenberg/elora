@@ -719,7 +719,7 @@ impl Session {
         self.content.area_of(&self.map_name).is_some_and(|a| a.hot)
     }
 
-    /// Hitze-Leiste (E-320): Sonne füllt; Schatten (Dach über Elora, Zonen `schatten…`) und
+    /// Hitze-Leiste (E-320): Sonne füllt (Ausrüstung `heat_pct` verlangsamt); Schatten (Dach über Elora, Zonen `schatten…`) und
     /// Oase (Zonen `oase…`) kühlen. Voll = Elora wird langsamer, bis sie abgekühlt ist.
     fn heat(&mut self, world: &mut World, pos: Vec2) {
         let zone = |prefix: &str| {
@@ -745,7 +745,9 @@ impl Session {
             self.heat -= step(HEAT_SHADE_MS);
         } else {
             self.in_sun = true;
-            self.heat += step(HEAT_FILL_MS);
+            // Sonnenschleier: füllt sich langsamer
+            let pct = self.save.stats(&self.content).heat_pct;
+            self.heat += step(HEAT_FILL_MS) * (1.0 + pct / 100.0).max(0.1);
         }
         self.heat = self.heat.clamp(0.0, 1.0);
         if self.heat >= 1.0 {
@@ -937,6 +939,14 @@ impl Session {
             crate::data::Effect::Heal(_) => {
                 if let Some(ch) = world.character_mut(self.player) {
                     ch.health = self.save.health;
+                }
+            }
+            crate::data::Effect::Cool(_) => {
+                self.heat = 0.0;
+                self.overheated = false;
+                if let Some(ch) = world.character_mut(self.player) {
+                    ch.health = self.save.health;
+                    ch.core.overheated = false;
                 }
             }
             crate::data::Effect::Tau(secs) => {

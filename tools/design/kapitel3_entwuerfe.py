@@ -245,6 +245,17 @@ def glutquelle(freed=True):
     return s
 
 
+def ruinenquelle():
+    """Kleine Quelle zwischen den Säulen: Steinring, klares Wasser, das sprudelt."""
+    s = f'<path d="M -60,0 Q -64,-24 -48,-28 H 48 Q 64,-24 60,0 Z" fill="{STONE}" {st(4)}/>'
+    for x in (-36, -12, 12, 36):
+        s += f'<path d="M {x},-28 V 0" stroke="{STONE_DARK}" stroke-width="2"/>'
+    s += f'<ellipse cx="0" cy="-28" rx="48" ry="9" fill="{WATER}" {st(3.5)}/>'
+    s += f'<path d="M 0,-30 Q -6,-52 -14,-58 M 0,-30 Q 6,-56 14,-60 M 0,-30 V -64" fill="none" stroke="{WATER}" stroke-width="5" stroke-linecap="round"/>'
+    s += '<path d="M -24,-29 q 8,-3 16,0 M 10,-27 q 8,-3 16,0" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round"/>'
+    return s
+
+
 def duene():
     return (f'<path d="M -200,0 Q -120,-90 -20,-70 Q 60,-120 200,0 Z" fill="{SAND}" {st(4)}/>'
             f'<path d="M -120,-40 Q -60,-70 0,-50 M 40,-60 Q 100,-80 150,-30" fill="none" stroke="{SAND_LIGHT}" stroke-width="5" stroke-linecap="round"/>')

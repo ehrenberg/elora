@@ -598,6 +598,7 @@ grenade_shards = "{n} shards"
 laser_bounces = "{n} bounces"
 laser_pierce = "Pierce {n} enemies"
 laser_delay_pct = "{n} % laser charge time"
+heat_pct = "{n} % heat in the sun"
 
 [refusal]
 unknown = "unknown"

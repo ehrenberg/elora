@@ -34,6 +34,7 @@ pub struct Stats {
     pub laser_bounces: i32,
     pub laser_pierce: i32,
     pub laser_delay_pct: f32,
+    pub heat_pct: f32,
 }
 
 impl Stats {
@@ -65,6 +66,7 @@ impl Stats {
             Bonus::LaserBounces(v) => self.laser_bounces += v,
             Bonus::LaserPierce(v) => self.laser_pierce += v,
             Bonus::LaserDelayPct(v) => self.laser_delay_pct += v,
+            Bonus::HeatPct(v) => self.heat_pct += v,
         }
     }
 

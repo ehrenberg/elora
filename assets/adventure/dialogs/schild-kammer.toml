@@ -1,0 +1,9 @@
+# Wegweiser (E-273, R2-M2.3)
+speaker = "wegweiser"
+
+[[start]]
+node = "text"
+
+[[node]]
+id = "text"
+text = { de = "Hier klingt der Boden hohl …", en = "The ground sounds hollow here …" }

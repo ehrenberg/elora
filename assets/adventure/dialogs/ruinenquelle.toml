@@ -1,0 +1,26 @@
+# Kleine Quelle in den Ruinen: Wasserschlauch füllen (E-319, E-322)
+speaker = "ruinenquelle"
+
+[[start]]
+if = "hat wasser"
+node = "voll"
+
+[[start]]
+if = "hat wasserschlauch"
+node = "fuellen"
+
+[[start]]
+node = "leer"
+
+[[node]]
+id = "leer"
+text = { de = "Klares Wasser sprudelt zwischen den Steinen. Wenn man nur etwas hätte, um es mitzunehmen …", en = "Clear water bubbles between the stones. If only you had something to carry it in …" }
+
+[[node]]
+id = "fuellen"
+text = { de = "Du füllst den Wasserschlauch bis zum Rand.", en = "You fill the water skin to the brim." }
+do = ["gib wasser 3"]
+
+[[node]]
+id = "voll"
+text = { de = "Der Schlauch ist schon voll.", en = "The skin is already full." }

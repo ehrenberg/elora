@@ -24,6 +24,7 @@ desc = { de = "Klebrig, aus dem Murmelwald.", en = "Sticky, from the Murmelwald.
 [[item]]
 id = "glutstein"
 type = "material"
+price = 25
 name = { de = "Glutstein", en = "Ember stone" }
 desc = { de = "Noch warm, aus der Glutsandwüste.", en = "Still warm, from the Glutsandwüste." }
 
@@ -153,3 +154,42 @@ id = "munition_laser"
 type = "ammo"
 weapon = "Laser"
 name = { de = "Laser-Ladung", en = "Laser charge" }
+
+# Kapitel 3 – Glutsandwüste (R2-M2.3, docs/release-2/m2-3-inhalte.md)
+[[item]]
+id = "kaktusfrucht"
+type = "consumable"
+effect = { cool = 3 }
+price = 12
+name = { de = "Kaktusfrucht", en = "Cactus fruit" }
+desc = { de = "Stellt 3 Leben her und kühlt: Die Hitze-Leiste ist danach leer.", en = "Restores 3 health and cools you down: the heat bar is empty afterwards." }
+
+[[item]]
+id = "sonnenschleier"
+type = "equipment"
+slot = "hat"
+rarity = "rare"
+bonuses = [{ heat_pct = -40.0 }]
+name = { de = "Sonnenschleier", en = "Sun veil" }
+desc = { de = "Aus der verschütteten Kammer des Glutvolks. Die Hitze-Leiste füllt sich langsamer.", en = "From the buried chamber of the Ember Folk. The heat bar fills more slowly." }
+
+[[item]]
+id = "karawanenkette"
+type = "equipment"
+slot = "pendant"
+price = 180
+bonuses = [{ invulnerable_ms = 300 }]
+name = { de = "Karawanenkette", en = "Caravan chain" }
+desc = { de = "Sirup schwört, sie hat ihn durch drei Sandstürme gebracht. Nach einem Treffer länger geschützt.", en = "Sirup swears it got him through three sandstorms. Protected for longer after a hit." }
+
+[[item]]
+id = "wasserschlauch"
+type = "key"
+name = { de = "Wasserschlauch", en = "Water skin" }
+desc = { de = "Aus Ziegenleder, riecht ein bisschen nach Kamel.", en = "Made of goat leather, smells a little of camel." }
+
+[[item]]
+id = "wasser"
+type = "key"
+name = { de = "Schluck Wasser", en = "Sip of water" }
+desc = { de = "Klar und kühl, aus der Ruinenquelle.", en = "Clear and cool, from the ruin spring." }

@@ -2,12 +2,28 @@
 speaker = "oma"
 
 [[start]]
-if = "quest murmelwald schritt fest"
-node = "fest2"
+if = "quest glutsand schritt fest"
+node = "fest3"
+
+[[start]]
+if = "quest glutsand aktiv und merker besiegt.sandschlange"
+node = "funke"
+
+[[start]]
+if = "quest glutsand schritt aufbruch"
+node = "glutsand"
 
 [[start]]
 if = "quest glutsand aktiv"
-node = "glutsand"
+node = "unterwegs"
+
+[[start]]
+if = "quest frostspitzen aktiv"
+node = "frost"
+
+[[start]]
+if = "quest murmelwald schritt fest"
+node = "fest2"
 
 [[start]]
 if = "quest murmelwald aktiv und merker besiegt.wurzelwaechter"
@@ -196,7 +212,25 @@ text = { de = "Die dritte Quelle liegt in der Glutsandwüste. Eine Karawane erz�
 
 [[node]]
 id = "glutsand"
-text = { de = "Die Wüste ist heiß, Kind. Nimm genug Heiltränke mit, wenn es so weit ist.", en = "The desert is hot, dear. Take enough healing potions when the time comes." }
+text = { de = "Die Glutquelle, Kind. Sie hat mir als Mädchen die Hände gewärmt. Nimm am Ostpfad den Hohlweg nach Süden. Und trink genug – die Sonne dort ist nicht so freundlich wie ich.", en = "The Ember Spring, dear. It warmed my hands when I was a girl. Take the sunken path south off the east path. And drink enough – the sun there isn't as friendly as I am." }
+
+[[node]]
+id = "unterwegs"
+text = { de = "Die Wüste wird dich nicht beißen. Nur die Krabben.", en = "The desert won't bite you. Only the crabs will." }
+
+# Fest nach Kapitel 3 (R2-M2.3)
+[[node]]
+id = "fest3"
+text = { de = "Gold! Die Häuser leuchten wie Honig in der Abendsonne. Und du, mein mutiger Tropfen …", en = "Gold! The houses glow like honey in the evening sun. And you, my brave little drop …" }
+next = "fest3_lied"
+
+[[node]]
+id = "fest3_lied"
+text = { de = "Ein grauer Wanderer, sagst du? Der nach einem Lied sucht? … Ich weiß nicht warum, aber dabei wird mir ganz wehmütig. Die Berge im Norden, die Frostspitzen. Dort wartet die vierte Quelle.", en = "A grey wanderer, you say? Who is looking for a song? … I don't know why, but it makes me feel quite wistful. The mountains in the north, the Frostspitzen. The fourth spring awaits there." }
+
+[[node]]
+id = "frost"
+text = { de = "Die Frostspitzen warten. Aber ruh dich ruhig noch ein bisschen aus – das Fest war lang.", en = "The Frostspitzen are waiting. But do rest a little longer – it was a long party." }
 
 [[bark]]
 if = "merker fest"

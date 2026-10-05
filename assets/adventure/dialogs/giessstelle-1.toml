@@ -1,0 +1,18 @@
+# Verdorrte Stelle 1 der Oase (E-319)
+speaker = "giessstelle-1"
+
+[[start]]
+if = "hat wasser"
+node = "giessen"
+
+[[start]]
+node = "trocken"
+
+[[node]]
+id = "trocken"
+text = { de = "Trockene, rissige Erde. Hier wuchs einmal etwas.", en = "Dry, cracked earth. Something used to grow here." }
+
+[[node]]
+id = "giessen"
+text = { de = "Du gießt einen Schluck Wasser. Die Erde trinkt gierig – und kleine Blüten öffnen sich.", en = "You pour a sip of water. The earth drinks greedily – and little blossoms open." }
+do = ["nimm wasser 1", "merker befreit.giessstelle-1 = 1", "merker oase.gegossen +1"]

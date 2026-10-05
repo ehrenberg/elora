@@ -1,0 +1,9 @@
+# Gegossene Stelle der Oase (für bluete-1 bis bluete-3)
+speaker = "bluete-1"
+
+[[start]]
+node = "text"
+
+[[node]]
+id = "text"
+text = { de = "Hier blüht es wieder.", en = "It's blooming here again." }

@@ -2,6 +2,10 @@
 speaker = "klonk"
 
 [[start]]
+if = "quest glutsand erledigt und nicht merker klonk.laser"
+node = "laser"
+
+[[start]]
 if = "quest murmelwald erledigt und nicht merker klonk.harz"
 node = "harz"
 
@@ -64,6 +68,11 @@ do = ["schmied"]
 
 [[node.choice]]
 text = { de = "Später.", en = "Later." }
+
+[[node]]
+id = "laser"
+text = { de = "Hmpf. Du kommst aus der Wüste und hast nicht mal Sand in den Ohren. Respekt. Hier. Hab ich aus Glutstein und einer alten Linse gebaut. Ein Laser. Zeig damit auf nichts, was du magst.", en = "Hmph. You come back from the desert without even sand in your ears. Respect. Here. Built it from ember stone and an old lens. A laser. Don't point it at anything you like." }
+do = ["waffe laser", "gib munition_laser 1", "merker klonk.laser = 1", "zuneigung klonk +1"]
 
 [[bark]]
 if = "merker fest"

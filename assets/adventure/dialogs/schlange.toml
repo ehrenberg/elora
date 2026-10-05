@@ -1,0 +1,26 @@
+# Sandschlange nach dem Kampf (R2-M2.3, E-316)
+speaker = "schlange"
+
+[[start]]
+if = "merker schlange.gesprochen"
+node = "spaeter"
+
+[[start]]
+node = "erwacht"
+
+[[node]]
+id = "erwacht"
+text = { de = "Sssso … kühl … endlich. Verzeih, kleiner Tropfen. Etwas Graues hat aus meiner Quelle getrunken. Danach war mir so kalt, so schrecklich kalt, dass ich jeden angefaucht habe, der näher kam.", en = "Ssso … cool … at last. Forgive me, little drop. Something grey drank from my spring. Afterwards I was so cold, so terribly cold, that I hissed at anyone who came near." }
+next = "norden"
+
+[[node]]
+id = "norden"
+text = { de = "Es ging nach Norden. Zu den Bergen, wo der Schnee nie schmilzt. Nimm den Funken. Und wenn du ihn findest … sei sanft. Er hat sehr kalt geklungen. Kälter als ich.", en = "It went north. To the mountains where the snow never melts. Take the spark. And if you find him … be gentle. He sounded very cold. Colder than me." }
+do = ["merker schlange.gesprochen = 1", "merker befreit.glutquelle = 1", "merker duerrer.norden = 1"]
+
+[[node]]
+id = "spaeter"
+text = { de = "Sssso warm … Die Quelle summt wieder. Danke.", en = "Ssso warm … The spring is humming again. Thank you." }
+
+[[bark]]
+text = { de = "Ssss …", en = "Ssss …" }

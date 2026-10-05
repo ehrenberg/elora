@@ -126,19 +126,111 @@ id = "fest"
 text = { de = "Mit Oma Pfütze am Brunnen feiern", en = "Celebrate with Oma Pfütze at the well" }
 goal = { type = "talk", who = "oma" }
 
-# Kapitel 3 – Ankündigung, Fortsetzung mit R2-M2.3
+# Kapitel 3 – Glutsandwüste (R2-M2.3, docs/release-2/m2-3-inhalte.md)
 [[quest]]
 id = "glutsand"
 kind = "main"
 giver = "oma"
 name = { de = "Spuren im Sand", en = "Tracks in the Sand" }
 desc = { de = "Die dritte Quelle liegt in der Glutsandwüste. Eine Karawane erzählt von einem grauen Wanderer.", en = "The third spring lies in the Glutsandwüste. A caravan tells of a grey wanderer." }
+reward = { xp = 350, glanztropfen = 160 }
+next = "frostspitzen"
+
+[[quest.step]]
+id = "aufbruch"
+text = { de = "Am Ostpfad den Hohlweg in die Wüste nehmen", en = "Take the sunken path off the east path into the desert" }
+goal = { type = "reach", map = "wueste-1" }
+
+[[quest.step]]
+id = "sirup"
+text = { de = "Die Karawane in der Wüste finden", en = "Find the caravan in the desert" }
+goal = { type = "talk", who = "sirup" }
+
+[[quest.step]]
+id = "ruinen"
+text = { de = "Den grauen Spuren zu den Ruinen folgen", en = "Follow the grey tracks to the ruins" }
+goal = { type = "reach", map = "wueste-3" }
+
+[[quest.step]]
+id = "quelle"
+text = { de = "Die Glutquelle im Sandkessel erreichen", en = "Reach the Ember Spring in the sand basin" }
+goal = { type = "reach", map = "wueste-arena" }
+
+[[quest.step]]
+id = "hueter"
+text = { de = "Die Sandschlange beruhigen", en = "Calm the Sand Serpent" }
+goal = { type = "defeat", kind = "sandschlange", count = 1, map = "wueste-arena" }
+
+[[quest.step]]
+id = "funke"
+text = { de = "Tüftel den Quellfunken bringen", en = "Bring Tüftel the spring spark" }
+goal = { type = "bring", item = "quellfunke", count = 1, to = "tueftel" }
+
+[[quest.step]]
+id = "fest"
+text = { de = "Mit Oma Pfütze am Brunnen feiern", en = "Celebrate with Oma Pfütze at the well" }
+goal = { type = "talk", who = "oma" }
+
+# Kapitel 4 – Ankündigung, Fortsetzung mit R2-M2.4
+[[quest]]
+id = "frostspitzen"
+kind = "main"
+giver = "oma"
+name = { de = "Der Ruf der Frostspitzen", en = "The Call of the Frostspitzen" }
+desc = { de = "Die vierte Quelle liegt in den Frostspitzen im Norden. Dorthin führten die grauen Spuren.", en = "The fourth spring lies in the Frostspitzen to the north. That is where the grey tracks led." }
 reward = { xp = 100 }
 
 [[quest.step]]
 id = "aufbruch"
-text = { de = "In die Glutsandwüste aufbrechen (bald)", en = "Set out for the Glutsandwüste (soon)" }
+text = { de = "In die Frostspitzen aufbrechen (bald)", en = "Set out for the Frostspitzen (soon)" }
 goal = { type = "manual" }
+
+# Nebenaufgaben in Kapitel 3 (E-319, E-322, E-323)
+[[quest]]
+id = "oase"
+kind = "side"
+giver = "palma"
+name = { de = "Wasser für die Oase", en = "Water for the Oasis" }
+desc = { de = "Seit der Graue an der Oase getrunken hat, wird sie stiller. Drei Stellen am Ufer sind verdorrt. In den Ruinen gibt es noch eine kleine Quelle.", en = "Since the grey one drank at the oasis, it has grown quieter. Three patches on the bank have withered. There is still a little spring in the ruins." }
+reward = { xp = 80, points = 1, items = [{ item = "kaktusfrucht", count = 3 }] }
+
+[[quest.step]]
+id = "fuellen"
+text = { de = "Den Wasserschlauch an der Ruinenquelle füllen", en = "Fill the water skin at the ruin spring" }
+goal = { type = "collect", item = "wasser", count = 3 }
+
+[[quest.step]]
+id = "giessen"
+text = { de = "Die drei verdorrten Stellen der Oase gießen", en = "Water the three withered patches of the oasis" }
+goal = { type = "flag", flag = "oase.gegossen", value = 3 }
+
+[[quest.step]]
+id = "danke"
+text = { de = "Palma von der Oase erzählen", en = "Tell Palma about the oasis" }
+goal = { type = "talk", who = "palma" }
+
+[[quest]]
+id = "ruine"
+kind = "side"
+giver = "sirup"
+name = { de = "Die verschüttete Ruine", en = "The Buried Ruin" }
+desc = { de = "Unter den Ruinen des Glutvolks liegt eine verschüttete Kammer. Sirups Vater schwor, darin stehe eine Tafel, die keiner je gelesen hat.", en = "Beneath the ruins of the Ember Folk lies a buried chamber. Sirup's father swore it holds a tablet nobody has ever read." }
+reward = { xp = 80, points = 1, glanztropfen = 60 }
+
+[[quest.step]]
+id = "kammer"
+text = { de = "Einen Weg in die verschüttete Kammer finden", en = "Find a way into the buried chamber" }
+goal = { type = "reach", map = "wueste-3", zone = "ruinenkammer" }
+
+[[quest.step]]
+id = "tafel"
+text = { de = "Die Tafel in der Kammer lesen", en = "Read the tablet in the chamber" }
+goal = { type = "talk", who = "tafel-kammer" }
+
+[[quest.step]]
+id = "bericht"
+text = { de = "Sirup von der Kammer erzählen", en = "Tell Sirup about the chamber" }
+goal = { type = "talk", who = "sirup" }
 
 # Nebenaufgaben in Kapitel 2 (E-308, E-309)
 [[quest]]

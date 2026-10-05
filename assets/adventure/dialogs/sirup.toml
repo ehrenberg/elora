@@ -1,0 +1,110 @@
+# Karawanenführer Sirup (R2-M2.3, Kapitel 3)
+speaker = "sirup"
+
+[[start]]
+if = "quest ruine schritt bericht"
+node = "bericht"
+
+[[start]]
+if = "nicht merker sirup.kennt"
+node = "begruessung"
+
+[[start]]
+node = "danach"
+
+[[node]]
+id = "begruessung"
+text = { de = "Na sieh mal an, ein Tropfen in der Glut! Willkommen in Sirups Karawane – Waren aus allen Ecken des Taulands, frisch, selten und nur ein kleines bisschen sandig.", en = "Well, look at that, a drop in the embers! Welcome to Sirup's caravan – goods from every corner of the Tauland, fresh, rare and only a tiny bit sandy." }
+do = ["merker sirup.kennt = 1"]
+
+[[node.choice]]
+tone = "neugierig"
+text = { de = "Hast du hier etwas Seltsames gesehen?", en = "Have you seen anything strange around here?" }
+next = "wanderer"
+
+[[node.choice]]
+tone = "freundlich"
+text = { de = "Was verkaufst du denn?", en = "What are you selling?" }
+next = "ware"
+
+[[node.choice]]
+tone = "frech"
+text = { de = "Nur ein bisschen sandig? Dein Turban ist voller Sand.", en = "Only a tiny bit sandy? Your turban is full of sand." }
+next = "turban"
+do = ["zuneigung sirup +1"]
+
+[[node]]
+id = "turban"
+text = { de = "Hoho! Der Turban ist ein Erbstück. Der Sand auch.", en = "Ho ho! The turban is an heirloom. So is the sand." }
+next = "wanderer"
+
+[[node]]
+id = "ware"
+text = { de = "Kaktusfrüchte gegen die Hitze, Glutstein für Klonks Esse und eine Kette, die mich durch drei Sandstürme gebracht hat. Aber erst – hast du nicht etwas gesucht?", en = "Cactus fruit against the heat, ember stone for Klonk's forge and a chain that got me through three sandstorms. But first – weren't you looking for something?" }
+next = "wanderer"
+
+[[node]]
+id = "wanderer"
+text = { de = "Seltsam? Vor drei Nächten saß ich am Feuer, da kam einer aus den Dünen. Ganz grau, wie Asche, die laufen gelernt hat. Er kniete an Palmas Oase und trank. Und trank. Am Morgen war die Oase halb leer und so blass wie mein Großvater nach dem Bad.", en = "Strange? Three nights ago I sat by the fire, and someone came out of the dunes. All grey, like ash that has learned to walk. He knelt at Palma's oasis and drank. And drank. By morning the oasis was half empty and as pale as my grandfather after a bath." }
+next = "spuren"
+do = ["merker duerrer.oase = 1"]
+
+[[node]]
+id = "spuren"
+text = { de = "Seine Spuren führen zu den alten Ruinen. Grau, als hätte jemand die Farbe aus dem Sand gesogen. Ich gehe da nicht hin. Aber du hast so einen … unternehmungslustigen Blick.", en = "His tracks lead to the old ruins. Grey, as if someone had sucked the colour out of the sand. I'm not going there. But you have such an … adventurous look." }
+
+[[node.choice]]
+tone = "freundlich"
+text = { de = "Ich folge den Spuren.", en = "I'll follow the tracks." }
+
+[[node.choice]]
+tone = "neugierig"
+if = "quest ruine neu"
+text = { de = "Was sind das für Ruinen?", en = "What ruins are those?" }
+next = "ruine"
+
+[[node]]
+id = "ruine"
+text = { de = "Das Glutvolk hat dort früher die Glutquelle gehütet. Unter den Ruinen liegt eine verschüttete Kammer – mein Vater schwor, da drin steht eine Tafel, die keiner je gelesen hat. Der Boden ist alt und mürbe. Man bräuchte jemanden, der kräftig aufstampfen kann.", en = "The Ember Folk used to guard the Ember Spring there. Beneath the ruins lies a buried chamber – my father swore there's a tablet inside that nobody has ever read. The floor is old and crumbly. You'd need someone who can stomp really hard." }
+
+[[node.choice]]
+tone = "freundlich"
+text = { de = "Ich schaue nach, wenn ich kann.", en = "I'll take a look when I can." }
+do = ["quest ruine start", "zuneigung sirup +1"]
+
+[[node.choice]]
+text = { de = "Vielleicht später.", en = "Maybe later." }
+
+[[node]]
+id = "danach"
+text = { de = "Na, kleiner Tropfen? Frische Ware, frisch aus der Glut!", en = "Well, little drop? Fresh goods, fresh from the embers!" }
+
+[[node.choice]]
+tone = "freundlich"
+text = { de = "Zeig mir deine Waren.", en = "Show me your goods." }
+do = ["laden sirup"]
+
+[[node.choice]]
+tone = "neugierig"
+text = { de = "Erzähl noch mal vom Grauen.", en = "Tell me about the grey one again." }
+next = "wanderer"
+
+[[node.choice]]
+tone = "neugierig"
+if = "quest ruine neu"
+text = { de = "Was war mit der verschütteten Kammer?", en = "What about the buried chamber?" }
+next = "ruine"
+
+[[node.choice]]
+text = { de = "Bis bald, Sirup.", en = "See you, Sirup." }
+
+[[node]]
+id = "bericht"
+text = { de = "Eine Tafel? Was stand drauf? … Er suchte ein Lied? Hm. Dann ist er vielleicht gar nicht böse, sondern nur verloren. Wie ich, als ich zum ersten Mal ohne Karte losgezogen bin. Hier, für deine Mühe. Und komm wieder – Sirup vergisst keinen Freund.", en = "A tablet? What did it say? … He was looking for a song? Hm. Then maybe he isn't wicked at all, just lost. Like me, the first time I set off without a map. Here, for your trouble. And come back – Sirup never forgets a friend." }
+do = ["zuneigung sirup +2"]
+
+[[bark]]
+text = { de = "Frisch aus dem Norden: Kaktusfrüchte! Na gut, aus dem Süden.", en = "Fresh from the north: cactus fruit! All right, from the south." }
+
+[[bark]]
+text = { de = "Halt dich im Schatten, Kleines!", en = "Stay in the shade, little one!" }

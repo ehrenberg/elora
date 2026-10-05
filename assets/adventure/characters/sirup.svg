@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-60 -80 120 90">
+  <!-- sirup (A1.7, aus tools/design/abenteuer_assets.py). Ursprung = Boden, Blick nach rechts. -->
+  <g id="figure"><g transform="scale(0.36)"><path d="M 56,-150 V 0" stroke="#5e4430" stroke-width="7"/><path d="M 56,-150 V 0" stroke="#a87a52" stroke-width="3.5"/><rect x="44" y="-178" width="24" height="28" rx="5" fill="#ffd27a" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M 44,-178 L 56,-190 L 68,-178" fill="#a87a52" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>
+  
+  <g id="foot-back">
+    <ellipse cx="-20" cy="-8" rx="14" ry="8" fill="#a8703c" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse cx="22" cy="-8" rx="14" ry="8" fill="#a8703c" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#d9a066" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#eacbab"/>
+  </g>
+  <g id="eyes">
+    <ellipse cx="2" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <ellipse cx="26" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    <path d="M 10,-41 Q 16,-36 22,-41" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+<path d="M -46,-12 Q -50,-34 -34,-44 L -22,-10 Z M 46,-12 Q 50,-34 34,-44 L 22,-10 Z" fill="#3fa38f" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M -42,-16 Q -42,-32 -34,-38 M 42,-16 Q 42,-32 34,-38" fill="none" stroke="#f2c14e" stroke-width="3"/><path d="M -48,-112 Q -50,-156 0,-160 Q 50,-156 48,-112 Q 0,-124 -48,-112 Z" fill="#f6efdf" stroke="#2b2b2b" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><path d="M -44,-140 Q 0,-156 44,-140" fill="none" stroke="#d8ccb8" stroke-width="2.5"/><path d="M -40,-128 Q 0,-144 40,-128" fill="none" stroke="#d8ccb8" stroke-width="2.5"/><path d="M -36,-116 Q 0,-132 36,-116" fill="none" stroke="#d8ccb8" stroke-width="2.5"/><circle cx="0" cy="-136" r="8" fill="#e8685a" stroke="#2b2b2b" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M 0,-144 q 8,-18 20,-20" fill="none" stroke="#3fa38f" stroke-width="5" stroke-linecap="round"/><path d="M 18,-44 Q 8,-40 2,-48 Q 8,-38 18,-40 Q 28,-38 34,-48 Q 28,-40 18,-44 Z" fill="#5e4430" stroke="#2b2b2b" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/></g></g>
+</svg>

@@ -95,6 +95,8 @@ pub enum Bonus {
     LaserPierce(i32),
     /// Ladezeit des Lasers in Prozent.
     LaserDelayPct(f32),
+    /// Füllen der Hitze-Leiste in Prozent (negativ = langsamer, E-320).
+    HeatPct(f32),
 }
 
 /// Verbrauchsgegenstand (P-25).
@@ -105,6 +107,8 @@ pub enum Effect {
     Heal(i32),
     /// Hook-Ruck ohne Abklingzeit für so viele Sekunden.
     Tau(u32),
+    /// Leben auffüllen und die Hitze-Leiste leeren (Kaktusfrucht, E-320).
+    Cool(i32),
 }
 
 /// Art eines Gegenstands (Reiter im Inventar, P-24).
@@ -338,6 +342,21 @@ const DIALOG_FILES: &[(&str, &str)] = dialogs!(
     "schild-wald",
     "schild-pilzring",
     "schild-zug",
+    "sirup",
+    "palma",
+    "schlange",
+    "tafel-1",
+    "tafel-2",
+    "tafel-kammer",
+    "ruinenquelle",
+    "giessstelle-1",
+    "giessstelle-2",
+    "giessstelle-3",
+    "oase-bluete",
+    "schild-wueste",
+    "schild-treibsand",
+    "schild-hitze",
+    "schild-kammer",
 );
 
 /// Quelltexte der Inhaltsdateien.

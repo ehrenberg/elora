@@ -144,7 +144,7 @@ health = 6
 touch_damage = 2
 armor = true
 xp = 8
-loot = [{ item = "glanztropfen", min = 3, max = 5 }]
+loot = [{ item = "glanztropfen", min = 3, max = 5 }, { item = "glutstein", min = 1, max = 1, chance = 0.25 }]
 behavior = { type = "walker", speed = 1.1, turn_at_edges = true }
 
 # wandert unter dem Sand heran, bebt kurz und springt im Bogen (nur dann verwundbar)
@@ -154,7 +154,7 @@ size = [36.0, 36.0]
 health = 4
 touch_damage = 2
 xp = 8
-loot = [{ item = "glanztropfen", min = 2, max = 4 }]
+loot = [{ item = "glanztropfen", min = 2, max = 4 }, { item = "glutstein", min = 1, max = 1, chance = 0.25 }]
 behavior = { type = "leaper", sight = 380.0, speed = 2.2, warn_ms = 700, jump_x = 7.0, jump_y = 11.5, rest_ms = 1400 }
 
 # schwebt über Elora und lässt Funken fallen, die kurz am Boden glühen
@@ -165,7 +165,7 @@ health = 3
 touch_damage = 1
 small = true
 xp = 6
-loot = [{ item = "glanztropfen", min = 2, max = 3 }]
+loot = [{ item = "glanztropfen", min = 2, max = 3 }, { item = "glutstein", min = 1, max = 1, chance = 0.25 }]
 behavior = { type = "flyer", speed = 2.4, sight = 480.0, hover = 150.0, drop_ms = 1600, drop_damage = 1, glow_ms = 1800 }
 
 # Hüter der Glutsandwüste (E-316): Sandspur, Beben, Bogen; verwundbar nur im Bogen und benommen;
@@ -180,6 +180,6 @@ xp = 260
 loot = [
     { item = "quellfunke", min = 1, max = 1 },
     { item = "glanztropfen", min = 70, max = 70 },
-    { item = "bernstein", min = 3, max = 3 },
+    { item = "glutstein", min = 3, max = 3 },
 ]
 behavior = { type = "serpent", sight = 600.0, speed = 3.2, trail_ms = 1600, warn_ms = 800, jump_x = 5.0, jump_y = 14.0, stun_ms = 2400, enrage_at = 0.5, double_at = 0.25, sand_every_ms = 3500, sand_ms = 3000, sand_width = 3 }

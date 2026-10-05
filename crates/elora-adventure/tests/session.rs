@@ -398,3 +398,19 @@ fn no_heat_outside_the_desert() {
     }
     assert!(s.heat == 0.0 && !s.in_sun);
 }
+
+/// Kaktusfrucht (E-320): heilt und leert die Hitze-Leiste, Elora ist wieder schnell.
+#[test]
+fn cactus_fruit_cools_elora_down() {
+    let map = load("wiese-1");
+    let mut s = Session::new_game(Content::builtin());
+    let mut w = s.enter("wueste-1", map, "west", &Tuning::default());
+    for _ in 0..1100 {
+        step(&mut s, &mut w, PlayerInput::default(), false);
+    }
+    assert!(s.overheated);
+    s.save.add_item(&s.content.clone(), "kaktusfrucht", 1).unwrap();
+    s.use_item(&mut w, "kaktusfrucht").unwrap();
+    assert!(s.heat == 0.0 && !s.overheated);
+    assert!(!w.character(s.player).unwrap().core.overheated);
+}

@@ -517,3 +517,134 @@ fn mushroom_child_quest_ends_with_mama() {
     assert_eq!(conv.node, "danke");
     assert!(g.holds(&c, "quest pilzkind erledigt"));
 }
+
+#[test]
+fn chapter_three_runs_from_the_desert_to_the_party() {
+    let (c, mut g) = game();
+    g.run(&c, &["quest glutsand start".into()]);
+    let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
+    assert_eq!(conv.node, "glutsand");
+    g.on_reach(&c, "wueste-1", None);
+    assert!(g.holds(&c, "quest glutsand schritt sirup"));
+    let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
+    assert_eq!(conv.node, "unterwegs");
+    // Sirup erzählt vom grauen Wanderer und kennt die Kammer
+    let (mut conv, _) = Conversation::start(&c, &mut g, "sirup").unwrap();
+    assert_eq!(conv.node, "begruessung");
+    assert!(g.holds(&c, "quest glutsand schritt ruinen"));
+    conv.choose(&c, &mut g, 0);
+    assert_eq!(conv.node, "wanderer");
+    conv.advance(&c, &mut g);
+    assert_eq!(conv.node, "spuren");
+    conv.choose(&c, &mut g, 1);
+    assert_eq!(conv.node, "ruine");
+    conv.choose(&c, &mut g, 0);
+    assert!(g.holds(&c, "quest ruine aktiv"));
+    let (conv, _) = Conversation::start(&c, &mut g, "sirup").unwrap();
+    assert_eq!(conv.node, "danach", "kennt Elora schon");
+    g.on_reach(&c, "wueste-3", None);
+    g.on_reach(&c, "wueste-arena", None);
+    g.location.map = "wueste-arena".into();
+    g.set_flag("besiegt.sandschlange", 1);
+    let kind = c
+        .creatures
+        .iter()
+        .position(|k| k.name == "sandschlange")
+        .unwrap();
+    g.on_event(
+        &c,
+        &c.creatures,
+        0,
+        &Event::CreatureDeath {
+            id: 1,
+            kind,
+            pos: Vec2::ZERO,
+            killer: Some(0),
+        },
+    );
+    g.add_item(&c, "quellfunke", 1).unwrap();
+    assert!(g.holds(&c, "quest glutsand schritt funke"));
+    let (mut conv, _) = Conversation::start(&c, &mut g, "schlange").unwrap();
+    conv.advance(&c, &mut g);
+    assert_eq!(g.flag("befreit.glutquelle"), 1);
+    let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
+    assert_eq!(conv.node, "funke");
+    let (conv, _) = Conversation::start(&c, &mut g, "tueftel").unwrap();
+    assert_eq!(conv.node, "funke3");
+    assert!(g.abilities().has(elora_sim::Ability::Stomp));
+    assert_eq!(g.flag("quellen_befreit"), 3);
+    assert_eq!(g.count("quellfunke"), 0, "abgegeben");
+    let (mut conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
+    assert_eq!(conv.node, "fest3");
+    conv.advance(&c, &mut g);
+    assert_eq!(conv.node, "fest3_lied");
+    assert!(g.holds(&c, "quest glutsand erledigt"));
+    assert!(g.holds(&c, "quest frostspitzen aktiv"));
+    // Klonk gibt den Laser (E-243)
+    let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
+    assert_eq!(conv.node, "laser");
+    assert!(g.weapons.contains_key(&elora_sim::Weapon::Laser));
+    let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
+    assert_ne!(conv.node, "laser", "nur einmal");
+    // Kammer der Ruine: Tafel lesen, Sirup berichten
+    g.on_reach(&c, "wueste-3", Some("ruinenkammer"));
+    assert!(g.holds(&c, "quest ruine schritt tafel"));
+    Conversation::start(&c, &mut g, "tafel-kammer").unwrap();
+    assert!(g.holds(&c, "quest ruine schritt bericht"));
+    let glanz = g.glanztropfen;
+    let (conv, _) = Conversation::start(&c, &mut g, "sirup").unwrap();
+    assert_eq!(conv.node, "bericht");
+    assert!(g.holds(&c, "quest ruine erledigt"));
+    assert_eq!(g.glanztropfen, glanz + 60);
+}
+
+#[test]
+fn oasis_quest_fills_the_skin_once_and_waters_three_patches() {
+    let (c, mut g) = game();
+    let (mut conv, _) = Conversation::start(&c, &mut g, "palma").unwrap();
+    assert_eq!(conv.node, "begruessung");
+    conv.choose(&c, &mut g, 0);
+    assert_eq!(conv.node, "auftrag");
+    conv.choose(&c, &mut g, 0);
+    assert!(g.holds(&c, "quest oase aktiv"));
+    assert_eq!(g.count("wasserschlauch"), 1);
+    // ohne Wasser bleibt die Stelle trocken
+    let (conv, _) = Conversation::start(&c, &mut g, "giessstelle-1").unwrap();
+    assert_eq!(conv.node, "trocken");
+    let (conv, _) = Conversation::start(&c, &mut g, "ruinenquelle").unwrap();
+    assert_eq!(conv.node, "fuellen");
+    assert_eq!(g.count("wasser"), 3, "drei Füllungen (E-322)");
+    assert!(g.holds(&c, "quest oase schritt giessen"));
+    let (conv, _) = Conversation::start(&c, &mut g, "ruinenquelle").unwrap();
+    assert_eq!(conv.node, "voll");
+    for n in 1..=3 {
+        let (conv, _) = Conversation::start(&c, &mut g, &format!("giessstelle-{n}")).unwrap();
+        assert_eq!(conv.node, "giessen");
+        assert_eq!(g.flag(&format!("befreit.giessstelle-{n}")), 1);
+    }
+    assert_eq!(g.count("wasser"), 0);
+    assert_eq!(g.flag("oase.gegossen"), 3);
+    assert!(g.holds(&c, "quest oase schritt danke"));
+    let points = g.bonus_points;
+    let (conv, _) = Conversation::start(&c, &mut g, "palma").unwrap();
+    assert_eq!(conv.node, "danke");
+    assert!(g.holds(&c, "quest oase erledigt"));
+    assert_eq!(g.count("kaktusfrucht"), 3);
+    assert_eq!(g.bonus_points, points + 1);
+}
+
+#[test]
+fn cactus_fruit_heals_and_sun_veil_slows_the_heat() {
+    let (c, mut g) = game();
+    g.add_item(&c, "kaktusfrucht", 1).unwrap();
+    g.health = 2;
+    assert_eq!(
+        g.use_item(&c, "kaktusfrucht"),
+        Ok(elora_adventure::data::Effect::Cool(3))
+    );
+    assert_eq!(g.health, 5);
+    g.add_item(&c, "sonnenschleier", 1).unwrap();
+    g.equip(&c, "sonnenschleier").unwrap();
+    assert!((g.stats(&c).heat_pct + 40.0).abs() < 1e-6);
+    assert!(c.shops["sirup"].stock.contains(&"kaktusfrucht".to_owned()));
+}

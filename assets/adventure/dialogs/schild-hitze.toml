@@ -1,0 +1,9 @@
+# Wegweiser (E-273, R2-M2.3)
+speaker = "wegweiser"
+
+[[start]]
+node = "text"
+
+[[node]]
+id = "text"
+text = { de = "Hitze macht müde. Schatten unter Felsen und Zeltdächern kühlt.", en = "Heat makes you tired. Shade under rocks and tent roofs cools you down." }

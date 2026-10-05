@@ -54,10 +54,28 @@ macro_rules! adventure_svgs {
     };
 }
 
-const CHARACTER_FILES: &[(&str, &[u8])] = adventure_svgs!("characters": "oma", "klonk", "lotte", "tueftel", "pip", "wegweiser", "wabe", "hummel", "plumm", "pilzkind", "pilzkind_froh", "pilzmama", "waechter");
+const CHARACTER_FILES: &[(&str, &[u8])] = adventure_svgs!("characters": "oma", "klonk", "lotte", "tueftel", "pip", "wegweiser", "wabe", "hummel", "plumm", "pilzkind", "pilzkind_froh", "pilzmama", "waechter", "sirup", "palma", "schlange", "ruinenquelle");
+/// Figuren, die sich ein Bild teilen (Tafeln, Stellen der Oase, R2-M2.3).
+const SHARED_CHARACTER_FILES: &[(&str, &[u8])] = {
+    const TAFEL: &[u8] = include_bytes!("../../../assets/adventure/characters/tafel.svg");
+    const DRY: &[u8] = include_bytes!("../../../assets/adventure/characters/giessstelle.svg");
+    const BLOOM: &[u8] =
+        include_bytes!("../../../assets/adventure/characters/giessstelle_bluete.svg");
+    &[
+        ("tafel-1", TAFEL),
+        ("tafel-2", TAFEL),
+        ("tafel-kammer", TAFEL),
+        ("giessstelle-1", DRY),
+        ("giessstelle-2", DRY),
+        ("giessstelle-3", DRY),
+        ("bluete-1", BLOOM),
+        ("bluete-2", BLOOM),
+        ("bluete-3", BLOOM),
+    ]
+};
 /// Gegenstände mit eigenem Bild (R2-M2.1); alle anderen zeigen `item.svg`.
 const ITEM_FILES: &[(&str, &[u8])] =
-    adventure_svgs!("items": "biene", "quellfunke", "wabenhut", "rune");
+    adventure_svgs!("items": "biene", "quellfunke", "wabenhut", "rune", "wasserschlauch", "wasser");
 /// Objekt und die Namen seiner beiden Teile (aus, an).
 const OBJECT_FILES: &[(&str, &[u8], [&str; 2])] = &[
     (
@@ -145,6 +163,7 @@ impl CreatureArt {
         };
         let characters = CHARACTER_FILES
             .iter()
+            .chain(SHARED_CHARACTER_FILES)
             .map(|&(name, data)| {
                 let a = load(data, &format!("characters/{name}.svg"));
                 let m = a

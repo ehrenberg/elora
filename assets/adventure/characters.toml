@@ -94,3 +94,102 @@ name = { de = "Wurzelwächter", en = "Root Warden" }
 portrait = "waechter"
 voice = 0.45
 show_if = "merker besiegt.wurzelwaechter"
+
+# Kapitel 3 (R2-M2.3, docs/release-2/m2-3-inhalte.md)
+[[character]]
+id = "sirup"
+name = { de = "Karawanenführer Sirup", en = "Sirup the caravan leader" }
+portrait = "sirup"
+voice = 0.85
+
+[[character]]
+id = "palma"
+name = { de = "Oasen-Hüterin Palma", en = "Palma, keeper of the oasis" }
+portrait = "palma"
+voice = 1.15
+
+# nach dem Kampf an der Glutquelle
+[[character]]
+id = "schlange"
+name = { de = "Sandschlange", en = "Sand Serpent" }
+portrait = "schlange"
+voice = 0.5
+show_if = "merker besiegt.sandschlange"
+
+# Steintafeln des Glutvolks (fest, stumm)
+[[character]]
+id = "tafel-1"
+name = { de = "Ruinentafel", en = "Ruin tablet" }
+portrait = "tafel-1"
+fixed = true
+voice = 0.0
+
+[[character]]
+id = "tafel-2"
+name = { de = "Ruinentafel", en = "Ruin tablet" }
+portrait = "tafel-2"
+fixed = true
+voice = 0.0
+
+[[character]]
+id = "tafel-kammer"
+name = { de = "Ruinentafel", en = "Ruin tablet" }
+portrait = "tafel-kammer"
+fixed = true
+voice = 0.0
+
+[[character]]
+id = "ruinenquelle"
+name = { de = "Ruinenquelle", en = "Ruin spring" }
+portrait = "ruinenquelle"
+fixed = true
+voice = 0.0
+
+# drei verdorrte Stellen der Oase; nach dem Gießen blüht dort eine Blüte (E-319)
+[[character]]
+id = "giessstelle-1"
+name = { de = "Verdorrte Stelle", en = "Withered patch" }
+portrait = "giessstelle-1"
+fixed = true
+voice = 0.0
+show_if = "nicht merker befreit.giessstelle-1"
+
+[[character]]
+id = "giessstelle-2"
+name = { de = "Verdorrte Stelle", en = "Withered patch" }
+portrait = "giessstelle-2"
+fixed = true
+voice = 0.0
+show_if = "nicht merker befreit.giessstelle-2"
+
+[[character]]
+id = "giessstelle-3"
+name = { de = "Verdorrte Stelle", en = "Withered patch" }
+portrait = "giessstelle-3"
+fixed = true
+voice = 0.0
+show_if = "nicht merker befreit.giessstelle-3"
+
+[[character]]
+id = "bluete-1"
+name = { de = "Oasenblüte", en = "Oasis blossom" }
+portrait = "bluete-1"
+fixed = true
+voice = 0.0
+show_if = "merker befreit.giessstelle-1"
+
+[[character]]
+id = "bluete-2"
+name = { de = "Oasenblüte", en = "Oasis blossom" }
+portrait = "bluete-2"
+fixed = true
+voice = 0.0
+show_if = "merker befreit.giessstelle-2"
+
+[[character]]
+id = "bluete-3"
+name = { de = "Oasenblüte", en = "Oasis blossom" }
+portrait = "bluete-3"
+fixed = true
+voice = 0.0
+show_if = "merker befreit.giessstelle-3"

@@ -118,6 +118,7 @@ pub fn bonus_text(lang: &Lang, b: Bonus) -> String {
         Bonus::LaserBounces(v) => ("bonus.laser_bounces", format!("{v:+}")),
         Bonus::LaserPierce(v) => ("bonus.laser_pierce", v.to_string()),
         Bonus::LaserDelayPct(v) => ("bonus.laser_delay_pct", format!("{v:+}")),
+        Bonus::HeatPct(v) => ("bonus.heat_pct", format!("{v:+}")),
     };
     lang.f(key, &[("n", &n)])
 }
@@ -147,6 +148,7 @@ pub fn item_icon(
             let color = match effect {
                 elora_adventure::data::Effect::Heal(_) => Color::hex(0xe05a7a),
                 elora_adventure::data::Effect::Tau(_) => Color::hex(0x5aaee8),
+                elora_adventure::data::Effect::Cool(_) => Color::hex(0x7fd99a),
             };
             batch.fill_rect(
                 c + Vec2::new(-3.5, -13.5) * k,

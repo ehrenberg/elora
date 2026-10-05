@@ -18,7 +18,8 @@ from abenteuer_figuren import (glanztropfen, glitzerstein, grashuepfer, klonk, l
 from kapitel1_entwuerfe import biene, hummel, quellfunke, wabe, wabenhut  # noqa: E402
 from kapitel2_entwuerfe import (eichhornpirat, pilzkind, pilzmama, pilzwicht, plumm, rune,  # noqa: E402
                                 wurzelschlange, wurzelwaechter)
-from kapitel3_entwuerfe import duenenwurm, funkenmotte, sandkrabbe, sandschlange  # noqa: E402
+from kapitel3_entwuerfe import (duenenwurm, funkenmotte, giessstelle, palma, ruinenquelle,  # noqa: E402
+                                sandkrabbe, sandschlange, sirup, steintafel, wasserschlauch)
 
 
 def strohpuppe():
@@ -95,6 +96,14 @@ CHARACTERS = {
     'pilzmama': (0.85, pilzmama()),
     # nach dem Kampf freundlich (Gesprächsfigur), gleiche Größe wie der Hüter
     'waechter': (1.25, wurzelwaechter('ruhig')),
+    # Kapitel 3 (R2-M2.3); feste Dinge in Deko-Größe (1 / 0,36 × Maßstab)
+    'sirup': (1.0, sirup()),
+    'palma': (1.0, palma()),
+    'schlange': (1.1, f'<g transform="translate(-20,0)">{sandschlange("ruhig")}</g>'),
+    'tafel': (1 / 0.36 * 0.5, steintafel()),
+    'ruinenquelle': (1 / 0.36 * 0.5, ruinenquelle()),
+    'giessstelle': (1 / 0.36 * 0.55, giessstelle(False)),
+    'giessstelle_bluete': (1 / 0.36 * 0.55, giessstelle(True)),
 }
 
 
@@ -167,9 +176,12 @@ def main():
                              # eigene Bilder je Gegenstand (R2-M2.1), sonst gilt `item`
                              # gleiche Größe wie die übrigen Symbole (etwa 22 Einheiten)
                              ('biene', biene(1.0, 0, 0), 0.31), ('quellfunke', quellfunke(), 0.33),
-                             ('wabenhut', wabenhut(), 0.25), ('rune', rune(True), 0.32)):
+                             ('wabenhut', wabenhut(), 0.25), ('rune', rune(True), 0.32),
+                             # Kapitel 3: leerer und voller Schlauch
+                             ('wasserschlauch', wasserschlauch(False), 0.32), ('wasser', wasserschlauch(True), 0.32)):
         with open(f'{items}/{name}.svg', 'w') as f:
-            dy = {'item': 8, 'glanztropfen': 3, 'biene': 5.5, 'quellfunke': 10, 'wabenhut': 4, 'rune': 12}.get(name, 0)
+            dy = {'item': 8, 'glanztropfen': 3, 'biene': 5.5, 'quellfunke': 10, 'wabenhut': 4, 'rune': 12,
+                  'wasserschlauch': 10, 'wasser': 10}.get(name, 0)
             f.write(svg({'': f'<g transform="translate(0,{dy}) scale({scale})">{art}</g>'},
                         f'Beute „{name}“ (A1.2). Ursprung = Mitte.'))
 
