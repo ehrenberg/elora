@@ -76,10 +76,24 @@ pub enum Sound {
     CorePull,
     /// Bunter Rausch beginnt (E-311).
     Daze,
+    /// Sand spritzt: Dünenwurm oder Sandschlange schießt heraus (R2-M2.3).
+    SandBurst,
+    /// Zurück in den Sand.
+    SandDig,
+    /// Sand bebt vor dem Sprung.
+    SandRumble,
+    /// Funkenmotte lässt einen Funken fallen.
+    Spark,
+    /// Treffer prallt am Panzer der Sandkrabbe ab (E-317).
+    ShellClack,
+    /// Die Sandschlange zischt.
+    SnakeHiss,
+    /// Elora gerät in Treibsand (E-318).
+    Quicksand,
 }
 
 impl Sound {
-    pub const ALL: [Self; 48] = [
+    pub const ALL: [Self; 55] = [
         Self::HammerFire,
         Self::HammerHit,
         Self::GrenadeFire,
@@ -128,6 +142,13 @@ impl Sound {
         Self::RootStrike,
         Self::CorePull,
         Self::Daze,
+        Self::SandBurst,
+        Self::SandDig,
+        Self::SandRumble,
+        Self::Spark,
+        Self::ShellClack,
+        Self::SnakeHiss,
+        Self::Quicksand,
     ];
 
     pub fn name(self) -> &'static str {
@@ -180,6 +201,13 @@ impl Sound {
             Self::RootStrike => "root_strike",
             Self::CorePull => "core_pull",
             Self::Daze => "daze",
+            Self::SandBurst => "sand_burst",
+            Self::SandDig => "sand_dig",
+            Self::SandRumble => "sand_rumble",
+            Self::Spark => "spark",
+            Self::ShellClack => "shell_clack",
+            Self::SnakeHiss => "snake_hiss",
+            Self::Quicksand => "quicksand",
         }
     }
 
@@ -321,6 +349,38 @@ pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>)
     }
 }
 
+/// Eigene Klänge der Wüsten-Gegner (R2-M2.3) je Art (`kind`, Name aus `creatures.toml`);
+/// `None`: die allgemeine Zuordnung aus [`for_event`] gilt.
+pub fn for_creature(e: &Event, kind: &str) -> Option<Vec<Cue>> {
+    use CreatureAct::{Burrow, Emerge, Land, Wake, Warn};
+    let one = |sound, pos| Some(vec![Cue::at(sound, pos)]);
+    match (kind, e) {
+        ("duenenwurm", &Event::CreatureAct { act, pos, .. }) => match act {
+            Warn => Some(vec![Cue::at(Sound::SandRumble, pos).pitched(1.3)]),
+            Emerge => one(Sound::SandBurst, pos),
+            Burrow => one(Sound::SandDig, pos),
+            _ => None,
+        },
+        ("sandschlange", &Event::CreatureAct { act, pos, .. }) => match act {
+            Wake => one(Sound::SnakeHiss, pos),
+            Warn => one(Sound::SandRumble, pos),
+            Emerge => Some(vec![
+                Cue::at(Sound::SandBurst, pos).pitched(0.7),
+                Cue::at(Sound::SnakeHiss, pos),
+            ]),
+            Burrow => Some(vec![Cue::at(Sound::SandDig, pos).pitched(0.8)]),
+            Land => Some(vec![
+                Cue::at(Sound::BossLand, pos),
+                Cue::at(Sound::SandDig, pos).pitched(0.7),
+            ]),
+            _ => None,
+        },
+        ("funkenmotte", &Event::CreatureFire { pos, .. }) => one(Sound::Spark, pos),
+        ("sandkrabbe", &Event::CreatureHit { pos, damage: 0, .. }) => one(Sound::ShellClack, pos),
+        _ => None,
+    }
+}
+
 /// Sounds aus dem Zustand einer Figur: Sprünge und Hook (Bits des letzten Ticks)
 /// sowie Hook-Abschuss (Wechsel nach [`HookState::Flying`]).
 pub fn for_character(pos: Vec2, triggered: u16, prev_hook: HookState, hook: HookState) -> Vec<Cue> {
@@ -376,6 +436,38 @@ mod tests {
         assert_eq!(cues[1], Cue::global(Sound::HitConfirm));
         let cues = for_event(&hit(4, Some(3)), l, pos);
         assert_eq!(cues, vec![Cue::at(Sound::PainLong, Vec2::new(5.0, 5.0))]);
+    }
+
+    #[test]
+    fn desert_creatures_have_their_own_sounds() {
+        let act = |act| Event::CreatureAct {
+            id: 1,
+            pos: Vec2::ZERO,
+            act,
+        };
+        let sounds = |e: &Event, kind| {
+            for_creature(e, kind).map(|c| c.iter().map(|c| c.sound).collect::<Vec<_>>())
+        };
+        assert_eq!(
+            sounds(&act(CreatureAct::Emerge), "duenenwurm"),
+            Some(vec![Sound::SandBurst])
+        );
+        assert_eq!(
+            sounds(&act(CreatureAct::Emerge), "sandschlange"),
+            Some(vec![Sound::SandBurst, Sound::SnakeHiss])
+        );
+        assert_eq!(sounds(&act(CreatureAct::Emerge), "wurzelschlange"), None);
+        let blocked = Event::CreatureHit {
+            id: 1,
+            pos: Vec2::ZERO,
+            damage: 0,
+            from: None,
+        };
+        assert_eq!(
+            sounds(&blocked, "sandkrabbe"),
+            Some(vec![Sound::ShellClack])
+        );
+        assert_eq!(sounds(&blocked, "brummbaer"), None);
     }
 
     #[test]

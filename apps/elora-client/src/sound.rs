@@ -29,7 +29,8 @@ pub struct Sounds {
     audio: Audio,
     pub settings: AudioSettings,
     /// Zuletzt gesehene Bits und Hook-Zustand je Slot.
-    last: HashMap<usize, (u16, HookState)>,
+    /// Je Figur: Ereignis-Bits, Hook-Zustand und ob sie im Treibsand steckt (letzter Frame).
+    last: HashMap<usize, (u16, HookState, bool)>,
     /// Gelesene Musikstücke, gepackt (E-121, E-285); `None`: fehlt oder unlesbar.
     tracks: HashMap<String, Option<Arc<[u8]>>>,
     /// Gerade laufendes Stück.
@@ -116,9 +117,27 @@ impl Sounds {
                 .find(|c| c.slot == slot)
                 .map(SceneChar::pos)
         };
+        // Wüsten-Gegner haben eigene Klänge (R2-M2.3): Art über die Id des Gegners
+        let kind_of = |e: &Event| {
+            let (Event::CreatureAct { id, .. }
+            | Event::CreatureFire { id, .. }
+            | Event::CreatureHit { id, .. }) = *e
+            else {
+                return None;
+            };
+            scene
+                .creatures
+                .iter()
+                .find(|c| c.id == id)
+                .map(|c| c.kind.as_str())
+        };
         let mut cues: Vec<Cue> = events
             .iter()
-            .flat_map(|e| cues::for_event(e, listener, pos_of))
+            .flat_map(|e| {
+                kind_of(e)
+                    .and_then(|k| cues::for_creature(e, k))
+                    .unwrap_or_else(|| cues::for_event(e, listener, pos_of))
+            })
             .collect();
 
         self.last
@@ -126,14 +145,23 @@ impl Sounds {
         for c in &scene.chars {
             let bits = c.ch.core.triggered_events;
             let hook = c.ch.core.hook_state;
-            let (last_bits, last_hook) = self.last.get(&c.slot).copied().unwrap_or((bits, hook));
+            let sand = c.ch.core.sand_ticks > 0;
+            let (last_bits, last_hook, last_sand) = self
+                .last
+                .get(&c.slot)
+                .copied()
+                .unwrap_or((bits, hook, sand));
             cues.extend(cues::for_character(
                 c.pos(),
                 bits & !last_bits,
                 last_hook,
                 hook,
             ));
-            self.last.insert(c.slot, (bits, hook));
+            // hinein in den Treibsand (E-318)
+            if sand && !last_sand {
+                cues.push(Cue::at(Sound::Quicksand, c.pos()));
+            }
+            self.last.insert(c.slot, (bits, hook, sand));
         }
         cues.extend(
             landings

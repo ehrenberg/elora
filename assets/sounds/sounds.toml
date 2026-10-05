@@ -51,6 +51,8 @@ fanfare = 0.7
 quest_done = 0.6
 root_emerge = 0.5
 root_strike = 0.8
+sand_dig = 0.6
+shell_clack = 0.5
 
 # ── Prozedural ───────────────────────────────────────────────────────────
 
@@ -225,4 +227,123 @@ vibrato_hz = 5
 delay = 0.05
 sustain = 0.6
 decay = 0.4
+volume = 0.5
+
+# ── Glutsandwüste (R2-M2.3) ─────────────────────────────────────────────
+
+[sand_burst]           # Sand spritzt: Wurm oder Schlange schießt heraus
+volume = 0.55
+[[sand_burst.layer]]
+wave = "noise"
+freq = 2400
+attack = 0.01
+sustain = 0.06
+decay = 0.4
+lowpass = 3200
+lowpass_sweep = 0.25
+[[sand_burst.layer]]
+wave = "sine"
+freq = 110
+slide = -1.5
+sustain = 0.05
+decay = 0.18
+volume = 0.7
+
+[sand_rumble]          # Sand bebt vor dem Sprung
+volume = 0.5
+[[sand_rumble.layer]]
+wave = "noise"
+freq = 600
+attack = 0.12
+sustain = 0.45
+decay = 0.25
+lowpass = 900
+highpass = 120
+[[sand_rumble.layer]]
+wave = "sine"
+freq = 48
+vibrato = 0.25
+vibrato_hz = 11
+attack = 0.12
+sustain = 0.45
+decay = 0.25
+volume = 0.6
+
+[spark]                # Funke knistert
+volume = 0.35
+[[spark.layer]]
+wave = "noise"
+freq = 5000
+sustain = 0.01
+decay = 0.04
+highpass = 2500
+[[spark.layer]]
+wave = "noise"
+freq = 5000
+delay = 0.06
+sustain = 0.01
+decay = 0.03
+highpass = 3000
+seed = 7
+[[spark.layer]]
+wave = "noise"
+freq = 5000
+delay = 0.13
+sustain = 0.01
+decay = 0.05
+highpass = 2800
+seed = 13
+[[spark.layer]]
+wave = "sine"
+freq = 1900
+slide = -2.5
+sustain = 0.03
+decay = 0.1
+volume = 0.4
+
+[snake_hiss]           # die Sandschlange zischt
+volume = 0.4
+[[snake_hiss.layer]]
+wave = "noise"
+freq = 6000
+attack = 0.08
+sustain = 0.35
+decay = 0.35
+highpass = 3200
+lowpass = 9000
+[[snake_hiss.layer]]
+wave = "noise"
+freq = 3000
+vibrato = 0.2
+vibrato_hz = 6
+attack = 0.1
+sustain = 0.3
+decay = 0.3
+highpass = 1800
+lowpass = 4000
+volume = 0.5
+
+[quicksand]            # hinein in den Treibsand: schmatzt und rieselt
+volume = 0.45
+[[quicksand.layer]]
+wave = "sine"
+freq = 240
+slide = -2.2
+sustain = 0.08
+decay = 0.12
+[[quicksand.layer]]
+wave = "sine"
+freq = 200
+slide = -2.0
+delay = 0.16
+sustain = 0.06
+decay = 0.12
+volume = 0.7
+[[quicksand.layer]]
+wave = "noise"
+freq = 1200
+attack = 0.05
+sustain = 0.3
+decay = 0.4
+lowpass = 1500
 volume = 0.5

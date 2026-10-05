@@ -50,6 +50,8 @@ Anfang entfernt, Ende ausgeblendet, Spitze −1 dBFS, teils gekürzt).
 | `quest_done` | `jingles_PIZZI01.ogg` | [Kenney – music-jingles](https://kenney.nl/assets/music-jingles) | Kenney (kenney.nl) | CC0 1.0 |
 | `root_emerge` | `creak3.ogg` | [Kenney – rpg-audio](https://kenney.nl/assets/rpg-audio) | Kenney (kenney.nl) | CC0 1.0 |
 | `root_strike` | `impactWood_heavy_000.ogg` | [Kenney – impact-sounds](https://kenney.nl/assets/impact-sounds) | Kenney (kenney.nl) | CC0 1.0 |
+| `sand_dig` | `footstep_snow_002.ogg` | [Kenney – impact-sounds](https://kenney.nl/assets/impact-sounds) | Kenney (kenney.nl) | CC0 1.0 |
+| `shell_clack` | `impactPlate_light_001.ogg` | [Kenney – impact-sounds](https://kenney.nl/assets/impact-sounds) | Kenney (kenney.nl) | CC0 1.0 |
 
 ## Schriften (`assets/fonts/`)
 
