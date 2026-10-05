@@ -74,6 +74,26 @@ id = "laser"
 text = { de = "Hmpf. Du kommst aus der Wüste und hast nicht mal Sand in den Ohren. Respekt. Hier. Hab ich aus Glutstein und einer alten Linse gebaut. Ein Laser. Zeig damit auf nichts, was du magst.", en = "Hmph. You come back from the desert without even sand in your ears. Respect. Here. Built it from ember stone and an old lens. A laser. Don't point it at anything you like." }
 do = ["waffe laser", "gib munition_laser 1", "merker klonk.laser = 1", "zuneigung klonk +1"]
 
+[[node.choice]]
+tone = "neugierig"
+text = { de = "Und mit Glutstein geht noch mehr?", en = "And with ember stone there's more?" }
+next = "glutstein"
+
+[[node.choice]]
+text = { de = "Danke, Klonk.", en = "Thanks, Klonk." }
+
+[[node]]
+id = "glutstein"
+text = { de = "Hmpf. Bring mir Glutstein, dann springt der Strahl von Wänden ab und geht durch zwei Gegner auf einmal. Sirup verkauft welchen. Zu teuer, aber das sag ich ihm nicht.", en = "Hmph. Bring me ember stone and the beam bounces off walls and goes through two enemies at once. Sirup sells some. Too expensive, but I won't tell him that." }
+
+[[node.choice]]
+tone = "freundlich"
+text = { de = "Zeig mal, was geht.", en = "Show me what you can do." }
+do = ["schmied"]
+
+[[node.choice]]
+text = { de = "Später.", en = "Later." }
+
 [[bark]]
 if = "merker fest"
 text = { de = "*klong* … Festlaternen schmieden ist auch Arbeit.", en = "*clang* … forging party lanterns is work too." }

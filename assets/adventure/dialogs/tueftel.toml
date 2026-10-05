@@ -82,6 +82,10 @@ text = { de = "Ein goldener Funke! Warm wie … nein, wärmer! Halt das mal. Und
 do = ["faehigkeit stampfen", "merker quellen_befreit = 3", "merker befreit.glutquelle = 1", "merker fest = 1", "merker hof.stampf = 1", "zuneigung tueftel +1"]
 
 [[bark]]
+if = "merker hof.stampf"
+text = { de = "Die Stampfplatte! Hast du sie schon … krawumm?", en = "The stomp plate! Have you … ka-boom'd it yet?" }
+
+[[bark]]
 if = "merker hof.ruck"
 text = { de = "Hast du den Ruck schon ausprobiert?", en = "Have you tried the jolt yet?" }
 

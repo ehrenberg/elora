@@ -2,6 +2,10 @@
 speaker = "lotte"
 
 [[start]]
+if = "quest glutsand erledigt und nicht merker lotte.wueste"
+node = "wueste"
+
+[[start]]
 if = "quest murmelwald erledigt und nicht merker lotte.wald"
 node = "wald"
 
@@ -45,6 +49,16 @@ id = "wald"
 text = { de = "Elora! Mama Morchel hat mir Pilzsuppe gebracht – angeblich hilft sie bei allem. Hier, eine Schüssel für dich. Und erzähl mal: Laufende Bäume?!", en = "Elora! Mama Morel brought me mushroom soup – supposedly it helps with everything. Here, a bowl for you. And tell me: walking trees?!" }
 next = "laden"
 do = ["gib pilzsuppe 1", "merker lotte.wald = 1"]
+
+[[node]]
+id = "wueste"
+text = { de = "Elora! Heute Morgen stand ein Kamel vor meinem Laden – mit einem Brief von Sirup! Er schickt dir Kaktusfrüchte. Und mir gleich eine Rechnung dazu. Hier, die gehören dir.", en = "Elora! This morning a camel was standing outside my shop – with a letter from Sirup! He's sending you cactus fruit. And me an invoice to go with it. Here, these are yours." }
+next = "laden"
+do = ["gib kaktusfrucht 2", "merker lotte.wueste = 1"]
+
+[[bark]]
+if = "quest glutsand erledigt und nicht merker fest"
+text = { de = "Kaktusfrüchte! Stachelig außen, saftig innen!", en = "Cactus fruit! Prickly outside, juicy inside!" }
 
 [[bark]]
 if = "quest murmelwald erledigt und nicht merker fest"

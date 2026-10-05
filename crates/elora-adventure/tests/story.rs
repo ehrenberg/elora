@@ -586,6 +586,12 @@ fn chapter_three_runs_from_the_desert_to_the_party() {
     assert!(g.weapons.contains_key(&elora_sim::Weapon::Laser));
     let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
     assert_ne!(conv.node, "laser", "nur einmal");
+    // Dorf nach Kapitel 3: Lotte schenkt Kaktusfrüchte von Sirup, Pip staunt
+    let fruit = g.count("kaktusfrucht");
+    let (conv, _) = Conversation::start(&c, &mut g, "lotte").unwrap();
+    assert_eq!(conv.node, "wueste");
+    assert_eq!(g.count("kaktusfrucht"), fruit + 2);
+    assert!(bark(&c, &g, "pip").unwrap().de.contains("Schlange"));
     // Kammer der Ruine: Tafel lesen, Sirup berichten
     g.on_reach(&c, "wueste-3", Some("ruinenkammer"));
     assert!(g.holds(&c, "quest ruine schritt tafel"));
