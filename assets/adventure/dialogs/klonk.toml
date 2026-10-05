@@ -2,6 +2,10 @@
 speaker = "klonk"
 
 [[start]]
+if = "quest murmelwald erledigt und nicht merker klonk.harz"
+node = "harz"
+
+[[start]]
 if = "quest bluetenquelle erledigt und nicht merker klonk.granate"
 node = "granate"
 
@@ -47,6 +51,19 @@ text = { de = "Nur mal schauen.", en = "Just looking." }
 id = "granate"
 text = { de = "Hmpf. Die Hummel beruhigt, ja? Dann bist du so weit. Hier, mein alter Granatwerfer. Mit {taste:grenade} nimmst du ihn in die Hand. Pass auf Omas Beete auf.", en = "Hmph. Calmed the bumblebee, did you? Then you're ready. Here, my old grenade launcher. Press {taste:grenade} to pick it up. Mind Oma's flowerbeds." }
 do = ["waffe granate", "gib munition_granate 1", "merker klonk.granate = 1"]
+
+[[node]]
+id = "harz"
+text = { de = "Harz aus dem Murmelwald, hm? Gutes Zeug. Bring mir genug davon, dann bekommt dein Hammer mehr Reichweite – und deine Granaten mehr Wumms.", en = "Resin from the Murmelwald, hm? Good stuff. Bring me enough and your hammer gets more reach – and your grenades more boom." }
+do = ["merker klonk.harz = 1"]
+
+[[node.choice]]
+tone = "neugierig"
+text = { de = "Zeig mal, was geht.", en = "Show me what you can do." }
+do = ["schmied"]
+
+[[node.choice]]
+text = { de = "Später.", en = "Later." }
 
 [[bark]]
 if = "merker fest"

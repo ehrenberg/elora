@@ -56,7 +56,7 @@ text = { de = "Bis später!", en = "See you later!" }
 id = "funke"
 text = { de = "Ein Quellfunke! Wenn man den … und dann … ja! Fertig! Dein Hook hat jetzt einen Ruck: Hängt er fest, drück {taste:ability}, und du schnellst hin.", en = "A spring spark! If you take it … and then … yes! Done! Your hook now has a jolt: once it's attached, press {taste:ability} and you shoot towards it." }
 next = "hof"
-do = ["faehigkeit hook-ruck", "merker quellen_befreit = 1", "merker fest = 1", "merker hof.ruck = 1", "zuneigung tueftel +1"]
+do = ["faehigkeit hook-ruck", "merker quellen_befreit = 1", "merker befreit.bluetenquelle = 1", "merker fest = 1", "merker hof.ruck = 1", "zuneigung tueftel +1"]
 
 [[node]]
 id = "hof"
@@ -66,7 +66,7 @@ text = { de = "Hinten in meinem Hof hab ich was aufgemacht. Eine Strecke, die sc
 id = "funke2"
 text = { de = "Noch ein Quellfunke! Wenn ich den hier … und das da … umdrehe … Fertig! Dein Hook zieht jetzt Dinge zu dir: Schalter, Fundstücke, Beute. Einfach anhooken.", en = "Another spring spark! If I turn this … and that … around … Done! Your hook now pulls things to you: switches, finds, loot. Just hook them." }
 next = "hof2"
-do = ["faehigkeit heranhooken", "merker quellen_befreit = 2", "merker fest = 1", "merker hof.zug = 1", "zuneigung tueftel +1"]
+do = ["faehigkeit heranhooken", "merker quellen_befreit = 2", "merker befreit.waldquelle = 1", "merker fest = 1", "merker hof.zug = 1", "zuneigung tueftel +1"]
 
 [[node]]
 id = "hof2"

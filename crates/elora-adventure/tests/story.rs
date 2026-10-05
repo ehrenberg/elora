@@ -483,6 +483,13 @@ fn chapter_two_runs_from_the_slope_to_the_party() {
     assert_eq!(conv.node, "fest2");
     assert!(g.holds(&c, "quest murmelwald erledigt"));
     assert!(g.holds(&c, "quest glutsand aktiv"));
+    assert_eq!(g.flag("befreit.waldquelle"), 1, "Weltkarte: Quelle befreit");
+    // Dorf nach Kapitel 2: Lotte schenkt Pilzsuppe, Klonk spricht vom Harz
+    let (conv, _) = Conversation::start(&c, &mut g, "lotte").unwrap();
+    assert_eq!(conv.node, "wald");
+    assert_eq!(g.count("pilzsuppe"), 1);
+    let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
+    assert_eq!(conv.node, "harz");
     // Runen: Plumm liest vor, Feder und Tautropfen-Punkt (E-309)
     let points = g.bonus_points;
     g.add_item(&c, "rune", 5).unwrap();

@@ -2,6 +2,10 @@
 speaker = "lotte"
 
 [[start]]
+if = "quest murmelwald erledigt und nicht merker lotte.wald"
+node = "wald"
+
+[[start]]
 if = "nicht merker lotte.geschenk"
 node = "erster"
 
@@ -35,6 +39,16 @@ text = { de = "Vielleicht später.", en = "Maybe later." }
 [[node]]
 id = "hut"
 text = { de = "Ach, du! Für dich gibt's bestimmt bald einen Freundschaftspreis.", en = "Oh, you! I'm sure there'll be a friendship price for you soon." }
+
+[[node]]
+id = "wald"
+text = { de = "Elora! Mama Morchel hat mir Pilzsuppe gebracht – angeblich hilft sie bei allem. Hier, eine Schüssel für dich. Und erzähl mal: Laufende Bäume?!", en = "Elora! Mama Morel brought me mushroom soup – supposedly it helps with everything. Here, a bowl for you. And tell me: walking trees?!" }
+next = "laden"
+do = ["gib pilzsuppe 1", "merker lotte.wald = 1"]
+
+[[bark]]
+if = "quest murmelwald erledigt und nicht merker fest"
+text = { de = "Pilzsuppe, frisch aus dem Wald!", en = "Mushroom soup, fresh from the forest!" }
 
 [[bark]]
 if = "merker fest"

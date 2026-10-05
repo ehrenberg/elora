@@ -109,6 +109,10 @@ id = "beleidigt"
 text = { de = "Du hast mich bei Oma verpetzt. Ich rede nicht mit dir. … Na gut, ein bisschen. Aber nur ein bisschen.", en = "You told on me to Oma. I'm not talking to you. … Oh, all right, a little. But only a little." }
 
 [[bark]]
+if = "merker sechste_quelle"
+text = { de = "Eine sechste Quelle? Unter unserem Brunnen? Ich hab's immer gewusst!", en = "A sixth spring? Under our well? I always knew it!" }
+
+[[bark]]
 if = "merker besiegt.wurzelwaechter"
 text = { de = "Ein Riesenbaum, der läuft?! Nimm mich nächstes Mal mit!", en = "A giant tree that walks?! Take me with you next time!" }
 

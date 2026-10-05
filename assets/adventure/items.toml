@@ -49,6 +49,13 @@ name = { de = "Heiltrank", en = "Healing potion" }
 desc = { de = "Stellt 5 Leben her.", en = "Restores 5 health." }
 
 [[item]]
+id = "pilzsuppe"
+type = "consumable"
+effect = { heal = 8 }
+name = { de = "Pilzsuppe", en = "Mushroom soup" }
+desc = { de = "Von Mama Morchel. Stellt 8 Leben her – und schmeckt nach Moos.", en = "From Mama Morel. Restores 8 health – and tastes of moss." }
+
+[[item]]
 id = "tautrank"
 type = "consumable"
 effect = { tau = 10 }
