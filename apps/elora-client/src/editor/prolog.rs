@@ -318,10 +318,14 @@ pub(super) fn finish(map: Map, theme: &Theme) -> Map {
 pub fn tauwinkel() -> Map {
     let (w, h) = (450, 50);
     let mut g = Grid::new(w, h, 40);
-    // Westen: Steilhang aus Stein als natürliches Ende
-    g.fill((0, 3), (0, h - 1), '%');
-    g.fill((4, 6), (18, h - 1), '%');
-    g.fill((7, 8), (29, h - 1), '%');
+    // Westen: Hang aus Erde und Wurzeln hinauf in den Murmelwald (E-306), oben der Übergang
+    g.fill((0, 3), (13, h - 1), '#');
+    g.fill((4, 6), (21, h - 1), '#');
+    g.fill((7, 8), (29, h - 1), '#');
+    g.fill((9, 10), (35, h - 1), '#');
+    // Wurzeln zum Festhalten
+    g.fill((12, 12), (24, 24), '*');
+    g.fill((8, 8), (16, 16), '*');
     // Baumhaus: Plattform 5 Tiles über dem Boden
     g.fill((40, 44), (35, 35), '=');
     // Hecke: nur mit Doppelsprung
@@ -354,6 +358,18 @@ pub fn tauwinkel() -> Map {
     g.ground(404, 417, 36);
     let mut m = g.map("Tauwinkel");
     m.adventure.objects = vec![
+        o(
+            "weg-wald",
+            corner(0, 0),
+            ObjectKind::Exit {
+                size: Vec2::new(2.0 * T, 13.0 * T),
+                map: "wald-1".into(),
+                spawn: "ost".into(),
+                on_touch: true,
+            },
+        ),
+        o("west", at(3, 13, 28.0), ObjectKind::Spawn),
+        sign("schild-westhang", 14, 40),
         o("start", at(23, 40, 28.0), ObjectKind::Spawn),
         sign("schild-start", 26, 40),
         npc("pip", 37, 40, -1, 0.0),
@@ -401,7 +417,7 @@ pub fn tauwinkel() -> Map {
     let mut baumhaus = decor("baumhaus", 42.0, 40);
     baumhaus.pos.y += 8.0;
     m.decor_back = vec![
-        decor("tree-pine", 5.0, 18),
+        decor("tree-pine", 5.0, 21),
         decor("tree-round", 8.0, 29),
         decor("tree-round", 11.0, 40),
         decor("haus-elora", 18.0, 40),

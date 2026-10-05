@@ -362,7 +362,10 @@ mod tests {
             let errors = map_objects(&c, &back);
             assert!(errors.is_empty(), "{name}: {errors:?}");
         }
-        let refs: Vec<(&str, &Map)> = maps.iter().map(|(n, m)| (*n, m)).collect();
+        // Übergänge über alle Abenteuer-Karten (auch Kapitel 2)
+        let mut linked = all_maps();
+        linked.extend(super::super::kapitel2::maps());
+        let refs: Vec<(&str, &Map)> = linked.iter().map(|(n, m)| (*n, m)).collect();
         let errors = map_links(&refs);
         assert!(errors.is_empty(), "{errors:?}");
         // fünf Bienen, davon vier in Kapitel 1 und eine für die Rückkehr (M2.1.5)

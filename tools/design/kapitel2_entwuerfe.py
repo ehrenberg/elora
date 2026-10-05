@@ -450,6 +450,41 @@ def sheet():
     return '\n'.join(o)
 
 
+def pilzring():
+    """Ring aus Pilzen (Zuhause der Familie Morchel), flach am Boden."""
+    s = '<ellipse cx="0" cy="-6" rx="120" ry="16" fill="#9ff2d8" opacity="0.2"/>'
+    for k, (x, h, r, c) in enumerate(((-110, 18, 12, '#e8685a'), (-80, 26, 15, '#a8703c'), (-46, 20, 12, '#e8685a'),
+                                      (-14, 30, 16, '#5fd8c8'), (20, 22, 13, '#a8703c'), (54, 28, 15, '#e8685a'),
+                                      (86, 20, 12, '#5fd8c8'), (112, 16, 11, '#a8703c'))):
+        s += f'<path d="M {x},0 V {-h}" stroke="{OUT}" stroke-width="7"/><path d="M {x},0 V {-h}" stroke="#f2e6d0" stroke-width="3.5"/>'
+        s += f'<path d="M {x - r},{-h} Q {x},{-h - r * 1.4} {x + r},{-h} Z" fill="{c}" {st(3)}/>'
+        if c == '#e8685a':
+            s += f'<circle cx="{x - 4}" cy="{-h - 6}" r="2.5" fill="#fff6e8"/>'
+    return s
+
+
+# Deko für die Karten von Kapitel 2 (E-312): Name: (Zeichnung, viewBox), Ursprung unten in der Mitte.
+DECOR = {
+    'waldbaum': (waldbaum(), '-150 -620 300 622'),
+    'waldhaus': (baumhaus(), '-100 -160 200 204'),
+    'haengebruecke': (haengebruecke(), '-160 -70 320 72'),
+    'leuchtpilze': (leuchtpilze(), '-56 -60 112 62'),
+    'wurzelbogen': (wurzelbogen(), '-140 -180 280 182'),
+    'pilzring': (pilzring(), '-130 -56 260 58'),
+    'waldquelle-verdorrt': (waldquelle(False), '-160 -160 320 162'),
+    'waldquelle-befreit': (waldquelle(True), '-160 -160 320 162'),
+}
+
+
+def export_decor():
+    for name, (art, vb) in DECOR.items():
+        with open(f'assets/map/decor/{name}.svg', 'w') as f:
+            f.write(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{vb}">\n'
+                    f'  <!-- Kapitel 2: {name} (R2-M2.2, aus tools/design/kapitel2_entwuerfe.py). Ursprung unten in der Mitte. -->\n'
+                    f'  {art}\n</svg>\n')
+
+
 if __name__ == '__main__':
     os.makedirs('docs/release-2/design', exist_ok=True)
     open('docs/release-2/design/kapitel2-entwuerfe.svg', 'w').write(sheet())
+    export_decor()

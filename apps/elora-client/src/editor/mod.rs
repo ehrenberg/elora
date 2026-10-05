@@ -7,6 +7,8 @@
 pub mod adventure;
 #[cfg(test)]
 mod kapitel1;
+#[cfg(test)]
+mod kapitel2;
 pub mod look;
 pub mod panel;
 pub mod panel_adventure;

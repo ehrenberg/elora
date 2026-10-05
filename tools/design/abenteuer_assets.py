@@ -16,8 +16,8 @@ from abenteuer_figuren import (glanztropfen, glitzerstein, grashuepfer, klonk, l
                                pollenblaeser, quellstein, schalter, stachelkaefer, truhe, tueftel)
 
 from kapitel1_entwuerfe import biene, hummel, quellfunke, wabe, wabenhut  # noqa: E402
-from kapitel2_entwuerfe import (eichhornpirat, pilzkind, pilzmama, pilzwicht, plumm, wurzelschlange,  # noqa: E402
-                                wurzelwaechter)
+from kapitel2_entwuerfe import (eichhornpirat, pilzkind, pilzmama, pilzwicht, plumm, rune,  # noqa: E402
+                                wurzelschlange, wurzelwaechter)
 
 
 def strohpuppe():
@@ -155,9 +155,9 @@ def main():
                              # eigene Bilder je Gegenstand (R2-M2.1), sonst gilt `item`
                              # gleiche Größe wie die übrigen Symbole (etwa 22 Einheiten)
                              ('biene', biene(1.0, 0, 0), 0.31), ('quellfunke', quellfunke(), 0.33),
-                             ('wabenhut', wabenhut(), 0.25)):
+                             ('wabenhut', wabenhut(), 0.25), ('rune', rune(True), 0.32)):
         with open(f'{items}/{name}.svg', 'w') as f:
-            dy = {'item': 8, 'glanztropfen': 3, 'biene': 5.5, 'quellfunke': 10, 'wabenhut': 4}.get(name, 0)
+            dy = {'item': 8, 'glanztropfen': 3, 'biene': 5.5, 'quellfunke': 10, 'wabenhut': 4, 'rune': 12}.get(name, 0)
             f.write(svg({'': f'<g transform="translate(0,{dy}) scale({scale})">{art}</g>'},
                         f'Beute „{name}“ (A1.2). Ursprung = Mitte.'))
 
