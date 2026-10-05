@@ -80,10 +80,13 @@ pub enum Behavior {
     /// Steckt im Boden und schießt hoch, wenn Elora näher als `sight` ist (Wurzelschlange,
     /// R2-M2.2); bleibt `out_ms` draußen – **nur dann verwundbar und gefährlich** – und
     /// wartet danach mindestens `hide_ms` versteckt.
+    /// Beim Auftauchen wächst sie `rise_ms` lang aus dem Boden (noch harmlos).
     Burrower {
         sight: f32,
         out_ms: u32,
         hide_ms: u32,
+        #[cfg_attr(feature = "serde", serde(default))]
+        rise_ms: u32,
     },
     /// Begleiter (Pilzkind, E-308): folgt Elora am Boden, springt über Stufen, wartet an
     /// Lücken und Gefahren; unverwundbar und harmlos.
@@ -144,6 +147,8 @@ pub mod diver {
 pub mod burrow {
     pub const HIDDEN: u8 = 0;
     pub const OUT: u8 = 1;
+    /// Wächst gerade aus dem Boden (harmlos, nicht verwundbar).
+    pub const RISING: u8 = 2;
 }
 
 /// Eintrag der Beutetabelle: `min`–`max` Stück mit Wahrscheinlichkeit `chance`.

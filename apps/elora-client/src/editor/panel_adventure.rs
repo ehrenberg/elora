@@ -853,7 +853,9 @@ pub fn draw(
                     stunned: false,
                     airborne: false,
                     boss: *persistent,
-                    mode: 0,
+                    // ganz sichtbar (Wurzelschlange draußen)
+                    mode: elora_sim::creature::burrow::OUT,
+                    grow: 1.0,
                 };
                 art.draw(batch, &c, time);
                 if *persistent {

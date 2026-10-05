@@ -94,6 +94,8 @@ pub struct SceneCreature {
     pub boss: bool,
     /// Zustand mehrstufiger Verhalten (Hüter: Sturzflug, benommen; `elora_sim::creature::diver`).
     pub mode: u8,
+    /// Wie weit eine Wurzelschlange aus dem Boden gewachsen ist (0..1, sonst 1).
+    pub grow: f32,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -189,6 +191,7 @@ impl Scene {
                 airborne: !c.grounded,
                 boss: kind.boss,
                 mode: c.mode,
+                grow: grow(kind, c),
             });
         }
         self.creature_shots = world
@@ -216,5 +219,20 @@ impl Scene {
             .map(|p| (p.kind, p.pos))
             .collect();
         self.spawns.clone_from(&world.spawn_points);
+    }
+}
+
+/// Wachstum einer auftauchenden Wurzelschlange (R2-M2.2): 0 = im Boden, 1 = ganz draußen.
+fn grow(kind: &elora_sim::CreatureKind, c: &elora_sim::Creature) -> f32 {
+    use elora_sim::creature::{Behavior, burrow};
+    match kind.behavior {
+        Behavior::Burrower { rise_ms, .. } if c.mode == burrow::RISING => {
+            #[allow(clippy::cast_precision_loss)]
+            let total = elora_sim::tuning::ms_to_ticks(rise_ms).max(1) as f32;
+            #[allow(clippy::cast_precision_loss)]
+            let p = c.timer as f32 / total;
+            p.clamp(0.0, 1.0)
+        }
+        _ => 1.0,
     }
 }

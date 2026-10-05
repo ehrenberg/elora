@@ -194,6 +194,15 @@ impl CreatureArt {
             }
             .or_else(|| look.air.as_ref().filter(|_| c.airborne))
             .unwrap_or(&look.idle);
+            // Wurzelschlange wächst langsam aus dem Boden (Fuß bleibt unten)
+            let t = if c.grow < 1.0 {
+                let h = mesh.bounds().map_or(0.0, |(_, max)| max.y);
+                Affine::translate(c.pos + Vec2::new(0.0, h))
+                    .then(Affine::scale(flip, c.grow.max(0.05)))
+                    .then(Affine::translate(Vec2::new(0.0, -h)))
+            } else {
+                t
+            };
             batch.draw_mesh(mesh, &t, &tint);
         } else {
             batch.fill_circle(c.pos, 16.0, OUTLINE);
@@ -349,6 +358,7 @@ mod tests {
                     airborne,
                     boss: false,
                     mode,
+                    grow: 1.0,
                 };
                 // Kollisionsbox zur Kontrolle
                 let (hx, hy) = (k.size[0] / 2.0, k.size[1] / 2.0);

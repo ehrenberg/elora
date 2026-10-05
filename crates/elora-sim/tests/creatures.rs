@@ -728,6 +728,7 @@ fn burrower_hides_until_elora_comes_and_only_then_is_dangerous() {
             sight: 150.0,
             out_ms: 1000,
             hide_ms: 600,
+            rise_ms: 400,
         },
     );
     let id = w.add_creature(kind, on_floor(30, 26.0)).unwrap();
@@ -740,6 +741,10 @@ fn burrower_hides_until_elora_comes_and_only_then_is_dangerous() {
     w.spawn_character(0, on_floor(26, 28.0));
     let ev = run(&mut w, PlayerInput::default(), 5);
     assert!(ev.iter().any(|e| matches!(e, Event::CreatureAct { .. })));
+    let c = w.creatures.iter().find(|c| c.id == id).unwrap();
+    assert_eq!(c.mode, burrow::RISING, "wächst erst langsam heraus");
+    assert!(!c.harmful(&w.creature_kinds[kind]));
+    run(&mut w, PlayerInput::default(), 25);
     let c = w.creatures.iter().find(|c| c.id == id).unwrap();
     assert_eq!(c.mode, burrow::OUT);
     // nach out_ms wieder versteckt

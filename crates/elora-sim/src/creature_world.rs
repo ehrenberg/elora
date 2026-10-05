@@ -508,8 +508,9 @@ impl World {
                     sight,
                     out_ms,
                     hide_ms,
+                    rise_ms,
                 } => {
-                    use crate::creature::burrow::{HIDDEN, OUT};
+                    use crate::creature::burrow::{HIDDEN, OUT, RISING};
                     fixed = true;
                     c.vel = Vec2::ZERO;
                     c.timer = c.timer.saturating_add(1);
@@ -522,13 +523,19 @@ impl World {
                                 && c.timer >= ms_to_ticks(hide_ms)
                                 && target.is_some_and(|(_, d)| d <= sight)
                             {
-                                c.mode = OUT;
+                                c.mode = RISING;
                                 c.timer = 0;
                                 events.push(Event::CreatureAct {
                                     id: c.id,
                                     pos: c.pos,
                                     act: CreatureAct::Emerge,
                                 });
+                            }
+                        }
+                        RISING => {
+                            if c.timer >= ms_to_ticks(rise_ms) {
+                                c.mode = OUT;
+                                c.timer = 0;
                             }
                         }
                         _ => {
