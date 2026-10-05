@@ -27,6 +27,8 @@ const HOOK_SWITCH_RANGE: f32 = 36.0;
 /// Leuchtpilze: so nah (halbe Breite, halbe Höhe um ihren Fuß) und so lange der Rausch.
 const MUSHROOM_RANGE: Vec2 = Vec2::new(40.0, 40.0);
 const MUSHROOM_DAZE_MS: u32 = 5500;
+/// So lange muss Elora in den Pilzen stehen.
+const MUSHROOM_DELAY_MS: u32 = 1200;
 /// So nah muss der Hook an einem Sammelstück oder an Beute sein (Heranhooken).
 const HOOK_PICK_RANGE: f32 = 28.0;
 /// Leben nach „Zweite Chance“ (Knoten, P-xx).
@@ -97,7 +99,7 @@ pub struct Session {
     pub map: Map,
     /// Hook-Spitze im letzten Tick (Heranhooken prüft die ganze Flugstrecke).
     last_hook: Option<Vec2>,
-    /// So viele Ticks steht Elora schon in Leuchtpilzen (bunter Rausch nach 2 s).
+    /// So viele Ticks steht Elora schon in Leuchtpilzen (bunter Rausch nach 1,2 s).
     in_mushrooms: u32,
     /// Begleiter in der Welt: Figur → Gegner-Id (E-308).
     followers: BTreeMap<String, u32>,
@@ -669,7 +671,7 @@ impl Session {
         }
     }
 
-    /// Wer 2 s in Leuchtpilzen steht, bekommt den bunten Rausch (E-311).
+    /// Wer 1,2 s in Leuchtpilzen steht, bekommt den bunten Rausch (E-311).
     fn mushroom_daze(&mut self, world: &mut World, pos: Vec2) {
         let inside = self
             .map
@@ -682,7 +684,7 @@ impl Session {
                     && (d.pos.y - pos.y).abs() < MUSHROOM_RANGE.y
             });
         self.in_mushrooms = if inside { self.in_mushrooms + 1 } else { 0 };
-        if self.in_mushrooms >= elora_sim::TICKS_PER_SECOND * 2 {
+        if self.in_mushrooms >= elora_sim::tuning::ms_to_ticks(MUSHROOM_DELAY_MS) {
             self.in_mushrooms = 0;
             let ticks = elora_sim::tuning::ms_to_ticks(MUSHROOM_DAZE_MS);
             if let Some(ch) = world.character_mut(self.player)

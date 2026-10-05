@@ -313,7 +313,7 @@ fn follower_appears_follows_and_stays_home() {
     assert!(kid(&w).is_none(), "bleibt daheim");
 }
 
-/// 2 s in Leuchtpilzen: bunter Rausch (E-311).
+/// 1,2 s in Leuchtpilzen: bunter Rausch (E-311).
 #[test]
 fn standing_in_glowing_mushrooms_dazes() {
     let mut map = load("wiese-1");
@@ -324,7 +324,7 @@ fn standing_in_glowing_mushrooms_dazes() {
     ));
     let mut s = Session::new_game(Content::builtin());
     let mut w = s.enter("wiese-1", map, "west", &Tuning::default());
-    for _ in 0..90 {
+    for _ in 0..50 {
         step(&mut s, &mut w, PlayerInput::default(), false);
     }
     assert_eq!(w.character(s.player).unwrap().core.dazed, 0, "noch nicht");
