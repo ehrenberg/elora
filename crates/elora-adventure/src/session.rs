@@ -552,6 +552,21 @@ impl Session {
         outcomes(self.save.update_quests(&self.content))
     }
 
+    /// Fähigkeiten und Waffen aus dem Spielstand in die laufende Welt übernehmen (nach
+    /// Gesprächen, die etwas freischalten: Hook-Ruck bei Tüftel, Granatwerfer bei Klonk).
+    pub fn sync_world(&self, world: &mut World) {
+        world.set_abilities(self.player, self.save.abilities());
+        let max_ammo = world.tuning.max_ammo;
+        if let Some(ch) = world.character_mut(self.player) {
+            for &w in self.save.weapons.keys() {
+                if w != Weapon::Hammer && !ch.arsenal.has(w) {
+                    let ammo = self.save.ammo.get(&w).copied().unwrap_or(max_ammo);
+                    ch.arsenal.give(w, ammo, max_ammo);
+                }
+            }
+        }
+    }
+
     /// Deko neu nach dem Weltzustand richten (nach Gesprächen, die Merker setzen);
     /// `true`, wenn sie sich geändert hat.
     pub fn refresh_decor(&mut self) -> bool {

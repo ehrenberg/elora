@@ -206,3 +206,20 @@ fn defeated_boss_sets_a_flag() {
     assert_eq!(s.save.flag("besiegt.brummbaer"), 1);
     assert!(s.save.holds(&s.content, "merker besiegt.brummbaer"));
 }
+
+#[test]
+fn unlocks_from_dialogs_reach_the_running_world() {
+    let (mut s, mut w) = start();
+    let c = s.content.clone();
+    s.save
+        .run(&c, &["faehigkeit hook-ruck".into(), "waffe granate".into()]);
+    let ch = w.character(s.player).unwrap();
+    assert!(
+        !ch.core.abilities.has(elora_sim::Ability::HookRuck),
+        "noch nicht"
+    );
+    s.sync_world(&mut w);
+    let ch = w.character(s.player).unwrap();
+    assert!(ch.core.abilities.has(elora_sim::Ability::HookRuck));
+    assert!(ch.arsenal.has(elora_sim::Weapon::Grenade));
+}

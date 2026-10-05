@@ -284,6 +284,71 @@ impl Ui<'_> {
         clicked
     }
 
+    /// Auswahl als Chips, die in Zeilen umbrechen (`max_w`): der gewählte als farbige Pille,
+    /// die anderen umrandet. Liefert den angeklickten Index und die belegte Höhe.
+    #[allow(clippy::too_many_arguments)]
+    pub fn chips(
+        &mut self,
+        id: &str,
+        origin: Vec2,
+        max_w: f32,
+        height: f32,
+        items: &[&str],
+        selected: usize,
+        color: Color,
+    ) -> (Option<usize>, f32) {
+        let s = self.s;
+        let size = (height / s * 0.46).clamp(9.0, 18.0);
+        let gap = 6.0 * s;
+        let mut hit = None;
+        let rects = self.chip_layout(origin, max_w, height, items);
+        for (i, (item, r)) in items.iter().zip(&rects).enumerate() {
+            let chip_id = format!("{id}#{i}");
+            let radius = height / 2.0;
+            if i == selected {
+                self.pill(*r, color, false);
+                self.label(item, r.center(), size, WHITE, Align::Center);
+                let _ = self.click(&chip_id, *r);
+            } else {
+                // Umrandung, innen Kartenfarbe (hell beim Darüberfahren)
+                self.batch
+                    .fill_rounded_rect(r.min, r.max, radius, Color::hex(0xcdb894));
+                let inner = r.shrink(1.5 * s);
+                let fill = if self.hovered(*r) { HIGHLIGHT } else { CARD };
+                self.batch
+                    .fill_rounded_rect(inner.min, inner.max, radius - 1.5 * s, fill);
+                self.label(item, r.center(), size, TEXT, Align::Center);
+                if self.click(&chip_id, *r) {
+                    hit = Some(i);
+                }
+            }
+        }
+        let bottom = rects.iter().map(|r| r.max.y).fold(origin.y, f32::max);
+        (hit, bottom - origin.y + gap)
+    }
+
+    /// Lage der Chips von [`Self::chips`] (für die Höhe vor dem Zeichnen).
+    #[allow(clippy::many_single_char_names)]
+    pub fn chip_layout(&self, origin: Vec2, max_w: f32, height: f32, items: &[&str]) -> Vec<Rect> {
+        let s = self.s;
+        let size = (height / s * 0.46).clamp(9.0, 18.0);
+        let gap = 6.0 * s;
+        let (mut x, mut y) = (origin.x, origin.y);
+        items
+            .iter()
+            .map(|item| {
+                let w = self.text_width(item, size) + 24.0 * s;
+                if x > origin.x && x + w > origin.x + max_w {
+                    x = origin.x;
+                    y += height + gap;
+                }
+                let r = Rect::new(x, y, w, height);
+                x += w + gap;
+                r
+            })
+            .collect()
+    }
+
     /// Reiter als Knopf-Reihe: der gewählte als farbige Pille, die anderen als Text.
     /// Liefert den angeklickten Index. `colors` wird zyklisch verwendet.
     pub fn tabs(

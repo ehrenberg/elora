@@ -136,10 +136,11 @@ def main():
     os.makedirs(items, exist_ok=True)
     for name, art, scale in (('glanztropfen', glanztropfen(), 0.5), ('item', glitzerstein(), 0.4),
                              # eigene Bilder je Gegenstand (R2-M2.1), sonst gilt `item`
-                             ('biene', biene(1.0, 0, 0), 0.9), ('quellfunke', quellfunke(), 0.45),
-                             ('wabenhut', wabenhut(), 0.45)):
+                             # gleiche Größe wie die übrigen Symbole (etwa 22 Einheiten)
+                             ('biene', biene(1.0, 0, 0), 0.31), ('quellfunke', quellfunke(), 0.33),
+                             ('wabenhut', wabenhut(), 0.25)):
         with open(f'{items}/{name}.svg', 'w') as f:
-            dy = {'item': 8, 'glanztropfen': 3}.get(name, 0)
+            dy = {'item': 8, 'glanztropfen': 3, 'biene': 5.5, 'quellfunke': 10, 'wabenhut': 4}.get(name, 0)
             f.write(svg({'': f'<g transform="translate(0,{dy}) scale({scale})">{art}</g>'},
                         f'Beute „{name}“ (A1.2). Ursprung = Mitte.'))
 

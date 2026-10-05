@@ -405,6 +405,7 @@ impl App {
             ch.armor = ch.armor.min(armor);
         }
         s.save.health = s.save.health.min(max);
+        s.sync_world(world);
     }
 
     /// Aktionstaste im Spiel.
@@ -623,6 +624,10 @@ impl App {
 
     /// Nach dem Gespräch die Maus wieder fangen.
     fn after_dialog(&mut self) {
+        // Gespräche schalten frei (Hook-Ruck, Waffen): sofort in die Welt
+        if let Some(a) = &self.adventure {
+            a.session.sync_world(&mut self.sandbox.world);
+        }
         // Gespräche setzen Merker: Deko nachziehen (Quelle blüht, Festschmuck)
         if let Some(a) = &mut self.adventure
             && a.session.refresh_decor()

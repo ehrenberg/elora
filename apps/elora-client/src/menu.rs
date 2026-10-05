@@ -428,6 +428,7 @@ fn quick_card(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, area: Rect) -> Option<MenuActio
 }
 
 /// „Server erstellen“ (E-122): Name, Karte, Modus, Instagib, Spielerzahl.
+#[allow(clippy::too_many_lines)]
 fn create_page(
     ui: &mut Ui<'_>,
     cx: &MenuCtx<'_>,
@@ -436,11 +437,17 @@ fn create_page(
 ) -> Option<MenuAction> {
     let s = cx.s;
     let lang = cx.lang;
+    // Kartenliste bricht in Zeilen um; die Karte wächst mit
+    let maps: Vec<&str> = cx.maps.iter().map(String::as_str).collect();
+    let card_w = (area.w() - 16.0 * s).min(620.0 * s);
+    let list_w = card_w - 40.0 * s;
+    let probe = ui.chip_layout(Vec2::ZERO, list_w, 26.0 * s, &maps);
+    let list_h = probe.iter().map(|r| r.max.y).fold(26.0 * s, f32::max);
     let card = Rect::new(
         area.min.x + 8.0 * s,
         area.min.y + 8.0 * s,
-        520.0 * s,
-        360.0 * s,
+        card_w,
+        334.0 * s + list_h,
     );
     ui.card(card);
     let x = card.min.x + 20.0 * s;
@@ -467,18 +474,19 @@ fn create_page(
         TEXT_DIM,
         Align::Left,
     );
-    let maps: Vec<&str> = cx.maps.iter().map(String::as_str).collect();
-    if let Some(i) = ui.tabs(
+    let (hit, used) = ui.chips(
         "map",
         Vec2::new(x, y + 12.0 * s),
+        list_w,
         26.0 * s,
         &maps,
         form.map,
-        &[BLUE],
-    ) {
+        BLUE,
+    );
+    if let Some(i) = hit {
         form.map = i;
     }
-    y += 60.0 * s;
+    y += 12.0 * s + used + 16.0 * s;
     ui.label(
         lang.t("menu.mode"),
         Vec2::new(x, y),
@@ -592,7 +600,21 @@ mod tests {
         let map_art = crate::map_art::MapArt::load();
         let creatures = crate::creatures::CreatureArt::load();
         let favorites = vec!["127.0.0.1:8303".to_owned(), "192.168.0.20:8303".to_owned()];
-        let maps = vec!["ctf-test".to_owned(), "sandbox".to_owned()];
+        let maps: Vec<String> = [
+            "ctf-nacht",
+            "ctf-test",
+            "ctf-wald",
+            "dm-wiese",
+            "dm-winter",
+            "dm-wueste",
+            "faehigkeiten-test",
+            "look-test",
+            "sandbox",
+            "tiles-test",
+            "training",
+        ]
+        .map(str::to_owned)
+        .to_vec();
         for (name, page) in [
             ("spielen", Page::Play),
             ("abenteuer", Page::Adventure),
