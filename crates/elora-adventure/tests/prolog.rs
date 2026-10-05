@@ -345,3 +345,90 @@ fn chapter_three_from_the_sunken_path_to_the_spring_and_home() {
     };
     assert_eq!((map.as_str(), spawn.as_str()), ("tauwinkel", "hohlweg"));
 }
+
+/// Stampfkammern (R2-M2.3, M2.3.6): Der Bröckelboden trägt, bis Elora mit Stampfen
+/// daraufspringt; dann fällt sie in die Kammer zur Truhe. Übung in Tüftels Hof und
+/// Belohnungen für die Rückkehr nach Kapitel 1 und 2.
+#[test]
+fn stomp_vaults_open_only_with_a_stomp() {
+    let tuning = Tuning::default();
+    for (map, spawn, id) in [
+        ("tauwinkel", "start", "stampf"),
+        ("wiese-2", "west", "wiese2-stampf"),
+        ("wald-1", "ost", "wald1-stampf"),
+        ("wald-3", "ost", "wald3-stampf"),
+    ] {
+        let mut s = Session::new_game(Content::builtin());
+        let mut w = s.enter(map, load(map), spawn, &tuning);
+        let chest = s
+            .map
+            .adventure
+            .object(&format!("{id}-truhe"))
+            .unwrap_or_else(|| panic!("{map}: Truhe fehlt"))
+            .pos;
+        // Bröckelboden neben der Truhe: Mitte und Oberkante
+        let crumbs: Vec<(i32, i32)> = (-6..=6)
+            .flat_map(|dx| (-8..=0).map(move |dy| (dx, dy)))
+            .map(|(dx, dy)| {
+                #[allow(clippy::cast_possible_truncation)]
+                let (tx, ty) = ((chest.x / 32.0) as i32 + dx, (chest.y / 32.0) as i32 + dy);
+                (tx, ty)
+            })
+            .filter(|&(tx, ty)| w.collision.tile(tx, ty) == elora_sim::Tile::Crumble)
+            .collect();
+        assert!(!crumbs.is_empty(), "{map}: kein Bröckelboden");
+        let top = crumbs.iter().map(|c| c.1).min().unwrap();
+        #[allow(clippy::cast_precision_loss)]
+        let mid = crumbs.iter().map(|c| c.0 as f32).sum::<f32>() / crumbs.len() as f32;
+        #[allow(clippy::cast_precision_loss)]
+        let above = Vec2::new((mid + 0.5) * 32.0, top as f32 * 32.0 - 20.0);
+        let run = |s: &mut Session, w: &mut World, input: PlayerInput, n: usize| {
+            for _ in 0..n {
+                step(s, w, input, false);
+            }
+        };
+        let jump = PlayerInput {
+            jump: true,
+            ..PlayerInput::default()
+        };
+        let down = PlayerInput {
+            down: true,
+            ..PlayerInput::default()
+        };
+        // ohne Stampfen trägt der Boden
+        w.spawn_character(s.player, above);
+        w.set_abilities(s.player, elora_sim::Abilities::NONE);
+        run(&mut s, &mut w, PlayerInput::default(), 20);
+        run(&mut s, &mut w, jump, 1);
+        run(&mut s, &mut w, PlayerInput::default(), 12);
+        run(&mut s, &mut w, down, 60);
+        #[allow(clippy::cast_precision_loss)]
+        let surface = top as f32 * 32.0;
+        let y = w.character(s.player).unwrap().core.pos.y;
+        assert!(y < surface, "{map}: ohne Stampfen nicht hinein ({y})");
+        // mit Stampfen bricht er
+        w.spawn_character(s.player, above);
+        w.set_abilities(
+            s.player,
+            elora_sim::Abilities::NONE.with(elora_sim::Ability::Stomp),
+        );
+        run(&mut s, &mut w, PlayerInput::default(), 20);
+        run(&mut s, &mut w, jump, 1);
+        run(&mut s, &mut w, PlayerInput::default(), 12);
+        run(&mut s, &mut w, down, 60);
+        run(&mut s, &mut w, PlayerInput::default(), 30);
+        let p = w.character(s.player).unwrap().core.pos;
+        assert!(p.y > surface + 64.0, "{map}: in der Kammer ({p:?})");
+        assert!((p.y - chest.y).abs() < 24.0, "{map}: unten bei der Truhe");
+        // ein Sprung (mit Doppelsprung) führt wieder hinaus
+        run(&mut s, &mut w, jump, 1);
+        run(&mut s, &mut w, PlayerInput::default(), 14);
+        run(&mut s, &mut w, jump, 1);
+        let mut out = false;
+        for _ in 0..30 {
+            step(&mut s, &mut w, PlayerInput::default(), false);
+            out |= w.character(s.player).unwrap().core.pos.y < surface - 14.0;
+        }
+        assert!(out, "{map}: wieder hinaus");
+    }
+}

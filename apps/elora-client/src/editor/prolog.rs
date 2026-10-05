@@ -120,6 +120,23 @@ pub(super) fn pull_vault(
     ]
 }
 
+/// Stampfkammer (R2-M2.3, M2.3.6): Bröckelboden (drei Tiles breit, zwei Reihen) über einer
+/// kleinen Kammer (fünf Tiles breit, drei hoch) mit Truhe – nur mit Stampfen zu öffnen. Vom
+/// Kammerboden bis zur Oberfläche sind es fünf Reihen, ein Sprung führt wieder hinaus.
+/// `x0` ist die linke Wand, `floor` die Oberkante des Bodens. Liefert die Truhe `<id>-truhe`.
+pub(super) fn stomp_vault(
+    g: &mut Grid,
+    id: &str,
+    x0: usize,
+    floor: usize,
+    contents: &[(&str, u32)],
+) -> Object {
+    g.fill((x0, x0 + 6), (floor, floor + 5), '#');
+    g.fill((x0 + 1, x0 + 5), (floor + 2, floor + 4), '.');
+    g.fill((x0 + 2, x0 + 4), (floor, floor + 1), ':');
+    chest(&format!("{id}-truhe"), x0 + 5, floor + 5, contents)
+}
+
 /// Mitte über dem Boden (Oberkante von Zeile `ty`) in Spalte `tx` für ein Objekt der Höhe `h`.
 pub(super) fn at(tx: usize, ty: usize, h: f32) -> Vec2 {
     Vec2::new(tx as f32 * T + T / 2.0, ty as f32 * T - h / 2.0 - 1.0)
@@ -402,6 +419,14 @@ pub fn tauwinkel() -> Map {
         "hof.zugtor",
         &[("glanztropfen", 50), ("tautrank", 1)],
     );
+    // Stampfplatte (M2.3.6): Übung für Stampfen, Tüftel baut es nach Kapitel 3
+    let stampf = stomp_vault(
+        &mut g,
+        "stampf",
+        228,
+        38,
+        &[("glanztropfen", 30), ("heiltrank", 1)],
+    );
     g.fill((186, 203), (38, 41), '.');
     g.fill((185, 204), (29, 30), '#');
     g.fill((211, 221), (26, 34), '#');
@@ -452,6 +477,8 @@ pub fn tauwinkel() -> Map {
         sign("schild-hook", 184, 38),
         sign("schild-ruck", 172, 38),
         sign("schild-zug", 236, 38),
+        sign("schild-stampf", 226, 38),
+        stampf,
         chest(
             "truhe-ruck",
             179,

@@ -17,7 +17,7 @@ use elora_sim::Vec2;
 
 use super::prolog::{
     Grid, T, animate, at, chest, corner, creature, decor, finish, npc, o, plant, pull_vault,
-    ruck_gate, sign,
+    ruck_gate, sign, stomp_vault,
 };
 use super::release;
 
@@ -110,6 +110,14 @@ pub fn wiese_2() -> Map {
         "wiese2.zug",
         &[("glanztropfen", 50), ("heiltrank", 2)],
     );
+    // Stampfkammer für die Rückkehr mit Stampfen (M2.3.6)
+    let stampf = stomp_vault(
+        &mut g,
+        "wiese2-stampf",
+        101,
+        44,
+        &[("glanztropfen", 60), ("bernstein", 2)],
+    );
     // Hügel, Quellstein und Weg nach wiese-3
     g.ground(231, 250, 40);
     g.ground(251, w - 1, 42);
@@ -143,6 +151,7 @@ pub fn wiese_2() -> Map {
         edge_exit("weg-wiese-3", w - 2, h, "wiese-3", "west"),
     ];
     m.adventure.objects.extend(zug);
+    m.adventure.objects.push(stampf);
     m.decor_back = vec![
         decor("honigstand", 24.0, 42),
         decor("bienenstock", 34.0, 42),

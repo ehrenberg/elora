@@ -18,6 +18,7 @@ use elora_sim::{TILE_SIZE, Vec2};
 
 use super::prolog::{
     Grid, T, animate, at, chest, corner, creature, decor, finish, npc, o, plant, ruck_gate, sign,
+    stomp_vault,
 };
 use super::release;
 
@@ -115,6 +116,14 @@ pub fn wald_1() -> Map {
     g.fill((110, 116), (36, 36), '=');
     // schwebende Steinsäule: Rune oben, nur mit Heranhooken (M2.2.2); unten frei für den Weg
     g.fill((186, 188), (20, 30), '%');
+    // Stampfkammer für die Rückkehr mit Stampfen (M2.3.6)
+    let stampf = stomp_vault(
+        &mut g,
+        "wald1-stampf",
+        140,
+        42,
+        &[("glanztropfen", 60), ("harz", 2)],
+    );
     let mut m = g.map("Murmelwald 1");
     m.adventure.objects = vec![
         edge_exit("weg-dorf", 0, h, "tauwinkel", "west"),
@@ -144,6 +153,7 @@ pub fn wald_1() -> Map {
         plant("blume-2", 196, 38),
         o("west", at(214, 40, 28.0), ObjectKind::Spawn),
         edge_exit("weg-wald-2", w - 2, h, "wald-2", "ost"),
+        stampf,
     ];
     m.decor_back = vec![
         big("waldbaum", 4.0, 44, 0.8),
@@ -270,6 +280,14 @@ pub fn wald_3() -> Map {
     g.ground(161, w - 1, 26);
     // Ruck-Stelle oben mit Rune 4
     let ruck_top = ruck_gate(&mut g, 170, 26);
+    // Stampfkammer im Höhlenboden (M2.3.6)
+    let stampf = stomp_vault(
+        &mut g,
+        "wald3-stampf",
+        26,
+        57,
+        &[("glanztropfen", 70), ("tautrank", 1)],
+    );
     let mut m = g.map("Murmelwald 3");
     m.adventure.objects = vec![
         edge_exit("weg-wald-2", 0, h, "wald-2", "west"),
@@ -308,6 +326,7 @@ pub fn wald_3() -> Map {
         rune("rune-4", 179, ruck_top),
         o("west", at(194, 26, 28.0), ObjectKind::Spawn),
         edge_exit("weg-arena", w - 2, h, "wald-arena", "ost"),
+        stampf,
     ];
     m.decor_back = vec![
         big("waldbaum", 8.0, 30, 1.0),
