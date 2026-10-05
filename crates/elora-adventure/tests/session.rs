@@ -409,7 +409,9 @@ fn cactus_fruit_cools_elora_down() {
         step(&mut s, &mut w, PlayerInput::default(), false);
     }
     assert!(s.overheated);
-    s.save.add_item(&s.content.clone(), "kaktusfrucht", 1).unwrap();
+    s.save
+        .add_item(&s.content.clone(), "kaktusfrucht", 1)
+        .unwrap();
     s.use_item(&mut w, "kaktusfrucht").unwrap();
     assert!(s.heat == 0.0 && !s.overheated);
     assert!(!w.character(s.player).unwrap().core.overheated);
