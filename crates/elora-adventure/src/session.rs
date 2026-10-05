@@ -23,7 +23,7 @@ pub const BARK_RANGE: f32 = 160.0;
 /// Berührung von Heilpflanzen und Sammelstücken.
 const TOUCH_RANGE: f32 = PHYS_SIZE;
 /// Abstand des Hooks zu einem Hook-Schalter.
-const HOOK_SWITCH_RANGE: f32 = 24.0;
+const HOOK_SWITCH_RANGE: f32 = 36.0;
 /// Leuchtpilze: so nah (halbe Breite, halbe Höhe um ihren Fuß) und so lange der Rausch.
 const MUSHROOM_RANGE: Vec2 = Vec2::new(40.0, 40.0);
 const MUSHROOM_DAZE_MS: u32 = 5500;
@@ -95,6 +95,8 @@ pub struct Session {
     pub map_name: String,
     /// Karte mit dem aktuellen Zustand von Türen und Bröckelboden.
     pub map: Map,
+    /// Hook-Spitze im letzten Tick (Heranhooken prüft die ganze Flugstrecke).
+    last_hook: Option<Vec2>,
     /// So viele Ticks steht Elora schon in Leuchtpilzen (bunter Rausch nach 2 s).
     in_mushrooms: u32,
     /// Begleiter in der Welt: Figur → Gegner-Id (E-308).
@@ -165,6 +167,7 @@ impl Session {
             base_decor: (Vec::new(), Vec::new()),
             followers: BTreeMap::new(),
             in_mushrooms: 0,
+            last_hook: None,
             pending: Vec::new(),
             dead: false,
         }
@@ -406,12 +409,16 @@ impl Session {
         let pull = world
             .character(me)
             .is_some_and(|c| c.core.abilities.has(elora_sim::Ability::Pull));
-        if pull && matches!(hook_state, HookState::Flying | HookState::Grabbed) {
-            out.extend(self.hook_pickups(world, hook_pos, pos));
+        // Strecke der Hook-Spitze seit dem letzten Tick (sie fliegt 80 Einheiten je Tick)
+        let hooking = matches!(hook_state, HookState::Flying | HookState::Grabbed);
+        let from = self.last_hook.filter(|_| hooking).unwrap_or(hook_pos);
+        self.last_hook = hooking.then_some(hook_pos);
+        if pull && hooking {
+            out.extend(self.hook_pickups(world, from, hook_pos, pos));
         }
-        if matches!(hook_state, HookState::Flying | HookState::Grabbed) && pull {
+        if hooking && pull {
             if self.hook_armed {
-                let hits = self.switches_at(hook_pos, SwitchTrigger::Hook, HOOK_SWITCH_RANGE);
+                let hits = self.switches_along(from, hook_pos, HOOK_SWITCH_RANGE);
                 if !hits.is_empty() {
                     self.hook_armed = false;
                 }
@@ -440,24 +447,29 @@ impl Session {
     }
 
     /// Heranhooken: Sammelstücke am Hook werden eingesammelt, Beute fliegt zu Elora.
-    fn hook_pickups(&mut self, world: &mut World, hook: Vec2, elora: Vec2) -> Vec<SessionEvent> {
+    fn hook_pickups(
+        &mut self,
+        world: &mut World,
+        from: Vec2,
+        hook: Vec2,
+        elora: Vec2,
+    ) -> Vec<SessionEvent> {
         let mut out = Vec::new();
+        let near_path =
+            |p: Vec2| Vec2::closest_point_on_segment(from, hook, p).distance(p) < HOOK_PICK_RANGE;
         let near: Vec<String> = self
             .map
             .adventure
             .objects
             .iter()
-            .filter(|o| {
-                matches!(o.kind, ObjectKind::Collectible { .. })
-                    && o.pos.distance(hook) < HOOK_PICK_RANGE
-            })
+            .filter(|o| matches!(o.kind, ObjectKind::Collectible { .. }) && near_path(o.pos))
             .map(|o| o.id.clone())
             .collect();
         for id in near {
             out.extend(self.collect(&id));
         }
         for l in &mut world.loot {
-            if l.pos.distance(hook) < HOOK_PICK_RANGE {
+            if near_path(l.pos) {
                 l.pos = elora;
                 l.vel = Vec2::ZERO;
             }
@@ -595,6 +607,22 @@ impl Session {
             .iter()
             .filter(|o| matches!(&o.kind, ObjectKind::Switch { trigger: t, .. } if *t == trigger))
             .filter(|o| o.pos.distance(at) < range)
+            .map(|o| o.id.clone())
+            .collect();
+        ids.iter().flat_map(|id| self.toggle(id)).collect()
+    }
+
+    /// Zugschalter auf der Strecke der Hook-Spitze.
+    fn switches_along(&mut self, from: Vec2, to: Vec2, range: f32) -> Vec<SessionEvent> {
+        let ids: Vec<String> = self
+            .map
+            .adventure
+            .objects
+            .iter()
+            .filter(|o| {
+                matches!(&o.kind, ObjectKind::Switch { trigger, .. } if *trigger == SwitchTrigger::Hook)
+            })
+            .filter(|o| Vec2::closest_point_on_segment(from, to, o.pos).distance(o.pos) < range)
             .map(|o| o.id.clone())
             .collect();
         ids.iter().flat_map(|id| self.toggle(id)).collect()

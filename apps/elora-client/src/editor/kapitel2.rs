@@ -256,6 +256,8 @@ pub fn wald_3() -> Map {
     for x in [54, 59, 134, 139, 143] {
         g.fill((x, x), (40, 42), '#');
     }
+    // Wurzel mit dem Zugschalter (vom Höhlenboden mit dem Hook erreichbar)
+    g.fill((122, 123), (40, 46), '#');
     // Zugschalter-Kammer in der Decke: Steg als Boden, Tor darunter (`merker zug.wald3`)
     g.fill((106, 116), (34, 37), '.');
     g.fill((106, 116), (38, 38), '=');
@@ -278,7 +280,7 @@ pub fn wald_3() -> Map {
         o("hoehle", at(102, 57, 40.0), ObjectKind::SavePoint),
         o(
             "zug",
-            Vec2::new(122.5 * T, 40.0 * T + 14.0),
+            Vec2::new(123.0 * T, 47.0 * T + 14.0),
             ObjectKind::Switch {
                 flag: "zug.wald3".into(),
                 once: true,

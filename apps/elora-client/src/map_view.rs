@@ -408,14 +408,25 @@ impl MapView {
         let Some(cache) = self.cache.as_ref() else {
             return;
         };
-        let (min, max) = visible(camera, 400.0);
+        let (min, max) = visible(camera, 0.0);
         for d in items {
-            if d.pos.x < min.x || d.pos.x > max.x || d.pos.y < min.y || d.pos.y > max.y {
+            let Some(mesh) = map_art::decor_mesh(&self.art, &cache.images, d) else {
+                continue;
+            };
+            // Ausdehnung der Grafik (große Bäume ragen weit über ihren Fuß hinaus)
+            let reach = mesh
+                .bounds()
+                .map_or(400.0, |(lo, hi)| lo.length().max(hi.length()))
+                * d.scale.abs()
+                + 64.0;
+            if d.pos.x + reach < min.x
+                || d.pos.x - reach > max.x
+                || d.pos.y + reach < min.y
+                || d.pos.y - reach > max.y
+            {
                 continue;
             }
-            if let Some(mesh) = map_art::decor_mesh(&self.art, &cache.images, d) {
-                map_art::draw_decor(batch, mesh, d, d.pos, &anim(map, d, time));
-            }
+            map_art::draw_decor(batch, mesh, d, d.pos, &anim(map, d, time));
         }
     }
 

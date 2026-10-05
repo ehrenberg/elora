@@ -161,3 +161,33 @@ fn prologue_from_start_to_the_meadow_edge_and_back() {
     assert_eq!(talk(&mut s, &mut w, "pip")[0], "stein_da");
     assert!(holds(&s, "quest pips_stein erledigt"));
 }
+
+/// Zugschalter in `wald-3` mit einem echten Hook-Schuss nach oben (R2-M2.2).
+#[test]
+fn pull_lever_in_the_root_caves_opens_the_chamber() {
+    let tuning = Tuning::default();
+    let mut s = Session::new_game(Content::builtin());
+    let mut w = s.enter("wald-3", load("wald-3"), "ost", &tuning);
+    s.save
+        .run(&s.content.clone(), &["faehigkeit heranhooken".into()]);
+    s.sync_world(&mut w);
+    let lever = s.map.adventure.object("zug").unwrap().pos;
+    // Elora unter den Schalter auf den Höhlenboden
+    w.spawn_character(s.player, Vec2::new(lever.x, lever.y + 200.0));
+    for _ in 0..40 {
+        step(&mut s, &mut w, PlayerInput::default(), false);
+    }
+    let me = w.character(s.player).unwrap().core.pos;
+    let aim = lever - me;
+    let mut events = Vec::new();
+    for _ in 0..40 {
+        let input = PlayerInput {
+            hook: true,
+            target_x: aim.x as i32,
+            target_y: aim.y as i32,
+            ..PlayerInput::default()
+        };
+        events.extend(step(&mut s, &mut w, input, false));
+    }
+    assert_eq!(s.save.flag("zug.wald3"), 1, "Schalter umgelegt: {events:?}");
+}
