@@ -176,47 +176,120 @@ def kern(x, y, r=14, lit=True):
     return s
 
 
-def wurzelwaechter(pose='schlaf'):
-    """Wurzelwächter: riesiger Baumstumpf mit Gesicht, Wurzelarme, drei Kerne in der Rinde.
-    Posen: schlaf, angriff (Wurzeln aus dem Boden), offen (ein Kern gezogen), ruhig (nach dem Kampf)."""
+def branch(path, w=22, fill=None):
+    """Ast/Glied: dunkler Umriss, Rinde innen."""
+    fill = fill or BARK
+    return (f'<path d="{path}" fill="none" stroke="{OUT}" stroke-width="{w + 8}" stroke-linecap="round" stroke-linejoin="round"/>'
+            f'<path d="{path}" fill="none" stroke="{fill}" stroke-width="{w}" stroke-linecap="round" stroke-linejoin="round"/>')
+
+
+def twigs(x, y, ang, n=3, length=34):
+    """Zweig-Finger am Ende eines Arms (Winkel in Grad)."""
     s = ''
-    # Wurzelfüße
-    for (x, dx) in ((-120, -50), (-60, -30), (60, 30), (120, 50)):
-        s += f'<path d="M {x},-30 Q {x + dx},-10 {x + dx * 1.6},0" fill="none" stroke="{OUT}" stroke-width="26" stroke-linecap="round"/>'
-        s += f'<path d="M {x},-30 Q {x + dx},-10 {x + dx * 1.6},0" fill="none" stroke="{BARK}" stroke-width="18" stroke-linecap="round"/>'
-    # Stamm
-    s += f'<path d="M -130,-20 Q -150,-200 -110,-300 Q 0,-340 110,-300 Q 150,-200 130,-20 Z" fill="{BARK}" {st(6)}/>'
-    for x in (-90, -40, 40, 90):
-        s += f'<path d="M {x},-40 Q {x - 10},-160 {x + 6},-280" fill="none" stroke="{BARK_DARK}" stroke-width="4"/>'
-    # Moos und Krone aus Blättern
-    s += blob(-60, -300, 70, 38, MOSS, 26, 0.12)
-    s += blob(40, -318, 90, 46, LEAF, 30, 0.12)
-    s += blob(110, -290, 50, 30, MOSS, 20, 0.14)
-    # Kerne (offen: der mittlere fehlt, Loch leuchtet)
-    for k, (x, y) in enumerate(((-70, -150), (0, -110), (70, -160))):
+    for k in range(n):
+        a = math.radians(ang + (k - (n - 1) / 2) * 28)
+        s += branch(f'M {x},{y} l {length * math.cos(a):.1f},{length * math.sin(a):.1f}', 7)
+        s += (f'<ellipse cx="{x + (length + 6) * math.cos(a):.1f}" cy="{y + (length + 6) * math.sin(a):.1f}" '
+              f'rx="9" ry="5" fill="{LEAF_LIGHT}" stroke="{OUT}" stroke-width="2" '
+              f'transform="rotate({math.degrees(a):.0f} {x + (length + 6) * math.cos(a):.1f} {y + (length + 6) * math.sin(a):.1f})"/>')
+    return s
+
+
+def wurzelwaechter(pose='schlaf'):
+    """Wurzelwächter: ein uralter, wandelnder Baumriese (Baumhirte) – Wurzelbeine, lange Astarme mit
+    Zweigfingern, Rindengesicht mit schweren Brauen, Knollennase und langem Bart aus Moos und
+    Zweigen, Blätterkrone. Drei Kerne in der Brust.
+    Posen: schlaf, angriff (Arm erhoben, Wurzeln brechen aus dem Boden), offen (ein Kern gezogen),
+    ruhig (nach dem Kampf)."""
+    s = ''
+    # Beine aus Wurzeln mit gespreizten Zehen
+    for side in (-1, 1):
+        x = side * 44
+        s += branch(f'M {x},-190 Q {x + side * 10},-100 {x + side * 4},-20', 42)
+        for k, dx in enumerate((-30, 0, 30)):
+            s += branch(f'M {x + side * 4},-20 Q {x + side * 4 + dx * 0.6},-4 {x + side * 4 + dx * 1.4},0', 12)
+    # Rumpf: hoher, leicht schiefer Stamm
+    s += (f'<path d="M -78,-170 Q -92,-320 -70,-440 Q -40,-470 0,-472 Q 44,-470 72,-440 '
+          f'Q 94,-320 80,-170 Q 0,-150 -78,-170 Z" fill="{BARK}" {st(6)}/>')
+    for x, c in ((-52, -6), (-20, 4), (18, -4), (50, 6)):
+        s += f'<path d="M {x},-180 Q {x + c * 3},-300 {x - c},-440" fill="none" stroke="{BARK_DARK}" stroke-width="3.5"/>'
+    s += f'<ellipse cx="34" cy="-210" rx="10" ry="14" fill="{BARK_DARK}" opacity="0.7"/>'
+    # Arme: Schulter bei y −410; lang, knorrig
+    if pose == 'angriff':
+        left = 'M -70,-410 Q -150,-470 -160,-560'
+        lend = (-160, -560, -90)
+        right = 'M 72,-410 Q 150,-330 170,-230'
+        rend = (170, -230, 70)
+    elif pose == 'offen':
+        left = 'M -70,-410 Q -170,-380 -200,-300'
+        lend = (-200, -300, 120)
+        right = 'M 72,-410 Q 170,-380 200,-300'
+        rend = (200, -300, 60)
+    elif pose == 'ruhig':
+        left = 'M -70,-410 Q -120,-320 -110,-210'
+        lend = (-110, -210, 100)
+        right = 'M 72,-410 Q 150,-380 160,-330'
+        rend = (160, -330, -40)
+    else:
+        left = 'M -70,-410 Q -130,-310 -118,-190'
+        lend = (-118, -190, 95)
+        right = 'M 72,-410 Q 130,-310 118,-190'
+        rend = (118, -190, 85)
+    for path, end in ((left, lend), (right, rend)):
+        s += branch(path, 26)
+        s += twigs(*end)
+    # Kerne in der Brust
+    for k, (x, y) in enumerate(((-34, -250), (6, -300), (40, -236))):
         if pose == 'offen' and k == 1:
             s += f'<ellipse cx="{x}" cy="{y}" rx="18" ry="22" fill="#3a2a1a" stroke="{OUT}" stroke-width="3"/>'
-            s += f'<ellipse cx="{x}" cy="{y}" rx="10" ry="12" fill="#ffd27a" opacity="0.8"/>'
+            s += f'<ellipse cx="{x}" cy="{y}" rx="10" ry="12" fill="#ffd27a" opacity="0.85"/>'
         else:
-            s += kern(x, y, 14, pose != 'ruhig')
-    # Gesicht
+            s += kern(x, y, 13, pose != 'ruhig')
+    # Kopf: oberer Teil des Stamms, lang gezogen
+    s += f'<path d="M -64,-430 Q -74,-540 -30,-580 Q 0,-596 34,-580 Q 76,-540 66,-430 Z" fill="{BARK}" {st(5)}/>'
+    # Krone aus Blättern und Zweigen wie Haar
+    for (x, y, rx, ry, c) in ((-46, -590, 46, 30, LEAF), (10, -612, 58, 34, LEAF_LIGHT), (58, -586, 42, 28, LEAF),
+                              (-70, -556, 28, 22, MOSS), (78, -552, 26, 20, MOSS)):
+        s += blob(x, y, rx, ry, c, 26, 0.14)
+    for (x, ang) in ((-30, -120), (20, -80), (50, -60)):
+        s += branch(f'M {x},-600 l {30 * math.cos(math.radians(ang)):.0f},{30 * math.sin(math.radians(ang)):.0f}', 6)
+    # schwere Brauen aus Rinde
+    for side in (-1, 1):
+        x = side * 26
+        lift = -4 if pose == 'angriff' else 0
+        s += (f'<path d="M {x - side * 26},{-528 + lift * side} Q {x},{-552} {x + side * 26},{-534 - lift * side} '
+              f'L {x + side * 24},{-522} Q {x},{-534} {x - side * 22},{-518} Z" fill="{BARK_DARK}" {st(3)}/>')
+    # Augen tief in der Rinde
+    for side in (-1, 1):
+        x = side * 26
+        s += f'<ellipse cx="{x}" cy="-508" rx="17" ry="12" fill="#3a2a1a" stroke="{OUT}" stroke-width="3"/>'
+        if pose == 'schlaf':
+            s += f'<path d="M {x - 12},-508 Q {x},-502 {x + 12},-508" fill="none" stroke="#a8946e" stroke-width="3"/>'
+        elif pose == 'ruhig':
+            s += f'<ellipse cx="{x}" cy="-507" rx="8" ry="6" fill="#ffd27a"/><circle cx="{x - 2}" cy="-509" r="2" fill="#ffffff"/>'
+        else:
+            glow = '#ffb84a' if pose == 'angriff' else '#ffd27a'
+            s += f'<ellipse cx="{x}" cy="-507" rx="7" ry="7" fill="{glow}"/><circle cx="{x + 2}" cy="-506" r="3" fill="{OUT}"/>'
+    # Knollennase
+    s += f'<path d="M -6,-500 Q -14,-470 0,-462 Q 16,-466 10,-500 Z" fill="#9a6e48" {st(3.5)}/>'
+    # Mund im Bart
+    mouth = {'angriff': f'<path d="M -22,-446 Q 0,-466 22,-446 Q 0,-436 -22,-446 Z" fill="#3a2a1a" {st(3)}/>',
+             'offen': f'<ellipse cx="0" cy="-446" rx="12" ry="9" fill="#3a2a1a" {st(3)}/>',
+             'ruhig': f'<path d="M -18,-448 Q 0,-436 18,-448" fill="none" stroke="{OUT}" stroke-width="4" stroke-linecap="round"/>'}
+    # langer Bart aus Moos und Zweigen
+    beard = (f'<path d="M -58,-470 Q -66,-420 -46,-380 Q -40,-350 -24,-336 Q -16,-360 -8,-330 Q 0,-356 10,-328 '
+             f'Q 18,-356 26,-336 Q 42,-352 48,-382 Q 68,-420 60,-470 Q 0,-438 -58,-470 Z" fill="{MOSS}" {st(4)}/>')
+    s += beard
+    for x in (-40, -20, 0, 20, 40):
+        s += f'<path d="M {x},-454 Q {x + 4},-410 {x - 2},-360" fill="none" stroke="{MOSS_DARK}" stroke-width="3"/>'
+    s += branch('M -30,-380 l -6,24', 4) + branch('M 32,-376 l 8,22', 4)
+    s += mouth.get(pose, f'<path d="M -16,-448 H 16" stroke="{OUT}" stroke-width="4" stroke-linecap="round"/>')
     if pose == 'schlaf':
-        for ex in (-40, 40):
-            s += f'<path d="M {ex - 22},-220 Q {ex},-210 {ex + 22},-220" fill="none" stroke="{OUT}" stroke-width="6" stroke-linecap="round"/>'
-        s += f'<path d="M -20,-186 Q 0,-178 20,-186" fill="none" stroke="{OUT}" stroke-width="5" stroke-linecap="round"/>'
-        s += text(90, -250, 'Z', 30, '#5e4430', weight='bold') + text(118, -276, 'z', 22, '#5e4430', weight='bold')
-    elif pose == 'ruhig':
-        for ex in (-40, 40):
-            s += f'<path d="M {ex - 18},-216 Q {ex},-230 {ex + 18},-216" fill="none" stroke="{OUT}" stroke-width="6" stroke-linecap="round"/>'
-        s += f'<path d="M -26,-186 Q 0,-168 26,-186" fill="none" stroke="{OUT}" stroke-width="5" stroke-linecap="round"/>'
-    else:
-        s += angry_eye(-40, -220, 20, 1.5) + angry_eye(40, -220, 20, 1.5)
-        s += f'<path d="M -34,-176 Q 0,-196 34,-176 Q 0,-166 -34,-176 Z" fill="#3a2a1a" {st(4)}/>'
+        s += text(110, -560, 'Z', 34, '#5e4430', weight='bold') + text(140, -592, 'z', 24, '#5e4430', weight='bold')
     if pose == 'angriff':
-        # Wurzeln brechen aus dem Boden
-        for x in (-240, 220):
-            s += f'<path d="M {x - 30},0 L {x},-110 L {x + 30},0 Z" fill="{BARK}" {st(5)}/>'
-            s += f'<path d="M {x - 40},0 l 10,-12 l 12,6 l 10,-10 l 14,8 l 10,-8 l 14,16" fill="none" stroke="#7a5a3e" stroke-width="5"/>'
+        for x in (-250, 240):
+            s += f'<path d="M {x - 34},0 L {x - 6},-130 L {x + 4},-96 L {x + 30},0 Z" fill="{BARK}" {st(5)}/>'
+            s += f'<path d="M {x - 50},0 l 12,-12 l 12,6 l 12,-10 l 14,8 l 12,-8 l 16,16" fill="none" stroke="#7a5a3e" stroke-width="5"/>'
     return s
 
 
@@ -350,7 +423,7 @@ def sheet():
                                 (610, 'angriff', 'Wurzelangriff', 'Boden bebt vorher'),
                                 (990, 'offen', 'Kern gezogen', 'jetzt verwundbar'),
                                 (1360, 'ruhig', 'nach dem Kampf', 'müde, nicht böse')):
-        o.append(ground(x - 170, 1290, 340) + g(x, 1290, 0.62, wurzelwaechter(pose)))
+        o.append(ground(x - 170, 1290, 340) + g(x, 1290, 0.5, wurzelwaechter(pose)))
         o.append(text(x, 1322, name, 17, TEXT, weight='bold'))
         o.append(text(x, 1344, note, 12, DIM))
     o.append(elora(1500, 1290))
