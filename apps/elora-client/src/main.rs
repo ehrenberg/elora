@@ -1169,6 +1169,8 @@ impl ApplicationHandler for App {
         let attrs = Window::default_attributes()
             .with_title("Elora")
             .with_inner_size(LogicalSize::new(1280.0, 720.0))
+            // maximiert starten; die Größe oben gilt beim Verkleinern
+            .with_maximized(true)
             .with_fullscreen(
                 graphics
                     .fullscreen
