@@ -148,8 +148,8 @@ pub fn scene(
         batch.fill_circle(p, 7.0, OUTLINE);
         batch.fill_circle(p, 5.5, GRENADE);
     }
-    for &p in &scene.creature_shots {
-        CreatureArt::draw_shot(batch, p);
+    for &(p, spark) in &scene.creature_shots {
+        CreatureArt::draw_shot(batch, p, spark, time);
     }
     for l in &scene.lasers {
         batch.stroke_line(

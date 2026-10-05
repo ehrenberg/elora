@@ -544,7 +544,7 @@ impl World {
             let n = 1 + self.tuning.laser_pierce as usize;
             for &(id, _) in creatures.iter().take(n) {
                 if let Some(c) = self.creatures.iter().position(|c| c.id == id) {
-                    self.damage_creature(c, force, damage, Some(l.owner));
+                    self.damage_creature(c, force, damage, Some(l.owner), Some(l.pos));
                 }
             }
             if creatures.len() >= n || self.tuning.laser_pierce == 0 {
@@ -677,7 +677,7 @@ impl World {
         for (j, force, damage) in hits {
             self.take_damage(j, force, damage, Some(owner), DeathCause::Weapon(weapon));
         }
-        self.explode_creatures(pos, owner, max_damage);
+        self.explode_creatures(pos, pos, owner, max_damage);
         if weapon == Weapon::Grenade {
             self.grenade_shards(pos, owner, max_damage);
         }

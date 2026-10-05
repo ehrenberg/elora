@@ -26,6 +26,7 @@ fn kinds() -> Vec<CreatureKind> {
             chance: 1.0,
         }],
         daze_ms: 0,
+        armor: false,
         behavior,
     };
     vec![
@@ -60,6 +61,10 @@ fn kinds() -> Vec<CreatureKind> {
             Behavior::Flyer {
                 speed: 3.0,
                 sight: 300.0,
+                hover: 0.0,
+                drop_ms: 0,
+                drop_damage: 0,
+                glow_ms: 0,
             },
         ),
     ]
@@ -962,4 +967,201 @@ fn angry_warden_raises_root_walls_that_disappear() {
     }
     assert!(set > 0, "Wurzelwand");
     assert!(reset > 0, "verschwindet wieder");
+}
+
+// ---------------------------------------------------------------- Kapitel 3 (R2-M2.3)
+
+fn damage_of(ev: &[Event], id: u32) -> Option<i32> {
+    ev.iter().find_map(|e| match e {
+        Event::CreatureHit { id: i, damage, .. } if *i == id => Some(*damage),
+        _ => None,
+    })
+}
+
+#[test]
+fn armored_crab_only_takes_hits_from_above() {
+    let mut w = world(|_| {});
+    let kind = add_kind(
+        &mut w,
+        "krabbe",
+        Behavior::Walker {
+            speed: 0.0,
+            turn_at_edges: true,
+        },
+    );
+    w.creature_kinds[kind].armor = true;
+    w.creature_kinds[kind].touch_damage = 0;
+    let id = w.add_creature(kind, on_floor(30, 26.0)).unwrap();
+    elora(&mut w, 29);
+    w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
+    // Hammer von der Seite prallt ab
+    let ev = run(&mut w, fire(100, 0, 1), 2);
+    assert_eq!(damage_of(&ev, id), Some(0), "Panzer hält");
+    assert_eq!(w.creatures[0].health, 6);
+    // Laser von der Seite auch
+    w.spawn_character(0, on_floor(24, 28.0));
+    w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
+    w.character_mut(0)
+        .unwrap()
+        .arsenal
+        .give(Weapon::Laser, 10, 10);
+    w.character_mut(0).unwrap().arsenal.active = Weapon::Laser;
+    let ev = run(&mut w, fire(100, 0, 3), 2);
+    assert_eq!(damage_of(&ev, id), Some(0), "Laser prallt ab");
+    // Hammer von oben trifft
+    w.character_mut(0).unwrap().arsenal.active = Weapon::Hammer;
+    let top = w.creatures[0].pos - Vec2::new(0.0, 13.0 + 14.0 + 4.0);
+    w.spawn_character(0, top);
+    w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
+    let ev = run(&mut w, fire(0, 100, 5), 2);
+    assert!(
+        damage_of(&ev, id).is_some_and(|d| d > 0),
+        "von oben verwundbar"
+    );
+    assert!(w.creatures[0].health < 6);
+}
+
+fn worm(w: &mut World) -> usize {
+    add_kind(
+        w,
+        "wurm",
+        Behavior::Leaper {
+            sight: 400.0,
+            speed: 2.0,
+            warn_ms: 500,
+            jump_x: 6.0,
+            jump_y: 11.0,
+            rest_ms: 800,
+        },
+    )
+}
+
+#[test]
+fn dune_worm_travels_under_sand_warns_and_leaps_at_elora() {
+    use elora_sim::creature::leaper;
+    let mut w = world(|_| {});
+    let kind = worm(&mut w);
+    let id = w.add_creature(kind, on_floor(40, 26.0)).unwrap();
+    elora(&mut w, 30);
+    w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
+    let get = |w: &World| w.creatures.iter().find(|c| c.id == id).unwrap().clone();
+    // unter dem Sand: kommt näher, harmlos und unverwundbar
+    run(&mut w, PlayerInput::default(), 10);
+    let c = get(&w);
+    assert_eq!(c.mode, leaper::UNDER);
+    assert!(c.pos.x < on_floor(40, 26.0).x, "wandert auf Elora zu");
+    assert!(!c.vulnerable(&w.creature_kinds[kind]) && !c.harmful(&w.creature_kinds[kind]));
+    w.hurt_creature(id, 1);
+    assert_eq!(get(&w).health, 6, "unter dem Sand nicht zu treffen");
+    // Warnung, dann Sprung
+    let mut modes = Vec::new();
+    let mut top = f32::MAX;
+    for _ in 0..200 {
+        run(&mut w, PlayerInput::default(), 1);
+        let c = get(&w);
+        if modes.last() != Some(&c.mode) {
+            modes.push(c.mode);
+        }
+        if c.mode == leaper::LEAP {
+            top = top.min(c.pos.y);
+            assert!(c.vulnerable(&w.creature_kinds[kind]));
+        }
+    }
+    assert!(
+        modes
+            .windows(3)
+            .any(|m| m == [leaper::WARN, leaper::LEAP, leaper::UNDER]),
+        "Warnung, Sprung, Eintauchen: {modes:?}"
+    );
+    assert!(top < on_floor(40, 26.0).y - 64.0, "springt im Bogen");
+}
+
+#[test]
+fn dune_worm_lands_where_elora_stood_at_the_warning() {
+    use elora_sim::creature::leaper;
+    let mut w = world(|_| {});
+    let kind = worm(&mut w);
+    w.creature_kinds[kind].touch_damage = 0;
+    let id = w.add_creature(kind, on_floor(30, 26.0)).unwrap();
+    elora(&mut w, 25);
+    w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
+    let stood = w.character(0).unwrap().core.pos.x;
+    let mut was_leaping = false;
+    let mut landed = None;
+    for _ in 0..300 {
+        run(&mut w, PlayerInput::default(), 1);
+        let c = w.creatures.iter().find(|c| c.id == id).unwrap();
+        if was_leaping && c.mode == leaper::UNDER {
+            landed = Some(c.pos.x);
+            break;
+        }
+        was_leaping = c.mode == leaper::LEAP;
+    }
+    let x = landed.expect("gesprungen und gelandet");
+    assert!((x - stood).abs() < 40.0, "landet bei Elora: {x} vs {stood}");
+}
+
+#[test]
+fn spark_moth_hovers_above_elora_and_sparks_glow_on_the_ground() {
+    let mut w = world(|_| {});
+    let kind = add_kind(
+        &mut w,
+        "motte",
+        Behavior::Flyer {
+            speed: 3.0,
+            sight: 500.0,
+            hover: 120.0,
+            drop_ms: 600,
+            drop_damage: 1,
+            glow_ms: 1000,
+        },
+    );
+    w.creature_kinds[kind].touch_damage = 0;
+    w.add_creature(kind, on_floor(20, 26.0) - Vec2::new(0.0, 200.0))
+        .unwrap();
+    elora(&mut w, 22);
+    w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
+    run(&mut w, PlayerInput::default(), 150);
+    let elora_pos = w.character(0).unwrap().core.pos;
+    let m = &w.creatures[0];
+    assert!((m.pos.x - elora_pos.x).abs() < 30.0, "über Elora");
+    assert!(
+        (elora_pos.y - m.pos.y - 120.0).abs() < 20.0,
+        "in Schwebehöhe"
+    );
+    // Elora geht zur Seite: der Funke landet und glüht
+    w.spawn_character(0, on_floor(10, 28.0));
+    w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
+    let mut landed = 0;
+    for _ in 0..40 {
+        run(&mut w, PlayerInput::default(), 1);
+        landed = landed.max(w.creature_shots.iter().filter(|s| s.landed).count());
+    }
+    assert!(landed > 0, "Funke liegt glühend am Boden");
+    let s = w.creature_shots.iter().find(|s| s.landed).unwrap();
+    assert!(s.pos.y > on_floor(20, 26.0).y, "am Boden");
+    // nach glow_ms verglüht
+    w.creatures.clear();
+    run(&mut w, PlayerInput::default(), 60);
+    assert!(w.creature_shots.is_empty(), "verglüht");
+}
+
+#[test]
+fn glowing_spark_burns_elora() {
+    let mut w = world(|_| {});
+    elora(&mut w, 20);
+    let feet = w.character(0).unwrap().core.pos;
+    w.creature_shots.push(elora_sim::creature::CreatureShot {
+        owner: 0,
+        pos: feet,
+        vel: Vec2::ZERO,
+        damage: 1,
+        ticks: 0,
+        gravity: 0.0,
+        glow: 50,
+        landed: true,
+    });
+    let before = health(&w);
+    run(&mut w, PlayerInput::default(), 2);
+    assert!(health(&w) < before, "glühender Funke brennt");
 }

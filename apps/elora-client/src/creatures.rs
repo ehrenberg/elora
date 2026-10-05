@@ -17,6 +17,9 @@ const BAR: Color = Color::hex(0xe05a7a);
 const POLLEN: Color = Color::hex(0xf8dd6e);
 const POLLEN_GLOW: Color = Color::rgba(0.95, 0.76, 0.31, 0.35);
 const STUN: Color = Color::hex(0xf2c14e);
+const EMBER: Color = Color::hex(0xff9a3c);
+const EMBER_CORE: Color = Color::hex(0xfff0b0);
+const EMBER_GLOW: Color = Color::rgba(1.0, 0.6, 0.2, 0.3);
 
 /// Teile einer Gegnergrafik: `idle` und optional `air`.
 #[derive(Debug)]
@@ -100,7 +103,10 @@ const CREATURE_FILES: &[(&str, &[u8])] = creatures!(
     "eichhornpirat",
     "pilzwicht",
     "pilzkind",
-    "wurzelwaechter"
+    "wurzelwaechter",
+    "sandkrabbe",
+    "duenenwurm",
+    "funkenmotte"
 );
 
 impl CreatureArt {
@@ -277,10 +283,28 @@ impl CreatureArt {
         }
     }
 
-    pub fn draw_shot(batch: &mut ShapeBatch, pos: Vec2) {
-        batch.fill_circle(pos, 11.0, POLLEN_GLOW);
-        batch.fill_circle(pos, 7.5, OUTLINE);
-        batch.fill_circle(pos, 6.0, POLLEN);
+    /// Geschoss: Pollenkugel, oder mit `spark` ein Funke (`Some(true)` = glüht am Boden).
+    pub fn draw_shot(batch: &mut ShapeBatch, pos: Vec2, spark: Option<bool>, time: f32) {
+        match spark {
+            None => {
+                batch.fill_circle(pos, 11.0, POLLEN_GLOW);
+                batch.fill_circle(pos, 7.5, OUTLINE);
+                batch.fill_circle(pos, 6.0, POLLEN);
+            }
+            Some(landed) => {
+                // flackernder Funke; am Boden flacher Glutfleck
+                let flicker = 1.0 + 0.15 * (time * 23.0 + pos.x * 0.1).sin();
+                let r = if landed { 7.0 } else { 5.5 } * flicker;
+                batch.fill_circle(pos, r * 2.2, EMBER_GLOW);
+                if landed {
+                    for dx in [-0.9, 0.9] {
+                        batch.fill_circle(pos + Vec2::new(r * dx, 2.0), r * 0.7, EMBER);
+                    }
+                }
+                batch.fill_circle(pos, r, EMBER);
+                batch.fill_circle(pos, r * 0.5, EMBER_CORE);
+            }
+        }
     }
 
     /// Beute: Glanztropfen schweben leicht, andere Gegenstände als Glitzerstein.
@@ -346,7 +370,7 @@ mod tests {
         let ground = 200.0;
         batch.fill_rect(
             Vec2::new(0.0, ground),
-            Vec2::new(2600.0, ground + 40.0),
+            Vec2::new(3200.0, ground + 40.0),
             Color::hex(0x8fbf7a),
         );
         let mut x = 60.0;
@@ -401,9 +425,26 @@ mod tests {
         put("wurzelwaechter", false, false, None, -1, 1);
         put("wurzelwaechter", false, false, None, -1, 2);
         put("wurzelwaechter", false, false, Some(10), -1, 3);
+        put("sandkrabbe", false, false, None, 1, 0);
+        put("duenenwurm", false, false, None, 1, 0);
+        put("duenenwurm", false, false, None, 1, 1);
+        put("duenenwurm", true, false, None, 1, 2);
+        put("funkenmotte", true, false, None, 1, 0);
         // Elora zum Größenvergleich (Box 28)
         batch.fill_circle(Vec2::new(x, ground - 14.0), 14.0, Color::hex(0xf2c14e));
-        CreatureArt::draw_shot(&mut batch, Vec2::new(x + 80.0, ground - 60.0));
+        CreatureArt::draw_shot(&mut batch, Vec2::new(x + 80.0, ground - 60.0), None, 0.0);
+        CreatureArt::draw_shot(
+            &mut batch,
+            Vec2::new(x + 100.0, ground - 60.0),
+            Some(false),
+            0.0,
+        );
+        CreatureArt::draw_shot(
+            &mut batch,
+            Vec2::new(x + 120.0, ground - 6.0),
+            Some(true),
+            0.0,
+        );
         art.draw_loot(
             &mut batch,
             "glanztropfen",
@@ -449,7 +490,7 @@ mod tests {
             let x = 480.0 + i as f32 * 52.0;
             art.draw_object(&mut batch, name, Vec2::new(x, ground2), *on);
         }
-        let svg = batch.debug_svg(Vec2::ZERO, Vec2::new(2600.0, 480.0), Color::hex(0xa9cde8));
+        let svg = batch.debug_svg(Vec2::ZERO, Vec2::new(3200.0, 480.0), Color::hex(0xa9cde8));
         std::fs::write(
             concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/creatures.svg"),
             svg,

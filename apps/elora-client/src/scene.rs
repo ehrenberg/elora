@@ -103,7 +103,8 @@ pub struct Scene {
     /// Simulations-Tick (Blinken, Anzeigen).
     pub tick: u64,
     pub creatures: Vec<SceneCreature>,
-    pub creature_shots: Vec<Vec2>,
+    /// Gegner-Geschosse: Position und ob Funke (`Some(true)` = glüht am Boden).
+    pub creature_shots: Vec<(Vec2, Option<bool>)>,
     /// Beute: Gegenstand und Position.
     pub loot: Vec<(String, Vec2)>,
     /// Abenteuer-Objekte (NPCs, Truhen, Schalter …).
@@ -197,7 +198,10 @@ impl Scene {
         self.creature_shots = world
             .creature_shots
             .iter()
-            .map(|s| s.pos + s.vel * (alpha - 1.0))
+            .map(|s| {
+                let spark = (s.glow > 0 || s.landed).then_some(s.landed);
+                (s.pos + s.vel * (alpha - 1.0), spark)
+            })
             .collect();
         self.loot = world
             .loot

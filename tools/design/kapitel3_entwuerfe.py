@@ -113,6 +113,21 @@ def duenenwurm(pose='bogen'):
         for x in (-34, 6, 40):
             s += f'<circle cx="{x}" cy="-10" r="3" fill="{SAND_DARK}"/>'
         return s
+    if pose == 'warnung':
+        s = f'<path d="M -50,0 Q -30,-30 0,-34 Q 30,-30 50,0 Z" fill="{SAND}" {st(3)}/>'
+        s += f'<path d="M -8,-30 Q 0,-52 10,-34" fill="#b87a4a" {st(3)}/>'
+        for (x, y) in ((-30, -30), (26, -36), (-12, -48), (36, -18)):
+            s += f'<circle cx="{x}" cy="{y}" r="4" fill="{SAND_LIGHT}" stroke="{OUT}" stroke-width="2"/>'
+        return s
+    if pose == 'flug':
+        pts = [(-46 + 16 * k, 12 * math.sin(k * 1.1)) for k in range(5)]
+        s = ''
+        for k, (x, y) in enumerate(pts):
+            s += f'<circle cx="{x:.1f}" cy="{y - 30:.1f}" r="{13 + k * 1.5:.1f}" fill="{"#c88a5a" if k % 2 else "#b87a4a"}" {st(3.5)}/>'
+        hx, hy = pts[-1][0] + 6, pts[-1][1] - 30
+        s += f'<path d="M {hx + 12},{hy - 8} l 16,-8 l -6,10 M {hx + 12},{hy + 8} l 16,8 l -6,-10" fill="{OCHRE}" stroke="{OUT}" stroke-width="3" stroke-linejoin="round"/>'
+        s += angry_eye(hx - 2, hy - 8, 6)
+        return s
     s = f'<path d="M -70,0 Q -50,-14 -30,-6 Z" fill="{SAND}" {st(3)}/>'
     pts = [(-60 + 22 * k, -10 - 110 * math.sin(math.pi * k / 8)) for k in range(8)]
     for k, (x, y) in enumerate(pts):
@@ -124,7 +139,7 @@ def duenenwurm(pose='bogen'):
     return s
 
 
-def funkenmotte():
+def funkenmotte(sparks=True):
     """Funkenmotte: glühende Flügel, Funken fallen."""
     s = '<circle cx="0" cy="-40" r="46" fill="#ffb84a" opacity="0.18"/>'
     for side in (-1, 1):
@@ -134,7 +149,7 @@ def funkenmotte():
     s += f'<ellipse cx="0" cy="-38" rx="8" ry="20" fill="#5e4430" {st(3)}/>'
     s += f'<path d="M -3,-56 q -8,-14 -16,-14 M 3,-56 q 8,-14 16,-14" fill="none" stroke="{OUT}" stroke-width="2.5"/>'
     s += angry_eye(-4, -50, 3.5) + angry_eye(5, -50, 3.5)
-    for (x, y) in ((-10, 4), (8, 16), (-4, 28)):
+    for (x, y) in ((-10, 4), (8, 16), (-4, 28)) if sparks else ():
         s += star(x, y, 5, '#ffcf6a')
     return s
 

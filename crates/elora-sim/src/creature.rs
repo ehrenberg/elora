@@ -32,6 +32,10 @@ pub struct CreatureKind {
     /// Berührung löst den bunten Rausch aus (so viele ms, E-311): Elora läuft langsamer.
     #[cfg_attr(feature = "serde", serde(default))]
     pub daze_ms: u32,
+    /// Panzer (Sandkrabbe, E-317): Treffer von der Seite oder von unten prallen ab, nur von
+    /// oben (Schlag, Granate darauf) und Stampfen wirken.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub armor: bool,
     pub behavior: Behavior,
 }
 
@@ -70,8 +74,21 @@ pub enum Behavior {
         #[cfg_attr(feature = "serde", serde(default))]
         lob: bool,
     },
-    /// Schwebt um den Startpunkt und verfolgt Elora in Sichtweite.
-    Flyer { speed: f32, sight: f32 },
+    /// Schwebt um den Startpunkt und verfolgt Elora in Sichtweite. Mit `hover` bleibt er so
+    /// hoch über ihr und lässt alle `drop_ms` einen Funken fallen, der `glow_ms` lang am Boden
+    /// glüht (Funkenmotte, R2-M2.3).
+    Flyer {
+        speed: f32,
+        sight: f32,
+        #[cfg_attr(feature = "serde", serde(default))]
+        hover: f32,
+        #[cfg_attr(feature = "serde", serde(default))]
+        drop_ms: u32,
+        #[cfg_attr(feature = "serde", serde(default))]
+        drop_damage: i32,
+        #[cfg_attr(feature = "serde", serde(default))]
+        glow_ms: u32,
+    },
     /// Hüter aus der Luft (R2-M2.1, E-298, E-299): kreist über dem Startpunkt und lässt
     /// Geschosse fallen, visiert Elora an und stürzt herab; danach liegt er benommen am
     /// Boden – **nur dann verwundbar** – und steigt wieder auf. Ab `enrage_at` (Anteil des
@@ -96,6 +113,17 @@ pub enum Behavior {
     /// Begleiter (Pilzkind, E-308): folgt Elora am Boden, springt über Stufen, wartet an
     /// Lücken und Gefahren; unverwundbar und harmlos.
     Follower { speed: f32, jump: f32 },
+    /// Wandert unter dem Sand (nur die Sandspur ist zu sehen) auf Elora zu, kündigt sich
+    /// `warn_ms` lang an und springt im Bogen auf sie zu (Dünenwurm, R2-M2.3); nach der
+    /// Landung taucht er ein und ruht `rest_ms`. **Nur im Sprung verwundbar und gefährlich.**
+    Leaper {
+        sight: f32,
+        speed: f32,
+        warn_ms: u32,
+        jump_x: f32,
+        jump_y: f32,
+        rest_ms: u32,
+    },
 }
 
 /// Werte des Hüters aus der Luft ([`Behavior::Diver`]).
@@ -196,6 +224,16 @@ pub mod burrow {
     pub const RISING: u8 = 2;
 }
 
+/// Zustand des Dünenwurms (in [`Creature::mode`]).
+pub mod leaper {
+    /// Unter dem Sand: harmlos, unverwundbar.
+    pub const UNDER: u8 = 0;
+    /// Sand bebt, gleich springt er.
+    pub const WARN: u8 = 1;
+    /// Im Sprung: gefährlich und verwundbar.
+    pub const LEAP: u8 = 2;
+}
+
 /// Eintrag der Beutetabelle: `min`–`max` Stück mit Wahrscheinlichkeit `chance`.
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -252,6 +290,7 @@ impl Creature {
             Behavior::Burrower { .. } => self.mode == burrow::OUT,
             Behavior::Warden(_) => self.mode == warden::OPEN,
             Behavior::Follower { .. } => false,
+            Behavior::Leaper { .. } => self.mode == leaper::LEAP,
             _ => true,
         }
     }
@@ -263,6 +302,7 @@ impl Creature {
             Behavior::Burrower { .. } => self.mode == burrow::OUT,
             Behavior::Warden(_) => !matches!(self.mode, warden::OPEN | warden::SLEEP),
             Behavior::Follower { .. } => false,
+            Behavior::Leaper { .. } => self.mode == leaper::LEAP,
             _ => true,
         }
     }
@@ -272,8 +312,15 @@ impl Creature {
         match kind.behavior {
             Behavior::Burrower { .. } => self.mode == burrow::OUT,
             Behavior::Follower { .. } => false,
+            Behavior::Leaper { .. } => self.mode == leaper::LEAP,
             _ => true,
         }
+    }
+
+    /// Prallt ein Treffer aus Richtung `src` am Panzer ab? Nur Treffer von oben wirken
+    /// (E-317); ohne Richtung (Stampfen, Werkzeuge) immer.
+    pub fn armor_blocks(&self, kind: &CreatureKind, src: Option<Vec2>) -> bool {
+        kind.armor && src.is_some_and(|p| p.y > self.pos.y - kind.size[1] / 2.0)
     }
 }
 
@@ -287,6 +334,10 @@ pub struct CreatureShot {
     pub ticks: u32,
     /// Schwerkraft je Tick (0 = fliegt gerade; Nüsse im Bogen).
     pub gravity: f32,
+    /// Glüht nach der Landung noch so viele Ticks am Boden (Funken, 0 = verschwindet).
+    pub glow: u32,
+    /// Liegt glühend am Boden.
+    pub landed: bool,
 }
 
 /// Herumliegende Beute (E-236).

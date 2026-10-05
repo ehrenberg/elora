@@ -160,7 +160,7 @@ impl World {
             let a = std::f32::consts::FRAC_PI_2 + k as f32 * std::f32::consts::TAU / n as f32;
             let p = pos + Vec2::new(a.cos(), a.sin()) * 48.0;
             self.events.push(Event::Explosion { owner, pos: p });
-            self.explode_creatures(p, owner, (max_damage / 3).max(1));
+            self.explode_creatures(p, pos, owner, (max_damage / 3).max(1));
         }
     }
 
@@ -194,14 +194,20 @@ impl World {
             if let Some(i) = self.creature_index(id) {
                 let stun = ms_to_ticks(self.tuning.hammer_stun);
                 self.creatures[i].stun = self.creatures[i].stun.max(stun);
-                self.damage_creature(i, force, damage, Some(owner));
+                self.damage_creature(i, force, damage, Some(owner), Some(pos));
             }
         }
         hits.len()
     }
 
-    /// Explosion trifft Gegner (wie Figuren, ohne Rüstung).
-    pub(crate) fn explode_creatures(&mut self, pos: Vec2, owner: usize, max_damage: i32) {
+    /// Explosion trifft Gegner (wie Figuren, ohne Rüstung); `src` ist der Einschlag (Panzer).
+    pub(crate) fn explode_creatures(
+        &mut self,
+        pos: Vec2,
+        src: Vec2,
+        owner: usize,
+        max_damage: i32,
+    ) {
         let t = &self.tuning;
         let (radius, inner, max_force) = (
             t.explosion_radius,
@@ -231,7 +237,7 @@ impl World {
             .collect();
         for (id, force, damage) in hits {
             if let Some(i) = self.creature_index(id) {
-                self.damage_creature(i, force, damage, Some(owner));
+                self.damage_creature(i, force, damage, Some(owner), Some(src));
             }
         }
     }
@@ -253,7 +259,7 @@ impl World {
             let force = Vec2::new(f32::from(sign(p.x - pos.x)) * 4.0, -6.0);
             if let Some(i) = self.creature_index(id) {
                 self.creatures[i].stun = stun;
-                self.damage_creature(i, force, damage, Some(player));
+                self.damage_creature(i, force, damage, Some(player), None);
             }
         }
     }
@@ -261,17 +267,18 @@ impl World {
     /// Schaden an Gegner `id` ohne Rückstoß (Tests, Werkzeuge); prallt an Hütern in der Luft ab.
     pub fn hurt_creature(&mut self, id: u32, damage: i32) {
         if let Some(i) = self.creature_index(id) {
-            self.damage_creature(i, Vec2::ZERO, damage, None);
+            self.damage_creature(i, Vec2::ZERO, damage, None, None);
         }
     }
 
-    /// Schaden an Gegner `i`; besiegt ihn bei 0 Leben.
+    /// Schaden an Gegner `i` aus Richtung `src`; besiegt ihn bei 0 Leben.
     pub(crate) fn damage_creature(
         &mut self,
         i: usize,
         force: Vec2,
         damage: i32,
         from: Option<usize>,
+        src: Option<Vec2>,
     ) {
         if self.prediction {
             return;
@@ -279,8 +286,8 @@ impl World {
         let tick = self.tick;
         let c = &mut self.creatures[i];
         let kind = &self.creature_kinds[c.kind];
-        // Hüter in der Luft: Treffer prallen ab (E-299)
-        if !c.vulnerable(kind) {
+        // Hüter in der Luft und Panzer von der Seite: Treffer prallen ab (E-299, E-317)
+        if !c.vulnerable(kind) || c.armor_blocks(kind, src) {
             self.events.push(Event::CreatureHit {
                 id: c.id,
                 pos: c.pos,
@@ -532,6 +539,8 @@ impl World {
                                 damage: shot_damage,
                                 ticks: 0,
                                 gravity: g,
+                                glow: 0,
+                                landed: false,
                             });
                             events.push(Event::CreatureFire { id: c.id, pos });
                             c.timer = 0;
@@ -651,11 +660,63 @@ impl World {
                         c.vel.x *= 0.7;
                     }
                 }
-                Behavior::Flyer { speed, sight } => {
-                    let goal = match target {
-                        Some((p, d)) if d <= sight && active => p,
-                        _ => c.home,
-                    };
+                Behavior::Leaper {
+                    sight,
+                    speed,
+                    warn_ms,
+                    jump_x,
+                    jump_y,
+                    rest_ms,
+                } => {
+                    tick_leaper(
+                        c,
+                        &LeaperDef {
+                            sight,
+                            speed,
+                            warn_ms,
+                            jump_x,
+                            jump_y,
+                            rest_ms,
+                        },
+                        size,
+                        gravity,
+                        if active { target } else { None },
+                        collision,
+                        events,
+                    );
+                }
+                Behavior::Flyer {
+                    speed,
+                    sight,
+                    hover,
+                    drop_ms,
+                    drop_damage,
+                    glow_ms,
+                } => {
+                    let chase = target.filter(|&(_, d)| d <= sight && active);
+                    let goal = chase.map_or(c.home, |(p, _)| p - Vec2::new(0.0, hover));
+                    c.timer = c.timer.saturating_add(1);
+                    // Funken fallen lassen, wenn er über Elora ist
+                    if drop_ms > 0
+                        && let Some((p, _)) = chase
+                        && (p.x - c.pos.x).abs() < 48.0
+                        && p.y > c.pos.y
+                        && c.timer >= ms_to_ticks(drop_ms)
+                    {
+                        let pos = c.pos + Vec2::new(0.0, size.y / 2.0 + SHOT_RADIUS);
+                        creature_shots.push(CreatureShot {
+                            owner: c.id,
+                            pos,
+                            vel: Vec2::new(c.vel.x * 0.5, 1.0),
+                            damage: drop_damage,
+                            ticks: 0,
+                            gravity: gravity * 0.4,
+                            glow: ms_to_ticks(glow_ms),
+                            landed: false,
+                        });
+                        events.push(Event::CreatureFire { id: c.id, pos });
+                        c.timer = 0;
+                    }
                     let to = goal - c.pos;
                     let want = if to.length() > 4.0 {
                         to.normalize() * speed
@@ -772,9 +833,13 @@ impl World {
         let mut i = 0;
         while i < self.creature_shots.len() {
             let s = &mut self.creature_shots[i];
-            s.vel.y += s.gravity;
-            s.pos += s.vel;
             s.ticks += 1;
+            if s.landed {
+                s.glow = s.glow.saturating_sub(1);
+            } else {
+                s.vel.y += s.gravity;
+                s.pos += s.vel;
+            }
             let (pos, vel, damage) = (s.pos, s.vel, s.damage);
             let hit = chars
                 .iter()
@@ -784,6 +849,19 @@ impl World {
                 self.creature_shots.remove(i);
                 let force = vel.normalize() * (kb * 0.5);
                 self.take_damage(j, force, damage, None, DeathCause::Creature);
+            } else if self.creature_shots[i].landed {
+                // Funke glüht am Boden aus
+                if self.creature_shots[i].glow == 0 {
+                    self.creature_shots.remove(i);
+                } else {
+                    i += 1;
+                }
+            } else if self.collision.is_solid(pos) && self.creature_shots[i].glow > 0 {
+                let s = &mut self.creature_shots[i];
+                s.pos -= s.vel;
+                s.vel = Vec2::ZERO;
+                s.landed = true;
+                i += 1;
             } else if self.collision.is_solid(pos) || self.creature_shots[i].ticks > SHOT_LIFETIME {
                 self.creature_shots.remove(i);
             } else {
@@ -878,6 +956,87 @@ impl World {
     }
 }
 
+/// Werte des Dünenwurms (aus [`Behavior::Leaper`]).
+struct LeaperDef {
+    sight: f32,
+    speed: f32,
+    warn_ms: u32,
+    jump_x: f32,
+    jump_y: f32,
+    rest_ms: u32,
+}
+
+/// Ein Tick des Dünenwurms: unter dem Sand heran, Warnung, Sprung im Bogen auf die Stelle,
+/// an der Elora bei der Warnung stand, Landung und Eintauchen.
+fn tick_leaper(
+    c: &mut Creature,
+    d: &LeaperDef,
+    size: Vec2,
+    gravity: f32,
+    target: Option<(Vec2, f32)>,
+    collision: &Collision,
+    events: &mut Vec<Event>,
+) {
+    use crate::creature::leaper::{LEAP, UNDER, WARN};
+    c.vel.y += gravity;
+    c.timer = c.timer.saturating_add(1);
+    // Flugzeit eines Sprungs bis zurück auf die Ausgangshöhe
+    let air = 2.0 * d.jump_y / gravity.max(0.01);
+    let act = |events: &mut Vec<Event>, pos: Vec2, act: CreatureAct| {
+        events.push(Event::CreatureAct { id: c.id, pos, act });
+    };
+    match c.mode {
+        UNDER => {
+            let Some((p, _)) = target.filter(|&(_, dist)| dist <= d.sight) else {
+                c.vel.x *= 0.8;
+                return;
+            };
+            let dx = p.x - c.pos.x;
+            c.facing = sign(dx);
+            if c.grounded
+                && c.timer >= ms_to_ticks(d.rest_ms)
+                && dx.abs() <= d.jump_x * air
+                && (p.y - c.pos.y).abs() < 160.0
+            {
+                c.mode = WARN;
+                c.timer = 0;
+                c.goal = p;
+                c.vel.x = 0.0;
+                act(events, c.pos, CreatureAct::Warn);
+                return;
+            }
+            let ahead = Vec2::new(
+                c.pos.x + f32::from(c.facing) * (size.x / 2.0 + 2.0),
+                c.pos.y + size.y / 2.0 + 4.0,
+            );
+            let edge = c.grounded && !floor_at(collision, ahead);
+            c.vel.x = if edge || dx.abs() < 8.0 {
+                0.0
+            } else {
+                f32::from(c.facing) * d.speed
+            };
+        }
+        WARN => {
+            c.vel.x = 0.0;
+            if c.timer >= ms_to_ticks(d.warn_ms) {
+                let dx = c.goal.x - c.pos.x;
+                c.vel = Vec2::new((dx / air).clamp(-d.jump_x, d.jump_x), -d.jump_y);
+                c.mode = LEAP;
+                c.timer = 0;
+                act(events, c.pos, CreatureAct::Emerge);
+            }
+        }
+        _ => {
+            if c.grounded && c.timer > 4 && c.vel.y >= 0.0 {
+                c.vel.x = 0.0;
+                c.mode = UNDER;
+                c.timer = 0;
+                act(events, c.pos, CreatureAct::Burrow);
+            }
+        }
+    }
+}
+
 /// Ein Tick des Hüters aus der Luft; liefert eine Position, wenn er einen Helfer ruft.
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 fn tick_diver(
@@ -943,6 +1102,8 @@ fn tick_diver(
                     damage: d.drop_damage,
                     ticks: 0,
                     gravity: 0.0,
+                    glow: 0,
+                    landed: false,
                 });
                 events.push(Event::CreatureFire { id: c.id, pos });
             }

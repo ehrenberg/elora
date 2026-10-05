@@ -12,6 +12,9 @@
 #               speed, circle_ms, aim_ms, dive_speed, stun_ms, drop_ms/drop_speed/drop_damage
 #               (fallende Geschosse), enrage_at, summon_at/summon/summon_max/summon_ms (Anteil des Lebens)
 #               – verwundbar nur benommen am Boden (E-299)
+#               flyer: speed, sight; hover (Höhe über Elora), drop_ms/drop_damage/glow_ms (Funken)
+#               leaper (Dünenwurm, R2-M2.3): sight, speed, warn_ms, jump_x, jump_y, rest_ms
+# armor         Panzer: nur Treffer von oben und Stampfen wirken (E-317)
 # Grafik: assets/adventure/creatures/<name>.svg (Teile `idle`, beim Hüpfer zusätzlich `air`;
 #         Hüter zusätzlich `dive` und `stunned`)
 
@@ -129,3 +132,36 @@ loot = [
     { item = "harz", min = 3, max = 3 },
 ]
 behavior = { type = "warden", sight = 640.0, attack_ms = 2600, warn_ms = 900, spike_width = 70.0, spike_height = 110.0, spike_damage = 2, pull_ms = 800, open_ms = 3500, cores = 3, enrage_at = 0.5, wall_every_ms = 4500, wall_ms = 3500, wall_height = 5 }
+
+# Kapitel 3 – Glutsandwüste (R2-M2.3)
+# Panzer: nur Treffer von oben und Stampfen wirken (E-317)
+[[creature]]
+name = "sandkrabbe"
+size = [48.0, 30.0]
+health = 6
+touch_damage = 2
+armor = true
+xp = 8
+loot = [{ item = "glanztropfen", min = 3, max = 5 }]
+behavior = { type = "walker", speed = 1.1, turn_at_edges = true }
+
+# wandert unter dem Sand heran, bebt kurz und springt im Bogen (nur dann verwundbar)
+[[creature]]
+name = "duenenwurm"
+size = [36.0, 36.0]
+health = 4
+touch_damage = 2
+xp = 8
+loot = [{ item = "glanztropfen", min = 2, max = 4 }]
+behavior = { type = "leaper", sight = 380.0, speed = 2.2, warn_ms = 700, jump_x = 7.0, jump_y = 11.5, rest_ms = 1400 }
+
+# schwebt über Elora und lässt Funken fallen, die kurz am Boden glühen
+[[creature]]
+name = "funkenmotte"
+size = [40.0, 32.0]
+health = 3
+touch_damage = 1
+small = true
+xp = 6
+loot = [{ item = "glanztropfen", min = 2, max = 3 }]
+behavior = { type = "flyer", speed = 2.4, sight = 480.0, hover = 150.0, drop_ms = 1600, drop_damage = 1, glow_ms = 1800 }

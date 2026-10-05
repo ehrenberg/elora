@@ -502,6 +502,10 @@ impl Effects {
                     self.shake = (self.shake + 0.3).min(1.0);
                 }
                 elora_sim::CreatureAct::Core => self.burst(pos, GLITTER, &SPAWN_GLITTER),
+                // Wurzelschlange und Dünenwurm: Erde/Sand spritzt beim Auf- und Abtauchen
+                elora_sim::CreatureAct::Emerge | elora_sim::CreatureAct::Burrow => {
+                    self.burst(pos, CRUMB, &CRUMBS);
+                }
                 _ => {}
             },
             // zerbrochener Boden und Wurzelwände bröseln

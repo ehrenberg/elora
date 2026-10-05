@@ -18,6 +18,7 @@ from abenteuer_figuren import (glanztropfen, glitzerstein, grashuepfer, klonk, l
 from kapitel1_entwuerfe import biene, hummel, quellfunke, wabe, wabenhut  # noqa: E402
 from kapitel2_entwuerfe import (eichhornpirat, pilzkind, pilzmama, pilzwicht, plumm, rune,  # noqa: E402
                                 wurzelschlange, wurzelwaechter)
+from kapitel3_entwuerfe import duenenwurm, funkenmotte, sandkrabbe  # noqa: E402
 
 
 def strohpuppe():
@@ -61,6 +62,12 @@ CREATURES = {
     # Hüter: Teile je Zustand m0 schläft, m2 Wurzelangriff, m3 Kern gezogen (creature::warden)
     'wurzelwaechter': (280, 0.45, {'idle': wurzelwaechter('wach'), 'm0': wurzelwaechter('schlaf'),
                                    'm2': wurzelwaechter('angriff_ohne'), 'm3': wurzelwaechter('offen')}),
+    # Kapitel 3 (R2-M2.3): Sandkrabbe; Dünenwurm unter dem Sand (hidden = Zustand 0), m1 Warnung,
+    # sonst im Sprung; Funkenmotte
+    'sandkrabbe': (30, 0.36, {'idle': sandkrabbe()}),
+    'duenenwurm': (36, 0.42, {'idle': f'<g transform="translate(0,-6)">{duenenwurm("flug")}</g>',
+                              'hidden': duenenwurm('spur'), 'm1': duenenwurm('warnung')}),
+    'funkenmotte': (32, 0.36, {'idle': f'<g transform="translate(0,4)">{funkenmotte(False)}</g>'}),
 }
 
 
