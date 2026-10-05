@@ -198,3 +198,150 @@ fn pull_levers_flip_with_a_real_hook_shot() {
         assert_eq!(s.save.flag(flag), 1, "{map}: Schalter {lever}");
     }
 }
+
+fn travel(s: &mut Session, w: &mut World, from: &str, direction: i8) -> World {
+    go_to(s, w, from, 0.0);
+    let (map, spawn) = walk_until_travel(s, w, direction);
+    s.enter(&map, load(&map), &spawn, &Tuning::default())
+}
+
+/// Durchlauf von Kapitel 3 (R2-M2.3) auf den mitgelieferten Karten: Hohlweg am Ostpfad,
+/// Karawane, Oase mit Wasser aus den Ruinen, Kammer unter dem Bröckelboden (Stampfen),
+/// Kampf an der Glutquelle, Tor und Weg zurück nach Tauwinkel.
+#[test]
+#[allow(clippy::too_many_lines)] // ein Durchlauf in der Reihenfolge des Kapitels
+fn chapter_three_from_the_sunken_path_to_the_spring_and_home() {
+    let tuning = Tuning::default();
+    // vor Kapitel 3 ist der Hohlweg zu
+    let mut s = Session::new_game(Content::builtin());
+    let mut w = s.enter("tauwinkel", load("tauwinkel"), "hohlweg", &tuning);
+    step(&mut s, &mut w, PlayerInput::default(), false);
+    let lid = s.map.adventure.object("hohlweg-deckel").unwrap().pos;
+    assert!(w.collision.tile_at(lid + Vec2::new(16.0, 16.0)).is_solid());
+
+    let mut s = Session::new_game(Content::builtin());
+    s.save
+        .run(&s.content.clone(), &["quest glutsand start".into()]);
+    let mut w = s.enter("tauwinkel", load("tauwinkel"), "hohlweg", &tuning);
+    step(&mut s, &mut w, PlayerInput::default(), false);
+    assert!(!w.collision.tile_at(lid + Vec2::new(16.0, 16.0)).is_solid());
+    let (map, spawn) = walk_until_travel(&mut s, &mut w, 1);
+    assert_eq!((map.as_str(), spawn.as_str()), ("wueste-1", "nord"));
+    let mut w = s.enter(&map, load(&map), &spawn, &tuning);
+    assert!(holds(&s, "quest glutsand schritt sirup"));
+    assert!(s.hot());
+
+    // Karawanenlager: Sirup und Palma
+    let mut w = travel(&mut s, &mut w, "ost", 1);
+    assert_eq!(s.map_name, "wueste-2");
+    assert_eq!(talk(&mut s, &mut w, "sirup")[0], "begruessung");
+    assert!(holds(&s, "quest glutsand schritt ruinen"));
+    talk(&mut s, &mut w, "palma");
+    assert!(holds(&s, "quest oase aktiv"));
+
+    // Ruinen: Wasser holen, mit Stampfen in die Kammer
+    let mut w = travel(&mut s, &mut w, "ost", 1);
+    assert_eq!(s.map_name, "wueste-3");
+    assert!(holds(&s, "quest glutsand schritt quelle"));
+    talk(&mut s, &mut w, "ruinenquelle");
+    assert_eq!(s.save.count("wasser"), 3);
+    s.save
+        .run(&s.content.clone(), &["quest ruine start".into()]);
+    w.set_abilities(
+        s.player,
+        elora_sim::Abilities::NONE.with(elora_sim::Ability::Stomp),
+    );
+    // mitten auf dem Bröckelboden (Spalten 175 bis 179, Oberkante Zeile 46)
+    let top = Vec2::new(177.5 * 32.0, 46.0 * 32.0 - 20.0);
+    w.spawn_character(s.player, top);
+    w.set_abilities(
+        s.player,
+        elora_sim::Abilities::NONE.with(elora_sim::Ability::Stomp),
+    );
+    for _ in 0..20 {
+        step(&mut s, &mut w, PlayerInput::default(), false);
+    }
+    assert!(holds(&s, "quest ruine schritt kammer"), "der Boden trägt");
+    let down = PlayerInput {
+        down: true,
+        ..PlayerInput::default()
+    };
+    step(
+        &mut s,
+        &mut w,
+        PlayerInput {
+            jump: true,
+            ..PlayerInput::default()
+        },
+        false,
+    );
+    for _ in 0..12 {
+        step(&mut s, &mut w, PlayerInput::default(), false);
+    }
+    for _ in 0..80 {
+        step(&mut s, &mut w, down, false);
+    }
+    for _ in 0..40 {
+        step(&mut s, &mut w, PlayerInput::default(), false);
+    }
+    assert!(
+        holds(&s, "quest ruine schritt tafel"),
+        "durch den Boden gestampft"
+    );
+    talk(&mut s, &mut w, "tafel-kammer");
+    assert!(holds(&s, "quest ruine schritt bericht"));
+
+    // zurück zur Oase und gießen
+    let mut w = travel(&mut s, &mut w, "west", -1);
+    assert_eq!(s.map_name, "wueste-2");
+    for n in 1..=3 {
+        assert_eq!(
+            talk(&mut s, &mut w, &format!("giessstelle-{n}"))[0],
+            "giessen"
+        );
+    }
+    assert!(holds(&s, "quest oase schritt danke"));
+    // die Blüte steht jetzt dort
+    assert!(s.npcs(&w).iter().any(|n| n.id == "bluete-1"));
+    assert!(!s.npcs(&w).iter().any(|n| n.id == "giessstelle-1"));
+    talk(&mut s, &mut w, "palma");
+    assert!(holds(&s, "quest oase erledigt"));
+
+    // Glutquelle: im Schatten des Kessels, Kampf, Tor geht auf
+    let mut w = s.enter("wueste-arena", load("wueste-arena"), "west", &tuning);
+    assert!(holds(&s, "quest glutsand schritt hueter"));
+    go_to(&mut s, &mut w, "sandschlange", -200.0);
+    assert!(!s.in_sun, "Kessel liegt im Schatten");
+    // benommen am Boden, ein Hammerschlag beruhigt sie
+    assert_eq!(w.creatures.len(), 1, "nur die Sandschlange im Kessel");
+    let snake = &mut w.creatures[0];
+    snake.mode = elora_sim::creature::serpent::STUNNED;
+    snake.timer = 0;
+    snake.health = 1;
+    let at = snake.pos;
+    w.spawn_character(s.player, at + Vec2::new(-60.0, 0.0));
+    w.character_mut(s.player).unwrap().invulnerable_until = u64::MAX;
+    let hit = PlayerInput {
+        fire: 1,
+        target_x: 100,
+        target_y: 0,
+        ..PlayerInput::default()
+    };
+    for _ in 0..3 {
+        step(&mut s, &mut w, hit, false);
+    }
+    for _ in 0..80 {
+        step(&mut s, &mut w, PlayerInput::default(), false);
+    }
+    assert_eq!(s.save.flag("besiegt.sandschlange"), 1);
+    assert!(s.save.count("quellfunke") >= 1, "Funke eingesammelt");
+    assert!(holds(&s, "quest glutsand schritt funke"));
+    let gate = s.map.adventure.object("tor").unwrap().pos;
+    assert!(!w.collision.tile_at(gate + Vec2::new(16.0, 16.0)).is_solid());
+    assert_eq!(talk(&mut s, &mut w, "schlange")[0], "erwacht");
+    let (map, spawn) = {
+        go_to(&mut s, &mut w, "ost", 0.0);
+        walk_until_travel(&mut s, &mut w, 1)
+    };
+    assert_eq!((map.as_str(), spawn.as_str()), ("tauwinkel", "hohlweg"));
+}

@@ -419,6 +419,7 @@ mod tests {
         let c = Content::builtin();
         let mut all = super::super::kapitel1::all_maps();
         all.extend(maps());
+        all.extend(super::super::kapitel3::maps());
         for (name, m) in &all {
             let back = elora_map::decode(&elora_map::encode(m)).expect("Karte gültig");
             let errors = map_objects(&c, &back);

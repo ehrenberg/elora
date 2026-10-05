@@ -266,6 +266,14 @@ pub fn build(theme: &Theme) -> Map {
     let now = Instant::now();
     editor.apply_preset(theme.preset, now);
     let map = &mut editor.map;
+    apply_look(theme, map);
+    place(theme, map);
+    glow(map);
+    editor.map
+}
+
+/// Material, Himmel und Hintergrund-Färbung des Themas (nach der Hintergrund-Vorlage).
+pub(super) fn apply_look(theme: &Theme, map: &mut Map) {
     if let Some(m) = theme.material {
         map.materials = vec![m.into()];
         map.material_map = map
@@ -289,9 +297,6 @@ pub fn build(theme: &Theme) -> Map {
             }
         }
     }
-    place(theme, map);
-    glow(map);
-    editor.map
 }
 
 #[cfg(test)]

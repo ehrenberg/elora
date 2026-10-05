@@ -38,6 +38,7 @@ pos = [0.5, 0.18]
 color = "#e0b85a"
 maps = "wueste-"
 hot = true
+spring = "glutquelle"
 
 [[area]]
 id = "frostspitzen"

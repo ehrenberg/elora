@@ -9,6 +9,8 @@ pub mod adventure;
 mod kapitel1;
 #[cfg(test)]
 mod kapitel2;
+#[cfg(test)]
+mod kapitel3;
 pub mod look;
 pub mod panel;
 pub mod panel_adventure;

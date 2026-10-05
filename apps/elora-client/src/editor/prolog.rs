@@ -419,6 +419,11 @@ pub fn tauwinkel() -> Map {
     g.ground(357, 362, 36);
     g.ground(363, w - 1, 38);
     g.ground(404, 417, 36);
+    // Hohlweg am Ostpfad hinab in die Glutsandwüste (E-315): Stufen, unten der Übergang;
+    // oben ein Felsdeckel, bis Kapitel 3 beginnt
+    g.fill((388, 394), (38, 47), '.');
+    g.fill((388, 388), (41, 47), '#');
+    g.fill((389, 389), (44, 47), '#');
     let mut m = g.map("Tauwinkel");
     m.adventure.objects = vec![
         o(
@@ -465,6 +470,26 @@ pub fn tauwinkel() -> Map {
         creature("puppe-2", "strohpuppe", 295, 32, 40.0),
         creature("puppe-3", "strohpuppe", 300, 32, 40.0),
         npc("lotte", 321, 32, -1, 0.0),
+        o("hohlweg", at(384, 38, 28.0), ObjectKind::Spawn),
+        sign("schild-wueste", 386, 38),
+        o(
+            "hohlweg-deckel",
+            corner(388, 38),
+            ObjectKind::Door {
+                size: (7, 1),
+                open_if: "nicht quest glutsand neu".into(),
+            },
+        ),
+        o(
+            "weg-wueste",
+            corner(390, 44),
+            ObjectKind::Exit {
+                size: Vec2::new(5.0 * T, 4.0 * T),
+                map: "wueste-1".into(),
+                spawn: "nord".into(),
+                on_touch: true,
+            },
+        ),
         sign("schild-ostpfad", 398, 38),
         o("ost", at(436, 38, 28.0), ObjectKind::Spawn),
         o(
@@ -514,7 +539,6 @@ pub fn tauwinkel() -> Map {
         decor("laterne", 350.0, 32),
         decor("tree-round", 368.0, 38),
         decor("tree-pine", 384.0, 38),
-        decor("fence", 390.0, 38),
         decor("fahne-blass", 401.0, 38),
         decor("tree-round", 411.0, 36),
         decor("tree-pine", 422.0, 38),
@@ -581,7 +605,7 @@ pub fn tauwinkel() -> Map {
         decor("briefkasten", 318.0, 32),
         decor("baumstumpf", 376.0, 38),
         decor("farn", 386.0, 38),
-        decor("loewenzahn", 392.0, 38),
+        decor("loewenzahn", 397.0, 38),
         decor("beerenbusch", 414.0, 36),
         decor_px("vogel", ground(428.0, 38).x, ground(428.0, 38).y - 28.0),
         decor("schmetterling", 395.0, 36),

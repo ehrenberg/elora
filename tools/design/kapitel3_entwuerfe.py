@@ -343,6 +343,43 @@ def giessstelle(bloom=False):
     return s
 
 
+def grauspur():
+    """Graue Fußspuren des Wanderers (E-325): drei Paare, blass wie Asche."""
+    s = ''
+    for k in range(3):
+        x = -60 + k * 50
+        for dx, dy in ((0, 0), (16, -6)):
+            s += f'<ellipse cx="{x + dx}" cy="{-3 + dy * 0.3:.1f}" rx="9" ry="3.5" fill="#9a9894" opacity="0.85"/>'
+            s += f'<ellipse cx="{x + dx + 7}" cy="{-4 + dy * 0.3:.1f}" rx="2.5" ry="1.6" fill="#7e7c78" opacity="0.85"/>'
+    return s
+
+
+# Deko für die Karten (Welteinheiten, Ursprung unten in der Mitte): Name → (Zeichnung, viewBox)
+DECOR = {
+    'duene': (duene(), '-210 -130 420 134'),
+    'felsbogen': (felsbogen(), '-140 -190 280 194'),
+    'saeule': (saeule(), '-36 -222 72 226'),
+    'saeule-bruch': (saeule(True), '-36 -160 72 164'),
+    'ruinentor': (ruinentor(), '-124 -250 248 254'),
+    'kaktus': (kaktus(), '-50 -146 100 150'),
+    'palme': (palme(), '-110 -300 260 304'),
+    'oase': (oase(), '-160 -76 320 80'),
+    'zelt': (zelt(), '-116 -156 232 160'),
+    'kamel': (kamel(), '-80 -184 232 188'),
+    'glutquelle-verdorrt': (glutquelle(False), '-120 -60 240 64'),
+    'glutquelle-befreit': (glutquelle(True), '-160 -136 320 140'),
+    'grauspur': (grauspur(), '-74 -10 156 14'),
+}
+
+
+def export_decor():
+    for name, (art, vb) in DECOR.items():
+        with open(f'assets/map/decor/{name}.svg', 'w') as f:
+            f.write(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{vb}">\n'
+                    f'  <!-- Kapitel 3: {name} (R2-M2.3, aus tools/design/kapitel3_entwuerfe.py). Ursprung unten in der Mitte. -->\n'
+                    f'  {art}\n</svg>\n')
+
+
 # ── Bogen ───────────────────────────────────────────────────────────────
 
 def sheet():
@@ -419,3 +456,4 @@ def sheet():
 if __name__ == '__main__':
     os.makedirs('docs/release-2/design', exist_ok=True)
     open('docs/release-2/design/kapitel3-entwuerfe.svg', 'w').write(sheet())
+    export_decor()

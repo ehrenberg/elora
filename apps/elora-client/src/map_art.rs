@@ -55,6 +55,9 @@ pub const DECOR_FILES: &[(&str, &[u8])] = assets!("decor":
     // Kapitel 2 (R2-M2.2)
     "waldbaum", "waldhaus", "haengebruecke", "leuchtpilze", "wurzelbogen", "pilzring",
     "waldquelle-verdorrt", "waldquelle-befreit",
+    // Kapitel 3 (R2-M2.3)
+    "duene", "felsbogen", "saeule", "saeule-bruch", "ruinentor", "kaktus", "palme", "oase", "zelt",
+    "kamel", "glutquelle-verdorrt", "glutquelle-befreit", "grauspur",
 );
 
 /// Eingebaute Hintergrund-Grafik (ebenfalls über [`Art::Builtin`] benutzt).
