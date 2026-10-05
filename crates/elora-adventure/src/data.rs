@@ -323,6 +323,14 @@ const DIALOG_FILES: &[(&str, &str)] = dialogs!(
     "hummel",
     "schild-wurzeln",
     "schild-ruck",
+    "plumm",
+    "pilzkind",
+    "pilzkind_froh",
+    "pilzmama",
+    "waechter",
+    "schild-westhang",
+    "schild-wald",
+    "schild-pilzring",
 );
 
 /// Quelltexte der Inhaltsdateien.

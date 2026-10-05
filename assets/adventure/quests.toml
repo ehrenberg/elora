@@ -81,19 +81,101 @@ id = "fest"
 text = { de = "Mit Oma Pfütze am Brunnen feiern", en = "Celebrate with Oma Pfütze at the well" }
 goal = { type = "talk", who = "oma" }
 
-# Kapitel 2 – Ankündigung, Fortsetzung mit R2-M2.2
+# Kapitel 2 – Murmelwald (R2-M2.2, docs/release-2/m2-2-plan.md)
 [[quest]]
 id = "murmelwald"
 kind = "main"
 giver = "oma"
 name = { de = "Das Flüstern im Murmelwald", en = "Whispers in the Murmelwald" }
-desc = { de = "Die zweite Quelle liegt im Murmelwald. Oma sagt, die Wurzeln dort erzählen alte Geschichten.", en = "The second spring lies in the Murmelwald. Oma says the roots there tell old stories." }
+desc = { de = "Die zweite Quelle liegt im Murmelwald, oben am Westhang. Oma sagt, die Wurzeln dort erzählen alte Geschichten.", en = "The second spring lies in the Murmelwald, up the western slope. Oma says the roots there tell old stories." }
+reward = { xp = 250, glanztropfen = 120 }
+next = "glutsand"
+
+[[quest.step]]
+id = "westhang"
+text = { de = "Über den Westhang in den Murmelwald", en = "Climb the western slope into the Murmelwald" }
+goal = { type = "reach", map = "wald-1" }
+
+[[quest.step]]
+id = "plumm"
+text = { de = "Den alten Uhu in den Baumkronen finden", en = "Find the old owl in the treetops" }
+goal = { type = "talk", who = "plumm" }
+
+[[quest.step]]
+id = "wurzeln"
+text = { de = "Hinab in die Wurzelhöhlen", en = "Descend into the root caves" }
+goal = { type = "reach", map = "wald-3" }
+
+[[quest.step]]
+id = "quelle"
+text = { de = "Die Waldquelle erreichen", en = "Reach the Forest Spring" }
+goal = { type = "reach", map = "wald-arena" }
+
+[[quest.step]]
+id = "hueter"
+text = { de = "Den Wurzelwächter beruhigen", en = "Calm the Root Warden" }
+goal = { type = "defeat", kind = "wurzelwaechter", count = 1, map = "wald-arena" }
+
+[[quest.step]]
+id = "funke"
+text = { de = "Tüftel den Quellfunken bringen", en = "Bring Tüftel the spring spark" }
+goal = { type = "bring", item = "quellfunke", count = 1, to = "tueftel" }
+
+[[quest.step]]
+id = "fest"
+text = { de = "Mit Oma Pfütze am Brunnen feiern", en = "Celebrate with Oma Pfütze at the well" }
+goal = { type = "talk", who = "oma" }
+
+# Kapitel 3 – Ankündigung, Fortsetzung mit R2-M2.3
+[[quest]]
+id = "glutsand"
+kind = "main"
+giver = "oma"
+name = { de = "Spuren im Sand", en = "Tracks in the Sand" }
+desc = { de = "Die dritte Quelle liegt in der Glutsandwüste. Eine Karawane erzählt von einem grauen Wanderer.", en = "The third spring lies in the Glutsandwüste. A caravan tells of a grey wanderer." }
 reward = { xp = 100 }
 
 [[quest.step]]
 id = "aufbruch"
-text = { de = "In den Murmelwald aufbrechen (bald)", en = "Set out for the Murmelwald (soon)" }
+text = { de = "In die Glutsandwüste aufbrechen (bald)", en = "Set out for the Glutsandwüste (soon)" }
 goal = { type = "manual" }
+
+# Nebenaufgaben in Kapitel 2 (E-308, E-309)
+[[quest]]
+id = "runen"
+kind = "side"
+giver = "plumm"
+name = { de = "Erinnerungsrunen", en = "Memory Runes" }
+desc = { de = "Fünf Runen liegen im Murmelwald verstreut. Plumm glaubt, sie erzählen zusammen eine vergessene Geschichte.", en = "Five runes lie scattered across the Murmelwald. Plumm believes that together they tell a forgotten story." }
+reward = { xp = 80, points = 1, items = [{ item = "eulenfeder", count = 1 }] }
+
+[[quest.step]]
+id = "sammeln"
+text = { de = "Fünf Erinnerungsrunen finden", en = "Find five memory runes" }
+goal = { type = "collect", item = "rune", count = 5 }
+
+[[quest.step]]
+id = "bringen"
+text = { de = "Plumm die Runen vorlesen lassen", en = "Let Plumm read the runes" }
+goal = { type = "bring", item = "rune", count = 5, to = "plumm" }
+
+[[quest]]
+id = "pilzkind"
+kind = "side"
+giver = "pilzkind"
+name = { de = "Das verirrte Pilzkind", en = "The Lost Mushroom Child" }
+desc = { de = "Ein kleines Pilzkind hat sich verlaufen. Sein Zuhause ist der Pilzring am Waldrand.", en = "A little mushroom child got lost. Its home is the mushroom ring at the edge of the forest." }
+reward = { xp = 60, glanztropfen = 40, items = [{ item = "heiltrank", count = 2 }] }
+
+[[quest.step]]
+id = "heim"
+text = { de = "Das Pilzkind zum Pilzring bringen", en = "Bring the mushroom child to the mushroom ring" }
+goal = { type = "flag", flag = "pilzkind.daheim" }
+
+[[quest.step]]
+id = "danke"
+text = { de = "Mit Mama Morchel sprechen", en = "Talk to Mama Morel" }
+goal = { type = "talk", who = "pilzmama" }
 
 # Nebenaufgabe in Kapitel 1 (E-300)
 [[quest]]

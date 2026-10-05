@@ -82,6 +82,16 @@ def pilzkind(sad=True):
     return s
 
 
+def pilzmama():
+    """Mutter des Pilzkinds: größer, brauner Hut mit hellen Tupfen, Schürze."""
+    s = drop('f6efdf', 'd8c8a8')
+    s += f'<path d="M -46,-40 Q 4,-30 52,-40 L 50,-14 Q 4,-6 -44,-14 Z" fill="#7fd99a" {st(3.5)}/>'
+    s += f'<path d="M -78,-92 Q -66,-160 0,-166 Q 66,-160 78,-92 Q 0,-106 -78,-92 Z" fill="#a8703c" {st(4.5)}/>'
+    for (x, y, r) in ((-40, -128, 10), (4, -146, 12), (44, -122, 9), (-8, -114, 6)):
+        s += f'<circle cx="{x}" cy="{y}" r="{r}" fill="#f6e8c8" stroke="{OUT}" stroke-width="2"/>'
+    return s
+
+
 # ── Gegner ──────────────────────────────────────────────────────────────
 
 def wurzelschlange(out=True):

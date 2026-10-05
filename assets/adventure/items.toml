@@ -100,12 +100,27 @@ bonuses = [{ heal_bonus = 1 }]
 name = { de = "Wabenhut", en = "Honeycomb hat" }
 desc = { de = "Von Imkerin Wabe. Heilblumen mögen ihn – sie heilen etwas mehr.", en = "From beekeeper Wabe. Healing blossoms like it – they heal a little more." }
 
+[[item]]
+id = "eulenfeder"
+type = "equipment"
+slot = "pendant"
+rarity = "rare"
+bonuses = [{ magnet = 48.0 }]
+name = { de = "Eulenfeder", en = "Owl feather" }
+desc = { de = "Von Plumm. Beute fliegt dir von weiter her zu.", en = "From Plumm. Loot flies to you from further away." }
+
 # Sammelstücke (Weltbuch §8)
 [[item]]
 id = "quellfunke"
 type = "key"
 name = { de = "Quellfunke", en = "Spring spark" }
 desc = { de = "Ein Funke der Blütenquelle. Tüftel kann daraus etwas bauen.", en = "A spark of the Blossom Spring. Tüftel can build something from it." }
+
+[[item]]
+id = "rune"
+type = "collectible"
+name = { de = "Erinnerungsrune", en = "Memory rune" }
+desc = { de = "Ein moosiger Stein mit einem leuchtenden Zeichen. Plumm kann ihn lesen.", en = "A mossy stone with a glowing sign. Plumm can read it." }
 
 [[item]]
 id = "biene"

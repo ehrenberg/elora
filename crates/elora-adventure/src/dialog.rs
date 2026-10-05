@@ -33,6 +33,15 @@ pub struct CharacterDef {
     /// Figur ist nur zu sehen, solange die Bedingung gilt (z. B. erst nach einem Kampf).
     #[serde(default)]
     pub show_if: Option<String>,
+    /// Begleiter (E-308): Gegnerart, die Elora folgt, solange `follow_if` gilt – auch über
+    /// Kartenwechsel. Erreicht der Begleiter die Zone `home_zone`, gilt der Merker
+    /// `<id>.daheim` und er bleibt dort.
+    #[serde(default)]
+    pub follower: Option<String>,
+    #[serde(default)]
+    pub follow_if: Option<String>,
+    #[serde(default)]
+    pub home_zone: Option<String>,
     /// Tonhöhe der Plapperlaute (E-286): 1 = mittel, kleiner = tiefer; 0 = stumm (Schilder).
     #[serde(default = "default_voice")]
     pub voice: f32,

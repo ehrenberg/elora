@@ -92,6 +92,8 @@ pub struct Session {
     pub map_name: String,
     /// Karte mit dem aktuellen Zustand von Türen und Bröckelboden.
     pub map: Map,
+    /// Begleiter in der Welt: Figur → Gegner-Id (E-308).
+    followers: BTreeMap<String, u32>,
     /// Deko der Karte, wie sie in der Datei steht (für [`Self::refresh_decor`]).
     base_decor: (Vec<elora_map::Decor>, Vec<elora_map::Decor>),
     pub player: usize,
@@ -156,6 +158,7 @@ impl Session {
             ticks: 0,
             npc_pos: BTreeMap::new(),
             base_decor: (Vec::new(), Vec::new()),
+            followers: BTreeMap::new(),
             pending: Vec::new(),
             dead: false,
         }
@@ -246,6 +249,7 @@ impl Session {
             }
         }
         world.events.clear();
+        self.followers.clear();
 
         name.clone_into(&mut self.map_name);
         self.inside = Self::areas_at(&map, pos);
@@ -263,6 +267,7 @@ impl Session {
         self.save.set_flag(&format!("besucht:{name}"), 1);
         let reached = self.save.on_reach(&self.content, name, None);
         self.push_outcomes(reached);
+        self.sync_followers(&mut world);
         world
     }
 
@@ -412,6 +417,7 @@ impl Session {
             .into_iter()
             .map(|n| (n.id, n.pos))
             .collect();
+        out.extend(self.followers_home(world));
         out.extend(self.touch(world, pos));
         out.extend(self.areas(pos));
         out.extend(self.barks(pos));
@@ -598,9 +604,62 @@ impl Session {
         outcomes(self.save.update_quests(&self.content))
     }
 
+    /// Begleiter erscheinen neben Elora, sobald ihre Bedingung gilt, und gehen, wenn nicht.
+    fn sync_followers(&mut self, world: &mut World) {
+        let Some(elora) = world.character(self.player).map(|c| c.core.pos) else {
+            return;
+        };
+        for (id, ch) in &self.content.characters {
+            let (Some(kind), Some(cond)) = (&ch.follower, &ch.follow_if) else {
+                continue;
+            };
+            let wanted = self.save.holds(&self.content, cond);
+            match (wanted, self.followers.get(id).copied()) {
+                (true, None) => {
+                    if let Some(k) = world.creature_kind(kind)
+                        && let Some(cid) = world.add_creature(k, elora + Vec2::new(-40.0, -8.0))
+                    {
+                        self.followers.insert(id.clone(), cid);
+                    }
+                }
+                (false, Some(cid)) => {
+                    world.creatures.retain(|c| c.id != cid);
+                    self.followers.remove(id);
+                }
+                _ => {}
+            }
+        }
+    }
+
+    /// Begleiter in ihrer Heimat-Zone: Merker `<id>.daheim`, der Begleiter bleibt dort.
+    fn followers_home(&mut self, world: &mut World) -> Vec<SessionEvent> {
+        let mut out = Vec::new();
+        let arrived: Vec<String> = self
+            .followers
+            .iter()
+            .filter_map(|(id, cid)| {
+                let zone = self.content.characters.get(id)?.home_zone.as_ref()?;
+                let z = self.map.adventure.object(zone)?;
+                let size = z.kind.area()?;
+                let c = world.creatures.iter().find(|c| c.id == *cid)?;
+                inside(c.pos, z.pos, size).then(|| id.clone())
+            })
+            .collect();
+        for id in arrived {
+            if let Some(cid) = self.followers.remove(&id) {
+                world.creatures.retain(|c| c.id != cid);
+            }
+            self.save.set_flag(&format!("{id}.daheim"), 1);
+            out.extend(outcomes(self.save.update_quests(&self.content)));
+        }
+        out
+    }
+
     /// Fähigkeiten und Waffen aus dem Spielstand in die laufende Welt übernehmen (nach
-    /// Gesprächen, die etwas freischalten: Hook-Ruck bei Tüftel, Granatwerfer bei Klonk).
-    pub fn sync_world(&self, world: &mut World) {
+    /// Gesprächen, die etwas freischalten: Hook-Ruck bei Tüftel, Granatwerfer bei Klonk),
+    /// Begleiter erscheinen lassen.
+    pub fn sync_world(&mut self, world: &mut World) {
+        self.sync_followers(world);
         world.set_abilities(self.player, self.save.abilities());
         let max_ammo = world.tuning.max_ammo;
         if let Some(ch) = world.character_mut(self.player) {

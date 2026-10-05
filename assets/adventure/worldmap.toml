@@ -26,6 +26,8 @@ name = { de = "Murmelwald", en = "Murmelwald" }
 pos = [0.18, 0.32]
 color = "#6cbf4a"
 maps = "wald-"
+music = "murmelwald"
+spring = "waldquelle"
 
 [[area]]
 id = "glutsandwueste"

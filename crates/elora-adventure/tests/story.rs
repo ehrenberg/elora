@@ -434,3 +434,79 @@ fn wabes_bees_give_the_honeycomb_hat() {
     assert_eq!(g.count("wabenhut"), 1);
     assert_eq!(g.count("biene"), 0);
 }
+
+/// Kapitel 2 (R2-M2.2): Westhang, Plumm, Wächter, Heranhooken bei Tüftel, Fest, Runen.
+#[test]
+fn chapter_two_runs_from_the_slope_to_the_party() {
+    let (c, mut g) = game();
+    g.run(&c, &["quest murmelwald start".into()]);
+    let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
+    assert_eq!(conv.node, "westhang");
+    g.on_reach(&c, "wald-1", None);
+    let (mut conv, _) = Conversation::start(&c, &mut g, "plumm").unwrap();
+    assert_eq!(conv.node, "begruessung");
+    assert!(g.holds(&c, "quest murmelwald schritt wurzeln"));
+    conv.choose(&c, &mut g, 0);
+    conv.choose(&c, &mut g, 0);
+    assert!(g.holds(&c, "quest runen aktiv"));
+    g.on_reach(&c, "wald-3", None);
+    g.on_reach(&c, "wald-arena", None);
+    g.location.map = "wald-arena".into();
+    g.set_flag("besiegt.wurzelwaechter", 1);
+    let kind = c
+        .creatures
+        .iter()
+        .position(|k| k.name == "wurzelwaechter")
+        .unwrap();
+    g.on_event(
+        &c,
+        &c.creatures,
+        0,
+        &Event::CreatureDeath {
+            id: 1,
+            kind,
+            pos: Vec2::ZERO,
+            killer: Some(0),
+        },
+    );
+    g.add_item(&c, "quellfunke", 1).unwrap();
+    assert!(g.holds(&c, "quest murmelwald schritt funke"));
+    let (mut conv, _) = Conversation::start(&c, &mut g, "waechter").unwrap();
+    conv.choose(&c, &mut g, 0);
+    conv.advance(&c, &mut g);
+    assert_eq!(g.flag("befreit.waldquelle"), 1);
+    let (conv, _) = Conversation::start(&c, &mut g, "tueftel").unwrap();
+    assert_eq!(conv.node, "funke2");
+    assert!(g.abilities().has(elora_sim::Ability::Pull));
+    assert_eq!(g.flag("quellen_befreit"), 2);
+    let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
+    assert_eq!(conv.node, "fest2");
+    assert!(g.holds(&c, "quest murmelwald erledigt"));
+    assert!(g.holds(&c, "quest glutsand aktiv"));
+    // Runen: Plumm liest vor, Feder und Tautropfen-Punkt (E-309)
+    let points = g.bonus_points;
+    g.add_item(&c, "rune", 5).unwrap();
+    g.update_quests(&c);
+    let (conv, _) = Conversation::start(&c, &mut g, "plumm").unwrap();
+    assert_eq!(conv.node, "runen_da");
+    assert!(g.holds(&c, "quest runen erledigt"));
+    assert_eq!(g.count("eulenfeder"), 1);
+    assert_eq!(g.bonus_points, points + 1);
+    assert_eq!(g.flag("sechste_quelle"), 1);
+}
+
+#[test]
+fn mushroom_child_quest_ends_with_mama() {
+    let (c, mut g) = game();
+    let (mut conv, _) = Conversation::start(&c, &mut g, "pilzkind").unwrap();
+    conv.choose(&c, &mut g, 0);
+    assert!(g.holds(&c, "quest pilzkind aktiv"));
+    assert_eq!(g.flag("pilzkind.unterwegs"), 1);
+    // die Sitzung setzt den Merker, sobald der Begleiter daheim ist
+    g.set_flag("pilzkind.daheim", 1);
+    g.update_quests(&c);
+    assert!(g.holds(&c, "quest pilzkind schritt danke"));
+    let (conv, _) = Conversation::start(&c, &mut g, "pilzmama").unwrap();
+    assert_eq!(conv.node, "danke");
+    assert!(g.holds(&c, "quest pilzkind erledigt"));
+}

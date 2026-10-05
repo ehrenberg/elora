@@ -231,6 +231,16 @@ fn quests(c: &Content) -> Result<(), String> {
         if let Some(s) = &ch.show_if {
             cond(c, s, &format!("characters.toml `{id}` show_if"))?;
         }
+        if let Some(s) = &ch.follow_if {
+            cond(c, s, &format!("characters.toml `{id}` follow_if"))?;
+        }
+        if let Some(k) = &ch.follower
+            && !c.creatures.iter().any(|x| &x.name == k)
+        {
+            return Err(format!(
+                "characters.toml `{id}`: Begleiter `{k}` gibt es nicht"
+            ));
+        }
     }
     Ok(())
 }

@@ -1,0 +1,9 @@
+# Wegweiser (E-273, R2-M2.2)
+speaker = "wegweiser"
+
+[[start]]
+node = "text"
+
+[[node]]
+id = "text"
+text = { de = "Murmelwald. Vorsicht: Wo die Erde sich wölbt, lauern Wurzelschlangen. Lila Pilzwichte machen dich ganz bunt im Kopf!", en = "Murmelwald. Careful: where the earth bulges, root snakes lurk. Purple mushroom imps make your head all colourful!" }

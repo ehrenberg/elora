@@ -51,7 +51,7 @@ macro_rules! adventure_svgs {
     };
 }
 
-const CHARACTER_FILES: &[(&str, &[u8])] = adventure_svgs!("characters": "oma", "klonk", "lotte", "tueftel", "pip", "wegweiser", "wabe", "hummel", "plumm", "pilzkind");
+const CHARACTER_FILES: &[(&str, &[u8])] = adventure_svgs!("characters": "oma", "klonk", "lotte", "tueftel", "pip", "wegweiser", "wabe", "hummel", "plumm", "pilzkind", "pilzkind_froh", "pilzmama", "waechter");
 /// Gegenstände mit eigenem Bild (R2-M2.1); alle anderen zeigen `item.svg`.
 const ITEM_FILES: &[(&str, &[u8])] = adventure_svgs!("items": "biene", "quellfunke", "wabenhut");
 /// Objekt und die Namen seiner beiden Teile (aus, an).

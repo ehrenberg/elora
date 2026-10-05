@@ -55,3 +55,42 @@ name = { de = "Brummbär-Hummel", en = "Bumblebear" }
 portrait = "hummel"
 voice = 0.55
 show_if = "merker besiegt.brummbaer"
+
+# Kapitel 2 (R2-M2.2)
+[[character]]
+id = "plumm"
+name = { de = "Uhu Plumm", en = "Plumm the Owl" }
+portrait = "plumm"
+voice = 0.75
+
+# verirrt im Wald; folgt Elora nach Hause (Begleiter, E-308)
+[[character]]
+id = "pilzkind"
+name = { de = "Pilzkind", en = "Mushroom child" }
+portrait = "pilzkind"
+voice = 1.6
+show_if = "nicht merker pilzkind.unterwegs"
+follower = "pilzkind"
+follow_if = "merker pilzkind.unterwegs und nicht merker pilzkind.daheim"
+home_zone = "pilzring"
+
+[[character]]
+id = "pilzkind_froh"
+name = { de = "Pilzkind", en = "Mushroom child" }
+portrait = "pilzkind_froh"
+voice = 1.6
+show_if = "merker pilzkind.daheim"
+
+[[character]]
+id = "pilzmama"
+name = { de = "Mama Morchel", en = "Mama Morel" }
+portrait = "pilzmama"
+voice = 1.0
+
+# nach dem Kampf an der Waldquelle
+[[character]]
+id = "waechter"
+name = { de = "Wurzelwächter", en = "Root Warden" }
+portrait = "waechter"
+voice = 0.45
+show_if = "merker besiegt.wurzelwaechter"

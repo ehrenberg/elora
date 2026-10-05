@@ -1,0 +1,12 @@
+# Pilzkind daheim (R2-M2.2)
+speaker = "pilzkind_froh"
+
+[[start]]
+node = "froh"
+
+[[node]]
+id = "froh"
+text = { de = "Elora! Mama hat Pilzsuppe gekocht. Mit extra Moos!", en = "Elora! Mama made mushroom soup. With extra moss!" }
+
+[[bark]]
+text = { de = "Danke, Elora!", en = "Thank you, Elora!" }

@@ -1,0 +1,124 @@
+# Uhu Plumm (R2-M2.2, Kapitel 2)
+speaker = "plumm"
+
+[[start]]
+if = "quest runen erledigt"
+node = "danach"
+
+[[start]]
+if = "quest runen schritt bringen"
+node = "runen_da"
+
+[[start]]
+if = "quest runen aktiv"
+node = "erinnerung"
+
+[[start]]
+node = "begruessung"
+
+[[node]]
+id = "begruessung"
+text = { de = "Huhu! Ein Tropfen im Wald, wie selten. Ich bin Plumm und sammle Geschichten. Die Wurzeln flüstern seit Tagen nur noch Unsinn – seit der Wächter so grimmig ist.", en = "Hoo-hoo! A drop in the forest, how rare. I'm Plumm and I collect stories. The roots have been whispering nonsense for days – ever since the warden turned so grim." }
+
+[[node.choice]]
+tone = "neugierig"
+text = { de = "Welche Geschichten erzählen die Wurzeln?", en = "What stories do the roots tell?" }
+next = "runen"
+
+[[node.choice]]
+tone = "freundlich"
+text = { de = "Ich will die Waldquelle wieder zum Singen bringen.", en = "I want to make the Forest Spring sing again." }
+next = "quelle"
+
+[[node.choice]]
+tone = "frech"
+text = { de = "Sammelst du auch Mäuse?", en = "Do you collect mice too?" }
+next = "maeuse"
+do = ["zuneigung plumm -1"]
+
+[[node]]
+id = "maeuse"
+text = { de = "Hm! Nur Geschichten. Und Brillenputztücher.", en = "Hm! Only stories. And spectacle cloths." }
+next = "runen"
+
+[[node]]
+id = "quelle"
+text = { de = "Dann musst du hinab in die Wurzelhöhlen. Der Wächter schläft auf der Quelle. Wecke ihn vorsichtig.", en = "Then you must go down into the root caves. The warden sleeps on the spring. Wake him carefully." }
+next = "runen"
+
+[[node]]
+id = "runen"
+text = { de = "Im Wald liegen fünf alte Runen. Jede trägt ein Stück einer Geschichte, die keiner mehr kennt. Bringst du sie mir, lese ich sie dir vor.", en = "Five old runes lie in the forest. Each carries a piece of a story nobody knows anymore. If you bring them to me, I'll read them to you." }
+
+[[node.choice]]
+tone = "freundlich"
+text = { de = "Ich halte die Augen offen.", en = "I'll keep my eyes open." }
+do = ["quest runen start", "zuneigung plumm +1"]
+
+[[node.choice]]
+text = { de = "Vielleicht später.", en = "Maybe later." }
+
+[[node]]
+id = "erinnerung"
+text = { de = "Hast du schon Runen gefunden? Zeig her, ich lese dir vor, was draufsteht.", en = "Have you found any runes yet? Show me, I'll read you what's on them." }
+
+[[node.choice]]
+if = "hat rune 1"
+text = { de = "Die erste Rune.", en = "The first rune." }
+next = "rune1"
+
+[[node.choice]]
+if = "hat rune 2"
+text = { de = "Die zweite Rune.", en = "The second rune." }
+next = "rune2"
+
+[[node.choice]]
+if = "hat rune 3"
+text = { de = "Die dritte Rune.", en = "The third rune." }
+next = "rune3"
+
+[[node.choice]]
+if = "hat rune 4"
+text = { de = "Die vierte Rune.", en = "The fourth rune." }
+next = "rune4"
+
+[[node.choice]]
+text = { de = "Ich suche weiter.", en = "I'll keep looking." }
+
+[[node]]
+id = "rune1"
+text = { de = "„Fünf Lieder sangen die Quellen …“", en = "“Five songs the springs did sing …”" }
+
+[[node]]
+id = "rune2"
+text = { de = "„… doch unter allen lag ein sechstes, leises Lied.“", en = "“… yet beneath them all lay a sixth, quiet song.”" }
+
+[[node]]
+id = "rune3"
+text = { de = "„Die Ursprungsquelle gab den anderen ihren Tau.“", en = "“The Origin Spring gave the others their dew.”" }
+
+[[node]]
+id = "rune4"
+text = { de = "„Ihr Hüter war einsam, denn niemand hörte sein Lied.“", en = "“Its keeper was lonely, for no one heard its song.”" }
+
+[[node]]
+id = "runen_da"
+text = { de = "Alle fünf! Hör zu: „Fünf Lieder sangen die Quellen, doch unter allen lag ein sechstes, leises Lied. Die Ursprungsquelle gab den anderen ihren Tau. Ihr Hüter war einsam, denn niemand hörte sein Lied. Wo der älteste Brunnen steht, schläft die sechste Quelle.“", en = "All five! Listen: “Five songs the springs did sing, yet beneath them all lay a sixth, quiet song. The Origin Spring gave the others their dew. Its keeper was lonely, for no one heard its song. Where the oldest well stands, the sixth spring sleeps.”" }
+next = "brunnen"
+do = ["merker sechste_quelle = 1"]
+
+[[node]]
+id = "brunnen"
+text = { de = "Der älteste Brunnen … das ist doch der in Tauwinkel! Nimm diese Feder, Kind. Und frag Oma Pfütze nach dem alten Lied.", en = "The oldest well … that's the one in Tauwinkel! Take this feather, child. And ask Oma Pfütze about the old song." }
+do = ["zuneigung plumm +2"]
+
+[[node]]
+id = "danach"
+text = { de = "Huhu! Neue Geschichten? Ich bin ganz Ohr. Na ja, ganz Federohr.", en = "Hoo-hoo! New stories? I'm all ears. Well, all feather-ears." }
+
+[[bark]]
+if = "quest runen aktiv"
+text = { de = "Huhu, Runen gefunden?", en = "Hoo-hoo, found any runes?" }
+
+[[bark]]
+text = { de = "Huhu!", en = "Hoo-hoo!" }

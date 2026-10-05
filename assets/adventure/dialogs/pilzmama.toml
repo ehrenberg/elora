@@ -1,0 +1,33 @@
+# Mama Morchel (R2-M2.2)
+speaker = "pilzmama"
+
+[[start]]
+if = "quest pilzkind erledigt"
+node = "danach"
+
+[[start]]
+if = "merker pilzkind.daheim"
+node = "danke"
+
+[[start]]
+node = "sorge"
+
+[[node]]
+id = "sorge"
+text = { de = "Hast du meinen Krümel gesehen? So groß, roter Hut, weint schnell. Er ist seit dem Morgen fort.", en = "Have you seen my Crumb? This big, red hat, cries easily. He's been gone since morning." }
+
+[[node]]
+id = "danke"
+text = { de = "Krümel! Da bist du ja! Danke, liebes Tropfenkind. Hier, nimm das – und komm jederzeit auf eine Suppe vorbei.", en = "Crumb! There you are! Thank you, dear drop child. Here, take this – and come by for soup any time." }
+do = ["zuneigung pilzmama +2"]
+
+[[node]]
+id = "danach"
+text = { de = "Die Suppe ist noch warm. Moos?", en = "The soup is still warm. Moss?" }
+
+[[bark]]
+if = "nicht merker pilzkind.daheim"
+text = { de = "Krümel? Krüüümel!", en = "Crumb? Cruuumb!" }
+
+[[bark]]
+text = { de = "Pilzsuppe für alle!", en = "Mushroom soup for everyone!" }

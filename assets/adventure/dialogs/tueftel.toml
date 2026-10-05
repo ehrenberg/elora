@@ -2,6 +2,10 @@
 speaker = "tueftel"
 
 [[start]]
+if = "quest murmelwald schritt funke"
+node = "funke2"
+
+[[start]]
 if = "quest bluetenquelle schritt funke"
 node = "funke"
 
@@ -57,6 +61,16 @@ do = ["faehigkeit hook-ruck", "merker quellen_befreit = 1", "merker fest = 1", "
 [[node]]
 id = "hof"
 text = { de = "Hinten in meinem Hof hab ich was aufgemacht. Eine Strecke, die schafft man nur mit Ruck. Probier's aus! Und dann – ab zu Oma, die will feiern.", en = "I've opened something at the back of my yard. A course you can only manage with a jolt. Give it a try! And then – off to Oma, she wants to celebrate." }
+
+[[node]]
+id = "funke2"
+text = { de = "Noch ein Quellfunke! Wenn ich den hier … und das da … umdrehe … Fertig! Dein Hook zieht jetzt Dinge zu dir: Schalter, Fundstücke, Beute. Einfach anhooken.", en = "Another spring spark! If I turn this … and that … around … Done! Your hook now pulls things to you: switches, finds, loot. Just hook them." }
+next = "hof2"
+do = ["faehigkeit heranhooken", "merker quellen_befreit = 2", "merker fest = 1", "merker hof.zug = 1", "zuneigung tueftel +1"]
+
+[[node]]
+id = "hof2"
+text = { de = "Im Hof hängt jetzt ein Zugschalter hoch oben. Hol ihn dir! Und dann – du weißt schon – Oma.", en = "There's a pull lever high up in the yard now. Go get it! And then – you know – Oma." }
 
 [[bark]]
 if = "merker hof.ruck"

@@ -2,6 +2,22 @@
 speaker = "oma"
 
 [[start]]
+if = "quest murmelwald schritt fest"
+node = "fest2"
+
+[[start]]
+if = "quest glutsand aktiv"
+node = "glutsand"
+
+[[start]]
+if = "quest murmelwald aktiv und merker besiegt.wurzelwaechter"
+node = "funke"
+
+[[start]]
+if = "quest murmelwald schritt westhang"
+node = "westhang"
+
+[[start]]
 if = "quest bluetenquelle schritt fest"
 node = "fest"
 
@@ -133,6 +149,54 @@ text = { de = "Ein Quellfunke! Bring ihn schnell zu Tüftel, Kind. Der weiß, wa
 [[node]]
 id = "murmelwald"
 text = { de = "Der Murmelwald wartet. Aber ruh dich ruhig noch ein bisschen aus – das Fest war lang.", en = "The Murmelwald is waiting. But do rest a little longer – it was a long party." }
+
+[[node]]
+id = "westhang"
+text = { de = "Der Murmelwald liegt oben am Westhang, hinter deinem Haus. Früher führte ein Pfad hinauf – halt dich an den Wurzeln fest, Kind.", en = "The Murmelwald lies up the western slope, behind your house. A path used to lead up there – hold on to the roots, dear." }
+
+[[node]]
+id = "fest2"
+text = { de = "Hörst du, wie die Blätter am Brunnen rascheln? Zwei Quellen singen wieder! Heute Abend feiern wir noch einmal.", en = "Can you hear the leaves rustling by the well? Two springs are singing again! Tonight we celebrate once more." }
+
+[[node.choice]]
+tone = "neugierig"
+text = { de = "Plumm sagt, es gab eine sechste Quelle. Weißt du davon?", en = "Plumm says there was a sixth spring. Do you know about it?" }
+if = "merker sechste_quelle"
+next = "sechste"
+
+[[node.choice]]
+tone = "freundlich"
+text = { de = "Der Wächter war auch nur müde und verwirrt.", en = "The warden was only tired and confused as well." }
+next = "muede"
+do = ["zuneigung oma +1"]
+
+[[node.choice]]
+tone = "frech"
+text = { de = "Feiern wir jetzt nach jeder Quelle?", en = "Are we going to celebrate after every spring now?" }
+next = "jede"
+
+[[node]]
+id = "sechste"
+text = { de = "Eine sechste … Da war ein Lied, als ich klein war. Ich weiß nur noch die erste Zeile. Vielleicht fällt mir der Rest wieder ein.", en = "A sixth … There was a song when I was little. I only remember the first line. Maybe the rest will come back to me." }
+next = "wueste"
+
+[[node]]
+id = "muede"
+text = { de = "Müde, verwirrt … und grau. Irgendetwas wandert durchs Tauland und nimmt die Farben mit.", en = "Tired, confused … and grey. Something is wandering the Tauland, taking the colours with it." }
+next = "wueste"
+
+[[node]]
+id = "jede"
+text = { de = "Nach jeder einzelnen! So, und jetzt hilf Lotte mit den Laternen.", en = "After every single one! Now go and help Lotte with the lanterns." }
+next = "wueste"
+
+[[node]]
+id = "wueste"
+text = { de = "Die dritte Quelle liegt in der Glutsandwüste. Eine Karawane erzählt von einem grauen Wanderer. Aber erst wird gefeiert.", en = "The third spring lies in the Glutsandwüste. A caravan tells of a grey wanderer. But first we celebrate." }
+
+[[node]]
+id = "glutsand"
+text = { de = "Die Wüste ist heiß, Kind. Nimm genug Heiltränke mit, wenn es so weit ist.", en = "The desert is hot, dear. Take enough healing potions when the time comes." }
 
 [[bark]]
 if = "merker fest"

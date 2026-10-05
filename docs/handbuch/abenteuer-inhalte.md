@@ -47,6 +47,8 @@ Ein Knoten kann `speaker = "elora"` oder eine andere Figur haben. Jeder Knoten m
 
 **Erscheinen:** `show_if = "<Bedingung>"` in `characters.toml` zeigt eine Figur nur, solange die Bedingung gilt (z. B. die Hummel erst nach dem Kampf: `merker besiegt.brummbaer`). Besiegte Hüter setzen den Merker `besiegt.<art>`.
 
+**Begleiter (E-308):** `follower = "<gegnerart>"`, `follow_if = "<Bedingung>"` und `home_zone = "<zone>"` in `characters.toml`: Solange die Bedingung gilt, folgt die Gegnerart (Verhalten `follower`) Elora, auch über Kartenwechsel. Erreicht sie die Zone, gilt der Merker `<id>.daheim`.
+
 **Stimme (E-286):** In `characters.toml` setzt `voice` die Tonhöhe der Plapperlaute, während der Text erscheint (1 = mittel, kleiner = tiefer, 0 = stumm). Elora spricht mit 1,25.
 
 **Musik (E-285, E-290):** In `worldmap.toml` wählt `music = "<name>"` je Gebiet die Datei `assets/music/<name>.ogg` (Ogg Vorbis, 44,1 kHz). Beim Wechsel des Gebiets wird übergeblendet; `menu.ogg` läuft im Hauptmenü. Quelle und Lizenz gehören in `assets/SOURCES.md`.

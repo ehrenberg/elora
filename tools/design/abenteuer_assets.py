@@ -16,7 +16,8 @@ from abenteuer_figuren import (glanztropfen, glitzerstein, grashuepfer, klonk, l
                                pollenblaeser, quellstein, schalter, stachelkaefer, truhe, tueftel)
 
 from kapitel1_entwuerfe import biene, hummel, quellfunke, wabe, wabenhut  # noqa: E402
-from kapitel2_entwuerfe import eichhornpirat, pilzkind, pilzwicht, plumm, wurzelschlange, wurzelwaechter  # noqa: E402
+from kapitel2_entwuerfe import (eichhornpirat, pilzkind, pilzmama, pilzwicht, plumm, wurzelschlange,  # noqa: E402
+                                wurzelwaechter)
 
 
 def strohpuppe():
@@ -78,6 +79,8 @@ CHARACTERS = {
     # Kapitel 2 (R2-M2.2)
     'plumm': (1.0, plumm()),
     'pilzkind': (0.6, pilzkind(True)),
+    'pilzkind_froh': (0.6, pilzkind(False)),
+    'pilzmama': (0.85, pilzmama()),
     # nach dem Kampf freundlich (Gesprächsfigur), gleiche Größe wie der Hüter
     'waechter': (1.25, wurzelwaechter('ruhig')),
 }

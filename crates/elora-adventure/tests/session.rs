@@ -269,3 +269,46 @@ fn pulling_hook_grabs_collectibles_and_loot() {
             < 1.0
     );
 }
+
+/// Begleiter (E-308): erscheint, folgt über Kartenwechsel und bleibt in seiner Heimat-Zone.
+#[test]
+fn follower_appears_follows_and_stays_home() {
+    use elora_map::{Object, ObjectKind};
+    let mut s = Session::new_game(Content::builtin());
+    let mut w = s.enter("wiese-1", load("wiese-1"), "west", &Tuning::default());
+    assert!(
+        w.creatures
+            .iter()
+            .all(|c| w.creature_kinds[c.kind].name != "pilzkind")
+    );
+    s.save.run(
+        &s.content.clone(),
+        &["merker pilzkind.unterwegs = 1".into()],
+    );
+    s.sync_world(&mut w);
+    let kid = |w: &World| {
+        w.creatures
+            .iter()
+            .find(|c| w.creature_kinds[c.kind].name == "pilzkind")
+            .map(|c| c.pos)
+    };
+    assert!(kid(&w).is_some(), "folgt");
+    // neue Karte mit Pilzring: das Kind kommt mit
+    let mut home = load("wiese-1");
+    let spawn = home.adventure.object("west").unwrap().pos;
+    home.adventure.objects.push(Object {
+        id: "pilzring".into(),
+        pos: spawn - Vec2::new(200.0, 200.0),
+        kind: ObjectKind::Zone {
+            size: Vec2::new(400.0, 400.0),
+        },
+    });
+    let mut w = s.enter("wald-1", home, "west", &Tuning::default());
+    assert!(kid(&w).is_some(), "über den Kartenwechsel");
+    for _ in 0..5 {
+        w.step(&[PlayerInput::default()]);
+        s.tick(&mut w, false);
+    }
+    assert_eq!(s.save.flag("pilzkind.daheim"), 1);
+    assert!(kid(&w).is_none(), "bleibt daheim");
+}
