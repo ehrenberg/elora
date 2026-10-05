@@ -28,6 +28,8 @@ struct Look {
     stunned: Option<Mesh>,
     /// Versteckt im Boden (Wurzelschlange, Zustand 0).
     hidden: Option<Mesh>,
+    /// Pose je Zustand (`m<Zustand>`, z. B. `m3`): geht allen anderen vor (Wurzelwächter).
+    modes: HashMap<u8, Mesh>,
 }
 
 #[derive(Debug)]
@@ -96,7 +98,8 @@ const CREATURE_FILES: &[(&str, &[u8])] = creatures!(
     "wurzelschlange",
     "eichhornpirat",
     "pilzwicht",
-    "pilzkind"
+    "pilzkind",
+    "wurzelwaechter"
 );
 
 impl CreatureArt {
@@ -119,6 +122,9 @@ impl CreatureArt {
                         dive: a.part("dive").cloned(),
                         stunned: a.part("stunned").cloned(),
                         hidden: a.part("hidden").cloned(),
+                        modes: (0..8u8)
+                            .filter_map(|m| Some((m, a.part(&format!("m{m}"))?.clone())))
+                            .collect(),
                     },
                 )
             })
@@ -186,14 +192,17 @@ impl CreatureArt {
         };
         if let Some(look) = self.looks.get(c.kind.as_str()) {
             use elora_sim::creature::diver;
-            let mesh = match c.mode {
-                elora_sim::creature::burrow::HIDDEN => look.hidden.as_ref(),
-                diver::DIVE | diver::AIM => look.dive.as_ref(),
-                diver::STUNNED => look.stunned.as_ref(),
-                _ => None,
-            }
-            .or_else(|| look.air.as_ref().filter(|_| c.airborne))
-            .unwrap_or(&look.idle);
+            let mesh = look
+                .modes
+                .get(&c.mode)
+                .or(match c.mode {
+                    elora_sim::creature::burrow::HIDDEN => look.hidden.as_ref(),
+                    diver::DIVE | diver::AIM => look.dive.as_ref(),
+                    diver::STUNNED => look.stunned.as_ref(),
+                    _ => None,
+                })
+                .or_else(|| look.air.as_ref().filter(|_| c.airborne))
+                .unwrap_or(&look.idle);
             // Wurzelschlange wächst langsam aus dem Boden (Fuß bleibt unten)
             let t = if c.grow < 1.0 {
                 let h = mesh.bounds().map_or(0.0, |(_, max)| max.y);
@@ -336,7 +345,7 @@ mod tests {
         let ground = 200.0;
         batch.fill_rect(
             Vec2::new(0.0, ground),
-            Vec2::new(2000.0, ground + 40.0),
+            Vec2::new(2600.0, ground + 40.0),
             Color::hex(0x8fbf7a),
         );
         let mut x = 60.0;
@@ -387,6 +396,10 @@ mod tests {
         put("eichhornpirat", false, false, None, -1, 0);
         put("pilzwicht", false, false, None, 1, 0);
         put("pilzkind", false, false, None, 1, 0);
+        put("wurzelwaechter", false, false, None, -1, 0);
+        put("wurzelwaechter", false, false, None, -1, 1);
+        put("wurzelwaechter", false, false, None, -1, 2);
+        put("wurzelwaechter", false, false, Some(10), -1, 3);
         // Elora zum Größenvergleich (Box 28)
         batch.fill_circle(Vec2::new(x, ground - 14.0), 14.0, Color::hex(0xf2c14e));
         CreatureArt::draw_shot(&mut batch, Vec2::new(x + 80.0, ground - 60.0));
@@ -435,7 +448,7 @@ mod tests {
             let x = 480.0 + i as f32 * 52.0;
             art.draw_object(&mut batch, name, Vec2::new(x, ground2), *on);
         }
-        let svg = batch.debug_svg(Vec2::ZERO, Vec2::new(2000.0, 480.0), Color::hex(0xa9cde8));
+        let svg = batch.debug_svg(Vec2::ZERO, Vec2::new(2600.0, 480.0), Color::hex(0xa9cde8));
         std::fs::write(
             concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/creatures.svg"),
             svg,

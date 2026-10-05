@@ -344,6 +344,11 @@ impl Session {
                     set_map_tile(&mut self.map, *tx, *ty, Tile::Air);
                     out.push(SessionEvent::TilesChanged);
                 }
+                // Wurzelwände: nur zeitweise, nicht im Spielstand
+                Event::TileSet { tx, ty, tile } => {
+                    set_map_tile(&mut self.map, *tx, *ty, *tile);
+                    out.push(SessionEvent::TilesChanged);
+                }
                 Event::HammerHit { owner, pos } if *owner == me => {
                     out.extend(self.switches_at(*pos, SwitchTrigger::Hammer, 32.0));
                 }

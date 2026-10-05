@@ -180,6 +180,8 @@ pub struct Effects {
     pub settings: EffectSettings,
     particles: Vec<Particle>,
     flashes: Vec<Flash>,
+    /// Wurzelstöße des Wurzelwächters: Fuß am Boden, Alter (s).
+    roots: Vec<(Vec2, f32)>,
     rng: u64,
     trail: f32,
     shake: f32,
@@ -196,6 +198,7 @@ impl Default for Effects {
             settings: EffectSettings::default(),
             particles: Vec::new(),
             flashes: Vec::new(),
+            roots: Vec::new(),
             rng: 0x9e37_79b9_7f4a_7c15,
             trail: 0.0,
             shake: 0.0,
@@ -239,6 +242,8 @@ const LASER_SPARK: Color = Color::rgb(0.6, 0.95, 1.0);
 const GLITTER: Color = Color::rgb(1.0, 0.95, 0.6);
 const FALLBACK_BODY: Color = Color::hex(0xf2c14e);
 const CRUMB: Color = Color::hex(0xb08a5e);
+/// So lange steht ein Wurzelstoß (s).
+const ROOT_LIFE: f32 = 0.7;
 
 impl Effects {
     pub fn with_settings(settings: EffectSettings) -> Self {
@@ -452,7 +457,22 @@ impl Effects {
                 self.burst(pos, SMOKE, &DEATH_SMOKE);
                 self.burst(pos, GLITTER, &SPAWN_GLITTER);
             }
-            Event::TileBroken { tx, ty } => {
+            // Wurzelwächter (R2-M2.2): Boden bebt, dann Wurzelstoß; gelöster Kern glitzert
+            Event::CreatureAct { pos, act, .. } => match act {
+                elora_sim::CreatureAct::Warn => {
+                    self.burst(pos, CRUMB, &CRUMBS);
+                    self.shake = (self.shake + 0.15).min(1.0);
+                }
+                elora_sim::CreatureAct::Strike => {
+                    self.roots.push((pos, 0.0));
+                    self.burst(pos, CRUMB, &CRUMBS);
+                    self.shake = (self.shake + 0.3).min(1.0);
+                }
+                elora_sim::CreatureAct::Core => self.burst(pos, GLITTER, &SPAWN_GLITTER),
+                _ => {}
+            },
+            // zerbrochener Boden und Wurzelwände bröseln
+            Event::TileBroken { tx, ty } | Event::TileSet { tx, ty, .. } => {
                 #[allow(clippy::cast_precision_loss)]
                 let ts = elora_sim::TILE_SIZE as f32;
                 #[allow(clippy::cast_precision_loss)]
@@ -485,6 +505,10 @@ impl Effects {
             f.age += dt;
         }
         self.flashes.retain(|f| f.age < f.life);
+        for r in &mut self.roots {
+            r.1 += dt;
+        }
+        self.roots.retain(|r| r.1 < ROOT_LIFE);
         self.shake = (self.shake - SHAKE_DECAY * dt).max(0.0);
         self.hit_marker = (self.hit_marker - dt).max(0.0);
     }
@@ -501,6 +525,29 @@ impl Effects {
 
     pub fn draw(&self, batch: &mut ShapeBatch) {
         let mut tint = Tint::new(vec![WHITE]);
+        // Wurzelstöße: schießen hoch, bleiben kurz, ziehen sich zurück
+        for &(foot, age) in &self.roots {
+            let t = age / ROOT_LIFE;
+            let grow = if t < 0.15 {
+                t / 0.15
+            } else {
+                1.0 - ((t - 0.6) / 0.4).max(0.0)
+            };
+            let h = 100.0 * grow;
+            for (dx, k) in [(-16.0, 0.7), (0.0, 1.0), (16.0, 0.8)] {
+                let base = foot + Vec2::new(dx, 0.0);
+                let tip = base + Vec2::new(dx * 0.4, -h * k);
+                let w = 10.0 * k;
+                let outline = [
+                    base + Vec2::new(-w - 2.0, 2.0),
+                    tip + Vec2::new(0.0, -3.0),
+                    base + Vec2::new(w + 2.0, 2.0),
+                ];
+                let fill = [base + Vec2::new(-w, 0.0), tip, base + Vec2::new(w, 0.0)];
+                batch.fill_polygon(&outline, Color::hex(0x2b2b2b));
+                batch.fill_polygon(&fill, Color::hex(0x8a6040));
+            }
+        }
         for f in &self.flashes {
             let t = f.age / f.life;
             batch.fill_circle(

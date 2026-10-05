@@ -846,3 +846,120 @@ fn follower_follows_waits_at_gaps_and_never_hurts() {
     assert!(c.pos.x < 30.0 * 32.0, "wartet: {}", c.pos.x);
     assert!(!c.vulnerable(&w.creature_kinds[kind]));
 }
+
+fn warden_def() -> elora_sim::creature::WardenDef {
+    elora_sim::creature::WardenDef {
+        sight: 900.0,
+        attack_ms: 400,
+        warn_ms: 200,
+        spike_width: 60.0,
+        spike_height: 100.0,
+        spike_damage: 2,
+        pull_ms: 200,
+        open_ms: 600,
+        cores: 3,
+        enrage_at: 0.5,
+        wall_every_ms: 300,
+        wall_ms: 400,
+        wall_height: 3,
+    }
+}
+
+fn warden_world() -> (World, u32, usize) {
+    let mut w = world(|_| {});
+    let mut k = kinds()[0].clone();
+    k.name = "waechter".into();
+    k.size = [80.0, 200.0];
+    k.health = 12;
+    k.boss = true;
+    k.behavior = Behavior::Warden(Box::new(warden_def()));
+    w.creature_kinds.push(k);
+    let kind = w.creature_kinds.len() - 1;
+    let id = w.add_creature(kind, on_floor(40, 200.0)).unwrap();
+    (w, id, kind)
+}
+
+#[test]
+fn warden_strikes_with_warning_where_elora_stands() {
+    use elora_sim::CreatureAct;
+    let (mut w, _, _) = warden_world();
+    elora(&mut w, 20);
+    let ev = run(&mut w, PlayerInput::default(), 40);
+    let warn = ev.iter().position(|e| {
+        matches!(
+            e,
+            Event::CreatureAct {
+                act: CreatureAct::Warn,
+                ..
+            }
+        )
+    });
+    let strike = ev.iter().position(|e| {
+        matches!(
+            e,
+            Event::CreatureAct {
+                act: CreatureAct::Strike,
+                ..
+            }
+        )
+    });
+    assert!(warn.is_some() && strike > warn, "erst Warnung, dann Stoß");
+    assert!(health(&w) < 10, "Elora stand still und wurde getroffen");
+}
+
+#[test]
+fn pulling_a_core_opens_the_warden_for_hits() {
+    use elora_sim::creature::warden;
+    let (mut w, id, kind) = warden_world();
+    elora(&mut w, 30);
+    run(&mut w, PlayerInput::default(), 3);
+    let c = w.creatures.iter().find(|c| c.id == id).unwrap();
+    assert!(!c.vulnerable(&w.creature_kinds[kind]));
+    // Hook am Wächter, Elora zieht weg (nach links)
+    let away = PlayerInput {
+        direction: -1,
+        hook: true,
+        ..PlayerInput::default()
+    };
+    let mut opened = false;
+    for _ in 0..30 {
+        let ch = w.character_mut(0).unwrap();
+        ch.core.hook_state = HookState::Grabbed;
+        ch.core.hooked_creature = Some(id);
+        ch.core.pulling = true;
+        ch.core.hook_tick = 0;
+        ch.health = 10;
+        run(&mut w, away, 1);
+        if w.creatures.iter().find(|c| c.id == id).unwrap().mode == warden::OPEN {
+            opened = true;
+            break;
+        }
+    }
+    assert!(opened, "Kern gelöst");
+    let c = w.creatures.iter().find(|c| c.id == id).unwrap();
+    assert_eq!(c.count, 2, "zwei Kerne übrig");
+    assert!(c.vulnerable(&w.creature_kinds[kind]));
+}
+
+#[test]
+fn angry_warden_raises_root_walls_that_disappear() {
+    let (mut w, id, _) = warden_world();
+    w.creatures.iter_mut().find(|c| c.id == id).unwrap().health = 5;
+    elora(&mut w, 20);
+    let mut set = 0;
+    let mut reset = 0;
+    for _ in 0..120 {
+        w.character_mut(0).unwrap().health = 10;
+        for e in run(&mut w, PlayerInput::default(), 1) {
+            if let Event::TileSet { tile, .. } = e {
+                if tile == Tile::Unhookable {
+                    set += 1;
+                } else {
+                    reset += 1;
+                }
+            }
+        }
+    }
+    assert!(set > 0, "Wurzelwand");
+    assert!(reset > 0, "verschwindet wieder");
+}

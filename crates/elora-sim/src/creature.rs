@@ -88,6 +88,11 @@ pub enum Behavior {
         #[cfg_attr(feature = "serde", serde(default))]
         rise_ms: u32,
     },
+    /// Hüter am Boden (Wurzelwächter, R2-M2.2, E-307): steht, stößt Wurzeln aus dem Boden
+    /// (mit Warnung), Kerne in der Rinde lassen sich per Tauziehen mit dem Hook lösen –
+    /// **nur dann verwundbar**. Ab `enrage_at` schneller und mit Wurzelwänden, beim letzten
+    /// Kern Wurzeln an zwei Stellen.
+    Warden(Box<WardenDef>),
     /// Begleiter (Pilzkind, E-308): folgt Elora am Boden, springt über Stufen, wartet an
     /// Lücken und Gefahren; unverwundbar und harmlos.
     Follower { speed: f32, jump: f32 },
@@ -128,6 +133,46 @@ pub struct DiverDef {
     pub summon_max: u32,
     #[cfg_attr(feature = "serde", serde(default))]
     pub summon_ms: u32,
+}
+
+/// Werte des Hüters am Boden ([`Behavior::Warden`]).
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct WardenDef {
+    /// Wacht auf, sobald Elora so nah ist.
+    pub sight: f32,
+    /// Abstand der Wurzelstöße und Warnzeit davor (Boden bebt).
+    pub attack_ms: u32,
+    pub warn_ms: u32,
+    /// Wurzelstoß: Breite und Höhe der Trefferzone, Schaden.
+    pub spike_width: f32,
+    pub spike_height: f32,
+    pub spike_damage: i32,
+    /// So lange vom Wächter weg ziehen, bis ein Kern sich löst; so lange ist er dann offen.
+    pub pull_ms: u32,
+    pub open_ms: u32,
+    /// Kerne in der Rinde (wachsen nach, wenn alle gezogen sind).
+    pub cores: u32,
+    /// Ab diesem Anteil des Lebens wütend: schneller, Wurzelwände; 0 = nie.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub enrage_at: f32,
+    /// Wurzelwand: alle `wall_every_ms`, steht `wall_ms`, so viele Tiles hoch.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub wall_every_ms: u32,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub wall_ms: u32,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub wall_height: u32,
+}
+
+/// Zustand des Hüters am Boden (in [`Creature::mode`]).
+pub mod warden {
+    pub const SLEEP: u8 = 0;
+    pub const IDLE: u8 = 1;
+    /// Boden bebt an [`super::Creature::goal`], gleich kommt der Wurzelstoß.
+    pub const WARN: u8 = 2;
+    /// Ein Kern ist gezogen: verwundbar.
+    pub const OPEN: u8 = 3;
 }
 
 /// Zustand eines Hüters aus der Luft (in [`Creature::mode`]).
@@ -191,8 +236,12 @@ pub struct Creature {
     pub mode: u8,
     /// Ziel des Verhaltens (Sturzflug-Richtung).
     pub goal: Vec2,
-    /// Zähler im Zustand (Sturzflüge hintereinander, Winkel beim Kreisen in 1/1000).
+    /// Zähler im Zustand (Sturzflüge hintereinander, Winkel beim Kreisen in 1/1000;
+    /// beim Wurzelwächter: verbleibende Kerne).
     pub count: u32,
+    /// Tauziehen am Wurzelwächter (Ticks) und Takt der Wurzelwände.
+    pub tug: u32,
+    pub wall_timer: u32,
 }
 
 impl Creature {
@@ -201,6 +250,7 @@ impl Creature {
         match kind.behavior {
             Behavior::Diver(_) => self.mode == diver::STUNNED,
             Behavior::Burrower { .. } => self.mode == burrow::OUT,
+            Behavior::Warden(_) => self.mode == warden::OPEN,
             Behavior::Follower { .. } => false,
             _ => true,
         }
@@ -211,6 +261,7 @@ impl Creature {
         match kind.behavior {
             Behavior::Diver(_) => self.mode != diver::STUNNED,
             Behavior::Burrower { .. } => self.mode == burrow::OUT,
+            Behavior::Warden(_) => !matches!(self.mode, warden::OPEN | warden::SLEEP),
             Behavior::Follower { .. } => false,
             _ => true,
         }
@@ -257,6 +308,8 @@ pub struct HookTarget {
     pub pos: Vec2,
     pub radius: f32,
     pub small: bool,
+    /// Fest verankert (Wurzelwächter): der Hook hält, zieht Elora aber nicht hin.
+    pub anchor: bool,
 }
 
 /// Fester Pseudo-Zufall (splitmix64) – gleiche Eingabe, gleiches Ergebnis.

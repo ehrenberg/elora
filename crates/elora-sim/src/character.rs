@@ -421,7 +421,7 @@ impl CharacterCore {
                     self.triggered_events |= events::HOOK_ATTACH_PLAYER;
                     self.hook_state = HookState::Grabbed;
                     self.hooked_creature = Some(c.id);
-                    self.pulling = c.small && self.abilities.has(Ability::Pull);
+                    self.pulling = c.anchor || (c.small && self.abilities.has(Ability::Pull));
                     self.hook_tick = 0;
                     self.hook_pos = c.pos;
                 }

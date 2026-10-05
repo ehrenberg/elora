@@ -16,7 +16,7 @@ from abenteuer_figuren import (glanztropfen, glitzerstein, grashuepfer, klonk, l
                                pollenblaeser, quellstein, schalter, stachelkaefer, truhe, tueftel)
 
 from kapitel1_entwuerfe import biene, hummel, quellfunke, wabe, wabenhut  # noqa: E402
-from kapitel2_entwuerfe import eichhornpirat, pilzkind, pilzwicht, plumm, wurzelschlange  # noqa: E402
+from kapitel2_entwuerfe import eichhornpirat, pilzkind, pilzwicht, plumm, wurzelschlange, wurzelwaechter  # noqa: E402
 
 
 def strohpuppe():
@@ -57,6 +57,9 @@ CREATURES = {
     'eichhornpirat': (52, 0.4, {'idle': eichhornpirat()}),
     'pilzwicht': (40, 0.4, {'idle': pilzwicht()}),
     'pilzkind': (34, 0.21, {'idle': pilzkind(False)}),
+    # Hüter: Teile je Zustand m0 schläft, m2 Wurzelangriff, m3 Kern gezogen (creature::warden)
+    'wurzelwaechter': (280, 0.45, {'idle': wurzelwaechter('wach'), 'm0': wurzelwaechter('schlaf'),
+                                   'm2': wurzelwaechter('angriff_ohne'), 'm3': wurzelwaechter('offen')}),
 }
 
 
@@ -75,6 +78,8 @@ CHARACTERS = {
     # Kapitel 2 (R2-M2.2)
     'plumm': (1.0, plumm()),
     'pilzkind': (0.6, pilzkind(True)),
+    # nach dem Kampf freundlich (Gesprächsfigur), gleiche Größe wie der Hüter
+    'waechter': (1.25, wurzelwaechter('ruhig')),
 }
 
 

@@ -67,6 +67,8 @@ pub struct World {
     pub creature_kinds: Vec<CreatureKind>,
     pub creatures: Vec<Creature>,
     pub creature_shots: Vec<CreatureShot>,
+    /// Zeitweise gesetzte Tiles (Wurzelwände): Tile-Position, ursprüngliches Tile, Ende (Tick).
+    pub temp_tiles: Vec<(i32, i32, crate::Tile, u64)>,
     pub loot: Vec<Loot>,
     /// Nächste Id für Kreaturen und Beute.
     pub next_id: u32,
@@ -95,6 +97,7 @@ impl World {
             creature_kinds: Vec::new(),
             creatures: Vec::new(),
             creature_shots: Vec::new(),
+            temp_tiles: Vec::new(),
             loot: Vec::new(),
             next_id: 1,
         }

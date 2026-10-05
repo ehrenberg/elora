@@ -450,12 +450,17 @@ impl Sandbox {
             self.rule_events();
             // zerbrochene Tiles auch in der Karte (Grafik), E-230
             for e in &self.world.events {
-                if let Event::TileBroken { tx, ty } = *e
-                    && let (Ok(x), Ok(y)) = (usize::try_from(tx), usize::try_from(ty))
+                let (tx, ty, tile) = match *e {
+                    Event::TileBroken { tx, ty } => (tx, ty, elora_sim::Tile::Air),
+                    // Wurzelwände kommen und gehen (R2-M2.2)
+                    Event::TileSet { tx, ty, tile } => (tx, ty, tile),
+                    _ => continue,
+                };
+                if let (Ok(x), Ok(y)) = (usize::try_from(tx), usize::try_from(ty))
                     && x < self.map.width
                     && let Some(t) = self.map.tiles.get_mut(y * self.map.width + x)
                 {
-                    *t = elora_sim::Tile::Air;
+                    *t = tile;
                 }
             }
             self.pending_events

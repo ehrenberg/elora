@@ -271,7 +271,7 @@ pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>)
         Event::FlagDrop { .. } => vec![Cue::global(Sound::FlagDrop)],
         Event::FlagReturn { .. } => vec![Cue::global(Sound::FlagReturn)],
         Event::FlagCapture { .. } => vec![Cue::global(Sound::FlagCapture)],
-        Event::TileBroken { .. } => Vec::new(),
+        Event::TileBroken { .. } | Event::TileSet { .. } => Vec::new(),
         // Gegner (A1.2): vorerst vorhandene Sounds, eigene liefert der Projektinhaber (E-109)
         // Hüter in der Luft: Treffer prallt ab (E-299)
         Event::CreatureHit { pos, damage: 0, .. } => vec![Cue::at(Sound::Deflect, pos)],
@@ -286,10 +286,12 @@ pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>)
         Event::CreatureAct { pos, act, .. } => match act {
             CreatureAct::Wake => vec![Cue::at(Sound::BossWake, pos)],
             CreatureAct::Dive => vec![Cue::at(Sound::BossDive, pos)],
-            CreatureAct::Land => vec![Cue::at(Sound::BossLand, pos)],
-            // eigene Klänge der Waldgegner folgen mit M2.2.8
-            CreatureAct::Emerge => vec![Cue::at(Sound::Land, pos)],
+            // Wurzelwächter-Stoß wie der Aufprall; Beben und Auftauchen wie eine Landung
+            // (eigene Klänge der Waldgegner mit M2.2.8)
+            CreatureAct::Land | CreatureAct::Strike => vec![Cue::at(Sound::BossLand, pos)],
+            CreatureAct::Emerge | CreatureAct::Warn => vec![Cue::at(Sound::Land, pos)],
             CreatureAct::Burrow => Vec::new(),
+            CreatureAct::Core => vec![Cue::at(Sound::Fanfare, pos)],
         },
         Event::LootCollect { pos, .. } => vec![Cue::at(Sound::PickupArmor, pos)],
     }

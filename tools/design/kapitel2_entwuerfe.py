@@ -215,7 +215,7 @@ def wurzelwaechter(pose='schlaf'):
         s += f'<path d="M {x},-180 Q {x + c * 3},-300 {x - c},-440" fill="none" stroke="{BARK_DARK}" stroke-width="3.5"/>'
     s += f'<ellipse cx="34" cy="-210" rx="10" ry="14" fill="{BARK_DARK}" opacity="0.7"/>'
     # Arme: Schulter bei y −410; lang, knorrig
-    if pose == 'angriff':
+    if pose in ('angriff', 'angriff_ohne'):
         left = 'M -70,-410 Q -150,-470 -160,-560'
         lend = (-160, -560, -90)
         right = 'M 72,-410 Q 150,-330 170,-230'
@@ -256,7 +256,7 @@ def wurzelwaechter(pose='schlaf'):
     # schwere Brauen aus Rinde
     for side in (-1, 1):
         x = side * 26
-        lift = -4 if pose == 'angriff' else 0
+        lift = -4 if pose.startswith('angriff') else 0
         s += (f'<path d="M {x - side * 26},{-528 + lift * side} Q {x},{-552} {x + side * 26},{-534 - lift * side} '
               f'L {x + side * 24},{-522} Q {x},{-534} {x - side * 22},{-518} Z" fill="{BARK_DARK}" {st(3)}/>')
     # Augen tief in der Rinde
@@ -268,12 +268,13 @@ def wurzelwaechter(pose='schlaf'):
         elif pose == 'ruhig':
             s += f'<ellipse cx="{x}" cy="-507" rx="8" ry="6" fill="#ffd27a"/><circle cx="{x - 2}" cy="-509" r="2" fill="#ffffff"/>'
         else:
-            glow = '#ffb84a' if pose == 'angriff' else '#ffd27a'
+            glow = '#ffb84a' if pose.startswith('angriff') else '#ffd27a'
             s += f'<ellipse cx="{x}" cy="-507" rx="7" ry="7" fill="{glow}"/><circle cx="{x + 2}" cy="-506" r="3" fill="{OUT}"/>'
     # Knollennase
     s += f'<path d="M -6,-500 Q -14,-470 0,-462 Q 16,-466 10,-500 Z" fill="#9a6e48" {st(3.5)}/>'
     # Mund im Bart
-    mouth = {'angriff': f'<path d="M -22,-446 Q 0,-466 22,-446 Q 0,-436 -22,-446 Z" fill="#3a2a1a" {st(3)}/>',
+    roar = f'<path d="M -22,-446 Q 0,-466 22,-446 Q 0,-436 -22,-446 Z" fill="#3a2a1a" {st(3)}/>'
+    mouth = {'angriff': roar, 'angriff_ohne': roar,
              'offen': f'<ellipse cx="0" cy="-446" rx="12" ry="9" fill="#3a2a1a" {st(3)}/>',
              'ruhig': f'<path d="M -18,-448 Q 0,-436 18,-448" fill="none" stroke="{OUT}" stroke-width="4" stroke-linecap="round"/>'}
     # langer Bart aus Moos und Zweigen

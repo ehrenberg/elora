@@ -2,7 +2,9 @@
 
 use crate::character::PHYS_SIZE;
 use crate::collision::{Collision, Tile};
-use crate::creature::{Behavior, Creature, CreatureShot, DiverDef, HookTarget, Loot, rng, rng_f32};
+use crate::creature::{
+    Behavior, Creature, CreatureShot, DiverDef, HookTarget, Loot, WardenDef, rng, rng_f32,
+};
 use crate::event::CreatureAct;
 use crate::event::{DeathCause, Event};
 use crate::math::Vec2;
@@ -83,7 +85,12 @@ impl World {
             grounded: false,
             mode: 0,
             goal: pos,
-            count: 0,
+            count: match &k.behavior {
+                Behavior::Warden(d) => d.cores,
+                _ => 0,
+            },
+            tug: 0,
+            wall_timer: 0,
         });
         Some(id)
     }
@@ -99,6 +106,7 @@ impl World {
                     pos: c.pos,
                     radius: k.radius(),
                     small: k.small,
+                    anchor: matches!(k.behavior, Behavior::Warden(_)),
                 }
             })
             .collect()
@@ -357,6 +365,7 @@ impl World {
         }
         let chars = self.living();
         self.tick_pull();
+        self.tick_temp_tiles();
         self.tick_behavior(&chars);
         self.tick_shots(&chars);
         self.tick_contact(&chars);
@@ -382,8 +391,40 @@ impl World {
         }
     }
 
+    /// Wurzelwände verschwinden wieder.
+    fn tick_temp_tiles(&mut self) {
+        let tick = self.tick;
+        let mut i = 0;
+        while i < self.temp_tiles.len() {
+            let (tx, ty, old, until) = self.temp_tiles[i];
+            if tick >= until {
+                self.collision.set_tile(tx, ty, old);
+                self.events.push(Event::TileSet { tx, ty, tile: old });
+                self.temp_tiles.remove(i);
+            } else {
+                i += 1;
+            }
+        }
+    }
+
+    /// Spieler, die gerade am Wurzelwächter ziehen: am Hook und Laufrichtung weg von ihm.
+    fn tuggers(&self) -> Vec<u32> {
+        self.players
+            .iter()
+            .filter_map(|p| p.as_ref()?.character.as_ref())
+            .filter_map(|ch| {
+                let id = ch.core.hooked_creature?;
+                let c = self.creatures.iter().find(|c| c.id == id)?;
+                let away = ch.core.direction != 0
+                    && sign(ch.core.pos.x - c.pos.x) == ch.core.direction.signum();
+                away.then_some(id)
+            })
+            .collect()
+    }
+
     #[allow(clippy::too_many_lines)]
     fn tick_behavior(&mut self, chars: &[(usize, Vec2)]) {
+        let tuggers = self.tuggers();
         let Self {
             creatures,
             creature_kinds,
@@ -396,6 +437,9 @@ impl World {
         let gravity = tuning.gravity;
         let mut died = Vec::new();
         let mut summons: Vec<(u32, String, u32, Vec2)> = Vec::new();
+        // Wurzelstöße (Mitte am Boden, Breite, Höhe, Schaden) und Wurzelwände (Fuß, Höhe, Dauer)
+        let mut spikes: Vec<(Vec2, f32, f32, i32)> = Vec::new();
+        let mut walls: Vec<(Vec2, u32, u32)> = Vec::new();
         for c in creatures.iter_mut() {
             let kind = &creature_kinds[c.kind];
             let size = kind.size();
@@ -502,6 +546,28 @@ impl World {
                     }
                     if c.mode == crate::creature::diver::SLEEP {
                         continue;
+                    }
+                }
+                Behavior::Warden(ref d) => {
+                    fixed = true;
+                    c.vel = Vec2::ZERO;
+                    let feet = c.pos.y + size.y / 2.0;
+                    let out = tick_warden(
+                        c,
+                        d,
+                        kind.health,
+                        target,
+                        feet,
+                        tuggers.contains(&c.id),
+                        events,
+                    );
+                    spikes.extend(
+                        out.0
+                            .into_iter()
+                            .map(|p| (p, d.spike_width, d.spike_height, d.spike_damage)),
+                    );
+                    if let Some(p) = out.1 {
+                        walls.push((p, d.wall_height, d.wall_ms));
                     }
                 }
                 Behavior::Burrower {
@@ -631,6 +697,8 @@ impl World {
                 self.kill_creature(i, None, false);
             }
         }
+        self.root_spikes(&spikes, chars);
+        self.root_walls(&walls, chars);
         // Helfer der Hüter, höchstens `max` zugleich
         for (owner, name, max, pos) in summons {
             let Some(kind) = self.creature_kind(&name) else {
@@ -642,6 +710,59 @@ impl World {
             {
                 self.events.push(Event::CreatureFire { id: owner, pos });
                 let _ = id;
+            }
+        }
+    }
+
+    /// Wurzelstöße treffen Figuren in ihrer Zone (Rückstoß nach oben).
+    fn root_spikes(&mut self, spikes: &[(Vec2, f32, f32, i32)], chars: &[(usize, Vec2)]) {
+        let kb = self.tuning.hit_knockback;
+        for &(at, w, h, damage) in spikes {
+            for &(j, p) in chars {
+                if (p.x - at.x).abs() < w / 2.0 + PHYS_SIZE / 2.0
+                    && p.y > at.y - h
+                    && p.y < at.y + 4.0
+                {
+                    self.take_damage(
+                        j,
+                        Vec2::new(0.0, -kb * 1.2),
+                        damage,
+                        None,
+                        DeathCause::Creature,
+                    );
+                }
+            }
+        }
+    }
+
+    /// Wurzelwände: eine Tile-Spalte vom Boden aufwärts, nur in Luft und nicht auf Figuren.
+    fn root_walls(&mut self, walls: &[(Vec2, u32, u32)], chars: &[(usize, Vec2)]) {
+        let ts = crate::TILE_SIZE;
+        for &(foot, height, ms) in walls {
+            #[allow(clippy::cast_possible_truncation)]
+            let tx = (foot.x as i32).div_euclid(ts);
+            #[allow(clippy::cast_possible_truncation)]
+            let ground = (foot.y as i32 - 1).div_euclid(ts);
+            let until = self.tick + u64::from(ms_to_ticks(ms));
+            #[allow(clippy::cast_possible_wrap)]
+            for k in 0..height as i32 {
+                let ty = ground - k;
+                if self.collision.tile(tx, ty) != Tile::Air {
+                    break;
+                }
+                #[allow(clippy::cast_precision_loss)]
+                let center =
+                    Vec2::new((tx as f32 + 0.5) * ts as f32, (ty as f32 + 0.5) * ts as f32);
+                if chars.iter().any(|&(_, p)| p.distance(center) < PHYS_SIZE) {
+                    break;
+                }
+                self.collision.set_tile(tx, ty, Tile::Unhookable);
+                self.temp_tiles.push((tx, ty, Tile::Air, until));
+                self.events.push(Event::TileSet {
+                    tx,
+                    ty,
+                    tile: Tile::Unhookable,
+                });
             }
         }
     }
@@ -898,4 +1019,114 @@ fn tick_diver(
         }
     }
     summon
+}
+
+/// Ein Tick des Hüters am Boden; liefert Wurzelstöße (Mitte am Boden) und eine Wurzelwand.
+#[allow(clippy::too_many_lines)]
+fn tick_warden(
+    c: &mut Creature,
+    d: &WardenDef,
+    max_health: i32,
+    target: Option<(Vec2, f32)>,
+    feet: f32,
+    tugged: bool,
+    events: &mut Vec<Event>,
+) -> (Vec<Vec2>, Option<Vec2>) {
+    use crate::creature::warden::{IDLE, OPEN, SLEEP, WARN};
+    #[allow(clippy::cast_precision_loss)]
+    let life = c.health as f32 / max_health.max(1) as f32;
+    let angry = d.enrage_at > 0.0 && life <= d.enrage_at;
+    let pace = if angry { 1.4 } else { 1.0 };
+    let ticks = |ms: u32| {
+        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+        let t = (ms_to_ticks(ms) as f32 / pace) as u32;
+        t.max(1)
+    };
+    let mut spikes = Vec::new();
+    let mut wall = None;
+    c.timer = c.timer.saturating_add(1);
+    if let Some((p, _)) = target {
+        c.facing = sign(p.x - c.pos.x);
+    }
+    let act = |events: &mut Vec<Event>, pos: Vec2, act: CreatureAct| {
+        events.push(Event::CreatureAct { id: c.id, pos, act });
+    };
+    match c.mode {
+        SLEEP => {
+            if target.is_some_and(|(_, dist)| dist <= d.sight) {
+                c.mode = IDLE;
+                c.timer = 0;
+                act(events, c.pos, CreatureAct::Wake);
+            }
+            return (spikes, wall);
+        }
+        OPEN => {
+            c.tug = 0;
+            if c.timer >= ms_to_ticks(d.open_ms) {
+                c.mode = IDLE;
+                c.timer = 0;
+                if c.count == 0 {
+                    c.count = d.cores;
+                }
+            }
+            return (spikes, wall);
+        }
+        _ => {}
+    }
+    // Tauziehen: Kern löst sich
+    c.tug = if tugged {
+        c.tug + 1
+    } else {
+        c.tug.saturating_sub(2)
+    };
+    if c.tug >= ms_to_ticks(d.pull_ms) && c.count > 0 {
+        c.count -= 1;
+        c.tug = 0;
+        c.mode = OPEN;
+        c.timer = 0;
+        act(events, c.pos, CreatureAct::Core);
+        return (spikes, wall);
+    }
+    match c.mode {
+        WARN => {
+            if c.timer >= ticks(d.warn_ms) {
+                spikes.push(c.goal);
+                act(events, c.goal, CreatureAct::Strike);
+                // letzter Kern: gleich noch eine Stelle näher am Wächter
+                if c.count == 1 {
+                    let toward = sign(c.pos.x - c.goal.x);
+                    let second =
+                        c.goal + Vec2::new(f32::from(toward) * 3.0 * crate::TILE_SIZE as f32, 0.0);
+                    spikes.push(second);
+                    act(events, second, CreatureAct::Strike);
+                }
+                c.mode = IDLE;
+                c.timer = 0;
+            }
+        }
+        _ => {
+            if let Some((p, _)) = target
+                && c.timer >= ticks(d.attack_ms)
+            {
+                c.goal = Vec2::new(p.x, feet);
+                c.mode = WARN;
+                c.timer = 0;
+                act(events, c.goal, CreatureAct::Warn);
+            }
+        }
+    }
+    // Wurzelwände, wenn wütend: zwischen Elora und dem Wächter
+    if angry && d.wall_every_ms > 0 {
+        c.wall_timer += 1;
+        if c.wall_timer >= ms_to_ticks(d.wall_every_ms)
+            && let Some((p, _)) = target
+        {
+            c.wall_timer = 0;
+            let mid = Vec2::new(f32::midpoint(p.x, c.pos.x), feet);
+            if (mid.x - c.pos.x).abs() > 64.0 && (mid.x - p.x).abs() > 48.0 {
+                wall = Some(mid);
+            }
+        }
+    }
+    (spikes, wall)
 }

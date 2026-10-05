@@ -118,6 +118,12 @@ pub enum Event {
         tx: i32,
         ty: i32,
     },
+    /// Ein Tile wurde zeitweise gesetzt oder zurückgesetzt (Wurzelwand, R2-M2.2).
+    TileSet {
+        tx: i32,
+        ty: i32,
+        tile: crate::Tile,
+    },
     /// Gegner getroffen (`from`: Spieler-Slot).
     CreatureHit {
         id: u32,
@@ -166,6 +172,12 @@ pub enum CreatureAct {
     Emerge,
     /// Zurück in den Boden.
     Burrow,
+    /// Boden bebt: gleich ein Wurzelstoß an dieser Stelle (Wurzelwächter).
+    Warn,
+    /// Wurzelstoß.
+    Strike,
+    /// Ein Kern hat sich gelöst.
+    Core,
 }
 
 impl Event {
