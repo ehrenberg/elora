@@ -327,12 +327,19 @@ fn chapter_three_from_the_sunken_path_to_the_spring_and_home() {
         target_y: 0,
         ..PlayerInput::default()
     };
+    let mut done = Vec::new();
     for _ in 0..3 {
-        step(&mut s, &mut w, hit, false);
+        done.extend(step(&mut s, &mut w, hit, false));
     }
     for _ in 0..80 {
-        step(&mut s, &mut w, PlayerInput::default(), false);
+        done.extend(step(&mut s, &mut w, PlayerInput::default(), false));
     }
+    assert!(
+        done.contains(&SessionEvent::ChapterDone {
+            area: "glutsandwueste".into()
+        }),
+        "Gewinn-Bildschirm nach dem Hüter"
+    );
     assert_eq!(s.save.flag("besiegt.sandschlange"), 1);
     assert!(s.save.count("quellfunke") >= 1, "Funke eingesammelt");
     assert!(holds(&s, "quest glutsand schritt funke"));

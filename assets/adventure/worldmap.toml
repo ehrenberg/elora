@@ -2,6 +2,7 @@
 # music: Hintergrundmusik assets/music/<name>.ogg (E-285); party_music: beim Fest (Merker fest);
 # spring: Quelle des Gebiets, befreit mit Merker befreit.<spring>; boss_music: Kampfmusik (sonst boss).
 # hot: heißes Gebiet mit Hitze-Leiste (E-320); Schatten unter Dächern und in Zonen schatten…, Oase in Zonen oase….
+# chapter/guardian: Kapitel und Hüter – nach dem Sieg Gewinn-Bildschirm mit victory und dem Ehrentitel honor.
 
 [[area]]
 id = "tauwinkel"
@@ -20,6 +21,10 @@ color = "#ef7fb0"
 maps = "wiese-"
 music = "bluetenwiesen"
 spring = "bluetenquelle"
+chapter = 1
+guardian = "brummbaer"
+victory = { de = "Die Brummbär-Hummel brummt wieder fröhlich – und die Blütenquelle singt ihr Morgenlied.", en = "The Bumblebear is buzzing happily again – and the Blossom Spring sings its morning song." }
+honor = { de = "Bienenflüsterin", en = "Bee Whisperer" }
 
 [[area]]
 id = "murmelwald"
@@ -30,6 +35,10 @@ maps = "wald-"
 music = "murmelwald"
 boss_music = "boss-wald"
 spring = "waldquelle"
+chapter = 2
+guardian = "wurzelwaechter"
+victory = { de = "Der Wurzelwächter ist erwacht, und die Wurzeln flüstern wieder alte Geschichten.", en = "The Root Warden is awake, and the roots whisper old stories again." }
+honor = { de = "Wurzelfreundin", en = "Friend of the Roots" }
 
 [[area]]
 id = "glutsandwueste"
@@ -41,6 +50,10 @@ hot = true
 spring = "glutquelle"
 music = "wueste"
 boss_music = "boss-wueste"
+chapter = 3
+guardian = "sandschlange"
+victory = { de = "Die Sandschlange döst friedlich in der Wärme – und die Glutquelle leuchtet golden wie Honig.", en = "The Sand Serpent dozes peacefully in the warmth – and the Ember Spring glows golden like honey." }
+honor = { de = "Wüstentänzerin", en = "Desert Dancer" }
 
 [[area]]
 id = "frostspitzen"

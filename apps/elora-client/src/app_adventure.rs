@@ -66,6 +66,8 @@ pub struct AdventureMode {
     pub conversation: Option<Conversation>,
     /// Elora ist erschöpft (E-261): verlorene Glanztropfen.
     pub dead: Option<u32>,
+    /// Hüter beruhigt: Gewinn-Bildschirm für dieses Gebiet, seit diesem Zeitpunkt.
+    pub victory: Option<(String, Instant)>,
     barks: Vec<(String, String, Instant)>,
     /// Aktionstaste gedrückt, wird im nächsten Tick ausgewertet.
     interact: bool,
@@ -160,6 +162,7 @@ impl App {
             editor_map: None,
             conversation: None,
             dead: None,
+            victory: None,
             barks: Vec::new(),
             interact: false,
             previous: None,
@@ -269,6 +272,7 @@ impl App {
             editor_map: Some((id.clone(), map)),
             conversation: None,
             dead: None,
+            victory: None,
             barks: Vec::new(),
             interact: false,
             previous: None,
@@ -303,9 +307,23 @@ impl App {
 
     /// Steht das Spiel still (Gespräch oder Erschöpfung)?
     pub(crate) fn adventure_halted(&self) -> bool {
-        self.adventure
-            .as_ref()
-            .is_some_and(|a| a.conversation.is_some() || a.dead.is_some() || a.menu.is_some())
+        self.adventure.as_ref().is_some_and(|a| {
+            a.conversation.is_some() || a.dead.is_some() || a.menu.is_some() || a.victory.is_some()
+        })
+    }
+
+    /// Gewinn-Bildschirm schließen (nach [`crate::adventure_hud::VICTORY_READY`]).
+    fn close_victory(&mut self) {
+        let Some(a) = &mut self.adventure else { return };
+        let ready = a.victory.as_ref().is_some_and(|(_, at)| {
+            at.elapsed().as_secs_f32() >= crate::adventure_hud::VICTORY_READY
+        });
+        if ready {
+            a.victory = None;
+            self.ui_cues
+                .push(elora_audio::Cue::global(elora_audio::Sound::UiClose));
+            self.set_cursor_grab(true);
+        }
     }
 
     /// Abenteuer-Menü öffnen (`panel`) oder schließen (`None`).
@@ -423,7 +441,7 @@ impl App {
     /// Simulation und Sitzung weiterrechnen; Ereignisse auswerten.
     pub(crate) fn advance_adventure(&mut self, elapsed: Duration) {
         let Some(a) = &mut self.adventure else { return };
-        if a.conversation.is_some() || a.dead.is_some() {
+        if a.conversation.is_some() || a.dead.is_some() || a.victory.is_some() {
             return;
         }
         let mut events = Vec::new();
@@ -535,6 +553,15 @@ impl App {
                 self.controls.release_all();
                 self.set_cursor_grab(false);
             }
+            SessionEvent::ChapterDone { area } => {
+                if let Some(a) = &mut self.adventure {
+                    a.victory = Some((area, Instant::now()));
+                }
+                self.ui_cues
+                    .push(elora_audio::Cue::global(elora_audio::Sound::Fanfare));
+                self.controls.release_all();
+                self.set_cursor_grab(false);
+            }
             SessionEvent::TilesChanged => {
                 if let Some(a) = &self.adventure {
                     self.sandbox.map.tiles.clone_from(&a.session.map.tiles);
@@ -593,6 +620,13 @@ impl App {
     /// Tasten während Gespräch oder Erschöpfung: Ziffern wählen, E/Leertaste/Enter weiter.
     pub(crate) fn adventure_key(&mut self, code: winit::keyboard::KeyCode) {
         use winit::keyboard::KeyCode as K;
+        // Gewinn-Bildschirm: E, Leertaste oder Enter führt weiter
+        if self.adventure.as_ref().is_some_and(|a| a.victory.is_some()) {
+            if matches!(code, K::KeyE | K::Space | K::Enter | K::Escape) {
+                self.close_victory();
+            }
+            return;
+        }
         // Abenteuer-Menü, Laden, Schmiede: Tab (belegte Taste) oder Esc schließt
         if self.adventure.as_ref().is_some_and(|a| a.menu.is_some()) {
             let tab = self
@@ -1006,6 +1040,43 @@ impl App {
             };
             menu_cmd = crate::adventure_menu::draw(&mut ui, &data, st);
         }
+        // Kapitel geschafft: Gewinn-Bildschirm
+        let mut victory_done = false;
+        if let Some((id, at)) = &a.victory
+            && let Some(area) = session.content.areas.iter().find(|x| &x.id == id)
+        {
+            let mut springs = [None; 5];
+            for (slot, x) in springs
+                .iter_mut()
+                .zip(session.content.areas.iter().filter(|x| x.id != "tauwinkel"))
+            {
+                // die eben beruhigte Quelle singt schon
+                if x.freed(&session.save) || &x.id == id {
+                    *slot = Some(crate::adventure_menu::hex(&x.color));
+                }
+            }
+            let text = |t: &Option<elora_adventure::data::Text>| {
+                t.as_ref().map_or(String::new(), |t| t.get(code).to_owned())
+            };
+            let stats = self.lang.f(
+                "victory.stats",
+                &[
+                    ("level", &session.save.level),
+                    ("time", &play_time(&self.lang, session.save.play_time_secs)),
+                ],
+            );
+            let view = crate::adventure_hud::VictoryView {
+                chapter: area.chapter.unwrap_or(0),
+                area: area.name.get(code),
+                line: &text(&area.victory),
+                honor: &text(&area.honor),
+                color: crate::adventure_menu::hex(&area.color),
+                springs,
+                stats: &stats,
+                time: at.elapsed().as_secs_f32(),
+            };
+            victory_done = crate::adventure_hud::victory(&mut ui, &self.lang, &view, screen);
+        }
         // Erschöpft (E-261)
         let mut death = None;
         if let Some(lost) = a.dead {
@@ -1062,6 +1133,9 @@ impl App {
         }
         if let Some(c) = menu_cmd {
             self.adventure_command(c);
+        }
+        if victory_done {
+            self.close_victory();
         }
         death
     }

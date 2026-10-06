@@ -480,6 +480,14 @@ link_project = "Quelltext: github.com/ehrenberg/elora"
 link_site = "Projektseite: elora.bastianswelt.de"
 files = "Vollständige Angaben: LICENSE, THIRD_PARTY_LICENSES und SOURCES.md im Programmordner"
 
+[victory]
+title = "Kapitel {n} geschafft!"
+springs = "{n} von 5 Quellen singen wieder"
+honor = "Ehrentitel"
+stats = "Stufe {level} · Spielzeit {time}"
+next = "Bring den Quellfunken zu Tüftel – er hat bestimmt schon eine Idee."
+continue = "Weiter"
+
 [adventure]
 tab = "Abenteuer"
 title = "Die verstummten Quellen"

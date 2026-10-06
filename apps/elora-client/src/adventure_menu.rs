@@ -878,7 +878,7 @@ fn quests(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState, area: Rect) -> 
     None
 }
 
-fn hex(c: &str) -> Color {
+pub(crate) fn hex(c: &str) -> Color {
     u32::from_str_radix(c.trim_start_matches('#'), 16).map_or(ui::GRAY, Color::hex)
 }
 

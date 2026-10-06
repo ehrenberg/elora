@@ -260,6 +260,16 @@ pub struct Area {
     /// Heißes Gebiet (Wüste, E-320): Hitze-Leiste und Flimmern.
     #[serde(default)]
     pub hot: bool,
+    /// Kapitel des Gebiets und sein Hüter (Art aus `creatures.toml`): Sieg über ihn zeigt den
+    /// Gewinn-Bildschirm mit `victory` und dem Ehrentitel `honor`.
+    #[serde(default)]
+    pub chapter: Option<u32>,
+    #[serde(default)]
+    pub guardian: Option<String>,
+    #[serde(default)]
+    pub victory: Option<Text>,
+    #[serde(default)]
+    pub honor: Option<Text>,
 }
 
 impl Area {

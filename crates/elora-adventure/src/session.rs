@@ -75,6 +75,10 @@ pub enum SessionEvent {
     },
     /// Tiles der Welt haben sich geändert (Tür, Bröckelboden) – Grafik nachziehen.
     TilesChanged,
+    /// Hüter eines Kapitels beruhigt: Gewinn-Bildschirm für das Gebiet `area`.
+    ChapterDone {
+        area: String,
+    },
 }
 
 /// Wobei die Aktionstaste hilft (Anzeige „E …“).
@@ -357,6 +361,15 @@ impl Session {
                     if let Some(k) = world.creature_kinds.get(*kind).filter(|k| k.boss) {
                         self.save.set_flag(&format!("besiegt.{}", k.name), 1);
                         out.extend(outcomes(self.save.update_quests(&self.content)));
+                        // Kapitel geschafft: Gewinn-Bildschirm
+                        if let Some(a) = self
+                            .content
+                            .areas
+                            .iter()
+                            .find(|a| a.guardian.as_deref() == Some(k.name.as_str()))
+                        {
+                            out.push(SessionEvent::ChapterDone { area: a.id.clone() });
+                        }
                     }
                     let n = self
                         .save

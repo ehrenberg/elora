@@ -480,6 +480,14 @@ link_project = "Source code: github.com/ehrenberg/elora"
 link_site = "Project page: elora.bastianswelt.de"
 files = "Full details: LICENSE, THIRD_PARTY_LICENSES and SOURCES.md in the program folder"
 
+[victory]
+title = "Chapter {n} complete!"
+springs = "{n} of 5 springs are singing again"
+honor = "Honorary title"
+stats = "Level {level} · Play time {time}"
+next = "Take the spring spark to Tüftel – he surely has an idea already."
+continue = "Continue"
+
 [adventure]
 tab = "Adventure"
 title = "The Silent Springs"

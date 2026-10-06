@@ -221,6 +221,191 @@ pub fn heat_bar(ui: &mut Ui<'_>, heat: f32, overheated: bool, time: f32) {
     }
 }
 
+/// Inhalt des Gewinn-Bildschirms nach einem Hüter.
+pub struct VictoryView<'a> {
+    pub chapter: u32,
+    pub area: &'a str,
+    pub line: &'a str,
+    pub honor: &'a str,
+    pub color: Color,
+    /// Farben der fünf Quellen, `None` = noch stumm.
+    pub springs: [Option<Color>; 5],
+    pub stats: &'a str,
+    /// Sekunden seit dem Erscheinen.
+    pub time: f32,
+}
+
+/// Ab dann lässt sich der Gewinn-Bildschirm schließen (Sekunden).
+pub const VICTORY_READY: f32 = 1.2;
+
+fn ease_out_back(x: f32) -> f32 {
+    let x = x.clamp(0.0, 1.0);
+    let (c1, c3) = (1.70158, 2.70158);
+    1.0 + c3 * (x - 1.0).powi(3) + c1 * (x - 1.0).powi(2)
+}
+
+/// Gewinn-Bildschirm „Kapitel X geschafft!“: drehende Sonnenstrahlen in der Farbe des Gebiets,
+/// Konfetti, die fünf Quellen als Tropfen, Ehrentitel. Liefert `true`, wenn „Weiter“ gedrückt.
+#[allow(clippy::too_many_lines)] // eine Szene am Stück
+pub fn victory(ui: &mut Ui<'_>, lang: &Lang, v: &VictoryView<'_>, screen: Vec2) -> bool {
+    use std::f32::consts::TAU;
+    let s = ui.s;
+    let t = v.time;
+    let fade = (t * 3.0).min(1.0);
+    ui.batch.fill_rect(
+        Vec2::ZERO,
+        screen,
+        Color::rgba(0.07, 0.09, 0.13, 0.62 * fade),
+    );
+    let center = Vec2::new(screen.x / 2.0, screen.y * 0.44);
+    // Sonnenstrahlen
+    let reach = screen.length();
+    let rays = 18;
+    for k in 0..rays {
+        #[allow(clippy::cast_precision_loss)]
+        let a = k as f32 / rays as f32 * TAU + t * 0.22;
+        let w = TAU / rays as f32 * 0.28;
+        let dir = |a: f32| Vec2::new(a.cos(), a.sin()) * reach;
+        let mut c = v.color;
+        c.0[3] = if k % 2 == 0 { 0.22 } else { 0.12 } * fade;
+        ui.batch
+            .fill_polygon(&[center, center + dir(a - w), center + dir(a + w)], c);
+    }
+    let mut glow = v.color;
+    glow.0[3] = 0.25 * fade;
+    ui.batch.fill_circle(center, 230.0 * s, glow);
+    // Konfetti
+    let palette = [
+        v.color,
+        GOLD,
+        Color::hex(0xef7fb0),
+        Color::hex(0x5aaee8),
+        Color::hex(0x7fd99a),
+    ];
+    for i in 0..70u32 {
+        let h = i.wrapping_mul(2_654_435_761).rotate_left(i % 13);
+        #[allow(clippy::cast_precision_loss)]
+        let r = |shift: u32| ((h >> shift) & 1023) as f32 / 1023.0;
+        let speed = 0.12 + r(3) * 0.18;
+        let y = ((t * speed + r(13)) % 1.15 - 0.08) * screen.y;
+        let x = r(23) * screen.x + (t * (1.0 + r(5) * 2.0) + r(7) * 6.0).sin() * 18.0 * s;
+        let ang = t * (2.0 + r(9) * 4.0) + r(11) * TAU;
+        let (dx, dy) = (
+            Vec2::new(ang.cos(), ang.sin()) * 5.0 * s,
+            Vec2::new(-ang.sin(), ang.cos()) * 2.5 * s,
+        );
+        let p = Vec2::new(x, y);
+        let mut c = palette[(h % 5) as usize];
+        c.0[3] = fade;
+        ui.batch
+            .fill_polygon(&[p - dx - dy, p + dx - dy, p + dx + dy, p - dx + dy], c);
+    }
+    // Karte
+    let (w, h) = (560.0 * s, 400.0 * s);
+    let card = Rect::new(center.x - w / 2.0, center.y - h / 2.0, w, h);
+    ui.card(card);
+    let x = card.center().x;
+    let pop = ease_out_back(t / 0.7);
+    ui.label(
+        &lang.f("victory.title", &[("n", &v.chapter)]),
+        Vec2::new(x, card.min.y + 52.0 * s),
+        (30.0 * pop).max(1.0),
+        ui::TEXT,
+        Align::Center,
+    );
+    ui.label(
+        v.area,
+        Vec2::new(x, card.min.y + 88.0 * s),
+        15.0,
+        v.color,
+        Align::Center,
+    );
+    let mut y = card.min.y + 120.0 * s;
+    for line in wrap(ui, v.line, 13.0, w - 80.0 * s) {
+        ui.label(&line, Vec2::new(x, y), 13.0, ui::TEXT_DIM, Align::Center);
+        y += 20.0 * s;
+    }
+    // die fünf Quellen
+    let dy = card.min.y + 210.0 * s;
+    for (k, spring) in v.springs.iter().enumerate() {
+        #[allow(clippy::cast_precision_loss)]
+        let cx = x + (k as f32 - 2.0) * 54.0 * s;
+        let bob = if spring.is_some() {
+            (t * 3.0 + k as f32).sin() * 3.0 * s
+        } else {
+            0.0
+        };
+        let c = spring.unwrap_or(Color::hex(0xc8ccd2));
+        let base = Vec2::new(cx, dy + bob);
+        ui.batch.fill_circle(base, 15.0 * s, ui::OUTLINE);
+        ui.batch.fill_polygon(
+            &[
+                base + Vec2::new(-12.5 * s, -6.0 * s),
+                base + Vec2::new(0.0, -30.0 * s),
+                base + Vec2::new(12.5 * s, -6.0 * s),
+            ],
+            ui::OUTLINE,
+        );
+        ui.batch.fill_circle(base, 12.0 * s, c);
+        ui.batch.fill_polygon(
+            &[
+                base + Vec2::new(-10.0 * s, -6.0 * s),
+                base + Vec2::new(0.0, -25.0 * s),
+                base + Vec2::new(10.0 * s, -6.0 * s),
+            ],
+            c,
+        );
+        if spring.is_some() {
+            ui.batch.fill_circle(
+                base + Vec2::new(-4.0 * s, -4.0 * s),
+                3.0 * s,
+                Color::rgba(1.0, 1.0, 1.0, 0.8),
+            );
+        }
+    }
+    let freed = v.springs.iter().filter(|c| c.is_some()).count();
+    ui.label(
+        &lang.f("victory.springs", &[("n", &freed)]),
+        Vec2::new(x, dy + 34.0 * s),
+        12.0,
+        ui::TEXT_DIM,
+        Align::Center,
+    );
+    // Ehrentitel
+    let badge_text = format!("{}: {}", lang.t("victory.honor"), v.honor);
+    let bw = ui.text_width(&badge_text, 13.0) + 36.0 * s;
+    let badge = Rect::new(x - bw / 2.0, dy + 54.0 * s, bw, 30.0 * s);
+    ui.batch
+        .fill_rounded_rect(badge.min, badge.max, 15.0 * s, ui::OUTLINE);
+    ui.batch.fill_rounded_rect(
+        badge.min + Vec2::new(2.5 * s, 2.5 * s),
+        badge.max - Vec2::new(2.5 * s, 2.5 * s),
+        12.5 * s,
+        GOLD,
+    );
+    ui.label(&badge_text, badge.center(), 13.0, ui::TEXT, Align::Center);
+    ui.label(
+        v.stats,
+        Vec2::new(x, dy + 104.0 * s),
+        11.0,
+        ui::TEXT_DIM,
+        Align::Center,
+    );
+    ui.label(
+        lang.t("victory.next"),
+        Vec2::new(x, dy + 124.0 * s),
+        11.0,
+        ui::TEXT_DIM,
+        Align::Center,
+    );
+    // Weiter (nach einem Moment, damit niemand den Bildschirm wegklickt)
+    if t >= VICTORY_READY {
+        let b = Rect::new(x - 90.0 * s, card.max.y - 46.0 * s, 180.0 * s, 32.0 * s);
+        return ui.button("victory_continue", b, lang.t("victory.continue"), ui::GREEN);
+    }
+    false
+}
+
 /// Platzhalter `{taste:<aktion>}` durch die belegte Taste ersetzen (Schilder, E-273),
 /// z. B. `{taste:jump}` → „Leertaste“.
 /// Lebensleiste eines Hüters oben in der Mitte mit Namen (R2-M2.1); `frac` 0..1.
@@ -552,6 +737,57 @@ mod tests {
 
     /// Sichtprüfung: `cargo test -p elora-client --bin elora adventure_hud_sheet -- --ignored`,
     /// dann `cargo xtask svg-preview target/abenteuer-hud.svg target/abenteuer-hud.png 1280`.
+    #[test]
+    #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
+    fn victory_sheet() {
+        let font = Font::new(include_bytes!("../../../assets/fonts/Inter-Regular.ttf")).unwrap();
+        let lang = Lang::new(Language::De);
+        let screen = Vec2::new(1280.0, 720.0);
+        let mut batch = ShapeBatch::default();
+        batch.fill_rect_vgradient(
+            Vec2::ZERO,
+            screen,
+            Color::hex(0x8fbcdf),
+            Color::hex(0xf6e2bf),
+        );
+        batch.fill_rect(Vec2::new(0.0, 560.0), screen, Color::hex(0xe0bf7c));
+        let input = crate::ui::UiInput::default();
+        let mut state = crate::ui::UiState::default();
+        let mut ui = Ui {
+            batch: &mut batch,
+            font: &font,
+            input: &input,
+            state: &mut state,
+            s: 1.0,
+        };
+        ui.begin(0.016);
+        let gold = Color::hex(0xe0b85a);
+        let view = VictoryView {
+            chapter: 3,
+            area: "Glutsandwüste",
+            line: "Die Sandschlange döst friedlich in der Wärme – und die Glutquelle leuchtet golden wie Honig.",
+            honor: "Wüstentänzerin",
+            color: gold,
+            springs: [
+                Some(Color::hex(0xef7fb0)),
+                Some(Color::hex(0x6cbf4a)),
+                Some(gold),
+                None,
+                None,
+            ],
+            stats: "Stufe 17 · Spielzeit 0 h 40 min",
+            time: 2.0,
+        };
+        victory(&mut ui, &lang, &view, screen);
+        ui.end();
+        let svg = batch.debug_svg(Vec2::ZERO, screen, Color::hex(0xa9cde8));
+        std::fs::write(
+            concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/sieg.svg"),
+            svg,
+        )
+        .unwrap();
+    }
+
     #[test]
     #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
     fn adventure_hud_sheet() {
