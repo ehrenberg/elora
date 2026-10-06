@@ -92,10 +92,24 @@ pub enum Sound {
     Quicksand,
     /// Hook-Ruck: Zischen beim Hinschnellen (E-226).
     HookRuck,
+    /// Dünnes Eis bekommt Risse (R2-M2.4).
+    IceCrack,
+    /// Dünnes Eis bricht.
+    IceBreak,
+    /// Eiszapfen zerschellt.
+    IcicleShatter,
+    /// Schnee knirscht (Schneeball, Schneebrocken).
+    SnowCrunch,
+    /// Die Fledermaus quiekt im Sturzflug.
+    BatScreech,
+    /// Elora erstarrt im Eis (Frostgeist).
+    Freeze,
+    /// Kristellas Frosthauch: die Welle beginnt.
+    FrostWave,
 }
 
 impl Sound {
-    pub const ALL: [Self; 56] = [
+    pub const ALL: [Self; 63] = [
         Self::HammerFire,
         Self::HammerHit,
         Self::GrenadeFire,
@@ -152,6 +166,13 @@ impl Sound {
         Self::SnakeHiss,
         Self::Quicksand,
         Self::HookRuck,
+        Self::IceCrack,
+        Self::IceBreak,
+        Self::IcicleShatter,
+        Self::SnowCrunch,
+        Self::BatScreech,
+        Self::Freeze,
+        Self::FrostWave,
     ];
 
     pub fn name(self) -> &'static str {
@@ -212,6 +233,13 @@ impl Sound {
             Self::SnakeHiss => "snake_hiss",
             Self::Quicksand => "quicksand",
             Self::HookRuck => "hook_ruck",
+            Self::IceCrack => "ice_crack",
+            Self::IceBreak => "ice_break",
+            Self::IcicleShatter => "icicle_shatter",
+            Self::SnowCrunch => "snow_crunch",
+            Self::BatScreech => "bat_screech",
+            Self::Freeze => "freeze",
+            Self::FrostWave => "frost_wave",
         }
     }
 
@@ -331,7 +359,14 @@ pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>)
                 (tx as f32 + 0.5) * elora_sim::TILE_SIZE as f32,
                 ty as f32 * elora_sim::TILE_SIZE as f32,
             );
-            vec![Cue::at(Sound::Deflect, pos).pitched(if broken { 0.7 } else { 1.5 })]
+            vec![Cue::at(
+                if broken {
+                    Sound::IceBreak
+                } else {
+                    Sound::IceCrack
+                },
+                pos,
+            )]
         }
         // Gegner (A1.2): vorerst vorhandene Sounds, eigene liefert der Projektinhaber (E-109)
         // Hüter in der Luft: Treffer prallt ab (E-299)
@@ -394,6 +429,38 @@ pub fn for_creature(e: &Event, kind: &str) -> Option<Vec<Cue>> {
             _ => None,
         },
         ("funkenmotte", &Event::CreatureFire { pos, .. }) => one(Sound::Spark, pos),
+        // Frostspitzen (R2-M2.4)
+        ("eiszapfen", &Event::CreatureAct { act: Warn, pos, .. }) => {
+            Some(vec![Cue::at(Sound::IceCrack, pos).pitched(1.6)])
+        }
+        ("eiszapfen", &Event::CreatureDeath { pos, .. }) => one(Sound::IcicleShatter, pos),
+        // Lawine geht ab (die Sitzung meldet den ersten Brocken), Brocken zerplatzt
+        ("schneebrocken", &Event::CreatureAct { act: Warn, pos, .. }) => {
+            Some(vec![Cue::at(Sound::SandRumble, pos).pitched(0.55)])
+        }
+        ("schneebrocken", &Event::CreatureDeath { pos, .. }) => {
+            Some(vec![Cue::at(Sound::SnowCrunch, pos).pitched(0.7)])
+        }
+        ("schneeballrobbe", &Event::CreatureFire { pos, .. }) => {
+            Some(vec![Cue::at(Sound::SnowCrunch, pos).pitched(1.3)])
+        }
+        (
+            "fledermaus",
+            &Event::CreatureAct {
+                act: CreatureAct::Dive,
+                pos,
+                ..
+            },
+        ) => one(Sound::BatScreech, pos),
+        ("kristella", &Event::CreatureAct { act, pos, .. }) => match act {
+            Wake => Some(vec![
+                Cue::at(Sound::BossWake, pos),
+                Cue::at(Sound::FrostWave, pos).pitched(0.8),
+            ]),
+            Warn => one(Sound::FrostWave, pos),
+            Land => one(Sound::BossLand, pos),
+            _ => None,
+        },
         ("sandkrabbe", &Event::CreatureHit { pos, damage: 0, .. }) => one(Sound::ShellClack, pos),
         _ => None,
     }
@@ -524,5 +591,49 @@ mod tests {
         let cues = for_character(p, 0, HookState::Idle, HookState::Flying);
         assert_eq!(cues[0].sound, Sound::HookFire);
         assert!(for_character(p, 0, HookState::Flying, HookState::Flying).is_empty());
+    }
+
+    #[test]
+    fn frost_creatures_have_their_own_sounds() {
+        let pos = Vec2::new(10.0, 20.0);
+        let act = |act| Event::CreatureAct { id: 1, pos, act };
+        let death = Event::CreatureDeath {
+            id: 1,
+            kind: 0,
+            pos,
+            killer: None,
+        };
+        let sounds = |e: &Event, kind: &str| -> Vec<Sound> {
+            for_creature(e, kind)
+                .unwrap_or_default()
+                .iter()
+                .map(|c| c.sound)
+                .collect()
+        };
+        assert_eq!(sounds(&death, "eiszapfen"), [Sound::IcicleShatter]);
+        assert_eq!(sounds(&death, "schneebrocken"), [Sound::SnowCrunch]);
+        assert_eq!(
+            sounds(&act(CreatureAct::Dive), "fledermaus"),
+            [Sound::BatScreech]
+        );
+        assert_eq!(
+            sounds(&act(CreatureAct::Warn), "kristella"),
+            [Sound::FrostWave]
+        );
+        assert_eq!(
+            sounds(&act(CreatureAct::Warn), "schneebrocken"),
+            [Sound::SandRumble]
+        );
+        let ice = |broken| Event::IceCrack {
+            tx: 1,
+            ty: 2,
+            broken,
+        };
+        let l = Listener::default();
+        assert_eq!(
+            for_event(&ice(false), l, |_| None)[0].sound,
+            Sound::IceCrack
+        );
+        assert_eq!(for_event(&ice(true), l, |_| None)[0].sound, Sound::IceBreak);
     }
 }

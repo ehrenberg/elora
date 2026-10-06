@@ -52,6 +52,10 @@ Anfang entfernt, Ende ausgeblendet, Spitze −1 dBFS, teils gekürzt).
 | `root_strike` | `impactWood_heavy_000.ogg` | [Kenney – impact-sounds](https://kenney.nl/assets/impact-sounds) | Kenney (kenney.nl) | CC0 1.0 |
 | `sand_dig` | `footstep_snow_002.ogg` | [Kenney – impact-sounds](https://kenney.nl/assets/impact-sounds) | Kenney (kenney.nl) | CC0 1.0 |
 | `shell_clack` | `impactPlate_light_001.ogg` | [Kenney – impact-sounds](https://kenney.nl/assets/impact-sounds) | Kenney (kenney.nl) | CC0 1.0 |
+| `ice_crack` | `impactGlass_light_002.ogg` | [Kenney – impact-sounds](https://kenney.nl/assets/impact-sounds) | Kenney (kenney.nl) | CC0 1.0 |
+| `ice_break` | `impactGlass_heavy_001.ogg` | [Kenney – impact-sounds](https://kenney.nl/assets/impact-sounds) | Kenney (kenney.nl) | CC0 1.0 |
+| `icicle_shatter` | `impactGlass_medium_003.ogg` | [Kenney – impact-sounds](https://kenney.nl/assets/impact-sounds) | Kenney (kenney.nl) | CC0 1.0 |
+| `snow_crunch` | `footstep_snow_001.ogg` | [Kenney – impact-sounds](https://kenney.nl/assets/impact-sounds) | Kenney (kenney.nl) | CC0 1.0 |
 
 ## Wetterklänge (`assets/ambience/`)
 
@@ -64,6 +68,7 @@ gebracht; Schleifen mit weich überblendeter Nahtstelle (E-338).
 | `wind.ogg` | `low-rumbling-176033.mp3` | [OpenGameArt – Low Rumbling](https://opengameart.org/content/low-rumbling) | Musheran | CC0 1.0 |
 | `sand.ogg` | `wind background noise 2.wav` (Hochpass 700 Hz, Höhen +8 dB) | [OpenGameArt – Mild Wind Background Noise](https://opengameart.org/content/mild-wind-background-noise) | Bashar3A | CC0 1.0 |
 | `donner.ogg` | `rain-thunder.ogg` (20,5–38,5 s, ausgeblendet) | [OpenGameArt – Rain + Long Thunder](https://opengameart.org/content/rain-long-thunder) | WuxiaScrub | CC0 1.0 |
+| `feuer.ogg` | `fire.wav` (Schleife, Nahtstelle überblendet) | [OpenGameArt – Fireplace Sound loop](https://opengameart.org/content/fireplace-sound-loop) | PagDev | CC0 1.0 |
 
 ## Schriften (`assets/fonts/`)
 
@@ -84,3 +89,5 @@ Per ffmpeg nach Ogg Vorbis umgewandelt (Stereo, 44,1 kHz, Qualität 4); das Spie
 | `boss-wald.ogg` | „Bamboo Blitz“ | [OpenGameArt – Bamboo Blitz](https://opengameart.org/content/bamboo-blitz) | Tsorthan Grove | CC0 1.0 |
 | `wueste.ogg` | „Desert Loop“ | [OpenGameArt – Desert Loop](https://opengameart.org/content/desert-loop) | iamoneabe | CC0 1.0 |
 | `boss-wueste.ogg` | „Hard Boss Battle 1“ | [OpenGameArt – Hard Boss Battle 1](https://opengameart.org/content/hard-boss-battle-1) | MintoDog | CC0 1.0 |
+| `frost.ogg` | „Ice Village“ | [OpenGameArt – Ice Village](https://opengameart.org/content/ice-village) | KarateStudios | CC0 1.0 |
+| `boss-frost.ogg` | „Dramatic Boss Encounter“ | [OpenGameArt – Dramatic Boss Encounter](https://opengameart.org/content/dramatic-boss-encounter) | cynicmusic | CC0 1.0 |

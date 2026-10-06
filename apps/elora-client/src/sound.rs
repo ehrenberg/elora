@@ -31,6 +31,10 @@ pub struct Sounds {
     /// Zuletzt gesehene Bits und Hook-Zustand je Slot.
     /// Je Figur: Ereignis-Bits, Hook-Zustand und ob sie im Treibsand steckt (letzter Frame).
     last: HashMap<usize, (u16, HookState, bool)>,
+    /// Art jedes Gegners der Szene (für Klänge, wenn er schon verschwunden ist).
+    kinds: HashMap<u32, String>,
+    /// Figuren, die im letzten Frame erstarrt waren (Frostgeist).
+    frozen: Vec<usize>,
     /// Gelesene Musikstücke, gepackt (E-121, E-285); `None`: fehlt oder unlesbar.
     tracks: HashMap<String, Option<Arc<[u8]>>>,
     /// Gerade laufendes Stück.
@@ -90,6 +94,8 @@ impl Sounds {
             audio: Audio::new(&bank),
             settings,
             last: HashMap::new(),
+            kinds: HashMap::new(),
+            frozen: Vec::new(),
             tracks: HashMap::new(),
             playing: None,
             ambience: HashMap::new(),
@@ -148,6 +154,20 @@ impl Sounds {
                 self.ambience.insert("donner".to_owned(), None);
                 return;
             }
+        }
+    }
+
+    /// Knistern der nächsten Feuerstelle (R2-M2.4): `level` 0..1 nach Abstand, weich nachgeführt.
+    pub fn fire(&mut self, level: f32) {
+        let Some(data) = self.ambience_file("feuer") else {
+            return;
+        };
+        if let Err(e) = self
+            .audio
+            .ambience("feuer", &data, level.clamp(0.0, 1.0) * AMBIENCE_GAIN)
+        {
+            tracing::warn!("{AMBIENCE_DIR}/feuer: {e}");
+            self.ambience.insert("feuer".to_owned(), None);
         }
     }
 
@@ -216,11 +236,14 @@ impl Sounds {
                 .find(|c| c.slot == slot)
                 .map(SceneChar::pos)
         };
-        // Wüsten-Gegner haben eigene Klänge (R2-M2.3): Art über die Id des Gegners
+        // Gegner haben eigene Klänge (R2-M2.3, R2-M2.4): Art über die Id des Gegners; besiegte
+        // sind schon aus der Szene verschwunden, ihre Art ist gemerkt
+        let kinds = &self.kinds;
         let kind_of = |e: &Event| {
             let (Event::CreatureAct { id, .. }
             | Event::CreatureFire { id, .. }
-            | Event::CreatureHit { id, .. }) = *e
+            | Event::CreatureHit { id, .. }
+            | Event::CreatureDeath { id, .. }) = *e
             else {
                 return None;
             };
@@ -229,6 +252,7 @@ impl Sounds {
                 .iter()
                 .find(|c| c.id == id)
                 .map(|c| c.kind.as_str())
+                .or_else(|| kinds.get(&id).map(String::as_str))
         };
         let mut cues: Vec<Cue> = events
             .iter()
@@ -239,6 +263,11 @@ impl Sounds {
             })
             .collect();
 
+        self.kinds = scene
+            .creatures
+            .iter()
+            .map(|c| (c.id, c.kind.clone()))
+            .collect();
         self.last
             .retain(|slot, _| scene.chars.iter().any(|c| c.slot == *slot));
         for c in &scene.chars {
@@ -260,8 +289,18 @@ impl Sounds {
             if sand && !last_sand {
                 cues.push(Cue::at(Sound::Quicksand, c.pos()));
             }
+            // erstarrt (Frostgeist, R2-M2.4)
+            if c.ch.core.frozen > 0 && !self.frozen.contains(&c.slot) {
+                cues.push(Cue::at(Sound::Freeze, c.pos()));
+            }
             self.last.insert(c.slot, (bits, hook, sand));
         }
+        self.frozen = scene
+            .chars
+            .iter()
+            .filter(|c| c.ch.core.frozen > 0)
+            .map(|c| c.slot)
+            .collect();
         cues.extend(
             landings
                 .iter()
@@ -319,7 +358,7 @@ mod tests {
 
     #[test]
     fn ambience_files_are_shipped() {
-        for name in AMBIENCE.into_iter().chain(["donner"]) {
+        for name in AMBIENCE.into_iter().chain(["donner", "feuer"]) {
             let path = format!(
                 "{}/../../{AMBIENCE_DIR}/{name}.ogg",
                 env!("CARGO_MANIFEST_DIR")

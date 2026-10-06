@@ -265,6 +265,8 @@ mod tests {
             "boss-wald",
             "wueste",
             "boss-wueste",
+            "frost",
+            "boss-frost",
         ] {
             let data = std::fs::read(format!("{dir}/{name}.ogg")).unwrap();
             assert_eq!(&data[..4], b"OggS", "{name}");

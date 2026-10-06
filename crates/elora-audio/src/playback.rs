@@ -265,10 +265,13 @@ mod music_tests {
             "boss-wald",
             "wueste",
             "boss-wueste",
+            "frost",
+            "boss-frost",
             "../ambience/regen",
             "../ambience/wind",
             "../ambience/sand",
             "../ambience/donner",
+            "../ambience/feuer",
         ] {
             let data: Arc<[u8]> = std::fs::read(format!("{dir}/{name}.ogg")).unwrap().into();
             assert!(

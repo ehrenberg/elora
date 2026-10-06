@@ -701,6 +701,24 @@ impl App {
         let shelter = self.weather.shelter();
         self.sounds
             .weather(dt, weather, shelter, thunder, camera.center);
+        // Feuerstellen knistern, je näher, desto lauter (Zonen `feuer…`, R2-M2.4)
+        let fire = self.adventure.as_ref().map_or(0.0, |a| {
+            a.session
+                .map
+                .adventure
+                .objects
+                .iter()
+                .filter(|o| o.id.starts_with("feuer"))
+                .filter_map(|o| o.kind.area().map(|s| o.pos + s * 0.5))
+                .map(|c| c.distance(camera.center))
+                .fold(f32::MAX, f32::min)
+        });
+        let level = if self.adventure.is_some() {
+            (1.0 - (fire - 150.0) / 450.0).clamp(0.0, 1.0) * 0.8
+        } else {
+            0.0
+        };
+        self.sounds.fire(level);
     }
 
     /// Effekte und Figuren-Animationen fortschreiben, eigenen Skin abgleichen.

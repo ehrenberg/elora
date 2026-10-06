@@ -116,10 +116,19 @@ impl Avalanches {
             // leicht versetzt, damit die Brocken nicht aufeinander liegen
             #[allow(clippy::cast_precision_loss)]
             let jitter = ((run.left * 37) % 5) as f32 * 6.0 - 12.0;
-            if let Some(cid) = world.add_creature(kind, run.from + Vec2::new(jitter, 0.0))
+            let pos = run.from + Vec2::new(jitter, 0.0);
+            if let Some(cid) = world.add_creature(kind, pos)
                 && let Some(c) = world.creatures.iter_mut().find(|c| c.id == cid)
             {
                 c.facing = run.dir;
+                // der erste Brocken: die Lawine geht ab (Grollen)
+                if run.left == world.tuning.avalanche_rocks {
+                    world.events.push(Event::CreatureAct {
+                        id: cid,
+                        pos,
+                        act: elora_sim::CreatureAct::Warn,
+                    });
+                }
             }
             run.left = run.left.saturating_sub(1);
             run.next = now + gap;
