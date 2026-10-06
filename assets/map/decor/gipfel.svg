@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-226 -266 452 270">
+  <!-- Kapitel 4: gipfel (R2-M2.4, aus tools/design/kapitel4_entwuerfe.py). Ursprung unten in der Mitte. -->
+  <path d="M -220,0 L -90,-220 L -40,-150 L 20,-260 L 220,0 Z" fill="#8f9aa6" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><path d="M -90,-220 L -120,-170 L -96,-176 L -80,-158 L -62,-182 Z" fill="#ffffff" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M 20,-260 L -16,-196 L 6,-204 L 24,-180 L 42,-208 L 60,-196 Z" fill="#ffffff" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M 40,-150 L 100,-60 M -60,-100 L -30,-40" stroke="#66717c" stroke-width="4"/>
+</svg>

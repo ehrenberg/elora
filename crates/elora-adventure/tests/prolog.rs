@@ -439,3 +439,147 @@ fn stomp_vaults_open_only_with_a_stomp() {
         assert!(out, "{map}: wieder hinaus");
     }
 }
+
+/// Durchlauf von Kapitel 4 (R2-M2.4) auf den mitgelieferten Karten: Eisdeckel am Bergsteig
+/// (Stampfen), Gletscherfuß mit Kälte und Feuer, Bergdorf mit Flocke, Keller und Seil,
+/// Steigkrallen, Kletterer, Gipfelgrat im Schneesturm, Kampf in der Eishalle, Tor und Weg
+/// zurück nach Tauwinkel.
+#[test]
+#[allow(clippy::too_many_lines)] // ein Durchlauf in der Reihenfolge des Kapitels
+fn chapter_four_from_the_mountain_path_to_the_ice_hall_and_home() {
+    let tuning = Tuning::default();
+    let run = |s: &mut Session, w: &mut World, input: PlayerInput, n: usize| {
+        for _ in 0..n {
+            step(s, w, input, false);
+        }
+    };
+    let jump = PlayerInput {
+        jump: true,
+        ..PlayerInput::default()
+    };
+    let down = PlayerInput {
+        down: true,
+        ..PlayerInput::default()
+    };
+    let mut s = Session::new_game(Content::builtin());
+    s.save
+        .run(&s.content.clone(), &["quest frostspitzen start".into()]);
+    let mut w = s.enter("tauwinkel", load("tauwinkel"), "bergsteig", &tuning);
+    // Eisdeckel (Spalten 343–345, Zeilen 32–33): trägt ohne Stampfen
+    let lid = Vec2::new(344.5 * 32.0, 32.0 * 32.0 - 20.0);
+    w.spawn_character(s.player, lid);
+    w.set_abilities(s.player, elora_sim::Abilities::NONE);
+    run(&mut s, &mut w, PlayerInput::default(), 20);
+    run(&mut s, &mut w, jump, 1);
+    run(&mut s, &mut w, PlayerInput::default(), 12);
+    run(&mut s, &mut w, down, 60);
+    assert!(
+        w.collision.tile(344, 32) == elora_sim::Tile::Crumble,
+        "Deckel hält"
+    );
+    // mit Stampfen bricht er, Elora fällt in den Gang und kommt zum Übergang
+    w.spawn_character(s.player, lid);
+    w.set_abilities(
+        s.player,
+        elora_sim::Abilities::NONE.with(elora_sim::Ability::Stomp),
+    );
+    run(&mut s, &mut w, PlayerInput::default(), 20);
+    run(&mut s, &mut w, jump, 1);
+    run(&mut s, &mut w, PlayerInput::default(), 12);
+    run(&mut s, &mut w, down, 60);
+    assert!(!w.collision.tile_at(lid + Vec2::new(0.0, 40.0)).is_solid());
+    let (map, spawn) = walk_until_travel(&mut s, &mut w, 1);
+    assert_eq!((map.as_str(), spawn.as_str()), ("frost-1", "west"));
+    // der Deckel bleibt offen
+    assert!(
+        s.save
+            .broken
+            .get("tauwinkel")
+            .is_some_and(|b| b.contains(&(344, 32)))
+    );
+    let mut w = s.enter(&map, load(&map), &spawn, &tuning);
+    assert!(holds(&s, "quest frostspitzen schritt flocke"));
+    assert!(s.chilly());
+    // am Eingang brennt ein Feuer: dort bleibt es warm
+    s.cold = 0.8;
+    go_to(&mut s, &mut w, "feuer-eingang", 0.0);
+    assert!(s.cold < 0.8, "am Feuer wärmer: {}", s.cold);
+
+    // Bergdorf: Flocke, Seil aus dem Keller, Steigkrallen
+    let mut w = travel(&mut s, &mut w, "ost", 1);
+    assert_eq!(s.map_name, "frost-2");
+    assert_eq!(talk(&mut s, &mut w, "flocke")[0], "begruessung");
+    assert!(holds(&s, "quest frostspitzen schritt seil"));
+    go_to(&mut s, &mut w, "truhe-seil", -30.0);
+    step(&mut s, &mut w, PlayerInput::default(), true);
+    for _ in 0..40 {
+        step(&mut s, &mut w, PlayerInput::default(), false);
+    }
+    assert_eq!(s.save.count("seil"), 1, "Seil aus der Truhe im Keller");
+    assert_eq!(talk(&mut s, &mut w, "flocke")[0], "seil_zurueck");
+    assert!(s.save.abilities().has(elora_sim::Ability::Grip));
+    assert!(holds(&s, "quest kletterer aktiv"));
+    talk(&mut s, &mut w, "kiesel");
+    assert_eq!(s.save.flag("kletterer.gefunden"), 1);
+    // Kiesel sitzt jetzt in der Hütte
+    assert!(s.npcs(&w).iter().any(|n| n.id == "kiesel-huette"));
+    assert!(!s.npcs(&w).iter().any(|n| n.id == "kiesel"));
+
+    // Gipfelgrat: immer im Schneesturm, die graue Stelle
+    let mut w = travel(&mut s, &mut w, "ost", 1);
+    assert_eq!(s.map_name, "frost-3");
+    assert!(holds(&s, "quest frostspitzen schritt quelle"));
+    assert_eq!(s.map.weather.kind, elora_map::WeatherKind::Blizzard);
+    talk(&mut s, &mut w, "graue-stelle");
+    assert_eq!(s.save.flag("duerrer.grat"), 1);
+    talk(&mut s, &mut w, "wicke");
+
+    // Eishalle: Kampf, Tor geht auf
+    let mut w = travel(&mut s, &mut w, "ost", 1);
+    assert_eq!(s.map_name, "frost-arena");
+    assert!(s.map.weather.is_clear(), "die Halle bleibt schön");
+    assert!(holds(&s, "quest frostspitzen schritt hueter"));
+    go_to(&mut s, &mut w, "eiskoenigin", -150.0);
+    let kind = w.creature_kind("kristella").expect("Art");
+    let queen = w
+        .creatures
+        .iter_mut()
+        .find(|c| c.kind == kind)
+        .expect("Kristella in der Halle");
+    queen.mode = elora_sim::creature::queen::TIRED;
+    queen.timer = 0;
+    queen.health = 1;
+    let at = queen.pos;
+    w.spawn_character(s.player, at + Vec2::new(-60.0, 0.0));
+    w.character_mut(s.player).unwrap().invulnerable_until = u64::MAX;
+    let hit = PlayerInput {
+        fire: 1,
+        target_x: 100,
+        target_y: 0,
+        ..PlayerInput::default()
+    };
+    let mut done = Vec::new();
+    for _ in 0..3 {
+        done.extend(step(&mut s, &mut w, hit, false));
+    }
+    for _ in 0..80 {
+        done.extend(step(&mut s, &mut w, PlayerInput::default(), false));
+    }
+    assert!(
+        done.contains(&SessionEvent::ChapterDone {
+            area: "frostspitzen".into()
+        }),
+        "Gewinn-Bildschirm nach der Hüterin"
+    );
+    assert_eq!(s.save.flag("besiegt.kristella"), 1);
+    assert!(s.save.count("quellfunke") >= 1, "Funke eingesammelt");
+    let gate = s.map.adventure.object("tor").unwrap().pos;
+    assert!(!w.collision.tile_at(gate + Vec2::new(16.0, 16.0)).is_solid());
+    assert_eq!(talk(&mut s, &mut w, "kristella")[0], "erwacht");
+    assert_eq!(s.save.flag("befreit.frostquelle"), 1);
+    let (map, spawn) = {
+        go_to(&mut s, &mut w, "ost", 0.0);
+        walk_until_travel(&mut s, &mut w, 1)
+    };
+    assert_eq!((map.as_str(), spawn.as_str()), ("tauwinkel", "bergsteig"));
+}

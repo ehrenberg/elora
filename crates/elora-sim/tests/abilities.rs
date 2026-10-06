@@ -476,3 +476,46 @@ fn ruck_gate_needs_the_hook_ruck() {
     assert!(!reach(false), "ohne Hook-Ruck erreichbar");
     assert!(reach(true), "mit Hook-Ruck nicht erreichbar");
 }
+
+/// Kletterkamin der Frostspitzen (R2-M2.4): zwei Kletterwände mit drei Tiles Luft dazwischen,
+/// 26 Reihen hoch – mit Eisgriff und Wandsprüngen im Wechsel kommt Elora oben an, ohne nicht.
+#[test]
+fn tall_chimney_can_be_climbed_with_grip_only() {
+    let climb = |abilities: Abilities| {
+        let mut w = world(|t| {
+            for y in 2..FLOOR {
+                set(t, 20, y, Tile::Climb);
+                set(t, 24, y, Tile::Climb);
+            }
+            // oben rechts ein Sims hinter der rechten Wand
+            for x in 25..40 {
+                set(t, x, 1, Tile::Solid);
+            }
+        });
+        spawn(&mut w, standing(22, FLOOR), abilities);
+        run(&mut w, PlayerInput::default(), 10);
+        let mut toward: i8 = 1;
+        let mut held = false;
+        let mut best = f32::MAX;
+        for _ in 0..1500 {
+            let c = core(&w);
+            best = best.min(c.pos.y);
+            // an der Wand: abspringen und zur anderen Wand lenken; sonst zur Wand hin
+            let jump = if c.grip != 0 && !held {
+                toward = -c.grip;
+                true
+            } else {
+                c.vel.y >= 0.0 && c.is_grounded(&w.collision) && !held
+            };
+            held = jump;
+            run(&mut w, input(toward, jump, false), 1);
+        }
+        best
+    };
+    let top = 4.0 * 32.0;
+    assert!(
+        climb(with(Ability::Grip)) < top,
+        "mit Eisgriff oben angekommen"
+    );
+    assert!(climb(Abilities::NONE) > 12.0 * 32.0, "ohne Eisgriff nicht");
+}

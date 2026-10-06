@@ -32,7 +32,7 @@ const DESERT: Theme = Theme {
 };
 
 /// Übergang über die ganze Kartenhöhe am Rand (E-279).
-fn edge_exit(id: &str, x: usize, h: usize, map: &str, spawn: &str) -> Object {
+pub(super) fn edge_exit(id: &str, x: usize, h: usize, map: &str, spawn: &str) -> Object {
     o(
         id,
         corner(x, 0),
@@ -45,13 +45,13 @@ fn edge_exit(id: &str, x: usize, h: usize, map: &str, spawn: &str) -> Object {
     )
 }
 
-fn big(name: &str, tx: f32, ty: usize, scale: f32) -> Decor {
+pub(super) fn big(name: &str, tx: f32, ty: usize, scale: f32) -> Decor {
     let mut d = decor(name, tx, ty);
     d.scale = scale;
     d
 }
 
-fn zone(id: &str, x: (usize, usize), y: (usize, usize)) -> Object {
+pub(super) fn zone(id: &str, x: (usize, usize), y: (usize, usize)) -> Object {
     o(
         id,
         corner(x.0, y.0),
@@ -468,6 +468,7 @@ mod tests {
         let mut all = super::super::kapitel1::all_maps();
         all.extend(super::super::kapitel2::maps());
         all.extend(maps());
+        all.extend(super::super::kapitel4::maps());
         for (name, m) in &all {
             let back = elora_map::decode(&elora_map::encode(m)).expect("Karte gültig");
             let errors = map_objects(&c, &back);

@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-86 -64 262 68">
+  <!-- Kapitel 4: grauspur-eis (R2-M2.4, aus tools/design/kapitel4_entwuerfe.py). Ursprung unten in der Mitte. -->
+  <ellipse cx="0" cy="-6" rx="80" ry="12" fill="#a8a8a6" opacity="0.8"/><path d="M -52.8,-8 L -52.8,-36.0 L -40,-48 L -27.2,-36.0 L -27.2,-8 Z" fill="#b8b8b6" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M -40,-48 L -40,-8" stroke="#ffffff" stroke-width="2.4" opacity="0.7"/><path d="M 13.36,-8 L 13.36,-44.4 L 30,-60 L 46.64,-44.4 L 46.64,-8 Z" fill="#c4c4c2" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M 30,-60 L 30,-8" stroke="#ffffff" stroke-width="2.4" opacity="0.7"/><ellipse cx="80" cy="-3" rx="9" ry="3.5" fill="#9a9894" opacity="0.85"/><ellipse cx="120" cy="-3" rx="9" ry="3.5" fill="#9a9894" opacity="0.85"/><ellipse cx="160" cy="-3" rx="9" ry="3.5" fill="#9a9894" opacity="0.85"/>
+</svg>

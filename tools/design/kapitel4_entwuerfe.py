@@ -496,7 +496,7 @@ DECOR = {
     'gletscher': (gletscher(), '-166 -126 332 130'),
     'feuerstelle': (feuerstelle(True), '-76 -104 152 108'),
     'eisblock': (eisblock(), '-70 -102 140 106'),
-    'frostquelle-vereist': (frostquelle(False), '-120 -62 240 66'),
+    'frostquelle-verdorrt': (frostquelle(False), '-120 -62 240 66'),
     'frostquelle-befreit': (frostquelle(True), '-150 -156 300 160'),
     'grauspur-eis': (grauspur_eis(), '-86 -64 262 68'),
 }

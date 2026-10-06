@@ -386,6 +386,7 @@ mod tests {
         let mut linked = all_maps();
         linked.extend(super::super::kapitel2::maps());
         linked.extend(super::super::kapitel3::maps());
+        linked.extend(super::super::kapitel4::maps());
         let refs: Vec<(&str, &Map)> = linked.iter().map(|(n, m)| (*n, m)).collect();
         let errors = map_links(&refs);
         assert!(errors.is_empty(), "{errors:?}");

@@ -444,6 +444,10 @@ pub fn tauwinkel() -> Map {
     g.ground(357, 362, 36);
     g.ground(363, w - 1, 38);
     g.ground(404, 417, 36);
+    // Bergsteig in die Frostspitzen (D-M24-01): ein Eisdeckel aus Bröckelboden über einem Gang,
+    // nur mit Stampfen zu öffnen; der Gang führt unter dem Oberdorf zum Übergang
+    g.fill((342, 350), (34, 37), '.');
+    g.fill((343, 345), (32, 33), ':');
     // Hohlweg am Ostpfad hinab in die Glutsandwüste (E-315): Stufen, unten der Übergang;
     // oben ein Felsdeckel, bis Kapitel 3 beginnt
     g.fill((388, 394), (38, 47), '.');
@@ -497,6 +501,18 @@ pub fn tauwinkel() -> Map {
         creature("puppe-2", "strohpuppe", 295, 32, 40.0),
         creature("puppe-3", "strohpuppe", 300, 32, 40.0),
         npc("lotte", 321, 32, -1, 0.0),
+        o("bergsteig", at(339, 32, 28.0), ObjectKind::Spawn),
+        sign("schild-bergsteig", 341, 32),
+        o(
+            "weg-berge",
+            corner(347, 34),
+            ObjectKind::Exit {
+                size: Vec2::new(4.0 * T, 4.0 * T),
+                map: "frost-1".into(),
+                spawn: "west".into(),
+                on_touch: true,
+            },
+        ),
         o("hohlweg", at(384, 38, 28.0), ObjectKind::Spawn),
         sign("schild-wueste", 386, 38),
         o(
@@ -560,9 +576,8 @@ pub fn tauwinkel() -> Map {
         decor("schmiede", 272.0, 32),
         decor("holzstapel", 309.0, 32),
         decor("laden", 328.0, 32),
-        decor("faesser", 336.0, 32),
-        decor("karren", 341.0, 32),
-        decor("bank", 347.0, 32),
+        decor("faesser", 334.0, 32),
+        decor("bank", 348.0, 32),
         decor("laterne", 350.0, 32),
         decor("tree-round", 368.0, 38),
         decor("tree-pine", 384.0, 38),
@@ -662,6 +677,8 @@ pub fn tauwinkel() -> Map {
         ground(166.0, 38) + Vec2::new(-42.0, -258.0),
         ground(328.0, 32) + Vec2::new(-40.0, -246.0),
     ];
+    // Eisblock über dem Bergsteig (verschwindet nicht von selbst: der Deckel sind Tiles)
+    m.decor_front.push(decor("eisblock", 344.0, 34));
     let mut map = finish(m, &GRASS);
     animate(&mut map, &chimneys);
     map

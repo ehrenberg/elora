@@ -58,6 +58,9 @@ pub const DECOR_FILES: &[(&str, &[u8])] = assets!("decor":
     // Kapitel 3 (R2-M2.3)
     "duene", "felsbogen", "saeule", "saeule-bruch", "ruinentor", "kaktus", "palme", "oase", "zelt",
     "kamel", "glutquelle-verdorrt", "glutquelle-befreit", "grauspur",
+    // Kapitel 4 (R2-M2.4)
+    "gipfel", "tanne-schnee", "berghuette", "seilbruecke", "schneewehe", "gletscher", "feuerstelle",
+    "eisblock", "frostquelle-verdorrt", "frostquelle-befreit", "grauspur-eis",
 );
 
 /// Eingebaute Hintergrund-Grafik (ebenfalls über [`Art::Builtin`] benutzt).
