@@ -249,6 +249,7 @@ impl Session {
         let mut world = map.world(tuning);
         world.creature_kinds.clone_from(&c.creatures);
         world.adventure = true;
+        world.weather = weather_env(map.weather);
 
         let objects = &map.adventure.objects;
         let pos = objects
@@ -338,6 +339,8 @@ impl Session {
     pub fn tick(&mut self, world: &mut World, interact: bool) -> Vec<SessionEvent> {
         let mut out = std::mem::take(&mut self.pending);
         self.ticks += 1;
+        // Wetter der Karte wirkt aufs Spiel (R2-W1); ändert sich, wenn eine Quelle frei wird
+        world.weather = weather_env(self.map.weather);
         if self
             .ticks
             .is_multiple_of(u64::from(elora_sim::TICKS_PER_SECOND))
@@ -1145,6 +1148,36 @@ pub const SPRINGS_FREED: &str = "quellen_befreit";
 
 /// Verblasste Deko (`…-blass`) bekommt mit jeder befreiten Quelle zum Teil ihre Farbe zurück
 /// (`…-bunt`, E-277): je Stück fest über seine Lage verteilt, nach fünf Quellen alles.
+/// Wie die Simulation das Wetter spürt (R2-W1, E-330): Wind (Sand- und Schneesturm wehen
+/// immer), Böen, Nässe bei Regen und Schnee, Blitze im Gewitter.
+pub fn weather_env(w: elora_map::Weather) -> Option<elora_sim::WeatherEnv> {
+    use elora_map::WeatherKind as K;
+    if w.is_clear() {
+        return None;
+    }
+    let strong = matches!(w.kind, K::Sandstorm | K::Blizzard);
+    let wind = if strong && w.wind.abs() < 0.2 {
+        0.7
+    } else {
+        w.wind
+    };
+    let (wet, lightning) = match w.kind {
+        K::Rain => (w.intensity, 0.0),
+        K::Storm => (w.intensity, w.intensity),
+        K::Snow | K::Blizzard => (w.intensity * 0.8, 0.0),
+        _ => (0.0, 0.0),
+    };
+    Some(elora_sim::WeatherEnv {
+        wind,
+        gusty: matches!(
+            w.kind,
+            K::Storm | K::Blizzard | K::Sandstorm | K::Leaves | K::Petals
+        ),
+        wet,
+        lightning,
+    })
+}
+
 /// Merker eines Fests im Dorf: Deko `…-fest` (Girlanden, Laternen) hängt nur dann (E-301).
 pub const PARTY: &str = "fest";
 

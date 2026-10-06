@@ -115,6 +115,13 @@ Nur im Abenteuer und im Quellenkampf (E-223). Startwerte zum Anspielen; die Sand
 | A-26 | Schaden ganz eingesunken | **1** | Danach zurück an den Rand | E-318 |
 | A-27 | Tempo bei voller Hitze-Leiste | **× 0,7** | Bis die Leiste unter die Hälfte fällt | E-320 |
 | A-28 | Dauer Hook-Ruck | **320 ms** | So lange zieht der Ruck geradewegs mit A-01 zum Hook-Punkt, statt nur einmal anzuschieben | Playtest 2026-10-06 |
+| A-29 | Windstoß auf Elora in der Luft | **0,15** Einheiten/Tick bei Wind 1 | Nur im Abenteuer; am Boden schiebt der Wind nicht | R2-W1, E-330 |
+| A-30 | Schaden Blitzeinschlag | **2** | Nur im Gewitter des Abenteuers | E-336 |
+| A-31 | Radius Blitzeinschlag | **56** Einheiten | Um die glimmende Stelle | E-336 |
+| A-32 | Warnzeit vor dem Einschlag | **900 ms** | Boden glimmt, Funken steigen – Zeit zum Ausweichen | E-336 |
+| A-33 | Abstand der Blitze | **9000 ms** bei voller Stärke (± 40 %) | Seltener bei schwächerem Gewitter | E-336 |
+| A-34 | Windablenkung Granaten | **2,2** | Granaten treiben mit dem Wind | R2-W1, E-330 |
+| A-35 | Rutschen auf nassem Boden | **0,33** (Anteil Richtung Eis) | Regen, Schnee: weicheres Bremsen | R2-W1, E-330 |
 
 ## F. Regeln aus Folgeentscheidungen
 

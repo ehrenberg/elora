@@ -773,7 +773,16 @@ impl App {
                     }
                 }
             }
-            let target = f32::from(a.look_dir) * LOOKAHEAD;
+            // bei Nebel und Stürmen schaut die Kamera weniger weit voraus (R2-W1, E-330)
+            let w = a.session.map.weather;
+            let sight = match w.kind {
+                elora_map::WeatherKind::Fog
+                | elora_map::WeatherKind::Sandstorm
+                | elora_map::WeatherKind::Blizzard => 1.0 - 0.5 * w.intensity,
+                elora_map::WeatherKind::Storm => 1.0 - 0.2 * w.intensity,
+                _ => 1.0,
+            };
+            let target = f32::from(a.look_dir) * LOOKAHEAD * sight;
             a.look += (target - a.look) * (dt * LOOKAHEAD_RATE).min(1.0);
         }
         let free = center + Vec2::new(a.look, 0.0);

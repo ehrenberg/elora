@@ -20,6 +20,8 @@ pub struct Projectile {
     pub start_tick: u64,
     pub lifespan: i32,
     pub damage: i32,
+    /// Wind beim Abschuss (R2-W1, nur Abenteuer): lenkt die Flugbahn seitlich ab.
+    pub wind: f32,
 }
 
 impl Projectile {
@@ -44,6 +46,7 @@ impl Projectile {
             start_tick,
             lifespan,
             damage,
+            wind: 0.0,
         }
     }
 
@@ -51,7 +54,7 @@ impl Projectile {
     pub fn pos_at(&self, time: f32, t: &Tuning) -> Vec2 {
         let time = time * t.grenade_speed;
         Vec2::new(
-            self.pos.x + self.dir.x * time,
+            self.pos.x + self.dir.x * time + self.wind * t.grenade_wind / 10000.0 * (time * time),
             self.pos.y + self.dir.y * time + t.grenade_curvature / 10000.0 * (time * time),
         )
     }

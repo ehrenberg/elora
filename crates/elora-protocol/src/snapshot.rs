@@ -301,6 +301,8 @@ impl Snapshot {
                 start_tick: v[5] as u64,
                 lifespan: v[6] as i32,
                 damage: v[7] as i32,
+                // Wind gibt es nur im Abenteuer (R2-W1), nicht im Netz
+                wind: 0.0,
             })
             .collect();
         world.lasers = self.objects[LASER]

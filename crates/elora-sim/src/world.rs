@@ -72,6 +72,9 @@ pub struct World {
     pub loot: Vec<Loot>,
     /// Nächste Id für Kreaturen und Beute.
     pub next_id: u32,
+    /// Wetter (R2-W1, nur Abenteuer; die Sitzung setzt es) und Zustand der Blitze.
+    pub weather: Option<crate::weather::WeatherEnv>,
+    pub lightning: crate::weather::Lightning,
 }
 
 impl World {
@@ -100,6 +103,8 @@ impl World {
             temp_tiles: Vec::new(),
             loot: Vec::new(),
             next_id: 1,
+            weather: None,
+            lightning: crate::weather::Lightning::default(),
         }
     }
 
@@ -215,6 +220,7 @@ impl World {
         self.tick_lasers();
         self.tick_pickups();
         self.update_hook_wilt();
+        self.tick_weather();
         self.tick_characters();
         self.tick_flags_physics();
         self.tick_characters_deferred();
@@ -421,14 +427,17 @@ impl World {
             }
             Weapon::Grenade => {
                 let t = &self.tuning;
-                self.projectiles.push(Projectile::new(
+                let mut p = Projectile::new(
                     i,
                     start,
                     dir,
                     self.tick,
                     (TICKS_PER_SECOND as f32 * t.grenade_lifetime) as i32,
                     t.grenade_damage,
-                ));
+                );
+                // Wind lenkt die Granate ab (R2-W1, nur Abenteuer)
+                p.wind = self.collision.wind;
+                self.projectiles.push(p);
             }
             Weapon::Laser => {
                 let laser = Laser::new(i, pos, dir, self.tuning.laser_reach, self.tick);

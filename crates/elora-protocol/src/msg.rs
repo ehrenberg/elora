@@ -346,6 +346,8 @@ fn networked(e: &Event) -> bool {
             | Event::CreatureFire { .. }
             | Event::CreatureAct { .. }
             | Event::LootCollect { .. }
+            | Event::LightningWarn { .. }
+            | Event::Lightning { .. }
     )
 }
 
@@ -445,7 +447,9 @@ fn put_event(w: &mut Writer, e: &Event) {
         | Event::CreatureDeath { .. }
         | Event::CreatureFire { .. }
         | Event::CreatureAct { .. }
-        | Event::LootCollect { .. } => unreachable!("nicht im Netz"),
+        | Event::LootCollect { .. }
+        | Event::LightningWarn { .. }
+        | Event::Lightning { .. } => unreachable!("nicht im Netz"),
     }
 }
 

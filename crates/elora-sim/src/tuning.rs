@@ -169,6 +169,20 @@ pub struct Tuning {
     pub quicksand_damage: i32,
     /// A-27: Laufgeschwindigkeit bei voller Hitze-Leiste (Faktor, E-320)
     pub heat_speed: f32,
+    /// A-29: Wind schiebt Elora in der Luft (Einheiten/Tick² bei Wind 1, R2-W1)
+    pub wind_push: f32,
+    /// A-30: Schaden eines Blitzeinschlags (E-336)
+    pub lightning_damage: i32,
+    /// A-31: Umkreis des Einschlags (Einheiten)
+    pub lightning_radius: f32,
+    /// A-32: Warnung vor dem Einschlag (ms)
+    pub lightning_warn: u32,
+    /// A-33: mittlerer Abstand der Einschläge bei voller Stärke (ms)
+    pub lightning_every: u32,
+    /// A-34: Wind lenkt Granaten ab (Krümmung wie T-…, je Wind 1)
+    pub grenade_wind: f32,
+    /// A-35: nasser bzw. verschneiter Boden: Anteil des Eis-Effekts bei voller Nässe
+    pub wet_slip: f32,
 }
 
 impl Default for Tuning {
@@ -251,6 +265,13 @@ impl Default for Tuning {
             quicksand_speed: 0.4,
             quicksand_damage: 1,
             heat_speed: 0.7,
+            wind_push: 0.15,
+            lightning_damage: 2,
+            lightning_radius: 56.0,
+            lightning_warn: 900,
+            lightning_every: 9000,
+            grenade_wind: 2.2,
+            wet_slip: 0.33,
         }
     }
 }

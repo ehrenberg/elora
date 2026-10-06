@@ -19,6 +19,7 @@ pub mod player;
 pub mod replay;
 pub mod tuning;
 pub mod weapon;
+pub mod weather;
 pub mod world;
 
 pub use ability::{Abilities, Ability};
@@ -32,6 +33,7 @@ pub use math::Vec2;
 pub use player::{Character, Controller, Player, Team};
 pub use tuning::Tuning;
 pub use weapon::Weapon;
+pub use weather::WeatherEnv;
 pub use world::World;
 
 /// Feste Simulationsrate in Ticks pro Sekunde (T-01).

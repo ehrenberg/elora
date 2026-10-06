@@ -145,6 +145,10 @@ pub struct Collision {
     /// Welke Hookpunkte (Hüter wütend, E-298): `Some(gerade)` = Hookpunkte in Spalten mit
     /// `tx % 2 == 0` (bzw. ungerade) greifen gerade nicht; `None` = alle frisch.
     pub hook_wilt: Option<bool>,
+    /// Wetter dieses Ticks (R2-W1, nur Abenteuer): Wind mit Böen (−1..1) und Nässe des Bodens
+    /// (0..1); im Mehrspieler 0.
+    pub wind: f32,
+    pub wet: f32,
 }
 
 impl Collision {
@@ -163,6 +167,8 @@ impl Collision {
             height,
             tiles,
             hook_wilt: None,
+            wind: 0.0,
+            wet: 0.0,
         }
     }
 

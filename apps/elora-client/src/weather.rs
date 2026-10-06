@@ -23,6 +23,8 @@ const SPAWN_PER_FRAME: usize = 600;
 /// So lange ist ein Blitz zu sehen (s) und ein Spritzer (s).
 const BOLT_TIME: f32 = 0.22;
 const SPLASH_TIME: f32 = 0.25;
+/// So lange glimmt der Boden vor einem Einschlag (s, wie A-32).
+const WARN_TIME: f32 = 0.9;
 
 #[derive(Debug, Clone, Copy)]
 struct Particle {
@@ -65,6 +67,11 @@ pub struct WeatherView {
     thunder: Vec<(Vec2, f32)>,
     /// Wind, mit dem die Deko gerade wiegt (geglättet).
     wind: f32,
+    /// Angekündigte Einschläge aus der Simulation (Abenteuer): Ort, Alter (s).
+    warnings: Vec<(Vec2, f32)>,
+    /// Oberkante des Ausschnitts (für Blitze aus der Simulation).
+    sky_top: f32,
+    quality: WeatherQuality,
 }
 
 /// Oberkante des ersten Bodens (fest, Plattform, Treibsand) unter `from`, höchstens `reach` tief.
@@ -249,9 +256,16 @@ impl WeatherView {
         quality: WeatherQuality,
         camera: &Camera,
         map: Option<&Map>,
+        random_bolts: bool,
     ) {
         let dt = dt.min(0.1);
         self.time += dt;
+        self.quality = quality;
+        self.sky_top = camera.top_left().y - MARGIN;
+        self.warnings.retain_mut(|w| {
+            w.1 += dt;
+            w.1 < WARN_TIME + 0.3
+        });
         let (q, q_grade) = match quality {
             WeatherQuality::Full => (1.0, 1.0),
             WeatherQuality::Gentle => (0.35, 0.6),
@@ -341,7 +355,7 @@ impl WeatherView {
             b.age < BOLT_TIME
         });
         self.flash *= (-dt * 7.0).exp();
-        if w.kind == WeatherKind::Storm && q > 0.0 {
+        if w.kind == WeatherKind::Storm && q > 0.0 && random_bolts {
             self.next_bolt -= dt;
             if self.next_bolt <= 0.0 {
                 self.next_bolt = self.range(3.0, 8.0) / strength.max(0.3);
@@ -382,6 +396,19 @@ impl WeatherView {
         self.thunder.push((ground, delay));
     }
 
+    /// Simulation (Abenteuer): hier schlägt gleich ein Blitz ein – der Boden glimmt.
+    pub fn sim_warn(&mut self, pos: Vec2) {
+        self.warnings.push((pos, 0.0));
+    }
+
+    /// Simulation (Abenteuer): Einschlag bei `pos`.
+    pub fn sim_strike(&mut self, pos: Vec2) {
+        self.warnings.retain(|w| w.0.distance(pos) > 1.0);
+        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+        let seed = (pos.x.abs() * 13.0 + self.time * 977.0) as u32;
+        self.strike(pos, self.sky_top, seed, self.quality);
+    }
+
     /// Farbstimmung für den Post-Shader.
     pub fn grade(&self) -> Grade {
         self.grade.unwrap_or(Grade::NONE)
@@ -400,6 +427,29 @@ impl WeatherView {
 
     /// Partikel hinter den Figuren und Spritzer.
     pub fn draw_back(&self, batch: &mut ShapeBatch) {
+        // Warnung vor dem Einschlag: der Boden glimmt immer heller, Funken steigen (E-336)
+        for (pos, age) in &self.warnings {
+            let k = (age / WARN_TIME).min(1.0);
+            let pulse = 0.75 + 0.25 * (age * 22.0).sin();
+            let ring: Vec<Vec2> = (0..16)
+                .map(|i| {
+                    let a = i as f32 / 16.0 * std::f32::consts::TAU;
+                    *pos + Vec2::new(a.cos() * 30.0, a.sin() * 7.0 - 1.0)
+                })
+                .collect();
+            batch.fill_polygon(&ring, Color::rgba(1.0, 0.94, 0.6, 0.35 * k * pulse));
+            batch.fill_circle(
+                *pos,
+                8.0 + 6.0 * k,
+                Color::rgba(1.0, 0.97, 0.78, 0.5 * k * pulse),
+            );
+            for j in 0..5 {
+                let f = j as f32;
+                let rise = ((age * 1.6 + f * 0.21) % 1.0) * 34.0;
+                let p = *pos + Vec2::new((f * 7.3).sin() * 18.0, -rise);
+                batch.fill_circle(p, 1.8, Color::rgba(1.0, 0.97, 0.8, k));
+            }
+        }
         for (pos, age) in &self.splashes {
             let k = 1.0 - age / SPLASH_TIME;
             let c = Color::rgba(0.88, 0.93, 1.0, 0.7 * k);
@@ -530,24 +580,52 @@ mod tests {
     #[test]
     fn particles_follow_kind_intensity_and_quality() {
         let mut v = WeatherView::default();
-        v.update(0.016, rain(1.0), WeatherQuality::Full, &camera(), None);
+        v.update(
+            0.016,
+            rain(1.0),
+            WeatherQuality::Full,
+            &camera(),
+            None,
+            true,
+        );
         let full = v.particles.len();
         assert!(full > 300, "{full}");
         let mut v = WeatherView::default();
-        v.update(0.016, rain(1.0), WeatherQuality::Gentle, &camera(), None);
+        v.update(
+            0.016,
+            rain(1.0),
+            WeatherQuality::Gentle,
+            &camera(),
+            None,
+            true,
+        );
         assert!(v.particles.len() < full / 2, "sanft: weniger");
         let mut v = WeatherView::default();
-        v.update(0.016, rain(1.0), WeatherQuality::Off, &camera(), None);
+        v.update(0.016, rain(1.0), WeatherQuality::Off, &camera(), None, true);
         assert!(
             v.particles.is_empty() && v.grade().fog_density == 0.0,
             "aus"
         );
         // Wetterwechsel: alte Partikel verschwinden nach und nach, neue kommen
         let mut v = WeatherView::default();
-        v.update(0.016, rain(1.0), WeatherQuality::Full, &camera(), None);
+        v.update(
+            0.016,
+            rain(1.0),
+            WeatherQuality::Full,
+            &camera(),
+            None,
+            true,
+        );
         // etwa 8 s
         for _ in 0..500 {
-            v.update(0.016, Weather::CLEAR, WeatherQuality::Full, &camera(), None);
+            v.update(
+                0.016,
+                Weather::CLEAR,
+                WeatherQuality::Full,
+                &camera(),
+                None,
+                true,
+            );
         }
         assert!(v.particles.is_empty(), "nach dem Regen klar");
         assert!(v.grade().tint_amount < 0.01, "Stimmung klingt ab");
@@ -563,7 +641,7 @@ mod tests {
         };
         let mut flashes = 0;
         for _ in 0..1500 {
-            v.update(0.016, storm, WeatherQuality::Full, &camera(), None);
+            v.update(0.016, storm, WeatherQuality::Full, &camera(), None, true);
             if v.grade().flash > 0.9 {
                 flashes += 1;
             }
@@ -610,7 +688,14 @@ mod tests {
         };
         let mut v = WeatherView::default();
         for _ in 0..60 {
-            v.update(0.016, rain(1.0), WeatherQuality::Full, &cam, Some(&map));
+            v.update(
+                0.016,
+                rain(1.0),
+                WeatherQuality::Full,
+                &cam,
+                Some(&map),
+                true,
+            );
         }
         assert!(!v.splashes.is_empty());
         assert!(v.splashes.iter().all(|(p, _)| (p.y - 64.0).abs() < 0.1));

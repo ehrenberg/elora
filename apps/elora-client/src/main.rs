@@ -668,10 +668,37 @@ impl App {
         elapsed
     }
 
+    /// Wetter der Karte (online: vom Server mitgeschickt) – nur Darstellung (R2-W1).
+    fn update_weather(&mut self, dt: f32, camera: &Camera) {
+        let map = match &self.online {
+            Some(o) => o.client.map.as_ref(),
+            None => Some(&self.sandbox.map),
+        };
+        let weather = map.map_or(elora_map::Weather::CLEAR, |m| m.weather);
+        // im Abenteuer kommen die Blitze aus der Simulation (mit Warnung und Schaden, E-336)
+        let random_bolts = self.adventure.is_none();
+        self.weather.update(
+            dt,
+            weather,
+            self.settings.graphics.weather,
+            camera,
+            map,
+            random_bolts,
+        );
+    }
+
     /// Effekte und Figuren-Animationen fortschreiben, eigenen Skin abgleichen.
     fn update_looks(&mut self, dt: f32, scene: &Scene, collision: &Collision, events: &[Event]) {
         self.figures.update(dt, scene, collision, events);
         self.emotes.update(dt);
+        // Blitze aus der Simulation (Abenteuer, R2-W1): Warnung und Einschlag zeichnen
+        for e in events {
+            match *e {
+                elora_sim::Event::LightningWarn { pos } => self.weather.sim_warn(pos),
+                elora_sim::Event::Lightning { pos } => self.weather.sim_strike(pos),
+                _ => {}
+            }
+        }
         if let Some(o) = &mut self.online {
             for (slot, emote) in o.client.take_emotes() {
                 self.emotes.show(slot, emote);
@@ -959,14 +986,7 @@ impl App {
                 );
             }
         }
-        // Wetter der Karte (online: vom Server mitgeschickt) – nur Darstellung (R2-W1)
-        let map = match &self.online {
-            Some(o) => o.client.map.as_ref(),
-            None => Some(&self.sandbox.map),
-        };
-        let weather = map.map_or(elora_map::Weather::CLEAR, |m| m.weather);
-        self.weather
-            .update(dt, weather, self.settings.graphics.weather, &camera, map);
+        self.update_weather(dt, &camera);
         self.build_batch(&scene, &tuning, &camera, info.tick);
         let screen = self.build_hud(&scene, &tuning, &info);
         let death_choice = if self.adventure.is_some() && !self.menu.paused {

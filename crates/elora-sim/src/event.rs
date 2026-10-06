@@ -28,6 +28,14 @@ pub enum PickupKind {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Event {
+    /// Gewitter (R2-W1, E-336): hier schlägt gleich ein Blitz ein (der Boden glimmt).
+    LightningWarn {
+        pos: Vec2,
+    },
+    /// Blitzeinschlag am Boden.
+    Lightning {
+        pos: Vec2,
+    },
     /// Schuss abgegeben.
     Fire {
         player: usize,

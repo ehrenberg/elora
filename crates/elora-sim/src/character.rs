@@ -204,10 +204,13 @@ impl CharacterCore {
                 tuning.ice_friction,
             )
         } else if grounded || in_sand {
+            // nasser oder verschneiter Boden bremst weicher (R2-W1, A-35)
+            let slip = col.wet * tuning.wet_slip;
             (
                 tuning.ground_control_speed,
-                tuning.ground_control_accel,
-                tuning.ground_friction,
+                tuning.ground_control_accel
+                    + (tuning.ice_accel - tuning.ground_control_accel) * slip,
+                tuning.ground_friction + (tuning.ice_friction - tuning.ground_friction) * slip,
             )
         } else if self.gliding {
             (
@@ -296,6 +299,9 @@ impl CharacterCore {
         if grounded || in_sand {
             self.jumped &= !2;
             self.grip_ticks = 0;
+        } else if col.wind != 0.0 {
+            // Wind schiebt in der Luft (R2-W1, A-29); am Boden kaum
+            self.vel.x += col.wind * tuning.wind_push;
         }
         if self.stomping {
             self.vel = Vec2::new(0.0, self.vel.y.max(tuning.stomp_speed));
