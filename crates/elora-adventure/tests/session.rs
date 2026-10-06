@@ -620,3 +620,31 @@ fn no_cold_outside_the_mountains() {
     assert!(!s.chilly());
     assert!(s.cold.abs() < f32::EPSILON && !s.frozen);
 }
+
+#[test]
+fn kristellas_storm_fills_the_hall_until_she_is_calmed() {
+    use elora_map::WeatherKind;
+    let map = load("wiese-1");
+    let mut s = Session::new_game(Content::builtin());
+    let mut w = s.enter("frost-arena", map, "west", &Tuning::default());
+    assert!(s.map.weather.is_clear(), "Arenen bleiben schön");
+    let me = w.character(s.player).unwrap().core.pos;
+    let queen = w.creature_kind("kristella").expect("in creatures.toml");
+    let id = w.add_creature(queen, me - Vec2::new(0.0, 200.0)).unwrap();
+    // im letzten Viertel
+    w.creatures.iter_mut().find(|c| c.id == id).unwrap().health = 8;
+    for _ in 0..5 {
+        step(&mut s, &mut w, PlayerInput::default(), false);
+    }
+    assert_eq!(s.map.weather.kind, WeatherKind::Blizzard, "Schneesturm");
+    assert!(
+        w.weather.is_some_and(|e| e.wind.abs() > 0.5),
+        "Wind in der Halle"
+    );
+    // beruhigt: der Sturm legt sich
+    let c = w.creatures.iter_mut().find(|c| c.id == id).unwrap();
+    c.mode = elora_sim::creature::queen::TIRED;
+    w.hurt_creature(id, 8);
+    s.tick(&mut w, false);
+    assert!(s.map.weather.is_clear());
+}

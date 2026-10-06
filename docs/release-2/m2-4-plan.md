@@ -45,7 +45,7 @@ speichern und fortsetzen.
 | M2.4.1 ✅ | Gelände in der Simulation | **Eiszapfen** (zittern, fallen, zerschellen), **dünnes Eis** (neues Tile: bricht nach kurzem Stehen oder sofort beim Stampfen, wächst nach), **Eiswasser** (neues Tile: kleiner Schaden, zurück an den Rand), **Lawinen** (Zone: Stampfen oder Explosion löst rollende Schneebrocken aus) | Tests |
 | M2.4.2 ✅ | Kälte | Kälte-Leiste im HUD, Frostrand als Bildeffekt (Post-Shader); Feuerstellen und Hütten wärmen; Werte als Tuning | Tests |
 | M2.4.3 ✅ | Neue Gegner | **Schneeballrobbe**: rutscht auf dem Bauch heran, hält an und wirft Schneebälle im Bogen. **Eisspitzen-Fledermaus**: hängt schlafend an der Decke, stürzt herab, wenn Elora darunter ist, flattert zurück. **Frostgeist**: schwebt durch Wände, Berührung lässt Elora kurz erstarren | Tests + Sandbox |
-| M2.4.4 | Hüter-Technik | **Kristella** nach E-341, Phasen siehe unten | Tests + Sandbox |
+| M2.4.4 ✅ | Hüter-Technik | **Kristella** nach E-341, Phasen siehe unten | Tests + Sandbox |
 | M2.4.5 | Inhalte | Figuren Flocke und Kletterer; Hauptaufgabe bis zum Quellfunken mit Steigkrallen in der Mitte; Nebenaufgaben **„Verlorene Kletterer“** und **„Eiskristalle für Klonk“**; Spuren des Dürren; Gespräche im Dorf nach Kapitel 4 | Tests |
 | M2.4.6 | Karten | Bergsteig aus Tauwinkel; `frost-1` bis `frost-3` und `frost-arena` | Sichtprüfung + Durchlauf-Test |
 | M2.4.7 | Quellfunke und Dorf | Sieg → Quellfunke → Tüftel stärkt den Eisgriff; Kletterstellen in Kapitel 1–3 (Rückkehr lohnt); `quellen_befreit = 4`, Fest, Weltkarte; Oma kündigt die Sternschlucht an | Tests + Sichtprüfung |
@@ -57,6 +57,8 @@ speichern und fortsetzen.
 **Stand M2.4.2:** Kälte-Leiste im HUD (Schneeflocke, Hellblau bis Tiefblau, pulsiert voll) für Gebiete mit `cold = true` (Frostspitzen): draußen 60 s bis voll, im Schneesturm 30 s, unter Dächern 10 s und in Zonen `feuer…` 3 s bis leer, in Hüter-Arenen wärmt sie; voll bremst wie die Hitze (A-27) bis unter die Hälfte. Bonus `cold_pct` für Ausrüstung. Frostrand als Post-Shader (Eisblumen von den Rändern, ab einem Drittel der Leiste).
 
 **Stand M2.4.3:** Neue Verhalten `seal` (Schneeballrobbe: rutscht heran, richtet sich in Wurfweite auf und wirft alle 1,5 s im Bogen), `bat` (Eisspitzen-Fledermaus: schläft kopfüber und harmlos, stürzt auf Elora herab, sobald sie darunter ist, flattert heim und ruht kurz), `ghost` (Frostgeist: schwebt durch Wände, Berührung mit `freeze_ms` lässt Elora 0,6 s erstarren – nur Zielen wirkt, sie steckt im Eisblock –, danach weicht er 1,8 s zurück; nicht hookbar). Arten `schneeballrobbe`, `fledermaus`, `frostgeist` mit Beute (Eiskristall selten). Ausprobieren: Training, F1 → „Gegner (Abenteuer)“.
+
+**Stand M2.4.4:** Verhalten `queen` (Art `kristella`, 36 Leben): schläft, bis Elora nahe ist, schwebt über der Halle (1100 breit) und zieht alle 2,6 s eine Frostwelle über den Boden (Front 6 Einheiten/Tick, dahinter 170 frischer Frost mit 2 Schaden und Stoß nach oben, davor kriecht Reif als Warnung) – an Kletterwänden, auf Simsen und im Sprung sicher. Ruhig kommt die Welle von der Seite, auf der Elora nicht ist. Nach drei Wellen sinkt sie erschöpft herab und ist 3,4 s ab der Landung verwundbar. Ab der Hälfte: schneller, Wellen abwechselnd von beiden Seiten, dazwischen drei Eiszapfen über Elora. Im letzten Viertel ruft sie einen Schneesturm (die Sitzung setzt das Wetter der Halle: Wind schiebt Elora von der Wand, Bild und Klang); nach dem Sieg legt er sich.
 
 ## Ablauf von Kapitel 4 (Vorschlag)
 

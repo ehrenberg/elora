@@ -858,6 +858,8 @@ pub fn draw(
                     grow: 1.0,
                     vel: Vec2::ZERO,
                     size: Vec2::new(32.0, 32.0),
+                    goal: elora_sim::Vec2::ZERO,
+                    hall: None,
                 };
                 art.draw(batch, &c, time);
                 if *persistent {

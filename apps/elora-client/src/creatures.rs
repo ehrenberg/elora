@@ -140,7 +140,8 @@ const CREATURE_FILES: &[(&str, &[u8])] = creatures!(
     "schneebrocken",
     "schneeballrobbe",
     "fledermaus",
-    "frostgeist"
+    "frostgeist",
+    "kristella"
 );
 
 impl CreatureArt {
@@ -235,6 +236,12 @@ impl CreatureArt {
         } else {
             Tint::default()
         };
+        // Frostwelle der Hüterin über den Boden der Halle (E-341)
+        if let Some(hall) = c.hall
+            && c.mode == elora_sim::creature::queen::WAVE
+        {
+            draw_frost_wave(batch, c.goal, c.facing, hall, time);
+        }
         if let Some(look) = self.looks.get(c.kind.as_str()) {
             use elora_sim::creature::diver;
             let mesh = look
@@ -470,6 +477,68 @@ impl CreatureArt {
     }
 }
 
+/// Frostwelle: hinter der Front frischer Frost als Eiszacken (schadet), davor kriecht Reif als
+/// Warnung; alles nur innerhalb der Halle (`hall` = Ränder und Länge des frischen Frosts).
+fn draw_frost_wave(
+    batch: &mut ShapeBatch,
+    front: Vec2,
+    facing: i8,
+    hall: (f32, f32, f32),
+    time: f32,
+) {
+    let (left, right, fresh) = hall;
+    let dir = if facing < 0 { -1.0 } else { 1.0 };
+    let floor = front.y;
+    let inside = |x: f32| x >= left && x <= right;
+    // frischer Frost
+    let mut x = front.x;
+    let mut k = 0u32;
+    while (front.x - x) * dir <= fresh {
+        if inside(x) {
+            #[allow(clippy::cast_precision_loss)]
+            let h = 16.0 + ((k as f32 * 1.7 + time * 9.0).sin() * 0.5 + 0.5) * 12.0;
+            let w = 7.0;
+            batch.fill_polygon(
+                &[
+                    Vec2::new(x - w - 1.5, floor + 1.0),
+                    Vec2::new(x, floor - h - 2.5),
+                    Vec2::new(x + w + 1.5, floor + 1.0),
+                ],
+                OUTLINE,
+            );
+            batch.fill_polygon(
+                &[
+                    Vec2::new(x - w, floor),
+                    Vec2::new(x, floor - h),
+                    Vec2::new(x + w, floor),
+                ],
+                Color::hex(0xe8f6ff),
+            );
+        }
+        x -= dir * 13.0;
+        k += 1;
+    }
+    // Reif kriecht voraus
+    for j in 0..7 {
+        #[allow(clippy::cast_precision_loss)]
+        let x = front.x + dir * (10.0 + j as f32 * 13.0);
+        if !inside(x) {
+            continue;
+        }
+        #[allow(clippy::cast_precision_loss)]
+        let a = (1.0 - j as f32 / 7.0) * 0.9;
+        batch.stroke_polyline(
+            &[
+                Vec2::new(x - 4.0, floor),
+                Vec2::new(x, floor - 6.0),
+                Vec2::new(x + 4.0, floor),
+            ],
+            2.0,
+            Color::rgba(0.37, 0.66, 0.82, a),
+        );
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -505,7 +574,7 @@ mod tests {
         let ground = 200.0;
         batch.fill_rect(
             Vec2::new(0.0, ground),
-            Vec2::new(4000.0, ground + 40.0),
+            Vec2::new(5000.0, ground + 40.0),
             Color::hex(0x8fbf7a),
         );
         let mut x = 60.0;
@@ -535,6 +604,8 @@ mod tests {
                         Vec2::ZERO
                     },
                     size: k.size(),
+                    goal: elora_sim::Vec2::ZERO,
+                    hall: None,
                 };
                 // Kollisionsbox zur Kontrolle
                 let (hx, hy) = (k.size[0] / 2.0, k.size[1] / 2.0);
@@ -581,6 +652,9 @@ mod tests {
         put("fledermaus", true, false, None, 1, 0);
         put("fledermaus", true, false, None, 1, 1);
         put("frostgeist", true, false, None, 1, 0);
+        for mode in [0, 1, 2, 3] {
+            put("kristella", mode != 3, false, None, 1, mode);
+        }
         put("schneebrocken", false, false, None, 1, 0);
         // Elora zum Größenvergleich (Box 28)
         batch.fill_circle(Vec2::new(x, ground - 14.0), 14.0, Color::hex(0xf2c14e));
@@ -642,7 +716,7 @@ mod tests {
             let x = 480.0 + i as f32 * 52.0;
             art.draw_object(&mut batch, name, Vec2::new(x, ground2), *on);
         }
-        let svg = batch.debug_svg(Vec2::ZERO, Vec2::new(4000.0, 480.0), Color::hex(0xa9cde8));
+        let svg = batch.debug_svg(Vec2::ZERO, Vec2::new(5000.0, 480.0), Color::hex(0xa9cde8));
         std::fs::write(
             concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/creatures.svg"),
             svg,

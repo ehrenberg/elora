@@ -386,6 +386,8 @@ impl Session {
                     }
                     // Hüter besiegt: Merker für Türen, Gespräche und Aufgaben (R2-M2.1)
                     if let Some(k) = world.creature_kinds.get(*kind).filter(|k| k.boss) {
+                        // ein Sturm des Hüters legt sich (Kristella, R2-M2.4)
+                        self.map.weather = self.pick_weather(&self.map_name.clone());
                         self.save.set_flag(&format!("besiegt.{}", k.name), 1);
                         out.extend(outcomes(self.save.update_quests(&self.content)));
                         // Kapitel geschafft: Gewinn-Bildschirm
@@ -402,6 +404,22 @@ impl Session {
                         .save
                         .on_event(&self.content, &world.creature_kinds, me, e);
                     out.extend(n.into_iter().map(SessionEvent::Notice));
+                }
+                // Kristella ruft einen Schneesturm in die Halle (E-341)
+                Event::CreatureAct {
+                    act: elora_sim::CreatureAct::Storm,
+                    ..
+                } => {
+                    self.map.weather = elora_map::Weather {
+                        kind: elora_map::WeatherKind::Blizzard,
+                        intensity: 0.85,
+                        wind: if self.ticks.is_multiple_of(2) {
+                            0.7
+                        } else {
+                            -0.7
+                        },
+                    };
+                    world.weather = weather_env(self.map.weather);
                 }
                 Event::LootCollect { .. } => {
                     let n = self

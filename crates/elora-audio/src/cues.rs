@@ -355,6 +355,8 @@ pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>)
                 CreatureAct::Warn => Sound::RootRumble,
                 CreatureAct::Strike => Sound::RootStrike,
                 CreatureAct::Core => Sound::CorePull,
+                // den Sturm hört man über die Umgebungsspur (Wetter)
+                CreatureAct::Storm => return Vec::new(),
             },
             pos,
         )],

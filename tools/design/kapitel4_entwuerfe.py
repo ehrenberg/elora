@@ -191,12 +191,13 @@ def erstarrt():
 
 # ── Hüterin ─────────────────────────────────────────────────────────────
 
-def kristella(pose='schwebend'):
+def kristella(pose='schwebend', floating=True):
     """Eiskönigin Kristella: großes eisblaues Wesen mit Kristallkrone und Eisschleppe.
-    Posen: schwebend, hauch (Frosthauch auf den Boden), erschoepft (herabgesunken), ruhig."""
-    lift = {'schwebend': -70, 'hauch': -80, 'erschoepft': 0, 'ruhig': -20}[pose]
+    Posen: schwebend, hauch (Frosthauch auf den Boden), erschoepft (herabgesunken), ruhig.
+    Ohne `floating` ohne Abstand zum Boden (im Spiel schwebt die Simulation)."""
+    lift = {'schwebend': -70, 'hauch': -80, 'erschoepft': 0, 'ruhig': -20}[pose] if floating else 0
     s = ''
-    if pose in ('schwebend', 'hauch'):
+    if pose in ('schwebend', 'hauch') and floating:
         s += f'<ellipse cx="0" cy="-6" rx="70" ry="9" fill="{ICE_DARK}" opacity="0.25"/>'
     o = f'<g transform="translate(0,{lift})">'
     # Schleppe aus Eis

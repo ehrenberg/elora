@@ -192,6 +192,8 @@ pub enum CreatureAct {
     Strike,
     /// Ein Kern hat sich gelöst.
     Core,
+    /// Schneesturm in der Halle beginnt (Kristella, R2-M2.4): die Sitzung setzt das Wetter.
+    Storm,
 }
 
 impl Event {

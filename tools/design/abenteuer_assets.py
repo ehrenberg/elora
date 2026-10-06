@@ -20,7 +20,8 @@ from kapitel2_entwuerfe import (eichhornpirat, pilzkind, pilzmama, pilzwicht, pl
                                 wurzelschlange, wurzelwaechter)
 from kapitel3_entwuerfe import (duenenwurm, funkenmotte, giessstelle, palma, ruinenquelle,  # noqa: E402
                                 sandkrabbe, sandschlange, sirup, steintafel, wasserschlauch)
-from kapitel4_entwuerfe import eiszapfen_figur, fledermaus, frostgeist, robbe, schneebrocken  # noqa: E402
+from kapitel4_entwuerfe import (eiszapfen_figur, fledermaus, frostgeist, kristella, robbe,  # noqa: E402
+                                schneebrocken)
 
 
 def strohpuppe():
@@ -85,6 +86,9 @@ CREATURES = {
     'fledermaus': (36, 0.4, {'idle': f'<g transform="translate(0,26)">{fledermaus("sturz")}</g>',
                              'm0': f'<g transform="translate(0,-86)">{fledermaus("haengt", bar=False)}</g>'}),
     'frostgeist': (52, 0.42, {'idle': frostgeist()}),
+    # Hüterin: m0 schläft (ruhig), idle schwebt, m2 Frosthauch, m3 erschöpft (creature::queen)
+    'kristella': (110, 0.36, {'idle': kristella('schwebend', False), 'm0': kristella('ruhig', False),
+                              'm2': kristella('hauch', False), 'm3': kristella('erschoepft', False)}),
 }
 
 

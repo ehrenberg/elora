@@ -163,6 +163,41 @@ pub enum Behavior {
         speed: f32,
         flee_ms: u32,
     },
+    /// Hüterin der Frostspitzen (Eiskönigin Kristella, R2-M2.4, E-341): schwebt über der
+    /// Halle und zieht Frostwellen über den Boden (frischer Frost schadet, wer an der Wand
+    /// hängt oder springt, bleibt heil); nach `waves` Wellen sinkt sie erschöpft herab –
+    /// **nur dann verwundbar**. Ab `enrage_at` Wellen von beiden Seiten und Eiszapfen, ab
+    /// `storm_at` ein Schneesturm in der Halle.
+    Queen(Box<QueenDef>),
+}
+
+/// Werte der Hüterin der Frostspitzen ([`Behavior::Queen`]).
+#[derive(Debug, Clone, PartialEq)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct QueenDef {
+    /// Wacht auf, sobald Elora so nah ist.
+    pub sight: f32,
+    /// Breite der Halle (Wellen laufen von Rand zu Rand, Mitte = Startpunkt).
+    pub width: f32,
+    /// Schweben zwischen zwei Wellen.
+    pub hover_ms: u32,
+    /// Wellen bis zur Erschöpfung.
+    pub waves: u32,
+    /// Tempo der Wellenfront (Einheiten/Tick) und Länge des frischen Frosts dahinter.
+    pub wave_speed: f32,
+    pub fresh_len: f32,
+    pub wave_damage: i32,
+    /// Erschöpft am Boden: verwundbar.
+    pub stun_ms: u32,
+    /// Ab diesem Anteil des Lebens wütend: Wellen abwechselnd von beiden Seiten, dazwischen
+    /// `icicles` Eiszapfen über Elora; 0 = nie.
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub enrage_at: f32,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub icicles: u32,
+    /// Ab diesem Anteil des Lebens Schneesturm in der Halle (die Sitzung setzt das Wetter).
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub storm_at: f32,
 }
 
 /// Werte des Hüters aus der Luft ([`Behavior::Diver`]).
@@ -349,6 +384,19 @@ pub mod bat {
     pub const RETURN: u8 = 2;
 }
 
+/// Zustand der Hüterin der Frostspitzen (in [`Creature::mode`]); die Wellenfront steht in
+/// [`Creature::goal`] (x = Front, y = Boden der Halle), die Richtung in `facing`.
+pub mod queen {
+    pub const SLEEP: u8 = 0;
+    pub const HOVER: u8 = 1;
+    /// Frostwelle läuft über den Boden.
+    pub const WAVE: u8 = 2;
+    /// Erschöpft herabgesunken: verwundbar.
+    pub const TIRED: u8 = 3;
+    /// Steigt zurück.
+    pub const RISE: u8 = 4;
+}
+
 /// Zustand des Frostgeists (in [`Creature::mode`]).
 pub mod ghost {
     pub const CHASE: u8 = 0;
@@ -416,6 +464,7 @@ impl Creature {
             Behavior::Follower { .. } => false,
             Behavior::Leaper { .. } => self.mode == leaper::LEAP,
             Behavior::Serpent(_) => matches!(self.mode, serpent::LEAP | serpent::STUNNED),
+            Behavior::Queen(_) => self.mode == queen::TIRED,
             _ => true,
         }
     }
@@ -432,6 +481,7 @@ impl Creature {
             Behavior::Icicle { .. } => self.mode == icicle::FALL,
             Behavior::Bat { .. } => self.mode != bat::HANG,
             Behavior::Ghost { .. } => self.mode == ghost::CHASE,
+            Behavior::Queen(_) => !matches!(self.mode, queen::TIRED | queen::SLEEP),
             _ => true,
         }
     }

@@ -681,7 +681,11 @@ impl App {
             Some(o) => o.client.map.as_ref(),
             None => Some(&self.sandbox.map),
         };
-        let weather = map.map_or(elora_map::Weather::CLEAR, |m| m.weather);
+        // im Abenteuer gilt das Wetter der Sitzung (Hüter können es ändern, R2-M2.4)
+        let weather = match &self.adventure {
+            Some(a) => a.session.map.weather,
+            None => map.map_or(elora_map::Weather::CLEAR, |m| m.weather),
+        };
         // im Abenteuer kommen die Blitze aus der Simulation (mit Warnung und Schaden, E-336)
         let random_bolts = self.adventure.is_none();
         self.weather.update(

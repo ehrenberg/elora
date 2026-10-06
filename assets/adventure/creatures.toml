@@ -218,6 +218,23 @@ xp = 9
 loot = [{ item = "glanztropfen", min = 2, max = 4 }, { item = "eiskristall", min = 1, max = 1, chance = 0.3 }]
 behavior = { type = "ghost", sight = 460.0, speed = 1.6, flee_ms = 1800 }
 
+# Hüterin der Frostspitzen (E-341): schwebt über der Eishalle, Frostwellen über den Boden
+# (an Kletterwänden oder im Sprung sicher); nach drei Wellen erschöpft und verwundbar;
+# ab der Hälfte Wellen von beiden Seiten und Eiszapfen, im letzten Viertel Schneesturm
+[[creature]]
+name = "kristella"
+size = [90.0, 110.0]
+health = 36
+touch_damage = 2
+boss = true
+xp = 280
+loot = [
+    { item = "quellfunke", min = 1, max = 1 },
+    { item = "glanztropfen", min = 80, max = 80 },
+    { item = "eiskristall", min = 3, max = 3 },
+]
+behavior = { type = "queen", sight = 640.0, width = 1100.0, hover_ms = 2600, waves = 3, wave_speed = 6.0, fresh_len = 170.0, wave_damage = 2, stun_ms = 3400, enrage_at = 0.5, icicles = 3, storm_at = 0.25 }
+
 # Kapitel 4 (R2-M2.4, E-343): Gelände als „Gegner“ – keine Erfahrung, keine Beute.
 # Eiszapfen an der Decke: zittert, sobald Elora darunter ist, fällt und zerschellt
 [[creature]]

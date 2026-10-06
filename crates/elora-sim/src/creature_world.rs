@@ -3,8 +3,8 @@
 use crate::character::PHYS_SIZE;
 use crate::collision::{Collision, Tile};
 use crate::creature::{
-    Behavior, Creature, CreatureShot, DiverDef, HookTarget, Loot, SerpentDef, WardenDef, rng,
-    rng_f32,
+    Behavior, Creature, CreatureShot, DiverDef, HookTarget, Loot, QueenDef, SerpentDef, WardenDef,
+    rng, rng_f32,
 };
 use crate::event::CreatureAct;
 use crate::event::{DeathCause, Event};
@@ -463,6 +463,8 @@ impl World {
         let mut walls: Vec<(Vec2, u32, u32)> = Vec::new();
         // Treibsand der Sandschlange (Mitte am Boden, Breite in Tiles, Dauer)
         let mut sands: Vec<(Vec2, u32, u32)> = Vec::new();
+        // Eiszapfen der Hüterin: über wem, wie viele
+        let mut drops: Vec<(Vec2, u32)> = Vec::new();
         for c in creatures.iter_mut() {
             let kind = &creature_kinds[c.kind];
             let size = kind.size();
@@ -556,6 +558,16 @@ impl World {
                             events.push(Event::CreatureFire { id: c.id, pos });
                             c.timer = 0;
                         }
+                    }
+                }
+                Behavior::Queen(ref d) => {
+                    fixed = true;
+                    let out = tick_queen(c, d, kind.health, size, target, collision, events);
+                    spikes.extend(out.frost);
+                    if out.icicles > 0
+                        && let Some((p, _)) = target
+                    {
+                        drops.push((p, out.icicles));
                     }
                 }
                 Behavior::Diver(ref d) => {
@@ -1000,6 +1012,7 @@ impl World {
         self.root_spikes(&spikes, chars);
         self.root_walls(&walls, chars);
         self.quicksand_patches(&sands);
+        self.drop_icicles(&drops);
         // Helfer der Hüter, höchstens `max` zugleich
         for (owner, name, max, pos) in summons {
             let Some(kind) = self.creature_kind(&name) else {
@@ -1064,6 +1077,35 @@ impl World {
                     ty,
                     tile: Tile::Unhookable,
                 });
+            }
+        }
+    }
+
+    /// Eiszapfen der Hüterin (wütend): an der Decke über und neben Elora, sie zittern gleich.
+    fn drop_icicles(&mut self, drops: &[(Vec2, u32)]) {
+        let Some(kind) = self.creature_kind("eiszapfen") else {
+            return;
+        };
+        let half = self.creature_kinds[kind].size[1] / 2.0;
+        let ts = crate::TILE_SIZE as f32;
+        for &(at, n) in drops {
+            for k in 0..n {
+                #[allow(clippy::cast_precision_loss)]
+                let x = at.x + (k as f32 - (n as f32 - 1.0) / 2.0) * 110.0;
+                // Decke über dieser Stelle
+                let mut y = at.y;
+                while y > at.y - 900.0 && !self.collision.tile_at(Vec2::new(x, y)).is_solid() {
+                    y -= 8.0;
+                }
+                if y <= at.y - 900.0 {
+                    continue;
+                }
+                let pos = Vec2::new(x, ((y / ts).floor() + 1.0) * ts + half + 1.0);
+                if let Some(id) = self.add_creature(kind, pos)
+                    && let Some(c) = self.creatures.iter_mut().find(|c| c.id == id)
+                {
+                    c.mode = crate::creature::icicle::SHAKE;
+                }
             }
         }
     }
@@ -1762,4 +1804,155 @@ fn tick_warden(
         }
     }
     (spikes, wall)
+}
+
+/// Ergebnis eines Ticks der Hüterin: frischer Frost (wie Wurzelstöße) und Eiszapfen.
+struct QueenOut {
+    frost: Option<(Vec2, f32, f32, i32)>,
+    icicles: u32,
+}
+
+/// Ein Tick der Hüterin der Frostspitzen (E-341).
+#[allow(clippy::too_many_lines)]
+fn tick_queen(
+    c: &mut Creature,
+    d: &QueenDef,
+    max_health: i32,
+    size: Vec2,
+    target: Option<(Vec2, f32)>,
+    collision: &Collision,
+    events: &mut Vec<Event>,
+) -> QueenOut {
+    use crate::creature::queen::{HOVER, RISE, SLEEP, TIRED, WAVE};
+    #[allow(clippy::cast_precision_loss)]
+    let life = c.health as f32 / max_health.max(1) as f32;
+    let angry = d.enrage_at > 0.0 && life <= d.enrage_at;
+    let storm = d.storm_at > 0.0 && life <= d.storm_at;
+    let pace = if storm {
+        1.3
+    } else if angry {
+        1.15
+    } else {
+        1.0
+    };
+    let ticks = |ms: u32| {
+        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+        let t = (ms_to_ticks(ms) as f32 / pace) as u32;
+        t.max(1)
+    };
+    let id = c.id;
+    let act = |events: &mut Vec<Event>, pos: Vec2, act: CreatureAct| {
+        events.push(Event::CreatureAct { id, pos, act });
+    };
+    let mut out = QueenOut {
+        frost: None,
+        icicles: 0,
+    };
+    c.stun = 0;
+    c.vel = Vec2::ZERO;
+    c.timer = c.timer.saturating_add(1);
+    let half = d.width / 2.0;
+    let floor = c.goal.y;
+    // Schneesturm einmal ansagen (die Sitzung macht das Wetter)
+    if storm && c.wall_timer == 0 && c.mode != SLEEP {
+        c.wall_timer = 1;
+        act(events, c.pos, CreatureAct::Storm);
+    }
+    match c.mode {
+        SLEEP => {
+            if target.is_some_and(|(_, dist)| dist <= d.sight) {
+                // Boden der Halle unter dem Startpunkt
+                let mut y = c.home.y;
+                while y < c.home.y + 1500.0 && !collision.tile_at(Vec2::new(c.home.x, y)).is_solid()
+                {
+                    y += 4.0;
+                }
+                let ts = crate::TILE_SIZE as f32;
+                c.goal = Vec2::new(c.home.x, (y / ts).floor() * ts);
+                c.mode = HOVER;
+                c.timer = 0;
+                act(events, c.pos, CreatureAct::Wake);
+            }
+        }
+        HOVER => {
+            #[allow(clippy::cast_precision_loss)]
+            let t = c.timer as f32;
+            c.pos = c.home + Vec2::new((t * 0.02).sin() * half * 0.45, (t * 0.05).sin() * 6.0);
+            if let Some((p, _)) = target {
+                c.facing = sign(p.x - c.pos.x);
+            }
+            if c.timer >= ticks(d.hover_ms) {
+                // ruhig: die Welle kommt von der Seite, auf der Elora nicht ist;
+                // wütend: abwechselnd von links und rechts
+                let from_left = if angry {
+                    c.count.is_multiple_of(2)
+                } else {
+                    target.is_none_or(|(p, _)| p.x >= c.home.x)
+                };
+                c.facing = if from_left { 1 } else { -1 };
+                c.goal.x = c.home.x - f32::from(c.facing) * half;
+                c.mode = WAVE;
+                c.timer = 0;
+                act(events, Vec2::new(c.goal.x, floor), CreatureAct::Warn);
+            }
+        }
+        WAVE => {
+            let dir = f32::from(c.facing);
+            c.goal.x += dir * d.wave_speed * pace;
+            // frischer Frost hinter der Front, innerhalb der Halle
+            let (a, b) = (c.goal.x - dir * d.fresh_len, c.goal.x);
+            let (lo, hi) = (a.min(b).max(c.home.x - half), a.max(b).min(c.home.x + half));
+            if hi > lo {
+                out.frost = Some((
+                    Vec2::new(f32::midpoint(lo, hi), floor),
+                    hi - lo,
+                    22.0,
+                    d.wave_damage,
+                ));
+            }
+            if (c.goal.x - c.home.x) * dir > half + d.fresh_len {
+                c.count += 1;
+                c.timer = 0;
+                if c.count.is_multiple_of(d.waves.max(1)) {
+                    c.mode = TIRED;
+                    act(events, c.pos, CreatureAct::Land);
+                } else {
+                    c.mode = HOVER;
+                    // kurze Pause zwischen zwei Wellen
+                    c.timer = ticks(d.hover_ms) * 2 / 3;
+                    if angry {
+                        out.icicles = d.icicles;
+                    }
+                }
+            }
+        }
+        TIRED => {
+            // sinkt erschöpft herab und liegt
+            let rest = Vec2::new(c.pos.x, floor - size.y / 2.0);
+            let to = rest - c.pos;
+            if to.length() > 9.0 {
+                c.pos += to.normalize() * 9.0;
+                // die Erschöpfung zählt erst ab der Landung
+                c.timer = 0;
+            } else {
+                c.pos = rest;
+            }
+            if c.timer >= ms_to_ticks(d.stun_ms) {
+                c.mode = RISE;
+                c.timer = 0;
+                act(events, c.pos, CreatureAct::Wake);
+            }
+        }
+        _ => {
+            let to = c.home - c.pos;
+            if to.length() <= 4.0 {
+                c.pos = c.home;
+                c.mode = HOVER;
+                c.timer = 0;
+            } else {
+                c.pos += to.normalize() * 4.0;
+            }
+        }
+    }
+    out
 }

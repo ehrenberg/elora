@@ -100,6 +100,10 @@ pub struct SceneCreature {
     pub vel: Vec2,
     /// Kollisionsbox (Breite, Höhe; Schatten).
     pub size: Vec2,
+    /// Ziel des Verhaltens (Kristella: Frostwelle x = Front, y = Boden der Halle).
+    pub goal: Vec2,
+    /// Halle der Hüterin der Frostspitzen: linker und rechter Rand, Länge des frischen Frosts.
+    pub hall: Option<(f32, f32, f32)>,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -199,6 +203,15 @@ impl Scene {
                 grow: grow(kind, c),
                 vel: c.vel,
                 size: kind.size(),
+                goal: c.goal,
+                hall: match &kind.behavior {
+                    elora_sim::Behavior::Queen(d) => Some((
+                        c.home.x - d.width / 2.0,
+                        c.home.x + d.width / 2.0,
+                        d.fresh_len,
+                    )),
+                    _ => None,
+                },
             });
         }
         self.creature_shots = world
