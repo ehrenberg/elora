@@ -3,6 +3,9 @@
 # spring: Quelle des Gebiets, befreit mit Merker befreit.<spring>; boss_music: Kampfmusik (sonst boss).
 # hot: heißes Gebiet mit Hitze-Leiste (E-320); Schatten unter Dächern und in Zonen schatten…, Oase in Zonen oase….
 # chapter/guardian: Kapitel und Hüter – nach dem Sieg Gewinn-Bildschirm mit victory und dem Ehrentitel honor.
+# weather_gloomy / weather: Wetter beim Betreten (R2-W1) – trüb, solange die Quelle schweigt (ohne Quelle:
+# bis clears_after_springs Quellen befreit sind), sonst weather; kind, weight, intensity = [von, bis], wind = [von, bis].
+# Arenen der Hüter (…-arena) bleiben schön; eine Karte mit eigenem Wetter aus dem Editor geht vor.
 
 [[area]]
 id = "tauwinkel"
@@ -12,6 +15,13 @@ color = "#f2c14e"
 maps = "tauwinkel"
 music = "tauwinkel"
 party_music = "fest"
+clears_after_springs = 1
+weather_gloomy = [{ kind = "regen", intensity = [0.25, 0.45], wind = [-0.15, 0.15] }]
+weather = [
+    { kind = "schoen", weight = 6 },
+    { kind = "blueten", weight = 2, intensity = [0.4, 0.7], wind = [0.2, 0.6] },
+    { kind = "regen", weight = 1, intensity = [0.3, 0.6] },
+]
 
 [[area]]
 id = "bluetenwiesen"
@@ -25,6 +35,15 @@ chapter = 1
 guardian = "brummbaer"
 victory = { de = "Die Brummbär-Hummel brummt wieder fröhlich – und die Blütenquelle singt ihr Morgenlied.", en = "The Bumblebear is buzzing happily again – and the Blossom Spring sings its morning song." }
 honor = { de = "Bienenflüsterin", en = "Bee Whisperer" }
+weather_gloomy = [
+    { kind = "regen", weight = 3, intensity = [0.5, 0.9] },
+    { kind = "gewitter", weight = 1, intensity = [0.6, 1.0] },
+]
+weather = [
+    { kind = "schoen", weight = 5 },
+    { kind = "blueten", weight = 3, intensity = [0.4, 0.8], wind = [0.2, 0.7] },
+    { kind = "regen", weight = 1, intensity = [0.3, 0.6] },
+]
 
 [[area]]
 id = "murmelwald"
@@ -39,6 +58,15 @@ chapter = 2
 guardian = "wurzelwaechter"
 victory = { de = "Der Wurzelwächter ist erwacht, und die Wurzeln flüstern wieder alte Geschichten.", en = "The Root Warden is awake, and the roots whisper old stories again." }
 honor = { de = "Wurzelfreundin", en = "Friend of the Roots" }
+weather_gloomy = [
+    { kind = "nebel", weight = 3, intensity = [0.6, 0.9] },
+    { kind = "regen", weight = 2, intensity = [0.5, 0.8] },
+]
+weather = [
+    { kind = "schoen", weight = 4 },
+    { kind = "nebel", weight = 2, intensity = [0.3, 0.6] },
+    { kind = "blaetter", weight = 3, intensity = [0.4, 0.8], wind = [-0.6, 0.6] },
+]
 
 [[area]]
 id = "glutsandwueste"
@@ -54,6 +82,14 @@ chapter = 3
 guardian = "sandschlange"
 victory = { de = "Die Sandschlange döst friedlich in der Wärme – und die Glutquelle leuchtet golden wie Honig.", en = "The Sand Serpent dozes peacefully in the warmth – and the Ember Spring glows golden like honey." }
 honor = { de = "Wüstentänzerin", en = "Desert Dancer" }
+weather_gloomy = [
+    { kind = "sandsturm", weight = 3, intensity = [0.5, 0.9], wind = [0.4, 0.9] },
+    { kind = "gewitter", weight = 1, intensity = [0.5, 0.8] },
+]
+weather = [
+    { kind = "schoen", weight = 6 },
+    { kind = "sandsturm", weight = 1, intensity = [0.4, 0.7], wind = [0.3, 0.8] },
+]
 
 [[area]]
 id = "frostspitzen"
@@ -61,6 +97,11 @@ name = { de = "Frostspitzen", en = "Frostspitzen" }
 pos = [0.82, 0.3]
 color = "#8fd0f0"
 maps = "frost-"
+weather_gloomy = [{ kind = "schneesturm", weight = 3, intensity = [0.6, 1.0], wind = [-0.9, 0.9] }]
+weather = [
+    { kind = "schnee", weight = 3, intensity = [0.4, 0.8] },
+    { kind = "schoen", weight = 2 },
+]
 
 [[area]]
 id = "sternschlucht"

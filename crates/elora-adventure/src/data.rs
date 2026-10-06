@@ -270,6 +270,40 @@ pub struct Area {
     pub victory: Option<Text>,
     #[serde(default)]
     pub honor: Option<Text>,
+    /// Wetter beim Betreten (R2-W1, E-331): trüb, solange die Quelle schweigt, sonst `weather`.
+    #[serde(default)]
+    pub weather: Vec<WeatherChance>,
+    #[serde(default)]
+    pub weather_gloomy: Vec<WeatherChance>,
+    /// Ohne eigene Quelle (Tauwinkel): trüb, bis so viele Quellen befreit sind.
+    #[serde(default)]
+    pub clears_after_springs: Option<i64>,
+}
+
+/// Ein mögliches Wetter mit Gewicht und Spannen für Stärke und Wind (R2-W1).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct WeatherChance {
+    /// `schoen`, `regen`, `gewitter`, `nebel`, `blaetter`, `blueten`, `sandsturm`, `schnee`,
+    /// `schneesturm` (siehe [`elora_map::WeatherKind::key`]).
+    pub kind: String,
+    #[serde(default = "one_u32")]
+    pub weight: u32,
+    #[serde(default = "default_intensity")]
+    pub intensity: [f32; 2],
+    #[serde(default = "default_wind")]
+    pub wind: [f32; 2],
+}
+
+fn one_u32() -> u32 {
+    1
+}
+
+fn default_intensity() -> [f32; 2] {
+    [0.5, 0.8]
+}
+
+fn default_wind() -> [f32; 2] {
+    [-0.3, 0.3]
 }
 
 impl Area {
@@ -609,6 +643,18 @@ impl Content {
                             s.id
                         ));
                     }
+                }
+            }
+        }
+        for a in &self.areas {
+            for w in a.weather.iter().chain(&a.weather_gloomy) {
+                let range_ok = |r: [f32; 2], lo: f32| r[0] <= r[1] && r[0] >= lo && r[1] <= 1.0;
+                if elora_map::WeatherKind::from_key(&w.kind).is_none()
+                    || w.weight == 0
+                    || !range_ok(w.intensity, 0.0)
+                    || !range_ok(w.wind, -1.0)
+                {
+                    return bad(format!("Gebiet `{}`: Wetter `{}` ungültig", a.id, w.kind));
                 }
             }
         }

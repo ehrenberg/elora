@@ -37,6 +37,8 @@ struct Particle {
     spin: f32,
     seed: f32,
     color: Color,
+    /// im Boden oder unter einem Dach: nicht zeichnen (Höhlen, Häuser, Felsdächer)
+    hidden: bool,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -85,6 +87,28 @@ pub fn surface_below(map: &Map, from: Vec2, reach: f32) -> Option<f32> {
             t.is_solid() || matches!(t, Tile::Platform | Tile::Quicksand)
         })
         .map(|y| y as f32 * ts)
+}
+
+/// Steckt `pos` im Boden – oder (fallendes Wetter) unter einem Dach bis 8 Tiles darüber?
+#[allow(clippy::cast_possible_wrap)]
+fn sheltered(map: &Map, pos: Vec2, kind: WeatherKind) -> bool {
+    let ts = TILE_SIZE as f32;
+    let (tx, ty) = ((pos.x / ts).floor() as i64, (pos.y / ts).floor() as i64);
+    let (w, h) = (map.width as i64, map.height as i64);
+    let blocks = |y: i64| {
+        (0..h).contains(&y) && (0..w).contains(&tx) && {
+            let t = map.tiles[(y * w + tx) as usize];
+            t.is_solid() || t == Tile::Platform
+        }
+    };
+    if blocks(ty) {
+        return true;
+    }
+    let falls = matches!(
+        kind,
+        WeatherKind::Rain | WeatherKind::Storm | WeatherKind::Snow | WeatherKind::Blizzard
+    );
+    falls && (1..=8).any(|k| blocks(ty - k))
 }
 
 /// Grundmenge der Partikel bei voller Stärke und Einstellung „voll“.
@@ -212,6 +236,7 @@ impl WeatherView {
             spin: self.range(-4.0, 4.0),
             seed: self.range(0.0, 100.0),
             color: Color::hex(palette[pick]),
+            hidden: false,
         }
     }
 
@@ -258,6 +283,7 @@ impl WeatherView {
             };
             p.pos += (p.vel + Vec2::new(sway, 0.0)) * dt;
             p.angle += p.spin * dt;
+            p.hidden = map.is_some_and(|m| sheltered(m, p.pos, p.kind));
             let current = p.kind == w.kind;
             if current {
                 alive += 1;
@@ -381,14 +407,14 @@ impl WeatherView {
             batch.stroke_line(*pos, *pos + Vec2::new(-4.0, -h), 1.4, c);
             batch.stroke_line(*pos, *pos + Vec2::new(4.0, -h), 1.4, c);
         }
-        for p in self.particles.iter().filter(|p| !p.front) {
+        for p in self.particles.iter().filter(|p| !p.front && !p.hidden) {
             draw_particle(batch, p, 0.65);
         }
     }
 
     /// Partikel vor den Figuren und Blitze.
     pub fn draw_front(&self, batch: &mut ShapeBatch) {
-        for p in self.particles.iter().filter(|p| p.front) {
+        for p in self.particles.iter().filter(|p| p.front && !p.hidden) {
             draw_particle(batch, p, 1.0);
         }
         for b in &self.bolts {
@@ -545,6 +571,34 @@ mod tests {
         assert!(flashes > 0, "es blitzt");
         assert!(!v.take_thunder().is_empty(), "und donnert");
         assert!(v.take_thunder().is_empty(), "nur einmal abgeholt");
+    }
+
+    #[test]
+    fn rain_stays_out_of_caves_and_houses() {
+        // Decke in Zeile 2: darunter (Zeile 3) regnet es nicht, daneben schon
+        let map = Map::from_rows(
+            "s",
+            &[
+                "S.........",
+                "..........",
+                "#####.....",
+                "..........",
+                "##########",
+            ],
+        )
+        .unwrap();
+        let under = Vec2::new(48.0, 3.5 * 32.0);
+        let open = Vec2::new(8.0 * 32.0, 3.5 * 32.0);
+        assert!(sheltered(&map, under, WeatherKind::Rain));
+        assert!(!sheltered(&map, open, WeatherKind::Rain));
+        assert!(
+            !sheltered(&map, under, WeatherKind::Leaves),
+            "Blätter wehen hinein"
+        );
+        assert!(
+            sheltered(&map, Vec2::new(48.0, 2.5 * 32.0), WeatherKind::Leaves),
+            "im Fels nie"
+        );
     }
 
     #[test]

@@ -674,6 +674,8 @@ impl App {
                 .map
                 .decor_front
                 .clone_from(&a.session.map.decor_front);
+            // Quelle befreit: das Gebiet klart auf (R2-W1)
+            self.sandbox.map.weather = a.session.map.weather;
         }
         if self
             .adventure

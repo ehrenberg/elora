@@ -350,6 +350,8 @@ fn heat_fills_in_the_sun_and_cools_in_shade_and_at_the_oasis() {
     });
     let mut s = Session::new_game(Content::builtin());
     let mut w = s.enter("wueste-1", map, "west", &Tuning::default());
+    // ohne gewürfelten Sandsturm (er verdeckt die Sonne, R2-W1)
+    s.map.weather = elora_map::Weather::CLEAR;
     assert!(s.hot());
     let sky_above = (1..=10).all(|k| {
         #[allow(clippy::cast_precision_loss)]
@@ -405,6 +407,8 @@ fn cactus_fruit_cools_elora_down() {
     let map = load("wiese-1");
     let mut s = Session::new_game(Content::builtin());
     let mut w = s.enter("wueste-1", map, "west", &Tuning::default());
+    // ohne gewürfelten Sandsturm (er verdeckt die Sonne, R2-W1)
+    s.map.weather = elora_map::Weather::CLEAR;
     for _ in 0..1100 {
         step(&mut s, &mut w, PlayerInput::default(), false);
     }
@@ -415,4 +419,96 @@ fn cactus_fruit_cools_elora_down() {
     s.use_item(&mut w, "kaktusfrucht").unwrap();
     assert!(s.heat == 0.0 && !s.overheated);
     assert!(!w.character(s.player).unwrap().core.overheated);
+}
+
+/// Wetter beim Betreten (R2-W1, E-331): Trüb, solange die Quelle schweigt; danach die
+/// bunteren Wetter des Gebiets; Arenen schön; eigenes Kartenwetter geht vor.
+#[test]
+fn weather_follows_the_springs() {
+    use elora_map::{Weather, WeatherKind};
+    let kinds = |freed: bool, map: &str| {
+        let mut seen = std::collections::BTreeSet::new();
+        for t in 0..40 {
+            let mut s = Session::new_game(Content::builtin());
+            s.save.play_time_secs = t * 37;
+            if freed {
+                s.save.set_flag("befreit.bluetenquelle", 1);
+                s.save.set_flag("quellen_befreit", 1);
+            }
+            let w = s.enter(map, load("wiese-1"), "west", &Tuning::default());
+            drop(w);
+            seen.insert(s.map.weather.kind.key());
+        }
+        seen
+    };
+    let gloomy = kinds(false, "wiese-1");
+    assert!(
+        gloomy.iter().all(|k| ["regen", "gewitter"].contains(k)),
+        "{gloomy:?}"
+    );
+    let bright = kinds(true, "wiese-1");
+    assert!(
+        bright
+            .iter()
+            .all(|k| ["schoen", "blueten", "regen"].contains(k)),
+        "{bright:?}"
+    );
+    assert!(bright.contains("schoen"), "meist schön");
+    assert_eq!(
+        kinds(false, "wiese-arena").into_iter().collect::<Vec<_>>(),
+        ["schoen"],
+        "Arena"
+    );
+    // eigenes Wetter der Karte (Editor) geht vor
+    let mut map = load("wiese-1");
+    map.weather = Weather {
+        kind: WeatherKind::Fog,
+        intensity: 0.5,
+        wind: 0.0,
+    };
+    let mut s = Session::new_game(Content::builtin());
+    s.enter("wiese-1", map, "west", &Tuning::default());
+    assert_eq!(s.map.weather.kind, WeatherKind::Fog);
+}
+
+/// Tauwinkel nieselt bis zur ersten Quelle; wird sie befreit, klart es auf, ohne die Karte zu
+/// verlassen (nach dem Gespräch mit Tüftel).
+#[test]
+fn tauwinkel_clears_after_the_first_spring() {
+    use elora_map::WeatherKind;
+    let (mut s, _w) = start();
+    assert_eq!(s.map.weather.kind, WeatherKind::Rain, "Niesel");
+    assert!(s.map.weather.intensity < 0.5);
+    s.save.set_flag("quellen_befreit", 1);
+    s.refresh_decor();
+    assert!(
+        matches!(
+            s.map.weather.kind,
+            WeatherKind::Clear | WeatherKind::Petals | WeatherKind::Rain
+        ),
+        "{:?}",
+        s.map.weather
+    );
+    assert_ne!(
+        (s.map.weather.kind, s.map.weather.intensity < 0.5),
+        (WeatherKind::Rain, true),
+        "kein Niesel mehr"
+    );
+}
+
+/// Sand verdeckt die Sonne: im Sandsturm füllt sich die Hitze-Leiste nicht (R2-W1, E-320).
+#[test]
+fn sandstorm_hides_the_sun() {
+    let mut map = load("wiese-1");
+    map.weather = elora_map::Weather {
+        kind: elora_map::WeatherKind::Sandstorm,
+        intensity: 0.8,
+        wind: 0.6,
+    };
+    let mut s = Session::new_game(Content::builtin());
+    let mut w = s.enter("wueste-1", map, "west", &Tuning::default());
+    for _ in 0..300 {
+        step(&mut s, &mut w, PlayerInput::default(), false);
+    }
+    assert!(!s.in_sun && s.heat == 0.0, "{}", s.heat);
 }
