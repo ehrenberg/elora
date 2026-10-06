@@ -1045,6 +1045,7 @@ impl App {
         let is_online = online_view.is_some();
         let team_mode = info.view.as_ref().is_some_and(|v| v.mode.teams());
         let audio_device = self.sounds.has_device();
+        let weather_before = self.sandbox.map.weather;
         let mut cx = debug_ui::Context {
             sandbox: if is_online {
                 None
@@ -1082,6 +1083,12 @@ impl App {
                 action = action.take().or(debug_ui::panel(ui, &mut cx));
             }
         });
+        // Wetter im Debug-Panel umgeschaltet: im Abenteuer auch die Spielwirkung (W1.7)
+        if self.sandbox.map.weather != weather_before
+            && let Some(a) = &mut self.adventure
+        {
+            a.session.map.weather = self.sandbox.map.weather;
+        }
         if let Some(action) = action {
             self.apply(action);
         }

@@ -75,6 +75,21 @@ Release-Karten: `dm-winter` Schnee, `ctf-nacht` leichter Nebel, `dm-wueste` Wind
 | W1.6 ✅ | Karten | Release-Karten: `dm-winter` Schnee (0,6), `ctf-nacht` leichter Nebel (0,35), `dm-wueste` Wind mit Sand (0,3), übrige schön; Hüter-Arenen bleiben schön (D-W1-01); in Höhlen und unter Dächern kein Niederschlag, Wetterklänge gedämpft | Sichtprüfung |
 | W1.7 | Abnahme | Wetter-Testkarte, Kapitel 1–3, eine Mehrspieler-Runde | Deine Abnahme |
 
+## Prüfliste Abnahme (W1.7)
+
+Wetter umschalten: Debug-Panel (F1) → „Wetter“ (Art, Stärke, Wind); im Abenteuer wirkt das auch
+auf Wind, Nässe und Blitze.
+
+| # | Wo | Was prüfen |
+|---|---|---|
+| 1 | `elora maps/wetter-test.emap` | alle neun Wetter nacheinander: Partikel, Farbstimmung, Nebel, Blitze; unter dem Dach und in der Grube kein Niederschlag; Klang unter dem Dach leiser |
+| 2 | dieselbe Karte | Einstellung Grafik → Wetter „voll / sanft / aus“; Bildrate bei vollem Regen und Schneesturm (Debug-Panel) |
+| 3 | Kapitel 1 (Blütenwiesen) | Wetter beim Betreten wechselt mit der Zeit; Gewitter: Boden glimmt, Blitz schlägt ein und schadet, Donner; Ausweichen gelingt |
+| 4 | Kapitel 2 (Murmelwald) | Nebel: Kamera schaut weniger weit voraus, Spiel bleibt lesbar; Blätter-Wind: Elora treibt beim Springen über Gruben spürbar, aber beherrschbar |
+| 5 | Kapitel 3 (Glutsandwüste) | Sandsturm: Hitze-Leiste füllt sich nicht (Schatten), Granaten treiben mit dem Wind; Arena bleibt schön |
+| 6 | Regen/Schnee im Abenteuer | nasser Boden: weicheres Bremsen, an Kanten nicht unfair |
+| 7 | Mehrspieler | `dm-winter`, `ctf-nacht`, `dm-wueste` mit Server: Wetter sichtbar und hörbar, keine Spielwirkung |
+
 ## Technische Festlegungen (Vorschlag)
 
 - **Partikel als eigene Schicht** (nicht im allgemeinen Effektsystem): feste Obergrenze (voll etwa
