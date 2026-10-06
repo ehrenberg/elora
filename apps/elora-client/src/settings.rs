@@ -152,6 +152,31 @@ pub struct GraphicsSettings {
     pub msaa: bool,
     /// Faktor auf die automatische Größe von Menü und HUD (1 = nach Fensterhöhe).
     pub ui_scale: f32,
+    /// Wetter: voll, sanft oder aus (E-335).
+    pub weather: WeatherQuality,
+}
+
+/// Wie viel Wetter zu sehen ist (E-335); die Wirkung im Abenteuer bleibt gleich.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum WeatherQuality {
+    #[default]
+    Full,
+    /// Weniger Partikel, kein Aufblitzen, dünnerer Schleier.
+    Gentle,
+    Off,
+}
+
+impl WeatherQuality {
+    pub const ALL: [Self; 3] = [Self::Full, Self::Gentle, Self::Off];
+
+    pub fn label_key(self) -> &'static str {
+        match self {
+            Self::Full => "settings.weather_full",
+            Self::Gentle => "settings.weather_gentle",
+            Self::Off => "settings.weather_off",
+        }
+    }
 }
 
 impl Default for GraphicsSettings {
@@ -161,6 +186,7 @@ impl Default for GraphicsSettings {
             vsync: true,
             msaa: true,
             ui_scale: 1.0,
+            weather: WeatherQuality::Full,
         }
     }
 }

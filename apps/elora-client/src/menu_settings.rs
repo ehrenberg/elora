@@ -362,6 +362,30 @@ fn graphics(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, page: Rect, edit: &mut SettingsEd
         lang.t("settings.hit_marker"),
         &mut e.hit_marker,
     );
+    // Wetter: voll, sanft, aus (E-335)
+    let wy = y + 80.0 * s;
+    ui.label(
+        lang.t("settings.weather"),
+        Vec2::new(x, wy),
+        11.0,
+        TEXT_DIM,
+        Align::Left,
+    );
+    let modes = crate::settings::WeatherQuality::ALL;
+    let names: Vec<&str> = modes.iter().map(|m| lang.t(m.label_key())).collect();
+    let g = &mut *edit.graphics;
+    let current = modes.iter().position(|m| *m == g.weather).unwrap_or(0);
+    if let Some(i) = ui.tabs(
+        "weather",
+        Vec2::new(x, wy + 10.0 * s),
+        24.0 * s,
+        &names,
+        current,
+        &[BLUE],
+    ) {
+        g.weather = modes[i];
+        changed = true;
+    }
     changed
 }
 

@@ -30,6 +30,27 @@ pub struct LookTime {
     pub server_ms: i64,
     /// Welke Hook-Blüten aus der Welt ([`elora_sim::Collision::hook_wilt`]).
     pub hook_wilt: Option<bool>,
+    /// Wind des Wetters (−1..1, R2-W1): Pflanzen neigen sich und wiegen stärker.
+    pub wind: f32,
+}
+
+/// Wiegen sich im Wind (Bäume, Büsche, Gras, Blumen, Fahnen).
+fn sways(name: &str) -> bool {
+    [
+        "tree-",
+        "bush-",
+        "grass-",
+        "flower-",
+        "waldbaum",
+        "palme",
+        "riesenblume",
+        "farn",
+        "beerenbusch",
+        "loewenzahn",
+        "fahne-",
+    ]
+    .iter()
+    .any(|p| name.starts_with(p))
 }
 
 /// Was sich an der Karte ändern muss, damit neu aufgebaut wird.
@@ -476,7 +497,18 @@ impl MapView {
             {
                 continue;
             }
-            map_art::draw_decor(batch, mesh, d, d.pos, &anim(map, d, time));
+            let mut a = anim(map, d, time);
+            if time.wind.abs() > 0.01
+                && let elora_map::Art::Builtin(name) = &d.art
+                && sways(name)
+            {
+                // in den Wind neigen und in Böen wiegen (Grad)
+                #[allow(clippy::cast_precision_loss)]
+                let t = time.local_ms as f32 / 1000.0;
+                let gust = (t * 1.7 + d.pos.x * 0.013).sin();
+                a.rotation += time.wind * 4.0 + gust * time.wind.abs() * 3.0;
+            }
+            map_art::draw_decor(batch, mesh, d, d.pos, &a);
         }
     }
 
@@ -749,6 +781,7 @@ mod tests {
             local_ms: 900,
             server_ms: 20_000,
             hook_wilt: None,
+            wind: 0.0,
         };
         view.draw_back(&mut batch, &map, &cam, t);
         view.draw_front(&mut batch, &map, &cam, t);
@@ -845,6 +878,7 @@ mod tests {
                 local_ms: 1800,
                 server_ms: 0,
                 hook_wilt: None,
+                wind: 0.0,
             },
         );
         assert!((a.rotation + 2.0).abs() < 1e-4 && (b.rotation - 2.0).abs() < 1e-4);
@@ -856,6 +890,7 @@ mod tests {
                 local_ms: 0,
                 server_ms: 45_000,
                 hook_wilt: None,
+                wind: 0.0,
             },
         );
         assert!(
@@ -870,6 +905,7 @@ mod tests {
                 local_ms: 1200,
                 server_ms: 0,
                 hook_wilt: None,
+                wind: 0.0,
             },
         );
         assert!((g.color[3] - 0.75).abs() < 1e-4);

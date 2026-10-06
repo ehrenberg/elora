@@ -8,6 +8,10 @@ struct Post {
     // x: Zeit in Sekunden, y: Stärke des Flimmerns 0..1, z: Seitenverhältnis (Breite / Höhe),
     // w: Sättigung (1 = unverändert, 0 = grau)
     params: vec4<f32>,
+    // Wetter (R2-W1): Tönung (rgb, Anteil), Nebel (rgb, Dichte), x: Abdunkeln, y: Blitz
+    tint: vec4<f32>,
+    fog: vec4<f32>,
+    extra: vec4<f32>,
 };
 
 @group(0) @binding(0) var scene: texture_2d<f32>;
@@ -50,5 +54,12 @@ fn fs_main(in: VertexOut) -> @location(0) vec4<f32> {
     let tinted = mix(color.rgb, warm, strength * 0.6);
     // Sättigung: Grauwert nach Helligkeit, dann zurück zur Farbe
     let gray = dot(tinted, vec3<f32>(0.299, 0.587, 0.114));
-    return vec4<f32>(mix(vec3<f32>(gray), tinted, post.params.w), color.a);
+    var rgb = mix(vec3<f32>(gray), tinted, post.params.w);
+    // Wetter: Tönung, Abdunkeln, Nebel nach unten dichter, Blitz hellt alles auf
+    rgb = mix(rgb, rgb * post.tint.rgb, post.tint.a);
+    rgb = rgb * (1.0 - post.extra.x);
+    let fog = clamp(post.fog.a * mix(0.35, 1.0, uv.y), 0.0, 1.0);
+    rgb = mix(rgb, post.fog.rgb, fog);
+    rgb = min(rgb + vec3<f32>(post.extra.y * 0.55), vec3<f32>(1.0));
+    return vec4<f32>(rgb, color.a);
 }

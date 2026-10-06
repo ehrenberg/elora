@@ -74,6 +74,27 @@ mod tests {
         assert_eq!(map.weather.kind, WeatherKind::Rain);
     }
 
+    /// Varianten zum Ansehen: `… write_weather_variants -- --ignored` → `target/wetter-<art>.emap`.
+    #[test]
+    #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
+    fn write_weather_variants() {
+        for kind in WeatherKind::ALL {
+            let mut m = weather_test();
+            m.weather = Weather {
+                kind,
+                intensity: 0.8,
+                wind: 0.4,
+            };
+            let path = format!(
+                "{}/../../target/wetter-{}.{}",
+                env!("CARGO_MANIFEST_DIR"),
+                kind.key(),
+                elora_map::EXTENSION
+            );
+            m.save(std::path::Path::new(&path)).unwrap();
+        }
+    }
+
     #[test]
     #[ignore = "schreibt maps/wetter-test.emap"]
     fn write_weather_test_map() {

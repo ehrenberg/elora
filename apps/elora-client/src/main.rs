@@ -42,6 +42,7 @@ mod skins;
 mod sound;
 mod tuning_file;
 mod ui;
+mod weather;
 
 use std::collections::VecDeque;
 use std::path::{Path, PathBuf};
@@ -224,6 +225,8 @@ struct App {
     was_dazed: bool,
     /// Sättigung der Welt (E-328): folgt den befreiten Quellen, gleitet sanft nach.
     saturation: f32,
+    /// Wetter in der Darstellung (R2-W1).
+    weather: weather::WeatherView,
     effects: effects::Effects,
     figures: figure::Figures,
     figure_art: figure::FigureArt,
@@ -291,6 +294,7 @@ impl App {
             owned_weapons: [false; 3],
             was_dazed: false,
             saturation: 1.0,
+            weather: weather::WeatherView::default(),
             effects: effects::Effects::with_settings(settings.effects),
             figures: figure::Figures::default(),
             figure_art: figure::FigureArt::load(),
@@ -647,6 +651,7 @@ impl App {
             let secs = tick as f32 / elora_sim::TICKS_PER_SECOND as f32;
             gfx.renderer.set_heat_haze(haze, secs);
             gfx.renderer.set_saturation(self.saturation);
+            gfx.renderer.set_grade(self.weather.grade());
         }
     }
 
@@ -804,6 +809,7 @@ impl App {
                 .is_none()
                 .then_some(self.sandbox.world.collision.hook_wilt)
                 .flatten(),
+            wind: self.weather.wind(),
         };
         draw::scene(
             &mut self.batch,
@@ -822,6 +828,7 @@ impl App {
                 art: &self.figure_art,
                 items: &self.item_art,
                 creatures: &self.creature_art,
+                weather: &self.weather,
                 emotes: &self.emotes,
                 skins: self
                     .online
@@ -952,6 +959,14 @@ impl App {
                 );
             }
         }
+        // Wetter der Karte (online: vom Server mitgeschickt) – nur Darstellung (R2-W1)
+        let map = match &self.online {
+            Some(o) => o.client.map.as_ref(),
+            None => Some(&self.sandbox.map),
+        };
+        let weather = map.map_or(elora_map::Weather::CLEAR, |m| m.weather);
+        self.weather
+            .update(dt, weather, self.settings.graphics.weather, &camera, map);
         self.build_batch(&scene, &tuning, &camera, info.tick);
         let screen = self.build_hud(&scene, &tuning, &info);
         let death_choice = if self.adventure.is_some() && !self.menu.paused {

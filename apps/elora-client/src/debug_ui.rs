@@ -179,6 +179,7 @@ pub fn panel(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
                     ui.separator();
                     abilities(ui, sandbox);
                     creatures(ui, sandbox, &mut cx.net.creature_kind);
+                    weather(ui, sandbox);
                     ui.separator();
                     tuning(ui, &mut sandbox.world.tuning);
                 } else if !cx.status.is_empty() {
@@ -785,6 +786,28 @@ fn map_picker(
             ui.small(format!("Aktuell: {}", s.map_path.display()));
         });
     action
+}
+
+/// Wetter der Karte zum Ausprobieren (R2-W1): Art, Stärke, Wind – wirkt sofort.
+fn weather(ui: &mut egui::Ui, s: &mut Sandbox) {
+    use elora_map::WeatherKind;
+    egui::CollapsingHeader::new("Wetter")
+        .default_open(false)
+        .show(ui, |ui| {
+            let w = &mut s.map.weather;
+            egui::ComboBox::from_id_salt("debug_weather")
+                .selected_text(w.kind.key())
+                .show_ui(ui, |ui| {
+                    for k in WeatherKind::ALL {
+                        ui.selectable_value(&mut w.kind, k, k.key());
+                    }
+                });
+            if !w.is_clear() && w.intensity <= 0.0 {
+                w.intensity = 0.7;
+            }
+            ui.add(egui::Slider::new(&mut w.intensity, 0.0..=1.0).text("Stärke"));
+            ui.add(egui::Slider::new(&mut w.wind, -1.0..=1.0).text("Wind"));
+        });
 }
 
 /// Gegner zum Ausprobieren (A1.2): Abenteuer-Regeln, Gegner setzen und entfernen.

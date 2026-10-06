@@ -71,6 +71,10 @@ to_menu = "Zum Hauptmenü"
 paused = "Pause"
 
 [settings]
+weather = "Wetter"
+weather_full = "voll"
+weather_gentle = "sanft"
+weather_off = "aus"
 name = "Name"
 body = "Körper"
 feet = "Füße"

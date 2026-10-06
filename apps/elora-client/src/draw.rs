@@ -26,6 +26,8 @@ pub struct Looks<'a> {
     pub skins: &'a BTreeMap<usize, Skin>,
     /// Eigener Skin (sofort sichtbar, ohne Umweg über den Server).
     pub own_skin: Skin,
+    /// Wetter (R2-W1): Partikel hinter und vor den Figuren.
+    pub weather: &'a crate::weather::WeatherView,
 }
 use elora_render::{Camera, Color, ShapeBatch};
 use elora_sim::Team;
@@ -66,6 +68,7 @@ pub fn scene(
         emotes,
         skins,
         own_skin,
+        weather,
     } = *looks;
     let time = figures.time();
     let MapLayer {
@@ -95,6 +98,8 @@ pub fn scene(
             ground_shadow(batch, map, c.pos() + Vec2::new(0.0, PHYS_SIZE / 2.0), 28.0);
         }
     }
+    // Wetter hinter den Figuren: Partikel der hinteren Ebene, Spritzer (R2-W1)
+    weather.draw_back(batch);
     spawns_and_pickups(batch, scene, items, time);
     draw_objects(batch, scene, art, creatures, time);
     for (item, pos) in &scene.loot {
@@ -187,6 +192,8 @@ pub fn scene(
     if let Some(map) = map {
         map_view.draw_front(batch, map, camera, look_time);
     }
+    // Wetter vor allem: vordere Partikel, Blitze
+    weather.draw_front(batch);
     effects.draw(batch);
     emotes.draw(batch, scene);
 
@@ -213,23 +220,9 @@ const SHADOW_REACH: f32 = 320.0;
     clippy::cast_sign_loss
 )]
 fn ground_shadow(batch: &mut ShapeBatch, map: &elora_map::Map, foot: Vec2, width: f32) {
-    let ts = elora_sim::TILE_SIZE as f32;
-    #[allow(clippy::cast_possible_truncation)]
-    let (tx, ty) = ((foot.x / ts).floor() as i64, (foot.y / ts).floor() as i64);
-    let (w, h) = (map.width as i64, map.height as i64);
-    if tx < 0 || tx >= w {
-        return;
-    }
-    let rows = (SHADOW_REACH / ts) as i64 + 1;
-    let Some(gy) = (ty.max(0)..(ty + rows).min(h)).find(|&y| {
-        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-        let t = map.tiles[(y * w + tx) as usize];
-        t.is_solid() || matches!(t, elora_sim::Tile::Platform | elora_sim::Tile::Quicksand)
-    }) else {
+    let Some(ground) = crate::weather::surface_below(map, foot, SHADOW_REACH) else {
         return;
     };
-    #[allow(clippy::cast_precision_loss)]
-    let ground = gy as f32 * ts;
     let dist = (ground - foot.y).max(0.0);
     if dist > SHADOW_REACH {
         return;
@@ -421,6 +414,7 @@ mod tests {
                 emotes: &Emotes::new(),
                 skins: &BTreeMap::new(),
                 own_skin: Skin::default(),
+                weather: &crate::weather::WeatherView::default(),
             },
         );
         let tl = camera.top_left();

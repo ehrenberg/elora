@@ -90,6 +90,41 @@ struct Post {
     time: f32,
     /// Sättigung der Welt (1 = unverändert).
     saturation: f32,
+    /// Farbstimmung des Wetters.
+    grade: Grade,
+}
+
+/// Farbstimmung der Welt durch das Wetter (R2-W1): Tönung, Abdunkeln, Nebel, Blitz.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Grade {
+    /// Farbe, mit der multipliziert wird, und ihr Anteil (0 = keine Tönung).
+    pub tint: [f32; 3],
+    pub tint_amount: f32,
+    /// 0 = unverändert, 1 = schwarz.
+    pub darken: f32,
+    /// Nebelfarbe und Dichte (unten voll, oben ein gutes Drittel).
+    pub fog: [f32; 3],
+    pub fog_density: f32,
+    /// Blitz: hellt das Bild auf (0..1).
+    pub flash: f32,
+}
+
+impl Grade {
+    pub const NONE: Self = Self {
+        tint: [1.0; 3],
+        tint_amount: 0.0,
+        darken: 0.0,
+        fog: [1.0; 3],
+        fog_density: 0.0,
+        flash: 0.0,
+    };
+
+    fn is_none(&self) -> bool {
+        self.tint_amount <= 0.001
+            && self.darken <= 0.001
+            && self.fog_density <= 0.001
+            && self.flash <= 0.001
+    }
 }
 
 /// Ein laufender Frame: Ziel-Textur und Command-Encoder.
@@ -215,6 +250,11 @@ impl Renderer {
         self.post.saturation = saturation.clamp(0.0, 1.0);
     }
 
+    /// Farbstimmung des Wetters für die nächsten Frames ([`Grade::NONE`] = aus).
+    pub fn set_grade(&mut self, grade: Grade) {
+        self.post.grade = grade;
+    }
+
     /// MSAA-Stufe (1 = aus).
     pub fn msaa_samples(&self) -> u32 {
         self.samples
@@ -291,7 +331,7 @@ impl Renderer {
         batch: &ShapeBatch,
         clear: Color,
     ) {
-        if self.post.strength <= 0.0 && self.post.saturation >= 0.999 {
+        if self.post.strength <= 0.0 && self.post.saturation >= 0.999 && self.post.grade.is_none() {
             self.draw_layer(frame, false, camera, batch, Some(clear));
             return;
         }
@@ -323,12 +363,25 @@ impl Renderer {
                 });
             self.world.draw(&mut pass, &self.pipeline, batch);
         }
+        let gr = self.post.grade;
         #[allow(clippy::cast_precision_loss)]
         let params = [
             self.post.time,
             self.post.strength,
             self.config.width as f32 / self.config.height.max(1) as f32,
             self.post.saturation,
+            gr.tint[0],
+            gr.tint[1],
+            gr.tint[2],
+            gr.tint_amount,
+            gr.fog[0],
+            gr.fog[1],
+            gr.fog[2],
+            gr.fog_density,
+            gr.darken,
+            gr.flash,
+            0.0,
+            0.0,
         ];
         self.queue
             .write_buffer(&self.post.uniform, 0, bytemuck::cast_slice(&params));
@@ -609,11 +662,12 @@ impl Post {
             pipeline: create_post_pipeline(device, format, samples, &layout),
             layout,
             sampler: filter,
-            uniform: create_buffer(device, "post", 16, wgpu::BufferUsages::UNIFORM),
+            uniform: create_buffer(device, "post", 64, wgpu::BufferUsages::UNIFORM),
             scene: None,
             strength: 0.0,
             time: 0.0,
             saturation: 1.0,
+            grade: Grade::NONE,
         }
     }
 
