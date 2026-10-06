@@ -1,267 +1,162 @@
-# Elora
+<p align="center">
+  <img src="assets/elora/elora.svg" width="120" alt="Elora">
+</p>
 
-Ein 2D-Multiplayer-Arena-Shooter nach dem Vorbild von [Teeworlds](https://teeworlds.com) – eigene Figur, eigener Stil, gleiches Spielgefühl. Elora ist zugleich der Name der spielbaren Figur.
+<h1 align="center">Elora</h1>
 
-**Stand:** **0.9.1 Beta** – Mehrspieler aus Release 1 (Bewegung, Hook, Waffen, Netzwerk, Spielmodi, Look & Sound, Menüs & Server-Browser, Karten & Editor) und als Vorschau das Abenteuer „Die verstummten Quellen“ mit Prolog und Kapitel 1–3 ([Release-Notizen](docs/releases/v0.9.1.md)). Release 2 läuft: [Roadmap](docs/release-2/roadmap.md).
+<p align="center">
+  <b>Schnelles 2D-Multiplayer: hooken, schwingen, sprengen – mit Freunden im Internet oder im LAN.<br>
+  Und jetzt auch allein im Abenteuer.</b>
+</p>
 
-## Einrichtung unter Arch Linux
+<p align="center">
+  <a href="https://github.com/ehrenberg/elora/releases"><b>Herunterladen</b></a> ·
+  <a href="https://elora.bastianswelt.de">Projektseite und Live-Server</a> ·
+  <a href="docs/releases/v0.9.1.md">Was ist neu in 0.9.1?</a> ·
+  <a href="https://github.com/ehrenberg/elora/issues">Fehler melden</a>
+</p>
 
-### 1. Pakete
+---
 
-```sh
-sudo pacman -S --needed git base-devel rustup cargo-deny cargo-nextest
-rustup default stable
-```
+Elora ist ein schnelles 2D-Spiel im Stil der großen Klassiker des Genres: flinke Bewegung, ein
+Haken zum Schwingen und eine Handvoll Waffen, die man in Sekunden versteht und in Wochen meistert.
+Elora ist auch der Name der Heldin – ein kleiner, mutiger Tropfen.
 
-- `rustup` ersetzt das Paket `rust` (pacman fragt nach – mit Ja bestätigen). Die genaue Rust-Version (siehe `rust-toolchain.toml`) lädt rustup beim ersten `cargo`-Aufruf im Projekt automatisch.
-- `cargo-deny` (Lizenz- und Sicherheitsprüfung) und `cargo-nextest` (Test-Runner) braucht `cargo xtask check`.
+**Version 0.9.1 Beta** · kostenlos und Open Source · Linux, Windows, macOS · Deutsch und Englisch
 
-### 2. Grafik (Vulkan) und Fenster
+## Was dich erwartet
 
-Der Renderer nutzt wgpu, unter Linux standardmäßig Vulkan. Nötig sind der Vulkan-Loader und der Treiber zur Grafikkarte:
+- **Hook, Hammer, Granatwerfer, Laser** – häng dich an Wände, schwing durch die Karte, zieh Gegner zu dir
+- **Fünf Spielmodi:** Deathmatch, Team-Deathmatch, Capture the Flag, Last Man Standing, Last Team Standing – jeweils auch als Instagib
+- **Online und im LAN:** Serverliste mit Live-Status, Favoriten, eigener Server mit einem Klick
+- **Das Abenteuer „Die verstummten Quellen“** (Vorschau): Prolog und drei Kapitel für dich allein
+- **Karten-Editor** direkt im Spiel – bauen, F5 drücken, losspielen
+- **Elora nach deinem Geschmack:** Farben für Augen, Körper und Füße, Emotes für schnelle Grüße
 
-```sh
-sudo pacman -S --needed vulkan-icd-loader
-sudo pacman -S --needed vulkan-radeon    # AMD
-# oder: vulkan-intel                     # Intel
-# oder: nvidia-utils                     # NVIDIA (proprietär)
-```
+## Herunterladen und starten
 
-Fenster laufen unter Wayland und X11 (auf Desktop-Installationen meist schon vorhanden, sonst: `sudo pacman -S --needed wayland libxkbcommon libx11 libxcursor libxrandr libxi`).
+Die neueste Version gibt es unter **[Releases](https://github.com/ehrenberg/elora/releases)**.
 
-Prüfen: `vulkaninfo --summary` (Paket `vulkan-tools`) sollte die Grafikkarte zeigen.
-
-### 3. Ton
-
-Die Tonausgabe läuft über ALSA (`alsa-lib`, auf Desktop-Installationen vorhanden; mit PipeWire zusätzlich `pipewire-alsa`):
-
-```sh
-sudo pacman -S --needed alsa-lib pipewire-alsa
-```
-
-Ohne Audiogerät startet das Spiel trotzdem – stumm, mit Hinweis im Panel unter *Ton*.
-
-### 4. Bauen
-
-```sh
-git clone <repo-url> elora && cd elora
-cargo build            # baut Client (elora) und Server (elora-server)
-```
-
-Alle Befehle werden aus dem Projektordner ausgeführt (Karten liegen in `maps/`).
-
-## Spielen
-
-```sh
-cargo run --bin elora                               # startet ins Hauptmenü
-```
-
-Im Hauptmenü: **Spielen** (Server-Browser mit Internet über `https://elora.bastianswelt.de`, LAN und Favoriten; Direkt-Verbinden; „Schnell spielen“ = letzter Server), **Training** (Sandbox), **Server erstellen** (startet einen eigenen Server und verbindet), **Einstellungen**, **Beenden**. Im Spiel öffnet Esc das Pause-Menü.
-
-### Sandbox direkt starten (Entwicklung)
-
-Mit einer Karte, `--mode` oder `--connect` auf der Kommandozeile geht es ohne Menü direkt ins Spiel, mit Debug-Panel:
-
-```sh
-cargo run --bin elora -- maps/sandbox.emap          # Standardkarte
-cargo run --bin elora -- maps/eigene.emap           # andere Karte
-cargo run --bin elora -- maps/ctf-test.emap --mode ctf   # Spielmodus gegen Dummies
-cargo run --bin elora -- maps/look-test.emap         # Kartenlook: Materialien, Hintergründe, Deko, Animationen
-cargo run --bin elora -- maps/tiles-test.emap        # Plattform, Eis, Sprungfeld, Beschleuniger (S = Runter)
-cargo run --bin elora -- maps/faehigkeiten-test.emap # Abenteuer-Fähigkeiten (F1 → „Fähigkeiten“ einschalten)
-cargo run --bin elora -- --abenteuer 1              # Abenteuer auf Platz 1 (fortsetzen oder neu)
-```
-
-**Pakete:** `cargo xtask package --archive` baut ein Release-Paket für das eigene System unter `dist/` (Programme, Release-Karten, Lizenzen, Symbol; macOS zusätzlich `Elora.app`). Bei einem Tag `v<version>` baut GitHub Actions Linux (tar.gz, AppImage), Windows (ZIP) und macOS (DMG) und legt ein Entwurfs-Release an; jeder Push wird mit `cargo xtask check` geprüft.
-
-**Dateien:** Mitgelieferte Daten (`maps/`, Menümusik) sucht das Spiel erst im Arbeitsverzeichnis, dann in `ELORA_DATA`, neben dem Programm, in `../share/elora` oder `../Resources` (macOS). Einstellungen, `tuning.toml`, `known_servers.toml` und die Dateien des gehosteten Servers (`server.toml`, `server_key.toml`) liegen im Einstellungsordner (`~/.config/elora`, Windows `%APPDATA%\Elora`, macOS `~/Library/Application Support/Elora`); eigene und heruntergeladene Karten unter `~/.local/share/elora`.
-
-**Release-Karten** (M6.10): `dm-wiese` (64×36, 4–8 Spieler), `dm-wueste` (96×48, 8–12), `dm-winter` (128×64, 12–16), `ctf-wald` (150×48, 8–12), `ctf-nacht` (190×64, 12–16). Layouts werden in `tools/design/release_maps/` gebaut und geprüft (`python3 tools/design/release_maps/export.py`), die Dateien schreibt `cargo test -p elora-client --bin elora write_release_maps -- --ignored`.
-
-Spielmodi in der Sandbox: `--mode dm|tdm|ctf|lms|lts` (optional `--instagib`) oder im Panel unter *Spiel → Modus*. CTF braucht eine Karte mit Flaggen, z. B. `maps/ctf-test.emap`.
-
-Die Sandbox dient zum Tunen und Testen: Dummies, Pickups, Live-Regler für alle Werte, Hot-Reload der Karte.
-
-### Online
-
-**Server starten:**
-
-```sh
-cargo run --bin elora-server
-cargo run --bin elora-server -- --port 8303 --map maps/dm-wiese.emap --max-clients 16 --name "Mein Server"
-cargo run --bin elora-server -- --config server.toml
-```
-
-| Option | Standard | Bedeutung |
+| System | Datei | So geht's |
 |---|---|---|
-| `--port` | 8303 | UDP-Port |
-| `--bind` | `::` | `::` = IPv4 und IPv6 (meldet sich beim Master über beide an), `0.0.0.0` = nur IPv4 |
-| `--map` | `maps/dm-wiese.emap` | Karte (relativ: erst Arbeitsverzeichnis, dann Datenordner der Installation) |
-| `--max-clients` | 8 | Spieler, 1–64 |
-| `--name` | Elora-Server | Anzeigename |
-| `--high-bandwidth` | aus | Snapshots mit 50 statt 25 Hz (nur LAN) |
-| `--key-file` | `server_key.toml` | dauerhafter Server-Schlüssel (wird beim ersten Start erzeugt) |
-| `--tuning` | – | Tuning-Datei (Abschnitt `[physics]` wie `tuning.toml`) |
-| `--mode` | dm | Spielmodus: `dm`, `tdm`, `ctf`, `lms`, `lts` |
-| `--instagib` | aus | nur Laser, ein Treffer tötet (für alle Modi) |
-| `--score-limit` | 20 (CTF: 5 Eroberungen) | Siegpunkte, 0 = aus |
-| `--time-limit` | 0 | Zeitlimit in Minuten, 0 = aus |
-| `--no-friendly-fire` | an | kein Schaden an Teammitgliedern (Rückstoß bleibt) |
-| `--no-votes` | an | Abstimmungen abschalten |
-| `--master` | `https://elora.bastianswelt.de` | beim Master-Server anmelden (Internet-Liste); ein eigener ersetzt den Standard, mehrfach möglich |
-| `--no-master` | – | nicht in die Internet-Liste eintragen |
-| `--config` | – | alle Optionen aus einer TOML-Datei; weitere Optionen überschreiben sie |
+| Linux | `elora-…-linux-x86_64.AppImage` | Rechtsklick → Eigenschaften → „Ausführbar“, dann doppelklicken (oder `chmod +x` im Terminal) |
+| Linux | `elora-…-linux-x86_64.tar.gz` | entpacken, `elora` starten |
+| Windows | `elora-…-windows-x86_64.zip` | entpacken, `elora.exe` starten |
+| macOS (Apple Silicon) | `elora-…-macos-aarch64.dmg` | Elora in „Programme“ ziehen; beim ersten Start **Rechtsklick → Öffnen** (die App ist nicht signiert) |
 
-Weitere Einstellungen nur in der Konfigurationsdatei: `rotation = ["sandbox", "ctf-test"]` (Kartenrotation), `maps_dir`, und ein Abschnitt `[rules]` (`warmup_secs`, `countdown_secs`, `tdm_respawn_secs`, `team_balance_secs`, `match_swap`, `matches_per_map`).
+Elora braucht eine Grafikkarte mit Vulkan, DirectX 12 oder Metal. Für Intel-Macs gibt es noch
+kein Paket.
 
-**Konsole:** Im Terminal des Servers Befehle eintippen – `help` zeigt alle: `status`, `mode ctf`, `instagib on`, `scorelimit 10`, `timelimit 5`, `friendlyfire off`, `restart`, `map <name>`, `maps`, `kick <slot>`, `ban <slot>`, `spectate <slot>`, `say <text>`, `vote cancel`, `quit`.
+## Erste Schritte
 
-Beenden: `quit` + Enter oder Strg+C. Log-Ausgabe steuern: `RUST_LOG=debug cargo run --bin elora-server`.
+Nach dem Start landest du im Hauptmenü:
 
-**Verbinden:**
+| Menü | Was du dort machst |
+|---|---|
+| **Spielen** | Server im Internet, im LAN oder aus deinen Favoriten finden und beitreten; „Schnell spielen“ bringt dich zum letzten Server |
+| **Abenteuer** | das Abenteuer auf einem von drei Spielstand-Plätzen beginnen oder fortsetzen |
+| **Training** | allein üben, mit Übungsgegnern und allen Waffen |
+| **Server erstellen** | einen eigenen Server starten und gleich mitspielen |
+| **Editor** | eigene Karten bauen |
+| **Einstellungen** | Name, Aussehen, Steuerung, Grafik, Ton, Sprache |
 
-```sh
-cargo run --bin elora -- --connect 127.0.0.1:8303
-```
+Im Spiel öffnet **Esc** das Pause-Menü: Team wählen, zuschauen, abstimmen, Einstellungen.
 
-oder im Hauptmenü unter *Spielen* (Adresse, Favoriten). Für Entwickler zusätzlich im Debug-Panel (F1) → *Netzwerk*.
+## Das Abenteuer
 
-**Karten-Editor:** Hauptmenü → *Editor*. Seitenleiste rechts: Datei (Neu, Öffnen, Speichern), Rückgängig/Wiederholen, Werkzeuge, Ebenen ein-/ausblenden, Karteneigenschaften (Name, Autor, Größe, Himmel). Werkzeuge (Tasten 1–8): Pinsel, Rechteck, Füllen, Radierer, Auswahl (Strg+C/X/V, Entf), Entities, Material (Erde, Sand, Schnee), Deko (setzen, wählen, ziehen; Größe, Drehung, Färbung, Animationen; eigene SVGs einbetten); `[`/`]` ändern die Pinselgröße. Abschnitte *Hintergrund-Ebenen* (Vorlagen Tag/Nacht, Parallax, Wiederholung, Reihenfolge) und *Animationen* (Bewegung/Farbe, Punkte mit Kurven, Kurvenbild). Kartenfläche: mittlere Maustaste oder Leertaste + Ziehen verschiebt, Mausrad zoomt, links anwenden, rechts löschen. Kürzel: Strg+Z/Strg+Y, Strg+S, Strg+N, Strg+O, F5 testspielen (ohne Speichern; Esc im Spiel führt zurück in den Editor), Esc zurück. Eigene Karten liegen im Benutzerverzeichnis (`~/.local/share/elora/maps`, Windows/macOS im Einstellungsordner) und erscheinen danach in Training und *Server erstellen*.
+Die Quellen des Taulands verstummen, und die Farben weichen aus dem Dorf Tauwinkel. Elora zieht
+los, um herauszufinden, warum.
 
-**Aus dem Client hosten:** Hauptmenü → *Server erstellen* (Name, Karte, Modus, Instagib, Spieler) → *Server starten*. Der Client schreibt `server.toml` und startet `elora-server` als eigenen Prozess (vorher einmal `cargo build`). Mehr Optionen im Debug-Panel → *Netzwerk* → *Server einrichten …*.
+- **Prolog – Tauwinkel:** Oma Pfütze, Tüftel, Klonk, Lotte und Pip zeigen dir, was du brauchst
+- **Kapitel 1 – Blütenwiesen:** verirrte Bienen und eine sehr schlecht gelaunte Brummbär-Hummel
+- **Kapitel 2 – Murmelwald:** ein Uhu voller Geschichten, ein Pilzkind auf dem Heimweg und der Wurzelwächter
+- **Kapitel 3 – Glutsandwüste:** Sirups Karawane, Treibsand, flirrende Hitze und die Sandschlange
 
-**Master-Server (Internet-Liste):**
+Jede befreite Quelle bringt eine neue Fähigkeit (Hook-Ruck, Heranhooken, Stampfen) – und damit
+neue Wege in Gebieten, die du schon kennst. Dazu gibt es Stufen, einen Fähigkeitenbaum,
+Ausrüstung, Läden, Aufgaben und Gespräche. Gespeichert wird beim Kartenwechsel und an den
+Quellsteinen. Weitere Kapitel folgen mit den nächsten Versionen.
 
-```sh
-cargo run --bin elora-master -- --bind 0.0.0.0:8300                # HTTP auf Port 8300
-cargo run --bin elora-master -- --bind 127.0.0.1:8300 --behind-proxy   # hinter Reverse-Proxy
-```
+## Mit anderen spielen
 
-Spielserver melden sich beim Standard-Master an (abschaltbar mit `--no-master`, eigener mit `--master <URL>` oder `masters = ["…"]` in `server.toml`; aus dem Client gehostete nur mit „Im Internet anzeigen“), alle 20 s; der Master listet sie erst, wenn er sie selbst per UDP erreicht, und entfernt sie nach 60 s ohne Anmeldung. Öffentlich den Master hinter einem Reverse-Proxy mit HTTPS betreiben (z. B. Caddy: `reverse_proxy 127.0.0.1:8300`) und `--behind-proxy` setzen. Schnittstelle: `GET /servers`, `POST /register` (JSON). Betrieb mit systemd oder Docker: [`docs/handbuch/master-betrieb.md`](docs/handbuch/master-betrieb.md).
+- **Einem Server beitreten:** Hauptmenü → *Spielen*. Die Liste zeigt Server im Internet und im LAN;
+  über die Adresse kannst du auch direkt verbinden. Welche Server gerade laufen, siehst du auch auf
+  der [Projektseite](https://elora.bastianswelt.de).
+- **Selbst einen Server starten:** Hauptmenü → *Server erstellen*, Karte und Modus wählen, starten.
+  Mit „Im Internet anzeigen“ erscheint er in der Liste aller Spieler. Damit andere ihn erreichen,
+  muss der UDP-Port (Standard **8303**) in Router bzw. Firewall freigegeben sein.
+- **Einen Server dauerhaft betreiben:** mit dem Programm `elora-server` – alle Optionen stehen in
+  der [Anleitung für Entwickler und Server-Betreiber](DEVELOPMENT.md#server-konsole-und-master).
 
-**Firewall:** Für Spieler aus dem LAN/Internet muss der UDP-Port (Standard 8303) freigegeben sein, z. B. `sudo ufw allow 8303/udp` bzw. `sudo firewall-cmd --add-port=8303/udp`.
+Die Verbindung ist verschlüsselt. Elora merkt sich jeden Server und warnt, wenn sich sein Schlüssel
+ändert.
 
-**Sicherheit:** Die Verbindung ist verschlüsselt (Noise-Protokoll). Der Client merkt sich den Schlüssel jedes Servers in `known_servers.toml` und warnt, wenn er sich ändert (wie SSH).
+## Eigene Karten bauen
 
-### Steuerung
+Hauptmenü → *Editor*: Gelände malen, Materialien wie Erde, Sand, Schnee und Eis wählen, Deko und
+Hintergründe setzen, Wolken und Bäume animieren, eigene SVG-Grafiken einbetten. Mit **F5** spielst
+du die Karte sofort an, Esc bringt dich zurück. Eigene Karten erscheinen danach in *Training* und
+*Server erstellen*; spielt ihr online, verteilt der Server sie automatisch an alle.
 
-Standardbelegung; alles außer Esc und F1 lässt sich unter *Einstellungen → Steuerung* umbelegen.
+## Steuerung
+
+Alles außer Esc lässt sich unter *Einstellungen → Steuerung* umbelegen.
 
 | Taste | Aktion |
 |---|---|
 | A / D | laufen |
 | Leertaste | springen, in der Luft Doppelsprung |
 | Rechte Maustaste (halten) | Hook |
-| Linke Maustaste | schießen (Granate/Laser: gedrückt halten = Dauerfeuer) |
-| 1 / 2 / 3, Mausrad | Hammer / Granate / Laser |
-| Esc | Pause-Menü: Team, Abstimmungen, Einstellungen, Hauptmenü, Beenden |
-| F1 | Debug-Panel ein/aus (auch im Menü) |
-| R | Respawn (nur Sandbox ohne Modus) |
-| K | Selbstmord (`kill`) |
-| T / Y | Chat / Team-Chat (Enter senden, Esc abbrechen; online) |
-| Tab (halten) | Scoreboard; im Abenteuer: Abenteuer-Menü auf/zu |
-| Strg links (halten) | Emote-Rad: Maus in Richtung des Emotes, loslassen zeigt es |
-| E | Aktion: Sprechen, Öffnen, Benutzen (Abenteuer) |
-| Q | Heiltrank trinken (Abenteuer) |
-| Shift links | Fähigkeit: Hook-Ruck (Abenteuer) |
-| S | Runter: durch Plattformen fallen, in der Luft Stampfen (mit Fähigkeit) |
+| Linke Maustaste | schießen (Granate und Laser: halten für Dauerfeuer) |
+| 1 / 2 / 3 oder Mausrad | Hammer / Granate / Laser |
+| S | durch Holzstege fallen; in der Luft stampfen (Abenteuer, sobald freigeschaltet) |
+| Esc | Pause-Menü |
+| Tab (halten) | Punktetafel; im Abenteuer: Abenteuer-Menü (Inventar, Fähigkeiten, Aufgaben, Karte) |
+| T / Y | Chat / Team-Chat |
+| Strg links (halten) | Emote-Rad: Maus in Richtung des Emotes, loslassen |
+| K | Neustart an einem Startpunkt (Selbstmord) |
 | F3 / F4 | Ja / Nein bei Abstimmungen |
-| F5 | Aufzeichnung starten/beenden (nur Sandbox, siehe unten) |
+| E | sprechen, öffnen, benutzen (Abenteuer) |
+| Q | Heiltrank trinken (Abenteuer) |
+| Shift links | Hook-Ruck (Abenteuer, sobald freigeschaltet) |
 
-Nach dem Tod: Feuertaste = Respawn (frühestens nach 0,5 s, TDM 3 s), sonst automatisch nach 3 s. In LMS/LTS kein Respawn bis zur nächsten Runde.
+Nach dem Tod: Feuertaste für einen schnellen Neustart, sonst geht es nach drei Sekunden von allein
+weiter. In Last Man Standing und Last Team Standing wartest du bis zur nächsten Runde.
 
-Team wählen, zuschauen und Abstimmungen (Karte, Modus, Kick, Zuschauer) starten: `Esc` → Pause-Menü.
+## Wo liegen meine Daten?
 
-## Dateien im Arbeitsverzeichnis
+| | Linux | Windows | macOS |
+|---|---|---|---|
+| Einstellungen | `~/.config/elora` | `%APPDATA%\Elora` | `~/Library/Application Support/Elora` |
+| Spielstände und eigene Karten | `~/.local/share/elora` | `%APPDATA%\Elora` | `~/Library/Application Support/Elora` |
 
-| Datei | Zweck | im Git |
-|---|---|---|
-| `settings.toml` | Spieler-Einstellungen: Name, Skin, Sprache, Grafik, Ton, Effekte, Maus, Favoriten – **im Benutzerverzeichnis** (Linux `~/.config/elora/`, Windows `%APPDATA%\Elora\`, macOS `~/Library/Application Support/Elora/`), beim Beenden gespeichert | nein, lokal |
-| `tuning.toml` | Entwickler-Tuning der Sandbox: Physik und Sichtbereich (Panel → *Speichern*) | nein, lokal |
-| `server.toml` | vom Client geschriebene Server-Konfiguration | nein |
-| `server_key.toml` | geheimer Server-Schlüssel – nicht weitergeben | nein |
-| `known_servers.toml` | bekannte Server-Schlüssel des Clients | nein |
-| `maps/*.emap` | Karten ([Format](docs/handbuch/kartenformat.md), ansehen mit `cargo xtask map-dump`) | ja |
+Zum Sichern einfach diese Ordner kopieren.
 
-## Entwicklung
-
-```sh
-cargo xtask check          # alles: Formatierung, clippy, Tests, Lizenzen & Advisories
-cargo xtask fmt            # Code formatieren
-cargo nextest run --workspace --all-features   # nur Tests
-```
-
-Nach jeder Änderung muss `cargo xtask check` grün sein, dann wird committet.
-
-**Determinismus-Tests (Golden-Dateien):** Die Simulation muss bit-genau reproduzierbar bleiben. In der Sandbox zeichnet `F5` die eigenen Eingaben auf; die Datei landet in `crates/elora-sim/tests/recordings/` und wird zum Regressionstest. Golden-Dateien (neu) erzeugen – nur nach bewusster Physik-Änderung:
-
-```sh
-ELORA_BLESS=1 cargo nextest run -p elora-sim --all-features
-```
-
-**Netzwerk-Kompression:**
-
-```sh
-cargo xtask net-stats         # Nachrichtengrößen für 8/16/64 Spieler messen
-cargo xtask train-huffman    # Huffman-Tabelle neu trainieren (nach Änderungen am Snapshot-Format)
-cargo xtask sound-preview    # alle Sounds als WAV nach target/sounds/ (Hörprobe; Parameter in assets/sounds/sounds.toml)
-cargo xtask svg-preview a.svg a.png 1200   # SVG rastern (Entwürfe, Assets)
-```
-
-### Sounds austauschen
-
-Jeder Sound hat einen festen Namen (Liste: `cargo xtask sound-preview` oder `crates/elora-audio/src/cues.rs`, z. B. `jump`, `hammer_fire`, `grenade_explode`). Eine Datei `assets/sounds/files/<name>.wav` ersetzt den Klang gleichen Namens.
-
-1. Datei importieren – jedes Format, das ffmpeg liest; optional Start und Länge in Sekunden:
-   ```sh
-   cargo xtask sound-import jump ~/Downloads/boing.ogg          # ganze Datei
-   cargo xtask sound-import jump ~/Downloads/boing.ogg 0.1 0.3  # ab 0,1 s, 0,3 s lang
-   ```
-   Der Import wandelt nach Mono/44,1 kHz/16 Bit, entfernt Stille am Anfang, blendet das Ende aus und bringt die Spitze auf −1 dBFS. Längstens 2,5 s (Test).
-2. Lautstärke im Spiel: Abschnitt `[gain]` in `assets/sounds/sounds.toml` (1 = unverändert).
-3. Quelle und Lizenz in `assets/SOURCES.md` eintragen – nur CC0 oder mit GPL-3.0 verträgliche Lizenzen.
-4. Anhören: `cargo xtask sound-preview jump` (nach `target/sounds/`) oder im Spiel (`cargo run --bin elora`, eingebettet beim Bauen).
-5. `cargo xtask check`, dann committen.
-
-Zurück zum prozeduralen Klang: die Datei löschen (für die vier prozeduralen Sounds `spawn`, `death`, `weapon_switch`, `pickup_weapon` steht er in `sounds.toml`; für die anderen braucht es dann dort wieder einen Eintrag, sonst schlägt der Test fehl).
-
-### Projektstruktur
-
-```
-crates/elora-sim       deterministische Simulation (Physik, Hook, Waffen, Dummies)
-crates/elora-map       Kartenformat und Aufbau der Welt aus einer Karte
-crates/elora-render    wgpu-2D-Renderer (lyon-Tessellierung), Kamera
-crates/elora-protocol  Nachrichten, Delta-Snapshots, Huffman
-crates/elora-net       UDP-Transport: Handshake, Verschlüsselung, Zuverlässigkeit, Simulator
-crates/elora-game      Spielregeln: Modi, Punkte, Runden, Teams, Flaggen
-apps/elora-client      das Spiel (Sandbox + Online)
-apps/elora-server      dedizierter Server
-xtask                  Entwicklungsbefehle (cargo xtask …)
-maps/                  Textkarten
-assets/                Schriften (später Grafik und Sound)
-docs/                  Handbuch, Release-2-Planung, Release-Notizen, Archiv von Release 1
-```
-
-Details: [Architektur](docs/handbuch/architektur.md).
-
-## Fehlerbehebung
+## Wenn etwas nicht klappt
 
 | Problem | Lösung |
 |---|---|
-| „kein passender Grafikadapter“ / Fenster startet nicht | Vulkan-Treiber installieren (siehe oben); notfalls OpenGL erzwingen: `WGPU_BACKEND=gl cargo run --bin elora` |
-| `elora-server … nicht gefunden` beim Hosten aus dem Client | einmal `cargo build` (baut beide Programme) |
-| `Port … nicht verfügbar` | anderer Server läuft bereits auf dem Port → `--port` ändern |
-| Warnung „Server-Schlüssel geändert“ | Server wurde neu eingerichtet (neuer `server_key.toml`) – oder ein Angriff. Nur vertrauen, wenn du den Grund kennst. |
-| Maus lässt sich nicht fangen | ins Spielfeld klicken; unter manchen Wayland-Umgebungen wird statt „gesperrt“ „begrenzt“ genutzt |
-| `cargo xtask check` meldet fehlende Befehle | `cargo-deny` und `cargo-nextest` installieren (siehe Einrichtung) |
+| Das Spiel startet nicht oder meldet „kein passender Grafikadapter“ | Grafiktreiber aktualisieren. Unter Linux den Vulkan-Treiber installieren (z. B. `vulkan-radeon`, `vulkan-intel` oder `nvidia-utils`). Notfalls OpenGL erzwingen: `WGPU_BACKEND=gl ./elora` |
+| Kein Ton | Elora startet auch ohne Tonausgabe – dann stumm. Unter Linux mit PipeWire hilft meist `pipewire-alsa`. |
+| Mein Server taucht nicht in der Internet-Liste auf | UDP-Port 8303 im Router und in der Firewall freigeben; „Im Internet anzeigen“ muss an sein. Hinter DS-Lite erreichen dich nur Spieler mit IPv6. |
+| Warnung „Server-Schlüssel geändert“ | Der Server wurde neu eingerichtet – oder jemand gibt sich als er aus. Nur vertrauen, wenn du den Grund kennst. |
+| Die Maus lässt sich nicht fangen | ins Spielfeld klicken; manche Wayland-Desktops begrenzen die Maus nur, statt sie zu sperren |
 
-## Dokumentation
+Noch etwas kaputt? Melde es gern unter **[Issues](https://github.com/ehrenberg/elora/issues)**.
 
-Siehe [`docs/`](docs/README.md) – Handbuch (Grundsätze, Architektur, Tuning, Kartenformat, Master-Betrieb), Planung von Release 2 und das Archiv von Release 1.
+## Mitmachen
 
-## Lizenz
+Elora ist freie Software, geschrieben in Rust. Wie du es aus dem Quellcode baust, testest und
+mitentwickelst, steht in **[DEVELOPMENT.md](DEVELOPMENT.md)**. Karten bauen, Fehler melden und
+Ideen einbringen ist ausdrücklich erwünscht.
 
-- Code: [GPL-3.0](LICENSE)
-- Grafiken & Sounds: CC-BY-SA 4.0
+## Lizenz und Dank
+
+- Programm: [GPL-3.0](LICENSE)
+- Eigene Grafiken und Sounds: CC-BY-SA 4.0
 - Schriften (Inter, JetBrains Mono): SIL Open Font License 1.1
-- Drittanbieter: [THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES)
+- Musik und Sounds anderer Künstler: [`assets/SOURCES.md`](assets/SOURCES.md) und im Spiel unter
+  *Einstellungen → Über Elora*
+- Bibliotheken: [THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES)
+
+Inspiriert von [Teeworlds](https://teeworlds.com) – danke an Magnus Auvinen und alle Mitwirkenden.

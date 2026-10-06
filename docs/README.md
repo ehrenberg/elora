@@ -2,6 +2,8 @@
 
 Elora ist ein schnelles 2D-Multiplayer-Spiel nach dem Vorbild von Teeworlds; „Elora“ ist zugleich der Name der Figur.
 
+Einstieg: [README](../README.md) für Spielerinnen und Spieler, [DEVELOPMENT.md](../DEVELOPMENT.md) zum Bauen, Testen, Server-Betrieb und Mitentwickeln.
+
 ## Handbuch (gilt)
 
 | Dokument | Inhalt |
