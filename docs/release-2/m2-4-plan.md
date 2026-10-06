@@ -1,6 +1,6 @@
 # R2-M2.4 – Kapitel 4: Frostspitzen – Umsetzungsplan
 
-Status: **Entwurf zur Freigabe** · Entscheidungen E-340 bis E-343 · Grundlage: [`weltbuch.md`](weltbuch.md) §4.4 und §5, [`m2-3-plan.md`](m2-3-plan.md), [`w1-plan.md`](w1-plan.md), E-228, E-243, E-320
+Status: **Freigegeben, in Umsetzung** (E-344) · Entscheidungen E-340 bis E-344 · Grundlage: [`weltbuch.md`](weltbuch.md) §4.4 und §5, [`m2-3-plan.md`](m2-3-plan.md), [`w1-plan.md`](w1-plan.md), E-228, E-243, E-320
 
 ## Ziel
 
