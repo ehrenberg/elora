@@ -53,6 +53,18 @@ Anfang entfernt, Ende ausgeblendet, Spitze −1 dBFS, teils gekürzt).
 | `sand_dig` | `footstep_snow_002.ogg` | [Kenney – impact-sounds](https://kenney.nl/assets/impact-sounds) | Kenney (kenney.nl) | CC0 1.0 |
 | `shell_clack` | `impactPlate_light_001.ogg` | [Kenney – impact-sounds](https://kenney.nl/assets/impact-sounds) | Kenney (kenney.nl) | CC0 1.0 |
 
+## Wetterklänge (`assets/ambience/`)
+
+Per ffmpeg nach Ogg Vorbis umgewandelt (Stereo, 44,1 kHz, Qualität 4), auf etwa −20 LUFS
+gebracht; Schleifen mit weich überblendeter Nahtstelle (E-338).
+
+| Datei | Original | Quelle | Autor | Lizenz |
+|---|---|---|---|---|
+| `regen.ogg` | `1.ogg` aus „Rain OGG.zip“ | [OpenGameArt – Rain (loopable)](https://opengameart.org/content/rain-loopable) | Ylmir | CC0 1.0 |
+| `wind.ogg` | `low-rumbling-176033.mp3` | [OpenGameArt – Low Rumbling](https://opengameart.org/content/low-rumbling) | Musheran | CC0 1.0 |
+| `sand.ogg` | `wind background noise 2.wav` (Hochpass 700 Hz, Höhen +8 dB) | [OpenGameArt – Mild Wind Background Noise](https://opengameart.org/content/mild-wind-background-noise) | Bashar3A | CC0 1.0 |
+| `donner.ogg` | `rain-thunder.ogg` (20,5–38,5 s, ausgeblendet) | [OpenGameArt – Rain + Long Thunder](https://opengameart.org/content/rain-long-thunder) | WuxiaScrub | CC0 1.0 |
+
 ## Schriften (`assets/fonts/`)
 
 Inter und JetBrains Mono unter SIL Open Font License 1.1, siehe `assets/fonts/*-OFL.txt` und `THIRD_PARTY_LICENSES`.

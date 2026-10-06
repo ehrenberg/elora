@@ -14,10 +14,10 @@ use elora_sim::{Event, HookState, Vec2};
 
 use crate::figure::Landing;
 
-/// Musikstück `assets/music/<name>.ogg` (oder `.wav`) lesen; fehlt es, bleibt es still.
-fn load_music(name: &str) -> Option<Arc<[u8]>> {
+/// Musikstück `<dir>/<name>.ogg` (oder `.wav`) lesen; fehlt es, bleibt es still.
+fn load_music(dir: &str, name: &str) -> Option<Arc<[u8]>> {
     ["ogg", "wav"].iter().find_map(|ext| {
-        let rel = format!("{MUSIC_DIR}/{name}.{ext}");
+        let rel = format!("{dir}/{name}.{ext}");
         std::fs::read(elora_server::paths::resolve(std::path::Path::new(&rel)))
             .ok()
             .map(Arc::from)
@@ -35,10 +35,40 @@ pub struct Sounds {
     tracks: HashMap<String, Option<Arc<[u8]>>>,
     /// Gerade laufendes Stück.
     playing: Option<String>,
+    /// Gelesene Wetterklänge (`assets/ambience`, R2-W1).
+    ambience: HashMap<String, Option<Arc<[u8]>>>,
+    /// Donner, der noch kommt: Ort und verbleibende Verzögerung (s).
+    thunder: Vec<(Vec2, f32)>,
+}
+
+/// Ordner der Wetterklänge: Schleifen `regen`, `wind`, `sand` und `donner` (R2-W1, E-338).
+pub const AMBIENCE_DIR: &str = "assets/ambience";
+
+/// Die Schleifen der Umgebungsspur.
+pub const AMBIENCE: [&str; 3] = ["regen", "wind", "sand"];
+
+/// Lautstärken (0..1) der Schleifen [`AMBIENCE`] für ein Wetter.
+pub fn ambience_levels(w: elora_map::Weather) -> [f32; 3] {
+    use elora_map::WeatherKind as K;
+    let i = w.intensity.clamp(0.0, 1.0);
+    let breeze = w.wind.abs().min(1.0);
+    match w.kind {
+        K::Clear => [0.0, 0.0, 0.0],
+        K::Rain => [0.35 + 0.45 * i, 0.12 * breeze, 0.0],
+        K::Storm => [0.5 + 0.5 * i, 0.25 + 0.35 * i, 0.0],
+        K::Fog => [0.0, 0.1 + 0.1 * i, 0.0],
+        K::Leaves | K::Petals => [0.0, 0.12 + 0.25 * breeze * i.max(0.4), 0.0],
+        K::Sandstorm => [0.0, 0.15 * i, 0.4 + 0.5 * i],
+        K::Snow => [0.0, 0.1 + 0.15 * i, 0.0],
+        K::Blizzard => [0.0, 0.45 + 0.5 * i, 0.0],
+    }
 }
 
 /// Ordner der Musik: `<name>.ogg` (Ogg Vorbis, 44,1 kHz) oder `<name>.wav`; `menu` im Hauptmenü.
 pub const MUSIC_DIR: &str = "assets/music";
+
+/// Grundlautstärke der Umgebungsspur unter der Gesamtlautstärke.
+const AMBIENCE_GAIN: f32 = 0.6;
 
 impl Sounds {
     /// # Panics
@@ -51,12 +81,69 @@ impl Sounds {
             last: HashMap::new(),
             tracks: HashMap::new(),
             playing: None,
+            ambience: HashMap::new(),
+            thunder: Vec::new(),
         }
     }
 
-    /// Menümusik an (im Menü) oder aus (im Spiel).
+    /// Menümusik an (im Menü) oder aus (im Spiel); das Wetter verstummt.
     pub fn menu_music(&mut self, on: bool) {
+        self.audio.stop_ambience();
+        self.thunder.clear();
         self.music(on.then_some("menu"));
+    }
+
+    /// Umgebungsspur des Wetters (jeden Frame): Schleifen weich nachführen, neuen Donner
+    /// (Ort, Verzögerung) einreihen und fälligen spielen – laut in der Nähe, leiser fern.
+    pub fn weather(
+        &mut self,
+        dt: f32,
+        weather: elora_map::Weather,
+        new_thunder: Vec<(Vec2, f32)>,
+        ear: Vec2,
+    ) {
+        self.audio.apply(self.settings);
+        for (name, level) in AMBIENCE.into_iter().zip(ambience_levels(weather)) {
+            let Some(data) = self.ambience_file(name) else {
+                continue;
+            };
+            if let Err(e) = self.audio.ambience(name, &data, level * AMBIENCE_GAIN) {
+                tracing::warn!("{AMBIENCE_DIR}/{name}: {e}");
+                self.ambience.insert(name.to_owned(), None);
+            }
+        }
+        self.thunder.extend(new_thunder);
+        let mut due = Vec::new();
+        self.thunder.retain_mut(|t| {
+            t.1 -= dt;
+            if t.1 <= 0.0 {
+                due.push(t.0);
+            }
+            t.1 > 0.0
+        });
+        if due.is_empty() {
+            return;
+        }
+        let Some(data) = self.ambience_file("donner") else {
+            return;
+        };
+        for pos in due {
+            let d = pos - ear;
+            let volume = (1.0 - d.length() / 3000.0).clamp(0.35, 1.0);
+            let pan = (d.x / 1500.0).clamp(-0.6, 0.6);
+            if let Err(e) = self.audio.play_once(&data, volume, pan) {
+                tracing::warn!("{AMBIENCE_DIR}/donner: {e}");
+                self.ambience.insert("donner".to_owned(), None);
+                return;
+            }
+        }
+    }
+
+    fn ambience_file(&mut self, name: &str) -> Option<Arc<[u8]>> {
+        self.ambience
+            .entry(name.to_owned())
+            .or_insert_with(|| load_music(AMBIENCE_DIR, name))
+            .clone()
     }
 
     /// Musikstück `name` spielen (jeden Frame aufrufen); ein anderes wird ausgeblendet,
@@ -71,7 +158,7 @@ impl Sounds {
         let track = self
             .tracks
             .entry(name.to_owned())
-            .or_insert_with(|| load_music(name));
+            .or_insert_with(|| load_music(MUSIC_DIR, name));
         let Some(data) = track.clone() else { return };
         let volume = self.settings.music_volume.clamp(0.0, 1.0);
         match self.audio.play_music(&data, volume) {
@@ -173,6 +260,55 @@ impl Sounds {
 
         for cue in &cues {
             self.audio.play(cue, ear);
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use elora_map::{Weather, WeatherKind};
+
+    fn w(kind: WeatherKind, intensity: f32) -> Weather {
+        Weather {
+            kind,
+            intensity,
+            wind: 0.0,
+        }
+    }
+
+    #[test]
+    fn weather_sounds_follow_the_weather() {
+        assert!(
+            ambience_levels(Weather::CLEAR).iter().all(|l| *l <= 0.0),
+            "schön: still"
+        );
+        let [rain, wind, sand] = ambience_levels(w(WeatherKind::Storm, 1.0));
+        assert!(
+            rain > 0.9 && wind > 0.5 && sand == 0.0,
+            "Gewitter: Regen und Wind"
+        );
+        let [_, _, sand] = ambience_levels(w(WeatherKind::Sandstorm, 1.0));
+        assert!(sand > 0.8, "Sandsturm rieselt");
+        let soft = ambience_levels(w(WeatherKind::Rain, 0.2))[0];
+        let hard = ambience_levels(w(WeatherKind::Rain, 1.0))[0];
+        assert!(hard > soft, "stärkerer Regen ist lauter");
+        for kind in WeatherKind::ALL {
+            for l in ambience_levels(w(kind, 1.0)) {
+                assert!((0.0..=1.0).contains(&l), "{kind:?}: {l}");
+            }
+        }
+    }
+
+    #[test]
+    fn ambience_files_are_shipped() {
+        for name in AMBIENCE.into_iter().chain(["donner"]) {
+            let path = format!(
+                "{}/../../{AMBIENCE_DIR}/{name}.ogg",
+                env!("CARGO_MANIFEST_DIR")
+            );
+            let data = std::fs::read(&path).expect(&path);
+            assert_eq!(&data[..4], b"OggS", "{name}");
         }
     }
 }

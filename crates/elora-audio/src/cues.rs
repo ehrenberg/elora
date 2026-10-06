@@ -350,9 +350,9 @@ pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>)
             pos,
         )],
         Event::LootCollect { pos, .. } => vec![Cue::at(Sound::PickupArmor, pos)],
-        // Gewitter (R2-W1): Knistern vor dem Einschlag, Krachen beim Einschlag (Donner folgt in W1.5)
+        // Gewitter (R2-W1): Knistern vor dem Einschlag; den Donner spielt die Umgebungsspur
         Event::LightningWarn { pos } => vec![Cue::at(Sound::Spark, pos).pitched(0.8)],
-        Event::Lightning { pos } => vec![Cue::at(Sound::BossLand, pos)],
+        Event::Lightning { .. } => vec![],
     }
 }
 

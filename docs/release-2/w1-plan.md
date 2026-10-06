@@ -71,7 +71,7 @@ Release-Karten: `dm-winter` Schnee, `ctf-nacht` leichter Nebel, `dm-wueste` Wind
 | W1.2 ✅ | Optik | Wetterpartikel in zwei Ebenen (hinter und vor der Spielfläche), Spritzer und Flocken auf Oberflächen, Blitze; Post-Shader: Farbstimmung, Abdunkeln, Nebel nach Höhe, Sandschleier; Himmel trüber; Wind lässt Deko stärker wiegen; Einstellung „Wetter: voll, sanft, aus“ (E-335) | Sichtprüfung, Bildrate bei vollem Regen |
 | W1.3 ✅ | Abenteuer-Steuerung | Gebietsregeln in `worldmap.toml` (trüb solange die Quelle schweigt, sonst gewichteter Zufall), Wahl beim Betreten, Übergänge weich; Sandsturm verdeckt die Sonne (Hitze) | Tests |
 | W1.4 ✅ | Spielwirkung | in der Simulation nur mit `world.adventure`: Windkraft auf Elora in der Luft und Granaten, nasser/verschneiter Boden (weichere Reibung), Blitze mit Warnung und Schaden im Gewitter (E-336), Sichtweite der Kamera bei Nebel/Sturm; Werte als Tuning (A-29 bis A-35) | Tests; Golden-Tests unverändert |
-| W1.5 | Klang | zweite Umgebungsspur mit weichem Überblenden; Regen, Wind, Sturm, Sand, Donner aus freien Quellen (CC0, zum Anhören vorgelegt, E-334) | Deine Hörprobe |
+| W1.5 ✅ | Klang | zweite Umgebungsspur mit weichem Überblenden; Regen, Wind, Sturm, Sand, Donner aus freien Quellen (CC0, zum Anhören vorgelegt, E-334, Auswahl E-338) | Deine Hörprobe |
 | W1.6 | Karten | Wetter für Release-Karten (nach Freigabe), Abenteuer-Karten mit festem Wetter wo nötig (Höhlen, Arenen) | Sichtprüfung |
 | W1.7 | Abnahme | Wetter-Testkarte, Kapitel 1–3, eine Mehrspieler-Runde | Deine Abnahme |
 

@@ -8,6 +8,7 @@
 //!   elora, elora-server, elora-master   Programme
 //!   maps/                               Release-Karten + Trainingskarte, abenteuer/ mit den Abenteuer-Karten
 //!   assets/music/                       Musik (Menü, Gebiete)
+//!   assets/ambience/                    Wetterklänge (Regen, Wind, Sand, Donner)
 //!   LICENSE, THIRD_PARTY_LICENSES, SOURCES.md, LIESMICH.txt
 //!   elora.png                           Programmsymbol (256 × 256)
 //! ```
@@ -111,12 +112,10 @@ fn fill(dir: &Path, bin_dir: &Path, data_dir: &Path) -> Result<(), String> {
         &data_dir.join("maps/abenteuer"),
         &|p| p.extension().is_some_and(|e| e == "emap"),
     )?;
-    if Path::new("assets/music").is_dir() {
-        copy_dir(
-            Path::new("assets/music"),
-            &data_dir.join("assets/music"),
-            &|_| true,
-        )?;
+    for dir in ["assets/music", "assets/ambience"] {
+        if Path::new(dir).is_dir() {
+            copy_dir(Path::new(dir), &data_dir.join(dir), &|_| true)?;
+        }
     }
     for f in ["LICENSE", "THIRD_PARTY_LICENSES"] {
         copy(f, &dir.join(f))?;

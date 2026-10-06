@@ -407,6 +407,10 @@ impl WeatherView {
         #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
         let seed = (pos.x.abs() * 13.0 + self.time * 977.0) as u32;
         self.strike(pos, self.sky_top, seed, self.quality);
+        // ganz nah: der Donner kracht sofort
+        if let Some(t) = self.thunder.last_mut() {
+            t.1 = 0.0;
+        }
     }
 
     /// Farbstimmung für den Post-Shader.
@@ -419,8 +423,7 @@ impl WeatherView {
         self.wind
     }
 
-    /// Donner seit dem letzten Abholen (für die Klänge, W1.5).
-    #[allow(dead_code)]
+    /// Donner seit dem letzten Abholen (für die Klänge, W1.5): Ort und Verzögerung (s).
     pub fn take_thunder(&mut self) -> Vec<(Vec2, f32)> {
         std::mem::take(&mut self.thunder)
     }

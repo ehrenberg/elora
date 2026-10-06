@@ -18,6 +18,8 @@ pub struct Audio {
     applied: Option<AudioSettings>,
     /// Laufende Musik (Schleife) und ihre Lautstärke.
     music: Option<(StreamingSoundHandle<FromFileError>, f32)>,
+    /// Umgebungsspur (Wetter, R2-W1): laufende Schleifen je Name mit Lautstärke.
+    ambience: BTreeMap<String, (StreamingSoundHandle<FromFileError>, f32)>,
 }
 
 impl std::fmt::Debug for Audio {
@@ -75,6 +77,7 @@ impl Audio {
             sounds,
             applied: None,
             music: None,
+            ambience: BTreeMap::new(),
         }
     }
 
@@ -149,6 +152,77 @@ impl Audio {
         }
     }
 
+    /// Umgebungsschleife `name` (zweite Spur neben der Musik, R2-W1) auf `volume` 0..1
+    /// nachführen, weich überblendet; bei 0 ausgeblendet und beendet. Jeden Frame aufrufen.
+    ///
+    /// # Errors
+    /// Die Datei ist keine lesbare Tondatei (ohne Audiogerät: nie).
+    pub fn ambience(&mut self, name: &str, data: &Arc<[u8]>, volume: f32) -> Result<(), String> {
+        let fade = |ms| Tween {
+            duration: std::time::Duration::from_millis(ms),
+            ..Tween::default()
+        };
+        if let Some((handle, v)) = self.ambience.get_mut(name) {
+            if volume <= 0.001 {
+                handle.stop(fade(1500));
+                self.ambience.remove(name);
+            } else if (*v - volume).abs() > 0.02 {
+                handle.set_volume(decibels(volume), fade(800));
+                *v = volume;
+            }
+            return Ok(());
+        }
+        if volume <= 0.001 {
+            return Ok(());
+        }
+        let Some(manager) = &mut self.manager else {
+            return Ok(());
+        };
+        let sound = StreamingSoundData::from_cursor(std::io::Cursor::new(data.clone()))
+            .map_err(|e| e.to_string())?
+            .loop_region(..)
+            .volume(Decibels::SILENCE);
+        match manager.play(sound) {
+            Ok(mut handle) => {
+                handle.set_volume(decibels(volume), fade(2000));
+                self.ambience.insert(name.to_owned(), (handle, volume));
+            }
+            Err(e) => tracing::debug!("Umgebung `{name}` nicht abgespielt: {e}"),
+        }
+        Ok(())
+    }
+
+    /// Alle Umgebungsschleifen ausblenden (Menü, Editor).
+    pub fn stop_ambience(&mut self) {
+        let names: Vec<String> = self.ambience.keys().cloned().collect();
+        for n in names {
+            if let Some((mut h, _)) = self.ambience.remove(&n) {
+                h.stop(Tween {
+                    duration: std::time::Duration::from_millis(800),
+                    ..Tween::default()
+                });
+            }
+        }
+    }
+
+    /// Längeren Klang (Donner) einmal abspielen, gestreamt, mit Lautstärke und Panorama.
+    ///
+    /// # Errors
+    /// Die Datei ist keine lesbare Tondatei (ohne Audiogerät: nie).
+    pub fn play_once(&mut self, data: &Arc<[u8]>, volume: f32, pan: f32) -> Result<(), String> {
+        let Some(manager) = &mut self.manager else {
+            return Ok(());
+        };
+        let sound = StreamingSoundData::from_cursor(std::io::Cursor::new(data.clone()))
+            .map_err(|e| e.to_string())?
+            .volume(decibels(volume))
+            .panning(Panning(pan));
+        if let Err(e) = manager.play(sound) {
+            tracing::debug!("Klang nicht abgespielt: {e}");
+        }
+        Ok(())
+    }
+
     /// Spielt `cue`; räumliche Sounds relativ zu `ear` (Kameramitte).
     pub fn play(&mut self, cue: &Cue, ear: Vec2) {
         let Some(manager) = &mut self.manager else {
@@ -191,6 +265,10 @@ mod music_tests {
             "boss-wald",
             "wueste",
             "boss-wueste",
+            "../ambience/regen",
+            "../ambience/wind",
+            "../ambience/sand",
+            "../ambience/donner",
         ] {
             let data: Arc<[u8]> = std::fs::read(format!("{dir}/{name}.ogg")).unwrap().into();
             assert!(
