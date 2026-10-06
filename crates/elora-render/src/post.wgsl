@@ -1,10 +1,12 @@
-// Nachbearbeitung der Welt: Hitzeflimmern (R2-M2.3, E-320).
+// Nachbearbeitung der Welt: Hitzeflimmern (R2-M2.3, E-320) und Sättigung (Farbe kehrt mit
+// den Quellen zurück, E-328).
 //
 // Die Welt liegt als Textur vor; jede Bildzeile wird leicht seitlich verschoben, die Wellen
 // steigen langsam auf und sind am unteren Bildrand (heißer Boden) am stärksten.
 
 struct Post {
-    // x: Zeit in Sekunden, y: Stärke 0..1, z: Seitenverhältnis (Breite / Höhe)
+    // x: Zeit in Sekunden, y: Stärke des Flimmerns 0..1, z: Seitenverhältnis (Breite / Höhe),
+    // w: Sättigung (1 = unverändert, 0 = grau)
     params: vec4<f32>,
 };
 
@@ -45,5 +47,8 @@ fn fs_main(in: VertexOut) -> @location(0) vec4<f32> {
     let color = textureSample(scene, scene_sampler, clamp(uv + offset, vec2<f32>(0.0), vec2<f32>(1.0)));
     // ganz leicht warm getönt
     let warm = color.rgb * vec3<f32>(1.03, 1.0, 0.93);
-    return vec4<f32>(mix(color.rgb, warm, strength * 0.6), color.a);
+    let tinted = mix(color.rgb, warm, strength * 0.6);
+    // Sättigung: Grauwert nach Helligkeit, dann zurück zur Farbe
+    let gray = dot(tinted, vec3<f32>(0.299, 0.587, 0.114));
+    return vec4<f32>(mix(vec3<f32>(gray), tinted, post.params.w), color.a);
 }

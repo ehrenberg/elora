@@ -88,6 +88,8 @@ struct Post {
     scene: Option<(wgpu::TextureView, wgpu::BindGroup)>,
     strength: f32,
     time: f32,
+    /// Sättigung der Welt (1 = unverändert).
+    saturation: f32,
 }
 
 /// Ein laufender Frame: Ziel-Textur und Command-Encoder.
@@ -208,6 +210,11 @@ impl Renderer {
         self.post.time = time;
     }
 
+    /// Sättigung der Welt für die nächsten Frames (1 = unverändert, 0 = grau); das HUD bleibt.
+    pub fn set_saturation(&mut self, saturation: f32) {
+        self.post.saturation = saturation.clamp(0.0, 1.0);
+    }
+
     /// MSAA-Stufe (1 = aus).
     pub fn msaa_samples(&self) -> u32 {
         self.samples
@@ -284,7 +291,7 @@ impl Renderer {
         batch: &ShapeBatch,
         clear: Color,
     ) {
-        if self.post.strength <= 0.0 {
+        if self.post.strength <= 0.0 && self.post.saturation >= 0.999 {
             self.draw_layer(frame, false, camera, batch, Some(clear));
             return;
         }
@@ -321,7 +328,7 @@ impl Renderer {
             self.post.time,
             self.post.strength,
             self.config.width as f32 / self.config.height.max(1) as f32,
-            0.0,
+            self.post.saturation,
         ];
         self.queue
             .write_buffer(&self.post.uniform, 0, bytemuck::cast_slice(&params));
@@ -606,6 +613,7 @@ impl Post {
             scene: None,
             strength: 0.0,
             time: 0.0,
+            saturation: 1.0,
         }
     }
 

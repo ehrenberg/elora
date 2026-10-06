@@ -76,6 +76,25 @@ pub fn scene(
     if let Some(map) = map {
         map_view.draw_back(batch, map, camera, look_time);
     }
+    // weiche Schatten auf dem Boden unter Figuren und Gegnern (E-328)
+    if let Some(map) = map {
+        for o in &scene.objects {
+            if let elora_client::scene::ObjectLook::Npc { character, .. } = &o.look
+                && !crate::creatures::CreatureArt::is_still(character)
+            {
+                ground_shadow(batch, map, o.pos + Vec2::new(0.0, PHYS_SIZE / 2.0), 30.0);
+            }
+        }
+        for c in &scene.creatures {
+            if crate::creatures::CreatureArt::casts_shadow(c) {
+                let foot = c.pos + Vec2::new(0.0, c.size.y / 2.0);
+                ground_shadow(batch, map, foot, c.size.x * 0.85);
+            }
+        }
+        for c in &scene.chars {
+            ground_shadow(batch, map, c.pos() + Vec2::new(0.0, PHYS_SIZE / 2.0), 28.0);
+        }
+    }
     spawns_and_pickups(batch, scene, items, time);
     draw_objects(batch, scene, art, creatures, time);
     for (item, pos) in &scene.loot {
@@ -183,6 +202,51 @@ pub fn scene(
 
 /// Abenteuer-Objekte (A1.6, Grafik A1.7). `pos` ist die Mitte; der Boden liegt bei der
 /// halben Höhe des jeweiligen Objekts darunter (wie auf den Karten gesetzt).
+/// So weit unter den Füßen ist noch ein Schatten zu sehen (Einheiten).
+const SHADOW_REACH: f32 = 320.0;
+
+/// Weicher Schatten auf dem ersten Boden unter `foot`: je höher, desto kleiner und blasser.
+#[allow(
+    clippy::cast_possible_wrap,
+    clippy::cast_possible_truncation,
+    clippy::cast_precision_loss,
+    clippy::cast_sign_loss
+)]
+fn ground_shadow(batch: &mut ShapeBatch, map: &elora_map::Map, foot: Vec2, width: f32) {
+    let ts = elora_sim::TILE_SIZE as f32;
+    #[allow(clippy::cast_possible_truncation)]
+    let (tx, ty) = ((foot.x / ts).floor() as i64, (foot.y / ts).floor() as i64);
+    let (w, h) = (map.width as i64, map.height as i64);
+    if tx < 0 || tx >= w {
+        return;
+    }
+    let rows = (SHADOW_REACH / ts) as i64 + 1;
+    let Some(gy) = (ty.max(0)..(ty + rows).min(h)).find(|&y| {
+        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+        let t = map.tiles[(y * w + tx) as usize];
+        t.is_solid() || matches!(t, elora_sim::Tile::Platform | elora_sim::Tile::Quicksand)
+    }) else {
+        return;
+    };
+    #[allow(clippy::cast_precision_loss)]
+    let ground = gy as f32 * ts;
+    let dist = (ground - foot.y).max(0.0);
+    if dist > SHADOW_REACH {
+        return;
+    }
+    let k = 1.0 - dist / SHADOW_REACH;
+    let size = 0.55 + 0.45 * k;
+    let (rx, ry) = (width * 0.62 * size, 5.0 * size);
+    let points: Vec<Vec2> = (0..16)
+        .map(|i| {
+            #[allow(clippy::cast_precision_loss)]
+            let a = i as f32 / 16.0 * std::f32::consts::TAU;
+            Vec2::new(foot.x + a.cos() * rx, ground - 1.0 + a.sin() * ry)
+        })
+        .collect();
+    batch.fill_polygon(&points, Color::rgba(0.1, 0.08, 0.06, 0.3 * k));
+}
+
 fn draw_objects(
     batch: &mut ShapeBatch,
     scene: &Scene,
@@ -197,7 +261,7 @@ fn draw_objects(
         match &o.look {
             ObjectLook::Npc { character, facing } => {
                 let g = ground(p, PHYS_SIZE);
-                if !creatures.draw_character(batch, character, g, *facing, 1.0) {
+                if !creatures.draw_character_alive(batch, character, g, *facing, time) {
                     // Figur ohne eigene Grafik: graue Elora
                     let tint = crate::skins::tint(
                         elora_protocol::Skin::default(),
@@ -260,6 +324,19 @@ fn spawns_and_pickups(batch: &mut ShapeBatch, scene: &Scene, items: &ItemArt, ti
 
 #[cfg(test)]
 mod tests {
+
+    #[test]
+    fn shadow_lands_on_the_ground_below() {
+        let map = elora_map::Map::from_rows("s", &["S...", "....", "....", "####"]).unwrap();
+        let mut batch = ShapeBatch::default();
+        // Füße direkt über dem Boden (Zeile 3 beginnt bei 96)
+        super::ground_shadow(&mut batch, &map, Vec2::new(48.0, 95.0), 28.0);
+        assert!(!batch.is_empty(), "Schatten am Boden");
+        let mut high = ShapeBatch::default();
+        super::ground_shadow(&mut high, &map, Vec2::new(48.0, 10.0), 28.0);
+        assert!(!high.is_empty(), "auch aus der Höhe");
+    }
+
     use super::*;
     use elora_client::scene::{SceneChar, SceneFlag};
     use elora_sim::{Character, Weapon};

@@ -196,6 +196,9 @@ struct FrameInfo {
     loading: Option<(String, usize, usize)>,
 }
 
+/// Sättigung der Abenteuerwelt je Zahl befreiter Quellen (E-328): erst blass, dann bunter.
+const SATURATION_BY_SPRINGS: [f32; 6] = [0.62, 0.74, 0.84, 0.92, 0.97, 1.0];
+
 #[allow(clippy::struct_excessive_bools)] // unabhängige Zustände der Anwendung
 struct App {
     gfx: Option<Gfx>,
@@ -219,6 +222,8 @@ struct App {
     owned_weapons: [bool; 3],
     /// Eigene Figur war im letzten Frame im bunten Rausch (Klang beim Beginn).
     was_dazed: bool,
+    /// Sättigung der Welt (E-328): folgt den befreiten Quellen, gleitet sanft nach.
+    saturation: f32,
     effects: effects::Effects,
     figures: figure::Figures,
     figure_art: figure::FigureArt,
@@ -285,6 +290,7 @@ impl App {
             ui_cues: Vec::new(),
             owned_weapons: [false; 3],
             was_dazed: false,
+            saturation: 1.0,
             effects: effects::Effects::with_settings(settings.effects),
             figures: figure::Figures::default(),
             figure_art: figure::FigureArt::load(),
@@ -622,6 +628,28 @@ impl App {
     }
 
     /// Zeit seit dem letzten Frame; aktualisiert die FPS-Anzeige.
+    /// Nachbearbeitung der Welt für diesen Frame: Hitzeflimmern in der Wüste (E-320, in der
+    /// prallen Sonne und mit der Hitze stärker) und Farbe, die mit den Quellen zurückkehrt
+    /// (E-328, je befreiter Quelle bunter; der Wechsel gleitet über einige Sekunden).
+    fn world_look(&mut self, dt: f32, tick: u64) {
+        let session = self.adventure.as_ref().map(|a| &a.session);
+        let haze = session
+            .filter(|s| s.hot())
+            .map_or(0.0, |s| (if s.in_sun { 0.6 } else { 0.3 }) + 0.4 * s.heat);
+        let target = session.map_or(1.0, |s| {
+            let freed = s.save.flag(elora_adventure::session::SPRINGS_FREED);
+            SATURATION_BY_SPRINGS[usize::try_from(freed.clamp(0, 5)).unwrap_or(0)]
+        });
+        let step = dt * 0.2;
+        self.saturation += (target - self.saturation).clamp(-step, step);
+        if let Some(gfx) = &mut self.gfx {
+            #[allow(clippy::cast_precision_loss)]
+            let secs = tick as f32 / elora_sim::TICKS_PER_SECOND as f32;
+            gfx.renderer.set_heat_haze(haze, secs);
+            gfx.renderer.set_saturation(self.saturation);
+        }
+    }
+
     fn frame_time(&mut self, now: Instant) -> Duration {
         let elapsed = now - self.last_frame;
         self.last_frame = now;
@@ -937,21 +965,12 @@ impl App {
         } else {
             None
         };
+        self.world_look(dt, info.tick);
         let Some(gfx) = &mut self.gfx else { return };
 
         let Some(mut frame) = gfx.renderer.begin_frame() else {
             return;
         };
-        // Hitzeflimmern in der Wüste (E-320): in der prallen Sonne und mit der Hitze stärker
-        let haze = self
-            .adventure
-            .as_ref()
-            .map(|a| &a.session)
-            .filter(|s| s.hot())
-            .map_or(0.0, |s| (if s.in_sun { 0.6 } else { 0.3 }) + 0.4 * s.heat);
-        #[allow(clippy::cast_precision_loss)]
-        let secs = info.tick as f32 / elora_sim::TICKS_PER_SECOND as f32;
-        gfx.renderer.set_heat_haze(haze, secs);
         gfx.renderer
             .draw_shapes(&mut frame, &camera, &self.batch, draw::BACKGROUND);
         let screen_camera = Camera {

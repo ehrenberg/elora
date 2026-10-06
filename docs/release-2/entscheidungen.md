@@ -135,6 +135,8 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-324 | 2026-10-06 | Sirups Laden | **Kleiner Laden mit seltenen Waren** (Verbrauchsgut, Material, ein Schmuckstück) | Entscheidung Projektinhaber |
 | E-325 | 2026-10-06 | Der graue Wanderer in Kapitel 3 | **Spuren und Berichte:** graue Fußspuren, Ruinentafeln, Sirup sah nachts eine graue Gestalt an der Oase trinken; kein Auftritt | Entscheidung Projektinhaber |
 | E-326 | 2026-10-06 | Musik Kapitel 3 | **Glutsandwüste: „Desert Loop“** (iamoneabe, CC0), **Sandschlange: „Hard Boss Battle 1“** (MintoDog, CC0) | Entscheidung Projektinhaber |
+| E-327 | 2026-10-06 | Abnahme R2-M2.3 | **Kapitel 3 vorerst abgenommen**; aus dem Playtest umgesetzt: Hook-Ruck spürbar schneller, Klonk gibt Waffen zuerst, Munitionstruhen, Sandschlange deutlich schwerer, Gewinn-Bildschirm nach jedem Hüter | Entscheidung Projektinhaber |
+| E-328 | 2026-10-06 | Grafische Verbesserungen | **Umsetzen:** lebendige Bewegung (Stauchen, Strecken, Wippen, Atmen), Flugposen drehen mit der Bewegung, weiche Schatten unter Figuren und Gegnern, Farbe kehrt mit den Quellen zurück (Sättigung als Shader); später eigene Hintergründe je Gebiet und Licht in dunklen Bereichen | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 

@@ -856,6 +856,8 @@ pub fn draw(
                     // ganz sichtbar (Wurzelschlange draußen)
                     mode: elora_sim::creature::burrow::OUT,
                     grow: 1.0,
+                    vel: Vec2::ZERO,
+                    size: Vec2::new(32.0, 32.0),
                 };
                 art.draw(batch, &c, time);
                 if *persistent {

@@ -96,6 +96,10 @@ pub struct SceneCreature {
     pub mode: u8,
     /// Wie weit eine Wurzelschlange aus dem Boden gewachsen ist (0..1, sonst 1).
     pub grow: f32,
+    /// Geschwindigkeit (Flugposen drehen mit, Gang wippt).
+    pub vel: Vec2,
+    /// Kollisionsbox (Breite, Höhe; Schatten).
+    pub size: Vec2,
 }
 
 #[derive(Debug, Clone, Default)]
@@ -193,6 +197,8 @@ impl Scene {
                 boss: kind.boss,
                 mode: c.mode,
                 grow: grow(kind, c),
+                vel: c.vel,
+                size: kind.size(),
             });
         }
         self.creature_shots = world

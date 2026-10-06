@@ -1,6 +1,6 @@
 # R2-M2.3 – Kapitel 3: Glutsandwüste – Umsetzungsplan
 
-Status: **Freigegeben, in Umsetzung** (Entscheidungen E-315 bis E-320) · Grundlage: [`weltbuch.md`](weltbuch.md) §4.3 und §5, [`m2-2-plan.md`](m2-2-plan.md), E-243, E-296, E-314
+Status: **Abgenommen** (E-327) · Entscheidungen E-315 bis E-327 · Grundlage: [`weltbuch.md`](weltbuch.md) §4.3 und §5, [`m2-2-plan.md`](m2-2-plan.md), E-243, E-296, E-314
 
 ## Ziel
 
@@ -29,7 +29,7 @@ Kapitel 3 ist von Anfang bis Ende spielbar: aus Tauwinkel in die Glutsandwüste,
 | M2.3.6 ✅ | Quellfunke und Stampfen | Sieg → Quellfunke → Tüftel baut **Stampfen**; Übungsstelle in Tüftels Hof; Stellen in Kapitel 1 und 2, die erst mit Stampfen gehen | Tests |
 | M2.3.7 ✅ | Dorf nach Kapitel 3 | `quellen_befreit = 3`, Fest, Gespräche und Zurufe, Weltkarte | Sichtprüfung |
 | M2.3.8 ✅ | Musik und Sounds | Musik der Wüste und des Hüters (zum Anhören vorgelegt), Klänge für Krabbe, Wurm, Motte, Treibsand, Sandschlange | Deine Hörprobe |
-| M2.3.9 | Abnahme | Kapitel 3 durchspielen, speichern, fortsetzen | Deine Abnahme |
+| M2.3.9 ✅ | Abnahme | Kapitel 3 durchspielen, speichern, fortsetzen | Deine Abnahme |
 
 **Stand M2.3.0–M2.3.7:** Entwürfe angenommen (E-321). Gegner Sandkrabbe (Panzer, E-317), Dünenwurm (`leaper`), Funkenmotte (Funken glühen am Boden). Treibsand-Tile `&` (E-318), Hitze-Leiste und Hitzeflimmern als Shader (E-320, E-321). Sandschlange (`serpent`, E-316). Inhalte nach [`m2-3-inhalte.md`](m2-3-inhalte.md) (E-322 bis E-325). Karten `wueste-1` bis `wueste-3`, `wueste-arena`, Hohlweg am Ostpfad (E-315); der Kessel der Arena liegt im Schatten. Stampfplatte in Tüftels Hof, Stampfkammern in `wiese-2`, `wald-1`, `wald-3`. Dorf nach Kapitel 3: `quellen_befreit = 3`, Fest, Lotte schenkt Kaktusfrüchte von Sirup, Klonk erklärt den Laser-Ausbau mit Glutstein, neue Zurufe von Pip, Lotte und Tüftel; Weltkarte: Glutquelle befreit (`spring = "glutquelle"`).
 

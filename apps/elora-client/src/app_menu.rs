@@ -107,6 +107,7 @@ impl App {
             size: screen,
         };
         gfx.renderer.set_heat_haze(0.0, 0.0);
+        gfx.renderer.set_saturation(1.0);
         gfx.renderer.draw_shapes(
             &mut frame,
             &camera,

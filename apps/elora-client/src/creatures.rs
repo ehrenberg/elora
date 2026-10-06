@@ -54,6 +54,16 @@ macro_rules! adventure_svgs {
     };
 }
 
+/// Neigung der Flugpose einer Art in der Grafik (Bogenmaß, nach oben negativ) – `None`:
+/// die Pose dreht nicht mit (Sandschlange und Dünenwurm im Sprung, E-328).
+fn flight_tilt(c: &SceneCreature) -> Option<f32> {
+    match (c.kind.as_str(), c.mode) {
+        ("sandschlange", elora_sim::creature::serpent::LEAP) => Some(-0.45),
+        ("duenenwurm", elora_sim::creature::leaper::LEAP) => Some(0.0),
+        _ => None,
+    }
+}
+
 const CHARACTER_FILES: &[(&str, &[u8])] = adventure_svgs!("characters": "oma", "klonk", "lotte", "tueftel", "pip", "wegweiser", "wabe", "hummel", "plumm", "pilzkind", "pilzkind_froh", "pilzmama", "waechter", "sirup", "palma", "schlange", "ruinenquelle");
 /// Figuren, die sich ein Bild teilen (Tafeln, Stellen der Oase, R2-M2.3).
 const SHARED_CHARACTER_FILES: &[(&str, &[u8])] = {
@@ -204,10 +214,13 @@ impl CreatureArt {
         }
     }
 
-    /// Gegner mit Lebensbalken nach Treffern; unbekannte Arten als Kreis.
+    /// Gegner mit Lebensbalken nach Treffern; unbekannte Arten als Kreis. Sie atmen im Stand,
+    /// wippen beim Gehen, schweben in der Luft und neigen Flugposen in die Flugrichtung (E-328).
+    #[allow(clippy::too_many_lines)]
     pub fn draw(&self, batch: &mut ShapeBatch, c: &SceneCreature, time: f32) {
         let flip = if c.facing < 0 { -1.0 } else { 1.0 };
-        let t = Affine::translate(c.pos).then(Affine::scale(flip, 1.0));
+        #[allow(clippy::cast_precision_loss)]
+        let phase = time + c.id as f32 * 1.37;
         let flash = c.since_hit.is_some_and(|t| t < 6);
         let tint = if flash {
             Tint {
@@ -230,14 +243,48 @@ impl CreatureArt {
                 })
                 .or_else(|| look.air.as_ref().filter(|_| c.airborne))
                 .unwrap_or(&look.idle);
-            // Wurzelschlange wächst langsam aus dem Boden (Fuß bleibt unten)
+            // Fuß der Grafik (Unterkante): Atmen und Wachsen bleiben am Boden
+            let h = mesh.bounds().map_or(0.0, |(_, max)| max.y);
+            // im Boden oder Sand versteckt: ruhig
+            let hidden = look.hidden.as_ref().is_some_and(|m| std::ptr::eq(m, mesh))
+                || (c.kind == "sandschlange" && c.mode <= 2)
+                || (c.kind == "duenenwurm" && c.mode <= 1);
             let t = if c.grow < 1.0 {
-                let h = mesh.bounds().map_or(0.0, |(_, max)| max.y);
+                // Wurzelschlange wächst langsam aus dem Boden
                 Affine::translate(c.pos + Vec2::new(0.0, h))
                     .then(Affine::scale(flip, c.grow.max(0.05)))
                     .then(Affine::translate(Vec2::new(0.0, -h)))
+            } else if let Some(tilt) = flight_tilt(c) {
+                // Flugpose zeigt in die Flugrichtung
+                let pitch = c.vel.y.atan2(c.vel.x.abs().max(0.5));
+                let a = ((pitch - tilt) * flip).clamp(-1.2, 1.2);
+                Affine::translate(c.pos)
+                    .then(Affine::rotate(a))
+                    .then(Affine::scale(flip, 1.0))
+            } else if hidden {
+                Affine::translate(c.pos).then(Affine::scale(flip, 1.0))
+            } else if c.airborne {
+                // Flieger schweben auf und ab, Springer neigen sich leicht
+                let bob = (phase * 3.1).sin() * 2.5;
+                let lean = (c.vel.x * 0.03).clamp(-0.25, 0.25);
+                Affine::translate(c.pos + Vec2::new(0.0, bob))
+                    .then(Affine::rotate(lean))
+                    .then(Affine::scale(flip, 1.0))
+            } else if c.vel.x.abs() > 0.3 {
+                // Gang: wippt mit den Schritten
+                let step = c.pos.x * 0.22;
+                let bob = -step.sin().abs() * 2.5;
+                let rock = step.sin() * 0.05;
+                Affine::translate(c.pos + Vec2::new(0.0, h + bob))
+                    .then(Affine::rotate(rock))
+                    .then(Affine::scale(flip, 1.0))
+                    .then(Affine::translate(Vec2::new(0.0, -h)))
             } else {
-                t
+                // Atmen: Höhe und Breite gegenläufig, Fläche bleibt
+                let sy = 1.0 + (phase * 2.4).sin() * 0.03;
+                Affine::translate(c.pos + Vec2::new(0.0, h))
+                    .then(Affine::scale(flip / sy, sy))
+                    .then(Affine::translate(Vec2::new(0.0, -h)))
             };
             batch.draw_mesh(mesh, &t, &tint);
         } else {
@@ -260,6 +307,55 @@ impl CreatureArt {
             batch.fill_rect(top, top + Vec2::new(w, h), BAR_BACK);
             batch.fill_rect(top, top + Vec2::new(w * frac, h), BAR);
         }
+    }
+
+    /// Unbelebte Figuren (Schilder, Tafeln, Quellen, Pflanzen): atmen nicht, werfen keinen Schatten.
+    pub fn is_still(id: &str) -> bool {
+        [
+            "wegweiser",
+            "tafel",
+            "ruinenquelle",
+            "giessstelle",
+            "bluete",
+        ]
+        .iter()
+        .any(|p| id.starts_with(p))
+    }
+
+    /// Wirft der Gegner einen Schatten? Nicht, solange er im Boden oder Sand steckt.
+    pub fn casts_shadow(c: &SceneCreature) -> bool {
+        !match c.kind.as_str() {
+            "wurzelschlange" => c.mode == elora_sim::creature::burrow::HIDDEN,
+            "duenenwurm" => c.mode <= elora_sim::creature::leaper::WARN,
+            "sandschlange" => c.mode <= elora_sim::creature::serpent::WARN,
+            _ => false,
+        }
+    }
+
+    /// Figur in der Welt: wie [`Self::draw_character`], dazu atmen lebende Figuren leicht
+    /// (Schilder, Tafeln, Quellen und Pflanzen stehen still, E-328).
+    pub fn draw_character_alive(
+        &self,
+        batch: &mut ShapeBatch,
+        id: &str,
+        ground: Vec2,
+        facing: i8,
+        time: f32,
+    ) -> bool {
+        let Some(m) = self.characters.get(id) else {
+            return false;
+        };
+        let sy = if Self::is_still(id) {
+            1.0
+        } else {
+            #[allow(clippy::cast_precision_loss)]
+            let seed = id.bytes().map(f32::from).sum::<f32>();
+            1.0 + (time * 2.2 + seed).sin() * 0.025
+        };
+        let flip = if facing < 0 { -1.0 } else { 1.0 };
+        let t = Affine::translate(ground).then(Affine::scale(flip / sy, sy));
+        batch.draw_mesh(m, &t, &Tint::default());
+        true
     }
 
     /// Grafik einer Figur (Ursprung am Boden), z. B. für das Hauptmenü.
@@ -413,6 +509,13 @@ mod tests {
                     boss: false,
                     mode,
                     grow: 1.0,
+                    // Flugposen im Bogen (Neigung sichtbar)
+                    vel: if airborne {
+                        Vec2::new(f32::from(facing) * 6.0, -4.0)
+                    } else {
+                        Vec2::ZERO
+                    },
+                    size: k.size(),
                 };
                 // Kollisionsbox zur Kontrolle
                 let (hx, hy) = (k.size[0] / 2.0, k.size[1] / 2.0);

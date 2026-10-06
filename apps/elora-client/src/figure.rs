@@ -262,7 +262,14 @@ impl Figures {
         } else {
             (vel.y.abs() / 60.0).min(0.15)
         };
-        let sy = (1.0 + state.squash + air).clamp(0.6, 1.45);
+        // im Stand atmet sie leicht (E-328)
+        #[allow(clippy::cast_precision_loss)]
+        let breathe = if state.grounded && vel.x.abs() < 0.5 {
+            (self.time * 2.2 + c.slot as f32).sin() * 0.022
+        } else {
+            0.0
+        };
+        let sy = (1.0 + state.squash + air + breathe).clamp(0.6, 1.45);
         let sx = 1.0 / sy;
         let mut lean = (vel.x * 0.012).clamp(-0.2, 0.2);
         if matches!(core.hook_state, HookState::Grabbed) {
@@ -271,7 +278,13 @@ impl Figures {
             lean = (d.x * 0.25).clamp(-0.25, 0.25);
         }
 
-        let anchor = c.pos() + Vec2::new(0.0, PHYS_SIZE / 2.0);
+        // beim Laufen wippt der Körper mit den Schritten (E-328)
+        let bob = if state.grounded && vel.x.abs() > 0.5 {
+            -(c.pos().x / 14.0).sin().abs() * 1.6
+        } else {
+            0.0
+        };
+        let anchor = c.pos() + Vec2::new(0.0, PHYS_SIZE / 2.0 + bob);
         let root = Affine::translate(anchor)
             .then(Affine::rotate(lean))
             .then(Affine::scale(facing * SCALE * sx, SCALE * sy));
