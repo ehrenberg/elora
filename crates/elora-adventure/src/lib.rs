@@ -35,8 +35,8 @@ mod tests {
         assert_eq!(c.upgrades.len(), 9, "3 Waffen × 3 Stufen");
         assert_eq!(
             c.creatures.len(),
-            17,
-            "bis Kapitel 4 mit Eiszapfen und Schneebrocken"
+            20,
+            "bis Kapitel 4 mit Gelände und Gegnern"
         );
     }
 

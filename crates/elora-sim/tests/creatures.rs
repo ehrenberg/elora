@@ -26,6 +26,7 @@ fn kinds() -> Vec<CreatureKind> {
             chance: 1.0,
         }],
         daze_ms: 0,
+        freeze_ms: 0,
         armor: false,
         behavior,
     };

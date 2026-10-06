@@ -102,6 +102,8 @@ pub struct CharacterCore {
     pub pulling: bool,
     /// Bunter Rausch (Pilzwicht, E-311): noch so viele Ticks langsamer.
     pub dazed: u32,
+    /// Erstarrt (Frostgeist, R2-M2.4): noch so viele Ticks ohne Eingabe (nur Zielen).
+    pub frozen: u32,
     /// Hitze-Leiste voll (E-320, setzt das Abenteuer): langsamer.
     pub overheated: bool,
     /// Ticks im Treibsand (Positionen sind ganzzahlig: Einsinken in ganzen Einheiten).
@@ -184,6 +186,19 @@ impl CharacterCore {
         drag_out: &mut [Vec2],
     ) {
         self.triggered_events = 0;
+        // erstarrt: nur Zielen wirkt, Laufen, Springen, Hook und Feuer nicht (D-M24-07)
+        let still;
+        let input = if self.frozen > 0 {
+            self.frozen -= 1;
+            still = input.map(|i| PlayerInput {
+                target_x: i.target_x,
+                target_y: i.target_y,
+                ..PlayerInput::default()
+            });
+            still.as_ref()
+        } else {
+            input
+        };
         // „Runter“ frisch gedrückt (vor dem Überschreiben von `drop_through`)
         let down_pressed = input.is_some_and(|i| i.down && !self.drop_through);
         // Stand die Figur vor diesem Druck? Dann fällt sie durch die Plattform statt zu stampfen

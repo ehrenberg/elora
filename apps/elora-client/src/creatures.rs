@@ -137,7 +137,10 @@ const CREATURE_FILES: &[(&str, &[u8])] = creatures!(
     "funkenmotte",
     "sandschlange",
     "eiszapfen",
-    "schneebrocken"
+    "schneebrocken",
+    "schneeballrobbe",
+    "fledermaus",
+    "frostgeist"
 );
 
 impl CreatureArt {
@@ -259,6 +262,9 @@ impl CreatureArt {
                     0.0
                 };
                 Affine::translate(c.pos + Vec2::new(shake, 0.0))
+            } else if c.kind == "fledermaus" && c.mode == elora_sim::creature::bat::HANG {
+                // schläft kopfüber: kein Schweben
+                Affine::translate(c.pos).then(Affine::scale(flip, 1.0))
             } else if c.kind == "schneebrocken" {
                 // rollt: dreht sich mit dem Weg
                 Affine::translate(c.pos).then(Affine::rotate(c.pos.x / 18.0))
@@ -570,6 +576,11 @@ mod tests {
             put("sandschlange", mode == 3, false, None, 1, mode);
         }
         put("eiszapfen", false, false, None, 1, 0);
+        put("schneeballrobbe", false, false, None, 1, 0);
+        put("schneeballrobbe", false, false, None, -1, 1);
+        put("fledermaus", true, false, None, 1, 0);
+        put("fledermaus", true, false, None, 1, 1);
+        put("frostgeist", true, false, None, 1, 0);
         put("schneebrocken", false, false, None, 1, 0);
         // Elora zum Größenvergleich (Box 28)
         batch.fill_circle(Vec2::new(x, ground - 14.0), 14.0, Color::hex(0xf2c14e));

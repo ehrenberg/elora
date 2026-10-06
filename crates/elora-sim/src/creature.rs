@@ -32,6 +32,9 @@ pub struct CreatureKind {
     /// Berührung löst den bunten Rausch aus (so viele ms, E-311): Elora läuft langsamer.
     #[cfg_attr(feature = "serde", serde(default))]
     pub daze_ms: u32,
+    /// Berührung lässt Elora so viele ms erstarren (Frostgeist, D-M24-07).
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub freeze_ms: u32,
     /// Panzer (Sandkrabbe, E-317): Treffer von der Seite oder von unten prallen ab, nur von
     /// oben (Schlag, Granate darauf) und Stampfen wirken.
     #[cfg_attr(feature = "serde", serde(default))]
@@ -140,6 +143,26 @@ pub enum Behavior {
     /// Schneebrocken einer Lawine (R2-M2.4): rollt mit `speed` in Blickrichtung hangabwärts
     /// und zerplatzt an einer Wand, an Elora oder nach `life_ms`.
     Roller { speed: f32, life_ms: u32 },
+    /// Schneeballrobbe (R2-M2.4): rutscht auf dem Bauch mit `speed` heran, bis Elora näher als
+    /// `range` ist, richtet sich auf und wirft alle `interval_ms` einen Schneeball im Bogen.
+    Seal {
+        sight: f32,
+        speed: f32,
+        range: f32,
+        interval_ms: u32,
+        shot_speed: f32,
+        shot_damage: i32,
+    },
+    /// Eisspitzen-Fledermaus (R2-M2.4): hängt schlafend an der Decke, stürzt mit `speed` auf
+    /// Elora herab, sobald sie darunter ist (wie beim Eiszapfen), und flattert zurück.
+    Bat { sight: f32, reach: f32, speed: f32 },
+    /// Frostgeist (R2-M2.4, D-M24-07): schwebt mit `speed` durch Wände auf Elora zu; nach
+    /// einer Berührung (Erstarren über `freeze_ms` der Art) weicht er `flee_ms` lang zurück.
+    Ghost {
+        sight: f32,
+        speed: f32,
+        flee_ms: u32,
+    },
 }
 
 /// Werte des Hüters aus der Luft ([`Behavior::Diver`]).
@@ -311,6 +334,28 @@ pub mod icicle {
     pub const FALL: u8 = 2;
 }
 
+/// Zustand der Schneeballrobbe (in [`Creature::mode`]).
+pub mod seal {
+    pub const SLIDE: u8 = 0;
+    /// Aufgerichtet, wirft.
+    pub const THROW: u8 = 1;
+}
+
+/// Zustand der Eisspitzen-Fledermaus (in [`Creature::mode`]).
+pub mod bat {
+    /// Schläft an der Decke: harmlos.
+    pub const HANG: u8 = 0;
+    pub const DIVE: u8 = 1;
+    pub const RETURN: u8 = 2;
+}
+
+/// Zustand des Frostgeists (in [`Creature::mode`]).
+pub mod ghost {
+    pub const CHASE: u8 = 0;
+    /// Weicht nach einer Berührung zurück: harmlos.
+    pub const FLEE: u8 = 1;
+}
+
 /// Eintrag der Beutetabelle: `min`–`max` Stück mit Wahrscheinlichkeit `chance`.
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -385,6 +430,8 @@ impl Creature {
             Behavior::Leaper { .. } => self.mode == leaper::LEAP,
             Behavior::Serpent(_) => self.mode == serpent::LEAP,
             Behavior::Icicle { .. } => self.mode == icicle::FALL,
+            Behavior::Bat { .. } => self.mode != bat::HANG,
+            Behavior::Ghost { .. } => self.mode == ghost::CHASE,
             _ => true,
         }
     }
@@ -401,7 +448,10 @@ impl Creature {
     pub fn hookable(&self, kind: &CreatureKind) -> bool {
         match kind.behavior {
             Behavior::Burrower { .. } => self.mode == burrow::OUT,
-            Behavior::Follower { .. } | Behavior::Icicle { .. } | Behavior::Roller { .. } => false,
+            Behavior::Follower { .. }
+            | Behavior::Icicle { .. }
+            | Behavior::Roller { .. }
+            | Behavior::Ghost { .. } => false,
             Behavior::Leaper { .. } => self.mode == leaper::LEAP,
             Behavior::Serpent(_) => matches!(self.mode, serpent::LEAP | serpent::STUNNED),
             _ => true,

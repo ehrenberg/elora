@@ -21,6 +21,7 @@ fn kind(name: &str, size: [f32; 2], behavior: Behavior) -> CreatureKind {
         xp: 0,
         loot: Vec::new(),
         daze_ms: 0,
+        freeze_ms: 0,
         armor: false,
         behavior,
     }

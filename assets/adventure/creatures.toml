@@ -186,6 +186,38 @@ loot = [
 ]
 behavior = { type = "serpent", sight = 600.0, speed = 3.6, trail_ms = 1200, warn_ms = 650, jump_x = 5.0, jump_y = 14.0, stun_ms = 1600, enrage_at = 0.5, double_at = 0.25, sand_every_ms = 3000, sand_ms = 3000, sand_width = 3, open_hits = 4, land_damage = 2, land_radius = 90.0 }
 
+# Kapitel 4 (R2-M2.4): rutscht auf dem Bauch heran und wirft Schneebälle im Bogen
+[[creature]]
+name = "schneeballrobbe"
+size = [48.0, 28.0]
+health = 4
+touch_damage = 1
+xp = 8
+loot = [{ item = "glanztropfen", min = 2, max = 4 }, { item = "eiskristall", min = 1, max = 1, chance = 0.25 }]
+behavior = { type = "seal", sight = 520.0, speed = 3.2, range = 300.0, interval_ms = 1500, shot_speed = 5.5, shot_damage = 1 }
+
+# schläft kopfüber an der Decke, stürzt auf Elora herab und flattert zurück
+[[creature]]
+name = "fledermaus"
+size = [32.0, 36.0]
+health = 2
+touch_damage = 1
+small = true
+xp = 6
+loot = [{ item = "glanztropfen", min = 1, max = 3 }, { item = "eiskristall", min = 1, max = 1, chance = 0.2 }]
+behavior = { type = "bat", sight = 90.0, reach = 380.0, speed = 6.5 }
+
+# schwebt durch Wände; Berührung lässt Elora kurz erstarren, danach weicht er zurück (D-M24-07)
+[[creature]]
+name = "frostgeist"
+size = [40.0, 52.0]
+health = 3
+touch_damage = 1
+freeze_ms = 600
+xp = 9
+loot = [{ item = "glanztropfen", min = 2, max = 4 }, { item = "eiskristall", min = 1, max = 1, chance = 0.3 }]
+behavior = { type = "ghost", sight = 460.0, speed = 1.6, flee_ms = 1800 }
+
 # Kapitel 4 (R2-M2.4, E-343): Gelände als „Gegner“ – keine Erfahrung, keine Beute.
 # Eiszapfen an der Decke: zittert, sobald Elora darunter ist, fällt und zerschellt
 [[creature]]

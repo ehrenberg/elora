@@ -131,10 +131,11 @@ def robbe(pose='rutschen'):
     return s
 
 
-def fledermaus(pose='haengt'):
-    """Eisspitzen-Fledermaus: Flügel mit Eiszacken; `haengt` schlafend kopfüber, `sturz` im Sturzflug."""
+def fledermaus(pose='haengt', bar=True):
+    """Eisspitzen-Fledermaus: Flügel mit Eiszacken; `haengt` schlafend kopfüber (mit `bar` die
+    Felsdecke dazu), `sturz` im Sturzflug."""
     if pose == 'haengt':
-        s = f'<rect x="-60" y="-4" width="120" height="10" fill="{ROCK}" {st(3)}/>'
+        s = f'<rect x="-60" y="-4" width="120" height="10" fill="{ROCK}" {st(3)}/>' if bar else ''
         s += f'<path d="M -6,6 v 10 M 6,6 v 10" stroke="{OUT}" stroke-width="3.5"/>'
         s += f'<path d="M -26,16 Q -34,60 0,74 Q 34,60 26,16 Z" fill="#6a7aa0" {st(4)}/>'
         for x, h in ((-20, 18), (-8, 26), (8, 22), (20, 16)):
@@ -553,7 +554,7 @@ def sheet():
     o.append(text(250, 856, 'Schneeballrobbe: rutscht / wirft', 17, TEXT, weight='bold'))
     o.append(text(250, 878, 'auf dem Bauch heran, Schneebälle im Bogen', 12, DIM))
     o.append(f'<rect x="520" y="596" width="240" height="14" fill="{ROCK}" stroke="{OUT}" stroke-width="3"/>')
-    o.append(g(580, 610, 1.0, fledermaus('haengt').replace(f'<rect x="-60" y="-4" width="120" height="10" fill="{ROCK}" {st(3)}/>', '')))
+    o.append(g(580, 610, 1.0, fledermaus('haengt', bar=False)))
     o.append(g(700, 790, 1.0, fledermaus('sturz')))
     o.append(text(640, 856, 'Eisspitzen-Fledermaus: schläft / stürzt', 17, TEXT, weight='bold'))
     o.append(text(640, 878, 'hängt an der Decke, stürzt herab, flattert zurück', 12, DIM))

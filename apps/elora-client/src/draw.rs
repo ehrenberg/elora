@@ -144,6 +144,28 @@ pub fn scene(
             tint = skins::rainbow(tint, t);
         }
         figures.draw(batch, art, c, aim, &tint);
+        // erstarrt (Frostgeist): Elora steckt kurz in einem Eisblock
+        if c.ch.core.frozen > 0 {
+            let half = Vec2::new(r + 5.0, r + 6.0);
+            batch.fill_rounded_rect(
+                pos - half,
+                pos + half,
+                5.0,
+                Color::rgba(0.75, 0.9, 0.98, 0.55),
+            );
+            batch.stroke_line(
+                pos + Vec2::new(-r, -r + 2.0),
+                pos + Vec2::new(-r + 9.0, -r + 2.0),
+                2.5,
+                Color::rgba(1.0, 1.0, 1.0, 0.9),
+            );
+            batch.stroke_line(
+                pos + Vec2::new(r - 2.0, -r + 4.0),
+                pos + Vec2::new(r + 2.0, -r + 9.0),
+                2.0,
+                Color::rgba(1.0, 1.0, 1.0, 0.8),
+            );
+        }
         let facing = if aim.x < 0.0 { -1.0 } else { 1.0 };
         let swing = figures.weapon_swing(c.slot, facing);
         items.draw_weapon(batch, pos, aim, swing, c.ch.arsenal.active);

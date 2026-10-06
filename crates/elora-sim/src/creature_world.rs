@@ -37,6 +37,25 @@ fn floor_at(col: &Collision, p: Vec2) -> bool {
     t.is_solid() || t == Tile::Platform
 }
 
+/// Wurf im Bogen von `from` nach `to`: waagerecht mit `speed`, senkrecht so, dass das
+/// Geschoss dort ankommt (flache Würfe mindestens etwas hoch).
+fn lob_velocity(from: Vec2, to: Vec2, speed: f32, gravity: f32) -> Vec2 {
+    let d = to - from;
+    let t = (d.x.abs() / speed).max(12.0);
+    let vy = (d.y - 0.5 * gravity * t * t) / t;
+    Vec2::new(d.x / t, vy.min(-3.0))
+}
+
+/// Ist eine Figur unter `pos` (waagerecht bis `sight`, senkrecht bis `reach`, freie Sicht)?
+fn below(col: &Collision, chars: &[(usize, Vec2)], pos: Vec2, sight: f32, reach: f32) -> bool {
+    chars.iter().any(|&(_, p)| {
+        (p.x - pos.x).abs() <= sight
+            && p.y > pos.y
+            && p.y - pos.y <= reach
+            && col.intersect_line(pos, p).is_none()
+    })
+}
+
 fn grounded(col: &Collision, pos: Vec2, size: Vec2) -> bool {
     let y = pos.y + size.y / 2.0 + 2.0;
     floor_at(col, Vec2::new(pos.x - size.x / 2.0 + 1.0, y))
@@ -515,13 +534,8 @@ impl World {
                         {
                             let dir = (p - c.pos).normalize();
                             let (pos, vel, g) = if lob {
-                                // Bogen: waagerecht mit `shot_speed`, senkrecht so, dass die
-                                // Nuss bei Elora ankommt (flache Würfe mindestens etwas hoch)
                                 let pos = c.pos + Vec2::new(0.0, -(kind.radius() + SHOT_RADIUS));
-                                let d = p - pos;
-                                let t = (d.x.abs() / shot_speed).max(12.0);
-                                let vy = (d.y - 0.5 * gravity * t * t) / t;
-                                (pos, Vec2::new(d.x / t, vy.min(-3.0)), gravity)
+                                (pos, lob_velocity(pos, p, shot_speed, gravity), gravity)
                             } else {
                                 (
                                     c.pos + dir * (kind.radius() + SHOT_RADIUS),
@@ -709,13 +723,7 @@ impl World {
                             fixed = true;
                             c.vel = Vec2::ZERO;
                             let tip = c.pos + Vec2::new(0.0, size.y / 2.0 + 2.0);
-                            let below = chars.iter().any(|&(_, p)| {
-                                (p.x - c.pos.x).abs() <= sight
-                                    && p.y > c.pos.y
-                                    && p.y - c.pos.y <= reach
-                                    && collision.intersect_line(tip, p).is_none()
-                            });
-                            if active && below {
+                            if active && below(collision, chars, tip, sight, reach) {
                                 c.mode = SHAKE;
                                 c.timer = 0;
                                 events.push(Event::CreatureAct {
@@ -754,6 +762,162 @@ impl World {
                     c.vel.x = f32::from(c.facing) * speed;
                     if c.timer >= ms_to_ticks(life_ms) {
                         died.push(c.id);
+                    }
+                }
+                Behavior::Seal {
+                    sight,
+                    speed,
+                    range,
+                    interval_ms,
+                    shot_speed,
+                    shot_damage,
+                } => {
+                    use crate::creature::seal::{SLIDE, THROW};
+                    c.vel.y += gravity;
+                    c.timer = c.timer.saturating_add(1);
+                    let seen = target.filter(|&(_, d)| d <= sight && active);
+                    match (c.mode, seen) {
+                        (THROW, Some((p, d))) if d <= range * 1.3 => {
+                            c.vel.x *= 0.7;
+                            c.facing = sign(p.x - c.pos.x);
+                            if c.timer >= ms_to_ticks(interval_ms) {
+                                let pos =
+                                    c.pos + Vec2::new(0.0, -(size.y / 2.0 + SHOT_RADIUS + 8.0));
+                                creature_shots.push(CreatureShot {
+                                    owner: c.id,
+                                    pos,
+                                    vel: lob_velocity(pos, p, shot_speed, gravity),
+                                    damage: shot_damage,
+                                    ticks: 0,
+                                    gravity,
+                                    glow: 0,
+                                    landed: false,
+                                });
+                                events.push(Event::CreatureFire { id: c.id, pos });
+                                c.timer = 0;
+                            }
+                        }
+                        (_, Some((p, d))) if d <= range => {
+                            // in Wurfweite: aufrichten, kurz zielen
+                            c.mode = THROW;
+                            c.timer = ms_to_ticks(interval_ms) / 2;
+                            c.vel.x *= 0.7;
+                            c.facing = sign(p.x - c.pos.x);
+                        }
+                        (_, Some((p, _))) => {
+                            c.mode = SLIDE;
+                            c.facing = sign(p.x - c.pos.x);
+                            let ahead = Vec2::new(
+                                c.pos.x + f32::from(c.facing) * (size.x / 2.0 + 2.0),
+                                c.pos.y + size.y / 2.0 + 4.0,
+                            );
+                            let edge = c.grounded && !floor_at(collision, ahead);
+                            c.vel.x = if edge {
+                                0.0
+                            } else {
+                                f32::from(c.facing) * speed
+                            };
+                        }
+                        (_, None) => {
+                            c.mode = SLIDE;
+                            c.vel.x *= 0.9;
+                        }
+                    }
+                }
+                Behavior::Bat {
+                    sight,
+                    reach,
+                    speed,
+                } => {
+                    use crate::creature::bat::{DIVE, HANG, RETURN};
+                    c.timer = c.timer.saturating_add(1);
+                    match c.mode {
+                        HANG => {
+                            fixed = true;
+                            c.vel = Vec2::ZERO;
+                            c.pos = c.home;
+                            // nach der Rückkehr kurz Ruhe
+                            if active
+                                && c.timer > 50
+                                && let Some((p, _)) = target
+                                && below(collision, chars, c.pos, sight, reach)
+                            {
+                                c.mode = DIVE;
+                                c.timer = 0;
+                                c.goal = p;
+                                events.push(Event::CreatureAct {
+                                    id: c.id,
+                                    pos: c.pos,
+                                    act: CreatureAct::Dive,
+                                });
+                            }
+                        }
+                        DIVE => {
+                            let to = c.goal - c.pos;
+                            if to.length() < 12.0
+                                || c.timer > 90
+                                || (c.timer > 3 && c.vel.length() < 0.5)
+                            {
+                                c.mode = RETURN;
+                                c.timer = 0;
+                            } else {
+                                c.vel = to.normalize() * speed;
+                            }
+                        }
+                        _ => {
+                            let to = c.home - c.pos;
+                            if to.length() < speed {
+                                c.pos = c.home;
+                                c.vel = Vec2::ZERO;
+                                c.mode = HANG;
+                                c.timer = 0;
+                                fixed = true;
+                            } else {
+                                c.vel = to.normalize() * speed * 0.6;
+                                fixed = c.timer > 120; // festgeklemmt: durch Wände heim
+                                if fixed {
+                                    c.pos += c.vel;
+                                }
+                            }
+                        }
+                    }
+                    if c.vel.x.abs() > 0.5 {
+                        c.facing = sign(c.vel.x);
+                    }
+                }
+                Behavior::Ghost {
+                    sight,
+                    speed,
+                    flee_ms,
+                } => {
+                    use crate::creature::ghost::{CHASE, FLEE};
+                    // schwebt durch alles hindurch
+                    fixed = true;
+                    c.timer = c.timer.saturating_add(1);
+                    let seen = target.filter(|&(_, d)| d <= sight && active);
+                    let want = match (c.mode, seen) {
+                        (FLEE, Some((p, _))) if c.timer < ms_to_ticks(flee_ms) => {
+                            let away = c.pos - p;
+                            (Vec2::new(away.x, away.y.min(0.0) - 40.0)).normalize() * speed * 1.4
+                        }
+                        (_, Some((p, _))) => {
+                            c.mode = CHASE;
+                            (p - c.pos).normalize() * speed
+                        }
+                        (_, None) => {
+                            c.mode = CHASE;
+                            let home = c.home - c.pos;
+                            if home.length() > 4.0 {
+                                home.normalize() * speed * 0.5
+                            } else {
+                                Vec2::ZERO
+                            }
+                        }
+                    };
+                    c.vel = c.vel * 0.9 + want * 0.1;
+                    c.pos += c.vel;
+                    if c.vel.x.abs() > 0.2 {
+                        c.facing = sign(c.vel.x);
                     }
                 }
                 Behavior::Flyer {
@@ -984,10 +1148,23 @@ impl World {
         let kb = self.tuning.hit_knockback;
         let mut hits = Vec::new();
         let mut dazes = Vec::new();
+        let mut freezes = Vec::new();
+        let mut fled = Vec::new();
+        let tick = self.tick;
+        let open: Vec<usize> = chars
+            .iter()
+            .filter(|&&(j, _)| {
+                self.players[j]
+                    .as_ref()
+                    .and_then(|p| p.character.as_ref())
+                    .is_some_and(|ch| ch.invulnerable_until <= tick)
+            })
+            .map(|&(j, _)| j)
+            .collect();
         for c in &self.creatures {
             let k = &self.creature_kinds[c.kind];
             // benommene Hüter, versteckte Schlangen und Begleiter schaden nicht
-            if (k.touch_damage <= 0 && k.daze_ms == 0) || !c.harmful(k) {
+            if (k.touch_damage <= 0 && k.daze_ms == 0 && k.freeze_ms == 0) || !c.harmful(k) {
                 continue;
             }
             for &(j, p) in chars {
@@ -999,6 +1176,10 @@ impl World {
                     hits.push((j, force, k.touch_damage));
                     if k.daze_ms > 0 {
                         dazes.push((j, ms_to_ticks(k.daze_ms)));
+                    }
+                    if k.freeze_ms > 0 && open.contains(&j) {
+                        freezes.push((j, ms_to_ticks(k.freeze_ms)));
+                        fled.push(c.id);
                     }
                 }
             }
@@ -1027,6 +1208,20 @@ impl World {
         for id in shattered {
             if let Some(i) = self.creature_index(id) {
                 self.kill_creature(i, None, false);
+            }
+        }
+        // Frostgeist: Elora erstarrt, er weicht zurück (D-M24-07)
+        for (j, ticks) in freezes {
+            if let Some(ch) = self.character_mut(j)
+                && ch.core.frozen == 0
+            {
+                ch.core.frozen = ticks;
+            }
+        }
+        for id in fled {
+            if let Some(c) = self.creatures.iter_mut().find(|c| c.id == id) {
+                c.mode = crate::creature::ghost::FLEE;
+                c.timer = 0;
             }
         }
         // bunter Rausch (E-311): nicht nachladen, solange er noch wirkt

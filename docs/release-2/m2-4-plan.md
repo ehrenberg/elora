@@ -44,7 +44,7 @@ speichern und fortsetzen.
 | M2.4.0 ✅ | Entwürfe | Flocke, Kletterer (3), Kristella (schwebend, Frosthauch, erschöpft, beruhigt), Schneeballrobbe, Eisspitzen-Fledermaus, Frostgeist, Steigkrallen, Eiszapfen, Lawinen-Schneeball, dünnes Eis und Eiswasser, Feuerstelle, Quelle (vereist/befreit); Deko: Gipfel, Tannen im Schnee, Berghütten, Seilbrücken, Gletscher | Deine Auswahl |
 | M2.4.1 ✅ | Gelände in der Simulation | **Eiszapfen** (zittern, fallen, zerschellen), **dünnes Eis** (neues Tile: bricht nach kurzem Stehen oder sofort beim Stampfen, wächst nach), **Eiswasser** (neues Tile: kleiner Schaden, zurück an den Rand), **Lawinen** (Zone: Stampfen oder Explosion löst rollende Schneebrocken aus) | Tests |
 | M2.4.2 ✅ | Kälte | Kälte-Leiste im HUD, Frostrand als Bildeffekt (Post-Shader); Feuerstellen und Hütten wärmen; Werte als Tuning | Tests |
-| M2.4.3 | Neue Gegner | **Schneeballrobbe**: rutscht auf dem Bauch heran, hält an und wirft Schneebälle im Bogen. **Eisspitzen-Fledermaus**: hängt schlafend an der Decke, stürzt herab, wenn Elora darunter ist, flattert zurück. **Frostgeist**: schwebt durch Wände, Berührung lässt Elora kurz erstarren | Tests + Sandbox |
+| M2.4.3 ✅ | Neue Gegner | **Schneeballrobbe**: rutscht auf dem Bauch heran, hält an und wirft Schneebälle im Bogen. **Eisspitzen-Fledermaus**: hängt schlafend an der Decke, stürzt herab, wenn Elora darunter ist, flattert zurück. **Frostgeist**: schwebt durch Wände, Berührung lässt Elora kurz erstarren | Tests + Sandbox |
 | M2.4.4 | Hüter-Technik | **Kristella** nach E-341, Phasen siehe unten | Tests + Sandbox |
 | M2.4.5 | Inhalte | Figuren Flocke und Kletterer; Hauptaufgabe bis zum Quellfunken mit Steigkrallen in der Mitte; Nebenaufgaben **„Verlorene Kletterer“** und **„Eiskristalle für Klonk“**; Spuren des Dürren; Gespräche im Dorf nach Kapitel 4 | Tests |
 | M2.4.6 | Karten | Bergsteig aus Tauwinkel; `frost-1` bis `frost-3` und `frost-arena` | Sichtprüfung + Durchlauf-Test |
@@ -55,6 +55,8 @@ speichern und fortsetzen.
 **Stand M2.4.0–M2.4.1:** Entwürfe angenommen (E-345). Tiles **dünnes Eis** (`-`) und **Eiswasser** (`+`) in Simulation, Kartenformat, Editor und Grafik; Risse als Warnung, Bruch und Nachwachsen über die zeitweisen Tiles (wachsen nie in eine Figur hinein). Gegnerarten **`eiszapfen`** (Verhalten `icicle`) und **`schneebrocken`** (`roller`); **Lawinen** als Zonen `lawine…` mit Auslöse-Zone `…-tritt` in der Sitzung. Werte A-36 bis A-41. Klänge vorerst Platzhalter (M2.4.8).
 
 **Stand M2.4.2:** Kälte-Leiste im HUD (Schneeflocke, Hellblau bis Tiefblau, pulsiert voll) für Gebiete mit `cold = true` (Frostspitzen): draußen 60 s bis voll, im Schneesturm 30 s, unter Dächern 10 s und in Zonen `feuer…` 3 s bis leer, in Hüter-Arenen wärmt sie; voll bremst wie die Hitze (A-27) bis unter die Hälfte. Bonus `cold_pct` für Ausrüstung. Frostrand als Post-Shader (Eisblumen von den Rändern, ab einem Drittel der Leiste).
+
+**Stand M2.4.3:** Neue Verhalten `seal` (Schneeballrobbe: rutscht heran, richtet sich in Wurfweite auf und wirft alle 1,5 s im Bogen), `bat` (Eisspitzen-Fledermaus: schläft kopfüber und harmlos, stürzt auf Elora herab, sobald sie darunter ist, flattert heim und ruht kurz), `ghost` (Frostgeist: schwebt durch Wände, Berührung mit `freeze_ms` lässt Elora 0,6 s erstarren – nur Zielen wirkt, sie steckt im Eisblock –, danach weicht er 1,8 s zurück; nicht hookbar). Arten `schneeballrobbe`, `fledermaus`, `frostgeist` mit Beute (Eiskristall selten). Ausprobieren: Training, F1 → „Gegner (Abenteuer)“.
 
 ## Ablauf von Kapitel 4 (Vorschlag)
 
