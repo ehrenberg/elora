@@ -1,0 +1,138 @@
+# Bergführerin Flocke (R2-M2.4, Kapitel 4)
+speaker = "flocke"
+
+[[start]]
+if = "quest kletterer schritt bericht"
+node = "bericht"
+
+[[start]]
+if = "quest frostspitzen schritt seil und hat seil"
+node = "seil_zurueck"
+
+[[start]]
+if = "quest frostspitzen schritt seil"
+node = "erinnerung"
+
+[[start]]
+if = "nicht merker flocke.kennt"
+node = "begruessung"
+
+[[start]]
+node = "danach"
+
+[[node]]
+id = "begruessung"
+text = { de = "Ha! Endlich mal jemand, der nicht vor dem bisschen Schnee wegläuft! Ich bin Flocke, Bergführerin. Na ja – Bergführerin ohne Berg, seit der Gipfel zugefroren ist. Und ohne Seil. Das ist das eigentliche Problem.", en = "Ha! Finally someone who doesn't run away from a little snow! I'm Flocke, mountain guide. Well – mountain guide without a mountain, since the summit froze over. And without a rope. That's the real problem." }
+do = ["merker flocke.kennt = 1"]
+
+[[node.choice]]
+tone = "neugierig"
+text = { de = "Was ist mit deinem Seil?", en = "What happened to your rope?" }
+next = "seil"
+
+[[node.choice]]
+tone = "freundlich"
+text = { de = "Warum ist das Dorf so leer?", en = "Why is the village so empty?" }
+next = "dorf"
+
+[[node.choice]]
+tone = "frech"
+text = { de = "Bergführerin ohne Berg? Und ohne Seil?", en = "A mountain guide without a mountain? And without a rope?" }
+next = "frech"
+do = ["zuneigung flocke +1"]
+
+[[node]]
+id = "dorf"
+text = { de = "Die Leute sind ins Tal gezogen, als es kälter und kälter wurde. Kälter als normal, meine ich. Seit da oben etwas Graues herumstapft, friert sogar das Feuer.", en = "Everyone moved down to the valley when it got colder and colder. Colder than normal, I mean. Since something grey has been stomping around up there, even the fire freezes." }
+next = "seil"
+do = ["merker duerrer.berge = 1"]
+
+[[node]]
+id = "frech"
+text = { de = "HA! Frech! Gefällt mir.", en = "HA! Cheeky! I like that." }
+next = "seil"
+
+[[node]]
+id = "seil"
+text = { de = "Mein Seil liegt im Keller unter der alten Käserei. Ich wollte es holen, aber da unten hängen Fledermäuse mit Eiszapfen an den Flügeln. Ich mag Fledermäuse. Nur nicht, wenn sie mir ins Gesicht fliegen. Holst du es mir? Der Boden dort ist dünnes Eis – nicht trödeln!", en = "My rope is in the cellar under the old cheese dairy. I wanted to fetch it, but bats with icicles on their wings hang down there. I like bats. Just not when they fly into my face. Will you get it for me? The floor there is thin ice – don't dawdle!" }
+
+[[node.choice]]
+tone = "freundlich"
+text = { de = "Ich hole es.", en = "I'll get it." }
+
+[[node.choice]]
+tone = "neugierig"
+text = { de = "Und dann?", en = "And then?" }
+next = "dann"
+
+[[node]]
+id = "dann"
+text = { de = "Dann gehen wir auf den Gipfel! Also, du. Ich halte das Seil.", en = "Then we climb the summit! Well, you do. I'll hold the rope." }
+
+[[node]]
+id = "erinnerung"
+text = { de = "Der Keller unter der Käserei. Dünnes Eis! Nicht stehen bleiben!", en = "The cellar under the cheese dairy. Thin ice! Don't stand still!" }
+
+[[node]]
+id = "seil_zurueck"
+text = { de = "Mein Seil! Glück, Mut und Abendbrot – alle drei Knoten noch dran! Hier, nimm dafür meine Steigkrallen. Damit hältst du dich an den Kletterwänden fest – an den rauen, gestreiften Felsen. Spring dagegen, halt dich fest, und dann: abspringen! Ganz einfach. Na ja. Fast.", en = "My rope! Luck, courage and supper – all three knots still there! Here, take my climbing claws for it. With them you can hold on to climbing walls – the rough, striped rocks. Jump at one, hold on, and then: jump off! Easy. Well. Almost." }
+do = ["faehigkeit eisgriff", "zuneigung flocke +1"]
+
+[[node.choice]]
+tone = "freundlich"
+text = { de = "Danke, Flocke!", en = "Thank you, Flocke!" }
+next = "kletterer"
+
+[[node.choice]]
+tone = "neugierig"
+text = { de = "Wohin jetzt?", en = "Where to now?" }
+next = "wohin"
+
+[[node]]
+id = "wohin"
+text = { de = "Hoch! Durch den Kamin hinter meiner Hütte. Oben am Grat wird's stürmisch.", en = "Up! Through the chimney behind my hut. Up on the ridge it gets stormy." }
+next = "kletterer"
+
+[[node]]
+id = "kletterer"
+text = { de = "Ach, und … drei meiner Kletterer sind nicht zurückgekommen. Bolle, Kiesel und Wicke. Die drei sind gut, wirklich! Aber der Sturm … Wenn du sie siehst, schick sie heim. Ich mache Tee.", en = "Oh, and … three of my climbers haven't come back. Bolle, Kiesel and Wicke. They're good, really! But the storm … If you see them, send them home. I'll make tea." }
+
+[[node.choice]]
+tone = "freundlich"
+text = { de = "Ich halte die Augen offen.", en = "I'll keep my eyes open." }
+do = ["quest kletterer start", "zuneigung flocke +1"]
+
+[[node.choice]]
+text = { de = "Vielleicht später.", en = "Maybe later." }
+
+[[node]]
+id = "danach"
+text = { de = "Na, kleiner Tropfen? Tee ist fertig – oder brauchst du was für unterwegs?", en = "Well, little drop? Tea is ready – or do you need something for the road?" }
+
+[[node.choice]]
+tone = "freundlich"
+text = { de = "Zeig mir deinen Vorrat.", en = "Show me your supplies." }
+do = ["laden flocke"]
+
+[[node.choice]]
+tone = "neugierig"
+if = "quest kletterer neu und faehigkeit eisgriff"
+text = { de = "Was war mit deinen Kletterern?", en = "What about your climbers?" }
+next = "kletterer"
+
+[[node.choice]]
+text = { de = "Bis bald, Flocke.", en = "See you, Flocke." }
+
+[[node]]
+id = "bericht"
+text = { de = "Alle drei sitzen an meinem Ofen und streiten, wer am längsten durchgehalten hat. Danke, kleiner Tropfen. Hier – meine alte Bommelmütze. Damit friert dir nicht mal die Laune ein.", en = "All three are sitting at my stove arguing about who held out the longest. Thank you, little drop. Here – my old bobble hat. With it, not even your mood will freeze." }
+do = ["zuneigung flocke +2"]
+
+[[bark]]
+text = { de = "Tee ist fertig!", en = "Tea is ready!" }
+
+[[bark]]
+text = { de = "Kälte ist nur Wärme, die gerade woanders ist.", en = "Cold is just warmth that happens to be somewhere else." }
+
+[[bark]]
+text = { de = "Am Feuer wird's wieder warm!", en = "By the fire you'll warm up again!" }

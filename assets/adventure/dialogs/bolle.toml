@@ -1,0 +1,10 @@
+# Kletterer Bolle (R2-M2.4, Nebenaufgabe „Verlorene Kletterer“)
+speaker = "bolle"
+
+[[start]]
+node = "gefunden"
+
+[[node]]
+id = "gefunden"
+text = { de = "Oh, hallo! Ich hab mich nur kurz hingesetzt. Vor drei Tagen. Gemütlich hier. Na gut, ich geh heim – Flocke macht bestimmt Tee.", en = "Oh, hello! I only sat down for a moment. Three days ago. Cosy here. All right, I'll head home – Flocke is surely making tea." }
+do = ["merker kletterer.bolle = 1", "merker kletterer.gefunden +1"]

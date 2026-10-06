@@ -1,0 +1,10 @@
+# Kletterer Kiesel (R2-M2.4, Nebenaufgabe „Verlorene Kletterer“)
+speaker = "kiesel"
+
+[[start]]
+node = "gefunden"
+
+[[node]]
+id = "gefunden"
+text = { de = "Sag Flocke nichts! Ich bin nicht reingefallen, ich … erkunde die Spalte. Gründlich. Ja, ich komme ja schon mit raus.", en = "Don't tell Flocke! I didn't fall in, I'm … exploring the crevasse. Thoroughly. Yes, all right, I'm coming out." }
+do = ["merker kletterer.kiesel = 1", "merker kletterer.gefunden +1"]

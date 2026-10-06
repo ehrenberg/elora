@@ -150,6 +150,7 @@ pub fn item_icon(
                 elora_adventure::data::Effect::Heal(_) => Color::hex(0xe05a7a),
                 elora_adventure::data::Effect::Tau(_) => Color::hex(0x5aaee8),
                 elora_adventure::data::Effect::Cool(_) => Color::hex(0x7fd99a),
+                elora_adventure::data::Effect::Warm(_) => Color::hex(0xe8a35a),
             };
             batch.fill_rect(
                 c + Vec2::new(-3.5, -13.5) * k,

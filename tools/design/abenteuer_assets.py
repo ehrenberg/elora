@@ -20,8 +20,8 @@ from kapitel2_entwuerfe import (eichhornpirat, pilzkind, pilzmama, pilzwicht, pl
                                 wurzelschlange, wurzelwaechter)
 from kapitel3_entwuerfe import (duenenwurm, funkenmotte, giessstelle, palma, ruinenquelle,  # noqa: E402
                                 sandkrabbe, sandschlange, sirup, steintafel, wasserschlauch)
-from kapitel4_entwuerfe import (eiszapfen_figur, fledermaus, frostgeist, kristella, robbe,  # noqa: E402
-                                schneebrocken)
+from kapitel4_entwuerfe import (eiszapfen_figur, fledermaus, flocke, frostgeist, grauspur_eis,  # noqa: E402
+                                kletterer, kristella, robbe, schneebrocken)
 
 
 def strohpuppe():
@@ -119,6 +119,13 @@ CHARACTERS = {
     'ruinenquelle': (1 / 0.36 * 0.5, ruinenquelle()),
     'giessstelle': (1 / 0.36 * 0.55, giessstelle(False)),
     'giessstelle_bluete': (1 / 0.36 * 0.55, giessstelle(True)),
+    # Kapitel 4 (R2-M2.4): Flocke, drei Kletterer, Kristella nach dem Kampf (Größe des Hüters)
+    'flocke': (1.0, flocke()),
+    'bolle': (0.85, kletterer('f2a65a', 'c97f3a', '#f2c14e')),
+    'kiesel': (0.85, kletterer('8fd06a', '5fa03a', '#e8685a')),
+    'wicke': (0.85, kletterer('c8a0e8', '9a70c0', '#5fc8e8')),
+    'kristella': (1.0, kristella('ruhig', False)),
+    'graue_stelle': (1 / 0.36 * 0.5, grauspur_eis()),
 }
 
 

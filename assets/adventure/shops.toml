@@ -13,3 +13,10 @@ id = "sirup"
 owner = "sirup"
 discount = [{ affection = 5, pct = 10 }, { affection = 10, pct = 20 }]
 stock = ["kaktusfrucht", "glutstein", "karawanenkette"]
+
+# Bergführerin Flocke (R2-M2.4)
+[[shop]]
+id = "flocke"
+owner = "flocke"
+discount = [{ affection = 5, pct = 10 }, { affection = 10, pct = 20 }]
+stock = ["kraeutertee", "eiskristall", "fellstiefel"]

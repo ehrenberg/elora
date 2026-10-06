@@ -678,3 +678,127 @@ fn klonk_hands_out_weapons_before_talking_about_resin() {
     let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
     assert_eq!(conv.node, "harz");
 }
+
+#[test]
+fn chapter_four_runs_from_the_mountain_path_to_the_party() {
+    let (c, mut g) = game();
+    g.run(&c, &["quest frostspitzen start".into()]);
+    let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
+    assert_eq!(conv.node, "frost");
+    g.on_reach(&c, "frost-1", None);
+    assert!(g.holds(&c, "quest frostspitzen schritt flocke"));
+    let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
+    assert_eq!(conv.node, "unterwegs4");
+    // Flocke: Begrüßung, dann das Seil
+    let (mut conv, _) = Conversation::start(&c, &mut g, "flocke").unwrap();
+    assert_eq!(conv.node, "begruessung");
+    assert!(g.holds(&c, "quest frostspitzen schritt seil"));
+    conv.choose(&c, &mut g, 0);
+    assert_eq!(conv.node, "seil");
+    let (conv, _) = Conversation::start(&c, &mut g, "flocke").unwrap();
+    assert_eq!(conv.node, "erinnerung");
+    // Seil aus dem Keller: Steigkrallen (Eisgriff) mitten im Kapitel (E-340)
+    g.add_item(&c, "seil", 1).unwrap();
+    let (mut conv, _) = Conversation::start(&c, &mut g, "flocke").unwrap();
+    assert_eq!(conv.node, "seil_zurueck");
+    assert!(g.abilities().has(elora_sim::Ability::Grip));
+    assert_eq!(g.count("seil"), 0, "abgegeben");
+    assert!(g.holds(&c, "quest frostspitzen schritt grat"));
+    conv.choose(&c, &mut g, 0);
+    assert_eq!(conv.node, "kletterer");
+    conv.choose(&c, &mut g, 0);
+    assert!(g.holds(&c, "quest kletterer aktiv"));
+    g.on_reach(&c, "frost-3", None);
+    g.on_reach(&c, "frost-arena", None);
+    g.location.map = "frost-arena".into();
+    g.set_flag("besiegt.kristella", 1);
+    let kind = c
+        .creatures
+        .iter()
+        .position(|k| k.name == "kristella")
+        .unwrap();
+    g.on_event(
+        &c,
+        &c.creatures,
+        0,
+        &Event::CreatureDeath {
+            id: 1,
+            kind,
+            pos: Vec2::ZERO,
+            killer: Some(0),
+        },
+    );
+    g.add_item(&c, "quellfunke", 1).unwrap();
+    assert!(g.holds(&c, "quest frostspitzen schritt funke"));
+    let (mut conv, _) = Conversation::start(&c, &mut g, "kristella").unwrap();
+    assert!(text(&c, &conv).contains("Genug"));
+    conv.advance(&c, &mut g);
+    assert!(text(&c, &conv).contains("einsam, nicht böse"));
+    conv.advance(&c, &mut g);
+    assert_eq!(g.flag("befreit.frostquelle"), 1);
+    let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
+    assert_eq!(conv.node, "funke");
+    let (conv, _) = Conversation::start(&c, &mut g, "tueftel").unwrap();
+    assert_eq!(conv.node, "funke4");
+    assert_eq!(g.flag("eisgriff.stark"), 1);
+    assert_eq!(g.flag("quellen_befreit"), 4);
+    let (mut conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
+    assert_eq!(conv.node, "fest4");
+    conv.advance(&c, &mut g);
+    assert_eq!(conv.node, "fest4_lied");
+    assert!(g.holds(&c, "quest frostspitzen erledigt"));
+    assert!(g.holds(&c, "quest sternschlucht aktiv"));
+    let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
+    assert_eq!(conv.node, "stern");
+}
+
+#[test]
+fn lost_climbers_go_home_and_flocke_gives_the_bobble_hat() {
+    let (c, mut g) = game();
+    g.run(&c, &["quest kletterer start".into()]);
+    for who in ["bolle", "kiesel", "wicke"] {
+        assert!(g.holds(&c, &format!("nicht merker kletterer.{who}")));
+        Conversation::start(&c, &mut g, who).unwrap();
+        assert!(g.holds(&c, &format!("merker kletterer.{who}")));
+    }
+    assert!(g.holds(&c, "quest kletterer schritt bericht"));
+    let (conv, _) = Conversation::start(&c, &mut g, "flocke").unwrap();
+    assert_eq!(conv.node, "bericht");
+    assert!(g.holds(&c, "quest kletterer erledigt"));
+    assert_eq!(g.count("bommelmuetze"), 1);
+    assert!(bark(&c, &g, "wicke-huette").is_some());
+}
+
+#[test]
+fn klonk_cuts_one_crystal_pendant_of_your_choice() {
+    let (c, mut g) = game();
+    g.run(&c, &["quest frostspitzen start".into()]);
+    let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
+    assert_eq!(conv.node, "kristalle");
+    assert!(g.holds(&c, "quest klarkristalle aktiv"));
+    let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
+    assert_eq!(conv.node, "kristalle_erinnerung");
+    g.add_item(&c, "klarkristall", 8).unwrap();
+    let _ = g.update_quests(&c);
+    assert!(g.holds(&c, "quest klarkristalle schritt bringen"));
+    let (mut conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
+    assert_eq!(conv.node, "kristalle_da");
+    assert_eq!(g.count("klarkristall"), 0, "abgegeben");
+    conv.choose(&c, &mut g, 2);
+    assert_eq!(g.count("lichtkristall"), 1);
+    assert_eq!(g.count("wuchtkristall") + g.count("sprengkristall"), 0);
+    assert!(g.holds(&c, "quest klarkristalle erledigt"));
+}
+
+#[test]
+fn herbal_tea_heals_and_the_bobble_hat_slows_the_cold() {
+    let (c, mut g) = game();
+    g.health = 3;
+    g.add_item(&c, "kraeutertee", 1).unwrap();
+    let effect = g.use_item(&c, "kraeutertee").unwrap();
+    assert_eq!(effect, elora_adventure::data::Effect::Warm(2));
+    assert_eq!(g.health, 5);
+    g.add_item(&c, "bommelmuetze", 1).unwrap();
+    g.equip(&c, "bommelmuetze").unwrap();
+    assert!((g.stats(&c).cold_pct + 40.0).abs() < f32::EPSILON);
+}

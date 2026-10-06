@@ -193,3 +193,69 @@ portrait = "bluete-3"
 fixed = true
 voice = 0.0
 show_if = "merker befreit.giessstelle-3"
+
+# Kapitel 4 – Frostspitzen (R2-M2.4, docs/release-2/m2-4-inhalte.md)
+[[character]]
+id = "flocke"
+name = { de = "Bergführerin Flocke", en = "Flocke the mountain guide" }
+portrait = "flocke"
+voice = 1.05
+
+# drei verschollene Kletterer: draußen, bis Elora sie findet, danach in Flockes Hütte
+[[character]]
+id = "bolle"
+name = { de = "Kletterer Bolle", en = "Bolle the climber" }
+portrait = "bolle"
+voice = 0.9
+show_if = "nicht merker kletterer.bolle"
+
+[[character]]
+id = "kiesel"
+name = { de = "Kletterin Kiesel", en = "Kiesel the climber" }
+portrait = "kiesel"
+voice = 1.2
+show_if = "nicht merker kletterer.kiesel"
+
+[[character]]
+id = "wicke"
+name = { de = "Kletterer Wicke", en = "Wicke the climber" }
+portrait = "wicke"
+voice = 1.1
+show_if = "nicht merker kletterer.wicke"
+
+[[character]]
+id = "bolle-huette"
+name = { de = "Kletterer Bolle", en = "Bolle the climber" }
+portrait = "bolle-huette"
+voice = 0.9
+show_if = "merker kletterer.bolle"
+
+[[character]]
+id = "kiesel-huette"
+name = { de = "Kletterin Kiesel", en = "Kiesel the climber" }
+portrait = "kiesel-huette"
+voice = 1.2
+show_if = "merker kletterer.kiesel"
+
+[[character]]
+id = "wicke-huette"
+name = { de = "Kletterer Wicke", en = "Wicke the climber" }
+portrait = "wicke-huette"
+voice = 1.1
+show_if = "merker kletterer.wicke"
+
+# nach dem Kampf in der Eishalle
+[[character]]
+id = "kristella"
+name = { de = "Eiskönigin Kristella", en = "Ice Queen Kristella" }
+portrait = "kristella"
+voice = 0.8
+show_if = "merker besiegt.kristella"
+
+# wo der Dürre getrunken hat (fest, stumm)
+[[character]]
+id = "graue-stelle"
+name = { de = "Graue Stelle", en = "Grey patch" }
+portrait = "graue-stelle"
+fixed = true
+voice = 0.0

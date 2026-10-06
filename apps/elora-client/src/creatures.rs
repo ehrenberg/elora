@@ -64,13 +64,17 @@ fn flight_tilt(c: &SceneCreature) -> Option<f32> {
     }
 }
 
-const CHARACTER_FILES: &[(&str, &[u8])] = adventure_svgs!("characters": "oma", "klonk", "lotte", "tueftel", "pip", "wegweiser", "wabe", "hummel", "plumm", "pilzkind", "pilzkind_froh", "pilzmama", "waechter", "sirup", "palma", "schlange", "ruinenquelle");
+const CHARACTER_FILES: &[(&str, &[u8])] = adventure_svgs!("characters": "oma", "klonk", "lotte", "tueftel", "pip", "wegweiser", "wabe", "hummel", "plumm", "pilzkind", "pilzkind_froh", "pilzmama", "waechter", "sirup", "palma", "schlange", "ruinenquelle", "flocke", "bolle", "kiesel", "wicke", "kristella");
 /// Figuren, die sich ein Bild teilen (Tafeln, Stellen der Oase, R2-M2.3).
 const SHARED_CHARACTER_FILES: &[(&str, &[u8])] = {
     const TAFEL: &[u8] = include_bytes!("../../../assets/adventure/characters/tafel.svg");
     const DRY: &[u8] = include_bytes!("../../../assets/adventure/characters/giessstelle.svg");
     const BLOOM: &[u8] =
         include_bytes!("../../../assets/adventure/characters/giessstelle_bluete.svg");
+    const BOLLE: &[u8] = include_bytes!("../../../assets/adventure/characters/bolle.svg");
+    const KIESEL: &[u8] = include_bytes!("../../../assets/adventure/characters/kiesel.svg");
+    const WICKE: &[u8] = include_bytes!("../../../assets/adventure/characters/wicke.svg");
+    const GREY: &[u8] = include_bytes!("../../../assets/adventure/characters/graue_stelle.svg");
     &[
         ("tafel-1", TAFEL),
         ("tafel-2", TAFEL),
@@ -81,6 +85,10 @@ const SHARED_CHARACTER_FILES: &[(&str, &[u8])] = {
         ("bluete-1", BLOOM),
         ("bluete-2", BLOOM),
         ("bluete-3", BLOOM),
+        ("bolle-huette", BOLLE),
+        ("kiesel-huette", KIESEL),
+        ("wicke-huette", WICKE),
+        ("graue-stelle", GREY),
     ]
 };
 /// Gegenstände mit eigenem Bild (R2-M2.1); alle anderen zeigen `item.svg`.
@@ -343,6 +351,7 @@ impl CreatureArt {
             "ruinenquelle",
             "giessstelle",
             "bluete",
+            "graue-stelle",
         ]
         .iter()
         .any(|p| id.starts_with(p))

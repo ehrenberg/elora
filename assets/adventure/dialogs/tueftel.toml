@@ -2,6 +2,10 @@
 speaker = "tueftel"
 
 [[start]]
+if = "quest frostspitzen schritt funke"
+node = "funke4"
+
+[[start]]
 if = "quest glutsand schritt funke"
 node = "funke3"
 
@@ -80,6 +84,11 @@ text = { de = "Im Hof hängt jetzt ein Zugschalter hoch oben. Hol ihn dir! Und d
 id = "funke3"
 text = { de = "Ein goldener Funke! Warm wie … nein, wärmer! Halt das mal. Und das. Und – stell dich da hin. Jetzt spring. Und jetzt RUNTER! Siehst du? Stampfen! Damit brichst du mürbe Böden und haust Gegner um. Probier's auf dem Übungsplatz, da hab ich dir was Bröseliges hingelegt.", en = "A golden spark! Warm as … no, warmer! Hold this. And this. And – stand over there. Now jump. And now DOWN! See? Stomp! It breaks crumbly floors and knocks enemies over. Try it at the practice ground, I've put something crumbly there for you." }
 do = ["faehigkeit stampfen", "merker quellen_befreit = 3", "merker befreit.glutquelle = 1", "merker fest = 1", "merker hof.stampf = 1", "zuneigung tueftel +1"]
+
+[[node]]
+id = "funke4"
+text = { de = "Blau! Eisblau! Und so kühl, dass meine Brille beschlägt. Gib mal deine Steigkrallen … *klirr* … *zisch* … So! Jetzt halten sie doppelt so lange, und wenn du an der Wand nach oben drückst, ziehst du dich sogar ein Stück hinauf. Kletterwände überall im Tauland – jetzt gehören sie dir!", en = "Blue! Ice blue! And so cool my glasses fog up. Give me your climbing claws … *clink* … *hiss* … There! Now they hold twice as long, and if you push up against the wall you even pull yourself up a bit. Climbing walls all over the Tauland – now they're yours!" }
+do = ["merker eisgriff.stark = 1", "merker quellen_befreit = 4", "merker befreit.frostquelle = 1", "merker fest = 1", "zuneigung tueftel +1"]
 
 [[bark]]
 if = "merker hof.stampf"

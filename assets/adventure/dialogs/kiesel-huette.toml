@@ -1,0 +1,12 @@
+# Kiesel in Flockes Hütte (R2-M2.4)
+speaker = "kiesel-huette"
+
+[[start]]
+node = "ofen"
+
+[[node]]
+id = "ofen"
+text = { de = "Ich war NICHT verloren.", en = "I was NOT lost." }
+
+[[bark]]
+text = { de = "Ich war NICHT verloren.", en = "I was NOT lost." }

@@ -1144,6 +1144,14 @@ impl Session {
                     ch.core.overheated = false;
                 }
             }
+            crate::data::Effect::Warm(_) => {
+                self.cold = 0.0;
+                self.frozen = false;
+                if let Some(ch) = world.character_mut(self.player) {
+                    ch.health = self.save.health;
+                    ch.core.overheated = self.overheated;
+                }
+            }
             crate::data::Effect::Tau(secs) => {
                 self.tau_until = world.tick + u64::from(secs * elora_sim::TICKS_PER_SECOND);
             }

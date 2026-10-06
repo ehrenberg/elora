@@ -31,6 +31,7 @@ desc = { de = "Noch warm, aus der Glutsandwüste.", en = "Still warm, from the G
 [[item]]
 id = "eiskristall"
 type = "material"
+price = 25
 name = { de = "Eiskristall", en = "Ice crystal" }
 desc = { de = "Schmilzt nie, aus den Frostspitzen.", en = "Never melts, from the Frostspitzen." }
 
@@ -193,3 +194,70 @@ id = "wasser"
 type = "key"
 name = { de = "Schluck Wasser", en = "Sip of water" }
 desc = { de = "Klar und kühl, aus der Ruinenquelle.", en = "Clear and cool, from the ruin spring." }
+
+# Kapitel 4 – Frostspitzen (R2-M2.4, docs/release-2/m2-4-inhalte.md)
+[[item]]
+id = "seil"
+type = "key"
+name = { de = "Flockes Seil", en = "Flocke's rope" }
+desc = { de = "Dick, rau und mit drei Knoten, die Flocke „Glück, Mut und Abendbrot“ nennt.", en = "Thick, rough and with three knots that Flocke calls “luck, courage and supper”." }
+
+[[item]]
+id = "klarkristall"
+type = "collectible"
+name = { de = "Klarkristall", en = "Clear crystal" }
+desc = { de = "Ganz klar. Wenn man hindurchsieht, wirkt die Welt ein bisschen ruhiger.", en = "Perfectly clear. Looking through it, the world seems a little calmer." }
+
+[[item]]
+id = "kraeutertee"
+type = "consumable"
+effect = { warm = 2 }
+price = 12
+name = { de = "Kräutertee", en = "Herbal tea" }
+desc = { de = "Stellt 2 Leben her und wärmt: Die Kälte-Leiste ist danach leer.", en = "Restores 2 health and warms you up: the cold bar is empty afterwards." }
+
+[[item]]
+id = "bommelmuetze"
+type = "equipment"
+slot = "hat"
+rarity = "rare"
+bonuses = [{ cold_pct = -40.0 }]
+name = { de = "Bommelmütze", en = "Bobble hat" }
+desc = { de = "Flockes alte Mütze. Die Kälte-Leiste füllt sich langsamer – und die Laune friert nicht ein.", en = "Flocke's old hat. The cold bar fills more slowly – and your mood doesn't freeze." }
+
+[[item]]
+id = "fellstiefel"
+type = "equipment"
+slot = "boots"
+price = 220
+bonuses = [{ cold_pct = -20.0 }, { armor = 1 }]
+name = { de = "Fellstiefel", en = "Fur boots" }
+desc = { de = "Warm und fest. Die Kälte-Leiste füllt sich etwas langsamer.", en = "Warm and sturdy. The cold bar fills a little more slowly." }
+
+# Klonks Anhänger aus Klarkristallen (zur Wahl)
+[[item]]
+id = "wuchtkristall"
+type = "equipment"
+slot = "pendant"
+rarity = "rare"
+bonuses = [{ hammer_damage = 1 }]
+name = { de = "Wuchtkristall", en = "Impact crystal" }
+desc = { de = "Von Klonk geschliffen. Der Hammer schlägt härter zu.", en = "Cut by Klonk. The hammer hits harder." }
+
+[[item]]
+id = "sprengkristall"
+type = "equipment"
+slot = "pendant"
+rarity = "rare"
+bonuses = [{ explosion_pct = 20.0 }]
+name = { de = "Sprengkristall", en = "Blast crystal" }
+desc = { de = "Von Klonk geschliffen. Granaten explodieren größer.", en = "Cut by Klonk. Grenades explode bigger." }
+
+[[item]]
+id = "lichtkristall"
+type = "equipment"
+slot = "pendant"
+rarity = "rare"
+bonuses = [{ laser_bounces = 1 }]
+name = { de = "Lichtkristall", en = "Light crystal" }
+desc = { de = "Von Klonk geschliffen. Der Laser prallt einmal mehr ab.", en = "Cut by Klonk. The laser bounces once more." }

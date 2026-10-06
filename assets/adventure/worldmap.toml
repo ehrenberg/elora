@@ -99,6 +99,11 @@ pos = [0.82, 0.3]
 color = "#8fd0f0"
 maps = "frost-"
 cold = true
+spring = "frostquelle"
+chapter = 4
+guardian = "kristella"
+victory = { de = "Kristella lächelt wieder – und die Frostquelle glitzert klar wie ein Wintermorgen.", en = "Kristella smiles again – and the Frost Spring sparkles as clear as a winter morning." }
+honor = { de = "Gipfelstürmerin", en = "Summit Climber" }
 weather_gloomy = [{ kind = "schneesturm", weight = 3, intensity = [0.6, 1.0], wind = [-0.9, 0.9] }]
 weather = [
     { kind = "schnee", weight = 3, intensity = [0.4, 0.8] },

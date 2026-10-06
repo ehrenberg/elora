@@ -15,6 +15,18 @@ if = "quest murmelwald erledigt und nicht merker klonk.harz"
 node = "harz"
 
 [[start]]
+if = "quest klarkristalle schritt bringen und hat klarkristall 8"
+node = "kristalle_da"
+
+[[start]]
+if = "quest frostspitzen aktiv und quest klarkristalle neu"
+node = "kristalle"
+
+[[start]]
+if = "quest klarkristalle aktiv"
+node = "kristalle_erinnerung"
+
+[[start]]
 if = "quest brunnen schritt klonk"
 node = "uebung"
 
@@ -94,6 +106,45 @@ do = ["schmied"]
 
 [[node.choice]]
 text = { de = "Später.", en = "Later." }
+
+[[node]]
+id = "kristalle"
+text = { de = "Eiskristalle schmelzen nicht. Weißt du, was nicht mal *die* können? So klar sein wie Klarkristalle. Acht Stück, irgendwo in den Bergen. Bring sie mir, und ich schleif dir was Hübsches. Hübsch und nützlich. Hübsch ist mir egal.", en = "Ice crystals don't melt. You know what even *they* can't do? Be as clear as clear crystals. Eight of them, somewhere in the mountains. Bring them to me and I'll cut you something pretty. Pretty and useful. I don't care about pretty." }
+do = ["quest klarkristalle start"]
+next = "schmiede"
+
+[[node]]
+id = "kristalle_erinnerung"
+text = { de = "Acht. Nicht sieben. Ich zähle nach.", en = "Eight. Not seven. I'll count." }
+next = "schmiede"
+
+[[node]]
+id = "kristalle_da"
+text = { de = "Acht. Ich hab nachgezählt. Zweimal. Was soll's werden?", en = "Eight. I counted. Twice. What'll it be?" }
+
+[[node.choice]]
+tone = "frech"
+text = { de = "Etwas für den Hammer.", en = "Something for the hammer." }
+next = "kristalle_fertig"
+do = ["gib wuchtkristall 1"]
+
+[[node.choice]]
+tone = "neugierig"
+text = { de = "Etwas für die Granaten.", en = "Something for the grenades." }
+next = "kristalle_fertig"
+do = ["gib sprengkristall 1"]
+
+[[node.choice]]
+tone = "freundlich"
+text = { de = "Etwas für den Laser.", en = "Something for the laser." }
+next = "kristalle_fertig"
+do = ["gib lichtkristall 1"]
+
+[[node]]
+id = "kristalle_fertig"
+text = { de = "Trag ihn mit Würde. Oder wenigstens ohne ihn zu verlieren.", en = "Wear it with dignity. Or at least without losing it." }
+do = ["zuneigung klonk +1"]
+next = "schmiede"
 
 [[bark]]
 if = "merker fest"

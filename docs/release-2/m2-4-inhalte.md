@@ -1,6 +1,6 @@
 # R2-M2.4 – Inhalte von Kapitel 4 (Entwurf, M2.4.5)
 
-Status: **Entwurf zur Freigabe** · Grundlage: [`m2-4-plan.md`](m2-4-plan.md), [`weltbuch.md`](weltbuch.md) §4.4 und §5, E-340 bis E-345, D-M24-01 bis D-M24-10
+Status: **Freigegeben und eingebaut** (Texte freigegeben 2026-10-07, E-346) · Grundlage: [`m2-4-plan.md`](m2-4-plan.md), [`weltbuch.md`](weltbuch.md) §4.4 und §5, E-340 bis E-345, D-M24-01 bis D-M24-10
 
 Deutsche Texte; die englischen kommen beim Einbau dazu. Bedingungen und Folgen in der Schreibweise
 der Inhaltsdateien ([`../handbuch/abenteuer-inhalte.md`](../handbuch/abenteuer-inhalte.md)).

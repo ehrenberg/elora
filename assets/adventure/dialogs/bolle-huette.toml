@@ -1,0 +1,12 @@
+# Bolle in Flockes Hütte (R2-M2.4)
+speaker = "bolle-huette"
+
+[[start]]
+node = "ofen"
+
+[[node]]
+id = "ofen"
+text = { de = "Bester Platz am Ofen.", en = "Best seat by the stove." }
+
+[[bark]]
+text = { de = "Bester Platz am Ofen.", en = "Best seat by the stove." }

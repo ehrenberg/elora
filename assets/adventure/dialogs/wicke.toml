@@ -1,0 +1,10 @@
+# Kletterer Wicke (R2-M2.4, Nebenaufgabe „Verlorene Kletterer“)
+speaker = "wicke"
+
+[[start]]
+node = "gefunden"
+
+[[node]]
+id = "gefunden"
+text = { de = "Vierhundertzwölf … vierhundertdreizehn … oh! Ein Tropfen! Ich zähle Schneeflocken, damit ich keine Angst habe. Du hast mich verzählen lassen. Danke. Ich geh lieber runter.", en = "Four hundred and twelve … four hundred and thirteen … oh! A drop! I count snowflakes so I'm not scared. You made me lose count. Thank you. I'd better go down." }
+do = ["merker kletterer.wicke = 1", "merker kletterer.gefunden +1"]

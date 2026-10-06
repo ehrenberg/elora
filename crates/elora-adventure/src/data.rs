@@ -111,6 +111,8 @@ pub enum Effect {
     Tau(u32),
     /// Leben auffüllen und die Hitze-Leiste leeren (Kaktusfrucht, E-320).
     Cool(i32),
+    /// Leben auffüllen und die Kälte-Leiste leeren (Kräutertee, E-342).
+    Warm(i32),
 }
 
 /// Art eines Gegenstands (Reiter im Inventar, P-24).
@@ -407,6 +409,20 @@ const DIALOG_FILES: &[(&str, &str)] = dialogs!(
     "schild-hitze",
     "schild-kammer",
     "schild-stampf",
+    "flocke",
+    "bolle",
+    "kiesel",
+    "wicke",
+    "bolle-huette",
+    "kiesel-huette",
+    "wicke-huette",
+    "kristella",
+    "graue-stelle",
+    "schild-bergsteig",
+    "schild-kaelte",
+    "schild-eis",
+    "schild-lawine",
+    "schild-kamin",
 );
 
 /// Quelltexte der Inhaltsdateien.

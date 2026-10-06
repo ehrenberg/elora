@@ -326,7 +326,7 @@ impl SaveGame {
         };
         let effect = *effect;
         self.remove_item(id, 1)?;
-        if let Effect::Heal(h) | Effect::Cool(h) = effect {
+        if let Effect::Heal(h) | Effect::Cool(h) | Effect::Warm(h) = effect {
             self.health = (self.health + h).min(self.max_health(content));
         }
         Ok(effect)

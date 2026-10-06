@@ -171,19 +171,106 @@ id = "fest"
 text = { de = "Mit Oma Pfütze am Brunnen feiern", en = "Celebrate with Oma Pfütze at the well" }
 goal = { type = "talk", who = "oma" }
 
-# Kapitel 4 – Ankündigung, Fortsetzung mit R2-M2.4
+# Kapitel 4 – Frostspitzen (R2-M2.4, docs/release-2/m2-4-inhalte.md)
 [[quest]]
 id = "frostspitzen"
 kind = "main"
 giver = "oma"
 name = { de = "Der Ruf der Frostspitzen", en = "The Call of the Frostspitzen" }
 desc = { de = "Die vierte Quelle liegt in den Frostspitzen im Norden. Dorthin führten die grauen Spuren.", en = "The fourth spring lies in the Frostspitzen to the north. That is where the grey tracks led." }
+reward = { xp = 400, glanztropfen = 180 }
+next = "sternschlucht"
+
+[[quest.step]]
+id = "aufbruch"
+text = { de = "Oben im Oberdorf den Bergsteig freilegen", en = "Clear the mountain path at the top of the upper village" }
+goal = { type = "reach", map = "frost-1" }
+
+[[quest.step]]
+id = "flocke"
+text = { de = "Im verlassenen Bergdorf nach jemandem suchen", en = "Look for someone in the abandoned mountain village" }
+goal = { type = "talk", who = "flocke" }
+
+[[quest.step]]
+id = "seil"
+text = { de = "Flockes Seil aus dem vereisten Keller holen", en = "Fetch Flocke's rope from the frozen cellar" }
+goal = { type = "bring", item = "seil", count = 1, to = "flocke" }
+
+[[quest.step]]
+id = "grat"
+text = { de = "Mit den Steigkrallen hinauf zum Gipfelgrat", en = "Climb up to the summit ridge with the climbing claws" }
+goal = { type = "reach", map = "frost-3" }
+
+[[quest.step]]
+id = "quelle"
+text = { de = "Die Eishalle der Frostquelle finden", en = "Find the ice hall of the Frost Spring" }
+goal = { type = "reach", map = "frost-arena" }
+
+[[quest.step]]
+id = "hueter"
+text = { de = "Kristella beruhigen", en = "Calm Kristella" }
+goal = { type = "defeat", kind = "kristella", count = 1, map = "frost-arena" }
+
+[[quest.step]]
+id = "funke"
+text = { de = "Tüftel den Quellfunken bringen", en = "Bring Tüftel the spring spark" }
+goal = { type = "bring", item = "quellfunke", count = 1, to = "tueftel" }
+
+[[quest.step]]
+id = "fest"
+text = { de = "Mit Oma Pfütze am Brunnen feiern", en = "Celebrate with Oma Pfütze at the well" }
+goal = { type = "talk", who = "oma" }
+
+# Kapitel 5 – Ankündigung, Fortsetzung mit R2-M2.5
+[[quest]]
+id = "sternschlucht"
+kind = "main"
+giver = "oma"
+name = { de = "Das Lied der Sterne", en = "The Song of the Stars" }
+desc = { de = "Kristella sah den Grauen nach Osten ziehen, zur Sternschlucht. Dort wohnt Luma, die Sternenweberin. Sie kennt alle Lieder.", en = "Kristella saw the grey one head east, to the Sternschlucht. Luma the star weaver lives there. She knows every song." }
 reward = { xp = 100 }
 
 [[quest.step]]
 id = "aufbruch"
-text = { de = "In die Frostspitzen aufbrechen (bald)", en = "Set out for the Frostspitzen (soon)" }
+text = { de = "In die Sternschlucht aufbrechen (bald)", en = "Set out for the Sternschlucht (soon)" }
 goal = { type = "manual" }
+
+# Nebenaufgaben in Kapitel 4 (D-M24-08, D-M24-09)
+[[quest]]
+id = "kletterer"
+kind = "side"
+giver = "flocke"
+name = { de = "Verlorene Kletterer", en = "Lost Climbers" }
+desc = { de = "Bolle, Kiesel und Wicke sind von ihrer Tour nicht zurückgekommen. Flocke macht schon mal Tee.", en = "Bolle, Kiesel and Wicke haven't come back from their climb. Flocke is already making tea." }
+reward = { xp = 100, points = 1, items = [{ item = "bommelmuetze", count = 1 }] }
+
+[[quest.step]]
+id = "finden"
+text = { de = "Die drei verschollenen Kletterer finden", en = "Find the three missing climbers" }
+goal = { type = "flag", flag = "kletterer.gefunden", value = 3 }
+
+[[quest.step]]
+id = "bericht"
+text = { de = "Flocke Bescheid geben", en = "Let Flocke know" }
+goal = { type = "talk", who = "flocke" }
+
+[[quest]]
+id = "klarkristalle"
+kind = "side"
+giver = "klonk"
+name = { de = "Klarkristalle für Klonk", en = "Clear Crystals for Klonk" }
+desc = { de = "Acht Klarkristalle liegen versteckt in den Frostspitzen. Klonk will daraus etwas schleifen. Hübsch und nützlich.", en = "Eight clear crystals lie hidden in the Frostspitzen. Klonk wants to cut something from them. Pretty and useful." }
+reward = { xp = 100 }
+
+[[quest.step]]
+id = "sammeln"
+text = { de = "Acht Klarkristalle in den Frostspitzen finden", en = "Find eight clear crystals in the Frostspitzen" }
+goal = { type = "collect", item = "klarkristall", count = 8 }
+
+[[quest.step]]
+id = "bringen"
+text = { de = "Klonk die Kristalle bringen", en = "Bring Klonk the crystals" }
+goal = { type = "bring", item = "klarkristall", count = 8, to = "klonk" }
 
 # Nebenaufgaben in Kapitel 3 (E-319, E-322, E-323)
 [[quest]]

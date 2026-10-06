@@ -1,0 +1,10 @@
+# Graue Stelle am Gipfelgrat (R2-M2.4): hier hat der Dürre getrunken
+speaker = "graue-stelle"
+
+[[start]]
+node = "text"
+
+[[node]]
+id = "text"
+text = { de = "Das Eis hier ist grau und stumpf, als hätte jemand alles Blau herausgetrunken. Daneben ein Abdruck im Schnee – ein großer, müder Fuß.", en = "The ice here is grey and dull, as if someone had drunk all the blue out of it. Next to it, a print in the snow – a large, weary foot." }
+do = ["merker duerrer.grat = 1"]

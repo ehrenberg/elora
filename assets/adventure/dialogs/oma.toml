@@ -2,6 +2,26 @@
 speaker = "oma"
 
 [[start]]
+if = "quest sternschlucht aktiv"
+node = "stern"
+
+[[start]]
+if = "quest frostspitzen schritt fest"
+node = "fest4"
+
+[[start]]
+if = "quest frostspitzen aktiv und merker besiegt.kristella"
+node = "funke"
+
+[[start]]
+if = "quest frostspitzen schritt aufbruch"
+node = "frost"
+
+[[start]]
+if = "quest frostspitzen aktiv"
+node = "unterwegs4"
+
+[[start]]
 if = "quest glutsand schritt fest"
 node = "fest3"
 
@@ -16,10 +36,6 @@ node = "glutsand"
 [[start]]
 if = "quest glutsand aktiv"
 node = "unterwegs"
-
-[[start]]
-if = "quest frostspitzen aktiv"
-node = "frost"
 
 [[start]]
 if = "quest murmelwald schritt fest"
@@ -230,7 +246,24 @@ text = { de = "Ein grauer Wanderer, sagst du? Der nach einem Lied sucht? … Ich
 
 [[node]]
 id = "frost"
-text = { de = "Die Frostspitzen warten. Aber ruh dich ruhig noch ein bisschen aus – das Fest war lang.", en = "The Frostspitzen are waiting. But do rest a little longer – it was a long party." }
+text = { de = "Die Frostquelle, Kind. Sie hat mich als junges Ding so klar denken lassen, dass ich einmal sogar die Steuern verstanden habe. Oben im Oberdorf liegt ein Eisblock vor dem alten Bergsteig. Du weißt ja jetzt, wie man aufstampft. Und zieh dich warm an!", en = "The Frost Spring, dear. When I was young it let me think so clearly that I once even understood the taxes. At the top of the upper village an ice block lies in front of the old mountain path. You know how to stomp now. And dress warmly!" }
+
+[[node]]
+id = "unterwegs4"
+text = { de = "Hast du auch eine Mütze? Ohne Mütze wird man zum Eiszapfen.", en = "Do you have a hat? Without a hat you'll turn into an icicle." }
+
+[[node]]
+id = "fest4"
+text = { de = "Blau wie ein Wintermorgen! Und klar – endlich klar in meinem Kopf. Kristella sagt, er ist einsam?", en = "Blue as a winter morning! And clear – finally clear in my head. Kristella says he is lonely?" }
+next = "fest4_lied"
+
+[[node]]
+id = "fest4_lied"
+text = { de = "… Einsam. Wie ein Brunnen ohne Lied. Ach, warum fällt mir das jetzt ein? Geh nach Osten, Kind, in die Sternschlucht. Dort wohnt Luma, die Sternenweberin. Sie kennt alle Lieder.", en = "… Lonely. Like a well without a song. Oh, why does that come to mind now? Go east, dear, to the Sternschlucht. Luma the star weaver lives there. She knows every song." }
+
+[[node]]
+id = "stern"
+text = { de = "Die Sternschlucht wartet. Aber ruh dich ruhig noch ein bisschen aus – das Fest war lang.", en = "The Sternschlucht is waiting. But do rest a little longer – it was a long party." }
 
 [[bark]]
 if = "merker fest"
