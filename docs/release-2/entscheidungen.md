@@ -137,6 +137,13 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-326 | 2026-10-06 | Musik Kapitel 3 | **Glutsandwüste: „Desert Loop“** (iamoneabe, CC0), **Sandschlange: „Hard Boss Battle 1“** (MintoDog, CC0) | Entscheidung Projektinhaber |
 | E-327 | 2026-10-06 | Abnahme R2-M2.3 | **Kapitel 3 vorerst abgenommen**; aus dem Playtest umgesetzt: Hook-Ruck spürbar schneller, Klonk gibt Waffen zuerst, Munitionstruhen, Sandschlange deutlich schwerer, Gewinn-Bildschirm nach jedem Hüter | Entscheidung Projektinhaber |
 | E-328 | 2026-10-06 | Grafische Verbesserungen | **Umsetzen:** lebendige Bewegung (Stauchen, Strecken, Wippen, Atmen), Flugposen drehen mit der Bewegung, weiche Schatten unter Figuren und Gegnern, Farbe kehrt mit den Quellen zurück (Sättigung als Shader); später eigene Hintergründe je Gebiet und Licht in dunklen Bereichen | Entscheidung Projektinhaber |
+| E-329 | 2026-10-06 | Wetter: Umfang | **Abenteuer und Karten:** im Abenteuer je Gebiet, dazu als Karteneigenschaft im Editor (auch Mehrspieler-Karten, alle sehen dasselbe) | Entscheidung Projektinhaber |
+| E-330 | 2026-10-06 | Wetter: Spielwirkung | **Leichte Wirkung im Abenteuer** (Wind schiebt, nasser oder verschneiter Boden etwas rutschig, Nebel verkürzt die Sicht); im Mehrspieler nur Optik | Entscheidung Projektinhaber |
+| E-331 | 2026-10-06 | Wetter: Steuerung | **Geschichte und Zufall:** solange die Quelle eines Gebiets schweigt, trüb; danach beim Betreten zufällig zwischen schön und den Wettern des Gebiets | Entscheidung Projektinhaber |
+| E-332 | 2026-10-06 | Tageszeiten | **Später, erst Wetter** (O-209 bleibt für die Tageszeiten offen) | Entscheidung Projektinhaber |
+| E-333 | 2026-10-06 | Wetterarten | **Regen, Gewitter, Nebel, Wind (Blätter, Blüten), Sandsturm, Schnee und Schneesturm** | Entscheidung Projektinhaber |
+| E-334 | 2026-10-06 | Wetterklänge | **Freie Aufnahmen (CC0)**, zum Anhören vorgelegt | Entscheidung Projektinhaber |
+| E-335 | 2026-10-06 | Einstellung Wetter | **Voll, sanft, aus** unter Grafik; die Spielwirkung im Abenteuer bleibt gleich | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 
@@ -162,4 +169,4 @@ Neu für Release 2 (Rollenspiel-Abenteuer, siehe [`roadmap.md`](roadmap.md)):
 Für die Zukunft festgehalten:
 
 - [ ] **O-208 Dauerhafte Welt** – ein Server mit fortlaufender Welt, auf dem Spielerfiguren ihren Fortschritt behalten (kleines Online-Rollenspiel; braucht Konten und Speicherung auf dem Server) – nach Release 2
-- [ ] **O-209 Tageszeiten und Wetter** – Tageszeit (Morgen, Tag, Abend, Nacht) und Wetter (Regen, Wind, Nebel, Schnee, Gewitter) in Abenteuer und Karten: Himmel, Licht, Deko-Färbung und Partikel; im Abenteuer ggf. mit Spielwirkung (Gegner nur nachts, leuchtende Pilze, rutschiger Boden bei Regen). Grundlage: Tageszeiten im Hauptmenü (E-291), Tag/Nacht-Vorlagen im Editor – offen, nach R2-M2.1
+- [ ] **O-209 Tageszeiten und Wetter** (Wetter wird mit R2-W1 umgesetzt, E-329 bis E-335; Tageszeiten bleiben offen, E-332) – Tageszeit (Morgen, Tag, Abend, Nacht) und Wetter (Regen, Wind, Nebel, Schnee, Gewitter) in Abenteuer und Karten: Himmel, Licht, Deko-Färbung und Partikel; im Abenteuer ggf. mit Spielwirkung (Gegner nur nachts, leuchtende Pilze, rutschiger Boden bei Regen). Grundlage: Tageszeiten im Hauptmenü (E-291), Tag/Nacht-Vorlagen im Editor – offen, nach R2-M2.1
