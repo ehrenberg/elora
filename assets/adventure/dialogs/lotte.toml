@@ -57,6 +57,10 @@ next = "laden"
 do = ["gib kaktusfrucht 2", "merker lotte.wueste = 1"]
 
 [[bark]]
+if = "quest frostspitzen erledigt"
+text = { de = "Kräutertee aus den Bergen – jetzt auch bei mir!", en = "Herbal tea from the mountains – now at my shop too!" }
+
+[[bark]]
 if = "quest glutsand erledigt und nicht merker fest"
 text = { de = "Kaktusfrüchte! Stachelig außen, saftig innen!", en = "Cactus fruit! Prickly outside, juicy inside!" }
 

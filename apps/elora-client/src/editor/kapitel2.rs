@@ -17,8 +17,8 @@ use elora_map::{Decor, Map, Object, ObjectKind};
 use elora_sim::{TILE_SIZE, Vec2};
 
 use super::prolog::{
-    Grid, T, animate, at, chest, corner, creature, decor, finish, npc, o, plant, ruck_gate, sign,
-    stomp_vault,
+    Grid, T, animate, at, chest, climb_vault, corner, creature, decor, finish, npc, o, plant,
+    ruck_gate, sign, stomp_vault,
 };
 use super::release;
 
@@ -116,6 +116,14 @@ pub fn wald_1() -> Map {
     g.fill((110, 116), (36, 36), '=');
     // schwebende Steinsäule: Rune oben, nur mit Heranhooken (M2.2.2); unten frei für den Weg
     g.fill((186, 188), (20, 30), '%');
+    // Kletterstelle für die Rückkehr mit dem Eisgriff (M2.4.7)
+    let kletter = climb_vault(
+        &mut g,
+        "wald1-kletter",
+        152,
+        40,
+        &[("glanztropfen", 60), ("harz", 2)],
+    );
     // Stampfkammer für die Rückkehr mit Stampfen (M2.3.6)
     let stampf = stomp_vault(
         &mut g,
@@ -160,6 +168,7 @@ pub fn wald_1() -> Map {
         o("west", at(214, 40, 28.0), ObjectKind::Spawn),
         edge_exit("weg-wald-2", w - 2, h, "wald-2", "ost"),
         stampf,
+        kletter,
     ];
     m.decor_back = vec![
         big("waldbaum", 4.0, 44, 0.8),

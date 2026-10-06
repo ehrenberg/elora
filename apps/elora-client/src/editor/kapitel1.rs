@@ -16,8 +16,8 @@ use elora_map::{Map, ObjectKind};
 use elora_sim::Vec2;
 
 use super::prolog::{
-    Grid, T, animate, at, chest, corner, creature, decor, finish, npc, o, plant, pull_vault,
-    ruck_gate, sign, stomp_vault,
+    Grid, T, animate, at, chest, climb_vault, corner, creature, decor, finish, npc, o, plant,
+    pull_vault, ruck_gate, sign, stomp_vault,
 };
 use super::release;
 
@@ -121,6 +121,14 @@ pub fn wiese_2() -> Map {
     // Hügel, Quellstein und Weg nach wiese-3
     g.ground(231, 250, 40);
     g.ground(251, w - 1, 42);
+    // Kletterstelle für die Rückkehr mit dem Eisgriff (M2.4.7)
+    let kletter = climb_vault(
+        &mut g,
+        "wiese2-kletter",
+        252,
+        42,
+        &[("glanztropfen", 60), ("bernstein", 2)],
+    );
     let mut m = g.map("Blütenwiesen 2");
     m.adventure.objects = vec![
         edge_exit("weg-wiese-1", 0, h, "wiese-1", "ost"),
@@ -152,6 +160,7 @@ pub fn wiese_2() -> Map {
     ];
     m.adventure.objects.extend(zug);
     m.adventure.objects.push(stampf);
+    m.adventure.objects.push(kletter);
     m.decor_back = vec![
         decor("honigstand", 24.0, 42),
         decor("bienenstock", 34.0, 42),

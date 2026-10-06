@@ -91,6 +91,10 @@ text = { de = "Blau! Eisblau! Und so kühl, dass meine Brille beschlägt. Gib ma
 do = ["merker eisgriff.stark = 1", "merker quellen_befreit = 4", "merker befreit.frostquelle = 1", "merker fest = 1", "zuneigung tueftel +1"]
 
 [[bark]]
+if = "merker eisgriff.stark"
+text = { de = "Steigkrallen-Version zwei. Bald drei.", en = "Climbing claws, version two. Three coming soon." }
+
+[[bark]]
 if = "merker hof.stampf"
 text = { de = "Die Stampfplatte! Hast du sie schon … krawumm?", en = "The stomp plate! Have you … ka-boom'd it yet?" }
 

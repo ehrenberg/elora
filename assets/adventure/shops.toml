@@ -5,7 +5,7 @@
 id = "lotte"
 owner = "lotte"
 discount = [{ affection = 5, pct = 10 }, { affection = 10, pct = 20 }]
-stock = ["heiltrank", "tautrank", "sandstiefel", "gluecksanhaenger", "strohhut"]
+stock = ["heiltrank", "tautrank", "sandstiefel", "gluecksanhaenger", "strohhut", "kraeutertee"]
 
 # Karawanenführer Sirup (R2-M2.3, E-324)
 [[shop]]

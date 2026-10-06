@@ -907,6 +907,10 @@ impl Session {
             .player(self.player)
             .map_or(elora_sim::Abilities::NONE, |p| p.abilities);
         world.set_abilities(self.player, self.save.abilities().union(current));
+        // gestärkter Eisgriff (D-M24-03) gilt sofort nach Tüftels Arbeit
+        let t = self.save.tuning(&self.content, &Tuning::default());
+        world.tuning.grip_time = t.grip_time;
+        world.tuning.grip_climb = t.grip_climb;
         let max_ammo = world.tuning.max_ammo;
         if let Some(ch) = world.character_mut(self.player) {
             for &w in self.save.weapons.keys() {

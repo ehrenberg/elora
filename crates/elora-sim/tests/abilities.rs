@@ -519,3 +519,35 @@ fn tall_chimney_can_be_climbed_with_grip_only() {
     );
     assert!(climb(Abilities::NONE) > 12.0 * 32.0, "ohne Eisgriff nicht");
 }
+
+/// Gestärkter Eisgriff (R2-M2.4, D-M24-03, A-42): wer zur Wand drückt, zieht sich hinauf,
+/// bis die (verdoppelte) Haftzeit um ist; ohne Stärkung rutscht Elora langsam ab.
+#[test]
+fn strong_grip_pulls_elora_up_the_wall() {
+    let height_after = |climb: f32| {
+        let mut w = world(|t| (5..FLOOR).for_each(|y| set(t, 40, y, Tile::Climb)));
+        w.tuning.grip_climb = climb;
+        w.tuning.grip_time *= 2;
+        spawn(&mut w, standing(37, FLOOR), with(Ability::Grip));
+        run(&mut w, PlayerInput::default(), 10);
+        run(&mut w, input(1, true, false), 1);
+        // bis zur Wand und an ihr festhalten
+        let mut gripped_at = None;
+        let mut highest = f32::MAX;
+        for _ in 0..200 {
+            run(&mut w, input(1, false, false), 1);
+            if core(&w).grip != 0 {
+                gripped_at.get_or_insert(core(&w).pos.y);
+                highest = highest.min(core(&w).pos.y);
+            }
+        }
+        (gripped_at.expect("haftet"), highest)
+    };
+    let (start, end) = height_after(1.6);
+    assert!(end < start - 100.0, "zieht sich hinauf: {start} → {end}");
+    let (start, end) = height_after(0.0);
+    assert!(
+        end >= start - 1.0,
+        "ohne Stärkung geht es nicht hinauf: {start} → {end}"
+    );
+}

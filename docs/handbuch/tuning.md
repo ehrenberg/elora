@@ -128,6 +128,7 @@ Nur im Abenteuer und im Quellenkampf (E-223). Startwerte zum Anspielen; die Sand
 | A-39 | Schneebrocken je Lawine | **7** | Rollen vom höheren Ende hangabwärts | D-M24-06 |
 | A-40 | Abstand der Schneebrocken | **350 ms** | | D-M24-06 |
 | A-41 | Ruhe nach einer Lawine | **8000 ms** | Bevor derselbe Hang wieder abgeht | D-M24-06 |
+| A-42 | Hochziehen an der Kletterwand | **0** (gestärkt **1,6** Einheiten/Tick) | Nach Tüftels Arbeit mit dem Quellfunken der Frostquelle (Merker `eisgriff.stark`): zur Wand drücken zieht Elora hinauf, Haftdauer A-06 doppelt | D-M24-03 |
 
 ## F. Regeln aus Folgeentscheidungen
 

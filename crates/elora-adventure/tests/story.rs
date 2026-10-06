@@ -750,6 +750,14 @@ fn chapter_four_runs_from_the_mountain_path_to_the_party() {
     assert!(g.holds(&c, "quest sternschlucht aktiv"));
     let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
     assert_eq!(conv.node, "stern");
+    // Dorf nach Kapitel 4: Zurufe, Kräutertee bei Lotte, gestärkter Eisgriff (D-M24-03)
+    assert!(bark(&c, &g, "pip").unwrap().de.contains("Kristella"));
+    assert!(bark(&c, &g, "lotte").unwrap().de.contains("Kräutertee"));
+    assert!(bark(&c, &g, "tueftel").unwrap().de.contains("Steigkrallen"));
+    let base = elora_sim::Tuning::default();
+    let t = g.tuning(&c, &base);
+    assert_eq!(t.grip_time, base.grip_time * 2);
+    assert!(t.grip_climb > 0.0 && base.grip_climb.abs() < f32::EPSILON);
 }
 
 #[test]

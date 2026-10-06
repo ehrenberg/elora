@@ -583,3 +583,100 @@ fn chapter_four_from_the_mountain_path_to_the_ice_hall_and_home() {
     };
     assert_eq!((map.as_str(), spawn.as_str()), ("tauwinkel", "bergsteig"));
 }
+
+/// Kletterstellen für die Rückkehr (R2-M2.4, M2.4.7): Unter dem hängenden Kamin läuft man
+/// durch; mit dem Eisgriff klettert Elora (nur mit Eingaben) bis auf das Sims mit der Truhe,
+/// ohne ihn nicht.
+#[test]
+fn climb_vaults_need_the_grip() {
+    let tuning = Tuning::default();
+    for (map, spawn, id) in [
+        ("wiese-2", "west", "wiese2-kletter"),
+        ("wald-1", "ost", "wald1-kletter"),
+        ("wueste-2", "west", "wueste2-kletter"),
+    ] {
+        let highest = |abilities: elora_sim::Abilities| {
+            let mut s = Session::new_game(Content::builtin());
+            let mut w = s.enter(map, load(map), spawn, &tuning);
+            // nur das Klettern zählt: Gegner in der Nähe stören den Bot
+            w.creatures.clear();
+            let chest = s
+                .map
+                .adventure
+                .object(&format!("{id}-truhe"))
+                .unwrap_or_else(|| panic!("{map}: Truhe fehlt"))
+                .pos;
+            // unter dem Kamin: fünf Spalten neben der Truhe ist die Mitte zwischen den Wänden
+            // (die Wald-Karten sind gespiegelt: dort liegt das Sims links)
+            let floor = chest.y + 19.0 * 32.0 + 13.0;
+            let wall = |x: f32| {
+                w.collision.tile_at(Vec2::new(x, floor - 10.0 * 32.0)) == elora_sim::Tile::Climb
+            };
+            let side: f32 = if wall(chest.x - 3.0 * 32.0) {
+                -1.0
+            } else {
+                1.0
+            };
+            let start = Vec2::new(chest.x + side * 5.0 * 32.0, floor - 15.0);
+            #[allow(clippy::cast_possible_truncation)]
+            let to_ledge = -side as i8;
+            w.spawn_character(s.player, start);
+            w.set_abilities(s.player, abilities);
+            w.character_mut(s.player).unwrap().invulnerable_until = u64::MAX;
+            for _ in 0..20 {
+                step(&mut s, &mut w, PlayerInput::default(), false);
+            }
+            let mut toward: i8 = 1;
+            let mut held = false;
+            let mut best = f32::MAX;
+            // vom Boden gerade hochspringen und erst oben zur Wand lenken
+            let mut rising = false;
+            for _ in 0..1500 {
+                let c = w.character(s.player).unwrap().core.clone();
+                best = best.min(c.pos.y);
+                let grounded = c.is_grounded(&w.collision);
+                let jump = if c.grip != 0 && !held {
+                    toward = -c.grip;
+                    rising = false;
+                    true
+                } else {
+                    !held && grounded
+                };
+                if jump && grounded {
+                    rising = true;
+                }
+                held = jump;
+                // oben angekommen: nach rechts aufs Sims
+                let dir = if c.pos.y < chest.y + 20.0 {
+                    to_ledge
+                } else if rising && c.vel.y < -3.0 {
+                    0
+                } else {
+                    toward
+                };
+                step(
+                    &mut s,
+                    &mut w,
+                    PlayerInput {
+                        direction: dir,
+                        jump,
+                        ..PlayerInput::default()
+                    },
+                    false,
+                );
+            }
+            (best, chest.y)
+        };
+        let grip = elora_sim::Abilities::NONE.with(elora_sim::Ability::Grip);
+        let (best, top) = highest(grip);
+        assert!(
+            best < top + 8.0,
+            "{map}: mit Eisgriff auf dem Sims ({best} / {top})"
+        );
+        let (best, top) = highest(elora_sim::Abilities::NONE);
+        assert!(
+            best > top + 6.0 * 32.0,
+            "{map}: ohne Eisgriff nicht ({best} / {top})"
+        );
+    }
+}

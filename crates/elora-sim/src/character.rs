@@ -642,17 +642,23 @@ impl CharacterCore {
         // Eisgriff (E-228): in der Luft gegen eine Kletterwand laufen
         let was_gripping = self.grip != 0;
         self.grip = 0;
+        // gestärkt (A-42): wer weiter zur Wand drückt, zieht sich hinauf statt zu rutschen
+        let climbing = tuning.grip_climb > 0.0 && was_gripping;
         if a.has(Ability::Grip)
             && !grounded
             && !self.stomping
             && input.direction != 0
-            && self.vel.y >= 0.0
+            && (self.vel.y >= 0.0 || climbing)
             && self.grip_ticks < ms_to_ticks(tuning.grip_time)
             && self.touches_climb(col, input.direction.signum())
         {
             self.grip = input.direction.signum();
             self.grip_ticks += 1;
-            self.vel.y = self.vel.y.min(tuning.grip_slide_speed);
+            self.vel.y = if tuning.grip_climb > 0.0 {
+                -tuning.grip_climb
+            } else {
+                self.vel.y.min(tuning.grip_slide_speed)
+            };
             self.jumped &= !2;
             if !was_gripping {
                 self.triggered_events |= events::WALL_GRIP;

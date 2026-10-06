@@ -17,8 +17,8 @@ use elora_map::{Decor, Map, Object, ObjectKind};
 use elora_sim::{TILE_SIZE, Vec2};
 
 use super::prolog::{
-    Grid, T, animate, at, chest, corner, creature, decor, finish, npc, o, plant, pull_vault,
-    ruck_gate, sign,
+    Grid, T, animate, at, chest, climb_vault, corner, creature, decor, finish, npc, o, plant,
+    pull_vault, ruck_gate, sign,
 };
 use super::release::{self, Theme};
 
@@ -191,6 +191,14 @@ pub fn wueste_2() -> Map {
     g.ground(96, 140, 45);
     g.ground(141, 150, 42);
     g.ground(151, w - 1, 40);
+    // Kletterstelle für die Rückkehr mit dem Eisgriff (M2.4.7)
+    let kletter = climb_vault(
+        &mut g,
+        "wueste2-kletter",
+        16,
+        40,
+        &[("glanztropfen", 60), ("glutstein", 2)],
+    );
     let mut m = g.map("Karawanenlager");
     let bluete = |n: usize, tx: usize| {
         o(
@@ -232,6 +240,7 @@ pub fn wueste_2() -> Map {
         crab("krabbe-3", 202, 40),
         o("ost", at(214, 40, 28.0), ObjectKind::Spawn),
         edge_exit("weg-ruinen", w - 2, h, "wueste-3", "west"),
+        kletter,
     ];
     m.decor_back = vec![
         big("duene", 12.0, 40, 1.4),

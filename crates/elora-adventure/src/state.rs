@@ -9,6 +9,11 @@ use serde::{Deserialize, Serialize};
 use crate::data::{Branch, Content, Effect, GLANZTROPFEN, ItemKind, Slot};
 use crate::stats::Stats;
 
+/// Merker nach Tüftels Arbeit mit dem Quellfunken der Frostquelle (D-M24-03).
+pub const STRONG_GRIP: &str = "eisgriff.stark";
+/// Hochziehen an der Kletterwand mit gestärktem Eisgriff (A-42, Einheiten/Tick).
+pub const STRONG_GRIP_CLIMB: f32 = 1.6;
+
 /// Ort im Abenteuer: Karte und Speicherpunkt bzw. Eingang.
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct Location {
@@ -222,6 +227,12 @@ impl SaveGame {
     pub fn tuning(&self, content: &Content, base: &Tuning) -> Tuning {
         let mut t = self.stats(content).apply(base);
         t.max_health = self.max_health(content);
+        // Quellfunke der Frostquelle (D-M24-03): Steigkrallen halten doppelt so lange und
+        // ziehen Elora an der Wand hinauf
+        if self.flag(STRONG_GRIP) != 0 {
+            t.grip_time = t.grip_time.saturating_mul(2);
+            t.grip_climb = STRONG_GRIP_CLIMB;
+        }
         t
     }
 

@@ -195,6 +195,9 @@ pub struct Tuning {
     pub avalanche_gap: u32,
     /// A-41: Ruhe nach einer Lawine, bevor derselbe Hang wieder abgeht (ms)
     pub avalanche_rest: u32,
+    /// A-42: Hochziehen an der Kletterwand (Einheiten/Tick, 0 = nur Rutschen); die Sitzung setzt
+    /// es nach dem Quellfunken der Frostquelle (D-M24-03)
+    pub grip_climb: f32,
 }
 
 impl Default for Tuning {
@@ -290,6 +293,7 @@ impl Default for Tuning {
             avalanche_rocks: 7,
             avalanche_gap: 350,
             avalanche_rest: 8000,
+            grip_climb: 0.0,
         }
     }
 }
