@@ -1269,6 +1269,9 @@ fn serpent_def() -> elora_sim::SerpentDef {
         sand_every_ms: 1000,
         sand_ms: 2000,
         sand_width: 3,
+        open_hits: 0,
+        land_damage: 0,
+        land_radius: 0.0,
     }
 }
 
@@ -1453,4 +1456,85 @@ fn angry_serpent_turns_the_basin_to_quicksand_and_leaps_twice() {
         }
     }
     assert_eq!(emerges, 2, "zwei Bögen hintereinander");
+}
+
+/// Playtest 2026-10-06: Die Sandschlange war in einer einzigen Öffnung erledigt. Nach
+/// `open_hits` Treffern taucht sie sofort ab.
+#[test]
+fn serpent_dives_after_a_few_hits() {
+    use elora_sim::creature::serpent;
+    let (mut w, kind) = serpent_world();
+    w.creature_kinds[kind].behavior = Behavior::Serpent(Box::new(elora_sim::SerpentDef {
+        open_hits: 3,
+        ..serpent_def()
+    }));
+    let id = w.add_creature(kind, on_sand(30, 60.0)).unwrap();
+    elora(&mut w, 5);
+    {
+        let c = w.creatures.iter_mut().find(|c| c.id == id).unwrap();
+        c.mode = serpent::STUNNED;
+        c.timer = 0;
+    }
+    for _ in 0..3 {
+        w.hurt_creature(id, 1);
+    }
+    let ev = run(&mut w, PlayerInput::default(), 1);
+    let c = w.creatures.iter().find(|c| c.id == id).unwrap();
+    assert_eq!(c.mode, serpent::TRAIL, "taucht sofort ab");
+    assert_eq!(c.health, 17);
+    assert!(ev.iter().any(|e| matches!(
+        e,
+        Event::CreatureAct {
+            act: elora_sim::CreatureAct::Burrow,
+            ..
+        }
+    )));
+    w.hurt_creature(id, 1);
+    assert_eq!(w.creatures[0].health, 17, "unter dem Sand wieder geschützt");
+}
+
+/// Die Landung schleudert Sand: Schaden im Umkreis; wütend landet sie auf Elora.
+#[test]
+fn angry_serpent_aims_at_elora_and_its_landing_hurts() {
+    use elora_sim::creature::serpent;
+    let (mut w, kind) = serpent_world();
+    w.creature_kinds[kind].behavior = Behavior::Serpent(Box::new(elora_sim::SerpentDef {
+        land_damage: 2,
+        land_radius: 80.0,
+        sand_every_ms: 0,
+        double_at: 0.0,
+        ..serpent_def()
+    }));
+    w.creature_kinds[kind].touch_damage = 0;
+    let id = w.add_creature(kind, on_sand(30, 60.0)).unwrap();
+    w.creatures.iter_mut().find(|c| c.id == id).unwrap().health = 9;
+    let i = elora(&mut w, 22);
+    w.spawn_character(i, on_sand(22, 28.0));
+    // die Warnung kommt unter Elora; dann geht sie zwei Tiles zur Seite
+    for _ in 0..300 {
+        run(&mut w, PlayerInput::default(), 1);
+        if w.creatures[0].mode == serpent::WARN {
+            break;
+        }
+    }
+    assert_eq!(w.creatures[0].mode, serpent::WARN);
+    let side = on_sand(25, 28.0);
+    w.spawn_character(i, side);
+    let before = health(&w);
+    let mut landed_at = None;
+    for _ in 0..200 {
+        run(&mut w, PlayerInput::default(), 1);
+        let c = &w.creatures[0];
+        if c.mode == serpent::STUNNED {
+            landed_at = Some(c.pos.x);
+            break;
+        }
+    }
+    let x = landed_at.expect("gelandet");
+    assert!(
+        (x - side.x).abs() < 60.0,
+        "landet bei Elora: {x} statt {}",
+        side.x
+    );
+    assert!(health(&w) < before, "Sand trifft Elora");
 }

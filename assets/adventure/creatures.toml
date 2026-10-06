@@ -15,7 +15,8 @@
 #               flyer: speed, sight; hover (Höhe über Elora), drop_ms/drop_damage/glow_ms (Funken)
 #               leaper (Dünenwurm, R2-M2.3): sight, speed, warn_ms, jump_x, jump_y, rest_ms
 #               serpent (Sandschlange): sight, speed, trail_ms, warn_ms, jump_x, jump_y, stun_ms,
-#               enrage_at, double_at, sand_every_ms/sand_ms/sand_width (Treibsand im Kessel)
+#               enrage_at, double_at, sand_every_ms/sand_ms/sand_width (Treibsand im Kessel),
+#               open_hits (taucht nach so vielen Treffern ab), land_damage/land_radius (Landung)
 # armor         Panzer: nur Treffer von oben und Stampfen wirken (E-317)
 # Grafik: assets/adventure/creatures/<name>.svg (Teile `idle`, beim Hüpfer zusätzlich `air`;
 #         Hüter zusätzlich `dive` und `stunned`)
@@ -168,12 +169,13 @@ xp = 6
 loot = [{ item = "glanztropfen", min = 2, max = 3 }, { item = "glutstein", min = 1, max = 1, chance = 0.25 }]
 behavior = { type = "flyer", speed = 2.4, sight = 480.0, hover = 150.0, drop_ms = 1600, drop_damage = 1, glow_ms = 1800 }
 
-# Hüter der Glutsandwüste (E-316): Sandspur, Beben, Bogen; verwundbar nur im Bogen und benommen;
-# wütend Treibsand im Kessel, im letzten Viertel zwei Bögen; Stampfen trifft doppelt
+# Hüter der Glutsandwüste (E-316): Sandspur, Beben, Bogen; verwundbar nur im Bogen und benommen,
+# nach 4 Treffern taucht sie ab; die Landung schleudert Sand; wütend Treibsand im Kessel und
+# Sprünge auf Elora, im letzten Viertel zwei Bögen; Stampfen trifft doppelt (Playtest: schwerer)
 [[creature]]
 name = "sandschlange"
 size = [110.0, 70.0]
-health = 30
+health = 48
 touch_damage = 2
 boss = true
 xp = 260
@@ -182,4 +184,4 @@ loot = [
     { item = "glanztropfen", min = 70, max = 70 },
     { item = "glutstein", min = 3, max = 3 },
 ]
-behavior = { type = "serpent", sight = 600.0, speed = 3.2, trail_ms = 1600, warn_ms = 800, jump_x = 5.0, jump_y = 14.0, stun_ms = 2400, enrage_at = 0.5, double_at = 0.25, sand_every_ms = 3500, sand_ms = 3000, sand_width = 3 }
+behavior = { type = "serpent", sight = 600.0, speed = 3.6, trail_ms = 1200, warn_ms = 650, jump_x = 5.0, jump_y = 14.0, stun_ms = 1600, enrage_at = 0.5, double_at = 0.25, sand_every_ms = 3000, sand_ms = 3000, sand_width = 3, open_hits = 4, land_damage = 2, land_radius = 90.0 }

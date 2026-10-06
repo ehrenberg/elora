@@ -92,6 +92,7 @@ impl World {
             },
             tug: 0,
             wall_timer: 0,
+            hits: 0,
         });
         Some(id)
     }
@@ -310,6 +311,7 @@ impl World {
             c.vel += force;
         }
         c.health -= damage;
+        c.hits = c.hits.saturating_add(1);
         c.hit_tick = Some(tick);
         self.events.push(Event::CreatureHit {
             id: c.id,
@@ -674,9 +676,13 @@ impl World {
                 }
                 Behavior::Serpent(ref d) => {
                     let feet = c.pos.y + size.y / 2.0;
-                    if let Some(p) = tick_serpent(c, d, kind.health, gravity, feet, target, events)
-                    {
+                    let (sand, slam) =
+                        tick_serpent(c, d, kind.health, gravity, feet, target, events);
+                    if let Some(p) = sand {
                         sands.push((p, d.sand_width, d.sand_ms));
+                    }
+                    if let Some(p) = slam {
+                        spikes.push((p, d.land_radius * 2.0, 64.0, d.land_damage));
                     }
                     if c.mode == crate::creature::serpent::SLEEP {
                         continue;
@@ -1011,7 +1017,8 @@ impl World {
     }
 }
 
-/// Ein Tick des Hüters im Sand; liefert eine Stelle für Treibsand, wenn er wütend ist.
+/// Ein Tick des Hüters im Sand; liefert eine Stelle für Treibsand (wütend) und die Stelle
+/// einer Landung, die Sand schleudert.
 #[allow(clippy::too_many_lines)]
 fn tick_serpent(
     c: &mut Creature,
@@ -1021,7 +1028,7 @@ fn tick_serpent(
     feet: f32,
     target: Option<(Vec2, f32)>,
     events: &mut Vec<Event>,
-) -> Option<Vec2> {
+) -> (Option<Vec2>, Option<Vec2>) {
     use crate::creature::serpent::{LEAP, SLEEP, STUNNED, TRAIL, WARN};
     #[allow(clippy::cast_precision_loss)]
     let life = c.health as f32 / max_health.max(1) as f32;
@@ -1041,6 +1048,9 @@ fn tick_serpent(
     c.timer = c.timer.saturating_add(1);
     c.vel.y += gravity;
     let mut sand = None;
+    let mut slam = None;
+    // ab halbem Leben springt sie gezielt auf Elora zu
+    let aim = target.map(|(p, _)| p).filter(|_| angry);
     match c.mode {
         SLEEP => {
             c.vel = Vec2::ZERO;
@@ -1049,12 +1059,12 @@ fn tick_serpent(
                 c.timer = 0;
                 act(events, c.pos, CreatureAct::Wake);
             }
-            return None;
+            return (None, None);
         }
         TRAIL => {
             let Some((p, _)) = target else {
                 c.vel.x = 0.0;
-                return None;
+                return (None, None);
             };
             let dx = p.x - c.pos.x;
             c.facing = sign(dx);
@@ -1074,7 +1084,8 @@ fn tick_serpent(
         WARN => {
             c.vel.x = 0.0;
             if c.timer >= ticks(d.warn_ms) {
-                leap(c, d, pace);
+                c.hits = 0;
+                leap(c, d, gravity, pace, aim);
                 act(events, c.pos, CreatureAct::Emerge);
             }
         }
@@ -1085,10 +1096,13 @@ fn tick_serpent(
             if c.grounded && c.timer > 4 && c.vel.y >= 0.0 {
                 c.vel.x = 0.0;
                 act(events, c.pos, CreatureAct::Land);
+                if d.land_damage > 0 {
+                    slam = Some(Vec2::new(c.pos.x, feet));
+                }
                 if double && c.count == 0 {
-                    // gleich noch ein Bogen
+                    // gleich noch ein Bogen, jetzt auf Elora zu
                     c.count = 1;
-                    leap(c, d, pace);
+                    leap(c, d, gravity, pace, target.map(|(p, _)| p));
                     act(events, c.pos, CreatureAct::Emerge);
                 } else {
                     c.count = 0;
@@ -1098,9 +1112,11 @@ fn tick_serpent(
             }
         }
         _ => {
-            // STUNNED: benommen, dann wieder unter den Sand
+            // STUNNED: benommen, dann wieder unter den Sand – nach zu vielen Treffern sofort
             c.vel.x = 0.0;
-            if c.timer >= ms_to_ticks(d.stun_ms) {
+            let too_many = d.open_hits > 0 && c.hits >= d.open_hits;
+            if c.timer >= ms_to_ticks(d.stun_ms) || too_many {
+                c.hits = 0;
                 c.mode = TRAIL;
                 c.timer = 0;
                 act(events, c.pos, CreatureAct::Burrow);
@@ -1121,19 +1137,30 @@ fn tick_serpent(
             sand = Some(at);
         }
     }
-    sand
+    (sand, slam)
 }
 
-/// Sprung der Sandschlange: hoch und zur Mitte des Kessels (Startpunkt).
-fn leap(c: &mut Creature, d: &SerpentDef, pace: f32) {
+/// Sprung der Sandschlange: hoch und zur Mitte des Kessels (Startpunkt) – oder mit `aim`
+/// so, dass sie auf dieser Stelle landet.
+fn leap(c: &mut Creature, d: &SerpentDef, gravity: f32, pace: f32, aim: Option<Vec2>) {
     use crate::creature::serpent::LEAP;
-    let toward = if (c.home.x - c.pos.x).abs() > 1.0 {
-        sign(c.home.x - c.pos.x)
+    let vx = if let Some(p) = aim {
+        // Flugzeit bis zurück auf die Ausgangshöhe
+        let air = 2.0 * d.jump_y / gravity.max(0.01);
+        let max = d.jump_x * 1.6;
+        ((p.x - c.pos.x) / air).clamp(-max, max)
     } else {
-        -c.facing
+        let toward = if (c.home.x - c.pos.x).abs() > 1.0 {
+            sign(c.home.x - c.pos.x)
+        } else {
+            -c.facing
+        };
+        f32::from(toward) * d.jump_x * pace.sqrt()
     };
-    c.facing = toward;
-    c.vel = Vec2::new(f32::from(toward) * d.jump_x * pace.sqrt(), -d.jump_y);
+    if vx.abs() > 0.1 {
+        c.facing = sign(vx);
+    }
+    c.vel = Vec2::new(vx, -d.jump_y);
     c.mode = LEAP;
     c.timer = 0;
 }

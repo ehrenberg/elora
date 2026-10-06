@@ -227,6 +227,14 @@ pub struct SerpentDef {
     pub sand_ms: u32,
     #[cfg_attr(feature = "serde", serde(default))]
     pub sand_width: u32,
+    /// Nach so vielen Treffern in einer Öffnung taucht sie sofort ab (0 = nie).
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub open_hits: u32,
+    /// Landung schleudert Sand: Schaden im Umkreis (Einheiten, 0 = aus).
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub land_damage: i32,
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub land_radius: f32,
 }
 
 /// Zustand des Hüters im Sand (in [`Creature::mode`]).
@@ -329,6 +337,8 @@ pub struct Creature {
     /// Tauziehen am Wurzelwächter (Ticks) und Takt der Wurzelwände.
     pub tug: u32,
     pub wall_timer: u32,
+    /// Treffer seit der letzten Öffnung (Sandschlange: taucht nach `open_hits` ab).
+    pub hits: u32,
 }
 
 impl Creature {
