@@ -183,6 +183,18 @@ pub struct Tuning {
     pub grenade_wind: f32,
     /// A-35: nasser bzw. verschneiter Boden: Anteil des Eis-Effekts bei voller Nässe
     pub wet_slip: f32,
+    /// A-36: so lange trägt dünnes Eis, bis es unter Elora bricht (ms, R2-M2.4)
+    pub thin_ice_break: u32,
+    /// A-37: gebrochenes dünnes Eis wächst nach (ms)
+    pub thin_ice_regrow: u32,
+    /// A-38: Schaden im Eiswasser (danach zurück an den Rand)
+    pub ice_water_damage: i32,
+    /// A-39: Schneebrocken je Lawine
+    pub avalanche_rocks: u32,
+    /// A-40: Abstand der Schneebrocken einer Lawine (ms)
+    pub avalanche_gap: u32,
+    /// A-41: Ruhe nach einer Lawine, bevor derselbe Hang wieder abgeht (ms)
+    pub avalanche_rest: u32,
 }
 
 impl Default for Tuning {
@@ -272,6 +284,12 @@ impl Default for Tuning {
             lightning_every: 9000,
             grenade_wind: 2.2,
             wet_slip: 0.33,
+            thin_ice_break: 600,
+            thin_ice_regrow: 4000,
+            ice_water_damage: 1,
+            avalanche_rocks: 7,
+            avalanche_gap: 350,
+            avalanche_rest: 8000,
         }
     }
 }

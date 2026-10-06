@@ -610,6 +610,59 @@ pub fn draw_quicksand(batch: &mut ShapeBatch, min: Vec2, top: bool, time: f32) {
     }
 }
 
+const ICE_SLAB: Color = Color::hex(0xc4e6f4);
+const ICE_EDGE: Color = Color::hex(0x5fa8d0);
+const WATER_DEEP: Color = Color::hex(0x2f6f9e);
+const WATER_TOP: Color = Color::hex(0x9fd8f0);
+
+/// Dünnes Eis (R2-M2.4): helle Platte im oberen Teil des Tiles, darunter ist es frei.
+pub fn draw_thin_ice(batch: &mut ShapeBatch, min: Vec2) {
+    let ts = TILE_SIZE as f32;
+    let h = ts * 0.45;
+    batch.fill_rect(
+        Vec2::new(min.x - SEAM, min.y),
+        Vec2::new(min.x + ts + SEAM, min.y + h),
+        ICE_SLAB,
+    );
+    batch.stroke_polyline(
+        &[
+            Vec2::new(min.x, min.y + h),
+            Vec2::new(min.x + ts, min.y + h),
+        ],
+        1.5,
+        ICE_EDGE,
+    );
+    batch.stroke_polyline(
+        &[
+            Vec2::new(min.x + 4.0, min.y + 3.0),
+            Vec2::new(min.x + 14.0, min.y + 3.0),
+        ],
+        1.8,
+        Color::rgba(1.0, 1.0, 1.0, 0.9),
+    );
+}
+
+/// Eiswasser (R2-M2.4): dunkles Blau, oben eine bewegte helle Oberfläche.
+pub fn draw_ice_water(batch: &mut ShapeBatch, min: Vec2, top: bool, time: f32) {
+    let ts = TILE_SIZE as f32;
+    let y0 = if top { min.y + 6.0 } else { min.y - SEAM };
+    batch.fill_rect(
+        Vec2::new(min.x - SEAM, y0),
+        min + Vec2::new(ts + SEAM, ts + SEAM),
+        WATER_DEEP,
+    );
+    if top {
+        let pts: Vec<Vec2> = (0..=8)
+            .map(|i| {
+                #[allow(clippy::cast_precision_loss)]
+                let x = min.x + i as f32 * ts / 8.0;
+                Vec2::new(x, min.y + 6.0 + (time * 2.2 + x * 0.15).sin() * 1.2)
+            })
+            .collect();
+        batch.stroke_polyline(&pts, 2.0, WATER_TOP);
+    }
+}
+
 /// Hook-Blüte im Tile `min`; `active` = frisch (greift), sonst welk. Wiegt sich leicht.
 pub fn draw_hook_point(batch: &mut ShapeBatch, art: &MapArt, min: Vec2, active: bool, time: f32) {
     let half = TILE_SIZE as f32 / 2.0;

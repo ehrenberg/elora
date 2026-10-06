@@ -153,6 +153,11 @@ impl CharacterCore {
         col.tile_at(Vec2::new(self.pos.x, self.pos.y + PHYS_SIZE / 2.0 - 1.0)) == Tile::Quicksand
     }
 
+    /// Steckt die Figur im Eiswasser (R2-M2.4)?
+    pub fn in_ice_water(&self, col: &Collision) -> bool {
+        col.tile_at(Vec2::new(self.pos.x, self.pos.y + PHYS_SIZE / 2.0 - 4.0)) == Tile::IceWater
+    }
+
     /// Ist die Figur ganz eingesunken (Kopf im Treibsand)?
     pub fn buried(&self, col: &Collision) -> bool {
         col.tile_at(Vec2::new(self.pos.x, self.pos.y - PHYS_SIZE / 2.0 + 4.0)) == Tile::Quicksand

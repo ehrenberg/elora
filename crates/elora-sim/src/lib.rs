@@ -17,6 +17,7 @@ pub mod math;
 pub mod player;
 #[cfg(feature = "serde")]
 pub mod replay;
+mod terrain;
 pub mod tuning;
 pub mod weapon;
 pub mod weather;

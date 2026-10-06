@@ -341,6 +341,7 @@ fn networked(e: &Event) -> bool {
         Event::Stomp { .. }
             | Event::TileBroken { .. }
             | Event::TileSet { .. }
+            | Event::IceCrack { .. }
             | Event::CreatureHit { .. }
             | Event::CreatureDeath { .. }
             | Event::CreatureFire { .. }
@@ -443,6 +444,7 @@ fn put_event(w: &mut Writer, e: &Event) {
         Event::Stomp { .. }
         | Event::TileBroken { .. }
         | Event::TileSet { .. }
+        | Event::IceCrack { .. }
         | Event::CreatureHit { .. }
         | Event::CreatureDeath { .. }
         | Event::CreatureFire { .. }

@@ -290,6 +290,14 @@ def eiszapfen(state='haengt'):
     return s
 
 
+def eiszapfen_figur():
+    """Eiszapfen als Gegner (Spitze unten am Ursprung, 96 hoch)."""
+    s = f'<path d="M -16,-96 L 0,0 L 16,-96 Z" fill="{ICE}" {st(3.5)}/>'
+    s += f'<path d="M -5,-90 L 0,-40" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>'
+    s += f'<path d="M 6,-92 L 4,-70" stroke="{ICE_DARK}" stroke-width="2.5" stroke-linecap="round"/>'
+    return s
+
+
 def duennes_eis(state='ganz'):
     """Dünnes Eis über Eiswasser (je zwei Tiles): ganz, Risse (gleich bricht es), gebrochen."""
     s = f'<rect x="-64" y="0" width="128" height="40" fill="{WATER}" {st(3)}/>'
@@ -305,10 +313,12 @@ def duennes_eis(state='ganz'):
     return s
 
 
-def schneebrocken():
-    """Lawinen-Schneebrocken: rollt hangabwärts, Schneestaub dahinter."""
+def schneebrocken(dust=True):
+    """Lawinen-Schneebrocken: rollt hangabwärts, Schneestaub dahinter (`dust`)."""
     s = blob(0, -30, 30, 28, '#ffffff', n=30, jag=0.08, w=4)
     s += f'<path d="M -14,-44 q 8,-6 18,0 M -6,-22 q 10,6 20,-2" fill="none" stroke="{SNOW_SHADE}" stroke-width="3"/>'
+    if not dust:
+        return s
     for (x, y, r) in ((-48, -20, 10), (-66, -12, 8), (-82, -6, 6)):
         s += f'<circle cx="{x}" cy="{y}" r="{r}" fill="#ffffff" stroke="{SNOW_SHADE}" stroke-width="2"/>'
     s += f'<path d="M 10,-66 a 26,26 0 0 1 22,20" fill="none" stroke="{DIM}" stroke-width="2.5"/>'

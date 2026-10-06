@@ -126,6 +126,12 @@ pub enum Event {
         tx: i32,
         ty: i32,
     },
+    /// Dünnes Eis (R2-M2.4): bekommt Risse unter Elora bzw. bricht (`broken`).
+    IceCrack {
+        tx: i32,
+        ty: i32,
+        broken: bool,
+    },
     /// Ein Tile wurde zeitweise gesetzt oder zurückgesetzt (Wurzelwand, R2-M2.2).
     TileSet {
         tx: i32,

@@ -421,6 +421,8 @@ tile_climb = "Climbing wall (ice grip)"
 tile_crumble = "Crumbling floor (stomp)"
 tile_hook_point = "Hook flower"
 tile_quicksand = "Quicksand"
+tile_thin_ice = "Thin ice"
+tile_ice_water = "Ice water"
 
 [msg]
 joined = "{name} joined"

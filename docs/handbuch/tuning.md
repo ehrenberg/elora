@@ -122,6 +122,12 @@ Nur im Abenteuer und im Quellenkampf (E-223). Startwerte zum Anspielen; die Sand
 | A-33 | Abstand der Blitze | **9000 ms** bei voller Stärke (± 40 %) | Seltener bei schwächerem Gewitter | E-336 |
 | A-34 | Windablenkung Granaten | **2,2** | Granaten treiben mit dem Wind | R2-W1, E-330 |
 | A-35 | Rutschen auf nassem Boden | **0,33** (Anteil Richtung Eis) | Regen, Schnee: weicheres Bremsen | R2-W1, E-330 |
+| A-36 | Dünnes Eis trägt | **600 ms** | Dann bricht es unter Elora (Risse als Warnung); Stampfen bricht sofort | R2-M2.4, E-343 |
+| A-37 | Dünnes Eis wächst nach | **4000 ms** | Erst, wenn niemand im Loch steckt | R2-M2.4 |
+| A-38 | Schaden im Eiswasser | **1** | Danach zurück an den Rand | D-M24-05 |
+| A-39 | Schneebrocken je Lawine | **7** | Rollen vom höheren Ende hangabwärts | D-M24-06 |
+| A-40 | Abstand der Schneebrocken | **350 ms** | | D-M24-06 |
+| A-41 | Ruhe nach einer Lawine | **8000 ms** | Bevor derselbe Hang wieder abgeht | D-M24-06 |
 
 ## F. Regeln aus Folgeentscheidungen
 

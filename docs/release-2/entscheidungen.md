@@ -153,6 +153,7 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-342 | 2026-10-06 | Kapitel 4: Kälte | **Kälte-Leiste** wie die Hitze gespiegelt: draußen füllt sie sich, im Schneesturm schneller; Feuerstellen und Hütten wärmen; voll = langsamer | Entscheidung Projektinhaber |
 | E-343 | 2026-10-06 | Kapitel 4: Gelände | **Eiszapfen, Lawinen, dünnes Eis**; keine Sprungfelder | Entscheidung Projektinhaber |
 | E-344 | 2026-10-06 | Plan R2-M2.4 | **Freigegeben** mit den Vorschlägen D-M24-01 bis D-M24-10 ([`m2-4-plan.md`](m2-4-plan.md)) | Entscheidung Projektinhaber |
+| E-345 | 2026-10-06 | Entwürfe Kapitel 4 (M2.4.0) | **Angenommen** ([`design/kapitel4-entwuerfe.png`](design/kapitel4-entwuerfe.png)) | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 

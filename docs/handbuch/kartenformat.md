@@ -91,6 +91,10 @@ Die Karte prüft den Aufbau (Ids, Lage, Größen, Raster); Verweise auf Gegnerar
 | Beschleuniger | Trägt eine darauf stehende Figur wie ein Laufband (T-35); Hook greift |
 | Kletterwand | Wand, Hook greift **nicht**; mit Eisgriff kann Elora daran haften und abspringen (E-228) |
 | Bröckelboden | Wand, Hook greift; bricht beim Stampfen und bleibt zerbrochen (E-230) |
+| Hook-Blüte | Hookpunkt in der Luft; alles andere fliegt und läuft hindurch (R2-M2.1) |
+| Treibsand | Nicht fest; Figuren sinken ein und laufen langsamer, Springen befreit (E-318) |
+| Dünnes Eis | Trägt, Hook greift **nicht**; bricht nach kurzem Stehen (A-36) oder sofort beim Stampfen und wächst nach (A-37) (R2-M2.4) |
+| Eiswasser | Nicht fest; wer hineinfällt, nimmt Schaden (A-38) und kommt zurück an den Rand (R2-M2.4) |
 
 ## 4. Regeln
 

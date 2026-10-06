@@ -110,6 +110,8 @@ struct Cache {
     hook_points: Vec<(Vec2, i32)>,
     /// Treibsand: Ecke und ob oben frei (vor den Figuren gezeichnet, sie sinken ein).
     quicksand: Vec<(Vec2, bool)>,
+    /// Dünnes Eis und Eiswasser (R2-M2.4): Ecke, Art, ob oben frei.
+    ice: Vec<(Vec2, Tile, bool)>,
 }
 
 impl Cache {
@@ -167,8 +169,21 @@ impl Cache {
                 (Vec2::new(x as f32 * ts, y as f32 * ts), top)
             })
             .collect();
+        let ice = map
+            .tiles
+            .iter()
+            .enumerate()
+            .filter(|(_, t)| matches!(t, Tile::ThinIce | Tile::IceWater))
+            .map(|(i, t)| {
+                let (x, y) = (i % map.width, i / map.width);
+                let top = y == 0 || map.tiles[i - map.width] != *t;
+                #[allow(clippy::cast_precision_loss)]
+                (Vec2::new(x as f32 * ts, y as f32 * ts), *t, top)
+            })
+            .collect();
         Self {
             quicksand,
+            ice,
             key: Key::of(map),
             col: map.collision(),
             materials,
@@ -390,7 +405,8 @@ impl MapView {
         self.decor(batch, map, &map.decor_front, camera, time);
     }
 
-    /// Treibsand vor den Figuren (E-318): wer einsinkt, verschwindet darin.
+    /// Treibsand vor den Figuren (E-318): wer einsinkt, verschwindet darin; ebenso Eiswasser
+    /// und dünnes Eis (R2-M2.4).
     pub fn draw_quicksand(
         &mut self,
         batch: &mut ShapeBatch,
@@ -409,6 +425,19 @@ impl MapView {
                 && pos.y <= max.y
             {
                 map_art::draw_quicksand(batch, pos, top, secs);
+            }
+        }
+        for &(pos, tile, top) in &cache.ice {
+            if pos.x + TILE_SIZE as f32 >= min.x
+                && pos.x <= max.x
+                && pos.y + TILE_SIZE as f32 >= min.y
+                && pos.y <= max.y
+            {
+                if tile == Tile::ThinIce {
+                    map_art::draw_thin_ice(batch, pos);
+                } else {
+                    map_art::draw_ice_water(batch, pos, top, secs);
+                }
             }
         }
     }
@@ -789,6 +818,49 @@ mod tests {
         let svg = batch.debug_svg(tl, tl + cam.size, elora_render::Color::hex(0x8fb8d9));
         std::fs::write(
             concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/look.svg"),
+            svg,
+        )
+        .unwrap();
+    }
+
+    /// Dünnes Eis über Eiswasser zur Sichtprüfung (R2-M2.4): `… ice_sheet -- --ignored`, danach
+    /// `cargo xtask svg-preview target/ice.svg target/ice.png 800`.
+    #[test]
+    #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
+    fn ice_sheet() {
+        let mut map = Map::from_rows(
+            "Eis",
+            &[
+                "............",
+                "............",
+                ".S..........",
+                "##~~------##",
+                "##++++++++##",
+                "##++++++++##",
+                "############",
+            ],
+        )
+        .expect("gültig");
+        map.materials = vec!["snow".into()];
+        map.material_map = vec![1; map.tiles.len()];
+        let mut view = MapView::default();
+        let mut batch = ShapeBatch::default();
+        let cam = Camera {
+            center: Vec2::new(192.0, 112.0),
+            size: Vec2::new(384.0, 224.0),
+        };
+        let t = LookTime::default();
+        view.draw_back(&mut batch, &map, &cam, t);
+        batch.fill_circle(
+            Vec2::new(200.0, 82.0),
+            14.0,
+            elora_render::Color::hex(0xf2c14e),
+        );
+        view.draw_front(&mut batch, &map, &cam, t);
+        let tl = cam.top_left();
+        let svg = batch.debug_svg(tl, tl + cam.size, elora_render::Color::hex(0xdcebf5));
+        std::fs::write(
+            concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/ice.svg"),
             svg,
         )
         .unwrap();

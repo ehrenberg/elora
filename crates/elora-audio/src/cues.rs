@@ -324,6 +324,15 @@ pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>)
         Event::FlagReturn { .. } => vec![Cue::global(Sound::FlagReturn)],
         Event::FlagCapture { .. } => vec![Cue::global(Sound::FlagCapture)],
         Event::TileBroken { .. } | Event::TileSet { .. } => Vec::new(),
+        // dünnes Eis (R2-M2.4): knackt, bricht (eigene Klänge folgen mit M2.4.8)
+        Event::IceCrack { tx, ty, broken } => {
+            #[allow(clippy::cast_precision_loss)]
+            let pos = Vec2::new(
+                (tx as f32 + 0.5) * elora_sim::TILE_SIZE as f32,
+                ty as f32 * elora_sim::TILE_SIZE as f32,
+            );
+            vec![Cue::at(Sound::Deflect, pos).pitched(if broken { 0.7 } else { 1.5 })]
+        }
         // Gegner (A1.2): vorerst vorhandene Sounds, eigene liefert der Projektinhaber (E-109)
         // Hüter in der Luft: Treffer prallt ab (E-299)
         Event::CreatureHit { pos, damage: 0, .. } => vec![Cue::at(Sound::Deflect, pos)],

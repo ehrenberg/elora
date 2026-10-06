@@ -70,10 +70,16 @@ pub enum Tile {
     /// Treibsand (R2-M2.3, E-318): nicht fest; Figuren sinken langsam ein und laufen
     /// langsamer, Springen befreit, tief eingesunken kleiner Schaden und zurück an den Rand.
     Quicksand,
+    /// Dünnes Eis (R2-M2.4, E-343): fest, nicht hookbar, nicht rutschig; bricht nach kurzem
+    /// Stehen (A-36) oder sofort beim Stampfen und wächst nach einer Weile nach (A-37).
+    ThinIce,
+    /// Eiswasser (R2-M2.4): nicht fest; wer hineinfällt, nimmt kleinen Schaden (A-38) und
+    /// kommt zurück an den Rand.
+    IceWater,
 }
 
 /// Zeichen der Tile-Arten im Textformat und in Aufzeichnungen (E-024, M6.1).
-const TILE_CHARS: [(char, Tile); 15] = [
+const TILE_CHARS: [(char, Tile); 17] = [
     ('.', Tile::Air),
     ('#', Tile::Solid),
     ('%', Tile::Unhookable),
@@ -89,12 +95,15 @@ const TILE_CHARS: [(char, Tile); 15] = [
     (':', Tile::Crumble),
     ('*', Tile::HookPoint),
     ('&', Tile::Quicksand),
+    ('-', Tile::ThinIce),
+    ('+', Tile::IceWater),
 ];
 
 impl Tile {
     /// Zeichen im Textformat (`.` Luft, `#` Wand, `%` unhookable, `^` Tod, `=` Plattform,
     /// `~` Eis, `!` `\` `/` Sprungfeld hoch/schräg links/schräg rechts, `<` `>` Beschleuniger,
-    /// `|` Kletterwand, `:` Bröckelboden, `*` Hookpunkt, `&` Treibsand).
+    /// `|` Kletterwand, `:` Bröckelboden, `*` Hookpunkt, `&` Treibsand, `-` dünnes Eis,
+    /// `+` Eiswasser).
     pub fn to_char(self) -> char {
         TILE_CHARS
             .iter()
@@ -117,12 +126,13 @@ impl Tile {
                 | Self::Conveyor(_)
                 | Self::Climb
                 | Self::Crumble
+                | Self::ThinIce
         )
     }
 
     /// Greift der Hook an diesem Tile (nur feste Tiles)?
     pub fn is_hookable(self) -> bool {
-        self.is_solid() && !matches!(self, Self::Unhookable | Self::Climb)
+        self.is_solid() && !matches!(self, Self::Unhookable | Self::Climb | Self::ThinIce)
     }
 }
 

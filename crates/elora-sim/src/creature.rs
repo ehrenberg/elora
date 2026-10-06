@@ -129,6 +129,17 @@ pub enum Behavior {
         jump_y: f32,
         rest_ms: u32,
     },
+    /// Eiszapfen an der Decke (R2-M2.4, E-343): hängt harmlos, zittert `warn_ms` lang, sobald
+    /// Elora darunter ist (waagerecht bis `sight`, senkrecht bis `reach`, freie Sicht), fällt
+    /// dann und zerschellt am Boden oder an Elora. **Nur im Fall gefährlich.**
+    Icicle {
+        sight: f32,
+        reach: f32,
+        warn_ms: u32,
+    },
+    /// Schneebrocken einer Lawine (R2-M2.4): rollt mit `speed` in Blickrichtung hangabwärts
+    /// und zerplatzt an einer Wand, an Elora oder nach `life_ms`.
+    Roller { speed: f32, life_ms: u32 },
 }
 
 /// Werte des Hüters aus der Luft ([`Behavior::Diver`]).
@@ -291,6 +302,15 @@ pub mod leaper {
     pub const LEAP: u8 = 2;
 }
 
+/// Zustand eines Eiszapfens (in [`Creature::mode`]).
+pub mod icicle {
+    pub const HANG: u8 = 0;
+    /// Zittert: gleich fällt er.
+    pub const SHAKE: u8 = 1;
+    /// Fällt: gefährlich.
+    pub const FALL: u8 = 2;
+}
+
 /// Eintrag der Beutetabelle: `min`–`max` Stück mit Wahrscheinlichkeit `chance`.
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
@@ -364,15 +384,24 @@ impl Creature {
             Behavior::Follower { .. } => false,
             Behavior::Leaper { .. } => self.mode == leaper::LEAP,
             Behavior::Serpent(_) => self.mode == serpent::LEAP,
+            Behavior::Icicle { .. } => self.mode == icicle::FALL,
             _ => true,
         }
+    }
+
+    /// Zerschellt bei Berührung (Eiszapfen, Schneebrocken)?
+    pub fn shatters(kind: &CreatureKind) -> bool {
+        matches!(
+            kind.behavior,
+            Behavior::Icicle { .. } | Behavior::Roller { .. }
+        )
     }
 
     /// Kann der Hook ihn greifen? (Versteckte Schlangen und Begleiter nicht.)
     pub fn hookable(&self, kind: &CreatureKind) -> bool {
         match kind.behavior {
             Behavior::Burrower { .. } => self.mode == burrow::OUT,
-            Behavior::Follower { .. } => false,
+            Behavior::Follower { .. } | Behavior::Icicle { .. } | Behavior::Roller { .. } => false,
             Behavior::Leaper { .. } => self.mode == leaper::LEAP,
             Behavior::Serpent(_) => matches!(self.mode, serpent::LEAP | serpent::STUNNED),
             _ => true,

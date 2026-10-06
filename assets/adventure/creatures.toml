@@ -185,3 +185,20 @@ loot = [
     { item = "glutstein", min = 3, max = 3 },
 ]
 behavior = { type = "serpent", sight = 600.0, speed = 3.6, trail_ms = 1200, warn_ms = 650, jump_x = 5.0, jump_y = 14.0, stun_ms = 1600, enrage_at = 0.5, double_at = 0.25, sand_every_ms = 3000, sand_ms = 3000, sand_width = 3, open_hits = 4, land_damage = 2, land_radius = 90.0 }
+
+# Kapitel 4 (R2-M2.4, E-343): Gelände als „Gegner“ – keine Erfahrung, keine Beute.
+# Eiszapfen an der Decke: zittert, sobald Elora darunter ist, fällt und zerschellt
+[[creature]]
+name = "eiszapfen"
+size = [20.0, 48.0]
+health = 1
+touch_damage = 2
+behavior = { type = "icicle", sight = 48.0, reach = 420.0, warn_ms = 450 }
+
+# Schneebrocken einer Lawine: rollt hangabwärts und zerplatzt an Wand oder Elora
+[[creature]]
+name = "schneebrocken"
+size = [36.0, 36.0]
+health = 1
+touch_damage = 2
+behavior = { type = "roller", speed = 5.0, life_ms = 6000 }

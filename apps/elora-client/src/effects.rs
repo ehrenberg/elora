@@ -184,6 +184,8 @@ pub struct Effects {
     flashes: Vec<Flash>,
     /// Wurzelstöße des Wurzelwächters: Fuß am Boden, Alter (s).
     roots: Vec<(Vec2, f32)>,
+    /// Dünnes Eis mit Rissen (R2-M2.4): Ecke des Tiles, Alter (s).
+    cracks: Vec<(Vec2, f32)>,
     rng: u64,
     trail: f32,
     shake: f32,
@@ -201,6 +203,7 @@ impl Default for Effects {
             particles: Vec::new(),
             flashes: Vec::new(),
             roots: Vec::new(),
+            cracks: Vec::new(),
             rng: 0x9e37_79b9_7f4a_7c15,
             trail: 0.0,
             shake: 0.0,
@@ -244,6 +247,10 @@ const LASER_SPARK: Color = Color::rgb(0.6, 0.95, 1.0);
 const GLITTER: Color = Color::rgb(1.0, 0.95, 0.6);
 const FALLBACK_BODY: Color = Color::hex(0xf2c14e);
 const CRUMB: Color = Color::hex(0xb08a5e);
+/// Splitter von brechendem dünnem Eis.
+const ICE_SHARD: Color = Color::hex(0xcfeefa);
+/// Risse bleiben höchstens so lange (s); das Eis bricht vorher (A-36).
+const CRACK_LIFE: f32 = 2.0;
 /// Sternchen der Leuchtpilze.
 const SPORE: Color = Color::rgba(0.55, 0.85, 1.0, 0.95);
 /// So lange steht ein Wurzelstoß (s).
@@ -421,6 +428,20 @@ impl Effects {
         }
     }
 
+    /// Dünnes Eis bekommt Risse (`broken = false`) oder bricht in Splitter.
+    fn ice_crack(&mut self, tx: i32, ty: i32, broken: bool) {
+        #[allow(clippy::cast_precision_loss)]
+        let ts = elora_sim::TILE_SIZE as f32;
+        #[allow(clippy::cast_precision_loss)]
+        let min = Vec2::new(tx as f32 * ts, ty as f32 * ts);
+        if broken {
+            self.cracks.retain(|c| c.0 != min);
+            self.burst(min + Vec2::new(ts / 2.0, ts / 4.0), ICE_SHARD, &CRUMBS);
+        } else if !self.cracks.iter().any(|c| c.0 == min) {
+            self.cracks.push((min, 0.0));
+        }
+    }
+
     fn on_event(&mut self, e: &Event, scene: &Scene, local: Option<(usize, Vec2)>) {
         let is_local = |slot: usize| local.is_some_and(|(s, _)| s == slot);
         match *e {
@@ -508,6 +529,8 @@ impl Effects {
                 }
                 _ => {}
             },
+            // dünnes Eis (R2-M2.4): Risse, dann Splitter
+            Event::IceCrack { tx, ty, broken } => self.ice_crack(tx, ty, broken),
             // zerbrochener Boden und Wurzelwände bröseln
             Event::TileBroken { tx, ty } | Event::TileSet { tx, ty, .. } => {
                 #[allow(clippy::cast_precision_loss)]
@@ -546,6 +569,10 @@ impl Effects {
             r.1 += dt;
         }
         self.roots.retain(|r| r.1 < ROOT_LIFE);
+        for c in &mut self.cracks {
+            c.1 += dt;
+        }
+        self.cracks.retain(|c| c.1 < CRACK_LIFE);
         self.shake = (self.shake - SHAKE_DECAY * dt).max(0.0);
         self.hit_marker = (self.hit_marker - dt).max(0.0);
     }
@@ -562,6 +589,25 @@ impl Effects {
 
     pub fn draw(&self, batch: &mut ShapeBatch) {
         let mut tint = Tint::new(vec![WHITE]);
+        // Risse im dünnen Eis: wachsen, bis es bricht
+        #[allow(clippy::cast_precision_loss)]
+        let ts = elora_sim::TILE_SIZE as f32;
+        for &(min, age) in &self.cracks {
+            let k = (age / 0.6).min(1.0);
+            let c = Color::rgba(0.18, 0.43, 0.6, 0.9);
+            let mid = min + Vec2::new(ts * 0.5, 3.0);
+            for (dx, dy) in [(-12.0, 6.0), (10.0, 8.0), (-3.0, 10.0)] {
+                batch.stroke_polyline(
+                    &[
+                        mid,
+                        mid + Vec2::new(dx * 0.5, dy * 0.4) * k,
+                        mid + Vec2::new(dx, dy) * k,
+                    ],
+                    1.6,
+                    c,
+                );
+            }
+        }
         // Wurzelstöße: schießen hoch, bleiben kurz, ziehen sich zurück
         for &(foot, age) in &self.roots {
             let t = age / ROOT_LIFE;

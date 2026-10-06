@@ -512,3 +512,48 @@ fn sandstorm_hides_the_sun() {
     }
     assert!(!s.in_sun && s.heat == 0.0, "{}", s.heat);
 }
+
+#[test]
+fn avalanche_rolls_rocks_then_rests() {
+    use elora_map::ObjectKind;
+    let mut map = load("wiese-1");
+    let spawn = map.adventure.object("west").unwrap().pos;
+    let zone = |id: &str, pos: Vec2, size: Vec2| elora_map::Object {
+        id: id.into(),
+        pos,
+        kind: ObjectKind::Zone { size },
+    };
+    // Hang weit weg, die Auslöse-Stelle genau am Eingang
+    map.adventure.objects.push(zone(
+        "lawine-test",
+        spawn + Vec2::new(900.0, -600.0),
+        Vec2::new(500.0, 500.0),
+    ));
+    map.adventure.objects.push(zone(
+        "lawine-test-tritt",
+        spawn - Vec2::new(100.0, 100.0),
+        Vec2::new(200.0, 200.0),
+    ));
+    let mut s = Session::new_game(Content::builtin());
+    let mut w = s.enter("wiese-1", map, "west", &Tuning::default());
+    let rock = w.creature_kind("schneebrocken").expect("in creatures.toml");
+    let mut seen = std::collections::BTreeSet::new();
+    let mut count_after = |s: &mut Session, w: &mut World, ticks: u32| {
+        for _ in 0..ticks {
+            step(s, w, PlayerInput::default(), false);
+            seen.extend(w.creatures.iter().filter(|c| c.kind == rock).map(|c| c.id));
+        }
+        seen.len()
+    };
+    let t = Tuning::default();
+    let rocks = usize::try_from(t.avalanche_rocks).unwrap();
+    assert_eq!(count_after(&mut s, &mut w, 200), rocks, "eine Lawine");
+    // Elora steht weiter auf der Auslöse-Stelle: der Hang ruht erst
+    assert_eq!(count_after(&mut s, &mut w, 100), rocks, "Ruhe nach A-41");
+    let rest = elora_sim::tuning::ms_to_ticks(t.avalanche_rest);
+    assert_eq!(
+        count_after(&mut s, &mut w, rest),
+        rocks * 2,
+        "danach wieder"
+    );
+}

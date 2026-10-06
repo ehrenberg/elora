@@ -41,8 +41,8 @@ speichern und fortsetzen.
 
 | # | Schritt | Inhalt | Prüfung |
 |---|---|---|---|
-| M2.4.0 | Entwürfe | Flocke, Kletterer (3), Kristella (schwebend, Frosthauch, erschöpft, beruhigt), Schneeballrobbe, Eisspitzen-Fledermaus, Frostgeist, Steigkrallen, Eiszapfen, Lawinen-Schneeball, dünnes Eis und Eiswasser, Feuerstelle, Quelle (vereist/befreit); Deko: Gipfel, Tannen im Schnee, Berghütten, Seilbrücken, Gletscher | Deine Auswahl |
-| M2.4.1 | Gelände in der Simulation | **Eiszapfen** (zittern, fallen, zerschellen), **dünnes Eis** (neues Tile: bricht nach kurzem Stehen oder sofort beim Stampfen, wächst nach), **Eiswasser** (neues Tile: kleiner Schaden, zurück an den Rand), **Lawinen** (Zone: Stampfen oder Explosion löst rollende Schneebrocken aus) | Tests |
+| M2.4.0 ✅ | Entwürfe | Flocke, Kletterer (3), Kristella (schwebend, Frosthauch, erschöpft, beruhigt), Schneeballrobbe, Eisspitzen-Fledermaus, Frostgeist, Steigkrallen, Eiszapfen, Lawinen-Schneeball, dünnes Eis und Eiswasser, Feuerstelle, Quelle (vereist/befreit); Deko: Gipfel, Tannen im Schnee, Berghütten, Seilbrücken, Gletscher | Deine Auswahl |
+| M2.4.1 ✅ | Gelände in der Simulation | **Eiszapfen** (zittern, fallen, zerschellen), **dünnes Eis** (neues Tile: bricht nach kurzem Stehen oder sofort beim Stampfen, wächst nach), **Eiswasser** (neues Tile: kleiner Schaden, zurück an den Rand), **Lawinen** (Zone: Stampfen oder Explosion löst rollende Schneebrocken aus) | Tests |
 | M2.4.2 | Kälte | Kälte-Leiste im HUD, Frostrand als Bildeffekt (Post-Shader); Feuerstellen und Hütten wärmen; Werte als Tuning | Tests |
 | M2.4.3 | Neue Gegner | **Schneeballrobbe**: rutscht auf dem Bauch heran, hält an und wirft Schneebälle im Bogen. **Eisspitzen-Fledermaus**: hängt schlafend an der Decke, stürzt herab, wenn Elora darunter ist, flattert zurück. **Frostgeist**: schwebt durch Wände, Berührung lässt Elora kurz erstarren | Tests + Sandbox |
 | M2.4.4 | Hüter-Technik | **Kristella** nach E-341, Phasen siehe unten | Tests + Sandbox |
@@ -51,6 +51,8 @@ speichern und fortsetzen.
 | M2.4.7 | Quellfunke und Dorf | Sieg → Quellfunke → Tüftel stärkt den Eisgriff; Kletterstellen in Kapitel 1–3 (Rückkehr lohnt); `quellen_befreit = 4`, Fest, Weltkarte; Oma kündigt die Sternschlucht an | Tests + Sichtprüfung |
 | M2.4.8 | Musik und Sounds | Musik der Frostspitzen und Kristellas (zum Anhören vorgelegt), Klänge für Robbe, Fledermaus, Geist, Eiszapfen, Lawine, brechendes Eis, Feuerstelle, Kristella | Deine Hörprobe |
 | M2.4.9 | Abnahme | Kapitel 4 durchspielen, speichern, fortsetzen | Deine Abnahme |
+
+**Stand M2.4.0–M2.4.1:** Entwürfe angenommen (E-345). Tiles **dünnes Eis** (`-`) und **Eiswasser** (`+`) in Simulation, Kartenformat, Editor und Grafik; Risse als Warnung, Bruch und Nachwachsen über die zeitweisen Tiles (wachsen nie in eine Figur hinein). Gegnerarten **`eiszapfen`** (Verhalten `icicle`) und **`schneebrocken`** (`roller`); **Lawinen** als Zonen `lawine…` mit Auslöse-Zone `…-tritt` in der Sitzung. Werte A-36 bis A-41. Klänge vorerst Platzhalter (M2.4.8).
 
 ## Ablauf von Kapitel 4 (Vorschlag)
 

@@ -20,6 +20,7 @@ from kapitel2_entwuerfe import (eichhornpirat, pilzkind, pilzmama, pilzwicht, pl
                                 wurzelschlange, wurzelwaechter)
 from kapitel3_entwuerfe import (duenenwurm, funkenmotte, giessstelle, palma, ruinenquelle,  # noqa: E402
                                 sandkrabbe, sandschlange, sirup, steintafel, wasserschlauch)
+from kapitel4_entwuerfe import eiszapfen_figur, schneebrocken  # noqa: E402
 
 
 def strohpuppe():
@@ -74,6 +75,10 @@ CREATURES = {
                                 'm0': sandschlange('spur'), 'm1': sandschlange('spur'),
                                 'm2': sandschlange('beben'),
                                 'm4': f'<g transform="translate(-60,0)">{sandschlange("benommen")}</g>'}),
+    # Kapitel 4 (R2-M2.4): Eiszapfen (Spitze unten; zittert und fällt in derselben Pose),
+    # Schneebrocken der Lawinen (rollt, der Client dreht ihn)
+    'eiszapfen': (48, 0.5, {'idle': eiszapfen_figur()}),
+    'schneebrocken': (36, 0.62, {'idle': f'<g transform="translate(0,1)">{schneebrocken(False)}</g>'}),
 }
 
 

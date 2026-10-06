@@ -5,6 +5,7 @@
 //! Die Simulation (`elora-sim`) bekommt daraus ein Tuning, die Fähigkeiten und den Stand der
 //! Figur; Ereignisse der Welt fließen über [`SaveGame::on_event`] zurück.
 
+pub mod avalanche;
 pub mod check;
 pub mod data;
 pub mod dialog;
@@ -32,7 +33,11 @@ mod tests {
         assert!(c.items.len() >= 10);
         assert_eq!(c.skills.len(), 16, "E-242: 16 Knoten");
         assert_eq!(c.upgrades.len(), 9, "3 Waffen × 3 Stufen");
-        assert_eq!(c.creatures.len(), 15);
+        assert_eq!(
+            c.creatures.len(),
+            17,
+            "bis Kapitel 4 mit Eiszapfen und Schneebrocken"
+        );
     }
 
     #[test]

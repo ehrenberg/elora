@@ -112,6 +112,11 @@ goal = { type = "talk", who = "tueftel" }
 
 Das Aufgabenbuch zeigt erledigte Schritte und den aktuellen, weitere als „?“ (E-251).
 
+## Gelände mit Zustand (R2-M2.4)
+
+- **Zonen mit festem Namensanfang:** `schatten…` und `oase…` kühlen die Hitze-Leiste (E-320). `lawine…` ist ein **Lawinenhang**: Stampfen oder eine Granate darin, oder ein Schritt in die Zone `<hang>-tritt` (z. B. `lawine-grat` und `lawine-grat-tritt`), lässt A-39 Schneebrocken im Abstand A-40 vom höheren Ende hangabwärts rollen; danach ruht der Hang A-41 lang.
+- **Eiszapfen** sind Gegner der Art `eiszapfen` (Verhalten `icicle`): an die Decke setzen; sie zittern, sobald Elora darunter ist, fallen und zerschellen. Keine Erfahrung, keine Beute.
+
 ## Abenteuer-Karten im Editor (A1.8)
 
 Werkzeug **9 „Abenteuer“** (E-268): Art in der Seitenleiste wählen, Klick setzt das Objekt auf den Boden unter der Maus (Sammelstücke schweben in der Tile-Mitte), Tür, Übergang, Zone und Kamera werden aufgezogen. Klick auf ein Objekt wählt es, Ziehen verschiebt (auf ganze Tiles), Rechtsklick oder Entf löscht; Rückgängig wie gewohnt. Rechts stehen die Werte des gewählten Objekts, bei NPCs die Vorschau des Gesprächs und **„Gespräch testen“** (Fenster mit Änderungen an Merkern, Aufgaben, Zuneigung und Gegenständen, E-270). „Inhalte neu laden“ liest `assets/adventure` ohne Neustart; die **Prüfung** zeigt fehlende Gegnerarten, Figuren, Gespräche, Gegenstände, falsche Bedingungen und Übergänge ohne Ziel.

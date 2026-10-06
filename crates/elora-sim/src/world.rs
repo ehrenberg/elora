@@ -69,6 +69,8 @@ pub struct World {
     pub creature_shots: Vec<CreatureShot>,
     /// Zeitweise gesetzte Tiles (Wurzelwände): Tile-Position, ursprüngliches Tile, Ende (Tick).
     pub temp_tiles: Vec<(i32, i32, crate::Tile, u64)>,
+    /// Dünnes Eis mit Rissen (R2-M2.4): Tile-Position und Tick, an dem es bricht.
+    pub cracking: Vec<(i32, i32, u64)>,
     pub loot: Vec<Loot>,
     /// Nächste Id für Kreaturen und Beute.
     pub next_id: u32,
@@ -101,6 +103,7 @@ impl World {
             creatures: Vec::new(),
             creature_shots: Vec::new(),
             temp_tiles: Vec::new(),
+            cracking: Vec::new(),
             loot: Vec::new(),
             next_id: 1,
             weather: None,
@@ -221,6 +224,7 @@ impl World {
         self.tick_pickups();
         self.update_hook_wilt();
         self.tick_weather();
+        self.tick_terrain();
         self.tick_characters();
         self.tick_flags_physics();
         self.tick_characters_deferred();
@@ -908,9 +912,12 @@ impl World {
             let landed = ch.core.triggered_events & crate::character::events::STOMP_LAND != 0;
             let feet = ch.core.pos + Vec2::new(0.0, PHYS_SIZE / 2.0);
             let buried = ch.core.buried(&self.collision);
-            if (ch.core.death || buried) && !self.prediction {
+            let water = ch.core.in_ice_water(&self.collision);
+            if (ch.core.death || buried || water) && !self.prediction {
                 let damage = if ch.core.death {
                     self.tuning.thorn_damage
+                } else if water {
+                    self.tuning.ice_water_damage
                 } else {
                     self.tuning.quicksand_damage
                 };
@@ -963,7 +970,7 @@ impl World {
                     let at = core.pos + Vec2::new(f32::from(dx) * ts, f32::from(dy) * ts);
                     matches!(
                         collision.tile_at(at),
-                        crate::Tile::Death | crate::Tile::Quicksand
+                        crate::Tile::Death | crate::Tile::Quicksand | crate::Tile::IceWater
                     )
                 })
             });
@@ -993,10 +1000,17 @@ impl World {
             for tx in x0..=x1 {
                 #[allow(clippy::cast_precision_loss)]
                 let center = Vec2::new((tx as f32 + 0.5) * tile, (ty as f32 + 0.5) * tile);
-                if self.collision.tile(tx, ty) == crate::Tile::Crumble && center.distance(pos) <= r
-                {
-                    self.collision.set_tile(tx, ty, crate::Tile::Air);
-                    self.events.push(Event::TileBroken { tx, ty });
+                if center.distance(pos) > r {
+                    continue;
+                }
+                match self.collision.tile(tx, ty) {
+                    crate::Tile::Crumble => {
+                        self.collision.set_tile(tx, ty, crate::Tile::Air);
+                        self.events.push(Event::TileBroken { tx, ty });
+                    }
+                    // dünnes Eis bricht sofort (R2-M2.4)
+                    crate::Tile::ThinIce => self.break_thin_ice(tx, ty),
+                    _ => {}
                 }
             }
         }

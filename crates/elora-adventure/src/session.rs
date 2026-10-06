@@ -128,6 +128,8 @@ pub struct Session {
     /// Würfeln noch trüb war (R2-W1).
     base_weather: elora_map::Weather,
     gloomy: bool,
+    /// Lawinenhänge der Karte (R2-M2.4).
+    avalanches: crate::avalanche::Avalanches,
     pub player: usize,
     /// Gegner-Id der Welt → Objekt-Id der Karte.
     creatures: BTreeMap<u32, String>,
@@ -192,6 +194,7 @@ impl Session {
             base_decor: (Vec::new(), Vec::new()),
             base_weather: elora_map::Weather::CLEAR,
             gloomy: false,
+            avalanches: crate::avalanche::Avalanches::default(),
             followers: BTreeMap::new(),
             in_mushrooms: 0,
             heat: 0.0,
@@ -243,6 +246,7 @@ impl Session {
         self.base_decor = (map.decor_back.clone(), map.decor_front.clone());
         adapt_decor(&mut map, &self.save);
         self.base_weather = map.weather;
+        self.avalanches = crate::avalanche::Avalanches::default();
         self.gloomy = c.area_of(name).is_some_and(|a| self.gloomy(a));
         map.weather = self.pick_weather(name);
         let tuning = self.save.tuning(c, base);
@@ -481,6 +485,7 @@ impl Session {
         out.extend(self.followers_home(world));
         self.mushroom_daze(world, pos);
         self.heat(world, pos);
+        self.avalanches.tick(&self.map, world, Some(pos));
         out.extend(self.touch(world, pos));
         out.extend(self.areas(pos));
         out.extend(self.barks(pos));

@@ -135,7 +135,9 @@ const CREATURE_FILES: &[(&str, &[u8])] = creatures!(
     "sandkrabbe",
     "duenenwurm",
     "funkenmotte",
-    "sandschlange"
+    "sandschlange",
+    "eiszapfen",
+    "schneebrocken"
 );
 
 impl CreatureArt {
@@ -249,7 +251,18 @@ impl CreatureArt {
             let hidden = look.hidden.as_ref().is_some_and(|m| std::ptr::eq(m, mesh))
                 || (c.kind == "sandschlange" && c.mode <= 2)
                 || (c.kind == "duenenwurm" && c.mode <= 1);
-            let t = if c.grow < 1.0 {
+            let t = if c.kind == "eiszapfen" {
+                // hängt still, zittert vor dem Fall (R2-M2.4)
+                let shake = if c.mode == elora_sim::creature::icicle::SHAKE {
+                    (time * 70.0).sin() * 1.6
+                } else {
+                    0.0
+                };
+                Affine::translate(c.pos + Vec2::new(shake, 0.0))
+            } else if c.kind == "schneebrocken" {
+                // rollt: dreht sich mit dem Weg
+                Affine::translate(c.pos).then(Affine::rotate(c.pos.x / 18.0))
+            } else if c.grow < 1.0 {
                 // Wurzelschlange wächst langsam aus dem Boden
                 Affine::translate(c.pos + Vec2::new(0.0, h))
                     .then(Affine::scale(flip, c.grow.max(0.05)))
@@ -556,6 +569,8 @@ mod tests {
         for mode in [1, 2, 3, 4] {
             put("sandschlange", mode == 3, false, None, 1, mode);
         }
+        put("eiszapfen", false, false, None, 1, 0);
+        put("schneebrocken", false, false, None, 1, 0);
         // Elora zum Größenvergleich (Box 28)
         batch.fill_circle(Vec2::new(x, ground - 14.0), 14.0, Color::hex(0xf2c14e));
         CreatureArt::draw_shot(&mut batch, Vec2::new(x + 80.0, ground - 60.0), None, 0.0);

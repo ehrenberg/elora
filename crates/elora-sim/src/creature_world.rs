@@ -384,7 +384,6 @@ impl World {
         }
         let chars = self.living();
         self.tick_pull();
-        self.tick_temp_tiles();
         self.tick_behavior(&chars);
         self.tick_shots(&chars);
         self.tick_contact(&chars);
@@ -406,22 +405,6 @@ impl World {
                 && c.pos.distance(to) > PHYS_SIZE * 1.5
             {
                 c.vel += (to - c.pos).normalize() * accel;
-            }
-        }
-    }
-
-    /// Wurzelwände verschwinden wieder.
-    fn tick_temp_tiles(&mut self) {
-        let tick = self.tick;
-        let mut i = 0;
-        while i < self.temp_tiles.len() {
-            let (tx, ty, old, until) = self.temp_tiles[i];
-            if tick >= until {
-                self.collision.set_tile(tx, ty, old);
-                self.events.push(Event::TileSet { tx, ty, tile: old });
-                self.temp_tiles.remove(i);
-            } else {
-                i += 1;
             }
         }
     }
@@ -713,6 +696,66 @@ impl World {
                         events,
                     );
                 }
+                Behavior::Icicle {
+                    sight,
+                    reach,
+                    warn_ms,
+                } => {
+                    use crate::creature::icicle::{FALL, HANG, SHAKE};
+                    let id = c.id;
+                    c.vel.x = 0.0;
+                    match c.mode {
+                        HANG => {
+                            fixed = true;
+                            c.vel = Vec2::ZERO;
+                            let tip = c.pos + Vec2::new(0.0, size.y / 2.0 + 2.0);
+                            let below = chars.iter().any(|&(_, p)| {
+                                (p.x - c.pos.x).abs() <= sight
+                                    && p.y > c.pos.y
+                                    && p.y - c.pos.y <= reach
+                                    && collision.intersect_line(tip, p).is_none()
+                            });
+                            if active && below {
+                                c.mode = SHAKE;
+                                c.timer = 0;
+                                events.push(Event::CreatureAct {
+                                    id,
+                                    pos: c.pos,
+                                    act: CreatureAct::Warn,
+                                });
+                            }
+                        }
+                        SHAKE => {
+                            fixed = true;
+                            c.vel = Vec2::ZERO;
+                            c.timer += 1;
+                            if c.timer >= ms_to_ticks(warn_ms) {
+                                c.mode = FALL;
+                                c.timer = 0;
+                                events.push(Event::CreatureAct {
+                                    id,
+                                    pos: c.pos,
+                                    act: CreatureAct::Dive,
+                                });
+                            }
+                        }
+                        _ => {
+                            c.timer += 1;
+                            c.vel.y += gravity;
+                            if c.grounded && c.timer > 2 {
+                                died.push(c.id);
+                            }
+                        }
+                    }
+                }
+                Behavior::Roller { speed, life_ms } => {
+                    c.timer += 1;
+                    c.vel.y += gravity;
+                    c.vel.x = f32::from(c.facing) * speed;
+                    if c.timer >= ms_to_ticks(life_ms) {
+                        died.push(c.id);
+                    }
+                }
                 Behavior::Flyer {
                     speed,
                     sight,
@@ -773,6 +816,10 @@ impl World {
                 && !follower;
             if matches!(kind.behavior, Behavior::Walker { .. }) && wanted_x != 0.0 && vel.x == 0.0 {
                 c.facing = -c.facing;
+            }
+            // Schneebrocken zerplatzt an der Wand
+            if matches!(kind.behavior, Behavior::Roller { .. }) && wanted_x != 0.0 && vel.x == 0.0 {
+                died.push(c.id);
             }
             c.pos = pos;
             c.vel = vel;
@@ -959,6 +1006,27 @@ impl World {
         for (j, force, damage) in hits {
             if damage > 0 {
                 self.take_damage(j, force, damage, None, DeathCause::Creature);
+            }
+        }
+        // Eiszapfen und Schneebrocken zerschellen an Elora
+        let shattered: Vec<u32> = self
+            .creatures
+            .iter()
+            .filter(|c| {
+                let k = &self.creature_kinds[c.kind];
+                Creature::shatters(k)
+                    && c.harmful(k)
+                    && chars.iter().any(|&(_, p)| {
+                        let d = p - c.pos;
+                        d.x.abs() < f32::midpoint(PHYS_SIZE, k.size[0])
+                            && d.y.abs() < f32::midpoint(PHYS_SIZE, k.size[1])
+                    })
+            })
+            .map(|c| c.id)
+            .collect();
+        for id in shattered {
+            if let Some(i) = self.creature_index(id) {
+                self.kill_creature(i, None, false);
             }
         }
         // bunter Rausch (E-311): nicht nachladen, solange er noch wirkt
