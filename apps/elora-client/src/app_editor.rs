@@ -94,6 +94,7 @@ impl App {
             return;
         };
         gfx.renderer.set_heat_haze(0.0, 0.0);
+        gfx.renderer.set_frost(0.0);
         gfx.renderer.set_saturation(1.0);
         gfx.renderer.set_grade(elora_render::Grade::NONE);
         gfx.renderer

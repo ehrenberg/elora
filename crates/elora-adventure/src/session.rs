@@ -35,6 +35,11 @@ const HEAT_SHADE_MS: u32 = 8_000;
 const HEAT_OASIS_MS: u32 = 2_500;
 /// Ist sie voll, bleibt Elora langsamer, bis die Leiste wieder unter diesen Anteil fällt.
 const HEAT_RECOVER: f32 = 0.5;
+/// Kälte-Leiste (E-342, D-M24-04): so lange draußen bis voll (im Schneesturm halb so lange),
+/// unter einem Dach und am Feuer bis leer.
+const COLD_FILL_MS: u32 = 60_000;
+const COLD_ROOF_MS: u32 = 10_000;
+const COLD_FIRE_MS: u32 = 3_000;
 /// Ein Dach (festes Tile oder Plattform) so viele Tiles über Elora spendet Schatten.
 const SHADE_TILES: i32 = 10;
 /// So nah muss der Hook an einem Sammelstück oder an Beute sein (Heranhooken).
@@ -120,6 +125,10 @@ pub struct Session {
     pub overheated: bool,
     /// Elora steht gerade in der prallen Sonne (Flimmern stärker).
     pub in_sun: bool,
+    /// Kälte-Leiste 0..1 (E-342); nur in kalten Gebieten.
+    pub cold: f32,
+    /// Leiste war voll: Elora ist langsamer, bis sie sich aufgewärmt hat.
+    pub frozen: bool,
     /// Begleiter in der Welt: Figur → Gegner-Id (E-308).
     followers: BTreeMap<String, u32>,
     /// Deko der Karte, wie sie in der Datei steht (für [`Self::refresh_decor`]).
@@ -200,6 +209,8 @@ impl Session {
             heat: 0.0,
             overheated: false,
             in_sun: false,
+            cold: 0.0,
+            frozen: false,
             last_hook: None,
             pending: Vec::new(),
             dead: false,
@@ -485,6 +496,7 @@ impl Session {
         out.extend(self.followers_home(world));
         self.mushroom_daze(world, pos);
         self.heat(world, pos);
+        self.chill(world, pos);
         self.avalanches.tick(&self.map, world, Some(pos));
         out.extend(self.touch(world, pos));
         out.extend(self.areas(pos));
@@ -747,6 +759,55 @@ impl Session {
     /// Ist die Karte ein heißes Gebiet (Wüste, E-320)?
     pub fn hot(&self) -> bool {
         self.content.area_of(&self.map_name).is_some_and(|a| a.hot)
+    }
+
+    /// Ist die Karte ein kaltes Gebiet (Frostspitzen, E-342)?
+    pub fn chilly(&self) -> bool {
+        self.content.area_of(&self.map_name).is_some_and(|a| a.cold)
+    }
+
+    /// Kälte-Leiste (E-342): draußen füllt sie sich (im Schneesturm doppelt so schnell,
+    /// Ausrüstung `cold_pct` verlangsamt), unter einem Dach und am Feuer (Zonen `feuer…`) wärmt
+    /// Elora sich auf; in den Arenen der Hüter ruht sie (wärmt langsam). Voll = langsamer, bis
+    /// sie unter die Hälfte gefallen ist.
+    fn chill(&mut self, world: &mut World, pos: Vec2) {
+        let fire = self.map.adventure.objects.iter().any(|o| {
+            o.id.starts_with("feuer")
+                && matches!(o.kind, ObjectKind::Zone { size } if inside(pos, o.pos, size))
+        });
+        let roof = (1..=SHADE_TILES).any(|k| {
+            #[allow(clippy::cast_precision_loss)]
+            let p = pos - Vec2::new(0.0, (k * TILE_SIZE) as f32);
+            let t = world.collision.tile_at(p);
+            t.is_solid() || t == Tile::Platform
+        });
+        #[allow(clippy::cast_precision_loss)]
+        let step = |ms: u32| 1.0 / elora_sim::tuning::ms_to_ticks(ms).max(1) as f32;
+        if !self.chilly() {
+            self.cold = 0.0;
+        } else if fire {
+            self.cold -= step(COLD_FIRE_MS);
+        } else if roof || self.map_name.ends_with("-arena") {
+            self.cold -= step(COLD_ROOF_MS);
+        } else {
+            let storm = if self.map.weather.kind == elora_map::WeatherKind::Blizzard {
+                2.0
+            } else {
+                1.0
+            };
+            let pct = self.save.stats(&self.content).cold_pct;
+            self.cold += step(COLD_FILL_MS) * storm * (1.0 + pct / 100.0).max(0.1);
+        }
+        self.cold = self.cold.clamp(0.0, 1.0);
+        if self.cold >= 1.0 {
+            self.frozen = true;
+        } else if self.cold < HEAT_RECOVER {
+            self.frozen = false;
+        }
+        // Hitze und Kälte bremsen gleich (A-27)
+        if let Some(ch) = world.character_mut(self.player) {
+            ch.core.overheated = self.overheated || self.frozen;
+        }
     }
 
     /// Hitze-Leiste (E-320): Sonne füllt (Ausrüstung `heat_pct` verlangsamt); Schatten (Dach über Elora, Zonen `schatten…`) und

@@ -557,3 +557,66 @@ fn avalanche_rolls_rocks_then_rests() {
         "danach wieder"
     );
 }
+
+#[test]
+fn cold_fills_outside_faster_in_blizzards_and_warms_at_fire_and_roofs() {
+    use elora_map::{ObjectKind, Weather, WeatherKind};
+    // eine Karte der Wiese, aber in den Frostspitzen
+    let mut map = load("wiese-1");
+    let spawn = map.adventure.object("west").unwrap().pos;
+    map.adventure.objects.push(elora_map::Object {
+        id: "feuer-1".into(),
+        pos: spawn + Vec2::new(-80.0, -2000.0),
+        kind: ObjectKind::Zone {
+            size: Vec2::new(40.0, 40.0),
+        },
+    });
+    let mut s = Session::new_game(Content::builtin());
+    let mut w = s.enter("frost-1", map, "west", &Tuning::default());
+    s.map.weather = Weather::CLEAR;
+    assert!(s.chilly() && !s.hot());
+    let run = |s: &mut Session, w: &mut World, ticks: u32| {
+        for _ in 0..ticks {
+            step(s, w, PlayerInput::default(), false);
+        }
+    };
+    // draußen: etwa 60 s bis voll
+    run(&mut s, &mut w, 1500);
+    assert!(s.cold > 0.45 && s.cold < 0.55, "halb voll: {}", s.cold);
+    // im Schneesturm doppelt so schnell
+    s.map.weather = Weather {
+        kind: WeatherKind::Blizzard,
+        intensity: 1.0,
+        wind: 0.0,
+    };
+    run(&mut s, &mut w, 760);
+    assert!(s.frozen && w.character(s.player).unwrap().core.overheated);
+    // Dach über Elora wärmt langsam
+    s.map.weather = Weather::CLEAR;
+    let pos = w.character(s.player).unwrap().core.pos;
+    #[allow(clippy::cast_possible_truncation)]
+    let (tx, ty) = ((pos.x / 32.0) as i32, (pos.y / 32.0) as i32 - 4);
+    w.collision.set_tile(tx, ty, Tile::Solid);
+    run(&mut s, &mut w, 100);
+    assert!(
+        s.cold < 0.95 && s.frozen,
+        "wärmt unter dem Dach: {}",
+        s.cold
+    );
+    // am Feuer schnell warm
+    w.collision.set_tile(tx, ty, Tile::Air);
+    s.map.adventure.objects.last_mut().unwrap().pos = pos - Vec2::new(20.0, 20.0);
+    run(&mut s, &mut w, 100);
+    assert!(s.cold < 0.4 && !s.frozen, "am Feuer: {}", s.cold);
+    assert!(!w.character(s.player).unwrap().core.overheated);
+}
+
+#[test]
+fn no_cold_outside_the_mountains() {
+    let (mut s, mut w) = start();
+    for _ in 0..300 {
+        step(&mut s, &mut w, PlayerInput::default(), false);
+    }
+    assert!(!s.chilly());
+    assert!(s.cold.abs() < f32::EPSILON && !s.frozen);
+}

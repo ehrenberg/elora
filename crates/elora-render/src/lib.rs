@@ -90,6 +90,8 @@ struct Post {
     time: f32,
     /// Sättigung der Welt (1 = unverändert).
     saturation: f32,
+    /// Frostrand am Bildrand (Kälte, E-342): 0..1.
+    frost: f32,
     /// Farbstimmung des Wetters.
     grade: Grade,
 }
@@ -250,6 +252,11 @@ impl Renderer {
         self.post.saturation = saturation.clamp(0.0, 1.0);
     }
 
+    /// Frostrand am Bildrand (Kälte-Leiste, E-342): 0 = aus, 1 = dicke Eisblumen.
+    pub fn set_frost(&mut self, frost: f32) {
+        self.post.frost = frost.clamp(0.0, 1.0);
+    }
+
     /// Farbstimmung des Wetters für die nächsten Frames ([`Grade::NONE`] = aus).
     pub fn set_grade(&mut self, grade: Grade) {
         self.post.grade = grade;
@@ -331,7 +338,11 @@ impl Renderer {
         batch: &ShapeBatch,
         clear: Color,
     ) {
-        if self.post.strength <= 0.0 && self.post.saturation >= 0.999 && self.post.grade.is_none() {
+        if self.post.strength <= 0.0
+            && self.post.saturation >= 0.999
+            && self.post.frost <= 0.0
+            && self.post.grade.is_none()
+        {
             self.draw_layer(frame, false, camera, batch, Some(clear));
             return;
         }
@@ -380,7 +391,7 @@ impl Renderer {
             gr.fog_density,
             gr.darken,
             gr.flash,
-            0.0,
+            self.post.frost,
             0.0,
         ];
         self.queue
@@ -667,6 +678,7 @@ impl Post {
             strength: 0.0,
             time: 0.0,
             saturation: 1.0,
+            frost: 0.0,
             grade: Grade::NONE,
         }
     }

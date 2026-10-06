@@ -97,6 +97,8 @@ pub enum Bonus {
     LaserDelayPct(f32),
     /// Füllen der Hitze-Leiste in Prozent (negativ = langsamer, E-320).
     HeatPct(f32),
+    /// Füllen der Kälte-Leiste in Prozent (negativ = langsamer, E-342).
+    ColdPct(f32),
 }
 
 /// Verbrauchsgegenstand (P-25).
@@ -260,6 +262,9 @@ pub struct Area {
     /// Heißes Gebiet (Wüste, E-320): Hitze-Leiste und Flimmern.
     #[serde(default)]
     pub hot: bool,
+    /// Kaltes Gebiet (Frostspitzen, E-342): Kälte-Leiste und Frostrand.
+    #[serde(default)]
+    pub cold: bool,
     /// Kapitel des Gebiets und sein Hüter (Art aus `creatures.toml`): Sieg über ihn zeigt den
     /// Gewinn-Bildschirm mit `victory` und dem Ehrentitel `honor`.
     #[serde(default)]

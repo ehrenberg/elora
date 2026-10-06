@@ -119,6 +119,7 @@ pub fn bonus_text(lang: &Lang, b: Bonus) -> String {
         Bonus::LaserPierce(v) => ("bonus.laser_pierce", v.to_string()),
         Bonus::LaserDelayPct(v) => ("bonus.laser_delay_pct", format!("{v:+}")),
         Bonus::HeatPct(v) => ("bonus.heat_pct", format!("{v:+}")),
+        Bonus::ColdPct(v) => ("bonus.cold_pct", format!("{v:+}")),
     };
     lang.f(key, &[("n", &n)])
 }

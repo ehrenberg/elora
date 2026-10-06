@@ -616,6 +616,7 @@ laser_bounces = "{n} bounces"
 laser_pierce = "Pierce {n} enemies"
 laser_delay_pct = "{n} % laser charge time"
 heat_pct = "{n} % heat in the sun"
+cold_pct = "{n} % cold outside"
 
 [refusal]
 unknown = "unknown"

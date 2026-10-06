@@ -640,6 +640,12 @@ impl App {
         let haze = session
             .filter(|s| s.hot())
             .map_or(0.0, |s| (if s.in_sun { 0.6 } else { 0.3 }) + 0.4 * s.heat);
+        // Frostrand ab einem Drittel der Kälte-Leiste, voll pulsiert er leicht (E-342)
+        #[allow(clippy::cast_precision_loss)]
+        let pulse = (tick as f32 * 0.12).sin() * 0.08;
+        let frost = session.filter(|s| s.chilly()).map_or(0.0, |s| {
+            ((s.cold - 0.33) / 0.67).clamp(0.0, 1.0) + if s.frozen { pulse } else { 0.0 }
+        });
         let target = session.map_or(1.0, |s| {
             let freed = s.save.flag(elora_adventure::session::SPRINGS_FREED);
             SATURATION_BY_SPRINGS[usize::try_from(freed.clamp(0, 5)).unwrap_or(0)]
@@ -651,6 +657,7 @@ impl App {
             let secs = tick as f32 / elora_sim::TICKS_PER_SECOND as f32;
             gfx.renderer.set_heat_haze(haze, secs);
             gfx.renderer.set_saturation(self.saturation);
+            gfx.renderer.set_frost(frost);
             gfx.renderer.set_grade(self.weather.grade());
         }
     }

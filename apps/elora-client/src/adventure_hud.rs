@@ -176,20 +176,44 @@ pub fn status(
 /// Hitze-Leiste unter den Glanztropfen (E-320): Sonne und Füllstand von Gelb nach Rot;
 /// voll (Elora ist langsamer) pulsiert sie, bis sie wieder unter die Hälfte fällt.
 pub fn heat_bar(ui: &mut Ui<'_>, heat: f32, overheated: bool, time: f32) {
+    temperature_bar(ui, heat, overheated, time, false);
+}
+
+/// Kälte-Leiste (E-342): Schneeflocke und Füllstand von Hellblau nach Tiefblau; voll pulsiert sie.
+pub fn cold_bar(ui: &mut Ui<'_>, cold: f32, frozen: bool, time: f32) {
+    temperature_bar(ui, cold, frozen, time, true);
+}
+
+fn temperature_bar(ui: &mut Ui<'_>, value: f32, full: bool, time: f32, cold: bool) {
     let s = ui.s;
     let pill = Rect::new(14.0 * s, 52.0 * s, 104.0 * s, 24.0 * s);
     ui.batch
         .fill_rounded_rect(pill.min, pill.max, 12.0 * s, PANEL);
-    // Sonne
-    let sun = pill.min + Vec2::new(15.0 * s, 12.0 * s);
-    for k in 0..8 {
-        #[allow(clippy::cast_precision_loss)]
-        let a = k as f32 * std::f32::consts::TAU / 8.0 + time * 0.6;
-        let d = Vec2::new(a.cos(), a.sin());
-        ui.batch
-            .stroke_line(sun + d * (7.0 * s), sun + d * (10.0 * s), 1.6 * s, GOLD);
+    let icon = pill.min + Vec2::new(15.0 * s, 12.0 * s);
+    if cold {
+        // Schneeflocke, dreht sich langsam
+        let c = Color::hex(0xbfe6f5);
+        for k in 0..6 {
+            #[allow(clippy::cast_precision_loss)]
+            let a = k as f32 * std::f32::consts::TAU / 6.0 + time * 0.3;
+            let d = Vec2::new(a.cos(), a.sin());
+            ui.batch.stroke_line(icon, icon + d * (9.0 * s), 1.8 * s, c);
+            let b = icon + d * (5.5 * s);
+            let n = Vec2::new(-d.y, d.x);
+            ui.batch.stroke_line(b, b + (d + n) * (2.4 * s), 1.4 * s, c);
+            ui.batch.stroke_line(b, b + (d - n) * (2.4 * s), 1.4 * s, c);
+        }
+    } else {
+        // Sonne
+        for k in 0..8 {
+            #[allow(clippy::cast_precision_loss)]
+            let a = k as f32 * std::f32::consts::TAU / 8.0 + time * 0.6;
+            let d = Vec2::new(a.cos(), a.sin());
+            ui.batch
+                .stroke_line(icon + d * (7.0 * s), icon + d * (10.0 * s), 1.6 * s, GOLD);
+        }
+        ui.batch.fill_circle(icon, 5.5 * s, GOLD);
     }
-    ui.batch.fill_circle(sun, 5.5 * s, GOLD);
     // Füllstand
     let (x0, x1) = (pill.min.x + 30.0 * s, pill.max.x - 10.0 * s);
     let (y0, y1) = (pill.min.y + 8.0 * s, pill.max.y - 8.0 * s);
@@ -200,16 +224,20 @@ pub fn heat_bar(ui: &mut Ui<'_>, heat: f32, overheated: bool, time: f32) {
         r,
         Color::rgba(1.0, 1.0, 1.0, 0.2),
     );
-    let h = heat.clamp(0.0, 1.0);
+    let h = value.clamp(0.0, 1.0);
     if h > 0.0 {
         let mix = |a: f32, b: f32| a + (b - a) * h;
-        let (hot, warm) = (Color::hex(0xe8685a).0, GOLD.0);
+        let (strong, mild) = if cold {
+            (Color::hex(0x3f7fc8).0, Color::hex(0xbfe6f5).0)
+        } else {
+            (Color::hex(0xe8685a).0, GOLD.0)
+        };
         let mut c = Color::rgb(
-            mix(warm[0], hot[0]),
-            mix(warm[1], hot[1]),
-            mix(warm[2], hot[2]),
+            mix(mild[0], strong[0]),
+            mix(mild[1], strong[1]),
+            mix(mild[2], strong[2]),
         );
-        if overheated {
+        if full {
             c.0[3] = 0.65 + 0.35 * (time * 8.0).sin();
         }
         ui.batch.fill_rounded_rect(
@@ -840,6 +868,7 @@ mod tests {
         conv.choose(&c, &mut save, 0);
         status(&mut ui, &art, &lang, "de", &c, &save, screen);
         heat_bar(&mut ui, 0.7, false, 1.0);
+        cold_bar(&mut ui, 0.4, true, 1.0);
         bubble(&mut ui, "Hallo, Elora!", Vec2::new(300.0, 200.0));
         prompt(&mut ui, "E", "Sprechen", Vec2::new(600.0, 200.0));
         ui.end();

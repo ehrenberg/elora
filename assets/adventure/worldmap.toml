@@ -2,6 +2,7 @@
 # music: Hintergrundmusik assets/music/<name>.ogg (E-285); party_music: beim Fest (Merker fest);
 # spring: Quelle des Gebiets, befreit mit Merker befreit.<spring>; boss_music: Kampfmusik (sonst boss).
 # hot: heißes Gebiet mit Hitze-Leiste (E-320); Schatten unter Dächern und in Zonen schatten…, Oase in Zonen oase….
+# cold: kaltes Gebiet mit Kälte-Leiste (E-342); Dächer, Hüter-Arenen und Zonen feuer… wärmen.
 # chapter/guardian: Kapitel und Hüter – nach dem Sieg Gewinn-Bildschirm mit victory und dem Ehrentitel honor.
 # weather_gloomy / weather: Wetter beim Betreten (R2-W1) – trüb, solange die Quelle schweigt (ohne Quelle:
 # bis clears_after_springs Quellen befreit sind), sonst weather; kind, weight, intensity = [von, bis], wind = [von, bis].
@@ -97,6 +98,7 @@ name = { de = "Frostspitzen", en = "Frostspitzen" }
 pos = [0.82, 0.3]
 color = "#8fd0f0"
 maps = "frost-"
+cold = true
 weather_gloomy = [{ kind = "schneesturm", weight = 3, intensity = [0.6, 1.0], wind = [-0.9, 0.9] }]
 weather = [
     { kind = "schnee", weight = 3, intensity = [0.4, 0.8] },

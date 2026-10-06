@@ -907,6 +907,8 @@ impl App {
             );
             if hot {
                 crate::adventure_hud::heat_bar(&mut ui, session.heat, session.overheated, secs);
+            } else if session.chilly() {
+                crate::adventure_hud::cold_bar(&mut ui, session.cold, session.frozen, secs);
             }
         }
         // Lebensleiste eines wachen Hüters (R2-M2.1)

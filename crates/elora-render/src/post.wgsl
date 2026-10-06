@@ -8,7 +8,8 @@ struct Post {
     // x: Zeit in Sekunden, y: Stärke des Flimmerns 0..1, z: Seitenverhältnis (Breite / Höhe),
     // w: Sättigung (1 = unverändert, 0 = grau)
     params: vec4<f32>,
-    // Wetter (R2-W1): Tönung (rgb, Anteil), Nebel (rgb, Dichte), x: Abdunkeln, y: Blitz
+    // Wetter (R2-W1): Tönung (rgb, Anteil), Nebel (rgb, Dichte), x: Abdunkeln, y: Blitz,
+    // z: Frostrand (Kälte, E-342)
     tint: vec4<f32>,
     fog: vec4<f32>,
     extra: vec4<f32>,
@@ -61,5 +62,21 @@ fn fs_main(in: VertexOut) -> @location(0) vec4<f32> {
     let fog = clamp(post.fog.a * mix(0.35, 1.0, uv.y), 0.0, 1.0);
     rgb = mix(rgb, post.fog.rgb, fog);
     rgb = min(rgb + vec3<f32>(post.extra.y * 0.55), vec3<f32>(1.0));
+    // Frostrand: Eisblumen wachsen von den Rändern und Ecken herein, die Welt wird kühler
+    let frost = post.extra.z;
+    if (frost > 0.0) {
+        let x = uv.x * aspect;
+        let e = abs(uv - vec2<f32>(0.5)) * 2.0;
+        let edge = max(e.x, e.y) + 0.35 * e.x * e.y;
+        let n = 0.5 + 0.25 * sin(x * 23.0 + sin(uv.y * 17.0) * 2.0)
+            + 0.25 * sin(uv.y * 29.0 + sin(x * 13.0) * 2.0);
+        let fern = abs(sin(x * 61.0 + sin(uv.y * 41.0 + x * 7.0) * 3.0))
+            * abs(sin(uv.y * 53.0 - sin(x * 37.0) * 3.0));
+        let reach = 1.15 - 0.45 * frost;
+        let rim = smoothstep(reach, reach + 0.22, edge + (n - 0.5) * 0.18 + fern * 0.08);
+        rgb = mix(rgb, rgb * vec3<f32>(0.9, 0.97, 1.08), frost * 0.5);
+        rgb = mix(rgb, vec3<f32>(0.88, 0.95, 1.0), rim * (0.5 + 0.35 * frost));
+        rgb = min(rgb + vec3<f32>(step(0.75, fern) * rim * 0.15), vec3<f32>(1.0));
+    }
     return vec4<f32>(rgb, color.a);
 }

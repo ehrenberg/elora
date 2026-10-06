@@ -114,7 +114,7 @@ Das Aufgabenbuch zeigt erledigte Schritte und den aktuellen, weitere als „?“
 
 ## Gelände mit Zustand (R2-M2.4)
 
-- **Zonen mit festem Namensanfang:** `schatten…` und `oase…` kühlen die Hitze-Leiste (E-320). `lawine…` ist ein **Lawinenhang**: Stampfen oder eine Granate darin, oder ein Schritt in die Zone `<hang>-tritt` (z. B. `lawine-grat` und `lawine-grat-tritt`), lässt A-39 Schneebrocken im Abstand A-40 vom höheren Ende hangabwärts rollen; danach ruht der Hang A-41 lang.
+- **Zonen mit festem Namensanfang:** `schatten…` und `oase…` kühlen die Hitze-Leiste (E-320), `feuer…` wärmt die Kälte-Leiste in wenigen Sekunden auf (E-342; Dächer wärmen langsamer, in den Hüter-Arenen ruht sie). Kalte Gebiete tragen `cold = true` in `worldmap.toml`, Ausrüstung kann `cold_pct` haben (negativ = langsamer kalt). `lawine…` ist ein **Lawinenhang**: Stampfen oder eine Granate darin, oder ein Schritt in die Zone `<hang>-tritt` (z. B. `lawine-grat` und `lawine-grat-tritt`), lässt A-39 Schneebrocken im Abstand A-40 vom höheren Ende hangabwärts rollen; danach ruht der Hang A-41 lang.
 - **Eiszapfen** sind Gegner der Art `eiszapfen` (Verhalten `icicle`): an die Decke setzen; sie zittern, sobald Elora darunter ist, fallen und zerschellen. Keine Erfahrung, keine Beute.
 
 ## Abenteuer-Karten im Editor (A1.8)
