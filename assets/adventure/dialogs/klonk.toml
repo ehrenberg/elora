@@ -1,6 +1,11 @@
 # Klonk (A1.9, Prolog)
 speaker = "klonk"
 
+# Waffen zuerst (Playtest: das Harz-Gespräch hatte die Granate verdrängt)
+[[start]]
+if = "quest bluetenquelle erledigt und nicht merker klonk.granate"
+node = "granate"
+
 [[start]]
 if = "quest glutsand erledigt und nicht merker klonk.laser"
 node = "laser"
@@ -8,10 +13,6 @@ node = "laser"
 [[start]]
 if = "quest murmelwald erledigt und nicht merker klonk.harz"
 node = "harz"
-
-[[start]]
-if = "quest bluetenquelle erledigt und nicht merker klonk.granate"
-node = "granate"
 
 [[start]]
 if = "quest brunnen schritt klonk"

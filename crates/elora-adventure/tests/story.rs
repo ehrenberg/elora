@@ -654,3 +654,27 @@ fn cactus_fruit_heals_and_sun_veil_slows_the_heat() {
     assert!((g.stats(&c).heat_pct + 40.0).abs() < 1e-6);
     assert!(c.shops["sirup"].stock.contains(&"kaktusfrucht".to_owned()));
 }
+
+/// Playtest 2026-10-06: Wer nach Kapitel 1 nicht bei Klonk war, bekam nach Kapitel 2 nur das
+/// Harz-Gespräch und nie den Granatwerfer. Waffen kommen jetzt zuerst.
+#[test]
+fn klonk_hands_out_weapons_before_talking_about_resin() {
+    let (c, mut g) = game();
+    g.run(
+        &c,
+        &[
+            "quest bluetenquelle start".into(),
+            "quest bluetenquelle fertig".into(),
+            "quest murmelwald fertig".into(),
+            "quest glutsand fertig".into(),
+        ],
+    );
+    let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
+    assert_eq!(conv.node, "granate");
+    assert!(g.weapons.contains_key(&elora_sim::Weapon::Grenade));
+    let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
+    assert_eq!(conv.node, "laser");
+    assert!(g.weapons.contains_key(&elora_sim::Weapon::Laser));
+    let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
+    assert_eq!(conv.node, "harz");
+}

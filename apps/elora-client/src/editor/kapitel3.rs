@@ -126,6 +126,12 @@ pub fn wueste_1() -> Map {
         edge_exit("weg-dorf", 0, h, "tauwinkel", "hohlweg"),
         o("nord", at(6, 24, 28.0), ObjectKind::Spawn),
         sign("schild-hitze", 11, 24),
+        chest(
+            "truhe-munition",
+            13,
+            24,
+            &[("munition_granate", 1), ("glanztropfen", 10)],
+        ),
         crab("krabbe-1", 56, 40),
         sign("schild-treibsand", 68, 44),
         crab("krabbe-2", 85, 44),
@@ -203,6 +209,12 @@ pub fn wueste_2() -> Map {
         o("west", at(5, 40, 28.0), ObjectKind::Spawn),
         o("lager", at(47, 40, 40.0), ObjectKind::SavePoint),
         npc("sirup", 52, 40, -1, 24.0),
+        chest(
+            "truhe-munition",
+            68,
+            40,
+            &[("munition_granate", 1), ("glanztropfen", 10)],
+        ),
         crab("krabbe-1", 90, 42),
         npc("palma", 104, 45, 1, 0.0),
         npc("giessstelle-1", 100, 45, 1, 0.0),
@@ -298,6 +310,12 @@ pub fn wueste_3() -> Map {
         moth("motte-1", 40, 40, 8),
         worm("wurm-1", 56, 46),
         npc("tafel-2", 76, 46, 1, 0.0),
+        chest(
+            "truhe-munition",
+            58,
+            46,
+            &[("munition_granate", 1), ("glanztropfen", 10)],
+        ),
         crab("krabbe-2", 86, 46),
         o("hof", at(108, 49, 40.0), ObjectKind::SavePoint),
         npc("ruinenquelle", 116, 49, 1, 0.0),
@@ -372,6 +390,12 @@ pub fn wueste_arena() -> Map {
     m.adventure.objects = vec![
         o("west", at(5, 28, 28.0), ObjectKind::Spawn),
         o("vor-der-quelle", at(11, 28, 40.0), ObjectKind::SavePoint),
+        chest(
+            "truhe-munition",
+            14,
+            28,
+            &[("munition_granate", 1), ("munition_laser", 1)],
+        ),
         o(
             "sandschlange",
             at(50, 44, 70.0),

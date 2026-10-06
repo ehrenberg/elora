@@ -144,6 +144,12 @@ pub fn wald_1() -> Map {
         rune("rune-1", 90, 20),
         creature("wicht-2", "pilzwicht", 86, 42, 40.0),
         creature("schlange-2", "wurzelschlange", 104, 46, 110.0),
+        chest(
+            "truhe-munition",
+            100,
+            46,
+            &[("munition_granate", 1), ("glanztropfen", 10)],
+        ),
         creature("pirat-1", "eichhornpirat", 113, 36, 52.0),
         plant("blume-1", 118, 46),
         o("quellstein", at(130, 42, 40.0), ObjectKind::SavePoint),
@@ -208,6 +214,12 @@ pub fn wald_2() -> Map {
         edge_exit("weg-wald-1", 0, h, "wald-1", "west"),
         o("ost", at(6, 80, 28.0), ObjectKind::Spawn),
         npc("pilzkind", 40, 78, 1, 0.0),
+        chest(
+            "truhe-munition",
+            50,
+            78,
+            &[("munition_granate", 1), ("glanztropfen", 10)],
+        ),
         creature("wicht-1", "pilzwicht", 52, 78, 40.0),
         creature("schlange-1", "wurzelschlange", 90, 76, 110.0),
         o("baum-rast", at(100, 76, 40.0), ObjectKind::SavePoint),
@@ -296,6 +308,12 @@ pub fn wald_3() -> Map {
         creature("wicht-1", "pilzwicht", 44, 57, 40.0),
         creature("pirat-1", "eichhornpirat", 75, 55, 52.0),
         o("hoehle", at(102, 57, 40.0), ObjectKind::SavePoint),
+        chest(
+            "truhe-munition",
+            108,
+            57,
+            &[("munition_granate", 1), ("glanztropfen", 10)],
+        ),
         o(
             "zug",
             Vec2::new(123.0 * T, 47.0 * T + 14.0),
