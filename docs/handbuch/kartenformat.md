@@ -28,6 +28,7 @@ Jeder **Abschnitt**: `Kennung (4 Byte ASCII) | Länge (u32) | Inhalt`. Zahlen si
 | `ENTS` | ja | Anzahl, je Entity: Art (u8), Spalte, Zeile |
 | `MATL` | nein | Materialnamen (höchstens 255), dann je Tile 1 Byte: 0 = Standard der Tile-Art, sonst Index + 1 |
 | `SKY ` | nein | Himmelsverlauf oben, unten (RGBA); fehlt er, gilt der bisherige Himmel |
+| `WTHR` | nein | Wetter (R2-W1): Art (u8: 0 schön, 1 Regen, 2 Gewitter, 3 Nebel, 4 Wind mit Blättern, 5 Wind mit Blüten, 6 Sandsturm, 7 Schnee, 8 Schneesturm), Stärke (f32, 0–1), Wind (f32, −1 bis 1); fehlt er, ist es schön. Nur geschrieben, wenn es Wetter gibt; ältere Programme überspringen ihn |
 | `BGRD` | nein | Hintergrund-Ebenen (höchstens 16), von hinten nach vorn: Name, Parallax (x, y), Versatz (x, y), Wiederholung waagerecht (0 = keine), Deko-Liste |
 | `DECO` | nein | Deko-Liste hinter der Spielfläche, Deko-Liste davor |
 | `ENVL` | nein | Animationen (höchstens 256): Name, Art (0 Bewegung, 1 Farbe), an Server-Zeit gebunden, Punkte (höchstens 1024, Zeit streng aufsteigend): Zeit (ms), 4 Werte, Kurve |

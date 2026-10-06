@@ -436,7 +436,46 @@ fn map_properties(ui: &mut egui::Ui, editor: &mut Editor, lang: &Lang, now: Inst
             }
             ui.end_row();
         }
+        weather_properties(ui, editor, lang, now);
     });
+}
+
+/// Wetter der Karte (R2-W1, E-329): Art, Stärke und Wind.
+fn weather_properties(ui: &mut egui::Ui, editor: &mut Editor, lang: &Lang, now: Instant) {
+    use elora_map::WeatherKind;
+    let name = |k: WeatherKind| lang.t(&format!("weather.{}", k.key())).to_owned();
+    ui.label(lang.t("editor.weather"));
+    let mut kind = editor.map.weather.kind;
+    egui::ComboBox::from_id_salt("weather_kind")
+        .selected_text(name(kind))
+        .show_ui(ui, |ui| {
+            for k in WeatherKind::ALL {
+                ui.selectable_value(&mut kind, k, name(k));
+            }
+        });
+    if kind != editor.map.weather.kind {
+        editor.begin_edit("weather", now);
+        let w = &mut editor.map.weather;
+        w.kind = kind;
+        if kind == WeatherKind::Clear {
+            *w = elora_map::Weather::CLEAR;
+        } else if w.intensity <= 0.0 {
+            w.intensity = 0.7;
+        }
+    }
+    ui.end_row();
+    let clear = editor.map.weather.is_clear();
+    let mut w = editor.map.weather;
+    ui.label(lang.t("editor.weather_intensity"));
+    let a = ui.add_enabled(!clear, egui::Slider::new(&mut w.intensity, 0.0..=1.0));
+    ui.end_row();
+    ui.label(lang.t("editor.weather_wind"));
+    let b = ui.add_enabled(!clear, egui::Slider::new(&mut w.wind, -1.0..=1.0));
+    ui.end_row();
+    if a.changed() || b.changed() {
+        editor.begin_edit("weather_values", now);
+        editor.map.weather = w;
+    }
 }
 
 /// Kartenfläche: Verschieben (mittlere Maustaste oder Leertaste + Ziehen), Zoomen (Mausrad),

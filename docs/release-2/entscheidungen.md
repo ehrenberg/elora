@@ -145,6 +145,7 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-334 | 2026-10-06 | Wetterklänge | **Freie Aufnahmen (CC0)**, zum Anhören vorgelegt | Entscheidung Projektinhaber |
 | E-335 | 2026-10-06 | Einstellung Wetter | **Voll, sanft, aus** unter Grafik; die Spielwirkung im Abenteuer bleibt gleich | Entscheidung Projektinhaber |
 | E-336 | 2026-10-06 | Plan R2-W1 | **Freigegeben** mit den Vorschlägen D-W1-01 bis D-W1-03; **Blitze können schaden** (nur im Abenteuer, mit kurzer Warnung am Boden) | Entscheidung Projektinhaber |
+| E-337 | 2026-10-06 | Entwürfe Wetter (W1.0) | **Angenommen** ([`design/wetter-entwuerfe.png`](design/wetter-entwuerfe.png)) | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 

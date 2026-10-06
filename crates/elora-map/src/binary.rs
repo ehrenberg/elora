@@ -9,7 +9,8 @@ use crate::adventure::{
     Adventure, CameraMode, MAX_LIST, MAX_OBJECTS, Object, ObjectKind, SwitchTrigger,
 };
 use crate::look::{
-    Art, Background, Curve, Decor, EnvKind, EnvPoint, EnvRef, Envelope, Image, Rgba, Sky,
+    Art, Background, Curve, Decor, EnvKind, EnvPoint, EnvRef, Envelope, Image, Rgba, Sky, Weather,
+    WeatherKind,
 };
 use crate::{Entity, EntityKind, MAX_SIZE, Map};
 
@@ -223,6 +224,15 @@ pub fn encode(map: &Map) -> Vec<u8> {
     s.rgba(map.sky.top);
     s.rgba(map.sky.bottom);
     payload.section(*b"SKY ", &s);
+
+    // Wetter (R2-W1): nur wenn es welches gibt – alte Programme überspringen den Abschnitt
+    if !map.weather.is_clear() {
+        let mut s = Writer::default();
+        s.u8(code(&WeatherKind::ALL, &map.weather.kind));
+        s.f32(map.weather.intensity);
+        s.f32(map.weather.wind);
+        payload.section(*b"WTHR", &s);
+    }
 
     if !map.backgrounds.is_empty() {
         let mut s = Writer::default();
@@ -709,6 +719,10 @@ fn decode_look(sections: &Sections<'_>, map: &mut Map) -> Result<()> {
         }
     };
 
+    let weather = sections
+        .get(*b"WTHR")
+        .map_or(Ok(Weather::CLEAR), get_weather)?;
+
     let mut decor_budget = MAX_DECOR;
     let backgrounds = match sections.get(*b"BGRD") {
         None => Vec::new(),
@@ -776,6 +790,7 @@ fn decode_look(sections: &Sections<'_>, map: &mut Map) -> Result<()> {
     map.materials = materials;
     map.material_map = material_map;
     map.sky = sky;
+    map.weather = weather;
     map.backgrounds = backgrounds;
     map.decor_back = decor_back;
     map.decor_front = decor_front;
@@ -783,6 +798,23 @@ fn decode_look(sections: &Sections<'_>, map: &mut Map) -> Result<()> {
     map.images = images;
     Ok(())
 }
+/// Abschnitt `WTHR` (R2-W1): Art, Stärke 0–1, Wind −1–1.
+fn get_weather(mut r: Reader<'_>) -> Result<Weather> {
+    let kind = *WeatherKind::ALL
+        .get(usize::from(r.u8()?))
+        .ok_or(MapError::Invalid("Wetter-Art"))?;
+    let (intensity, wind) = (r.f32()?, r.f32()?);
+    if !(0.0..=1.0).contains(&intensity) || !(-1.0..=1.0).contains(&wind) {
+        return Err(MapError::Invalid("Wetter-Werte"));
+    }
+    r.done("WTHR")?;
+    Ok(Weather {
+        kind,
+        intensity,
+        wind,
+    })
+}
+
 fn get_env_ref(r: &mut Reader<'_>) -> Result<Option<EnvRef>> {
     let index = r.u16()?;
     if index == u16::MAX {
@@ -1181,6 +1213,59 @@ mod tests {
         // Gleiche Karte → gleiche Bytes → gleiche Prüfsumme
         assert_eq!(checksum(&encode(&m)), checksum(&data));
         assert_ne!(checksum(&encode(&plain)), checksum(&data));
+    }
+
+    /// Wetter (R2-W1): hin und zurück; ohne Wetter kein Abschnitt (alte Karten bleiben gleich).
+    #[test]
+    fn weather_roundtrip_and_absent_section() {
+        let plain = Map::from_rows("P", &["###", "#S#", "###"]).unwrap();
+        let without = encode(&plain);
+        for kind in WeatherKind::ALL {
+            let mut m = plain.clone();
+            m.weather = Weather {
+                kind,
+                intensity: 0.6,
+                wind: -0.4,
+            };
+            let back = decode(&encode(&m)).unwrap();
+            assert_eq!(
+                back.weather,
+                if kind == WeatherKind::Clear {
+                    Weather::CLEAR
+                } else {
+                    m.weather
+                }
+            );
+        }
+        // klare Karte: gleiche Bytes wie vor dem Wetter
+        let mut clear = plain.clone();
+        clear.weather = Weather::CLEAR;
+        assert_eq!(encode(&clear), without);
+    }
+
+    #[test]
+    fn rejects_bad_weather() {
+        let base = [info(), game(1, 1, &[0]), ents(&[(0, 0, 0)])];
+        let weather = |kind: u8, intensity: f32, wind: f32| {
+            let mut w = Writer::default();
+            w.u8(kind);
+            w.f32(intensity);
+            w.f32(wind);
+            (b"WTHR", w.0)
+        };
+        let mut ok = base.to_vec();
+        ok.push(weather(1, 0.5, 0.0));
+        assert_eq!(decode(&raw(&ok)).unwrap().weather.kind, WeatherKind::Rain);
+        for bad in [
+            weather(99, 0.5, 0.0),
+            weather(1, 2.0, 0.0),
+            weather(1, 0.5, -3.0),
+            weather(1, f32::NAN, 0.0),
+        ] {
+            let mut list = base.to_vec();
+            list.push(bad);
+            assert!(decode(&raw(&list)).is_err());
+        }
     }
 
     #[test]

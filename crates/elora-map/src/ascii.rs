@@ -36,6 +36,7 @@ impl Map {
             materials: Vec::new(),
             material_map: Vec::new(),
             sky: crate::Sky::default(),
+            weather: crate::Weather::CLEAR,
             backgrounds: Vec::new(),
             decor_back: Vec::new(),
             decor_front: Vec::new(),

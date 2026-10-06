@@ -17,6 +17,80 @@ impl Rgba {
     }
 }
 
+/// Art des Wetters (R2-W1, E-333).
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum WeatherKind {
+    /// Kein Wetter (wie bisher).
+    #[default]
+    Clear,
+    Rain,
+    /// Gewitter: Regen, Böen und Blitze.
+    Storm,
+    Fog,
+    /// Wind mit Blättern.
+    Leaves,
+    /// Wind mit Blütenblättern.
+    Petals,
+    Sandstorm,
+    Snow,
+    Blizzard,
+}
+
+impl WeatherKind {
+    pub const ALL: [Self; 9] = [
+        Self::Clear,
+        Self::Rain,
+        Self::Storm,
+        Self::Fog,
+        Self::Leaves,
+        Self::Petals,
+        Self::Sandstorm,
+        Self::Snow,
+        Self::Blizzard,
+    ];
+
+    /// Schlüssel für Daten und Übersetzung (`assets/adventure/worldmap.toml`, `weather.<key>`).
+    pub fn key(self) -> &'static str {
+        match self {
+            Self::Clear => "schoen",
+            Self::Rain => "regen",
+            Self::Storm => "gewitter",
+            Self::Fog => "nebel",
+            Self::Leaves => "blaetter",
+            Self::Petals => "blueten",
+            Self::Sandstorm => "sandsturm",
+            Self::Snow => "schnee",
+            Self::Blizzard => "schneesturm",
+        }
+    }
+
+    pub fn from_key(key: &str) -> Option<Self> {
+        Self::ALL.into_iter().find(|k| k.key() == key)
+    }
+}
+
+/// Wetter einer Karte (R2-W1, E-329): Art, Stärke (0 = kaum, 1 = voll) und Wind
+/// (−1 = stark nach links, 1 = stark nach rechts).
+#[derive(Debug, Clone, Copy, PartialEq, Default)]
+pub struct Weather {
+    pub kind: WeatherKind,
+    pub intensity: f32,
+    pub wind: f32,
+}
+
+impl Weather {
+    pub const CLEAR: Self = Self {
+        kind: WeatherKind::Clear,
+        intensity: 0.0,
+        wind: 0.0,
+    };
+
+    /// Gibt es überhaupt Wetter?
+    pub fn is_clear(&self) -> bool {
+        self.kind == WeatherKind::Clear
+    }
+}
+
 /// Himmel: senkrechter Verlauf hinter allem.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Sky {

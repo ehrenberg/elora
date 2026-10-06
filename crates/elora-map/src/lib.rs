@@ -14,7 +14,7 @@ use elora_sim::{
 pub use adventure::{Adventure, Object, ObjectKind};
 pub use ascii::ENTITY_CHARS;
 pub use binary::{FORMAT_VERSION, MapError, checksum, decode, decode_draft, encode, validate};
-pub use look::{Art, Background, Decor, Envelope, Image, Rgba, Sky};
+pub use look::{Art, Background, Decor, Envelope, Image, Rgba, Sky, Weather, WeatherKind};
 
 /// Dateiendung der Karten (ohne Punkt).
 pub const EXTENSION: &str = "emap";
@@ -84,6 +84,8 @@ pub struct Map {
     /// Leer, wenn die Karte keine Materialien festlegt.
     pub material_map: Vec<u8>,
     pub sky: Sky,
+    /// Wetter der Karte (R2-W1); im Abenteuer kann das Gebiet es ersetzen.
+    pub weather: Weather,
     /// Von hinten nach vorn.
     pub backgrounds: Vec<Background>,
     /// Deko hinter der Spielfläche.

@@ -25,6 +25,8 @@ pub mod tools;
 #[cfg(test)]
 mod training;
 pub mod view;
+#[cfg(test)]
+mod wetter;
 
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};
