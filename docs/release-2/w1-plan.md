@@ -1,6 +1,6 @@
 # R2-W1 – Wetter – Umsetzungsplan
 
-Status: **Freigegeben, in Umsetzung** (E-336) · Entscheidungen E-329 bis E-336 · Grundlage: O-209 (Tageszeiten bleiben offen, E-332), E-320 (Hitze), E-328 (Post-Shader, Farbe der Quellen)
+Status: **Abgenommen** (E-339) · Entscheidungen E-329 bis E-339 · Grundlage: O-209 (Tageszeiten bleiben offen, E-332), E-320 (Hitze), E-328 (Post-Shader, Farbe der Quellen)
 
 ## Ziel
 
@@ -73,7 +73,7 @@ Release-Karten: `dm-winter` Schnee, `ctf-nacht` leichter Nebel, `dm-wueste` Wind
 | W1.4 ✅ | Spielwirkung | in der Simulation nur mit `world.adventure`: Windkraft auf Elora in der Luft und Granaten, nasser/verschneiter Boden (weichere Reibung), Blitze mit Warnung und Schaden im Gewitter (E-336), Sichtweite der Kamera bei Nebel/Sturm; Werte als Tuning (A-29 bis A-35) | Tests; Golden-Tests unverändert |
 | W1.5 ✅ | Klang | zweite Umgebungsspur mit weichem Überblenden; Regen, Wind, Sturm, Sand, Donner aus freien Quellen (CC0, zum Anhören vorgelegt, E-334, Auswahl E-338) | Deine Hörprobe |
 | W1.6 ✅ | Karten | Release-Karten: `dm-winter` Schnee (0,6), `ctf-nacht` leichter Nebel (0,35), `dm-wueste` Wind mit Sand (0,3), übrige schön; Hüter-Arenen bleiben schön (D-W1-01); in Höhlen und unter Dächern kein Niederschlag, Wetterklänge gedämpft | Sichtprüfung |
-| W1.7 | Abnahme | Wetter-Testkarte, Kapitel 1–3, eine Mehrspieler-Runde | Deine Abnahme |
+| W1.7 ✅ | Abnahme | Wetter-Testkarte, Kapitel 1–3, eine Mehrspieler-Runde | Deine Abnahme |
 
 ## Prüfliste Abnahme (W1.7)
 

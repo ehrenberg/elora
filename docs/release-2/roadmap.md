@@ -29,7 +29,7 @@ Waffen & Inhalte, Gemeinschaft laufen dazwischen
 |---|---|---|
 | R2-M1 | Abenteuer-Grundlage | Fähigkeiten, Gegner, Fortschritt, Spielstände, NPCs, Dialoge, Aufgaben, Editor; Abnahme mit dem Prolog – Plan: [`a1-plan.md`](a1-plan.md) |
 | R2-M2 | Geschichte & Abenteuer | Tauwinkel, fünf Gebiete, Bosse, Finale, Nebenaufgaben ([`weltbuch.md`](weltbuch.md)); Teil-Meilensteine je Kapitel: M2.1 Blütenwiesen ([`m2-1-plan.md`](m2-1-plan.md)), M2.2 Murmelwald ([`m2-2-plan.md`](m2-2-plan.md)), M2.3 Glutsandwüste ([`m2-3-plan.md`](m2-3-plan.md)), M2.4 Frostspitzen, M2.5 Sternschlucht, M2.6 Finale |
-| R2-W1 | Wetter | Regen, Gewitter, Nebel, Wind, Sandsturm, Schnee im Abenteuer und als Karteneigenschaft; leichte Spielwirkung im Abenteuer (E-329 bis E-335) – Plan: [`w1-plan.md`](w1-plan.md) |
+| R2-W1 ✅ | Wetter | Regen, Gewitter, Nebel, Wind, Sandsturm, Schnee im Abenteuer und als Karteneigenschaft; leichte Spielwirkung im Abenteuer (E-329 bis E-335) – **abgenommen** (E-339) – Plan: [`w1-plan.md`](w1-plan.md) |
 | R2-M3 | Mitspieler-Bots | Wegfindung, Kampf- und Hook-Verhalten, Schwierigkeitsstufen, Bots auf Servern und im Training |
 | R2-M4 | Waffen & Inhalte | weitere Waffen, Sounds in Karten, neue Themen und Karten |
 | R2-M5 | Rollenspiel-PvP-Modus | „Quellenkampf“: Stufen, Ausbau und Beute während des Matches (E-204) |
