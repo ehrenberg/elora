@@ -148,6 +148,10 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-337 | 2026-10-06 | Entwürfe Wetter (W1.0) | **Angenommen** ([`design/wetter-entwuerfe.png`](design/wetter-entwuerfe.png)) | Entscheidung Projektinhaber |
 | E-338 | 2026-10-06 | Wetterklänge (W1.5) | Nach Hörprobe: **Regen** „Rain (loopable)“ Nr. 1 (Ylmir), **Wind** „Low Rumbling“ (Musheran), **Donner** „Rain + Long Thunder“ (WuxiaScrub, Ausschnitt), **Sand** aus „Mild Wind Background Noise“ (Bashar3A) hell gefiltert; alle CC0 (OpenGameArt) | Entscheidung Projektinhaber |
 | E-339 | 2026-10-06 | Abnahme R2-W1 | **Wetter abgenommen**: neun Wetterarten mit Optik, Klang und leichter Spielwirkung im Abenteuer (Wind, Nässe, Blitze mit Warnung, Sicht); Release-Karten `dm-winter`, `ctf-nacht`, `dm-wueste` mit Wetter; R2-W1 abgeschlossen | Entscheidung Projektinhaber |
+| E-340 | 2026-10-06 | Kapitel 4: Eisgriff | **Mitten im Kapitel:** Flocke gibt Steigkrallen (= Eisgriff) im Bergdorf; der Hüterkampf nutzt die Wände; der Quellfunke stärkt den Eisgriff | Entscheidung Projektinhaber |
+| E-341 | 2026-10-06 | Kapitel 4: Kristella | **Frostwellen und Wände:** schwebt über einer Eishalle, friert den Boden in Wellen ein (frischer Frost schadet), Elora rettet sich an Kletterwände; erschöpft sinkt sie herab und ist verwundbar; später Eiszapfen | Entscheidung Projektinhaber |
+| E-342 | 2026-10-06 | Kapitel 4: Kälte | **Kälte-Leiste** wie die Hitze gespiegelt: draußen füllt sie sich, im Schneesturm schneller; Feuerstellen und Hütten wärmen; voll = langsamer | Entscheidung Projektinhaber |
+| E-343 | 2026-10-06 | Kapitel 4: Gelände | **Eiszapfen, Lawinen, dünnes Eis**; keine Sprungfelder | Entscheidung Projektinhaber |
 
 ## Offene Punkte
 
