@@ -687,7 +687,9 @@ impl App {
         );
         // Umgebungsspur: Regen, Wind, Sand, Donner (W1.5, E-338)
         let thunder = self.weather.take_thunder();
-        self.sounds.weather(dt, weather, thunder, camera.center);
+        let shelter = self.weather.shelter();
+        self.sounds
+            .weather(dt, weather, shelter, thunder, camera.center);
     }
 
     /// Effekte und Figuren-Animationen fortschreiben, eigenen Skin abgleichen.

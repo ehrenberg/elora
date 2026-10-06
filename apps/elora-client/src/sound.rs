@@ -47,6 +47,17 @@ pub const AMBIENCE_DIR: &str = "assets/ambience";
 /// Die Schleifen der Umgebungsspur.
 pub const AMBIENCE: [&str; 3] = ["regen", "wind", "sand"];
 
+/// Wie [`ambience_levels`], unter Dach oder in Höhlen (`shelter` 0..1) gedämpft (W1.6).
+pub fn sheltered_levels(w: elora_map::Weather, shelter: f32) -> [f32; 3] {
+    let s = shelter.clamp(0.0, 1.0);
+    let [rain, wind, sand] = ambience_levels(w);
+    [
+        rain * (1.0 - 0.65 * s),
+        wind * (1.0 - 0.4 * s),
+        sand * (1.0 - 0.65 * s),
+    ]
+}
+
 /// Lautstärken (0..1) der Schleifen [`AMBIENCE`] für ein Wetter.
 pub fn ambience_levels(w: elora_map::Weather) -> [f32; 3] {
     use elora_map::WeatherKind as K;
@@ -99,11 +110,12 @@ impl Sounds {
         &mut self,
         dt: f32,
         weather: elora_map::Weather,
+        shelter: f32,
         new_thunder: Vec<(Vec2, f32)>,
         ear: Vec2,
     ) {
         self.audio.apply(self.settings);
-        for (name, level) in AMBIENCE.into_iter().zip(ambience_levels(weather)) {
+        for (name, level) in AMBIENCE.into_iter().zip(sheltered_levels(weather, shelter)) {
             let Some(data) = self.ambience_file(name) else {
                 continue;
             };
@@ -293,6 +305,11 @@ mod tests {
         let soft = ambience_levels(w(WeatherKind::Rain, 0.2))[0];
         let hard = ambience_levels(w(WeatherKind::Rain, 1.0))[0];
         assert!(hard > soft, "stärkerer Regen ist lauter");
+        let open = ambience_levels(w(WeatherKind::Rain, 1.0))[0];
+        assert!(
+            sheltered_levels(w(WeatherKind::Rain, 1.0), 1.0)[0] < open * 0.5,
+            "unter Dach leiser"
+        );
         for kind in WeatherKind::ALL {
             for l in ambience_levels(w(kind, 1.0)) {
                 assert!((0.0..=1.0).contains(&l), "{kind:?}: {l}");

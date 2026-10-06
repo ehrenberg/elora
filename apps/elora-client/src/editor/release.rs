@@ -6,7 +6,7 @@
 use std::time::Instant;
 
 use elora_map::look::{Curve, EnvKind, EnvPoint, EnvRef, Envelope};
-use elora_map::{Art, Decor, Map, Rgba, Sky};
+use elora_map::{Art, Decor, Map, Rgba, Sky, Weather, WeatherKind};
 use elora_sim::{TILE_SIZE, Tile, Vec2};
 
 use super::Editor;
@@ -269,7 +269,23 @@ pub fn build(theme: &Theme) -> Map {
     apply_look(theme, map);
     place(theme, map);
     glow(map);
+    map.weather = weather_of(theme.file);
     editor.map
+}
+
+/// Wetter der Release-Karten (R2-W1, D-W1-02, E-336); die übrigen bleiben schön.
+pub fn weather_of(file: &str) -> Weather {
+    let (kind, intensity, wind) = match file {
+        "dm-winter" => (WeatherKind::Snow, 0.6, 0.2),
+        "ctf-nacht" => (WeatherKind::Fog, 0.35, 0.0),
+        "dm-wueste" => (WeatherKind::Sandstorm, 0.3, 0.5),
+        _ => return Weather::CLEAR,
+    };
+    Weather {
+        kind,
+        intensity,
+        wind,
+    }
 }
 
 /// Material, Himmel und Hintergrund-Färbung des Themas (nach der Hintergrund-Vorlage).
@@ -327,6 +343,26 @@ mod tests {
             );
             assert!(!back.backgrounds.is_empty());
         }
+    }
+
+    #[test]
+    fn shipped_release_maps_are_current() {
+        for theme in &THEMES {
+            let path = format!(
+                "{}/../../maps/{}.{}",
+                env!("CARGO_MANIFEST_DIR"),
+                theme.file,
+                elora_map::EXTENSION
+            );
+            let shipped = elora_map::decode(&std::fs::read(&path).unwrap()).unwrap();
+            assert!(
+                shipped == build(theme),
+                "{} veraltet – write_release_maps -- --ignored",
+                theme.file
+            );
+            assert_eq!(shipped.weather, weather_of(theme.file));
+        }
+        assert!(weather_of("dm-wiese").is_clear());
     }
 
     /// Schreibt die Release-Karten nach `maps/` (nach Änderungen an Layout oder Thema).

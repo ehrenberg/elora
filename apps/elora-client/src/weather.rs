@@ -72,6 +72,8 @@ pub struct WeatherView {
     /// Oberkante des Ausschnitts (für Blitze aus der Simulation).
     sky_top: f32,
     quality: WeatherQuality,
+    /// Wie sehr die Kamera unter Dach oder im Fels steckt (geglättet, 0..1) – dämpft die Klänge.
+    shelter: f32,
 }
 
 /// Oberkante des ersten Bodens (fest, Plattform, Treibsand) unter `from`, höchstens `reach` tief.
@@ -262,6 +264,8 @@ impl WeatherView {
         self.time += dt;
         self.quality = quality;
         self.sky_top = camera.top_left().y - MARGIN;
+        let covered = map.is_some_and(|m| sheltered(m, camera.center, WeatherKind::Rain));
+        self.shelter += (f32::from(u8::from(covered)) - self.shelter) * (dt * 2.0).min(1.0);
         self.warnings.retain_mut(|w| {
             w.1 += dt;
             w.1 < WARN_TIME + 0.3
@@ -416,6 +420,11 @@ impl WeatherView {
     /// Farbstimmung für den Post-Shader.
     pub fn grade(&self) -> Grade {
         self.grade.unwrap_or(Grade::NONE)
+    }
+
+    /// Wie sehr die Kamera unter Dach oder in einer Höhle steckt (0..1, geglättet).
+    pub fn shelter(&self) -> f32 {
+        self.shelter
     }
 
     /// Wind, mit dem die Deko gerade wiegt.
