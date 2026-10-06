@@ -132,6 +132,34 @@ fn hook_ruck_pulls_hard_with_cooldown() {
     );
 }
 
+/// Der Ruck zieht spürbar schneller als der normale Hook (Playtest 2026-10-06, A-28):
+/// gleiche Strecke zur Decke in deutlich weniger Ticks.
+#[test]
+fn hook_ruck_reaches_the_hook_point_much_faster() {
+    let ticks_to_ceiling = |press: bool| {
+        let mut w = hook_ceiling(with(Ability::HookRuck));
+        let start = core(&w).pos.y;
+        let hold = PlayerInput {
+            hook: true,
+            ability: press,
+            target_x: 0,
+            target_y: -100,
+            ..PlayerInput::default()
+        };
+        (1..200)
+            .find(|_| {
+                w.step(&[hold]);
+                start - core(&w).pos.y > 160.0
+            })
+            .expect("kommt oben an")
+    };
+    let (normal, ruck) = (ticks_to_ceiling(false), ticks_to_ceiling(true));
+    assert!(
+        ruck * 3 <= normal * 2,
+        "Ruck {ruck} Ticks statt {normal} – mindestens ein Drittel schneller"
+    );
+}
+
 #[test]
 fn hook_ruck_needs_ability() {
     let mut w = hook_ceiling(Abilities::NONE);

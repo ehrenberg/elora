@@ -111,6 +111,8 @@ pub struct Tuning {
     pub ruck_speed: f32,
     /// A-02: Abklingzeit des Hook-Rucks (ms)
     pub ruck_cooldown: u32,
+    /// A-28: So lange zieht der Ruck mit `ruck_speed` geradewegs zum Hook-Punkt (ms)
+    pub ruck_time: u32,
     /// A-04: Fallgeschwindigkeit beim Stampfen (Einheiten/Tick)
     pub stomp_speed: f32,
     /// A-05: Radius der Stoßwelle beim Aufprall (Einheiten)
@@ -220,8 +222,9 @@ impl Default for Tuning {
             ice_accel: 0.35,
             jump_pad_force: 20.0,
             conveyor_speed: 4.0,
-            ruck_speed: 16.0,
+            ruck_speed: 26.0,
             ruck_cooldown: 800,
+            ruck_time: 320,
             stomp_speed: 22.0,
             stomp_radius: 64.0,
             grip_time: 1000,

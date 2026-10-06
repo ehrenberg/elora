@@ -86,6 +86,8 @@ pub struct CharacterCore {
     pub ruck_cooldown: u32,
     /// Fähigkeitstaste gedrückt, während der Hook noch flog: Ruck, sobald er greift.
     pub ruck_queued: bool,
+    /// Ticks, die der Ruck noch zieht (A-28).
+    pub ruck_ticks: u32,
     /// Stampft gerade (bis zum Aufprall).
     pub stomping: bool,
     /// Haftet an einer Kletterwand: -1 links, 1 rechts, 0 nicht.
@@ -393,6 +395,7 @@ impl CharacterCore {
         self.hooked_player = None;
         self.hooked_creature = None;
         self.pulling = false;
+        self.ruck_ticks = 0;
         self.hook_state = state;
         self.hook_pos = self.pos;
     }
@@ -501,8 +504,18 @@ impl CharacterCore {
             self.hook_pos = p;
         }
 
+        // Hook-Ruck: zieht eine Weile mit voller Wucht geradewegs zum Hook-Punkt (E-226, A-28)
+        if self.ruck_ticks > 0 {
+            self.ruck_ticks -= 1;
+            let to = self.hook_pos - self.pos;
+            if self.hooked_player.is_none() && !self.pulling && to.length() > PHYS_SIZE {
+                self.vel = to.normalize() * tuning.ruck_speed;
+            } else {
+                self.ruck_ticks = 0;
+            }
+        }
         // Wand-Hook (oder Kreatur ohne Heranhooken) zieht die Figur
-        if self.hooked_player.is_none()
+        else if self.hooked_player.is_none()
             && !self.pulling
             && self.hook_pos.distance(self.pos) > HOOK_MIN_DRAG_DISTANCE
         {
@@ -584,6 +597,7 @@ impl CharacterCore {
             && self.hook_pos.distance(self.pos) > HOOK_MIN_DRAG_DISTANCE
         {
             self.vel = (self.hook_pos - self.pos).normalize() * tuning.ruck_speed;
+            self.ruck_ticks = ms_to_ticks(tuning.ruck_time);
             self.ruck_cooldown = ms_to_ticks(tuning.ruck_cooldown);
             self.ruck_queued = false;
             self.triggered_events |= events::HOOK_RUCK;

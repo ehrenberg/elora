@@ -87,7 +87,7 @@ Nur im Abenteuer und im Quellenkampf (E-223). Startwerte zum Anspielen; die Sand
 
 | # | Wert | Vorschlag | Begründung | Entscheidung |
 |---|---|---|---|---|
-| A-01 | Tempo Hook-Ruck | **16** Einheiten/Tick | Deutlich über dem normalen Hook-Zug (T-15: 14) | ✅ Startwert (E-231) |
+| A-01 | Tempo Hook-Ruck | **26** Einheiten/Tick (vorher 16) | Deutlich über dem normalen Hook-Zug (T-15: 14); 16 war im Spiel kaum spürbar | Playtest 2026-10-06 |
 | A-02 | Abklingzeit Hook-Ruck | **800 ms** | Ein Ruck je Schwung, kein Dauerfeuer | ✅ Startwert (E-231) |
 | A-03 | Zug Heranhooken | **2,5** Einheiten/Tick² | Kleine Gegner fliegen in etwa einer halben Sekunde heran | ✅ Startwert (E-240) |
 | A-04 | Tempo Stampfen | **22** Einheiten/Tick | Klar schneller als freier Fall | ✅ Startwert (E-231) |
@@ -110,6 +110,11 @@ Nur im Abenteuer und im Quellenkampf (E-223). Startwerte zum Anspielen; die Sand
 | A-21 | Laser-Durchschlag | **0** | Ausbau Laser II: trifft bis zu 3 Gegner | Ausbau (E-243) |
 | A-22 | Dornen-Schaden | **2 Leben** | Todes-Tiles im Abenteuer: Schaden, zurück auf den letzten sicheren Boden | E-283 |
 | A-23 | Tempo im bunten Rausch | **× 0,55** | Pilzwicht (E-311): so viel langsamer, solange der Rausch wirkt | E-311 |
+| A-24 | Einsinken im Treibsand | **0,22** Einheiten/Tick (in ganzen Einheiten) | Langsam; ein Sprung befreit | E-318 |
+| A-25 | Tempo im Treibsand | **× 0,4** | Deutlich langsamer | E-318 |
+| A-26 | Schaden ganz eingesunken | **1** | Danach zurück an den Rand | E-318 |
+| A-27 | Tempo bei voller Hitze-Leiste | **× 0,7** | Bis die Leiste unter die Hälfte fällt | E-320 |
+| A-28 | Dauer Hook-Ruck | **320 ms** | So lange zieht der Ruck geradewegs mit A-01 zum Hook-Punkt, statt nur einmal anzuschieben | Playtest 2026-10-06 |
 
 ## F. Regeln aus Folgeentscheidungen
 

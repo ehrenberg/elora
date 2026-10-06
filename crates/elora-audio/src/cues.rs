@@ -90,10 +90,12 @@ pub enum Sound {
     SnakeHiss,
     /// Elora gerät in Treibsand (E-318).
     Quicksand,
+    /// Hook-Ruck: Zischen beim Hinschnellen (E-226).
+    HookRuck,
 }
 
 impl Sound {
-    pub const ALL: [Self; 55] = [
+    pub const ALL: [Self; 56] = [
         Self::HammerFire,
         Self::HammerHit,
         Self::GrenadeFire,
@@ -149,6 +151,7 @@ impl Sound {
         Self::ShellClack,
         Self::SnakeHiss,
         Self::Quicksand,
+        Self::HookRuck,
     ];
 
     pub fn name(self) -> &'static str {
@@ -208,6 +211,7 @@ impl Sound {
             Self::ShellClack => "shell_clack",
             Self::SnakeHiss => "snake_hiss",
             Self::Quicksand => "quicksand",
+            Self::HookRuck => "hook_ruck",
         }
     }
 
@@ -391,6 +395,7 @@ pub fn for_character(pos: Vec2, triggered: u16, prev_hook: HookState, hook: Hook
         (bits::HOOK_ATTACH_GROUND, Sound::HookAttachGround),
         (bits::HOOK_ATTACH_PLAYER, Sound::HookAttachPlayer),
         (bits::HOOK_HIT_UNHOOKABLE, Sound::HookNoAttach),
+        (bits::HOOK_RUCK, Sound::HookRuck),
     ];
     for (bit, sound) in table {
         if triggered & bit != 0 {
