@@ -1,6 +1,6 @@
 # R2-W1 – Wetter – Umsetzungsplan
 
-Status: **Entwurf zur Freigabe** · Entscheidungen E-329 bis E-335 · Grundlage: O-209 (Tageszeiten bleiben offen, E-332), E-320 (Hitze), E-328 (Post-Shader, Farbe der Quellen)
+Status: **Freigegeben, in Umsetzung** (E-336) · Entscheidungen E-329 bis E-336 · Grundlage: O-209 (Tageszeiten bleiben offen, E-332), E-320 (Hitze), E-328 (Post-Shader, Farbe der Quellen)
 
 ## Ziel
 
@@ -30,7 +30,7 @@ mit Wetter anspielen, eine Mehrspieler-Karte mit Wetter online.
 |---|---|---|---|
 | **Schön** | wie bisher | – | – |
 | **Regen** (Niesel bis kräftig) | schräge Tropfen nach Wind, Spritzer auf Oberflächen, Himmel grauer, Bild leicht abgedunkelt | Regen | Boden nass: Bremsen etwas weicher (ein Drittel des Eis-Effekts) |
-| **Gewitter** | wie Regen, dunkler; Blitze hellen kurz das ganze Bild auf, Wolkenleuchten | Regen, Donner (passend zum Blitz verzögert) | wie Regen, dazu Wind in Böen |
+| **Gewitter** | wie Regen, dunkler; Blitze hellen kurz das ganze Bild auf, Wolkenleuchten | Regen, Donner (passend zum Blitz verzögert) | wie Regen, dazu Wind in Böen; **Blitzeinschläge** mit Warnung am Boden, kleiner Schaden (E-336) |
 | **Nebel** | Schleier über der Welt, nach unten dichter; ferne Hintergründe verschwinden | leiser Wind | Sichtweite: die Kamera zeigt weniger weit voraus, Gegner tauchen aus dem Schleier auf |
 | **Wind** (mit Blättern oder Blüten) | Blätter bzw. Blütenblätter wirbeln, Bäume und Fahnen wiegen stärker | Wind | Wind schiebt Elora in der Luft und Granaten (am Boden kaum) |
 | **Sandsturm** | Sandschleier waagerecht, Bild gelb-braun, Sicht kürzer | Sturm, rieselnder Sand | Wind wie oben, stärker; Sicht kürzer wie Nebel |
@@ -95,4 +95,4 @@ Release-Karten: `dm-winter` Schnee, `ctf-nacht` leichter Nebel, `dm-wueste` Wind
 | D-W1-01 | Wetter in den Hüter-Arenen | schön, damit Kämpfe lesbar bleiben; höchstens leichter Wind |
 | D-W1-02 | Release-Karten mit Wetter | `dm-winter` Schnee, `ctf-nacht` leichter Nebel, `dm-wueste` Wind mit Sand |
 | D-W1-03 | Stärke der Spielwirkung | Wind: Elora in der Luft bis etwa 1/6 der Luftsteuerung, Granaten spürbar; Nässe: ein Drittel des Eis-Effekts |
-| D-W1-04 | Blitze | nur Optik und Klang (kein Einschlag mit Schaden) |
+| D-W1-04 | Blitze | **E-336: Blitze können schaden** – nur im Abenteuer: kurz glimmt der Boden an der Einschlagstelle (Warnung), dann schlägt der Blitz ein (kleiner Schaden im Umkreis); im Mehrspieler nur Optik und Klang |
