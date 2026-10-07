@@ -156,6 +156,7 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-345 | 2026-10-06 | Entwürfe Kapitel 4 (M2.4.0) | **Angenommen** ([`design/kapitel4-entwuerfe.png`](design/kapitel4-entwuerfe.png)) | Entscheidung Projektinhaber |
 | E-346 | 2026-10-07 | Texte Kapitel 4 (M2.4.5) | **Freigegeben** ([`m2-4-inhalte.md`](m2-4-inhalte.md)); Gewinn-Bildschirm: „Kristella lächelt wieder – und die Frostquelle glitzert klar wie ein Wintermorgen.“, Ehrentitel „Gipfelstürmerin“ | Entscheidung Projektinhaber |
 | E-347 | 2026-10-07 | Musik Kapitel 4 (M2.4.8) | Nach Hörprobe: **Frostspitzen** „Ice Village“ (KarateStudios, CC0), **Kristella** „Dramatic Boss Encounter“ (cynicmusic, CC0); Klänge aus Kenney-Paketen (CC0) und prozedural, Feuerstelle „Fireplace Sound loop“ (PagDev, CC0) | Entscheidung Projektinhaber |
+| E-348 | 2026-10-07 | Language policy and refactoring | **From now on English** for README, code identifiers, code comments and documentation; player-facing text stays translated in `assets/lang`. Before the next release a refactoring pass ([`refactoring-plan.md`](refactoring-plan.md)) converts existing code and docs and improves structure. Nothing is converted yet. | Project owner decision |
 
 ## Offene Punkte
 
