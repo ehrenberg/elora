@@ -1,7 +1,7 @@
-"""Erzeugt docs/archiv/release-1/design/elora-emotes.svg – Vorschlag für 8 Emoticons und das Emote-Rad (M5.9, E-091).
+"""Erzeugt docs/archive/release-1/design/elora-emotes.svg – Vorschlag für 8 Emoticons und das Emote-Rad (M5.9, E-091).
 
 Aufruf: python3 tools/design/elora_emotes.py && cargo xtask svg-preview \
-        docs/archiv/release-1/design/elora-emotes.svg docs/archiv/release-1/design/elora-emotes.png 1260
+        docs/archive/release-1/design/elora-emotes.svg docs/archive/release-1/design/elora-emotes.png 1260
 
 Emoticons in Welteinheiten (Blase ≈ 24 breit), auf dem Blatt ×3.
 """
@@ -85,5 +85,5 @@ def sheet():
 
 
 if __name__ == '__main__':
-    with open('docs/archiv/release-1/design/elora-emotes.svg', 'w') as fh:
+    with open('docs/archive/release-1/design/elora-emotes.svg', 'w') as fh:
         fh.write(sheet())

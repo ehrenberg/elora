@@ -1,6 +1,6 @@
 # Fortschrittssystem des Abenteuers (O-204)
 
-Status: **entschieden** (E-241 bis E-245, A1.3) · Rahmen: E-206, E-212, E-214/E-215, E-219, E-220, E-239, [Weltbuch §6](weltbuch.md)
+Status: **entschieden** (E-241 bis E-245, A1.3) · Rahmen: E-206, E-212, E-214/E-215, E-219, E-220, E-239, [Weltbuch §6](world-book.md)
 
 Grundsatz: Hook, Sprung und Doppelsprung bleiben, wie sie sind (E-212). **Fortschritt verändert nie Lauftempo, Sprunghöhe oder Hook-Zug**, sondern Leben, Schaden, die fünf Gebietsfähigkeiten, Beute und Komfort.
 

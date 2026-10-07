@@ -2,7 +2,7 @@
 
 Status: **angenommen** (E-023, 2026-09-25) – alle Werte T-01 bis T-30 gelten als Startwerte; T-31 bis T-36 seit E-140.
 
-Original-Werte stammen aus [`../archiv/release-1/01-analyse-teeworlds.md`](../archiv/release-1/01-analyse-teeworlds.md). Einheiten: 1 Tile = 32 Einheiten, Werte gelten pro Tick.
+Original-Werte stammen aus [`../archive/release-1/01-teeworlds-analysis.md`](../archive/release-1/01-teeworlds-analysis.md). Einheiten: 1 Tile = 32 Einheiten, Werte gelten pro Tick.
 
 ## Leitidee
 

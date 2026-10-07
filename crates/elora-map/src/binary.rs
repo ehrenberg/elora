@@ -1,4 +1,4 @@
-//! Release-Kartenformat `.emap` (E-129, E-143 bis E-146), beschrieben in `docs/handbuch/kartenformat.md`.
+//! Release-Kartenformat `.emap` (E-129, E-143 bis E-146), beschrieben in `docs/handbook/map-format.md`.
 //!
 //! Datei: `EMAP` + Formatversion (u16) + zlib-komprimierte Abschnitte. Jeder Abschnitt ist
 //! `Kennung (4 Byte) | Länge (u32) | Inhalt`. Zahlen sind Little Endian.

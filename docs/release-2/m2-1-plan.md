@@ -1,6 +1,6 @@
 # R2-M2.1 – Kapitel 1: Blütenwiesen – Umsetzungsplan
 
-Status: **Abgeschlossen, vorerst angenommen (E-305)** · Entscheidungen E-297 bis E-304 · Grundlage: [`weltbuch.md`](weltbuch.md) §4.1 und §5, [`prolog.md`](prolog.md), E-272 bis E-295
+Status: **Abgeschlossen, vorerst angenommen (E-305)** · Entscheidungen E-297 bis E-304 · Grundlage: [`world-book.md`](world-book.md) §4.1 und §5, [`prolog.md`](prolog.md), E-272 bis E-295
 
 ## Ziel
 

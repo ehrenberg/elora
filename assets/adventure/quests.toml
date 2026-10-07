@@ -1,4 +1,4 @@
-# Aufgaben (A1.4, E-249 bis E-251). Bedingungen und Folgen: docs/handbuch/abenteuer-inhalte.md
+# Aufgaben (A1.4, E-249 bis E-251). Bedingungen und Folgen: docs/handbook/adventure-content.md
 # goal.type = talk | reach | defeat | collect | bring | flag | manual
 # Prolog (A1.9, docs/release-2/prolog.md)
 
@@ -126,7 +126,7 @@ id = "fest"
 text = { de = "Mit Oma Pfütze am Brunnen feiern", en = "Celebrate with Oma Pfütze at the well" }
 goal = { type = "talk", who = "oma" }
 
-# Kapitel 3 – Glutsandwüste (R2-M2.3, docs/release-2/m2-3-inhalte.md)
+# Kapitel 3 – Glutsandwüste (R2-M2.3, docs/release-2/m2-3-content.md)
 [[quest]]
 id = "glutsand"
 kind = "main"
@@ -171,7 +171,7 @@ id = "fest"
 text = { de = "Mit Oma Pfütze am Brunnen feiern", en = "Celebrate with Oma Pfütze at the well" }
 goal = { type = "talk", who = "oma" }
 
-# Kapitel 4 – Frostspitzen (R2-M2.4, docs/release-2/m2-4-inhalte.md)
+# Kapitel 4 – Frostspitzen (R2-M2.4, docs/release-2/m2-4-content.md)
 [[quest]]
 id = "frostspitzen"
 kind = "main"

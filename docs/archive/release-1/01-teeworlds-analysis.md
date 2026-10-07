@@ -2,7 +2,7 @@
 
 Stand: 2026-09-25 · Quellen: teeworlds.com, Quellcode `github.com/teeworlds/teeworlds` (`src/game/tuning.h`, `datasrc/content.py`)
 
-Ziel dieses Dokuments: festhalten, **was** Teeworlds ausmacht, damit der Klon das gleiche Spielgefühl erreicht. Entscheidungen, wie wir etwas umsetzen, stehen in [`02-entscheidungen.md`](02-entscheidungen.md).
+Ziel dieses Dokuments: festhalten, **was** Teeworlds ausmacht, damit der Klon das gleiche Spielgefühl erreicht. Entscheidungen, wie wir etwas umsetzen, stehen in [`02-decisions.md`](02-decisions.md).
 
 ---
 

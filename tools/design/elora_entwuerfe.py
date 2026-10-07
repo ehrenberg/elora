@@ -1,7 +1,7 @@
-"""Erzeugt docs/archiv/release-1/design/elora-entwuerfe.svg – drei Tropfen-Entwürfe von Elora (E-085).
+"""Erzeugt docs/archive/release-1/design/elora-entwuerfe.svg – drei Tropfen-Entwürfe von Elora (E-085).
 
 Aufruf: python3 tools/design/elora_entwuerfe.py && cargo xtask svg-preview \
-        docs/archiv/release-1/design/elora-entwuerfe.svg docs/archiv/release-1/design/elora-entwuerfe.png 1260
+        docs/archive/release-1/design/elora-entwuerfe.svg docs/archive/release-1/design/elora-entwuerfe.png 1260
 
 Maßstab: Figur lokal ~100 breit → Spielgröße 36 Einheiten (E-087), Faktor 0.36.
 Die Füße (lokal y = 67) stehen auf der Hitbox-Unterkante (+14 Einheiten).
@@ -86,5 +86,5 @@ def sheet():
 
 
 if __name__ == '__main__':
-    with open('docs/archiv/release-1/design/elora-entwuerfe.svg', 'w') as f:
+    with open('docs/archive/release-1/design/elora-entwuerfe.svg', 'w') as f:
         f.write(sheet())

@@ -1,7 +1,7 @@
-"""Erzeugt docs/archiv/release-1/design/elora-palette.svg – Paletten-Entwurf für Skins (E-095, E-096).
+"""Erzeugt docs/archive/release-1/design/elora-palette.svg – Paletten-Entwurf für Skins (E-095, E-096).
 
 Aufruf: python3 tools/design/elora_palette.py && cargo xtask svg-preview \
-        docs/archiv/release-1/design/elora-palette.svg docs/archiv/release-1/design/elora-palette.png 1260
+        docs/archive/release-1/design/elora-palette.svg docs/archive/release-1/design/elora-palette.png 1260
 """
 import re
 
@@ -73,5 +73,5 @@ def sheet():
 
 
 if __name__ == '__main__':
-    with open('docs/archiv/release-1/design/elora-palette.svg', 'w') as fh:
+    with open('docs/archive/release-1/design/elora-palette.svg', 'w') as fh:
         fh.write(sheet())

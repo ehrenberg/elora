@@ -1,9 +1,9 @@
 # R2-M2.3 – Inhalte von Kapitel 3 (Entwurf, M2.3.4)
 
-Status: **Freigegeben und eingebaut** (Texte freigegeben 2026-10-06) · Grundlage: [`m2-3-plan.md`](m2-3-plan.md), [`weltbuch.md`](weltbuch.md) §4.3 und §5, E-243, E-316 bis E-325
+Status: **Freigegeben und eingebaut** (Texte freigegeben 2026-10-06) · Grundlage: [`m2-3-plan.md`](m2-3-plan.md), [`world-book.md`](world-book.md) §4.3 und §5, E-243, E-316 bis E-325
 
 Deutsche Texte; die englischen kommen beim Einbau dazu. Bedingungen und Folgen in der Schreibweise
-der Inhaltsdateien ([`../handbuch/abenteuer-inhalte.md`](../handbuch/abenteuer-inhalte.md)).
+der Inhaltsdateien ([`../handbook/adventure-content.md`](../handbook/adventure-content.md)).
 
 ## 1. Figuren
 

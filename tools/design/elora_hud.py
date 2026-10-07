@@ -1,7 +1,7 @@
-"""Erzeugt docs/archiv/release-1/design/elora-hud.svg – drei HUD-Entwürfe (M5.8, E-090 „modern, am Fadenkreuz“).
+"""Erzeugt docs/archive/release-1/design/elora-hud.svg – drei HUD-Entwürfe (M5.8, E-090 „modern, am Fadenkreuz“).
 
 Aufruf: python3 tools/design/elora_hud.py && cargo xtask svg-preview \
-        docs/archiv/release-1/design/elora-hud.svg docs/archiv/release-1/design/elora-hud.png 1260
+        docs/archive/release-1/design/elora-hud.svg docs/archive/release-1/design/elora-hud.png 1260
 
 Jede Karte zeigt denselben Spielmoment: 7/10 Leben, 4/10 Rüstung, Granate mit 6/10 Munition,
 DM mit 12 Punkten, Timer 3:24.
@@ -134,5 +134,5 @@ def sheet():
 
 
 if __name__ == '__main__':
-    with open('docs/archiv/release-1/design/elora-hud.svg', 'w') as fh:
+    with open('docs/archive/release-1/design/elora-hud.svg', 'w') as fh:
         fh.write(sheet())

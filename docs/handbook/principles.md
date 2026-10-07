@@ -1,8 +1,8 @@
 # Grundsätze
 
 Was aus Release 1 verbindlich bleibt – als Kurzfassung. Die Herleitung steht im
-[Entscheidungslog von Release 1](../archiv/release-1/02-entscheidungen.md) (E-001 bis E-173);
-neue Entscheidungen stehen im [Log von Release 2](../release-2/entscheidungen.md) (ab E-200).
+[Entscheidungslog von Release 1](../archive/release-1/02-decisions.md) (E-001 bis E-173);
+neue Entscheidungen stehen im [Log von Release 2](../release-2/decisions.md) (ab E-200).
 
 ## Zusammenarbeit
 

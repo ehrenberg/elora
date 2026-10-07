@@ -1,4 +1,4 @@
-# Fortschrittswerte des Abenteuers (docs/release-2/fortschritt.md, E-241 bis E-244)
+# Fortschrittswerte des Abenteuers (docs/release-2/progression.md, E-241 bis E-244)
 
 max_level = 30        # P-01
 xp_base = 15          # P-02: Erfahrung bis zur nächsten Stufe = xp_base + xp_per_level × Stufe

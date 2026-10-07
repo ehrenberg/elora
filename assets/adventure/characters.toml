@@ -95,7 +95,7 @@ portrait = "waechter"
 voice = 0.45
 show_if = "merker besiegt.wurzelwaechter"
 
-# Kapitel 3 (R2-M2.3, docs/release-2/m2-3-inhalte.md)
+# Kapitel 3 (R2-M2.3, docs/release-2/m2-3-content.md)
 [[character]]
 id = "sirup"
 name = { de = "Karawanenführer Sirup", en = "Sirup the caravan leader" }
@@ -194,7 +194,7 @@ fixed = true
 voice = 0.0
 show_if = "merker befreit.giessstelle-3"
 
-# Kapitel 4 – Frostspitzen (R2-M2.4, docs/release-2/m2-4-inhalte.md)
+# Kapitel 4 – Frostspitzen (R2-M2.4, docs/release-2/m2-4-content.md)
 [[character]]
 id = "flocke"
 name = { de = "Bergführerin Flocke", en = "Flocke the mountain guide" }

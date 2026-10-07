@@ -862,7 +862,7 @@ mod tests {
     }
 
     /// Übersichtsblatt zur Sichtprüfung: `cargo test -p elora-client --bin elora map_art_sheet -- --ignored`,
-    /// danach `cargo xtask svg-preview target/map-art.svg docs/archiv/release-1/design/elora-kartenteile.png 1400`.
+    /// danach `cargo xtask svg-preview target/map-art.svg docs/archive/release-1/design/elora-kartenteile.png 1400`.
     #[test]
     #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
     #[allow(clippy::too_many_lines)]

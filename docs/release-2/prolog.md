@@ -1,6 +1,6 @@
 # Prolog „Der blasse Morgen“ – Entwurf (A1.9)
 
-Status: **Ablauf angenommen** (E-272 bis E-275) · Grundlage: [Weltbuch](weltbuch.md) §3, §4.1, §5 (Prolog), E-207 bis E-214 · Ziel: etwa 20–30 Minuten, Abnahme mit A1.10
+Status: **Ablauf angenommen** (E-272 bis E-275) · Grundlage: [Weltbuch](world-book.md) §3, §4.1, §5 (Prolog), E-207 bis E-214 · Ziel: etwa 20–30 Minuten, Abnahme mit A1.10
 
 ## Ablauf
 

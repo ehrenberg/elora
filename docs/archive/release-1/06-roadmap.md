@@ -36,7 +36,7 @@ M0 Setup ─► M1 Physik-Sandbox ─► M2 Kampf lokal ─► M3 Netzwerk ─�
 ## M0 – Projekt-Setup
 
 - Lokales Git-Repository (E-034), `.gitignore`, `LICENSE` (GPL-3.0), `THIRD_PARTY_LICENSES`
-- Cargo-Workspace nach [`../../handbuch/architektur.md`](../../handbuch/architektur.md), zunächst nur mit den M1-Crates
+- Cargo-Workspace nach [`../../handbook/architecture.md`](../../handbook/architecture.md), zunächst nur mit den M1-Crates
 - `rust-toolchain.toml`, rustfmt, clippy-Lints, cargo-deny
 - Lokales Prüfskript (fmt + clippy + test + deny) als Ersatz für die CI (O-41)
 

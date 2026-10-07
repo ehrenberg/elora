@@ -1,29 +1,29 @@
 # Entscheidungslog – Release 2
 
 Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
-[Archiv](../archiv/release-1/02-entscheidungen.md), die weiter gültigen Grundsätze in
-[`../handbuch/grundsaetze.md`](../handbuch/grundsaetze.md).
+[Archiv](../archive/release-1/02-decisions.md), die weiter gültigen Grundsätze in
+[`../handbook/principles.md`](../handbook/principles.md).
 
 ## Getroffene Entscheidungen
 
 | # | Datum | Thema | Entscheidung | Begründung / Quelle |
 |---|---|---|---|---|
-| E-200 | 2026-10-02 | Dokumentation | **Archiv + Handbuch:** Release 1 nach `docs/archiv/release-1/`, gültiges Wissen als Handbuch in `docs/handbuch/`, Release 2 in `docs/release-2/` | Entscheidung Projektinhaber |
+| E-200 | 2026-10-02 | Dokumentation | **Archiv + Handbuch:** Release 1 nach `docs/archive/release-1/`, gültiges Wissen als Handbuch in `docs/handbook/`, Release 2 in `docs/release-2/` | Entscheidung Projektinhaber |
 | E-201 | 2026-10-02 | Entscheidungslog | Log von Release 1 archiviert, **neuer Log ab E-200**; Grundsätze als Kurzfassung im Handbuch | Entscheidung Projektinhaber |
 | E-202 | 2026-10-02 | Schwerpunkte Release 2 | **Spieler & Gemeinschaft, mehr Spielinhalt, Mitspieler-Bots** und ein **Rollenspiel-Abenteuer**: Einzelspieler mit Geschichte, NPCs und Rollenspiel-Elementen (Leveln, Waffen und Fähigkeiten ausbauen …), zusätzlich als Spielmodus | Entscheidung Projektinhaber |
 | E-203 | 2026-10-02 | Weltaufbau (O-200) | **Hub mit Gebieten:** ein Dorf als Treffpunkt mit NPCs, Händlern und Aufgaben; Gebiete (z. B. Wald, Wüste, Eisberge, Höhlen) werden nach und nach freigeschaltet | Entscheidung Projektinhaber |
 | E-204 | 2026-10-02 | Rollenspiel als Spielmodus (O-201) | **Rollenspiel-PvP-Modus:** eigener Spielmodus, in dem man während des Matches levelt und Waffen/Fähigkeiten ausbaut (Fortschritt gilt für die Runde). Kein Koop-Abenteuer vorgesehen | Entscheidung Projektinhaber |
 | E-205 | 2026-10-02 | Geschichte (O-203) | **Claude schlägt vor** (Welt, Figuren, Handlung in Varianten), **Projektinhaber entscheidet** | Entscheidung Projektinhaber |
 | E-206 | 2026-10-02 | Rollenspiel-Elemente (O-204) | **Alle vier:** Stufen & Fertigkeiten (Fähigkeitenbaum), Waffen ausbauen, Ausrüstung & Beute (Inventar, Händler, Währung), Aufgaben & Dialoge | Entscheidung Projektinhaber |
-| E-207 | 2026-10-02 | Geschichte (O-203) | **Entwurf A „Die verstummten Quellen“** aus [`geschichte-entwuerfe.md`](geschichte-entwuerfe.md): märchenhaft, warm; Dorf Tauwinkel, fünf Gebiete (Blütenwiesen, Murmelwald, Glutsandwüste, Frostspitzen, Sternschlucht), Gegenspieler „Der Dürre“, Versöhnung statt Sieg; PvP-Modus „Quellenkampf“ | Entscheidung Projektinhaber |
+| E-207 | 2026-10-02 | Geschichte (O-203) | **Entwurf A „Die verstummten Quellen“** aus [`story-drafts.md`](story-drafts.md): märchenhaft, warm; Dorf Tauwinkel, fünf Gebiete (Blütenwiesen, Murmelwald, Glutsandwüste, Frostspitzen, Sternschlucht), Gegenspieler „Der Dürre“, Versöhnung statt Sieg; PvP-Modus „Quellenkampf“ | Entscheidung Projektinhaber |
 | E-208 | 2026-10-02 | Credits: Name | Projektinhaber als **Bastian Ehrenberg** | Entscheidung Projektinhaber |
 | E-209 | 2026-10-02 | Credits: Ort (M8.5) | **Letzte Seite in den Einstellungen** („Über Elora“) | Entscheidung Projektinhaber |
 | E-210 | 2026-10-02 | Wendung der Geschichte | **Sechste Quelle unter dem Dorfbrunnen**, der Dürre als ihr vergessener Hüter – passt | Entscheidung Projektinhaber |
 | E-211 | 2026-10-02 | Altersgruppe | Das Abenteuer ist **immer für 12+ spielbar**: Kämpfe ja, aber ohne Blut und Grausamkeit; die Hüter-Kämpfe dürfen echte Kämpfe sein, die Geschichte erzählt sie als Beruhigen | Entscheidung Projektinhaber |
 | E-212 | 2026-10-02 | Namen, Fähigkeiten | Namen von Welt und Figuren sowie die fünf Fähigkeiten in ihrer Reihenfolge (Hook-Ruck, Heranhooken, Stampfen, Eisgriff, Gleiten) **bleiben** | Entscheidung Projektinhaber |
 | E-213 | 2026-10-02 | Dialoge | **Auswahl mit Folgen** erlaubt | Entscheidung Projektinhaber |
-| E-214 | 2026-10-02 | Spieldauer | Der Einzelspieler-Modus soll **lange tragen – mehrere Stunden** (Zielwerte siehe [Weltbuch §8](weltbuch.md)) | Entscheidung Projektinhaber |
-| E-215 | 2026-10-02 | Spieldauer: Zielwerte | **Hauptgeschichte 6–8 h, mit Nebeninhalten 12 h+**, etwa 20 Abenteuer-Karten, ~25 Nebenaufgaben, Sammelstücke, „Quellen-Prüfungen“ nach dem Ende ([Weltbuch §8](weltbuch.md)) | Entscheidung Projektinhaber |
+| E-214 | 2026-10-02 | Spieldauer | Der Einzelspieler-Modus soll **lange tragen – mehrere Stunden** (Zielwerte siehe [Weltbuch §8](world-book.md)) | Entscheidung Projektinhaber |
+| E-215 | 2026-10-02 | Spieldauer: Zielwerte | **Hauptgeschichte 6–8 h, mit Nebeninhalten 12 h+**, etwa 20 Abenteuer-Karten, ~25 Nebenaufgaben, Sammelstücke, „Quellen-Prüfungen“ nach dem Ende ([Weltbuch §8](world-book.md)) | Entscheidung Projektinhaber |
 | E-216 | 2026-10-02 | Reihenfolge Release 2 | **Abenteuer-Grundlage zuerst** (R2-M1, Plan: [`a1-plan.md`](a1-plan.md)); Gegner-Steuerung und Wegfindung daraus nutzen später die Mehrspieler-Bots | Entscheidung Projektinhaber |
 | E-217 | 2026-10-02 | Sprache Abenteuer (D-A1-01) | **Deutsch und Englisch von Anfang an** | Entscheidung Projektinhaber |
 | E-218 | 2026-10-02 | Pflege von Gesprächen und Aufgaben (D-A1-02) | **Textdateien**, im Editor sichtbar (welcher NPC welches Gespräch hat) und direkt testbar | Entscheidung Projektinhaber |
@@ -50,7 +50,7 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-239 | 2026-10-02 | Eloras Leben im Abenteuer | **10 wie im Mehrspieler**, Stufen und Ausrüstung erhöhen später; Rüstung nur über Ausrüstung | Entscheidung Projektinhaber |
 | E-240 | 2026-10-02 | Abnahme A1.2 | Gegner im Playtest **angenommen**; Werte in `creatures.toml` und A-03, A-11 bis A-15 gelten als Startwerte | Entscheidung Projektinhaber |
 | E-241 | 2026-10-02 | Stufen (O-204) | Höchststufe 30, Erfahrung bis zur nächsten Stufe 15 + 10 × Stufe, je Stufe 1 Tautropfen-Punkt; **alle 2 Stufen +1 Leben** (10 → 24) | Entscheidung Projektinhaber |
-| E-242 | 2026-10-02 | Fähigkeitenbaum (O-204) | Drei Zweige, 16 Knoten, **nicht alles erreichbar** (nachgezählt: 35 Ränge, 31 Punkte bis Stufe 30) ([`fortschritt.md`](fortschritt.md) §2) | Entscheidung Projektinhaber |
+| E-242 | 2026-10-02 | Fähigkeitenbaum (O-204) | Drei Zweige, 16 Knoten, **nicht alles erreichbar** (nachgezählt: 35 Ränge, 31 Punkte bis Stufe 30) ([`progression.md`](progression.md) §2) | Entscheidung Projektinhaber |
 | E-243 | 2026-10-02 | Waffen im Abenteuer (O-204) | Start mit Hammer, Granatwerfer nach Kapitel 1, Laser nach Kapitel 3; **Munition wie im Mehrspieler nur über Pickups und Truhen**; je Waffe 3 Ausbaustufen mit Glanztropfen und Gebietsmaterial | Entscheidung Projektinhaber |
 | E-244 | 2026-10-02 | Ausrüstung, Inventar, Tod (O-204) | Wie vorgeschlagen: keine Platzgrenze, keine Tempo- oder Sprungboni, Verlust beim Tod 25 % der seit dem Speichern gesammelten Glanztropfen | Entscheidung Projektinhaber |
 | E-245 | 2026-10-02 | Spielstände (O-202) | **Keine lesbaren Dateien:** Spielstände werden gepackt mit Prüfsumme gespeichert | Entscheidung Projektinhaber |
@@ -154,7 +154,7 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-343 | 2026-10-06 | Kapitel 4: Gelände | **Eiszapfen, Lawinen, dünnes Eis**; keine Sprungfelder | Entscheidung Projektinhaber |
 | E-344 | 2026-10-06 | Plan R2-M2.4 | **Freigegeben** mit den Vorschlägen D-M24-01 bis D-M24-10 ([`m2-4-plan.md`](m2-4-plan.md)) | Entscheidung Projektinhaber |
 | E-345 | 2026-10-06 | Entwürfe Kapitel 4 (M2.4.0) | **Angenommen** ([`design/kapitel4-entwuerfe.png`](design/kapitel4-entwuerfe.png)) | Entscheidung Projektinhaber |
-| E-346 | 2026-10-07 | Texte Kapitel 4 (M2.4.5) | **Freigegeben** ([`m2-4-inhalte.md`](m2-4-inhalte.md)); Gewinn-Bildschirm: „Kristella lächelt wieder – und die Frostquelle glitzert klar wie ein Wintermorgen.“, Ehrentitel „Gipfelstürmerin“ | Entscheidung Projektinhaber |
+| E-346 | 2026-10-07 | Texte Kapitel 4 (M2.4.5) | **Freigegeben** ([`m2-4-content.md`](m2-4-content.md)); Gewinn-Bildschirm: „Kristella lächelt wieder – und die Frostquelle glitzert klar wie ein Wintermorgen.“, Ehrentitel „Gipfelstürmerin“ | Entscheidung Projektinhaber |
 | E-347 | 2026-10-07 | Musik Kapitel 4 (M2.4.8) | Nach Hörprobe: **Frostspitzen** „Ice Village“ (KarateStudios, CC0), **Kristella** „Dramatic Boss Encounter“ (cynicmusic, CC0); Klänge aus Kenney-Paketen (CC0) und prozedural, Feuerstelle „Fireplace Sound loop“ (PagDev, CC0) | Entscheidung Projektinhaber |
 | E-348 | 2026-10-07 | Language policy and refactoring | **From now on English** for README, code identifiers, code comments and documentation; player-facing text stays translated in `assets/lang`. Before the next release a refactoring pass ([`refactoring-plan.md`](refactoring-plan.md)) converts existing code and docs and improves structure. Nothing is converted yet. | Project owner decision |
 | E-349 | 2026-10-07 | Acceptance R2-M2.4 | **Chapter 4 accepted** after the playtest fixes (Kristella harder, thin ice, icicles, confetti, weather particles, no shot on map change) | Project owner decision |
@@ -176,8 +176,8 @@ Neu für Release 2 (Rollenspiel-Abenteuer, siehe [`roadmap.md`](roadmap.md)):
 - [x] ~~O-200 Weltaufbau~~ → E-203
 - [x] ~~O-201 Rollenspiel als Spielmodus~~ → E-204
 - [x] ~~O-202 Fortschritt speichern~~ → E-219 (im PvP-Modus nur für die Runde, E-204)
-- [x] ~~O-203 Geschichte und Welt~~ → E-207 · Ausarbeitung: [`weltbuch.md`](weltbuch.md) (Entwurf)
-- [x] ~~O-204 Fortschrittssystem~~ → E-241 bis E-244 ([`fortschritt.md`](fortschritt.md))
+- [x] ~~O-203 Geschichte und Welt~~ → E-207 · Ausarbeitung: [`world-book.md`](world-book.md) (Entwurf)
+- [x] ~~O-204 Fortschrittssystem~~ → E-241 bis E-244 ([`progression.md`](progression.md))
 - [ ] **O-205 NPCs und Gegner** – Verhalten, Dialoge, Händler, Begleiter; Grundlage sind die Bots
 - [ ] **O-206 Abenteuer im Editor** – NPCs, Auslöser, Dialoge und Aufgaben in Karten
 - [ ] **O-207 Weitere Waffen** – welche, für welche Modi

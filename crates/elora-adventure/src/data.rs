@@ -1,5 +1,5 @@
 //! Inhalte als Daten (`assets/adventure/*.toml`): Gegenstände, Fähigkeitenbaum, Waffen-Ausbau,
-//! Läden und Fortschrittswerte ([`docs/release-2/fortschritt.md`]).
+//! Läden und Fortschrittswerte ([`docs/release-2/progression.md`]).
 
 use std::collections::BTreeMap;
 

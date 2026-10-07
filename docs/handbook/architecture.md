@@ -1,6 +1,6 @@
 # Architektur & Code-Struktur
 
-Stand: Release 1 (0.9.0) · Grundsätze: [`grundsaetze.md`](grundsaetze.md)
+Stand: Release 1 (0.9.0) · Grundsätze: [`principles.md`](principles.md)
 
 ## 1. Leitprinzipien
 

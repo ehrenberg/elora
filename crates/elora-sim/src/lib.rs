@@ -1,7 +1,7 @@
 //! Deterministische Spielsimulation von Elora.
 //!
 //! Enthält reine Spiellogik ohne Abhängigkeiten zu Fenster, Grafik oder Netzwerk
-//! (siehe `docs/handbuch/architektur.md`). Server, Client-Vorhersage und Tests nutzen
+//! (siehe `docs/handbook/architecture.md`). Server, Client-Vorhersage und Tests nutzen
 //! denselben Code.
 
 pub mod ability;

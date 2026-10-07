@@ -40,8 +40,8 @@ New and changed code follows the rule immediately; existing code is converted in
 | # | Task | Notes |
 |---|---|---|
 | RF-01 ✅ | Rewrite `README.md` in English | User-facing; keep the structure from the last rewrite |
-| RF-02 | Translate `DEVELOPMENT.md` and `docs/handbuch/*` to English; rename the folder to `docs/handbook/` | Fix all links |
-| RF-03 | Translate all plans, decisions and the archive (`docs/release-2/`, `docs/archiv/`, `docs/releases/`) | D-RF-03; rename `docs/archiv/` to `docs/archive/` |
+| RF-02 | Translate `DEVELOPMENT.md` and `docs/handbook/*` to English; rename the folder to `docs/handbook/` | Fix all links |
+| RF-03 | Translate all plans, decisions and the archive (`docs/release-2/`, `docs/archive/`, `docs/releases/`) | D-RF-03; rename `docs/archive/` to `docs/archive/` |
 | RF-04 | Translate code comments and doc comments, crate by crate (`elora-sim` → `elora-map` → `elora-protocol` → `elora-net` → `elora-audio` → `elora-render` → `elora-game` → `elora-adventure` → apps → `xtask`) | One commit per crate; no code changes in the same commit |
 | RF-05 | Rename German identifiers in code (map generators `kapitel*` → `chapter*`, `wueste_*` → `desert_*`, helpers like `stampf`/`kletter`, test names) | Pure renames, compiler-checked |
 | RF-06 | Translate log, panic and error messages and `xtask` output | Player-facing messages stay in `assets/lang` |
@@ -92,7 +92,7 @@ New and changed code follows the rule immediately; existing code is converted in
 |---|---|---|
 | D-RF-01 | Content ids (items, creatures, maps, quests, flags) in English? | **Yes**, with a save-game migration |
 | D-RF-02 | Dialog/quest condition language in English? | **Yes**; the parser accepts the German keywords for one release, then they are removed |
-| D-RF-03 | Translate the archive (`docs/archiv/`, `docs/qa-*`) too? | **Yes** |
+| D-RF-03 | Translate the archive (`docs/archive/`, `docs/qa-*`) too? | **Yes** |
 | D-RF-04 | When? | **Now**, after the chapter 4 acceptance (E-349) |
 
 ## Order

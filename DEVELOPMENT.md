@@ -90,7 +90,7 @@ cargo run --bin elora -- --connect 127.0.0.1:8303   # direkt zu einem Server
 
 Spielmodi in der Sandbox: `--mode dm|tdm|ctf|lms|lts` (optional `--instagib`) oder im Panel unter *Spiel → Modus*. CTF braucht eine Karte mit Flaggen, z. B. `maps/ctf-test.emap`.
 
-Die Sandbox dient zum Tunen und Testen: Dummies, Pickups, Gegner des Abenteuers, Live-Regler für alle Werte ([Tuning](docs/handbuch/tuning.md)), Hot-Reload der Karte.
+Die Sandbox dient zum Tunen und Testen: Dummies, Pickups, Gegner des Abenteuers, Live-Regler für alle Werte ([Tuning](docs/handbook/tuning.md)), Hot-Reload der Karte.
 
 ### Entwickler-Tasten
 
@@ -179,16 +179,16 @@ cargo run --bin elora-master -- --bind 0.0.0.0:8300                # HTTP auf Po
 cargo run --bin elora-master -- --bind 127.0.0.1:8300 --behind-proxy   # hinter Reverse-Proxy
 ```
 
-Spielserver melden sich beim Standard-Master an (abschaltbar mit `--no-master`, eigener mit `--master <URL>` oder `masters = ["…"]` in `server.toml`; aus dem Client gehostete nur mit „Im Internet anzeigen“), alle 20 s; der Master listet sie erst, wenn er sie selbst per UDP erreicht, und entfernt sie nach 60 s ohne Anmeldung. Öffentlich den Master hinter einem Reverse-Proxy mit HTTPS betreiben (z. B. Caddy: `reverse_proxy 127.0.0.1:8300`) und `--behind-proxy` setzen. Schnittstelle: `GET /servers`, `POST /register` (JSON). Betrieb mit systemd oder Docker: [`docs/handbuch/master-betrieb.md`](docs/handbuch/master-betrieb.md).
+Spielserver melden sich beim Standard-Master an (abschaltbar mit `--no-master`, eigener mit `--master <URL>` oder `masters = ["…"]` in `server.toml`; aus dem Client gehostete nur mit „Im Internet anzeigen“), alle 20 s; der Master listet sie erst, wenn er sie selbst per UDP erreicht, und entfernt sie nach 60 s ohne Anmeldung. Öffentlich den Master hinter einem Reverse-Proxy mit HTTPS betreiben (z. B. Caddy: `reverse_proxy 127.0.0.1:8300`) und `--behind-proxy` setzen. Schnittstelle: `GET /servers`, `POST /register` (JSON). Betrieb mit systemd oder Docker: [`docs/handbook/master-operation.md`](docs/handbook/master-operation.md).
 
 Für Webspace ohne eigenen Dienst gibt es Master und Projektseite als PHP: [`deploy/master-php/`](deploy/master-php/LIESMICH.md) (läuft unter `https://elora.bastianswelt.de`). Ändert sich die Protokollversion des Spiels, muss `protocol_version` in `deploy/master-php/config.php` mitziehen.
 
 ## Karten
 
-- **Format:** [`docs/handbuch/kartenformat.md`](docs/handbuch/kartenformat.md); ansehen mit `cargo xtask map-dump`.
+- **Format:** [`docs/handbook/map-format.md`](docs/handbook/map-format.md); ansehen mit `cargo xtask map-dump`.
 - **Release-Karten** (M6.10): `dm-wiese` (64×36, 4–8 Spieler), `dm-wueste` (96×48, 8–12), `dm-winter` (128×64, 12–16), `ctf-wald` (150×48, 8–12), `ctf-nacht` (190×64, 12–16). Layouts werden in `tools/design/release_maps/` gebaut und geprüft (`python3 tools/design/release_maps/export.py`), die Dateien schreibt `cargo test -p elora-client --bin elora write_release_maps -- --ignored`.
 - **Abenteuer-Karten** (`maps/abenteuer/`) entstehen aus Generatoren in `apps/elora-client/src/editor/` (`prolog.rs`, `kapitel1.rs` bis `kapitel3.rs`) und werden mit `write_prolog_maps`, `write_kapitel1_maps` usw. geschrieben (`cargo test -p elora-client --bin elora <name> -- --ignored`). Ein Test prüft, dass die mitgelieferten Dateien aktuell sind.
-- **Inhalte des Abenteuers** (Figuren, Gespräche, Aufgaben, Gegner, Gegenstände) liegen als TOML in `assets/adventure/`: [`docs/handbuch/abenteuer-inhalte.md`](docs/handbuch/abenteuer-inhalte.md).
+- **Inhalte des Abenteuers** (Figuren, Gespräche, Aufgaben, Gegner, Gegenstände) liegen als TOML in `assets/adventure/`: [`docs/handbook/adventure-content.md`](docs/handbook/adventure-content.md).
 - **Grafiken** entstehen mit Python-Skripten in `tools/design/` (keine KI-Dienste, E-295).
 
 ## Sounds austauschen
@@ -268,11 +268,11 @@ deploy/                 Master als Dienst und als PHP mit Projektseite
 docs/                   Handbuch, Release-2-Planung, Release-Notizen, Archiv von Release 1
 ```
 
-Details: [Architektur](docs/handbuch/architektur.md) · Grundsätze: [`docs/handbuch/grundsaetze.md`](docs/handbuch/grundsaetze.md) · Übersicht der Doku: [`docs/README.md`](docs/README.md).
+Details: [Architektur](docs/handbook/architecture.md) · Grundsätze: [`docs/handbook/principles.md`](docs/handbook/principles.md) · Übersicht der Doku: [`docs/README.md`](docs/README.md).
 
 ## Arbeitsweise
 
-- Entscheidungen werden mit Nummer festgehalten (`E-…`): Release 2 in [`docs/release-2/entscheidungen.md`](docs/release-2/entscheidungen.md), Release 1 im [Archiv](docs/archiv/release-1/).
+- Entscheidungen werden mit Nummer festgehalten (`E-…`): Release 2 in [`docs/release-2/decisions.md`](docs/release-2/decisions.md), Release 1 im [Archiv](docs/archive/release-1/).
 - Meilensteine laufen als Plan → Freigabe → Entwürfe → Umsetzung → Abnahme (z. B. [`docs/release-2/m2-3-plan.md`](docs/release-2/m2-3-plan.md)).
 - Commits nach Conventional Commits (`feat(adventure): …`, `fix(client): …`), jeder mit grünem `cargo xtask check`.
 - Fremde Inhalte nur CC0 oder mit GPL-3.0 verträglich, immer mit Eintrag in `assets/SOURCES.md`.

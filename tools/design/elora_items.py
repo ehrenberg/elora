@@ -1,7 +1,7 @@
-"""Erzeugt docs/archiv/release-1/design/elora-items.svg – Entwürfe für Pickups, Waffen, Flaggen (M5.5).
+"""Erzeugt docs/archive/release-1/design/elora-items.svg – Entwürfe für Pickups, Waffen, Flaggen (M5.5).
 
 Aufruf: python3 tools/design/elora_items.py && cargo xtask svg-preview \
-        docs/archiv/release-1/design/elora-items.svg docs/archiv/release-1/design/elora-items.png 1260
+        docs/archive/release-1/design/elora-items.svg docs/archive/release-1/design/elora-items.png 1260
 
 Alle Motive sind in Welteinheiten gezeichnet und werden auf dem Blatt ×2.5 gezeigt.
 """
@@ -106,5 +106,5 @@ def sheet():
 
 
 if __name__ == '__main__':
-    with open('docs/archiv/release-1/design/elora-items.svg', 'w') as fh:
+    with open('docs/archive/release-1/design/elora-items.svg', 'w') as fh:
         fh.write(sheet())

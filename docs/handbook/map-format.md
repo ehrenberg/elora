@@ -115,7 +115,7 @@ Die Karte prüft den Aufbau (Ids, Lage, Größen, Raster); Verweise auf Gegnerar
 
 ## 6. Eingebaute Grafik (Stil A, M6.3)
 
-Ablage `assets/map/`, Übersicht in [`../archiv/release-1/design/elora-kartenteile.png`](../archiv/release-1/design/elora-kartenteile.png). Erzeugt einmalig mit `tools/../archiv/release-1/design/elora_map_assets.py`, danach normale, von Hand änderbare SVGs.
+Ablage `assets/map/`, Übersicht in [`../archive/release-1/design/elora-kartenteile.png`](../archive/release-1/design/elora-kartenteile.png). Erzeugt einmalig mit `tools/../archive/release-1/design/elora_map_assets.py`, danach normale, von Hand änderbare SVGs.
 
 | Art | Namen | Hinweis |
 |---|---|---|

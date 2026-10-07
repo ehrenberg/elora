@@ -1,7 +1,7 @@
-"""Erzeugt docs/archiv/release-1/design/elora-kartenlook.svg – drei Entwürfe für den Kartenlook (M6.0, E-130).
+"""Erzeugt docs/archive/release-1/design/elora-kartenlook.svg – drei Entwürfe für den Kartenlook (M6.0, E-130).
 
 Aufruf: python3 tools/design/elora_kartenlook.py && cargo xtask svg-preview \
-        docs/archiv/release-1/design/elora-kartenlook.svg docs/archiv/release-1/design/elora-kartenlook.png 1400
+        docs/archive/release-1/design/elora-kartenlook.svg docs/archive/release-1/design/elora-kartenlook.png 1400
 
 Jede Zeile zeigt dieselbe Szene: Spielfläche mit Außen-/Innenecken, nicht hookbarer
 Stein (U), Tod (x), Plattform (~), Eis (I), Sprungfeld (^), Beschleuniger (>),
@@ -247,5 +247,5 @@ def sheet():
 
 
 if __name__ == '__main__':
-    with open('docs/archiv/release-1/design/elora-kartenlook.svg', 'w') as fh:
+    with open('docs/archive/release-1/design/elora-kartenlook.svg', 'w') as fh:
         fh.write(sheet())

@@ -1,6 +1,6 @@
 # R2-M2.2 – Kapitel 2: Murmelwald – Umsetzungsplan
 
-Status: **Abgeschlossen, angenommen (E-314)** · Entscheidungen E-306 bis E-313 · Grundlage: [`weltbuch.md`](weltbuch.md) §4.2 und §5, [`m2-1-plan.md`](m2-1-plan.md), E-296, E-305
+Status: **Abgeschlossen, angenommen (E-314)** · Entscheidungen E-306 bis E-313 · Grundlage: [`world-book.md`](world-book.md) §4.2 und §5, [`m2-1-plan.md`](m2-1-plan.md), E-296, E-305
 
 ## Ziel
 

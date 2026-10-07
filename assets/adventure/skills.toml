@@ -1,4 +1,4 @@
-# Fähigkeitenbaum bei Tüftel (E-242, docs/release-2/fortschritt.md §2).
+# Fähigkeitenbaum bei Tüftel (E-242, docs/release-2/progression.md §2).
 # branch = movement | combat | spring; requires = Knoten darüber; ability = nötige Gebietsfähigkeit
 # per_rank = Wirkung je Rang
 

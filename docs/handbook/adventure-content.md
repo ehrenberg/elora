@@ -9,7 +9,7 @@ Alle Inhalte des Abenteuers sind TOML-Dateien unter `assets/adventure/`. Texte s
 | `characters.toml` | Figuren mit Namen und Bild (`elora` braucht keinen Eintrag) |
 | `dialogs/<id>.toml` | ein Gespräch je Datei (neue Dateien in `crates/elora-adventure/src/data.rs` bei `dialogs!` eintragen) |
 | `quests.toml` | Aufgaben mit Schritten |
-| `items.toml`, `skills.toml`, `upgrades.toml`, `shops.toml`, `progression.toml`, `creatures.toml` | Gegenstände, Fähigkeitenbaum, Waffen-Ausbau, Läden, Fortschritt, Gegner ([`fortschritt.md`](../release-2/fortschritt.md)) |
+| `items.toml`, `skills.toml`, `upgrades.toml`, `shops.toml`, `progression.toml`, `creatures.toml` | Gegenstände, Fähigkeitenbaum, Waffen-Ausbau, Läden, Fortschritt, Gegner ([`progression.md`](../release-2/progression.md)) |
 
 ## Gespräche
 
