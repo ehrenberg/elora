@@ -1,6 +1,6 @@
 # Refactoring before the next release – plan
 
-Status: **Draft, not started** (E-348) · Scope: whole workspace (`crates/`, `apps/`, `xtask/`, `docs/`, `assets/`)
+Status: **Decided, ready to start** (E-348, E-350) · Scope: whole workspace (`crates/`, `apps/`, `xtask/`, `docs/`, `assets/`)
 
 ## Goal
 
@@ -41,7 +41,7 @@ New and changed code follows the rule immediately; existing code is converted in
 |---|---|---|
 | RF-01 | Rewrite `README.md` in English | User-facing; keep the structure from the last rewrite |
 | RF-02 | Translate `DEVELOPMENT.md` and `docs/handbuch/*` to English; rename the folder to `docs/handbook/` | Fix all links |
-| RF-03 | Translate the active plans and decisions in `docs/release-2/` | Archive (`docs/archiv/`) stays German as a historical record |
+| RF-03 | Translate all plans, decisions and the archive (`docs/release-2/`, `docs/archiv/`, `docs/releases/`) | D-RF-03; rename `docs/archiv/` to `docs/archive/` |
 | RF-04 | Translate code comments and doc comments, crate by crate (`elora-sim` → `elora-map` → `elora-protocol` → `elora-net` → `elora-audio` → `elora-render` → `elora-game` → `elora-adventure` → apps → `xtask`) | One commit per crate; no code changes in the same commit |
 | RF-05 | Rename German identifiers in code (map generators `kapitel*` → `chapter*`, `wueste_*` → `desert_*`, helpers like `stampf`/`kletter`, test names) | Pure renames, compiler-checked |
 | RF-06 | Translate log, panic and error messages and `xtask` output | Player-facing messages stay in `assets/lang` |
@@ -51,10 +51,10 @@ New and changed code follows the rule immediately; existing code is converted in
 
 | # | Task | Notes |
 |---|---|---|
-| RF-10 | Decide whether content ids (items, creatures, characters, maps, quests) become English | See D-RF-01; renaming breaks saves and maps unless migrated |
-| RF-11 | Decide whether the dialog/quest condition language becomes English (`flag`, `quest … step`, `give`, `take`, `ability`) | See D-RF-02; parser could accept both during a transition |
-| RF-12 | If yes: save-game migration (format version bump, rename table for flags, items and quest ids) and a test with old save files | `SaveGame` already has a format version |
-| RF-13 | If yes: rewrite content files and map files via the generators; editor keeps loading old maps | Map ids are referenced by exits and the world map |
+| RF-10 | Rename content ids (items, creatures, characters, maps, quests, flags) to English | D-RF-01; one rename table drives content files, maps and the save migration |
+| RF-11 | English condition language (`flag`, `quest … step`, `give`, `take`, `ability`) | D-RF-02; the parser accepts the German keywords for one release |
+| RF-12 | Save-game migration (format version bump, rename table for flags, items and quest ids) and a test with old save files | `SaveGame` already has a format version |
+| RF-13 | Rewrite content files and map files via the generators; editor keeps loading old maps | Map ids are referenced by exits and the world map |
 
 ### Phase 3 – structure and quality
 
@@ -76,21 +76,21 @@ New and changed code follows the rule immediately; existing code is converted in
 | # | Task | Notes |
 |---|---|---|
 | RF-40 | Golden tests, replays and all shipped maps unchanged after each phase | `cargo xtask check` after every commit |
-| RF-41 | Old save games from 0.9.x load (if RF-12 happens) | Keep sample saves as test fixtures |
+| RF-41 | Old save games from 0.9.x load | Keep sample saves as test fixtures |
 | RF-42 | Short playtest of every chapter after Phase 3 | |
 
-## Open decisions
+## Decisions (E-350)
 
-| # | Question | Proposal |
+| # | Question | Decision |
 |---|---|---|
-| D-RF-01 | Content ids (items, creatures, maps, quests, flags) in English? | Yes, with a save-game migration – otherwise German stays visible in every content file |
-| D-RF-02 | Dialog/quest condition language in English? | Yes, the parser accepts both spellings for one release, then the German keywords are removed |
-| D-RF-03 | Translate the archive (`docs/archiv/`, `docs/qa-*`) too? | No, keep as history |
-| D-RF-04 | When? | After R2-M2.4 is accepted and before the next release; Phase 1 can start right away |
+| D-RF-01 | Content ids (items, creatures, maps, quests, flags) in English? | **Yes**, with a save-game migration |
+| D-RF-02 | Dialog/quest condition language in English? | **Yes**; the parser accepts the German keywords for one release, then they are removed |
+| D-RF-03 | Translate the archive (`docs/archiv/`, `docs/qa-*`) too? | **Yes** |
+| D-RF-04 | When? | **Now**, after the chapter 4 acceptance (E-349) |
 
 ## Order
 
 1. Phase 1 (RF-01 … RF-07) – can be done in small commits without risk.
-2. Decisions D-RF-01 … D-RF-04, then Phase 2.
+2. Phase 2 (decided in E-350).
 3. Phase 3 one task at a time, each with `cargo xtask check` and unchanged golden tests.
 4. Phase 4 before tagging the release.

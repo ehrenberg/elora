@@ -1,6 +1,6 @@
 # R2-M2.4 – Kapitel 4: Frostspitzen – Umsetzungsplan
 
-Status: **Freigegeben, in Umsetzung** (E-344) · Entscheidungen E-340 bis E-344 · Grundlage: [`weltbuch.md`](weltbuch.md) §4.4 und §5, [`m2-3-plan.md`](m2-3-plan.md), [`w1-plan.md`](w1-plan.md), E-228, E-243, E-320
+Status: **Abgenommen** (E-349) · Entscheidungen E-340 bis E-349 · Grundlage: [`weltbuch.md`](weltbuch.md) §4.4 und §5, [`m2-3-plan.md`](m2-3-plan.md), [`w1-plan.md`](w1-plan.md), E-228, E-243, E-320
 
 ## Ziel
 
@@ -50,7 +50,7 @@ speichern und fortsetzen.
 | M2.4.6 ✅ | Karten | Bergsteig aus Tauwinkel; `frost-1` bis `frost-3` und `frost-arena` | Sichtprüfung + Durchlauf-Test |
 | M2.4.7 ✅ | Quellfunke und Dorf | Sieg → Quellfunke → Tüftel stärkt den Eisgriff; Kletterstellen in Kapitel 1–3 (Rückkehr lohnt); `quellen_befreit = 4`, Fest, Weltkarte; Oma kündigt die Sternschlucht an | Tests + Sichtprüfung |
 | M2.4.8 ✅ | Musik und Sounds | Musik der Frostspitzen und Kristellas (zum Anhören vorgelegt), Klänge für Robbe, Fledermaus, Geist, Eiszapfen, Lawine, brechendes Eis, Feuerstelle, Kristella | Deine Hörprobe |
-| M2.4.9 | Abnahme | Kapitel 4 durchspielen, speichern, fortsetzen | Deine Abnahme |
+| M2.4.9 ✅ | Abnahme | Kapitel 4 durchspielen, speichern, fortsetzen | Deine Abnahme |
 
 **Stand M2.4.0–M2.4.1:** Entwürfe angenommen (E-345). Tiles **dünnes Eis** (`-`) und **Eiswasser** (`+`) in Simulation, Kartenformat, Editor und Grafik; Risse als Warnung, Bruch und Nachwachsen über die zeitweisen Tiles (wachsen nie in eine Figur hinein). Gegnerarten **`eiszapfen`** (Verhalten `icicle`) und **`schneebrocken`** (`roller`); **Lawinen** als Zonen `lawine…` mit Auslöse-Zone `…-tritt` in der Sitzung. Werte A-36 bis A-41. Klänge vorerst Platzhalter (M2.4.8).
 
