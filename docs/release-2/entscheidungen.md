@@ -159,6 +159,7 @@ Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
 | E-348 | 2026-10-07 | Language policy and refactoring | **From now on English** for README, code identifiers, code comments and documentation; player-facing text stays translated in `assets/lang`. Before the next release a refactoring pass ([`refactoring-plan.md`](refactoring-plan.md)) converts existing code and docs and improves structure. Nothing is converted yet. | Project owner decision |
 | E-349 | 2026-10-07 | Acceptance R2-M2.4 | **Chapter 4 accepted** after the playtest fixes (Kristella harder, thin ice, icicles, confetti, weather particles, no shot on map change) | Project owner decision |
 | E-350 | 2026-10-07 | Refactoring decisions | D-RF-01 **content ids in English** (with save-game migration); D-RF-02 **condition language in English** (German keywords accepted for one release); D-RF-03 **archive is translated too**; D-RF-04 **start after the chapter 4 acceptance** (now) | Project owner decision |
+| E-351 | 2026-10-07 | First-start setup screen | **One page** with name, language and Elora's look (colors with preview); **mandatory on the first start** (no settings file yet), no skipping; built **as part of the refactoring** (R2-RF, task RF-30), directly in English and in the new structure | Project owner decision |
 
 ## Offene Punkte
 

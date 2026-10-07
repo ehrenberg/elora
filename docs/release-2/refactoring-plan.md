@@ -71,6 +71,13 @@ New and changed code follows the rule immediately; existing code is converted in
 | RF-28 | Reduce `#[allow(clippy::…)]`: remove those that no longer apply, replace casts with helpers (`tile_of`, `to_f32`) | Goal: no `too_many_lines` outside generators and tests |
 | RF-29 | Review public API docs (`cargo doc` without warnings, `missing_docs` on library crates) | |
 
+### Phase 3b – new: first-start setup screen (E-351)
+
+| # | Task | Notes |
+|---|---|---|
+| RF-30 | Setup screen on the first start: one page with **name** (required, not empty), **language** (switches the screen immediately) and **Elora's look** (body, feet, eyes with a live preview); a “Let's go” button saves the settings and opens the main menu | Shown only when no settings file exists yet; no skipping; built in English and in the new structure |
+| RF-31 | First-start detection and validation as testable functions (settings file missing → setup; name trimmed, length limit like the player settings) | Unit tests; existing installs never see the screen |
+
 ### Phase 4 – verification
 
 | # | Task | Notes |
