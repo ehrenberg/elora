@@ -111,6 +111,19 @@ fn run() -> anyhow::Result<()> {
         .iter()
         .find(|a| is_map_path(a))
         .map_or_else(|| PathBuf::from(DEFAULT_MAP), PathBuf::from);
+    if !elora_server::paths::data_found() {
+        let searched: Vec<String> = elora_server::paths::candidates()
+            .iter()
+            .map(|p| format!("  {}", p.display()))
+            .collect();
+        anyhow::bail!(
+            "Spieldaten nicht gefunden (Ordner „maps“). Bitte das ZIP vollständig entpacken und \
+             elora.exe aus dem entpackten Ordner starten.\n\
+             Game data not found (folder “maps”). Please extract the whole ZIP and start \
+             elora.exe from the extracted folder.\n\nGesucht in / searched in:\n{}",
+            searched.join("\n")
+        );
+    }
     let map_path = elora_server::paths::resolve(&map_path);
     let file = TuningFile::load(&tuning_path())?;
     let settings = Settings::load(&settings::settings_path()).unwrap_or_else(|e| {

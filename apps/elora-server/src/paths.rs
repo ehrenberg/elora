@@ -9,7 +9,8 @@ use std::path::{Path, PathBuf};
 /// Umgebungsvariable für einen eigenen Datenordner.
 pub const DATA_ENV: &str = "ELORA_DATA";
 
-fn candidates() -> Vec<PathBuf> {
+/// Folders searched for the game data, in this order.
+pub fn candidates() -> Vec<PathBuf> {
     let mut list = Vec::new();
     if let Some(d) = std::env::var_os(DATA_ENV).filter(|v| !v.is_empty()) {
         list.push(PathBuf::from(d));
@@ -30,6 +31,12 @@ pub fn data_dir() -> PathBuf {
         .into_iter()
         .find(|d| d.join("maps").is_dir())
         .unwrap_or_else(|| PathBuf::from("."))
+}
+
+/// Is the game data there at all (a `maps` folder in the working directory or in one of the
+/// [`candidates`])? Without it Elora cannot start – usually the ZIP was not extracted.
+pub fn data_found() -> bool {
+    Path::new("maps").is_dir() || candidates().iter().any(|d| d.join("maps").is_dir())
 }
 
 /// Relativen Pfad auflösen: erst im Arbeitsverzeichnis, dann im Datenordner.
