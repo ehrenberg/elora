@@ -5,160 +5,160 @@
 <h1 align="center">Elora</h1>
 
 <p align="center">
-  <b>Schnelles 2D-Multiplayer: hooken, schwingen, sprengen – mit Freunden im Internet oder im LAN.<br>
-  Und jetzt auch allein im Abenteuer.</b>
+  <b>Fast 2D multiplayer: hook, swing, blast – with friends online or on your LAN.<br>
+  And now also on your own in an adventure.</b>
 </p>
 
 <p align="center">
-  <a href="https://github.com/ehrenberg/elora/releases"><b>Herunterladen</b></a> ·
-  <a href="https://elora.bastianswelt.de">Projektseite und Live-Server</a> ·
-  <a href="docs/releases/v0.9.2.md">Was ist neu in 0.9.2?</a> ·
-  <a href="https://github.com/ehrenberg/elora/issues">Fehler melden</a>
+  <a href="https://github.com/ehrenberg/elora/releases"><b>Download</b></a> ·
+  <a href="https://elora.bastianswelt.de">Project page and live servers</a> ·
+  <a href="docs/releases/v0.9.2.md">What's new in 0.9.2?</a> ·
+  <a href="https://github.com/ehrenberg/elora/issues">Report a bug</a>
 </p>
 
 ---
 
-Elora ist ein schnelles 2D-Spiel im Stil der großen Klassiker des Genres: flinke Bewegung, ein
-Haken zum Schwingen und eine Handvoll Waffen, die man in Sekunden versteht und in Wochen meistert.
-Elora ist auch der Name der Heldin – ein kleiner, mutiger Tropfen.
+Elora is a fast 2D game in the style of the genre's great classics: nimble movement, a hook to
+swing with and a handful of weapons you understand in seconds and master over weeks. Elora is
+also the name of the heroine – a small, brave drop.
 
-**Version 0.9.2 Beta** · kostenlos und Open Source · Linux, Windows, macOS · Deutsch und Englisch
+**Version 0.9.2 Beta** · free and open source · Linux, Windows, macOS · English and German
 
-## Was dich erwartet
+## What to expect
 
-- **Hook, Hammer, Granatwerfer, Laser** – häng dich an Wände, schwing durch die Karte, zieh Gegner zu dir
-- **Fünf Spielmodi:** Deathmatch, Team-Deathmatch, Capture the Flag, Last Man Standing, Last Team Standing – jeweils auch als Instagib
-- **Online und im LAN:** Serverliste mit Live-Status, Favoriten, eigener Server mit einem Klick
-- **Das Abenteuer „Die verstummten Quellen“** (Vorschau): Prolog und vier Kapitel für dich allein
-- **Karten-Editor** direkt im Spiel – bauen, F5 drücken, losspielen
-- **Elora nach deinem Geschmack:** Farben für Augen, Körper und Füße, Emotes für schnelle Grüße
+- **Hook, hammer, grenade launcher, laser** – hang on walls, swing across the map, pull opponents towards you
+- **Five game modes:** Deathmatch, Team Deathmatch, Capture the Flag, Last Man Standing, Last Team Standing – each also as Instagib
+- **Online and on your LAN:** server list with live status, favorites, your own server with one click
+- **The adventure “The Silent Springs”** (preview): a prologue and four chapters to play on your own
+- **Map editor** right in the game – build, press F5, play
+- **Elora your way:** colors for eyes, body and feet, emotes for quick greetings
 
-## Herunterladen und starten
+## Download and start
 
-Die neueste Version gibt es unter **[Releases](https://github.com/ehrenberg/elora/releases)**.
+Get the latest version under **[Releases](https://github.com/ehrenberg/elora/releases)**.
 
-| System | Datei | So geht's |
+| System | File | How to |
 |---|---|---|
-| Linux | `elora-…-linux-x86_64.AppImage` | Rechtsklick → Eigenschaften → „Ausführbar“, dann doppelklicken (oder `chmod +x` im Terminal) |
-| Linux | `elora-…-linux-x86_64.tar.gz` | entpacken, `elora` starten |
-| Windows | `elora-…-windows-x86_64.zip` | das ganze ZIP entpacken (Rechtsklick → „Alle extrahieren“), dann `elora.exe` im entpackten Ordner starten |
-| macOS (Apple Silicon) | `elora-…-macos-aarch64.dmg` | Elora in „Programme“ ziehen; beim ersten Start **Rechtsklick → Öffnen** (die App ist nicht signiert) |
+| Linux | `elora-…-linux-x86_64.AppImage` | right click → Properties → “Executable”, then double-click (or `chmod +x` in a terminal) |
+| Linux | `elora-…-linux-x86_64.tar.gz` | extract, start `elora` |
+| Windows | `elora-…-windows-x86_64.zip` | extract the whole ZIP (right click → “Extract all”), then start `elora.exe` in the extracted folder |
+| macOS (Apple Silicon) | `elora-…-macos-aarch64.dmg` | drag Elora to “Applications”; on the first start **right click → Open** (the app is not signed) |
 
-Elora braucht eine Grafikkarte mit Vulkan, DirectX 12 oder Metal. Für Intel-Macs gibt es noch
-kein Paket.
+Elora needs a graphics card with Vulkan, DirectX 12 or Metal; without one it falls back to a
+slower software renderer. There is no package for Intel Macs yet.
 
-## Erste Schritte
+## First steps
 
-Nach dem Start landest du im Hauptmenü:
+After starting you land in the main menu:
 
-| Menü | Was du dort machst |
+| Menu | What you do there |
 |---|---|
-| **Spielen** | Server im Internet, im LAN oder aus deinen Favoriten finden und beitreten; „Schnell spielen“ bringt dich zum letzten Server |
-| **Abenteuer** | das Abenteuer auf einem von drei Spielstand-Plätzen beginnen oder fortsetzen |
-| **Training** | allein üben, mit Übungsgegnern und allen Waffen |
-| **Server erstellen** | einen eigenen Server starten und gleich mitspielen |
-| **Editor** | eigene Karten bauen |
-| **Einstellungen** | Name, Aussehen, Steuerung, Grafik, Ton, Sprache |
+| **Play** | find and join servers online, on your LAN or from your favorites; “Quick play” takes you to the last server |
+| **Adventure** | start or continue the adventure in one of three save slots |
+| **Training** | practice on your own, with training dummies and all weapons |
+| **Create server** | start your own server and join it right away |
+| **Editor** | build your own maps |
+| **Settings** | name, look, controls, graphics, sound, language |
 
-Im Spiel öffnet **Esc** das Pause-Menü: Team wählen, zuschauen, abstimmen, Einstellungen.
+In game, **Esc** opens the pause menu: choose a team, spectate, vote, settings.
 
-## Das Abenteuer
+## The adventure
 
-Die Quellen des Taulands verstummen, und die Farben weichen aus dem Dorf Tauwinkel. Elora zieht
-los, um herauszufinden, warum.
+The springs of the Tauland are falling silent, and the colors are fading from the village of
+Tauwinkel. Elora sets out to find out why.
 
-- **Prolog – Tauwinkel:** Oma Pfütze, Tüftel, Klonk, Lotte und Pip zeigen dir, was du brauchst
-- **Kapitel 1 – Blütenwiesen:** verirrte Bienen und eine sehr schlecht gelaunte Brummbär-Hummel
-- **Kapitel 2 – Murmelwald:** ein Uhu voller Geschichten, ein Pilzkind auf dem Heimweg und der Wurzelwächter
-- **Kapitel 3 – Glutsandwüste:** Sirups Karawane, Treibsand, flirrende Hitze und die Sandschlange
-- **Kapitel 4 – Frostspitzen:** Bergführerin Flocke, dünnes Eis, Lawinen, Kälte und Eiskönigin Kristella
+- **Prologue – Tauwinkel:** Oma Pfütze, Tüftel, Klonk, Lotte and Pip show you what you need
+- **Chapter 1 – Blütenwiesen:** lost bees and a very grumpy Bumblebear
+- **Chapter 2 – Murmelwald:** an owl full of stories, a mushroom child on its way home and the Root Warden
+- **Chapter 3 – Glutsandwüste:** Sirup's caravan, quicksand, shimmering heat and the Sand Serpent
+- **Chapter 4 – Frostspitzen:** mountain guide Flocke, thin ice, avalanches, biting cold and Ice Queen Kristella
 
-Jede befreite Quelle bringt eine neue Fähigkeit (Hook-Ruck, Heranhooken, Stampfen, Eisgriff) – und damit
-neue Wege in Gebieten, die du schon kennst. Dazu gibt es Stufen, einen Fähigkeitenbaum,
-Ausrüstung, Läden, Aufgaben und Gespräche. Gespeichert wird beim Kartenwechsel und an den
-Quellsteinen. Wetter – Regen, Gewitter, Nebel, Wind, Sandsturm, Schnee – macht die Gebiete
-lebendig und wirkt im Abenteuer aufs Spiel. Weitere Kapitel folgen mit den nächsten Versionen.
+Every freed spring brings a new ability (hook jerk, pull hook, stomp, ice grip) – and with it new
+paths in areas you already know. There are also levels, a skill tree, equipment, shops, quests
+and conversations. The game saves when you change maps and at spring stones. Weather – rain,
+thunderstorms, fog, wind, sandstorms, snow – brings the areas to life and affects the adventure.
+More chapters follow with the next versions.
 
-## Mit anderen spielen
+## Playing with others
 
-- **Einem Server beitreten:** Hauptmenü → *Spielen*. Die Liste zeigt Server im Internet und im LAN;
-  über die Adresse kannst du auch direkt verbinden. Welche Server gerade laufen, siehst du auch auf
-  der [Projektseite](https://elora.bastianswelt.de).
-- **Selbst einen Server starten:** Hauptmenü → *Server erstellen*, Karte und Modus wählen, starten.
-  Mit „Im Internet anzeigen“ erscheint er in der Liste aller Spieler. Damit andere ihn erreichen,
-  muss der UDP-Port (Standard **8303**) in Router bzw. Firewall freigegeben sein.
-- **Einen Server dauerhaft betreiben:** mit dem Programm `elora-server` – alle Optionen stehen in
-  der [Anleitung für Entwickler und Server-Betreiber](DEVELOPMENT.md#server-konsole-und-master).
+- **Join a server:** main menu → *Play*. The list shows servers online and on your LAN; you can
+  also connect directly by address. You can also see which servers are running on the
+  [project page](https://elora.bastianswelt.de).
+- **Start a server yourself:** main menu → *Create server*, choose map and mode, start. With
+  “Show on the internet” it appears in every player's list. For others to reach it, the UDP port
+  (default **8303**) must be open in your router and firewall.
+- **Run a server permanently:** with the program `elora-server` – all options are in the
+  [guide for developers and server operators](DEVELOPMENT.md#server-konsole-und-master).
 
-Die Verbindung ist verschlüsselt. Elora merkt sich jeden Server und warnt, wenn sich sein Schlüssel
-ändert.
+The connection is encrypted. Elora remembers every server and warns you if its key changes.
 
-## Eigene Karten bauen
+## Build your own maps
 
-Hauptmenü → *Editor*: Gelände malen, Materialien wie Erde, Sand, Schnee und Eis wählen, Deko und
-Hintergründe setzen, Wolken und Bäume animieren, eigene SVG-Grafiken einbetten. Mit **F5** spielst
-du die Karte sofort an, Esc bringt dich zurück. Eigene Karten erscheinen danach in *Training* und
-*Server erstellen*; spielt ihr online, verteilt der Server sie automatisch an alle.
+Main menu → *Editor*: paint terrain, choose materials such as earth, sand, snow and ice, place
+decoration and backgrounds, animate clouds and trees, embed your own SVG graphics. Press **F5** to
+play the map right away, Esc takes you back. Your maps then appear in *Training* and *Create
+server*; when you play online, the server sends them to everyone automatically.
 
-## Steuerung
+## Controls
 
-Alles außer Esc lässt sich unter *Einstellungen → Steuerung* umbelegen.
+Everything except Esc can be rebound under *Settings → Controls*.
 
-| Taste | Aktion |
+| Key | Action |
 |---|---|
-| A / D | laufen |
-| Leertaste | springen, in der Luft Doppelsprung |
-| Rechte Maustaste (halten) | Hook |
-| Linke Maustaste | schießen (Granate und Laser: halten für Dauerfeuer) |
-| 1 / 2 / 3 oder Mausrad | Hammer / Granate / Laser |
-| S | durch Holzstege fallen; in der Luft stampfen (Abenteuer, sobald freigeschaltet) |
-| Esc | Pause-Menü |
-| Tab (halten) | Punktetafel; im Abenteuer: Abenteuer-Menü (Inventar, Fähigkeiten, Aufgaben, Karte) |
-| T / Y | Chat / Team-Chat |
-| Strg links (halten) | Emote-Rad: Maus in Richtung des Emotes, loslassen |
-| K | Neustart an einem Startpunkt (Selbstmord) |
-| F3 / F4 | Ja / Nein bei Abstimmungen |
-| E | sprechen, öffnen, benutzen (Abenteuer) |
-| Q | Heiltrank trinken (Abenteuer) |
-| Shift links | Hook-Ruck (Abenteuer, sobald freigeschaltet) |
+| A / D | walk |
+| Space | jump, in the air double jump |
+| Right mouse button (hold) | hook |
+| Left mouse button | shoot (grenade and laser: hold for continuous fire) |
+| 1 / 2 / 3 or mouse wheel | hammer / grenade / laser |
+| S | drop through wooden platforms; in the air: stomp (adventure, once unlocked) |
+| Esc | pause menu |
+| Tab (hold) | scoreboard; in the adventure: adventure menu (inventory, skills, quests, map) |
+| T / Y | chat / team chat |
+| Left Ctrl (hold) | emote wheel: move the mouse towards an emote, release |
+| K | respawn at a spawn point (suicide) |
+| F3 / F4 | yes / no in votes |
+| E | talk, open, use (adventure) |
+| Q | drink a healing potion (adventure) |
+| Left Shift | hook jerk (adventure, once unlocked) |
 
-Nach dem Tod: Feuertaste für einen schnellen Neustart, sonst geht es nach drei Sekunden von allein
-weiter. In Last Man Standing und Last Team Standing wartest du bis zur nächsten Runde.
+After dying: the fire button respawns you quickly, otherwise you continue after three seconds. In
+Last Man Standing and Last Team Standing you wait for the next round.
 
-## Wo liegen meine Daten?
+## Where is my data?
 
 | | Linux | Windows | macOS |
 |---|---|---|---|
-| Einstellungen | `~/.config/elora` | `%APPDATA%\Elora` | `~/Library/Application Support/Elora` |
-| Spielstände und eigene Karten | `~/.local/share/elora` | `%APPDATA%\Elora` | `~/Library/Application Support/Elora` |
+| Settings | `~/.config/elora` | `%APPDATA%\Elora` | `~/Library/Application Support/Elora` |
+| Save games and your own maps | `~/.local/share/elora` | `%APPDATA%\Elora` | `~/Library/Application Support/Elora` |
 
-Zum Sichern einfach diese Ordner kopieren.
+To back up, just copy these folders.
 
-## Wenn etwas nicht klappt
+## If something goes wrong
 
-| Problem | Lösung |
+| Problem | Solution |
 |---|---|
-| Das Spiel startet nicht oder meldet „kein passender Grafikadapter“ | Grafiktreiber aktualisieren. Unter Linux den Vulkan-Treiber installieren (z. B. `vulkan-radeon`, `vulkan-intel` oder `nvidia-utils`). Notfalls OpenGL erzwingen: `WGPU_BACKEND=gl ./elora` |
-| Kein Ton | Elora startet auch ohne Tonausgabe – dann stumm. Unter Linux mit PipeWire hilft meist `pipewire-alsa`. |
-| Mein Server taucht nicht in der Internet-Liste auf | UDP-Port 8303 im Router und in der Firewall freigeben; „Im Internet anzeigen“ muss an sein. Hinter DS-Lite erreichen dich nur Spieler mit IPv6. |
-| Warnung „Server-Schlüssel geändert“ | Der Server wurde neu eingerichtet – oder jemand gibt sich als er aus. Nur vertrauen, wenn du den Grund kennst. |
-| Die Maus lässt sich nicht fangen | ins Spielfeld klicken; manche Wayland-Desktops begrenzen die Maus nur, statt sie zu sperren |
+| The game does not start | Look at `crash.txt` and `elora.log` in the settings folder (see above) – they tell why. On Windows the report opens in Notepad. Make sure the whole ZIP is extracted. |
+| “No suitable graphics adapter” | Update your graphics driver. On Linux install the Vulkan driver (e.g. `vulkan-radeon`, `vulkan-intel` or `nvidia-utils`). If needed, force OpenGL: `WGPU_BACKEND=gl ./elora` |
+| No sound | Elora also starts without audio output – then it is silent. On Linux with PipeWire, `pipewire-alsa` usually helps. |
+| My server does not show up in the internet list | Open UDP port 8303 in your router and firewall; “Show on the internet” must be on. Behind DS-Lite only players with IPv6 can reach you. |
+| Warning “server key changed” | The server was set up again – or someone is impersonating it. Only trust it if you know the reason. |
+| The mouse cannot be captured | click into the game area; some Wayland desktops only confine the mouse instead of locking it |
 
-Noch etwas kaputt? Melde es gern unter **[Issues](https://github.com/ehrenberg/elora/issues)**.
+Something else broken? Please report it under **[Issues](https://github.com/ehrenberg/elora/issues)**.
 
-## Mitmachen
+## Contributing
 
-Elora ist freie Software, geschrieben in Rust. Wie du es aus dem Quellcode baust, testest und
-mitentwickelst, steht in **[DEVELOPMENT.md](DEVELOPMENT.md)**. Karten bauen, Fehler melden und
-Ideen einbringen ist ausdrücklich erwünscht.
+Elora is free software written in Rust. How to build it from source, test it and develop it is
+described in **[DEVELOPMENT.md](DEVELOPMENT.md)**. Building maps, reporting bugs and sharing ideas
+is very welcome.
 
-## Lizenz und Dank
+## License and thanks
 
-- Programm: [GPL-3.0](LICENSE)
-- Eigene Grafiken und Sounds: CC-BY-SA 4.0
-- Schriften (Inter, JetBrains Mono): SIL Open Font License 1.1
-- Musik und Sounds anderer Künstler: [`assets/SOURCES.md`](assets/SOURCES.md) und im Spiel unter
-  *Einstellungen → Über Elora*
-- Bibliotheken: [THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES)
+- Program: [GPL-3.0](LICENSE)
+- Own graphics and sounds: CC-BY-SA 4.0
+- Fonts (Inter, JetBrains Mono): SIL Open Font License 1.1
+- Music and sounds by other artists: [`assets/SOURCES.md`](assets/SOURCES.md) and in the game under
+  *Settings → About Elora*
+- Libraries: [THIRD_PARTY_LICENSES](THIRD_PARTY_LICENSES)
 
-Inspiriert von [Teeworlds](https://teeworlds.com) – danke an Magnus Auvinen und alle Mitwirkenden.
+Inspired by [Teeworlds](https://teeworlds.com) – thanks to Magnus Auvinen and all contributors.
