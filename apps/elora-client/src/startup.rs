@@ -56,6 +56,10 @@ pub fn report_fatal(message: &str) {
     tracing::error!("{message}");
     let crash = file_in_config(CRASH_FILE);
     if let Ok(mut f) = std::fs::File::create(&crash) {
+        // Notepad reads files without a byte order mark as ANSI and garbles umlauts
+        if cfg!(windows) {
+            let _ = f.write_all("\u{feff}".as_bytes());
+        }
         let _ = writeln!(
             f,
             "Elora wurde wegen eines Fehlers beendet. / Elora stopped because of an error.\n\

@@ -214,6 +214,16 @@ Zurück zum prozeduralen Klang: die Datei löschen und in `sounds.toml` einen Ei
 
 `cargo xtask package --archive` baut ein Release-Paket für das eigene System unter `dist/` (Programme, Karten, Musik, Lizenzen, Symbol; macOS zusätzlich `Elora.app`).
 
+Windows package on Linux (cross build with mingw-w64):
+
+```bash
+sudo pacman -S mingw-w64-gcc            # Arch; Debian/Ubuntu: apt install mingw-w64
+rustup target add x86_64-pc-windows-gnu
+cargo xtask package --archive --target x86_64-pc-windows-gnu   # → dist/elora-<version>-windows-x86_64.zip
+```
+
+Start `elora.exe` from the extracted folder: the game data (`maps/`, `assets/`) lies next to it. If Elora stops, `%APPDATA%\Elora\crash.txt` and `elora.log` tell why.
+
 Ein Release:
 
 1. Version in `Cargo.toml` setzen, Release-Notizen `docs/releases/v<version>.md` schreiben.

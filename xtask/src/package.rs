@@ -21,7 +21,9 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 /// Karten, die ausgeliefert werden (Testkarten bleiben im Repository).
-pub const SHIPPED_MAPS: [&str; 6] = [
+pub const SHIPPED_MAPS: [&str; 7] = [
+    // the client starts with the training map (0.9.1 shipped without it and did not start)
+    "training",
     "dm-wiese",
     "dm-wueste",
     "dm-winter",
@@ -36,8 +38,48 @@ fn version() -> String {
     env!("CARGO_PKG_VERSION").to_owned()
 }
 
-fn platform() -> String {
-    format!("{}-{}", std::env::consts::OS, std::env::consts::ARCH)
+/// What the package is built for: the host or a cross target (`--target <triple>`, e.g.
+/// `x86_64-pc-windows-gnu` to build a Windows package on Linux with mingw-w64).
+struct Target {
+    triple: Option<String>,
+}
+
+impl Target {
+    fn windows(&self) -> bool {
+        self.triple
+            .as_deref()
+            .map_or(cfg!(windows), |t| t.contains("windows"))
+    }
+
+    fn exe_suffix(&self) -> &'static str {
+        if self.windows() { ".exe" } else { "" }
+    }
+
+    /// Folder with the built programs.
+    fn bin_source(&self) -> PathBuf {
+        match &self.triple {
+            Some(t) => PathBuf::from("target").join(t).join("release"),
+            None => PathBuf::from("target/release"),
+        }
+    }
+
+    /// `<os>-<arch>` for the package name.
+    fn platform(&self) -> String {
+        match &self.triple {
+            None => format!("{}-{}", std::env::consts::OS, std::env::consts::ARCH),
+            Some(t) => {
+                let arch = t.split('-').next().unwrap_or("unknown");
+                let os = if self.windows() {
+                    "windows"
+                } else if t.contains("darwin") {
+                    "macos"
+                } else {
+                    "linux"
+                };
+                format!("{os}-{arch}")
+            }
+        }
+    }
 }
 
 fn copy_dir(from: &Path, to: &Path, filter: &dyn Fn(&Path) -> bool) -> Result<(), String> {
@@ -97,11 +139,12 @@ fremde Assets siehe SOURCES.md, Bibliotheken siehe THIRD_PARTY_LICENSES.\n\
 Quelltext: https://github.com/ehrenberg/elora\n";
 
 /// Paketordner füllen (Programme, Daten, Lizenzen).
-fn fill(dir: &Path, bin_dir: &Path, data_dir: &Path) -> Result<(), String> {
+fn fill(target: &Target, dir: &Path, bin_dir: &Path, data_dir: &Path) -> Result<(), String> {
     std::fs::create_dir_all(bin_dir).map_err(|e| e.to_string())?;
     for b in BINARIES {
-        let name = format!("{b}{}", std::env::consts::EXE_SUFFIX);
-        copy(&format!("target/release/{name}"), &bin_dir.join(&name))?;
+        let name = format!("{b}{}", target.exe_suffix());
+        let from = target.bin_source().join(&name);
+        copy(&from.to_string_lossy(), &bin_dir.join(&name))?;
     }
     copy_dir(Path::new("maps"), &data_dir.join("maps"), &|p| {
         p.file_stem()
@@ -132,11 +175,12 @@ fn fill(dir: &Path, bin_dir: &Path, data_dir: &Path) -> Result<(), String> {
 }
 
 /// macOS-Bundle `Elora.app` mit Programmen in `MacOS` und Daten in `Resources`.
-fn mac_bundle(dist: &Path) -> Result<PathBuf, String> {
+fn mac_bundle(target: &Target, dist: &Path) -> Result<PathBuf, String> {
     let app = dist.join("Elora.app");
     let _ = std::fs::remove_dir_all(&app);
     let contents = app.join("Contents");
     fill(
+        target,
         &contents.join("Resources"),
         &contents.join("MacOS"),
         &contents.join("Resources"),
@@ -174,36 +218,73 @@ fn run(cmd: &mut Command) -> Result<(), String> {
     }
 }
 
-/// `cargo xtask package [--archive]`
+/// `cargo xtask package [--archive] [--target <triple>]`
 pub fn package(args: &[String]) -> Result<(), String> {
     let archive = args.iter().any(|a| a == "--archive");
+    let target = Target {
+        triple: args
+            .iter()
+            .position(|a| a == "--target")
+            .and_then(|i| args.get(i + 1))
+            .cloned(),
+    };
     let mut build = vec!["build", "--release"];
+    if let Some(t) = &target.triple {
+        build.extend(["--target", t.as_str()]);
+    }
     for b in BINARIES {
         build.extend(["--bin", b]);
     }
     super::cargo(&build)?;
     let dist = PathBuf::from("dist");
-    let name = format!("elora-{}-{}", version(), platform());
+    let name = format!("elora-{}-{}", version(), target.platform());
     let dir = dist.join(&name);
     let _ = std::fs::remove_dir_all(&dir);
-    fill(&dir, &dir, &dir)?;
+    fill(&target, &dir, &dir, &dir)?;
     println!("Paket: {}", dir.display());
-    if cfg!(target_os = "macos") {
-        let app = mac_bundle(&dist)?;
+    if cfg!(target_os = "macos") && target.triple.is_none() {
+        let app = mac_bundle(&target, &dist)?;
         println!("Bundle: {}", app.display());
     }
     if archive {
-        let file = if cfg!(windows) {
+        let file = if target.windows() {
             format!("{name}.zip")
         } else {
             format!("{name}.tar.gz")
         };
-        let flags = if cfg!(windows) { "-a -cf" } else { "-czf" };
-        let mut tar = Command::new("tar");
+        let flags = if target.windows() { "-a -cf" } else { "-czf" };
+        // GNU tar cannot write ZIP files: cross-building for Windows needs bsdtar
+        let program = if target.windows() && !cfg!(windows) {
+            "bsdtar"
+        } else {
+            "tar"
+        };
+        let mut tar = Command::new(program);
         tar.current_dir(&dist);
         tar.args(flags.split(' ')).arg(&file).arg(&name);
         run(&mut tar)?;
         println!("Archiv: {}", dist.join(file).display());
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::SHIPPED_MAPS;
+
+    /// The map the client starts with must be in every package.
+    #[test]
+    fn client_start_map_is_shipped() {
+        let main = include_str!("../../apps/elora-client/src/main.rs");
+        let line = main
+            .lines()
+            .find(|l| l.contains("const DEFAULT_MAP: &str"))
+            .expect("DEFAULT_MAP in the client");
+        let stem = line
+            .split("maps/")
+            .nth(1)
+            .and_then(|r| r.split(".emap").next())
+            .expect("DEFAULT_MAP = \"maps/<name>.emap\"");
+        assert!(SHIPPED_MAPS.contains(&stem), "{stem} is not shipped");
+    }
 }
