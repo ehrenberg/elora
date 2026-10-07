@@ -198,6 +198,9 @@ pub struct QueenDef {
     /// Ab diesem Anteil des Lebens Schneesturm in der Halle (die Sitzung setzt das Wetter).
     #[cfg_attr(feature = "serde", serde(default))]
     pub storm_at: f32,
+    /// Nach so vielen Treffern in einer Erschöpfung steigt sie sofort wieder auf (0 = nie).
+    #[cfg_attr(feature = "serde", serde(default))]
+    pub open_hits: u32,
 }
 
 /// Werte des Hüters aus der Luft ([`Behavior::Diver`]).

@@ -64,6 +64,7 @@ fn hall() -> World {
                 enrage_at: 0.5,
                 icicles: 3,
                 storm_at: 0.25,
+                open_hits: 4,
             })),
         ),
         kind(
@@ -239,5 +240,29 @@ fn angry_queen_alternates_sides_drops_icicles_and_calls_a_storm() {
     assert!(
         dirs.windows(2).any(|p| p[0] != p[1]),
         "Wellen von beiden Seiten: {dirs:?}"
+    );
+}
+
+#[test]
+fn rises_again_after_enough_hits() {
+    let mut w = hall();
+    #[allow(clippy::cast_precision_loss)]
+    let ledge = Vec2::new(12.0 * 32.0 + 16.0, 25.0 * 32.0 - 15.0);
+    spawn(&mut w, ledge);
+    let id = queen_id(&mut w);
+    run_until(&mut w, 1600, |w| mode(w, w.creatures[0].id) == queen::TIRED);
+    run_until(&mut w, 60, |_| false);
+    assert_eq!(mode(&w, id), queen::TIRED);
+    for _ in 0..3 {
+        w.hurt_creature(id, 1);
+    }
+    run_until(&mut w, 2, |_| false);
+    assert_eq!(mode(&w, id), queen::TIRED, "drei Treffer: liegt noch");
+    w.hurt_creature(id, 1);
+    run_until(&mut w, 2, |_| false);
+    assert_eq!(
+        mode(&w, id),
+        queen::RISE,
+        "der vierte: sofort wieder hinauf"
     );
 }

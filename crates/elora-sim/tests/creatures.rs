@@ -110,6 +110,8 @@ fn run(w: &mut World, i: PlayerInput, ticks: u32) -> Vec<Event> {
 
 fn elora(w: &mut World, tx: usize) -> usize {
     let i = w.join();
+    // hier geht es um Treffer: der erste Feuer-Druck soll gleich zählen
+    w.players[i].as_mut().unwrap().fresh = false;
     w.spawn_character(i, on_floor(tx, 28.0));
     i
 }

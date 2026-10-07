@@ -1915,6 +1915,7 @@ fn tick_queen(
                 c.timer = 0;
                 if c.count.is_multiple_of(d.waves.max(1)) {
                     c.mode = TIRED;
+                    c.hits = 0;
                     act(events, c.pos, CreatureAct::Land);
                 } else {
                     c.mode = HOVER;
@@ -1937,7 +1938,9 @@ fn tick_queen(
             } else {
                 c.pos = rest;
             }
-            if c.timer >= ms_to_ticks(d.stun_ms) {
+            // genug Treffer eingesteckt: sofort wieder hinauf (Playtest: zu leicht)
+            let enough = d.open_hits > 0 && c.hits >= d.open_hits;
+            if c.timer >= ms_to_ticks(d.stun_ms) || enough {
                 c.mode = RISE;
                 c.timer = 0;
                 act(events, c.pos, CreatureAct::Wake);

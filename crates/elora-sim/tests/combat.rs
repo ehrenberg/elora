@@ -237,6 +237,7 @@ fn no_ammo_blocks_and_reports() {
     w.spawn(ground(10));
     give(&mut w, 0, Weapon::Laser);
     w.character_mut(0).unwrap().arsenal.slots[Weapon::Laser.index()].ammo = Some(0);
+    w.step(&[aim(100, 0, 0)]); // erste Eingabe nach dem Beitritt zählt nicht als Klick
     w.step(&[aim(100, 0, 1)]);
     assert!(w.events.iter().any(|e| matches!(e, Event::NoAmmo { .. })));
     assert_eq!(w.character(0).unwrap().arsenal.reload_timer, 6 - 1);
@@ -266,6 +267,7 @@ fn mouse_wheel_cycles_owned_weapons() {
         .unwrap()
         .arsenal
         .give(Weapon::Laser, 10, 10);
+    w.step(&[idle()]); // erste Eingabe nach dem Beitritt zählt nicht als Klick
     w.step(&[PlayerInput {
         next_weapon: 2,
         ..idle()
@@ -372,4 +374,31 @@ fn dummy_respawns_at_home_after_three_seconds() {
     w.die(d, None, DeathCause::World);
     run(&mut w, &[], 151);
     assert_eq!(w.core(d).unwrap().pos, ground(20));
+}
+
+/// Kartenwechsel im Abenteuer (Playtest R2-M2.4): Die neue Welt bekommt den schon
+/// hochgezählten Feuer-Zähler des Clients – das ist kein Klick. Der nächste Druck schießt.
+#[test]
+fn first_input_after_joining_does_not_fire() {
+    let mut w = arena();
+    let i = w.spawn(ground(10));
+    w.character_mut(i)
+        .unwrap()
+        .arsenal
+        .give(Weapon::Grenade, 10, 10);
+    w.character_mut(i).unwrap().arsenal.active = Weapon::Grenade;
+    let fires = |w: &World| {
+        w.events
+            .iter()
+            .filter(|e| matches!(e, Event::Fire { .. }))
+            .count()
+    };
+    // Zähler steht bei 6 (dreimal gedrückt und losgelassen in der alten Welt)
+    w.step(&[aim(100, 0, 6)]);
+    assert_eq!(fires(&w), 0, "kein Schuss beim Betreten");
+    for _ in 0..30 {
+        w.step(&[aim(100, 0, 6)]);
+    }
+    w.step(&[aim(100, 0, 7)]);
+    assert_eq!(fires(&w), 1, "der nächste Druck schießt");
 }

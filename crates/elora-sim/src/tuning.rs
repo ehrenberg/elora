@@ -288,7 +288,7 @@ impl Default for Tuning {
             grenade_wind: 2.2,
             wet_slip: 0.33,
             thin_ice_break: 600,
-            thin_ice_regrow: 4000,
+            thin_ice_regrow: 5500,
             ice_water_damage: 1,
             avalanche_rocks: 7,
             avalanche_gap: 350,

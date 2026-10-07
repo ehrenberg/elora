@@ -107,6 +107,10 @@ pub struct Player {
     pub respawn_disabled: bool,
     /// Fähigkeiten, mit denen die Figur spawnt (Abenteuer, Quellenkampf).
     pub abilities: Abilities,
+    /// Eben beigetreten: die erste Eingabe ist nur Ausgangspunkt für die Klick-Erkennung
+    /// (sonst zählt ein schon hochgezählter Feuer-Zähler als Klick, z. B. beim Kartenwechsel
+    /// im Abenteuer – Playtest).
+    pub fresh: bool,
 }
 
 impl Player {
@@ -122,6 +126,7 @@ impl Player {
             team: Team::None,
             respawn_disabled: false,
             abilities: Abilities::NONE,
+            fresh: false,
         }
     }
 

@@ -311,16 +311,14 @@ impl WeatherView {
                 continue;
             }
             if current && alive <= target {
-                // wiederverwenden: oben (fallend) oder auf der Windseite (waagerecht)
-                let kind = p.kind;
-                let x = self.range(tl.x, br.x);
-                let y = self.range(tl.y, br.y);
-                let side = if wind >= 0.0 { tl.x } else { br.x };
-                let at = match kind {
-                    WeatherKind::Sandstorm | WeatherKind::Fog => Vec2::new(side, y),
-                    _ => Vec2::new(x, tl.y),
-                };
-                self.particles[i] = self.spawn(kind, wind, at);
+                // um den Ausschnitt herum weiterführen: wer unten hinausfällt, kommt oben
+                // wieder, wer beim Laufen links zurückbleibt, kommt rechts – so bleibt die
+                // Dichte gleich, egal wie die Kamera sich bewegt (Playtest: Blätter in Schüben)
+                let size = br - tl;
+                p.pos = Vec2::new(
+                    tl.x + (p.pos.x - tl.x).rem_euclid(size.x),
+                    tl.y + (p.pos.y - tl.y).rem_euclid(size.y),
+                );
                 i += 1;
             } else {
                 self.particles.swap_remove(i);
@@ -711,5 +709,43 @@ mod tests {
         }
         assert!(!v.splashes.is_empty());
         assert!(v.splashes.iter().all(|(p, _)| (p.y - 64.0).abs() < 0.1));
+    }
+
+    /// Playtest: Blätter kamen in Schüben, je nachdem, wie die Kamera sich bewegte. Beim Laufen
+    /// und Springen bleibt ihre Zahl im Bild jetzt etwa gleich.
+    #[test]
+    fn leaves_stay_even_while_the_camera_moves() {
+        let mut v = WeatherView::default();
+        let leaves = Weather {
+            kind: WeatherKind::Leaves,
+            intensity: 1.0,
+            wind: 0.4,
+        };
+        let mut cam = camera();
+        for _ in 0..300 {
+            v.update(0.016, leaves, WeatherQuality::Full, &cam, None, true);
+        }
+        let visible = |v: &WeatherView, cam: &Camera| {
+            let (tl, br) = (cam.top_left(), cam.top_left() + cam.size);
+            v.particles
+                .iter()
+                .filter(|p| {
+                    p.pos.x >= tl.x && p.pos.x <= br.x && p.pos.y >= tl.y && p.pos.y <= br.y
+                })
+                .count()
+        };
+        let base = visible(&v, &cam);
+        assert!(base > 20, "Blätter im Bild: {base}");
+        // laufen, springen, fallen
+        for k in 0..240 {
+            let t = k as f32 * 0.05;
+            cam.center += Vec2::new(9.0, (t * 2.0).sin() * 14.0);
+            v.update(0.016, leaves, WeatherQuality::Full, &cam, None, true);
+            let n = visible(&v, &cam);
+            assert!(
+                n * 10 >= base * 7 && n * 10 <= base * 13,
+                "Frame {k}: {n} statt etwa {base}"
+            );
+        }
     }
 }

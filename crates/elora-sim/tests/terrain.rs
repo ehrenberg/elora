@@ -126,7 +126,8 @@ fn thin_ice_cracks_breaks_and_grows_back() {
     // Elora fällt hindurch, das Eis wächst nach A-37 nach
     run(&mut w, idle(), 60);
     assert!(w.character(0).unwrap().core.pos.y > 27.0 * 32.0);
-    run(&mut w, idle(), 200);
+    let regrow = elora_sim::tuning::ms_to_ticks(Tuning::default().thin_ice_regrow);
+    run(&mut w, idle(), regrow);
     assert_eq!(w.collision.tile(22, 20), Tile::ThinIce, "wieder zu");
     assert!(!Tile::ThinIce.is_hookable() && Tile::ThinIce.is_solid());
 }

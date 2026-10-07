@@ -312,8 +312,16 @@ pub fn victory(ui: &mut Ui<'_>, lang: &Lang, v: &VictoryView<'_>, screen: Vec2) 
     ];
     for i in 0..70u32 {
         let h = i.wrapping_mul(2_654_435_761).rotate_left(i % 13);
-        #[allow(clippy::cast_precision_loss)]
-        let r = |shift: u32| ((h >> shift) & 1023) as f32 / 1023.0;
+        // eigene Zufallszahl 0..1 je Größe (vorher reichten die Bits für x nur bis zur Mitte)
+        let r = |k: u32| {
+            let mut z = h ^ k.wrapping_mul(0x9e37_79b9);
+            z = (z ^ (z >> 16)).wrapping_mul(0x85eb_ca6b);
+            z = (z ^ (z >> 13)).wrapping_mul(0xc2b2_ae35);
+            z ^= z >> 16;
+            #[allow(clippy::cast_precision_loss)]
+            let v = (z & 0xffff) as f32 / 65535.0;
+            v
+        };
         let speed = 0.12 + r(3) * 0.18;
         let y = ((t * speed + r(13)) % 1.15 - 0.08) * screen.y;
         let x = r(23) * screen.x + (t * (1.0 + r(5) * 2.0) + r(7) * 6.0).sin() * 18.0 * s;

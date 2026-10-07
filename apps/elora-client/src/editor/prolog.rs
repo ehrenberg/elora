@@ -647,7 +647,7 @@ pub fn tauwinkel() -> Map {
         decor("briefkasten", 24.5, 40),
         decor("kuerbisse", 35.0, 40),
         decor("vogelhaus", 47.0, 40),
-        decor("katze", 46.0, 35),
+        decor("katze", 43.0, 35),
         decor("beerenbusch", 64.5, 40),
         decor("trittsteine", 96.0, 38),
         decor("korb", 126.0, 38),

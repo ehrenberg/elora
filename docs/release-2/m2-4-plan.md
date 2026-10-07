@@ -68,6 +68,8 @@ speichern und fortsetzen.
 
 **Stand M2.4.8:** Musik (E-347): Frostspitzen „Ice Village“ (KarateStudios, CC0), Kristella „Dramatic Boss Encounter“ (cynicmusic, CC0). Klänge: dünnes Eis knackt und bricht, Eiszapfen klirrt und zerschellt, Lawine grollt beim Start, Schneebrocken und Schneebälle knirschen (Kenney, CC0); Fledermaus quiekt, Elora erstarrt klirrend, Kristellas Frosthauch (prozedural); Feuerstellen knistern in der Umgebungsspur, je näher, desto lauter („Fireplace Sound loop“, PagDev, CC0).
 
+**Playtest 2026-10-07** (alle Kapitel in 29 min): Konfetti des Gewinn-Bildschirms über die ganze Breite (die Zufallszahl für x reichte nur bis zur Mitte); Wetterteilchen laufen um den Ausschnitt herum statt oben neu zu entstehen (Blätter kamen beim Laufen und Springen in Schüben); Katze sitzt auf Pips Baumhaus; kein Schuss mehr beim Betreten einer Karte (die erste Eingabe nach dem Beitritt ist nur Ausgangspunkt der Klick-Erkennung); dünnes Eis wächst nach 5,5 s nach; Eiszapfen 3 Schaden; **Kristella deutlich schwerer**: 52 Leben, nach 4 Treffern in einer Erschöpfung sofort wieder hinauf, Erschöpfung 3,0 s, Wellen schneller (7) und häufiger (2,1 s), ab 60 % wütend mit vier Eiszapfen, ab 30 % Schneesturm.
+
 ## Ablauf von Kapitel 4 (Vorschlag)
 
 | # | Ort | Was passiert |

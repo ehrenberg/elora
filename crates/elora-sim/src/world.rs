@@ -124,7 +124,10 @@ impl World {
     /// Fügt einen menschlichen Spieler hinzu, der beim nächsten Tick an einem
     /// Spawnpunkt erscheint.
     pub fn join(&mut self) -> usize {
-        self.add_player(Player::new(Controller::Human))
+        self.add_player(Player {
+            fresh: true,
+            ..Player::new(Controller::Human)
+        })
     }
 
     /// Fügt einen menschlichen Spieler hinzu, der sofort an `pos` steht.
@@ -334,6 +337,11 @@ impl World {
             // nicht ins Zentrum zielen
             if input.target_x == 0 && input.target_y == 0 {
                 input.target_y = -1;
+            }
+            if p.fresh {
+                // erste Eingabe nach dem Beitritt: Zähler übernehmen, nichts auslösen
+                p.fresh = false;
+                p.input = input;
             }
             p.prev_input = p.input;
             p.input = input;

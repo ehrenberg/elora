@@ -220,11 +220,12 @@ behavior = { type = "ghost", sight = 460.0, speed = 1.6, flee_ms = 1800 }
 
 # Hüterin der Frostspitzen (E-341): schwebt über der Eishalle, Frostwellen über den Boden
 # (an Kletterwänden oder im Sprung sicher); nach drei Wellen erschöpft und verwundbar;
-# ab der Hälfte Wellen von beiden Seiten und Eiszapfen, im letzten Viertel Schneesturm
+# ab 60 % Wellen von beiden Seiten und Eiszapfen, ab 30 % Schneesturm; nach 4 Treffern in einer
+# Erschöpfung steigt sie wieder auf (Playtest: deutlich schwerer)
 [[creature]]
 name = "kristella"
 size = [90.0, 110.0]
-health = 36
+health = 52
 touch_damage = 2
 boss = true
 xp = 280
@@ -233,7 +234,7 @@ loot = [
     { item = "glanztropfen", min = 80, max = 80 },
     { item = "eiskristall", min = 3, max = 3 },
 ]
-behavior = { type = "queen", sight = 640.0, width = 1100.0, hover_ms = 2600, waves = 3, wave_speed = 6.0, fresh_len = 170.0, wave_damage = 2, stun_ms = 3400, enrage_at = 0.5, icicles = 3, storm_at = 0.25 }
+behavior = { type = "queen", sight = 640.0, width = 1100.0, hover_ms = 2100, waves = 3, wave_speed = 7.0, fresh_len = 170.0, wave_damage = 2, stun_ms = 3000, enrage_at = 0.6, icicles = 4, storm_at = 0.3, open_hits = 4 }
 
 # Kapitel 4 (R2-M2.4, E-343): Gelände als „Gegner“ – keine Erfahrung, keine Beute.
 # Eiszapfen an der Decke: zittert, sobald Elora darunter ist, fällt und zerschellt
@@ -241,7 +242,7 @@ behavior = { type = "queen", sight = 640.0, width = 1100.0, hover_ms = 2600, wav
 name = "eiszapfen"
 size = [20.0, 48.0]
 health = 1
-touch_damage = 2
+touch_damage = 3
 behavior = { type = "icicle", sight = 48.0, reach = 420.0, warn_ms = 450 }
 
 # Schneebrocken einer Lawine: rollt hangabwärts und zerplatzt an Wand oder Elora
