@@ -1,176 +1,176 @@
-# R2-M2.4 – Inhalte von Kapitel 4 (Entwurf, M2.4.5)
+# R2-M2.4 – Chapter 4 content (draft, M2.4.5)
 
-Status: **Freigegeben und eingebaut** (Texte freigegeben 2026-10-07, E-346) · Grundlage: [`m2-4-plan.md`](m2-4-plan.md), [`world-book.md`](world-book.md) §4.4 und §5, E-340 bis E-345, D-M24-01 bis D-M24-10
+Status: **Approved and built in** (texts approved 2026-10-07, E-346) · Basis: [`m2-4-plan.md`](m2-4-plan.md), [`world-book.md`](world-book.md) §4.4 and §5, E-340 to E-345, D-M24-01 to D-M24-10
 
-Deutsche Texte; die englischen kommen beim Einbau dazu. Bedingungen und Folgen in der Schreibweise
-der Inhaltsdateien ([`../handbook/adventure-content.md`](../handbook/adventure-content.md)).
+German texts were approved; the English ones were added when building them in (quoted below as in the game). Conditions and
+effects use the notation of the content files ([`../handbook/adventure-content.md`](../handbook/adventure-content.md)).
 
-## 1. Figuren
+## 1. Characters
 
-| Id | Name | Wo | Stimme | Wesen |
+| Id | Name | Where | Voice | Nature |
 |---|---|---|---|---|
-| `flocke` | Bergführerin Flocke | Hütte im Bergdorf (`frost-2`) | klar, kräftig (1,05) | tatkräftig, ein bisschen stur, lacht laut; will seit Jahren auf den Gipfel |
-| `bolle` | Kletterer Bolle | Felsnische in `frost-1` (nur mit Eisgriff) | tief (0,9) | gemütlich, hat sich „nur kurz hingesetzt“ |
-| `kiesel` | Kletterin Kiesel | Gletscherspalte in `frost-2` | hell (1,2) | flink, ungeduldig, schämt sich ein wenig |
-| `wicke` | Kletterer Wicke | Sims am Gipfelgrat (`frost-3`) | zittrig (1,1) | ängstlich, zählt Schneeflocken gegen die Angst |
-| `kristella` | Eiskönigin Kristella | Eishalle, nach dem Kampf (`show_if = "merker besiegt.kristella"`) | ruhig, kühl (0,8) | streng und stolz, nach dem Kampf sanft und nachdenklich |
-| `graue-stelle` | Graue Stelle | Gipfelgrat (`frost-3`) | stumm, fest | Eis ohne Farbe, wo der Dürre getrunken hat |
+| `flocke` | Flocke the mountain guide | hut in the mountain village (`frost-2`) | clear, strong (1.05) | energetic, a bit stubborn, laughs loudly; has wanted to reach the summit for years |
+| `bolle` | Bolle the climber | rock niche in `frost-1` (ice grip only) | deep (0.9) | easygoing, “only sat down for a moment” |
+| `kiesel` | Kiesel the climber | glacier crevasse in `frost-2` | bright (1.2) | nimble, impatient, a little ashamed |
+| `wicke` | Wicke the climber | ledge on the summit ridge (`frost-3`) | shaky (1.1) | timid, counts snowflakes against the fear |
+| `kristella` | Ice Queen Kristella | ice hall, after the fight (`show_if = "merker besiegt.kristella"`) | calm, cool (0.8) | strict and proud, gentle and thoughtful after the fight |
+| `graue-stelle` | Grey patch | summit ridge (`frost-3`) | silent, fixed | colourless ice where the Withered One drank |
 
-Die Kletterer verschwinden aus ihrer Nische, sobald Elora mit ihnen gesprochen hat
-(`show_if = "nicht merker kletterer.<id>"`), und sitzen danach in Flockes Hütte.
+The climbers vanish from their niche as soon as Elora has talked to them
+(`show_if = "nicht merker kletterer.<id>"`), and afterwards sit in Flocke's hut.
 
-## 2. Hauptaufgabe „Der Ruf der Frostspitzen“ (`frostspitzen`, ersetzt den Schritt „bald“)
+## 2. Main quest “The Call of the Frostspitzen” (`frostspitzen`, replaces the “soon” step)
 
-> Die vierte Quelle liegt in den Frostspitzen im Norden. Dorthin führten die grauen Spuren.
+> The fourth spring lies in the Frostspitzen to the north. That is where the grey tracks led.
 
-| Schritt | Text | Ziel |
+| Step | Text | Goal |
 |---|---|---|
-| `aufbruch` | Oben im Oberdorf den Bergsteig freilegen | `frost-1` erreichen |
-| `flocke` | Im verlassenen Bergdorf nach jemandem suchen | mit Flocke sprechen |
-| `seil` | Flockes Seil aus dem vereisten Keller holen | Seil zu Flocke bringen |
-| `grat` | Mit den Steigkrallen hinauf zum Gipfelgrat | `frost-3` erreichen |
-| `quelle` | Die Eishalle der Frostquelle finden | `frost-arena` erreichen |
-| `hueter` | Kristella beruhigen | Kristella besiegen |
-| `funke` | Tüftel den Quellfunken bringen | Quellfunke zu Tüftel |
-| `fest` | Mit Oma Pfütze am Brunnen feiern | mit Oma sprechen |
+| `aufbruch` | Clear the mountain path at the top of the upper village | reach `frost-1` |
+| `flocke` | Look for someone in the abandoned mountain village | talk to Flocke |
+| `seil` | Fetch Flocke's rope from the frozen cellar | bring the rope to Flocke |
+| `grat` | Climb up to the summit ridge with the climbing claws | reach `frost-3` |
+| `quelle` | Find the ice hall of the Frost Spring | reach `frost-arena` |
+| `hueter` | Calm Kristella | defeat Kristella |
+| `funke` | Bring Tüftel the spring spark | spring spark to Tüftel |
+| `fest` | Celebrate with Oma Pfütze at the well | talk to Oma |
 
-Lohn: 400 Erfahrung, 180 Glanztropfen. Danach beginnt die Ankündigung **„Das Lied der Sterne“**
-(`sternschlucht`, Schritt von Hand, „bald“).
+Reward: 400 experience, 180 gleam drops. Afterwards the teaser **“The Song of the Stars”** begins
+(`sternschlucht`, step set by hand, “soon”).
 
-## 3. Nebenaufgaben
+## 3. Side quests
 
-### „Verlorene Kletterer“ (`kletterer`, von Flocke, D-M24-08)
+### “Lost Climbers” (`kletterer`, from Flocke, D-M24-08)
 
-| Schritt | Text | Ziel |
+| Step | Text | Goal |
 |---|---|---|
-| `finden` | Die drei verschollenen Kletterer finden | Merker `kletterer.gefunden` = 3 |
-| `bericht` | Flocke Bescheid geben | mit Flocke sprechen |
+| `finden` | Find the three missing climbers | flag `kletterer.gefunden` = 3 |
+| `bericht` | Let Flocke know | talk to Flocke |
 
-Jeder Kletterer zählt `kletterer.gefunden` hoch und macht sich auf den Weg zur Hütte. Bolle in `frost-1`
-sitzt in einer Nische, die nur mit dem Eisgriff erreichbar ist (also erst auf dem Rückweg). Lohn:
-100 Erfahrung, 1 Tautropfen-Punkt, **Bommelmütze**.
+Each climber counts `kletterer.gefunden` up and sets off for the hut. Bolle in `frost-1`
+sits in a niche that can only be reached with the ice grip (so only on the way back). Reward:
+100 experience, 1 dewdrop point, **bobble hat**.
 
-### „Klarkristalle für Klonk“ (`klarkristalle`, von Klonk, D-M24-09)
+### “Clear Crystals for Klonk” (`klarkristalle`, from Klonk, D-M24-09)
 
-| Schritt | Text | Ziel |
+| Step | Text | Goal |
 |---|---|---|
-| `sammeln` | Acht Klarkristalle in den Frostspitzen finden | 8 Klarkristalle haben |
-| `bringen` | Klonk die Kristalle bringen | 8 Klarkristalle zu Klonk |
+| `sammeln` | Find eight clear crystals in the Frostspitzen | have 8 clear crystals |
+| `bringen` | Bring Klonk the crystals | 8 clear crystals to Klonk |
 
-Die Kristalle liegen versteckt: unter dünnem Eis, hinter Lawinenhängen, oben in Kletterschächten.
-Klonk schleift daraus **einen Anhänger nach Wahl** (siehe Gespräch). Lohn zusätzlich: 100 Erfahrung.
+The crystals are hidden: under thin ice, behind avalanche slopes, high up in climbing shafts.
+Klonk cuts **a pendant of your choice** from them (see dialogue). Additional reward: 100 experience.
 
-## 4. Gegenstände und Flockes Vorrat
+## 4. Items and Flocke's supplies
 
-| Id | Art | Name | Wirkung | Preis |
+| Id | Kind | Name | Effect | Price |
 |---|---|---|---|---|
-| `seil` | Schlüssel | Flockes Seil | „Dick, rau und mit drei Knoten, die Flocke ‚Glück, Mut und Abendbrot‘ nennt.“ | – |
-| `klarkristall` | Sammelstück | Klarkristall | „Ganz klar. Wenn man hindurchsieht, wirkt die Welt ein bisschen ruhiger.“ | – |
-| `kraeutertee` | Verbrauch | Kräutertee | heilt 2 und **leert die Kälte-Leiste** (neu: Wirkung `warm`) | 12 |
-| `bommelmuetze` | Hut | Bommelmütze | **Kälte-Leiste füllt sich 40 % langsamer** | – (Lohn) |
-| `fellstiefel` | Stiefel | Fellstiefel | Kälte-Leiste −20 %, Rüstung +1 | 220 |
-| `wuchtkristall` | Anhänger | Wuchtkristall | Hammer +1 Schaden | – (Klonk) |
-| `sprengkristall` | Anhänger | Sprengkristall | Explosion +20 % | – (Klonk) |
-| `lichtkristall` | Anhänger | Lichtkristall | Laser +1 Abpraller | – (Klonk) |
+| `seil` | key | Flocke's rope | “Thick, rough and with three knots that Flocke calls “luck, courage and supper”.” | – |
+| `klarkristall` | collectible | Clear crystal | “Perfectly clear. Looking through it, the world seems a little calmer.” | – |
+| `kraeutertee` | consumable | Herbal tea | heals 2 and **empties the cold bar** (new: effect `warm`) | 12 |
+| `bommelmuetze` | hat | Bobble hat | **cold bar fills 40 % slower** | – (reward) |
+| `fellstiefel` | boots | Fur boots | cold bar −20 %, armour +1 | 220 |
+| `wuchtkristall` | pendant | Impact crystal | hammer +1 damage | – (Klonk) |
+| `sprengkristall` | pendant | Blast crystal | explosion +20 % | – (Klonk) |
+| `lichtkristall` | pendant | Light crystal | laser +1 bounce | – (Klonk) |
 
-Flockes Vorrat (Laden `flocke`): Kräutertee, Eiskristall (25), Fellstiefel; Rabatt ab Zuneigung 5 (10 %).
-Gegner der Frostspitzen lassen Eiskristall fallen (schon so), Kristella 3 Eiskristalle.
+Flocke's supplies (shop `flocke`): herbal tea, ice crystal (25), fur boots; discount from affection 5 (10 %).
+Enemies in the Frostspitzen drop ice crystals (already the case), Kristella 3 ice crystals.
 
-## 5. Gespräche
+## 5. Dialogues
 
 ### Flocke
 
-**Begrüßung** (erster Besuch):
-> Ha! Endlich mal jemand, der nicht vor dem bisschen Schnee wegläuft! Ich bin Flocke, Bergführerin. Na ja – Bergführerin ohne Berg, seit der Gipfel zugefroren ist. Und ohne Seil. Das ist das eigentliche Problem.
+**Greeting** (first visit):
+> Ha! Finally someone who doesn't run away from a little snow! I'm Flocke, mountain guide. Well – mountain guide without a mountain, since the summit froze over. And without a rope. That's the real problem.
 
-- *(neugierig)* „Was ist mit deinem Seil?“ → **Seil**
-- *(freundlich)* „Warum ist das Dorf so leer?“ → „Die Leute sind ins Tal gezogen, als es kälter und kälter wurde. Kälter als normal, meine ich. Seit da oben etwas Graues herumstapft, friert sogar das Feuer.“ → **Seil**
-- *(frech)* „Bergführerin ohne Berg? Und ohne Seil?“ → „HA! Frech! Gefällt mir.“ (Zuneigung +1) → **Seil**
+- *(curious)* “What happened to your rope?” → **Rope**
+- *(friendly)* “Why is the village so empty?” → “Everyone moved down to the valley when it got colder and colder. Colder than normal, I mean. Since something grey has been stomping around up there, even the fire freezes.” → **Rope**
+- *(cheeky)* “A mountain guide without a mountain? And without a rope?” → “HA! Cheeky! I like that.” (affection +1) → **Rope**
 
-**Seil** (startet Schritt `seil`):
-> Mein Seil liegt im Keller unter der alten Käserei. Ich wollte es holen, aber da unten hängen Fledermäuse mit Eiszapfen an den Flügeln. Ich mag Fledermäuse. Nur nicht, wenn sie mir ins Gesicht fliegen. Holst du es mir? Der Boden dort ist dünnes Eis – nicht trödeln!
+**Rope** (starts step `seil`):
+> My rope is in the cellar under the old cheese dairy. I wanted to fetch it, but bats with icicles on their wings hang down there. I like bats. Just not when they fly into my face. Will you get it for me? The floor there is thin ice – don't dawdle!
 
-- „Ich hole es.“ → `quest frostspitzen weiter`
-- „Und dann?“ → „Dann gehen wir auf den Gipfel! Also, du. Ich halte das Seil.“ → `quest frostspitzen weiter`
+- “I'll get it.” → `quest frostspitzen weiter`
+- “And then?” → “Then we climb the summit! Well, you do. I'll hold the rope.” → `quest frostspitzen weiter`
 
-**Erinnerung:** „Der Keller unter der Käserei. Dünnes Eis! Nicht stehen bleiben!“
+**Reminder:** “The cellar under the cheese dairy. Thin ice! Don't stand still!”
 
-**Seil zurück** (Schritt `seil`, mit Seil):
-> Mein Seil! Glück, Mut und Abendbrot – alle drei Knoten noch dran! Hier, nimm dafür meine Steigkrallen. Damit hältst du dich an den Kletterwänden fest – an den rauen, gestreiften Felsen. Spring dagegen, halt dich fest, und dann: abspringen! Ganz einfach. Na ja. Fast.
+**Rope returned** (step `seil`, with the rope):
+> My rope! Luck, courage and supper – all three knots still there! Here, take my climbing claws for it. With them you can hold on to climbing walls – the rough, striped rocks. Jump at one, hold on, and then: jump off! Easy. Well. Almost.
 
 → `nimm seil 1`, `faehigkeit eisgriff`, `quest frostspitzen weiter`
 
-- *(freundlich)* „Danke, Flocke!“ → **Kletterer**
-- „Wohin jetzt?“ → „Hoch! Durch den Kamin hinter meiner Hütte. Oben am Grat wird's stürmisch.“ → **Kletterer**
+- *(friendly)* “Thank you, Flocke!” → **Climbers**
+- “Where to now?” → “Up! Through the chimney behind my hut. Up on the ridge it gets stormy.” → **Climbers**
 
-**Kletterer** (startet die Nebenaufgabe):
-> Ach, und … drei meiner Kletterer sind nicht zurückgekommen. Bolle, Kiesel und Wicke. Die drei sind gut, wirklich! Aber der Sturm … Wenn du sie siehst, schick sie heim. Ich mache Tee.
+**Climbers** (starts the side quest):
+> Oh, and … three of my climbers haven't come back. Bolle, Kiesel and Wicke. They're good, really! But the storm … If you see them, send them home. I'll make tea.
 
-- *(freundlich)* „Ich halte die Augen offen.“ → `quest kletterer start`
-- „Vielleicht später.“
+- *(friendly)* “I'll keep my eyes open.” → `quest kletterer start`
+- “Maybe later.”
 
-**Bericht** (alle drei gefunden):
-> Alle drei sitzen an meinem Ofen und streiten, wer am längsten durchgehalten hat. Danke, kleiner Tropfen. Hier – meine alte Bommelmütze. Damit friert dir nicht mal die Laune ein.
+**Report** (all three found):
+> All three are sitting at my stove arguing about who held out the longest. Thank you, little drop. Here – my old bobble hat. With it, not even your mood will freeze.
 
-**Zurufe:** „Tee ist fertig!“ · „Kälte ist nur Wärme, die gerade woanders ist.“ · „Am Feuer wird's wieder warm!“
+**Calls:** “Tea is ready!” · “Cold is just warmth that happens to be somewhere else.” · “By the fire you'll warm up again!”
 
-### Kletterer
-- **Bolle:** „Oh, hallo! Ich hab mich nur kurz hingesetzt. Vor drei Tagen. Gemütlich hier. Na gut, ich geh heim – Flocke macht bestimmt Tee.“ → `merker kletterer.bolle = 1`, `merker kletterer.gefunden +1`
-- **Kiesel:** „Sag Flocke nichts! Ich bin nicht reingefallen, ich … erkunde die Spalte. Gründlich. Ja, ich komme ja schon mit raus.“ → `merker kletterer.kiesel = 1`, `merker kletterer.gefunden +1`
-- **Wicke:** „Vierhundertzwölf … vierhundertdreizehn … oh! Ein Tropfen! Ich zähle Schneeflocken, damit ich keine Angst habe. Du hast mich verzählen lassen. Danke. Ich geh lieber runter.“ → `merker kletterer.wicke = 1`, `merker kletterer.gefunden +1`
-- **In der Hütte** (danach): Bolle „Bester Platz am Ofen.“ · Kiesel „Ich war NICHT verloren.“ · Wicke „Hier drin schneit es nicht. Ich hab nachgezählt.“
+### Climbers
+- **Bolle:** “Oh, hello! I only sat down for a moment. Three days ago. Cosy here. All right, I'll head home – Flocke is surely making tea.” → `merker kletterer.bolle = 1`, `merker kletterer.gefunden +1`
+- **Kiesel:** “Don't tell Flocke! I didn't fall in, I'm … exploring the crevasse. Thoroughly. Yes, all right, I'm coming out.” → `merker kletterer.kiesel = 1`, `merker kletterer.gefunden +1`
+- **Wicke:** “Four hundred and twelve … four hundred and thirteen … oh! A drop! I count snowflakes so I'm not scared. You made me lose count. Thank you. I'd better go down.” → `merker kletterer.wicke = 1`, `merker kletterer.gefunden +1`
+- **In the hut** (afterwards): Bolle “Best seat by the stove.” · Kiesel “I was NOT lost.” · Wicke “It doesn't snow in here. I counted.”
 
-### Graue Stelle (fest, `frost-3`)
-> Das Eis hier ist grau und stumpf, als hätte jemand alles Blau herausgetrunken. Daneben ein Abdruck im Schnee – ein großer, müder Fuß.
+### Grey patch (fixed, `frost-3`)
+> The ice here is grey and dull, as if someone had drunk all the blue out of it. Next to it, a print in the snow – a large, weary foot.
 
-### Kristella (nach dem Kampf)
-> Genug. Du bist zäher als du aussiehst, kleiner Tropfen. Ich … war nicht ich selbst. Der Graue kam in einer klaren Nacht und trank von meiner Quelle. Danach hörte ich nur noch Sturm in meinem Kopf.
+### Kristella (after the fight)
+> Enough. You are tougher than you look, little drop. I … was not myself. The grey one came on a clear night and drank from my spring. After that I heard nothing but storm in my head.
 >
-> Doch ich habe ihn gesehen, als er ging. Er weinte. Er ist einsam, nicht böse. Er sucht etwas, das ihm jemand genommen hat – und er weiß nicht mehr, wer.
+> But I saw him as he left. He was weeping. He is lonely, not wicked. He is looking for something someone took from him – and he no longer knows who.
 >
-> Er zog nach Osten, zur Sternschlucht. Nimm den Funken. Und wenn du ihn findest … hör ihm zu.
+> He went east, to the Sternschlucht. Take the spark. And if you find him … listen to him.
 
-### Tüftel (Schritt `funke`, D-M24-03)
-> Blau! Eisblau! Und so kühl, dass meine Brille beschlägt. Gib mal deine Steigkrallen … *klirr* … *zisch* … So! Jetzt halten sie doppelt so lange, und wenn du an der Wand nach oben drückst, ziehst du dich sogar ein Stück hinauf. Kletterwände überall im Tauland – jetzt gehören sie dir!
+### Tüftel (step `funke`, D-M24-03)
+> Blue! Ice blue! And so cool my glasses fog up. Give me your climbing claws … *clink* … *hiss* … There! Now they hold twice as long, and if you push up against the wall you even pull yourself up a bit. Climbing walls all over the Tauland – now they're yours!
 
 → `merker eisgriff.stark = 1`, `nimm quellfunke 1`, `quest frostspitzen weiter`
 
 ### Klonk
-- **Auftrag** (Kapitel 4 läuft): „Eiskristalle schmelzen nicht. Weißt du, was nicht mal *die* können? So klar sein wie Klarkristalle. Acht Stück, irgendwo in den Bergen. Bring sie mir, und ich schleif dir was Hübsches. Hübsch und nützlich. Hübsch ist mir egal.“ → `quest klarkristalle start`
-- **Erinnerung:** „Acht. Nicht sieben. Ich zähle nach.“
-- **Bringen:**
-  > Acht. Ich hab nachgezählt. Zweimal. Was soll's werden?
-  - „Etwas für den Hammer.“ → `gib wuchtkristall 1`
-  - „Etwas für die Granaten.“ → `gib sprengkristall 1`
-  - „Etwas für den Laser.“ → `gib lichtkristall 1`
+- **Task** (chapter 4 in progress): “Ice crystals don't melt. You know what even *they* can't do? Be as clear as clear crystals. Eight of them, somewhere in the mountains. Bring them to me and I'll cut you something pretty. Pretty and useful. I don't care about pretty.” → `quest klarkristalle start`
+- **Reminder:** “Eight. Not seven. I'll count.”
+- **Delivery:**
+  > Eight. I counted. Twice. What'll it be?
+  - “Something for the hammer.” → `gib wuchtkristall 1`
+  - “Something for the grenades.” → `gib sprengkristall 1`
+  - “Something for the laser.” → `gib lichtkristall 1`
   
-  danach: „Trag ihn mit Würde. Oder wenigstens ohne ihn zu verlieren.“ → `nimm klarkristall 8`, `quest klarkristalle fertig`
+  afterwards: “Wear it with dignity. Or at least without losing it.” → `nimm klarkristall 8`, `quest klarkristalle fertig`
 
 ### Oma Pfütze
-- **Auftrag** (nach dem Fest von Kapitel 3): „Die Frostquelle, Kind. Sie hat mich als junges Ding so klar denken lassen, dass ich einmal sogar die Steuern verstanden habe. Oben im Oberdorf liegt ein Eisblock vor dem alten Bergsteig. Du weißt ja jetzt, wie man aufstampft. Und zieh dich warm an!“
-- **Unterwegs:** „Hast du auch eine Mütze? Ohne Mütze wird man zum Eiszapfen.“
-- **Fest:** „Blau wie ein Wintermorgen! Und klar – endlich klar in meinem Kopf. Kristella sagt, er ist einsam? … Einsam. Wie ein Brunnen ohne Lied. Ach, warum fällt mir das jetzt ein? Geh nach Osten, Kind, in die Sternschlucht. Dort wohnt Luma, die Sternenweberin. Sie kennt alle Lieder.“ → `quest frostspitzen fertig`, `quest sternschlucht start`, Fest
+- **Task** (after the chapter 3 celebration): “The Frost Spring, dear. When I was young it let me think so clearly that I once even understood the taxes. At the top of the upper village an ice block lies in front of the old mountain path. You know how to stomp now. And dress warmly!”
+- **On the way:** “Do you have a hat? Without a hat you'll turn into an icicle.”
+- **Celebration:** “Blue as a winter morning! And clear – finally clear in my head. Kristella says he is lonely? … Lonely. Like a well without a song. Oh, why does that come to mind now? Go east, dear, to the Sternschlucht. Luma the star weaver lives there. She knows every song.” → `quest frostspitzen fertig`, `quest sternschlucht start`, celebration
 
-### Schilder
-- `schild-bergsteig` (Oberdorf): „↑ Frostspitzen – Bergsteig. Warm anziehen!“
-- `schild-kaelte` (`frost-1`): „Kälte macht steif. Am Feuer und unter Dächern wärmst du dich auf.“
-- `schild-eis` (`frost-1`): „Dünnes Eis! Nicht stehen bleiben. Und NICHT aufstampfen.“
-- `schild-lawine` (`frost-3`): „Lawinengefahr! Lärm und Stampfen vermeiden.“
-- `schild-kamin` (`frost-2`, hinter der Hütte): „Kletterkamin. Nur mit Steigkrallen.“
+### Signs
+- `schild-bergsteig` (upper village): “↑ Frostspitzen – mountain path. Dress warmly!”
+- `schild-kaelte` (`frost-1`): “Cold makes you stiff. Warm up by a fire and under roofs.”
+- `schild-eis` (`frost-1`): “Thin ice! Don't stand still. And do NOT stomp.”
+- `schild-lawine` (`frost-3`): “Avalanche danger! Avoid noise and stomping.”
+- `schild-kamin` (`frost-2`, behind the hut): “Climbing chimney. Climbing claws only.”
 
-## 6. Spuren des Dürren
+## 6. Tracks of the Withered One
 
-Graue Stellen im Eis (Deko `grauspur-eis`) in `frost-1` bis `frost-3`, dazu die Figur `graue-stelle` am
-Gipfelgrat; vom Grat führen graue Fußspuren nach Osten aus der Arena hinaus. Kein Auftritt des Dürren.
+Grey patches in the ice (decoration `grauspur-eis`) in `frost-1` to `frost-3`, plus the character `graue-stelle` on the
+summit ridge; from the ridge, grey footprints lead east out of the arena. The Withered One does not appear.
 
-## 7. Dorf nach Kapitel 4 (Ausblick auf M2.4.7)
+## 7. Village after chapter 4 (outlook on M2.4.7)
 
-`quellen_befreit = 4`, Fest; neue Zurufe von Pip („Hast du Kristella gesehen? Ist sie wirklich aus Eis? Ganz?“),
-Lotte („Kräutertee aus den Bergen – jetzt auch bei mir!“) und Tüftel („Steigkrallen-Version zwei. Bald drei.“).
+`quellen_befreit = 4`, celebration; new calls from Pip (“Did you see Kristella? Is she really made of ice? All of her?”),
+Lotte (“Herbal tea from the mountains – now at my shop too!”) and Tüftel (“Climbing claws, version two. Three coming soon.”).
 
-## 8. Neue Technik für die Inhalte
+## 8. New tech for the content
 
-- Wirkung **`warm`** für Verbrauchsgegenstände (Kälte-Leiste leeren).
-- Laden `flocke` in `shops.toml`; Gegenstände in `items.toml`.
-- Merker **`eisgriff.stark`**: doppelte Haftdauer und Hochziehen an der Wand (Technik in M2.4.7).
-- Gesprächsdateien in `data.rs` (`dialogs!`) eintragen; Figuren Flocke, Kletterer, Kristella als Grafiken aus den Entwürfen.
+- Effect **`warm`** for consumables (empty the cold bar).
+- Shop `flocke` in `shops.toml`; items in `items.toml`.
+- Flag **`eisgriff.stark`**: double cling time and pulling up on the wall (tech in M2.4.7).
+- Register the dialogue files in `data.rs` (`dialogs!`); characters Flocke, climbers, Kristella as graphics from the drafts.

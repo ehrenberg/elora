@@ -1,64 +1,64 @@
-# Architektur & Code-Struktur
+# Architecture & code structure
 
-Stand: Release 1 (0.9.0) · Grundsätze: [`principles.md`](principles.md)
+Status: Release 1 (0.9.0) · Principles: [`principles.md`](principles.md)
 
-## 1. Leitprinzipien
+## 1. Guiding principles
 
-1. **Die Simulation ist reine Logik.** Physik, Hook, Waffen und Spielregeln kennen weder Fenster noch Grafik noch Netzwerk. Server, Client (Vorhersage), Sandbox und Tests nutzen denselben Code.
-2. **Abhängigkeiten zeigen in eine Richtung:** Programme → Engine-Crates → Simulation. Die Simulation hängt von nichts ab, was mit Plattform oder Ein-/Ausgabe zu tun hat.
-3. **Determinismus ist getestet.** Gleiche Eingaben ergeben bit-genau denselben Zustand; Golden-Tests spielen aufgezeichnete Eingaben ab (`crates/elora-sim/tests/recordings/`).
-4. **Logik ohne Fenster ist testbar.** Online-Client, Editor-Werkzeuge, Karten und Netz laufen in Tests ohne Grafik (Speichernetz `MemNetwork`, virtuelle Zeit).
+1. **The simulation is pure logic.** Physics, hook, weapons and game rules know nothing about windows, graphics or network. Server, client (prediction), sandbox and tests use the same code.
+2. **Dependencies point in one direction:** programs → engine crates → simulation. The simulation depends on nothing related to platform or input/output.
+3. **Determinism is tested.** The same inputs yield a bit-exact identical state; golden tests replay recorded inputs (`crates/elora-sim/tests/recordings/`).
+4. **Logic without a window is testable.** Online client, editor tools, maps and network run in tests without graphics (in-memory network `MemNetwork`, virtual time).
 
 ## 2. Workspace
 
 ```
 crates/
-  elora-sim        Simulation: Welt, Kollision (Tile-Arten), Figur, Hook, Waffen, Pickups, Dummies, Fähigkeiten, Gegner, Beute, Tuning, Aufzeichnungen
-  elora-game       Spielregeln: Modi, Punkte, Runden, Teams, Aufwärmen, Sudden Death
-  elora-map        Kartenmodell und Format .emap (binär, zlib), Aussehen (Materialien, Deko, Ebenen, Envelopes, SVGs)
-  elora-protocol   Nachrichten, Snapshots mit Delta, Huffman, Server-Info, übersetzbare Meldungen
-  elora-net        UDP: Token, Noise-Handshake, Zuverlässigkeit, Fragmente, Info-Abfrage, IPv4/IPv6, Netz-Simulator
-  elora-render     wgpu-Renderer: Formen, Meshes, SVG-Assets, Text, Kamera
-  elora-audio      Sounds: prozeduraler Generator, Zuordnung zu Ereignissen, Wiedergabe (kira)
-  elora-adventure  Abenteuer: Inhalte als Daten, Spielstand, Stufen, Fähigkeitenbaum, Inventar, Läden, Ausbau, Speichern
+  elora-sim        simulation: world, collision (tile kinds), character, hook, weapons, pickups, dummies, abilities, enemies, loot, tuning, recordings
+  elora-game       game rules: modes, scores, rounds, teams, warmup, sudden death
+  elora-map        map model and format .emap (binary, zlib), look (materials, decoration, layers, envelopes, SVGs)
+  elora-protocol   messages, snapshots with delta, Huffman, server info, translatable messages
+  elora-net        UDP: token, Noise handshake, reliability, fragments, info query, IPv4/IPv6, network simulator
+  elora-render     wgpu renderer: shapes, meshes, SVG assets, text, camera
+  elora-audio      sounds: procedural generator, mapping to events, playback (kira)
+  elora-adventure  adventure: content as data, save game, levels, skill tree, inventory, shops, upgrades, saving
 apps/
-  elora-client     das Spiel (lib: Online-Client, Szene, Kartenspeicher; bin: Fenster, Menüs, HUD, Editor)
-  elora-server     dedizierter Server (lib: Spielserver, Konsole, Abstimmungen, Pfade; bin: Programm, Master-Anmeldung)
-  elora-master     Master-Server für die Internet-Liste (HTTP/JSON, UDP-Prüfung)
+  elora-client     the game (lib: online client, scene, map store; bin: window, menus, HUD, editor)
+  elora-server     dedicated server (lib: game server, console, votes, paths; bin: program, master registration)
+  elora-master     master server for the internet list (HTTP/JSON, UDP check)
 xtask/             cargo xtask: check, package, map-dump, svg-preview, sound-preview/-import, train-huffman, net-stats
-deploy/            Betrieb: master/ (systemd, Docker, Proxy), master-php/ (Webspace: Master + Projektseite)
-tools/design/      Python-Generatoren für Entwürfe, Kartengrafik und Release-Karten
-assets/            SVGs (Figur, Items, Emotes, Karten), Sounds, Schriften, Sprachen; adventure/ mit Inhalten des Abenteuers
-maps/              mitgelieferte Karten (.emap)
+deploy/            operation: master/ (systemd, Docker, proxy), master-php/ (web hosting: master + project page)
+tools/design/      Python generators for drafts, map graphics and release maps
+assets/            SVGs (character, items, emotes, maps), sounds, fonts, languages; adventure/ with adventure content
+maps/              shipped maps (.emap)
 ```
 
 ### Client (`apps/elora-client/src`)
 
-| Bereich | Module |
+| Area | Modules |
 |---|---|
-| Ablauf | `main.rs` (App, Bildschirme Menü/Spiel/Editor, Eingaben), `app_menu.rs`, `app_editor.rs` |
-| Spiel lokal | `sandbox.rs` (Training, Hot-Reload, Aufzeichnung, Testspiel) |
-| Spiel online | `online.rs` (lib: Snapshots, Vorhersage, Interpolation, Karten-Download), `connection.rs`, `map_store.rs` (lib) |
-| Darstellung | `draw.rs`, `map_view.rs` (Ebenen, Parallax, Zwischenspeicher), `map_art.rs` (Auto-Kanten), `figure.rs`, `items.rs`, `effects.rs`, `emotes.rs`, `skins.rs` |
-| Oberfläche | `ui.rs` (eigenes Toolkit), `menu*.rs`, `hud.rs`, `game_ui.rs`, `debug_ui.rs` + `gui.rs` (egui), `lang.rs` |
-| Editor | `editor/` – Zustand und Verlauf (`mod.rs`), Werkzeuge (`tools.rs`), Aussehen (`look.rs`), Oberfläche (`panel*.rs`), Ansicht (`view.rs`) |
-| Sonstiges | `browser.rs`, `hosting.rs`, `settings.rs`, `bindings.rs`, `controls.rs`, `sound.rs`, `tuning_file.rs` |
+| Flow | `main.rs` (app, screens menu/game/editor, input), `app_menu.rs`, `app_editor.rs` |
+| Local game | `sandbox.rs` (training, hot reload, recording, test play) |
+| Online game | `online.rs` (lib: snapshots, prediction, interpolation, map download), `connection.rs`, `map_store.rs` (lib) |
+| Rendering | `draw.rs`, `map_view.rs` (layers, parallax, cache), `map_art.rs` (auto edges), `figure.rs`, `items.rs`, `effects.rs`, `emotes.rs`, `skins.rs` |
+| UI | `ui.rs` (own toolkit), `menu*.rs`, `hud.rs`, `game_ui.rs`, `debug_ui.rs` + `gui.rs` (egui), `lang.rs` |
+| Editor | `editor/` – state and history (`mod.rs`), tools (`tools.rs`), look (`look.rs`), UI (`panel*.rs`), view (`view.rs`) |
+| Other | `browser.rs`, `hosting.rs`, `settings.rs`, `bindings.rs`, `controls.rs`, `sound.rs`, `tuning_file.rs` |
 
-## 3. Laufzeit
+## 3. Runtime
 
-- **Tick-Modell:** feste 50 Ticks/s. Der Client rendert mit beliebiger Bildrate und interpoliert zwischen zwei Zuständen (Akkumulator).
-- **Online:** Server schickt Snapshots (25 Hz, LAN 50 Hz) als Delta; der Client sagt die eigene Figur samt Waffen voraus und interpoliert andere. Karten kommen beim Beitritt in Teilen, geprüft per BLAKE2s (`MapInfo` → `MapRequest`/`MapChunk` → `MapReady` → `Welcome`).
-- **Dateien:** Mitgelieferte Daten über `elora_server::paths::resolve` (Arbeitsverzeichnis, `ELORA_DATA`, neben dem Programm, `../share/elora`, `../Resources`); Einstellungen, Tuning, Server-Schlüssel im Einstellungsordner; eigene und geladene Karten unter `~/.local/share/elora`.
-- **Protokollversion:** 6 (bei Änderungen erhöhen; Master-PHP `config.php` anpassen).
+- **Tick model:** fixed 50 ticks/s. The client renders at any frame rate and interpolates between two states (accumulator).
+- **Online:** The server sends snapshots (25 Hz, LAN 50 Hz) as deltas; the client predicts its own character including weapons and interpolates the others. Maps arrive in chunks on joining, verified via BLAKE2s (`MapInfo` → `MapRequest`/`MapChunk` → `MapReady` → `Welcome`).
+- **Files:** Shipped data via `elora_server::paths::resolve` (working directory, `ELORA_DATA`, next to the program, `../share/elora`, `../Resources`); settings, tuning, server key in the settings folder; custom and downloaded maps under `~/.local/share/elora`.
+- **Protocol version:** 6 (increase on changes; adjust the master PHP `config.php`).
 
-## 4. Standards & Werkzeuge
+## 4. Standards & tools
 
-| Bereich | Standard |
+| Area | Standard |
 |---|---|
-| Sprache | Rust 2024, Version in `rust-toolchain.toml` |
-| Prüfung | `cargo xtask check`: rustfmt, clippy (pedantic, `-D warnings`), cargo-nextest, cargo-deny; dasselbe in GitHub Actions bei jedem Push |
-| Abhängigkeiten | zentral in `[workspace.dependencies]`, Lizenzen und Advisories über cargo-deny |
-| Fehler | `thiserror` in Bibliotheken, `anyhow` in Programmen; Logging mit `tracing` |
-| Sichtprüfung | ignorierte Tests erzeugen SVGs unter `target/`, `cargo xtask svg-preview` rastert sie |
-| Release | Tag `v<version>` → GitHub Actions baut Pakete und legt einen Release-Entwurf an; Notizen in `docs/releases/` |
+| Language | Rust 2024, version in `rust-toolchain.toml` |
+| Checks | `cargo xtask check`: rustfmt, clippy (pedantic, `-D warnings`), cargo-nextest, cargo-deny; the same in GitHub Actions on every push |
+| Dependencies | centrally in `[workspace.dependencies]`, licenses and advisories via cargo-deny |
+| Errors | `thiserror` in libraries, `anyhow` in programs; logging with `tracing` |
+| Visual checks | ignored tests generate SVGs under `target/`, `cargo xtask svg-preview` rasterizes them |
+| Release | tag `v<version>` → GitHub Actions builds packages and creates a draft release; notes in `docs/releases/` |
 | Commits | Conventional Commits |

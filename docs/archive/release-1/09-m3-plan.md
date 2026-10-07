@@ -1,106 +1,105 @@
-# M3 – Netzwerk: Umsetzungsplan
+# M3 – Networking: Implementation Plan
 
-Status: **abgeschlossen** (E-065) · angenommen (E-057–E-064) · Grundlage: [`06-roadmap.md`](06-roadmap.md) M3, E-008, E-012, Analyse §10
+Status: **completed** (E-065) · accepted (E-057–E-064) · Basis: [`06-roadmap.md`](06-roadmap.md) M3, E-008, E-012, analysis §10
 
-## Ziel
+## Goal
 
-Ein dedizierter Server, mehrere Clients über UDP. Die eigene Bewegung fühlt sich bei 100 ms Ping genauso an wie offline. Abnahme: 2 bis 8 Spieler im LAN, zusätzlich ein Test mit simuliertem Ping, Jitter und Paketverlust.
+A dedicated server, multiple clients over UDP. Your own movement feels the same at 100 ms ping as offline. Acceptance: 2 to 8 players on LAN, plus a test with simulated ping, jitter and packet loss.
 
-## Arbeitsschritte
+## Work Steps
 
-| # | Schritt | Crate | Inhalt | Prüfung |
+| # | Step | Crate | Content | Check |
 |---|---|---|---|---|
-| M3.1 ✅ | Serialisierung | `elora-protocol` | Bit-/Byte-Packer mit variabler Ganzzahl-Länge, Nachrichten (Eingabe, Snapshot, Ereignisse, Verbindung), Versionsnummer | Unit-Tests: Rundlauf, fehlerhafte Pakete werden abgelehnt |
-| M3.2 ✅ | Transport | `elora-net` | UDP-Socket, Verbindungsaufbau mit Token (gegen gefälschte Absender), Keepalive, Timeout, Trennen mit Grund; zuverlässige und unzuverlässige Kanäle (Sequenz, Ack, Resend), Aufteilen großer Nachrichten | Tests über eine simulierte Leitung mit Verlust und Umordnung |
-| M3.3 ✅ | Netzwerk-Simulator | `elora-net` | Einstellbarer Ping, Jitter, Paketverlust, Umordnung, zwischen Socket und Transport geschaltet | Tests; Regler im Debug-Panel |
-| M3.4 ✅ | Snapshots | `elora-protocol` | Vollständiger Welt-Snapshot (Figuren, Projektile, Laser, Pickups, Spielerinfos), **Delta gegen den zuletzt bestätigten Snapshot**, CRC | Tests: Delta-Rundlauf bit-genau, Größenmessung |
-| M3.5 ✅ | Server | `apps/elora-server` | Dedizierter Server ohne Grafik: Karte laden, Spieler aufnehmen/entfernen, Eingaben pro Tick anwenden, Snapshots senden, Eingabe-Timing zurückmelden; Konfiguration per Datei/Kommandozeile | Headless-Integrationstest: Server + 2 Test-Clients |
-| M3.6 ✅ | Client: Verbindung & Interpolation | `elora-client` | Verbinden per IP:Port, Snapshots empfangen, fremde Figuren und Objekte zwischen Snapshots interpolieren | Manuell im LAN |
-| M3.7 ✅ | Client: Vorhersage | `elora-client` | Eingaben puffern und mit Ziel-Tick senden, Vorhersagezeit regeln (wie `INPUTTIMING`), vom Snapshot vorwärts rechnen, Korrektur bei Abweichung (siehe D-M3-03) | Test: Vorhersage = Server bei verlustfreier Leitung |
-| M3.8 ✅ | Lokal hosten | `elora-client` | „Server starten“ aus dem Client (siehe D-M3-06), dann automatisch verbinden | Manuell |
-| M3.9 ✅ | Debug & Messwerte | `elora-client` | Panel: Ping, Paketverlust, Bandbreite, Vorhersage-Ticks, Korrekturen; Netzwerk-Simulator-Regler | Sichtprüfung |
-| M3.10 ✅ | Abnahme | – | 2–8 Spieler im LAN, Test mit 100 ms simuliertem Ping | Deine Abnahme |
+| M3.1 ✅ | Serialization | `elora-protocol` | Bit/byte packer with variable-length integers, messages (input, snapshot, events, connection), version number | Unit tests: round trip, malformed packets are rejected |
+| M3.2 ✅ | Transport | `elora-net` | UDP socket, connection setup with token (against spoofed senders), keepalive, timeout, disconnect with reason; reliable and unreliable channels (sequence, ack, resend), splitting of large messages | Tests over a simulated link with loss and reordering |
+| M3.3 ✅ | Network simulator | `elora-net` | Adjustable ping, jitter, packet loss, reordering, inserted between socket and transport | Tests; sliders in the debug panel |
+| M3.4 ✅ | Snapshots | `elora-protocol` | Full world snapshot (characters, projectiles, lasers, pickups, player infos), **delta against the last acknowledged snapshot**, CRC | Tests: delta round trip bit-identical, size measurement |
+| M3.5 ✅ | Server | `apps/elora-server` | Dedicated server without graphics: load map, add/remove players, apply inputs per tick, send snapshots, report input timing back; configuration via file/command line | Headless integration test: server + 2 test clients |
+| M3.6 ✅ | Client: connection & interpolation | `elora-client` | Connect via IP:port, receive snapshots, interpolate other characters and objects between snapshots | Manual on LAN |
+| M3.7 ✅ | Client: prediction | `elora-client` | Buffer inputs and send them with a target tick, regulate prediction time (like `INPUTTIMING`), simulate forward from the snapshot, correction on divergence (see D-M3-03) | Test: prediction = server on a lossless link |
+| M3.8 ✅ | Local hosting | `elora-client` | "Start server" from the client (see D-M3-06), then connect automatically | Manual |
+| M3.9 ✅ | Debug & metrics | `elora-client` | Panel: ping, packet loss, bandwidth, prediction ticks, corrections; network simulator sliders | Visual check |
+| M3.10 ✅ | Acceptance | – | 2–8 players on LAN, test with 100 ms simulated ping | Your acceptance |
 
-## Technische Festlegungen (Vorschlag)
+## Technical Specifications (Proposal)
 
-- **Keine Async-Laufzeit:** `std::net::UdpSocket` (nicht blockierend) im eigenen Netzwerk-Thread, Kanäle zur Spiellogik. Einfach, gut testbar und für ein 50-TPS-Spiel ausreichend.
-- **Transport und Protokoll sind getrennt:** `elora-net` weiß nichts vom Spiel (Bytes rein, Bytes raus). `elora-protocol` kennt die Nachrichten und Snapshots, aber keine Sockets.
-- **Transport testbar ohne echtes Netz:** Die Socket-Schicht ist austauschbar. Tests laufen über eine simulierte Leitung im Speicher.
-- **Simulation bleibt unverändert:** Server und Client-Vorhersage benutzen denselben `World::step`. Für die Vorhersage bekommt `elora-sim` die Möglichkeit, einen Welt-Zustand aus einem Snapshot zu übernehmen.
-- **Sandbox bleibt:** Ohne Verbindung läuft der Client weiter lokal wie bisher (für Tuning, Dummies und Aufzeichnungen).
-- **Spielregeln:** Der Server spielt in M3 „frei für alle“ ohne Punkte, die Regeln folgen in M4.
+- **No async runtime:** `std::net::UdpSocket` (non-blocking) in a dedicated network thread, channels to the game logic. Simple, easy to test and sufficient for a 50 TPS game.
+- **Transport and protocol are separate:** `elora-net` knows nothing about the game (bytes in, bytes out). `elora-protocol` knows the messages and snapshots, but no sockets.
+- **Transport testable without a real network:** The socket layer is swappable. Tests run over a simulated in-memory link.
+- **Simulation stays unchanged:** Server and client prediction use the same `World::step`. For prediction, `elora-sim` gains the ability to adopt a world state from a snapshot.
+- **Sandbox stays:** Without a connection, the client keeps running locally as before (for tuning, dummies and recordings).
+- **Game rules:** In M3 the server plays "free for all" without scoring; the rules follow in M4.
 
-## Entscheidungen zu M3
+## Decisions for M3
 
-| # | Frage | Original-Verhalten (0.7) |
+| # | Question | Original behavior (0.7) |
 |---|---|---|
-| D-M3-01 → E-059 | Maximale Spieler pro Server | Standard 8, technisch bis 64 |
-| D-M3-02 → E-059 | Snapshot-Rate | 25 Hz (jeder 2. Tick), 50 Hz als LAN-Option |
-| D-M3-03 → E-057 | Umfang der Vorhersage | nur eigene Bewegung/Hook; andere interpoliert; Waffen nicht vorhergesagt |
-| D-M3-04 → E-058 | Lag-Kompensation für Treffer | keine |
-| D-M3-05 → E-061/E-062 | Verschlüsselung / Schutz | Token-Handshake, keine Verschlüsselung |
-| D-M3-06 → E-060 | Lokal hosten | Server als eigener Prozess, der Client startet ihn |
-| D-M3-07 → E-063 | Kompression | Huffman mit fester Tabelle + Delta |
+| D-M3-01 → E-059 | Maximum players per server | Default 8, technically up to 64 |
+| D-M3-02 → E-059 | Snapshot rate | 25 Hz (every 2nd tick), 50 Hz as a LAN option |
+| D-M3-03 → E-057 | Scope of prediction | own movement/hook only; others interpolated; weapons not predicted |
+| D-M3-04 → E-058 | Lag compensation for hits | none |
+| D-M3-05 → E-061/E-062 | Encryption / protection | Token handshake, no encryption |
+| D-M3-06 → E-060 | Local hosting | Server as a separate process started by the client |
+| D-M3-07 → E-063 | Compression | Huffman with a fixed table + delta |
 
-## Ausarbeitung der Entscheidungen
+## Elaboration of the Decisions
 
-### Vorhersage der eigenen Waffen (E-057)
+### Prediction of Own Weapons (E-057)
 
-Der Client baut aus jedem Snapshot eine lokale Welt und rechnet sie mit den eigenen, noch nicht bestätigten Eingaben bis zum Vorhersage-Tick vorwärts – mit demselben `World::step` wie der Server. In dieser **Vorhersage-Welt**:
-- wirken Kräfte (Knockback, Rocket-Jump), aber **kein Schaden, kein Tod, keine Pickups** – das entscheidet allein der Server;
-- andere Figuren bekommen **keine Eingaben** (wie `Tick(false)` im Original: Laufrichtung bleibt, kein neuer Sprung/Hook);
-- eigene Projektile und Laserstrahlen werden aus der Vorhersage gezeichnet, fremde aus den interpolierten Snapshots.
+From each snapshot, the client builds a local world and simulates it forward with its own not-yet-acknowledged inputs up to the prediction tick – using the same `World::step` as the server. In this **prediction world**:
+- forces apply (knockback, rocket jump), but **no damage, no death, no pickups** – those are decided by the server alone;
+- other characters get **no inputs** (like `Tick(false)` in the original: walking direction is kept, no new jump/hook);
+- own projectiles and laser beams are drawn from the prediction, other players' from the interpolated snapshots.
 
-### Verschlüsselung (E-061, E-062)
+### Encryption (E-061, E-062)
 
-- Ablauf: Token-Anfrage (auf 512 Byte aufgefüllt, gegen Verstärkungsangriffe) → Token (an Absenderadresse gebunden) → Noise-Handshake `Noise_XX_25519_ChaChaPoly_BLAKE2s` → verschlüsselte Pakete mit expliziter Paketnummer als Nonce (UDP-tauglich, Wiedereinspiel-Schutz über Fenster).
-- Der Server hat einen dauerhaften Schlüssel (Datei neben der Server-Konfiguration). Der Client speichert bekannte Server-Schlüssel (`known_servers.toml`) und warnt bei Änderung.
+- Flow: token request (padded to 512 bytes, against amplification attacks) → token (bound to the sender address) → Noise handshake `Noise_XX_25519_ChaChaPoly_BLAKE2s` → encrypted packets with an explicit packet number as nonce (UDP-friendly, replay protection via a window).
+- The server has a persistent key (file next to the server configuration). The client stores known server keys (`known_servers.toml`) and warns when one changes.
 
-### Kompression (E-063)
+### Compression (E-063)
 
-Das Original bildet pro Objekt die Differenz aller Ganzzahlen zum Vorgänger, schreibt sie mit variabler Länge und komprimiert das Paket mit Huffman (feste Tabelle). Besser ist:
-1. **Feldweises Delta mit Änderungsmaske:** Pro Objekt ein Bit pro Feld „geändert?“; unveränderte Felder kosten 1 Bit statt ≥ 1 Byte. Die meisten Felder (Leben, Waffe, Hook-Zustand) ändern sich selten.
-2. **Kompakte Zahlen:** geänderte Felder als Differenz, ZigZag + variable Länge.
-3. **Statischer Huffman** darüber, mit einer Tabelle, die auf **unserem** Verkehr trainiert ist (Werkzeug in `xtask`), statt der Tabelle des Originals.
+The original computes, per object, the difference of all integers to the previous one, writes them with variable length and compresses the packet with Huffman (fixed table). Better is:
+1. **Per-field delta with a change mask:** per object one bit per field "changed?"; unchanged fields cost 1 bit instead of ≥ 1 byte. Most fields (health, weapon, hook state) rarely change.
+2. **Compact numbers:** changed fields as a difference, ZigZag + variable length.
+3. **Static Huffman** on top, with a table trained on **our** traffic (tool in `xtask`) instead of the original's table.
 
-Stufe 1 + 2 übertreffen erfahrungsgemäß „Delta + Huffman“ des Originals bereits; Stufe 3 holt den Rest. Gemessen und dokumentiert wird in M3.9 (Bytes pro Snapshot bei 8/16/64 Spielern).
+In experience, stages 1 + 2 already beat the original's "delta + Huffman"; stage 3 gets the rest. Measured and documented in M3.9 (bytes per snapshot at 8/16/64 players).
 
-## Umsetzungsnotizen (Stand 2026-09-29)
+## Implementation Notes (as of 2026-09-29)
 
-### Bedienung
+### Usage
 
-- **Server starten:** `cargo run --bin elora-server -- [--port 8303] [--map maps/sandbox.emap.toml] [--max-clients 8] [--high-bandwidth] [--name "…"]` oder mit `--config server.toml`. Beenden: `quit` eingeben oder Strg+C.
-- **Verbinden:** im Panel unter *Netzwerk* Adresse eintragen → *Verbinden*, oder `cargo run --bin elora -- --connect 127.0.0.1:8303`. *Trennen* führt zurück in die Sandbox.
-- **Lokal hosten (E-060):** *Server einrichten …* → Name, Port, Karte, max. Spieler, 50 Hz, „weiterlaufen lassen“ → *Starten und verbinden*. Die Einstellungen landen in `server.toml`; der Client startet `elora-server` als eigenen Prozess.
-- **TOFU (E-062):** Beim ersten Verbinden speichert der Client den Server-Schlüssel in `known_servers.toml`. Ändert er sich, erscheint eine Warnung mit beiden Fingerabdrücken und der Wahl „Neuem Schlüssel vertrauen“.
-- **Simulator (M3.3/M3.9):** Im Online-Panel Verzögerung, Jitter und Verlust für ausgehende Pakete einstellen.
+- **Start the server:** `cargo run --bin elora-server -- [--port 8303] [--map maps/sandbox.emap.toml] [--max-clients 8] [--high-bandwidth] [--name "…"]` or with `--config server.toml`. Quit: type `quit` or Ctrl+C.
+- **Connect:** in the panel under *Network*, enter the address → *Connect*, or `cargo run --bin elora -- --connect 127.0.0.1:8303`. *Disconnect* returns to the sandbox.
+- **Local hosting (E-060):** *Set up server …* → name, port, map, max. players, 50 Hz, "keep running" → *Start and connect*. The settings are stored in `server.toml`; the client starts `elora-server` as a separate process.
+- **TOFU (E-062):** On the first connection, the client stores the server key in `known_servers.toml`. If it changes, a warning appears with both fingerprints and the choice "Trust new key".
+- **Simulator (M3.3/M3.9):** In the online panel, set delay, jitter and loss for outgoing packets.
 
-### Messwerte
+### Measurements
 
-Vorhersage im Integrationstest (Server + Client im simulierten Netz, 100 ms Ping):
+Prediction in the integration test (server + client in a simulated network, 100 ms ping):
 
-| Größe | Wert |
+| Quantity | Value |
 |---|---|
-| Vorhergesagte Ticks | 7 |
-| Vorlauf der Eingaben | ≈ 125 ms |
-| Restzeit der Eingaben beim Server | ≈ 15–25 ms (Ziel: > 10 ms) |
-| Abweichung Vorhersage ↔ Server (verlustfrei) | **0** Einheiten |
-| Abweichung bei 10 % Verlust + 30 ms Jitter | in 1 von 40 Stichproben > 0 (redundante Eingaben fangen fast alles ab) |
+| Predicted ticks | 7 |
+| Input lead | ≈ 125 ms |
+| Remaining input time at the server | ≈ 15–25 ms (target: > 10 ms) |
+| Deviation prediction ↔ server (lossless) | **0** units |
+| Deviation at 10 % loss + 30 ms jitter | > 0 in 1 of 40 samples (redundant inputs catch almost everything) |
 
-Größen (`cargo xtask net-stats`, synthetischer Verkehr, Delta gegen 3 Snapshots ältere Basis, alle Spieler laufen/springen/hooken/schießen):
+Sizes (`cargo xtask net-stats`, synthetic traffic, delta against a base 3 snapshots older, all players run/jump/hook/shoot):
 
-| Spieler | Snapshot wie Original (Delta aller Felder + Huffman) | Elora roh | Elora + Huffman | vs. Original | Eingabe roh | Eingabe + Huffman | Server→Client pro Client (25 Hz) |
+| Players | Snapshot like original (delta of all fields + Huffman) | Elora raw | Elora + Huffman | vs. original | Input raw | Input + Huffman | Server→client per client (25 Hz) |
 |---|---|---|---|---|---|---|---|
-| 8 | 198 B | 209 B | 188 B | −5 % | 48 B | 31 B | 5,7 kB/s |
-| 16 | 341 B | 357 B | 322 B | −5 % | 48 B | 31 B | 9,1 kB/s |
-| 64 | 1169 B | 1224 B | 1106 B | −5 % | 48 B | 31 B | 28,6 kB/s |
+| 8 | 198 B | 209 B | 188 B | −5 % | 48 B | 31 B | 5.7 kB/s |
+| 16 | 341 B | 357 B | 322 B | −5 % | 48 B | 31 B | 9.1 kB/s |
+| 64 | 1169 B | 1224 B | 1106 B | −5 % | 48 B | 31 B | 28.6 kB/s |
 
-**Einordnung zu E-063:** Das feldweise Delta mit Änderungsmaske plus trainiertem Huffman ist **messbar, aber nur leicht (≈ 5 %) besser** als das Verfahren des Originals mit derselben Tabelle – Huffman macht die vielen Null-Differenzen des Originals bereits billig, und bei vielen aktiven Spielern ändert sich fast jedes Objekt in jedem Snapshot. Deutlich mehr bringen würde ein Delta gegen eine **vorausberechnete** Basis (Position + Geschwindigkeit fortgeschrieben); das ist als mögliche Optimierung vermerkt, für Release 1 aber nicht nötig: selbst 64 Spieler brauchen < 30 kB/s pro Client. Echte Spiele im Sandbox-Leerlauf liegen bei ≈ 30–50 B pro Snapshot.
+**Assessment regarding E-063:** The per-field delta with change mask plus trained Huffman is **measurably, but only slightly (≈ 5 %) better** than the original's method with the same table – Huffman already makes the original's many zero differences cheap, and with many active players almost every object changes in every snapshot. A delta against a **predicted** base (position + velocity extrapolated) would gain considerably more; this is noted as a possible optimization but not needed for Release 1: even 64 players need < 30 kB/s per client. Real games in sandbox idle are at ≈ 30–50 B per snapshot.
 
-### Grenzen und offene Punkte
+### Limitations and Open Points
 
-- **Waffen-Vorhersage (E-057):** eigene Schüsse, Laserstrahlen, Hammer-Effekte und Rückstoß erscheinen sofort; Schaden, Tod und Pickups kommen vom Server.
-- **Einrichten-Dialog und Schlüssel-Warnung** sind gebaut, aber von mir nicht per Maus durchgeklickt (nur Start per `--connect` und der Server-Start per Kommandozeile wurden live getestet).
-- **Server-Regeln:** frei für alle ohne Punkte (M4).
-- **Karte:** der Server überträgt das Textformat; das Release-Format folgt in M6.
-
+- **Weapon prediction (E-057):** own shots, laser beams, hammer effects and recoil appear immediately; damage, death and pickups come from the server.
+- **Setup dialog and key warning** are built, but I have not clicked through them with the mouse (only starting via `--connect` and starting the server from the command line were tested live).
+- **Server rules:** free for all without scoring (M4).
+- **Map:** the server transmits the text format; the release format follows in M6.

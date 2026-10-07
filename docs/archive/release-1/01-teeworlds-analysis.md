@@ -1,207 +1,207 @@
-# Analyse: Teeworlds
+# Analysis: Teeworlds
 
-Stand: 2026-09-25 · Quellen: teeworlds.com, Quellcode `github.com/teeworlds/teeworlds` (`src/game/tuning.h`, `datasrc/content.py`)
+Status: 2026-09-25 · Sources: teeworlds.com, source code `github.com/teeworlds/teeworlds` (`src/game/tuning.h`, `datasrc/content.py`)
 
-Ziel dieses Dokuments: festhalten, **was** Teeworlds ausmacht, damit der Klon das gleiche Spielgefühl erreicht. Entscheidungen, wie wir etwas umsetzen, stehen in [`02-decisions.md`](02-decisions.md).
+Purpose of this document: record **what** defines Teeworlds, so the clone reaches the same game feel. Decisions on how we implement things are in [`02-decisions.md`](02-decisions.md).
 
 ---
 
-## 1. Überblick
+## 1. Overview
 
-| Merkmal | Teeworlds |
+| Property | Teeworlds |
 |---|---|
-| Genre | 2D-Side-Scroller-Shooter, Multiplayer (Arena) |
-| Lizenz | Open Source (Code: zlib-ähnliche Teeworlds-Lizenz; Assets: CC-BY-SA) |
-| Sprache / Technik | C++, SDL2, OpenGL, eigenes UDP-Netzwerkprotokoll |
-| Letzte Version | 0.7.5 (2020). Nachfolger-Community: **DDNet** (basiert auf 0.6-Protokoll) |
-| Spieler pro Server | typischerweise 8–16 (max. 16 in Vanilla) |
-| Spielfigur | „Tee“ – runder Ball mit Augen und Füßen, Skins/Farben anpassbar |
+| Genre | 2D side-scroller shooter, multiplayer (arena) |
+| License | Open source (code: zlib-like Teeworlds license; assets: CC-BY-SA) |
+| Language / technology | C++, SDL2, OpenGL, custom UDP network protocol |
+| Latest version | 0.7.5 (2020). Successor community: **DDNet** (based on the 0.6 protocol) |
+| Players per server | typically 8–16 (max. 16 in vanilla) |
+| Player character | “Tee” – round ball with eyes and feet, customizable skins/colors |
 
-## 2. Was das „Feeling“ ausmacht
+## 2. What makes the “feeling”
 
-Das Spielgefühl entsteht fast vollständig aus diesen Punkten – sie müssen im Klon **exakt** stimmen:
+The game feel comes almost entirely from these points – they must be **exactly** right in the clone:
 
-1. **Deterministische Tick-Physik mit 50 Ticks/s.** Alle Werte (Geschwindigkeit, Beschleunigung, Gravitation) sind pro Tick definiert. Rendering interpoliert zwischen Ticks.
-2. **Der Enterhaken (Hook).** Kernmechanik: an Wände hängen, schwingen, Gegner heranziehen. Er bestimmt Bewegung, Taktik und Skill-Ceiling.
-3. **Hohe Luftkontrolle + Doppelsprung.** Man kann in der Luft stark lenken, hat einen zweiten Sprung.
-4. **Momentum.** Explosionen (Granate, Hammer) schleudern Spieler, „Rocket-Jumps“ mit Granaten sind möglich.
-5. **Schnelle Time-to-Kill, schneller Respawn.** 10 HP + 10 Rüstung, Runden sind kurz und hektisch.
-6. **Client-seitige Vorhersage (Prediction).** Eigene Bewegung fühlt sich trotz Ping sofort an.
-7. **Präzises Tile-Collision-System** mit 32px-Tiles.
-8. **Audio-visuelles Feedback:** Cartoon-Stil, Partikel, Screen-Feedback, Emotes, Treffer-Sounds.
+1. **Deterministic tick physics at 50 ticks/s.** All values (velocity, acceleration, gravity) are defined per tick. Rendering interpolates between ticks.
+2. **The grappling hook.** Core mechanic: hang on walls, swing, pull opponents in. It shapes movement, tactics and the skill ceiling.
+3. **Strong air control + double jump.** You can steer strongly in the air and have a second jump.
+4. **Momentum.** Explosions (grenade, hammer) fling players; “rocket jumps” with grenades are possible.
+5. **Fast time-to-kill, fast respawn.** 10 HP + 10 armor; rounds are short and hectic.
+6. **Client-side prediction.** Your own movement feels instant despite ping.
+7. **Precise tile collision system** with 32px tiles.
+8. **Audio-visual feedback:** cartoon style, particles, screen feedback, emotes, hit sounds.
 
-## 3. Welt & Kollision
+## 3. World & collision
 
-- Karte = Raster aus **Tiles à 32×32 Einheiten**.
-- Tile-Arten in Vanilla: **Luft**, **Solid** (Wand), **Death** (tötet), **Unhookable** (Wand, an der der Hook nicht greift).
-- Spieler-Hitbox: **28×28** (physische Größe `PhysSize = 28`), gezeichnet größer (~64px).
-- Bewegung pro Tick mit Sub-Stepping gegen Tiles (`MoveBox`), damit schnelle Objekte nicht durch Wände tunneln.
-- Entities-Layer: Spawnpunkte (neutral/rot/blau), Flaggen-Stände, Pickups (Herz, Rüstung, Waffen, Ninja).
+- Map = grid of **tiles of 32×32 units**.
+- Tile types in vanilla: **air**, **solid** (wall), **death** (kills), **unhookable** (wall the hook does not grab).
+- Player hitbox: **28×28** (physical size `PhysSize = 28`), drawn larger (~64px).
+- Per-tick movement with sub-stepping against tiles (`MoveBox`), so fast objects do not tunnel through walls.
+- Entities layer: spawn points (neutral/red/blue), flag stands, pickups (heart, armor, weapons, ninja).
 
-## 4. Bewegungsphysik (Default-Tuning, Einheiten/Tick bei 50 TPS)
+## 4. Movement physics (default tuning, units/tick at 50 TPS)
 
-| Parameter | Wert | Bedeutung |
+| Parameter | Value | Meaning |
 |---|---|---|
-| `GroundControlSpeed` | 10.0 | Max. Laufgeschwindigkeit am Boden |
-| `GroundControlAccel` | 100/50 = 2.0 | Beschleunigung am Boden |
-| `GroundFriction` | 0.5 | Reibung am Boden ohne Input |
-| `GroundJumpImpulse` | 13.2 | Sprungimpuls vom Boden |
-| `AirJumpImpulse` | 12.0 | Doppelsprung-Impuls |
-| `AirControlSpeed` | 250/50 = 5.0 | Max. Luftlenk-Geschwindigkeit |
-| `AirControlAccel` | 1.5 | Luftbeschleunigung |
-| `AirFriction` | 0.95 | Luftreibung |
-| `Gravity` | 0.5 | Gravitation pro Tick |
-| `VelrampStart` | 550 | ab dieser Geschw. wird Bewegung gedämpft |
-| `VelrampRange` | 2000 | Bereich der Dämpfung |
-| `VelrampCurvature` | 1.4 | Kurvenform der Dämpfung |
-| `PlayerCollision` | 1 | Spieler kollidieren miteinander |
-| `PlayerHooking` | 1 | Spieler können sich gegenseitig hooken |
+| `GroundControlSpeed` | 10.0 | Max. running speed on the ground |
+| `GroundControlAccel` | 100/50 = 2.0 | Acceleration on the ground |
+| `GroundFriction` | 0.5 | Ground friction without input |
+| `GroundJumpImpulse` | 13.2 | Jump impulse from the ground |
+| `AirJumpImpulse` | 12.0 | Double jump impulse |
+| `AirControlSpeed` | 250/50 = 5.0 | Max. air steering speed |
+| `AirControlAccel` | 1.5 | Air acceleration |
+| `AirFriction` | 0.95 | Air friction |
+| `Gravity` | 0.5 | Gravity per tick |
+| `VelrampStart` | 550 | above this speed, movement is damped |
+| `VelrampRange` | 2000 | Range of the damping |
+| `VelrampCurvature` | 1.4 | Curve shape of the damping |
+| `PlayerCollision` | 1 | Players collide with each other |
+| `PlayerHooking` | 1 | Players can hook each other |
 
-Weitere Details:
-- **Doppelsprung:** ein Luftsprung, wird bei Bodenkontakt zurückgesetzt. Visuell sichtbar (Füße).
-- **Velocity Ramp:** bei sehr hohen Geschwindigkeiten wird die effektive Bewegung nichtlinear reduziert – verhindert unkontrollierbare Geschwindigkeiten.
-- Werte werden **quantisiert** (Positionen/Geschwindigkeiten auf Ganzzahlen bzw. feste Genauigkeit gerundet), damit Server und Client deterministisch gleich rechnen.
+Further details:
+- **Double jump:** one air jump, reset on ground contact. Visible (feet).
+- **Velocity ramp:** at very high speeds, effective movement is reduced non-linearly – prevents uncontrollable speeds.
+- Values are **quantized** (positions/velocities rounded to integers or a fixed precision), so server and client compute deterministically the same.
 
 ## 5. Hook
 
-| Parameter | Wert |
+| Parameter | Value |
 |---|---|
-| `HookLength` | 380 (max. Reichweite) |
-| `HookFireSpeed` | 80 / Tick |
+| `HookLength` | 380 (max. range) |
+| `HookFireSpeed` | 80 / tick |
 | `HookDragAccel` | 3.0 |
 | `HookDragSpeed` | 15.0 |
 
-Zustände: `Idle → Flying → Grabbed (an Wand oder Spieler) → Retracted`.
-- Hook fliegt in Zielrichtung, greift an Solid-Tiles (nicht an Unhookable) oder an Spielern.
-- Gegriffen: Spieler wird zur Hook-Position gezogen (Beschleunigung bis `HookDragSpeed`).
-- Spieler-Hook: zieht **beide** Spieler zueinander (Kraft auf beide verteilt).
-- Player-Hook hat ein Zeitlimit: `SERVER_TICK_SPEED + SERVER_TICK_SPEED/5` = 60 Ticks = **1,2 s**, danach löst er sich.
-- Kraftverteilung beim Player-Hook: der gehookte Spieler bekommt `Dir * Accel * 1.5`, der hookende weniger.
-- Loslassen der Hook-Taste = Hook zurück.
-- **Eigenheit Reichweite:** In dem Tick, in dem der Hook die `HookLength` überschreitet, wird er gekappt und geht in `Retract` – eine Wand an diesem letzten, gekappten Stück wird **nicht** gegriffen (Spieler schon). Effektive Wand-Reichweite = letzter voller Flugschritt: `PHYS_SIZE·1,5 + n·HookFireSpeed ≤ HookLength` → Original **362** (42 + 4·80) statt 380. Außerdem bleibt die sichtbare Hook-Position dann auf dem letzten Flugschritt.
-- Hook-Zug an der Wand: nach oben voll, nach unten nur 30 %; horizontal 95 % in Laufrichtung, sonst 75 %. Kein Zug unter 46 Einheiten Abstand.
+States: `Idle → Flying → Grabbed (an Wand oder Spieler) → Retracted`.
+- The hook flies in the aim direction and grabs solid tiles (not unhookable ones) or players.
+- Grabbed: the player is pulled toward the hook position (acceleration up to `HookDragSpeed`).
+- Player hook: pulls **both** players toward each other (force split between both).
+- The player hook has a time limit: `SERVER_TICK_SPEED + SERVER_TICK_SPEED/5` = 60 ticks = **1.2 s**, after which it releases.
+- Force split on a player hook: the hooked player gets `Dir * Accel * 1.5`, the hooking player less.
+- Releasing the hook key = hook retracts.
+- **Range quirk:** In the tick in which the hook exceeds `HookLength`, it is clamped and goes to `Retract` – a wall on this last, clamped segment is **not** grabbed (players are). Effective wall range = last full flight step: `PHYS_SIZE·1,5 + n·HookFireSpeed ≤ HookLength` → original **362** (42 + 4·80) instead of 380. In addition, the visible hook position then stays at the last flight step.
+- Hook pull on a wall: upward full, downward only 30 %; horizontally 95 % in the running direction, otherwise 75 %. No pull below a distance of 46 units.
 
-## 6. Waffen
+## 6. Weapons
 
-Jeder Spieler hat immer **Hammer** und **Pistole**. Weitere Waffen per Pickup. Max. Munition 10.
+Every player always has **hammer** and **pistol**. Further weapons via pickup. Max. ammo 10.
 
-| Waffe | Schaden | Feuerrate (ms) | Munition | Besonderheit |
+| Weapon | Damage | Fire rate (ms) | Ammo | Special |
 |---|---|---|---|---|
-| Hammer | 3 | 125 | ∞ | Nahkampf, starker Knockback (schleudert Gegner weg) |
-| Pistole (Gun) | 1 | 125 | 10, Regeneration alle 500 ms | Projektil, Speed 2200, Kurve 1.25, Lebenszeit 2 s |
-| Shotgun | 1 pro Kugel | 500 | 10 | Mehrere Kugeln mit Streuung, Speed 2750, SpeedDiff 0.8, Lebenszeit 0.2 s, Knockback |
-| Granatwerfer | bis 6 (Explosion) | 500 | 10 | Ballistisch (Kurve 7.0), Speed 1000, Explosion mit Radius-Schaden und Knockback (Rocket-Jump) |
-| Laser (Rifle) | 5 | 800 | 10 | Hitscan, Reichweite 800, prallt 1× an Wänden ab (150 ms Verzögerung) |
-| Ninja | 9 | 800 | – | Power-Up (15 s), Dash-Angriff (200 ms, Velocity 50), ersetzt temporär andere Waffen |
+| Hammer | 3 | 125 | ∞ | Melee, strong knockback (flings opponents away) |
+| Pistol (gun) | 1 | 125 | 10, regenerates every 500 ms | Projectile, speed 2200, curvature 1.25, lifetime 2 s |
+| Shotgun | 1 per pellet | 500 | 10 | Multiple pellets with spread, speed 2750, SpeedDiff 0.8, lifetime 0.2 s, knockback |
+| Grenade launcher | up to 6 (explosion) | 500 | 10 | Ballistic (curvature 7.0), speed 1000, explosion with radius damage and knockback (rocket jump) |
+| Laser (rifle) | 5 | 800 | 10 | Hitscan, range 800, bounces off walls once (150 ms delay) |
+| Ninja | 9 | 800 | – | Power-up (15 s), dash attack (200 ms, velocity 50), temporarily replaces other weapons |
 
-- **Curvature** = Stärke der Flugbahn-Krümmung durch Gravitation.
-- **Explosion:** Radius 135, innerer Radius 48 (voller Schaden), `MaxForce` 12. Faktor fällt linear von 1 (≤ 48) auf 0 (135). Schaden = `(int)(Faktor · MaxDamage)`, Kraft = `Richtung · MaxForce · Faktor`.
-- **Hammer-Knockback:** `(0, -1) + normalize(Dir + (0, -1.1)) · 10` – schleudert immer leicht nach oben. Trifft nur bei freier Sichtlinie.
-- **Eigenschaden:** `max(1, Dmg / 2)` – für alle Waffen, vor Rüstungsberechnung.
-- **Pickups:** Respawn 15 s (Ninja 90 s, erstes Spawnen ebenfalls nach 90 s).
-- **Feuerlogik (`CCharacter::FireWeapon`):** Hammer und Pistole feuern nur pro Klick; Shotgun, Granate und Laser sind **Dauerfeuer**, solange die Taste gehalten wird. Ohne Munition: 125 ms Sperre + „Klick“-Sound. Feuerverzögerung (`Firedelay`) als Reload-Timer in Ticks. Waffenwechsel erst, wenn der Reload-Timer abgelaufen ist.
-- **Hammer:** Treffer-Mittelpunkt = Spieler + Zielrichtung · 21 (0,75 · 28), Radius 14 + 28 (Körper des Ziels) = 42. Nur bei freier Sichtlinie. **Nach einem Treffer** Sperre von **1/3 s** statt 125 ms. Knockback `(0,−1) + normalize(Dir + (0,−1,1)) · 10`.
-- **Projektile (Granate):** Position analytisch aus Startpunkt, Richtung (auf 0,01 gerundet), Speed und Curvature: `y = y0 + v·t + Curvature/10000 · t²` (t in s · Speed). Pro Tick Linien-Test gegen Wände und Spieler (Radius 6 + 28), **nie der eigene Schütze**. Granate explodiert bei Wand, Spieler oder Ablauf der Lebenszeit.
-- **Laser:** Sofort-Strahl der Länge `LaserReach`; an Wänden Abprall nach `LaserBounceDelay` ms, jeder Abschnitt verbraucht Reichweite. Trifft den ersten Spieler auf der Strecke (nie den Schützen). **Kein Knockback** (Kraft 0).
-- **Schaden (`TakeDamage`):** Kraft wird immer addiert (auch bei Friendly Fire). Eigenschaden `max(1, Dmg/2)`. Mit Rüstung: bei Dmg > 1 geht 1 Punkt auf HP, der Rest zuerst auf die Rüstung, Überschuss auf HP. HP ≤ 0 → Tod.
-- **Tod/Respawn:** Respawn frühestens nach 0,5 s; Spawnpunkt nach Abstand zu anderen Spielern gewählt.
-- **Pickups:** Aufnahme, wenn ein Spieler näher als 20 + 28 Einheiten ist. Herz/Schild +1 (nur wenn < 10). Waffe: volle Munition (10), nur wenn nicht vorhanden oder nicht voll.
-- **Startausrüstung im Original:** Hammer + Pistole (10 Schuss), aktive Waffe Pistole.
-- **Velocity Ramp:** `1 / Curvature^((v - Start) / Range)`.
-- Waffenwechsel per Mausrad / Zahlentasten; kurze Wechselzeit.
+- **Curvature** = strength of the trajectory bending due to gravity.
+- **Explosion:** radius 135, inner radius 48 (full damage), `MaxForce` 12. Factor falls linearly from 1 (≤ 48) to 0 (135). Damage = `(int)(Faktor · MaxDamage)`, force = `Richtung · MaxForce · Faktor`.
+- **Hammer knockback:** `(0, -1) + normalize(Dir + (0, -1.1)) · 10` – always flings slightly upward. Only hits with a clear line of sight.
+- **Self-damage:** `max(1, Dmg / 2)` – for all weapons, before the armor calculation.
+- **Pickups:** respawn 15 s (ninja 90 s, first spawn also after 90 s).
+- **Fire logic (`CCharacter::FireWeapon`):** hammer and pistol fire only per click; shotgun, grenade and laser are **automatic** while the button is held. Without ammo: 125 ms lockout + “click” sound. Fire delay (`Firedelay`) as a reload timer in ticks. Weapon switching only once the reload timer has expired.
+- **Hammer:** hit center = player + aim direction · 21 (0.75 · 28), radius 14 + 28 (target's body) = 42. Only with a clear line of sight. **After a hit**, lockout of **1/3 s** instead of 125 ms. Knockback `(0,−1) + normalize(Dir + (0,−1,1)) · 10`.
+- **Projectiles (grenade):** position computed analytically from start point, direction (rounded to 0.01), speed and curvature: `y = y0 + v·t + Curvature/10000 · t²` (t in s · speed). Per tick a line test against walls and players (radius 6 + 28), **never the own shooter**. The grenade explodes on a wall, a player or when its lifetime expires.
+- **Laser:** instant beam of length `LaserReach`; bounces off walls after `LaserBounceDelay` ms, every segment consumes range. Hits the first player along the path (never the shooter). **No knockback** (force 0).
+- **Damage (`TakeDamage`):** force is always added (even with friendly fire). Self-damage `max(1, Dmg/2)`. With armor: for Dmg > 1, 1 point goes to HP, the rest to armor first, the excess to HP. HP ≤ 0 → death.
+- **Death/respawn:** respawn no earlier than after 0.5 s; spawn point chosen by distance to other players.
+- **Pickups:** picked up when a player is closer than 20 + 28 units. Heart/shield +1 (only if < 10). Weapon: full ammo (10), only if not owned or not full.
+- **Starting equipment in the original:** hammer + pistol (10 shots), active weapon pistol.
+- **Velocity ramp:** `1 / Curvature^((v - Start) / Range)`.
+- Weapon switching via mouse wheel / number keys; short switch time.
 
-## 7. Gesundheit, Pickups, Tod
+## 7. Health, pickups, death
 
-- **10 Herzen (HP)**, **10 Schilde (Rüstung)**. Rüstung absorbiert Schaden vor HP.
-- Pickups: Herz (+1 HP), Schild (+1 Rüstung), Waffen (voll Munition), Ninja. Pickups respawnen nach fester Zeit.
-- Eigenschaden durch eigene Granate (reduziert).
-- Tod → kurzer Respawn-Delay (~0,5 s), Spawn an zufälligem/weitesten Spawnpunkt.
-- Selbstmord (`kill`) möglich.
+- **10 hearts (HP)**, **10 shields (armor)**. Armor absorbs damage before HP.
+- Pickups: heart (+1 HP), shield (+1 armor), weapons (full ammo), ninja. Pickups respawn after a fixed time.
+- Self-damage from your own grenade (reduced).
+- Death → short respawn delay (~0.5 s), spawn at a random/farthest spawn point.
+- Suicide (`kill`) possible.
 
-## 8. Spielmodi (Vanilla)
+## 8. Game modes (vanilla)
 
-| Modus | Beschreibung |
+| Mode | Description |
 |---|---|
-| **DM** | Deathmatch, jeder gegen jeden |
-| **TDM** | Team-Deathmatch, Rot vs. Blau |
-| **CTF** | Capture the Flag – Flagge des Gegners zur eigenen Basis bringen |
-| **LMS** (0.7) | Last Man Standing – kein Respawn in der Runde, Letzter gewinnt |
-| **LTS** (0.7) | Last Team Standing – wie LMS mit Teams |
+| **DM** | Deathmatch, free for all |
+| **TDM** | Team deathmatch, red vs. blue |
+| **CTF** | Capture the flag – bring the enemy flag to your own base |
+| **LMS** (0.7) | Last man standing – no respawn within the round, the last one wins |
+| **LTS** (0.7) | Last team standing – like LMS with teams |
 
-Community-Modi (nicht Vanilla): **DDRace** (kooperatives Parkour, Freeze-Tiles), **Instagib** (Varianten iDM/iTDM/iCTF: nur Laser, ein Treffer tötet; ob in 0.7 Vanilla enthalten, ist noch zu prüfen), zCatch, Race.
+Community modes (not vanilla): **DDRace** (cooperative parkour, freeze tiles), **Instagib** (variants iDM/iTDM/iCTF: laser only, one hit kills; whether it is included in 0.7 vanilla is still to be checked), zCatch, Race.
 
-**Regeln im Detail (Quellcode `gamecontroller.cpp`, `gamemodes/*.cpp`, `entities/flag.cpp`, 0.7):**
+**Rules in detail (source code `gamecontroller.cpp`, `gamemodes/*.cpp`, `entities/flag.cpp`, 0.7):**
 
-- **Punkte:** Kill +1; Selbstmord/Todes-Tile −1; Teamkill −1 (nur Teammodi). TDM: Teampunkt ± wie Spielerpunkt.
-- **Siegbedingung:** `sv_scorelimit` (Standard **20**, 0 = aus) oder `sv_timelimit` (Minuten, Standard 0 = aus). Bei Gleichstand am Limit: **Sudden Death** (nächster Punkt entscheidet).
-- **Spielzustände:** Aufwärmen (`sv_warmup`, Standard 0 s; „Spiel-Warmup“ unbegrenzt, solange zu wenige Spieler: DM < 2, Teams: ein Team leer), Countdown (`sv_countdown`, Standard 0; Survival-Modi immer 3 s), laufend, pausiert, **Rundenende 5 s**, **Match-Ende 10 s**, dann nächstes Match (Teams tauschen: `sv_match_swap 1`; Kartenrotation `sv_maprotation`, `sv_matches_per_map 1`).
-- **Friendly Fire:** `sv_teamdamage 0` – kein Schaden an Teammitgliedern, **der Rückstoß wirkt trotzdem**; Eigenschaden bleibt.
-- **Respawn:** TDM mindestens **3 s** (`sv_respawn_delay_tdm`); nach `kill` (Selbstmord-Befehl) 3 s; sonst 0,5 s (siehe §7).
-- **Teams:** automatischer Ausgleich nach `sv_teambalance_time` (1 min) bei ungleichen Teams; Zuschauer möglich.
-- **CTF:** Flagge (Radius 14) wird von einem Gegner aufgenommen, wenn er sie berührt (14 + 28) und freie Sichtlinie hat. **Eroberung:** Träger berührt die eigene Flagge, während diese am Stand ist → Team +1 Eroberung, Träger +5 Punkte. Stirbt der Träger, fällt die Flagge (Gravitation, prallt mit 0,5 ab; Mörder +1). Eigenes Team berührt die fallengelassene Flagge → zurück zum Stand (+1). Ohne Berührung nach **30 s** oder auf Todes-Tile zurück. Aufnehmen vom Stand +1 Punkt.
-- **LMS/LTS:** kein Respawn während der Runde; Startausrüstung **+5 Rüstung, Shotgun, Granate (10), Laser (5)**; Runde endet, wenn ≤ 1 Spieler bzw. 1 Team übrig; Sieger +1. Zeitlimit: alle Überlebenden +1.
-- **Chat:** allgemein und Team-Chat, Spam-Schutz.
+- **Points:** kill +1; suicide/death tile −1; teamkill −1 (team modes only). TDM: team point ± same as player point.
+- **Win condition:** `sv_scorelimit` (default **20**, 0 = off) or `sv_timelimit` (minutes, default 0 = off). On a tie at the limit: **sudden death** (next point decides).
+- **Game states:** warmup (`sv_warmup`, default 0 s; “game warmup” unlimited while there are too few players: DM < 2, teams: one team empty), countdown (`sv_countdown`, default 0; survival modes always 3 s), running, paused, **round end 5 s**, **match end 10 s**, then the next match (teams swap: `sv_match_swap 1`; map rotation `sv_maprotation`, `sv_matches_per_map 1`).
+- **Friendly fire:** `sv_teamdamage 0` – no damage to team members, **knockback still applies**; self-damage remains.
+- **Respawn:** TDM at least **3 s** (`sv_respawn_delay_tdm`); after `kill` (suicide command) 3 s; otherwise 0.5 s (see §7).
+- **Teams:** automatic balancing after `sv_teambalance_time` (1 min) with unequal teams; spectators possible.
+- **CTF:** the flag (radius 14) is picked up by an opponent when they touch it (14 + 28) and have a clear line of sight. **Capture:** the carrier touches their own flag while it is at its stand → team +1 capture, carrier +5 points. If the carrier dies, the flag drops (gravity, bounces with 0.5; killer +1). The own team touching the dropped flag → back to the stand (+1). Without a touch, back after **30 s** or on a death tile. Taking it from the stand +1 point.
+- **LMS/LTS:** no respawn during the round; starting equipment **+5 armor, shotgun, grenade (10), laser (5)**; the round ends when ≤ 1 player or 1 team is left; winner +1. Time limit: all survivors +1.
+- **Chat:** general and team chat, spam protection.
 
-## 9. Steuerung (Default)
+## 9. Controls (default)
 
-| Aktion | Taste |
+| Action | Key |
 |---|---|
-| Laufen | A / D |
-| Springen / Doppelsprung | Leertaste |
-| Zielen | Maus (freie 360°-Zielrichtung) |
-| Schießen | Linke Maustaste |
-| Hook | Rechte Maustaste (halten) |
-| Waffe wechseln | Mausrad / 1–5 |
-| Emote | E (Rad) / Tastenkürzel |
-| Chat / Team-Chat | T / Y |
+| Move | A / D |
+| Jump / double jump | Space |
+| Aim | Mouse (free 360° aim direction) |
+| Fire | Left mouse button |
+| Hook | Right mouse button (hold) |
+| Switch weapon | Mouse wheel / 1–5 |
+| Emote | E (wheel) / shortcut |
+| Chat / team chat | T / Y |
 | Scoreboard | Tab |
-| Kill | K (konfigurierbar) |
+| Kill | K (configurable) |
 
-**Kamera und Maus (0.7, Quellcode `camera.cpp`/`controls.cpp`):**
-- **Statische Kamera (Standard, `cl_dynamic_camera 0`):** Kamera-Mitte = exakt die (interpolierte) Spielerposition.
-- **Dynamische Kamera:** Versatz Richtung Maus = `max(Mausdistanz − 300, 0) · 0,6`.
-- **Maus:** relativ (Cursor gefangen), rohe Maus-Deltas × `inp_mousesens/100` werden **direkt in Welteinheiten** addiert. Das Fadenkreuz ist auf **400 Einheiten** um den Spieler begrenzt (statisch; dynamisch 1000). Der Zielvektor `TargetX/Y` = Fadenkreuz relativ zum Spieler (ganzzahlig).
-- **Sichtbereich:** Fläche 1150 × 1000 Einheiten², max. 1500 × 1050 (`CalcScreenParams`).
+**Camera and mouse (0.7, source code `camera.cpp`/`controls.cpp`):**
+- **Static camera (default, `cl_dynamic_camera 0`):** camera center = exactly the (interpolated) player position.
+- **Dynamic camera:** offset toward the mouse = `max(Mausdistanz − 300, 0) · 0,6`.
+- **Mouse:** relative (cursor captured); raw mouse deltas × `inp_mousesens/100` are added **directly in world units**. The crosshair is limited to **400 units** around the player (static; dynamic 1000). The aim vector `TargetX/Y` = crosshair relative to the player (integer).
+- **View area:** area 1150 × 1000 units², max. 1500 × 1050 (`CalcScreenParams`).
 
-## 10. Netzwerk
+## 10. Network
 
-- **Client-Server**, autoritativer Server, eigenes Protokoll über **UDP** (Standard-Port 8303).
-- Server simuliert mit 50 TPS und sendet **Snapshots** standardmäßig **jeden 2. Tick (25 Hz)**; `sv_high_bandwidth 1` (nur LAN) sendet jeden Tick. Snapshots sind **delta-komprimiert** gegen den zuletzt bestätigten Snapshot, mit CRC; max. 900 Byte pro Paketteil, größere Snapshots werden aufgeteilt.
-- **Pakete:** max. 1400 Byte. Kopf mit Flags (Control, Resend, Compression, Connless), Ack-Nummer (10-Bit-Sequenz) und Anzahl Chunks. Chunks sind *vital* (zuverlässig, werden bis zur Bestätigung erneut gesendet) oder *nicht vital*. Kompression: Huffman mit fester Häufigkeitstabelle, Ganzzahlen als variable Länge.
-- **Verbindung (0.7):** Token-Handshake gegen gefälschte Absender, danach Connect/Accept, Keepalive, Timeout; Close mit Grund.
-- **Spielerzahl:** `sv_max_clients` Standard **8**, technisches Maximum 64.
-- **Eingaben:** Der Client sendet pro Tick seine Eingabe mit Ziel-Tick (`PredTick`). Der Server meldet zurück, wie viel Zeit bis zur Verarbeitung blieb (`INPUTTIMING`); der Client regelt seine Vorhersagezeit so, dass Eingaben knapp (Marge 10 ms) vor ihrem Tick ankommen.
-- **Vorhersage (Prediction, 0.7 `OnPredict`):** Der Client rechnet vom letzten Snapshot bis zum Vorhersage-Tick vorwärts – **nur Bewegung/Hook** (`CCharacterCore`), mit den eigenen gepufferten Eingaben. Andere Spieler werden ohne Eingaben mitsimuliert (für Kollision/Hook), aber standardmäßig **interpoliert dargestellt** (`cl_predict_players 0`). **Waffen und Projektile werden nicht vorhergesagt** (`cl_predict_projectiles 0`): Schüsse erscheinen, wenn der Server sie bestätigt.
-- **Keine Lag-Kompensation:** Der Server wertet Treffer mit seinen aktuellen Positionen aus (kein Zurückspulen).
-- **Interpolation:** Fremde Objekte werden zwischen den zwei letzten Snapshots interpoliert.
-- **Master-Server** für die Server-Liste, Server-Browser im Client (M7).
-- **Demos** über aufgezeichnete Snapshots (O-18).
+- **Client-server**, authoritative server, custom protocol over **UDP** (default port 8303).
+- The server simulates at 50 TPS and by default sends **snapshots** **every 2nd tick (25 Hz)**; `sv_high_bandwidth 1` (LAN only) sends every tick. Snapshots are **delta-compressed** against the last acknowledged snapshot, with CRC; max. 900 bytes per packet part, larger snapshots are split.
+- **Packets:** max. 1400 bytes. Header with flags (control, resend, compression, connless), ack number (10-bit sequence) and number of chunks. Chunks are *vital* (reliable, resent until acknowledged) or *non-vital*. Compression: Huffman with a fixed frequency table, integers as variable length.
+- **Connection (0.7):** token handshake against spoofed senders, then connect/accept, keepalive, timeout; close with reason.
+- **Player count:** `sv_max_clients` default **8**, technical maximum 64.
+- **Inputs:** each tick, the client sends its input with a target tick (`PredTick`). The server reports back how much time was left until processing (`INPUTTIMING`); the client adjusts its prediction time so inputs arrive just (10 ms margin) before their tick.
+- **Prediction (0.7 `OnPredict`):** the client computes forward from the last snapshot to the prediction tick – **movement/hook only** (`CCharacterCore`), with its own buffered inputs. Other players are co-simulated without inputs (for collision/hook), but by default **rendered interpolated** (`cl_predict_players 0`). **Weapons and projectiles are not predicted** (`cl_predict_projectiles 0`): shots appear when the server confirms them.
+- **No lag compensation:** the server evaluates hits with its current positions (no rewinding).
+- **Interpolation:** other objects are interpolated between the last two snapshots.
+- **Master server** for the server list, server browser in the client (M7).
+- **Demos** via recorded snapshots (O-18).
 
-## 11. Karten & Editor
+## 11. Maps & editor
 
-- Eigenes Map-Format (`.map`, Datafile mit Gruppen/Layern).
-- Layer-Typen: **Game-Layer** (Kollision), **Tile-Layer** (Grafik, Tilesets), **Quad-Layer** (freie Polygone, animierbar), **Entities**.
-- Parallax-Gruppen für Hintergründe.
-- Integrierter **Map-Editor** im Client.
-- Bekannte Vanilla-Karten: `dm1`, `dm2`, `dm6`, `dm7`, `dm8`, `dm9`, `ctf1`–`ctf7`.
+- Own map format (`.map`, datafile with groups/layers).
+- Layer types: **game layer** (collision), **tile layer** (graphics, tilesets), **quad layer** (free polygons, animatable), **entities**.
+- Parallax groups for backgrounds.
+- Integrated **map editor** in the client.
+- Well-known vanilla maps: `dm1`, `dm2`, `dm6`, `dm7`, `dm8`, `dm9`, `ctf1`–`ctf7`.
 
-## 12. Grafik & Audio
+## 12. Graphics & audio
 
-- Handgezeichneter, runder Cartoon-Stil, kräftige Farben.
-- Tee-Skins aus Teilen (Körper, Füße, Augen, Hände; 0.7 zusätzlich Deko/Markierungen), einfärbbar.
-- Emotes über dem Kopf, Augen-Ausdrücke (Schmerz, Freude, …).
-- Partikel: Rauch, Treffer, Explosionen, Blut-ähnliche „Splats“ in Skinfarbe.
-- Kurze, markante Sounds für jede Waffe, Hook, Sprung, Treffer, Pickup, Tod.
+- Hand-drawn, rounded cartoon style, vivid colors.
+- Tee skins built from parts (body, feet, eyes, hands; 0.7 additionally decorations/markings), colorable.
+- Emotes above the head, eye expressions (pain, joy, …).
+- Particles: smoke, hits, explosions, blood-like “splats” in skin color.
+- Short, distinctive sounds for every weapon, hook, jump, hit, pickup, death.
 
 ## 13. Interface
 
-- Hauptmenü: Server-Browser (Internet/LAN/Favoriten), Einstellungen (Spieler, Tee-Skin, Steuerung, Grafik, Sound), Demos, Editor.
-- HUD: Herzen/Schilde, Munition, Waffenanzeige, Timer, Score, Killfeed, Chat, Emotes.
-- Ingame-Konsole (lokal und Remote-Console für Admins).
+- Main menu: server browser (internet/LAN/favorites), settings (player, Tee skin, controls, graphics, sound), demos, editor.
+- HUD: hearts/shields, ammo, weapon display, timer, score, kill feed, chat, emotes.
+- In-game console (local and remote console for admins).
 
-## 14. Rechtliches (wichtig für einen Klon)
+## 14. Legal (important for a clone)
 
-- Code-Lizenz erlaubt Weiterverwendung unter Bedingungen (Nennung, keine Falschdarstellung als Original).
-- Assets (Grafik/Sound) stehen unter **CC-BY-SA 3.0** → Nutzung möglich mit Namensnennung und gleicher Lizenz.
-- Name „Teeworlds“ sollte nicht als Produktname verwendet werden.
-- → Wie wir damit umgehen, ist eine offene Entscheidung (siehe Entscheidungsdokument).
+- The code license allows reuse under conditions (attribution, no misrepresentation as the original).
+- Assets (graphics/sound) are under **CC-BY-SA 3.0** → use possible with attribution and the same license.
+- The name “Teeworlds” should not be used as a product name.
+- → How we handle this is an open decision (see decision document).

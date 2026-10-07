@@ -1,67 +1,67 @@
-# M6 – Karten & Editor: Umsetzungsplan
+# M6 – Maps & Editor: Implementation Plan
 
-Status: **abgeschlossen** (E-160) · Grundlage: [`06-roadmap.md`](06-roadmap.md) M6 (nach M7, E-111), E-024, E-028, E-030, E-031, E-089, O-37, O-43
+Status: **completed** (E-160) · Basis: [`06-roadmap.md`](06-roadmap.md) M6 (after M7, E-111), E-024, E-028, E-030, E-031, E-089, O-37, O-43
 
-## Ziel
+## Goal
 
-Ein eigenes Release-Kartenformat mit Grafik und ein ins Spiel integrierter Editor (E-028): Karten lassen sich von Grund auf bauen, direkt aus dem Editor testen und auf Servern spielen. Dazu die ersten echten Karten für Release 1.
+A dedicated release map format with graphics and an editor integrated into the game (E-028): maps can be built from scratch, tested directly from the editor and played on servers. Plus the first real maps for Release 1.
 
-**Abnahme (Roadmap):** Mit dem Editor lässt sich eine Karte von Grund auf bauen und spielen.
+**Acceptance (roadmap):** With the editor, a map can be built from scratch and played.
 
-## Was das Original macht (Teeworlds 0.7, `datafile.cpp`, `mapitems.h`, `editor/`)
+## What the Original Does (Teeworlds 0.7, `datafile.cpp`, `mapitems.h`, `editor/`)
 
-| Bereich | Original |
+| Area | Original |
 |---|---|
-| **Datei** | Binäres „Datafile“ (`.map`): Einträge (Items) + mit zlib komprimierte Datenblöcke; Bilder und Sounds können eingebettet sein |
-| **Gruppen** | Ebenen-Gruppen mit **Parallax** (x/y in %), Versatz, optionalem Ausschnitt (Clipping) |
-| **Layer** | **Game-Layer** (Kollision: leer, fest, Tod, nicht hookbar + Entities als Tile-Indizes), **Tile-Layer** (Bild aus 16×16 Kacheln, je Tile Index + Spiegelung/Drehung), **Quad-Layer** (freie, texturierte Vierecke mit Farbe je Ecke), **Sound-Layer** (0.7) |
-| **Animation** | **Envelopes**: Kurven für Position, Drehung und Farbe; Quads und Tile-Layer-Farbe hängen daran (z. B. ziehende Wolken, pulsierendes Licht) |
-| **Automapper** | Regeln wählen passende Rand-/Ecken-Kacheln automatisch aus den Nachbarn |
-| **Editor** | Im Client (Taste/Menü), Pinsel aus Kacheln, Rechteck, Füllen, Kachel-Auswahl, Layer und Gruppen verwalten, Quads bearbeiten, Envelope-Editor, Bilder/Sounds einbetten, Testspielen über lokalen Server |
-| **Übertragung** | Server schickt die Karte in Teilen an Clients, die sie nicht haben (Prüfsumme + Name); Clients speichern sie im Download-Ordner |
-| **Vanilla-Karten** | dm1, dm2, dm6, dm7, dm8, dm9, ctf1–ctf7 – kleine bis mittlere Arenen, klar lesbare Kollision |
+| **File** | Binary "datafile" (`.map`): entries (items) + zlib-compressed data blocks; images and sounds can be embedded |
+| **Groups** | Layer groups with **parallax** (x/y in %), offset, optional clipping |
+| **Layers** | **Game layer** (collision: empty, solid, death, unhookable + entities as tile indices), **tile layer** (image made of 16×16 tiles, per tile index + flip/rotation), **quad layer** (free, textured quads with a color per corner), **sound layer** (0.7) |
+| **Animation** | **Envelopes**: curves for position, rotation and color; quads and tile layer color are attached to them (e.g. drifting clouds, pulsing light) |
+| **Automapper** | Rules automatically pick matching edge/corner tiles from the neighbors |
+| **Editor** | In the client (key/menu), brush made of tiles, rectangle, fill, tile selection, managing layers and groups, editing quads, envelope editor, embedding images/sounds, test play via a local server |
+| **Transfer** | The server sends the map in chunks to clients that do not have it (checksum + name); clients store it in the downloads folder |
+| **Vanilla maps** | dm1, dm2, dm6, dm7, dm8, dm9, ctf1–ctf7 – small to medium arenas, clearly readable collision |
 
-## Stand in Elora
+## Status in Elora
 
-- **Textformat** (E-024, `.emap.toml`): nur Kollision und Entities als ASCII-Raster – für Test- und Entwicklungskarten. Zwei Karten: `sandbox`, `ctf-test`. *(Mit M6.2 durch `.emap` ersetzt, E-146.)*
-- **Welt-Optik** (E-089): Tiles einfarbig mit Kontur, Himmel als Verlauf – schlicht, ohne Grafik-Layer.
-- **Übertragung:** Der Server schickt die Karte als Text im `Welcome` (bis 4 MB, ein Paket über den zuverlässigen Kanal).
-- **Stil:** Alles ist Vektor (E-030), Assets sind SVG (M5.2) – Figur, Items, Emotes.
-- **UI:** egui ist für den Editor vorgesehen (E-031); die Spiel-UI hat ein eigenes Toolkit (M7.1).
+- **Text format** (E-024, `.emap.toml`): only collision and entities as an ASCII grid – for test and development maps. Two maps: `sandbox`, `ctf-test`. *(Replaced by `.emap` with M6.2, E-146.)*
+- **World look** (E-089): tiles in a single color with an outline, sky as a gradient – simple, without graphics layers.
+- **Transfer:** The server sends the map as text in the `Welcome` (up to 4 MB, one packet over the reliable channel).
+- **Style:** Everything is vector (E-030), assets are SVG (M5.2) – character, items, emotes.
+- **UI:** egui is intended for the editor (E-031); the game UI has its own toolkit (M7.1).
 
-## Arbeitsschritte (nach den Entscheidungen)
+## Work Steps (after the decisions)
 
-| # | Schritt | Crate | Inhalt | Prüfung |
+| # | Step | Crate | Content | Check |
 |---|---|---|---|---|
-| M6.0 | Entwürfe | – | Kartenlook als Bild zur Auswahl: Materialien mit Kanten/Ecken, Deko, Hintergrund-Ebenen (E-130) | Deine Auswahl |
-| M6.1 | Neue Tile-Arten | `elora-sim` | Plattform, Eis, Sprungfeld, Beschleuniger (E-137) in Kollision und Bewegung; Tuning-Vorschlag T-31 ff. zur Freigabe; Testkarte; Golden-Tests der alten Karten unverändert | Tests + dein Playtest · **abgeschlossen** (E-140–E-142; `maps/tiles-test.emap.toml`) |
-| M6.2 | Release-Format | `elora-map` | Binäres Datenmodell (E-129): Kopf mit Version, Abschnitte (Game-Layer mit Tile-Arten und Richtungen, Material-Layer, Deko, Hintergrund-Ebenen mit Parallax, Envelopes, Metadaten), komprimiert, Prüfsumme; Import der Textkarten | Tests (Rundweg, Import, kaputte Dateien) · **abgeschlossen** (E-143–E-146; Textformat entfernt, `cargo xtask map-dump`) |
-| M6.3 | Materialien & Deko | `assets/` | SVG-Sätze je Material mit Kanten/Ecken (Auto-Kanten-Regeln), Deko-Objekte, Hintergründe – nach dem Entwurf aus M6.0 | Sichtprüfung · **abgeschlossen** (E-147, E-148, [`design/elora-kartenteile.png`](design/elora-kartenteile.png)) |
-| M6.4 | Karten-Darstellung | Client, `elora-render` | Ebenen zeichnen (Parallax, Deko vor/hinter der Spielfläche), Auto-Kanten, Envelopes abspielen, gecachte Meshes | Sichtprüfung, Benchmark · **umgesetzt** (`maps/look-test.emap`; Messung 400×200 Tiles: 0,3 ms je Frame) · **abgeschlossen** (E-149) |
-| M6.5 | Übertragung | Protokoll, Server, Client | Karte komprimiert in Teilen, Prüfsumme, Zwischenspeicher im Client (E-136) | Integrationstest · **umgesetzt** (Protokollversion 5; Tests: Download in Teilen, Zwischenspeicher, kein Slot während des Ladens, Kartenwechsel) · **abgeschlossen** (E-153) |
-| M6.6 | Editor-Grundlage | Client (`editor/`, egui) | Editor aus dem Hauptmenü, Kamera, Raster, Ebenen-Liste, Neu/Laden/Speichern, Rückgängig/Wiederholen | Tests + Sichtprüfung · **umgesetzt** (E-150–E-152; dazu vorläufiger Tile-Pinsel) · **abgeschlossen** (E-153) |
-| M6.7 | Werkzeuge | Client | Pinsel, Rechteck, Füllen, Radierer, Tile-Arten mit Richtung, Materialien, Entities (Spawns, Pickups, Flaggen, Dummies), Auswahl kopieren | Sichtprüfung · **abgeschlossen** (E-154) |
-| M6.8 | Deko, Hintergrund, Animation | Client | Deko platzieren/drehen/skalieren, Hintergrund-Ebenen mit Parallax, Envelope-Editor (Kurven für Position, Drehung, Farbe) (E-133) | Sichtprüfung · **umgesetzt** (dazu Vorlagen Tag/Nacht, eigene SVGs) · **abgeschlossen** (E-160) |
-| M6.9 | Testspielen | Client | aus dem Editor direkt in eine Trainingsrunde und zurück | Sichtprüfung · **umgesetzt** (F5 bzw. Knopf, Esc zurück, ohne Speichern) · **abgeschlossen** (E-160) |
-| M6.10 | Release-Karten | `maps/` | 3 DM + 2 CTF nach deinen Vorgaben (E-134/E-135) | Dein Playtest · **umgesetzt** (E-155–E-158: `dm-wiese`, `dm-wueste`, `dm-winter`, `ctf-wald`, `ctf-nacht`; Baukasten mit Prüfungen in `tools/design/release_maps/`) · **abgeschlossen** (E-159) |
-| M6.11 | Abnahme | – | Karte von Grund auf bauen und spielen | Deine Abnahme · **abgeschlossen** (E-160) |
+| M6.0 | Designs | – | Map look as an image to choose from: materials with edges/corners, decoration, background layers (E-130) | Your choice |
+| M6.1 | New tile types | `elora-sim` | Platform, ice, jump pad, booster (E-137) in collision and movement; tuning proposal T-31 ff. for approval; test map; golden tests of the old maps unchanged | Tests + your playtest · **completed** (E-140–E-142; `maps/tiles-test.emap.toml`) |
+| M6.2 | Release format | `elora-map` | Binary data model (E-129): header with version, sections (game layer with tile types and directions, material layer, decoration, background layers with parallax, envelopes, metadata), compressed, checksum; import of the text maps | Tests (round trip, import, broken files) · **completed** (E-143–E-146; text format removed, `cargo xtask map-dump`) |
+| M6.3 | Materials & decoration | `assets/` | SVG sets per material with edges/corners (auto-edge rules), decoration objects, backgrounds – following the design from M6.0 | Visual check · **completed** (E-147, E-148, [`design/elora-kartenteile.png`](design/elora-kartenteile.png)) |
+| M6.4 | Map rendering | Client, `elora-render` | Drawing layers (parallax, decoration in front of/behind the play area), auto edges, playing envelopes, cached meshes | Visual check, benchmark · **implemented** (`maps/look-test.emap`; measurement 400×200 tiles: 0.3 ms per frame) · **completed** (E-149) |
+| M6.5 | Transfer | Protocol, server, client | Map compressed in chunks, checksum, cache in the client (E-136) | Integration test · **implemented** (protocol version 5; tests: download in chunks, cache, no slot while loading, map change) · **completed** (E-153) |
+| M6.6 | Editor foundation | Client (`editor/`, egui) | Editor from the main menu, camera, grid, layer list, new/load/save, undo/redo | Tests + visual check · **implemented** (E-150–E-152; plus a preliminary tile brush) · **completed** (E-153) |
+| M6.7 | Tools | Client | Brush, rectangle, fill, eraser, tile types with direction, materials, entities (spawns, pickups, flags, dummies), copy selection | Visual check · **completed** (E-154) |
+| M6.8 | Decoration, background, animation | Client | Place/rotate/scale decoration, background layers with parallax, envelope editor (curves for position, rotation, color) (E-133) | Visual check · **implemented** (plus day/night templates, own SVGs) · **completed** (E-160) |
+| M6.9 | Test play | Client | from the editor directly into a training round and back | Visual check · **implemented** (F5 or button, Esc back, without saving) · **completed** (E-160) |
+| M6.10 | Release maps | `maps/` | 3 DM + 2 CTF according to your specifications (E-134/E-135) | Your playtest · **implemented** (E-155–E-158: `dm-wiese`, `dm-wueste`, `dm-winter`, `ctf-wald`, `ctf-nacht`; construction kit with checks in `tools/design/release_maps/`) · **completed** (E-159) |
+| M6.11 | Acceptance | – | Build a map from scratch and play it | Your acceptance · **completed** (E-160) |
 
-## Entscheidungen zu M6
+## Decisions for M6
 
-| # | Frage | Optionen | Entscheidung |
+| # | Question | Options | Decision |
 |---|---|---|---|
-| D-M6-01 | Speicherformat (O-37) | **Text** (TOML, lesbar, Git-freundlich, größer) / **Binär** (kompakt, wie Original) / **Text, beim Übertragen komprimiert** | E-129: **binär** |
-| D-M6-02 | Grafik der Kartenteile | **Vektor-Kacheln mit automatischen Kanten/Ecken** (Tile-Raster bleibt, Look aus SVG-Sätzen je Material) / **freie Vektorformen** (Polygone unabhängig vom Raster) / **beides** (Raster für Kollision, freie Formen als Deko) | E-130: **beides** – Kacheln mit Auto-Kanten + freie Vektor-Deko |
-| D-M6-03 | Ebenen-Modell | wie Original (Gruppen mit Parallax, Tile- und Quad-Layer) / vereinfacht (Game-Layer + Deko-Layer davor/dahinter + Hintergrund-Ebenen mit Parallax) | E-131: **vereinfacht** |
-| D-M6-04 | Animationen | ja (bewegte Deko, Farbwechsel – wie Envelopes) / nein für Release 1 | E-132: **wie Original** (Envelopes) |
-| D-M6-05 | Editor-Umfang Release 1 | Grundwerkzeuge (Pinsel, Rechteck, Füllen, Entities, Layer, Rückgängig, Testspielen) / zusätzlich Deko & Hintergrund / zusätzlich Animationen | E-133: **alles** inkl. Animations-Editor |
-| D-M6-06 | Release-Karten (O-43) | Anzahl und Modi (z. B. 3 DM + 2 CTF), wer sie baut (ich mit dem Editor nach deinen Vorgaben / du / gemeinsam) | E-134/E-135: **3 DM + 2 CTF**, gebaut von Claude nach deinen Vorgaben |
-| D-M6-07 | Karten-Download | Server schickt fehlende Karten automatisch (wie Original) / Karten müssen vorher installiert sein | E-136: **automatisch** |
-| D-M6-08 | Neue Tile-Arten | nur die bisherigen (fest, Tod, nicht hookbar) / zusätzliche (z. B. Plattform von unten durchlässig) | E-137: **Plattform, Eis, Sprungfeld, Beschleuniger** |
+| D-M6-01 | Storage format (O-37) | **Text** (TOML, readable, Git-friendly, larger) / **binary** (compact, like the original) / **text, compressed for transfer** | E-129: **binary** |
+| D-M6-02 | Graphics of the map parts | **Vector tiles with automatic edges/corners** (tile grid stays, look from SVG sets per material) / **free vector shapes** (polygons independent of the grid) / **both** (grid for collision, free shapes as decoration) | E-130: **both** – tiles with auto edges + free vector decoration |
+| D-M6-03 | Layer model | like the original (groups with parallax, tile and quad layers) / simplified (game layer + decoration layers in front/behind + background layers with parallax) | E-131: **simplified** |
+| D-M6-04 | Animations | yes (moving decoration, color changes – like envelopes) / no for Release 1 | E-132: **like the original** (envelopes) |
+| D-M6-05 | Editor scope for Release 1 | Basic tools (brush, rectangle, fill, entities, layers, undo, test play) / plus decoration & background / plus animations | E-133: **everything** incl. animation editor |
+| D-M6-06 | Release maps (O-43) | Number and modes (e.g. 3 DM + 2 CTF), who builds them (me with the editor following your specifications / you / together) | E-134/E-135: **3 DM + 2 CTF**, built by Claude following your specifications |
+| D-M6-07 | Map download | The server sends missing maps automatically (like the original) / maps must be installed beforehand | E-136: **automatic** |
+| D-M6-08 | New tile types | only the existing ones (solid, death, unhookable) / additional ones (e.g. platform passable from below) | E-137: **platform, ice, jump pad, booster** |
 
-## Technische Festlegungen (Vorschlag)
+## Technical Specifications (Proposal)
 
-- **Kollision bleibt ein Raster** aus 32er-Tiles (Physik und Netzcode unverändert); die Grafik legt sich darüber.
-- **Rückwärtskompatibel:** Textkarten (`.emap.toml`) bleiben lesbar und werden beim Laden ins neue Modell überführt; Server und Client verstehen beide.
-- **Prüfsumme** (BLAKE2s, schon über `snow` vorhanden) identifiziert Karten beim Download und im Zwischenspeicher.
-- **Editor in egui** (E-031) – Werkzeugleisten und Listen sind dort schnell gebaut; die Karte selbst zeichnet der Vektor-Renderer.
+- **Collision stays a grid** of 32-unit tiles (physics and netcode unchanged); the graphics are layered on top.
+- **Backward compatible:** text maps (`.emap.toml`) stay readable and are converted into the new model on load; server and client understand both.
+- **Checksum** (BLAKE2s, already available via `snow`) identifies maps during download and in the cache.
+- **Editor in egui** (E-031) – toolbars and lists are quick to build there; the map itself is drawn by the vector renderer.

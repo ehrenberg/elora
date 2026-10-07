@@ -1,120 +1,120 @@
-# Geschichte & Welt – drei Entwürfe
+# Story & world – three drafts
 
-Status: **Entwurf zur Auswahl** (E-205) · Rahmen: Hub-Welt mit Dorf und freischaltbaren Gebieten (E-203), Stufen & Fähigkeiten, Waffen-Ausbau, Beute, Aufgaben & Dialoge (E-206)
+Status: **draft for selection** (E-205) · Framework: hub world with village and unlockable areas (E-203), levels & abilities, weapon upgrades, loot, quests & dialogues (E-206)
 
-Gemeinsam für alle drei:
+Common to all three:
 
-- **Elora** ist die Heldin, ein Tropfenwesen wie alle Bewohner der Welt. Skins bleiben: Die Spielerin wählt Eloras Farben.
-- Die **Gebiete** nutzen die vorhandenen Themen (Wiese, Wüste, Winter, Wald, Nacht/Stein) und ergänzen ein, zwei neue (z. B. Höhlen, Vulkan).
-- **Fähigkeiten** bauen auf dem bekannten Spielgefühl auf und erweitern es, statt es zu ersetzen: Hook und Doppelsprung bleiben, wie sie sind. Neues kommt dazu, etwa längerer Hook, Hook zieht Gegenstände heran, ein dritter Sprung, Stampfen aus der Luft, Gleiten.
-- **Waffen** wachsen mit: Hammer, Granatwerfer und Laser werden ausgebaut (Schaden, Feuerrate, Spezialeffekte); im Abenteuer kommen neue dazu.
-- Jedes Gebiet endet mit einem **Bossgegner**, der eine Bewegungsfähigkeit prüft.
+- **Elora** is the heroine, a drop creature like all inhabitants of the world. Skins stay: the player chooses Elora's colours.
+- The **areas** use the existing themes (meadow, desert, winter, forest, night/stone) and add one or two new ones (e.g. caves, volcano).
+- **Abilities** build on the familiar game feel and extend it instead of replacing it: hook and double jump stay as they are. New things are added, such as a longer hook, a hook that pulls objects in, a third jump, a stomp from the air, gliding.
+- **Weapons** grow along: hammer, grenade launcher and laser get upgrades (damage, fire rate, special effects); new ones are added in the adventure.
+- Each area ends with a **boss** that tests a movement ability.
 
 ---
 
-## A – „Die verstummten Quellen“ (märchenhaft, warm)
+## A – “The Silent Springs” (fairy-tale, warm)
 
-**Grundidee:** In der Welt der Tropfenwesen speisen fünf Quellen das Land mit Farbe und Leben. Eine nach der anderen versiegt; im Dorf **Tauwinkel** werden die Farben blass, und die Ältesten erinnern sich an ein altes Lied über die „Hüter der Quellen“. Elora, eine junge Tauträgerin mit einem Hang zu waghalsigen Hook-Sprüngen, macht sich auf den Weg.
+**Core idea:** in the world of the drop creatures, five springs feed the land with colour and life. One after another they run dry; in the village of **Tauwinkel** the colours fade, and the elders remember an old song about the “guardians of the springs”. Elora, a young dew bearer with a penchant for daring hook jumps, sets off.
 
-**Ton:** freundlich, verspielt, leise Melancholie; viel Humor in Dialogen. Für alle Altersgruppen.
+**Tone:** friendly, playful, a quiet melancholy; lots of humour in dialogues. For all age groups.
 
-**Gegenspieler:** **Der Dürre** – kein böser Herrscher, sondern ein verletzter Quellgeist, der die Farben in sich aufsaugt, weil er sich vergessen fühlt. Am Ende steht keine Vernichtung, sondern eine Versöhnung (der letzte Bosskampf ist ein „Wiedererwecken“).
+**Antagonist:** **the Withered One** – not an evil ruler, but a wounded spring spirit who soaks up the colours because he feels forgotten. The end is not destruction but reconciliation (the last boss fight is a “reawakening”).
 
-**Dorf Tauwinkel (Hub):**
-| Figur | Rolle |
+**Village Tauwinkel (hub):**
+| Character | Role |
 |---|---|
-| Oma Pfütze | Älteste, erzählt die Geschichte, Hauptaufgaben |
-| Klonk | Schmied, baut Waffen aus |
-| Lotte Lichtblau | Händlerin, Ausrüstung und Tränke |
-| Tüftel | Erfinder, schaltet Fähigkeiten frei („Hook-Werkstatt“) |
-| Pip | jüngerer Bruder, Nebenaufgaben und Tipps |
+| Oma Pfütze | Elder, tells the story, main quests |
+| Klonk | Blacksmith, upgrades weapons |
+| Lotte Lichtblau | Trader, equipment and potions |
+| Tüftel | Inventor, unlocks abilities (“hook workshop”) |
+| Pip | Younger brother, side quests and tips |
 
-**Gebiete und Fähigkeiten:**
-| # | Gebiet | Thema | Neue Fähigkeit | Boss |
+**Areas and abilities:**
+| # | Area | Theme | New ability | Boss |
 |---|---|---|---|---|
-| 1 | Blütenwiesen | Wiese | Hook-Ruck (Hook zieht schneller) | Brummbär-Hummel |
-| 2 | Murmelwald | Wald | Gegenstände heranhooken | Wurzelwächter |
-| 3 | Glutsandwüste | Wüste | Stampfen aus der Luft | Sandschlange |
-| 4 | Frostspitzen | Winter | Eisgriff (kurz an Wänden haften) | Eiskönigin Kristella |
-| 5 | Sternenschlucht | Nacht/Stein | Gleiten | Der Dürre |
+| 1 | Blütenwiesen | Meadow | Hook jerk (hook pulls faster) | Bumblebear |
+| 2 | Murmelwald | Forest | Pull hook (pull objects in) | Root Warden |
+| 3 | Glutsandwüste | Desert | Stomp from the air | Sand Serpent |
+| 4 | Frostspitzen | Winter | Ice grip (briefly cling to walls) | Ice Queen Kristella |
+| 5 | Sternenschlucht | Night/stone | Glide | The Withered One |
 
-**Bogen:** Tauwinkel verblasst → erste Quelle befreit, Farbe kehrt zurück → Hinweise, dass jemand die Quellen *absichtlich* schweigen lässt → Begegnung mit dem Dürren → Wahrheit über die vergessenen Hüter → Versöhnung, die fünf Quellen singen wieder.
+**Arc:** Tauwinkel fades → first spring freed, colour returns → hints that someone is silencing the springs *on purpose* → encounter with the Withered One → the truth about the forgotten guardians → reconciliation, the five springs sing again.
 
-**PvP-Modus dazu:** „Quellenkampf“ – Spieler sammeln Tropfen für Stufen und Ausbauten, die Karte ist eine Quelle, die man verteidigt.
+**Matching PvP mode:** “Quellenkampf” – players collect drops for levels and upgrades; the map is a spring that you defend.
 
 ---
 
-## B – „Sternensplitter“ (Abenteuer, etwas düsterer)
+## B – “Sternensplitter” (adventure, somewhat darker)
 
-**Grundidee:** In einer Sternschnuppennacht zerbricht ein Stern über dem Land. Seine **Splitter** verwandeln Tiere und Pflanzen in wilde **Splitterwesen**. Das Grenzdorf **Hakenfels**, eine alte Siedlung von Hook-Kletterern auf einem Felsen, wird zur letzten Zuflucht. Elora ist Botin der **Hakengilde** und soll die Splitter einsammeln, bevor jemand sie zu etwas Größerem zusammensetzt.
+**Core idea:** on a night of shooting stars, a star breaks apart above the land. Its **shards** turn animals and plants into wild **shard creatures**. The border village of **Hakenfels**, an old settlement of hook climbers on a rock, becomes the last refuge. Elora is a messenger of the **Hook Guild** and is to collect the shards before someone assembles them into something bigger.
 
-**Ton:** spannendes Abenteuer, Geheimnisse und Wendungen, dunklere Gebiete (Nacht, Höhlen), aber nicht brutal.
+**Tone:** exciting adventure, secrets and twists, darker areas (night, caves), but not brutal.
 
-**Gegenspieler:** **Der Weber** – ein ehemaliger Gildenmeister, der die Splitter zu einem neuen Stern verweben will, um die Nacht für immer zu vertreiben, und dabei die Welt aus dem Gleichgewicht bringt. Mittlere Wendung: Eloras Mentor steckt mit ihm unter einer Decke.
+**Antagonist:** **the Weaver** – a former guild master who wants to weave the shards into a new star to drive away the night forever, throwing the world off balance in the process. Mid-story twist: Elora's mentor is in league with him.
 
-**Dorf Hakenfels (Hub):**
-| Figur | Rolle |
+**Village Hakenfels (hub):**
+| Character | Role |
 |---|---|
-| Meisterin Vela | Gildenmeisterin, Hauptaufgaben |
-| Ruß | Waffenschmied mit Splitter-Technik (Waffen-Ausbau) |
-| Kiesel | Händler, Ausrüstung, Beute ankaufen |
-| Mentor Orrin | bildet Elora aus (Fähigkeitenbaum), später Verräter |
-| Funke | rivalisierende Botin, wird zur Verbündeten |
+| Master Vela | Guild master, main quests |
+| Ruß | Weaponsmith with shard technology (weapon upgrades) |
+| Kiesel | Trader, equipment, buys loot |
+| Mentor Orrin | Trains Elora (skill tree), later a traitor |
+| Funke | Rival messenger, becomes an ally |
 
-**Gebiete und Fähigkeiten:**
-| # | Gebiet | Thema | Neue Fähigkeit | Boss |
+**Areas and abilities:**
+| # | Area | Theme | New ability | Boss |
 |---|---|---|---|---|
-| 1 | Felsenwiesen | Wiese | Dritter Sprung | Splitterhirsch |
-| 2 | Echowald | Wald | Hook schwingt weiter (längerer Hook) | Rankenmutter |
-| 3 | Sandgräber | Wüste | Stampfen | Mechanischer Skarabäus |
-| 4 | Eisschlund | Winter / Höhlen | Wandsprung | Frostwyrm |
-| 5 | Glutkern | Vulkan (neu) | Splitter-Hook (zieht Gegner heran) | Orrin |
-| 6 | Himmelsnetz | Nacht | Gleiten | Der Weber |
+| 1 | Felsenwiesen | Meadow | Third jump | Shard Stag |
+| 2 | Echowald | Forest | Hook swings further (longer hook) | Vine Mother |
+| 3 | Sandgräber | Desert | Stomp | Mechanical Scarab |
+| 4 | Eisschlund | Winter / caves | Wall jump | Frost Wyrm |
+| 5 | Glutkern | Volcano (new) | Shard hook (pulls enemies in) | Orrin |
+| 6 | Himmelsnetz | Night | Glide | The Weaver |
 
-**Bogen:** Sternennacht, erste Splitterwesen → Botengänge für die Gilde → Funke als Rivalin → Spuren des Webers → Verrat Orrins in der Mitte → Hakenfels wird angegriffen → Elora und Funke steigen ins Himmelsnetz → Entscheidung: Splitter zerstören oder den Stern neu formen (zwei Enden).
+**Arc:** night of stars, first shard creatures → errands for the guild → Funke as a rival → traces of the Weaver → Orrin's betrayal in the middle → Hakenfels is attacked → Elora and Funke climb into the Himmelsnetz → decision: destroy the shards or reshape the star (two endings).
 
-**PvP-Modus dazu:** „Splitterjagd“ – Splitter auf der Karte geben Stufen; wer einen Splitter trägt, ist stärker, aber sichtbar (wie eine Flagge).
+**Matching PvP mode:** “Splitterjagd” – shards on the map grant levels; whoever carries a shard is stronger but visible (like a flag).
 
 ---
 
-## C – „Die Hook-Prüfungen“ (humorvoll, sportlich)
+## C – “The Hook Trials” (humorous, sporty)
 
-**Grundidee:** Alle hundert Jahre richtet die legendäre **Hookliga** die Großen Prüfungen aus: Wer alle Gebietsmeister schlägt, wird in die Liga aufgenommen. Elora aus dem verschlafenen **Wipfeldorf** träumt seit Kindertagen davon. Doch hinter den Prüfungen steckt mehr: Der Ligapräsident sammelt die Kräfte der besiegten Meister.
+**Core idea:** every hundred years the legendary **Hook League** holds the Great Trials: whoever beats all area masters is admitted to the league. Elora from sleepy **Wipfeldorf** has dreamt of it since childhood. But there is more behind the trials: the league president collects the powers of the defeated masters.
 
-**Ton:** komödiantisch, sportlicher Wettkampf, schräge Figuren, viele Anspielungen; die Spannung kommt über die Verschwörung im letzten Drittel.
+**Tone:** comedic, sporting competition, quirky characters, lots of references; the tension comes from the conspiracy in the last third.
 
-**Gegenspieler:** **Präsident Glanzlack** – charmanter Showmaster der Liga, der mit den gesammelten Kräften unbesiegbar werden will. Rivale: **Blitz**, ein großmäuliger Champion, der später die Seiten wechselt.
+**Antagonist:** **President Glanzlack** – the league's charming showmaster, who wants to become invincible with the collected powers. Rival: **Blitz**, a big-mouthed champion who later switches sides.
 
-**Dorf Wipfeldorf (Hub):**
-| Figur | Rolle |
+**Village Wipfeldorf (hub):**
+| Character | Role |
 |---|---|
-| Trainer Kork | ehemaliger Ligaspieler, Fähigkeitenbaum |
-| Hanna Hammer | Schmiedin, Waffen-Ausbau |
-| Bazar-Bodo | Händler, verkauft auch Unsinn |
-| Reporterin Plätscher | kommentiert Eloras Erfolge, Nebenaufgaben |
-| Oma Tropf | Hinweise auf die alte Geschichte der Liga |
+| Coach Kork | Former league player, skill tree |
+| Hanna Hammer | Blacksmith, weapon upgrades |
+| Bazar-Bodo | Trader, also sells nonsense |
+| Reporter Plätscher | Comments on Elora's successes, side quests |
+| Oma Tropf | Hints about the league's old history |
 
-**Gebiete und Fähigkeiten:**
-| # | Gebiet | Thema | Prüfung / neue Fähigkeit | Meister |
+**Areas and abilities:**
+| # | Area | Theme | Trial / new ability | Master |
 |---|---|---|---|---|
-| 1 | Grüne Arena | Wiese | Hook-Ruck | Meisterin Blüte |
-| 2 | Kletterwald | Wald | Wandsprung | Meister Ast |
-| 3 | Dünenpark | Wüste | Stampfen | Meisterin Sanda |
-| 4 | Gletscherbahn | Winter | Rutschen (Eis wird schneller) | Meister Frosti |
-| 5 | Nachtstadion | Nacht | Gleiten | Präsident Glanzlack |
+| 1 | Grüne Arena | Meadow | Hook jerk | Master Blüte |
+| 2 | Kletterwald | Forest | Wall jump | Master Ast |
+| 3 | Dünenpark | Desert | Stomp | Master Sanda |
+| 4 | Gletscherbahn | Winter | Sliding (ice gets faster) | Master Frosti |
+| 5 | Nachtstadion | Night | Glide | President Glanzlack |
 
-**Bogen:** Anmeldung zur Prüfung → Meister für Meister (jeweils ein Bewegungs-Parcours + Kampf) → Rivale Blitz → Meister verschwinden nach ihren Niederlagen → Elora deckt Glanzlacks Plan auf → Finale im Nachtstadion vor vollem Publikum.
+**Arc:** signing up for the trials → master after master (each a movement course + fight) → rival Blitz → masters disappear after their defeats → Elora uncovers Glanzlack's plan → finale in the Nachtstadion in front of a full audience.
 
-**PvP-Modus dazu:** „Ligaspiel“ – Runden als Turnier; Stufen und Ausbauten im Match, das Dorf dient als Lobby.
+**Matching PvP mode:** “Ligaspiel” – rounds as a tournament; levels and upgrades during the match, the village serves as the lobby.
 
 ---
 
-## Zum Vergleich
+## Comparison
 
-| | A Quellen | B Sternensplitter | C Hook-Prüfungen |
+| | A Springs | B Sternensplitter | C Hook Trials |
 |---|---|---|---|
-| Stimmung | warm, märchenhaft | spannend, geheimnisvoll | lustig, sportlich |
-| Zielgruppe | alle, auch jüngere | eher Jugendliche/Erwachsene | alle |
-| Gebiete | 5 | 6 (mit Vulkan) | 5 |
-| Besonderheit | Versöhnung statt Sieg | Verrat, zwei Enden | Parcours-Prüfungen, viel Humor |
-| Aufwand | mittel | hoch | mittel |
+| Mood | warm, fairy-tale | exciting, mysterious | funny, sporty |
+| Target group | everyone, including younger players | rather teens/adults | everyone |
+| Areas | 5 | 6 (with volcano) | 5 |
+| Special feature | reconciliation instead of victory | betrayal, two endings | course trials, lots of humour |
+| Effort | medium | high | medium |

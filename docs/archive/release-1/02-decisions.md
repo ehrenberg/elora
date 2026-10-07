@@ -1,245 +1,245 @@
-# Entscheidungslog
+# Decision log
 
-Alle Entscheidungen trifft der Projektinhaber. Hier wird jede Entscheidung mit Datum und Begründung festgehalten. Offene Punkte bleiben offen, bis sie entschieden sind – es werden **keine Annahmen** getroffen.
+All decisions are made by the project owner. Every decision is recorded here with its date and rationale. Open items stay open until they are decided – **no assumptions** are made.
 
-## Getroffene Entscheidungen
+## Decisions made
 
-| # | Datum | Thema | Entscheidung | Begründung |
+| # | Date | Topic | Decision | Rationale |
 |---|---|---|---|---|
-| E-001 | 2026-09-25 | Ziel | Klon von Teeworlds mit identischem Spielgefühl | Vorgabe Projektinhaber |
-| E-002 | 2026-09-25 | Dokumentation | Erkenntnisse im Ordner `docs/` | Vorgabe Projektinhaber |
-| E-003 | 2026-09-25 | Ziel (O-01) | Veröffentlichung (öffentliches Release, eigene Identität) | Entscheidung Projektinhaber |
-| E-004 | 2026-09-25 | Plattform (O-02) | Desktop: Linux, Windows, macOS | Entscheidung Projektinhaber |
-| E-005 | 2026-09-25 | Referenzversion (O-03) | Teeworlds 0.7 | Entscheidung Projektinhaber |
-| E-006 | 2026-09-25 | Assets (O-05) | Eigene Assets, eigener Stil | Entscheidung Projektinhaber |
-| E-007 | 2026-09-25 | Code-Herkunft (O-23) | Komplett neu, Teeworlds-Quellcode dient als Referenz für Werte/Algorithmen | Entscheidung Projektinhaber |
-| E-008 | 2026-09-25 | Protokoll (O-04) | Eigenes Netzwerkprotokoll, keine Kompatibilität zum Original | Entscheidung Projektinhaber |
-| E-009 | 2026-09-25 | Sprache/Engine (O-07) | Rust mit eigener Engine (Server und Client teilen Code) | Entscheidung Projektinhaber |
-| ~~E-010~~ | 2026-09-25 | Lizenz (O-22) | ~~Open Source, permissiv~~ → **ersetzt durch E-020** | Entscheidung Projektinhaber |
-| E-011 | 2026-09-25 | Rendering (O-25) | wgpu + winit, eigener 2D-Renderer | Entscheidung Projektinhaber |
-| E-012 | 2026-09-25 | Netzwerk (O-09) | Eigenes UDP-Protokoll (Snapshots, Delta-Kompression, eigene Zuverlässigkeitsschicht) | Entscheidung Projektinhaber |
-| E-013 | 2026-09-25 | Erster Meilenstein (O-14/O-21) | Lokale Physik-Sandbox: ein Tee, Testkarte, Laufen/Springen/Hook – Feeling ohne Netzwerk abstimmen | Entscheidung Projektinhaber |
-| E-014 | 2026-09-25 | Spielmodi Release 1 (O-12) | DM, TDM, CTF, LMS, LTS, Instagib | Entscheidung Projektinhaber |
-| E-015 | 2026-09-25 | Physikwerte (O-30) | Original-Tuning **nicht** 1:1 übernehmen, sondern etwas abweichen (Umfang/Richtung → O-32) | Entscheidung Projektinhaber; eigene Identität |
-| E-016 | 2026-09-25 | Waffen Release 1 (O-13) | Hammer, Laser, Granate | Entscheidung Projektinhaber |
-| E-017 | 2026-09-25 | Testkarte (O-31) | Einfaches Textformat (Syntax → O-33) | Entscheidung Projektinhaber |
-| E-018 | 2026-09-25 | Projektname (O-06) | **Elora** – zugleich Name der spielbaren Figur; Abgrenzung zu Teeworlds | Entscheidung Projektinhaber |
-| E-019 | 2026-09-25 | Code-Struktur (O-29) | Aufteilung nach professionellem Rust-Standard gemäß [`../../handbook/architecture.md`](../../handbook/architecture.md) – **bestätigt** | Entscheidung Projektinhaber |
-| E-020 | 2026-09-25 | Lizenz (O-24) | **GPL-3.0** (Copyleft), ersetzt E-010 | Entscheidung Projektinhaber |
-| E-021 | 2026-09-25 | Physik-Arithmetik (O-28) | `f32` mit Quantisierung pro Tick (wie Original) | Entscheidung Projektinhaber |
-| E-022 | 2026-09-25 | Vorgehen Physikwerte (O-32) | Claude schlägt pro Wert eine Abweichung mit Begründung vor, Projektinhaber entscheidet einzeln → [`../../handbook/tuning.md`](../../handbook/tuning.md) | Entscheidung Projektinhaber |
+| E-001 | 2026-09-25 | Goal | Clone of Teeworlds with an identical game feel | Requirement of the project owner |
+| E-002 | 2026-09-25 | Documentation | Findings in the `docs/` folder | Requirement of the project owner |
+| E-003 | 2026-09-25 | Goal (O-01) | Publication (public release, own identity) | Decision of the project owner |
+| E-004 | 2026-09-25 | Platform (O-02) | Desktop: Linux, Windows, macOS | Decision of the project owner |
+| E-005 | 2026-09-25 | Reference version (O-03) | Teeworlds 0.7 | Decision of the project owner |
+| E-006 | 2026-09-25 | Assets (O-05) | Own assets, own style | Decision of the project owner |
+| E-007 | 2026-09-25 | Code origin (O-23) | Written entirely from scratch; the Teeworlds source code serves as a reference for values/algorithms | Decision of the project owner |
+| E-008 | 2026-09-25 | Protocol (O-04) | Own network protocol, no compatibility with the original | Decision of the project owner |
+| E-009 | 2026-09-25 | Language/engine (O-07) | Rust with an own engine (server and client share code) | Decision of the project owner |
+| ~~E-010~~ | 2026-09-25 | License (O-22) | ~~Open source, permissive~~ → **replaced by E-020** | Decision of the project owner |
+| E-011 | 2026-09-25 | Rendering (O-25) | wgpu + winit, own 2D renderer | Decision of the project owner |
+| E-012 | 2026-09-25 | Network (O-09) | Own UDP protocol (snapshots, delta compression, own reliability layer) | Decision of the project owner |
+| E-013 | 2026-09-25 | First milestone (O-14/O-21) | Local physics sandbox: one Tee, test map, running/jumping/hook – tune the feel without networking | Decision of the project owner |
+| E-014 | 2026-09-25 | Game modes Release 1 (O-12) | DM, TDM, CTF, LMS, LTS, Instagib | Decision of the project owner |
+| E-015 | 2026-09-25 | Physics values (O-30) | Do **not** adopt the original tuning 1:1, but deviate somewhat (extent/direction → O-32) | Decision of the project owner; own identity |
+| E-016 | 2026-09-25 | Weapons Release 1 (O-13) | Hammer, laser, grenade | Decision of the project owner |
+| E-017 | 2026-09-25 | Test map (O-31) | Simple text format (syntax → O-33) | Decision of the project owner |
+| E-018 | 2026-09-25 | Project name (O-06) | **Elora** – also the name of the playable character; distinct from Teeworlds | Decision of the project owner |
+| E-019 | 2026-09-25 | Code structure (O-29) | Split according to professional Rust standards as described in [`../../handbook/architecture.md`](../../handbook/architecture.md) – **confirmed** | Decision of the project owner |
+| E-020 | 2026-09-25 | License (O-24) | **GPL-3.0** (copyleft), replaces E-010 | Decision of the project owner |
+| E-021 | 2026-09-25 | Physics arithmetic (O-28) | `f32` with quantization per tick (like the original) | Decision of the project owner |
+| E-022 | 2026-09-25 | Approach to physics values (O-32) | Claude proposes a deviation with rationale per value, the project owner decides individually → [`../../handbook/tuning.md`](../../handbook/tuning.md) | Decision of the project owner |
 
-| E-023 | 2026-09-25 | Tuning (O-32) | Alle Vorschläge T-01 bis T-30 aus [`../../handbook/tuning.md`](../../handbook/tuning.md) angenommen | Entscheidung Projektinhaber |
-| E-024 | 2026-09-25 | Karten-Textformat (O-33) | Vorschlag aus [`../../handbook/map-format.md`](../../handbook/map-format.md) angenommen (TOML + ASCII-Raster, Legende, Endung `.emap.toml`) – **nur für Test- und Entwicklungskarten** | Entscheidung Projektinhaber; für Release 1 zu einfach (keine Grafik-Layer) · **ersetzt durch E-146** |
-| E-025 | 2026-09-25 | Startausrüstung (O-35) | Elora spawnt **nur mit Hammer**; Laser und Granate ausschließlich per Pickup | Entscheidung Projektinhaber; Pickups und Kartenkontrolle werden wichtig |
-| E-026 | 2026-09-25 | Instagib-Regeln | Klassisch: nur Laser, unendliche Munition, ein Treffer tötet, keine Pickups | Entscheidung Projektinhaber |
-| E-027 | 2026-09-25 | Asset-Lizenz (O-36) | **CC-BY-SA 4.0** für eigene Grafiken/Sounds | Entscheidung Projektinhaber; Copyleft passend zu GPL-3.0 |
-| E-028 | 2026-09-25 | Release-Kartenformat + Editor (O-10/O-16) | **Eigenes Format + eigener, ins Spiel integrierter Editor** (wie Teeworlds) | Entscheidung Projektinhaber; maximale Kontrolle |
-| E-029 | 2026-09-25 | Figur & Skins (O-34/O-19) | Elora ist die Basisfigur; **Skin-System aus Teilen** (Körper, Augen, Deko u. ä., wie 0.7) inkl. Community-Skins | Entscheidung Projektinhaber |
-| E-030 | 2026-09-25 | Grafikstil | **Flat/Vektor**: klare Formen, moderne Palette, auflösungsunabhängig | Entscheidung Projektinhaber; Abgrenzung zu Teeworlds |
-| E-031 | 2026-09-25 | UI (O-27) | **egui** für Editor, Konsole, Debug-Regler; **eigene Spiel-UI** für Hauptmenü, Server-Browser, HUD | Entscheidung Projektinhaber |
-| E-032 | 2026-09-25 | Audio (O-26) | **kira** | Entscheidung Projektinhaber |
-| E-033 | 2026-09-25 | Vektor-Pipeline (O-38) | **Laufzeit-Tessellierung** (z. B. lyon → Dreiecke → wgpu), echt auflösungsunabhängig, dynamische Verformung möglich | Entscheidung Projektinhaber |
-| E-034 | 2026-09-25 | Hosting (O-11) | Zunächst **nur lokales Git**, Hosting später | Entscheidung Projektinhaber |
-| E-035 | 2026-09-25 | Bots (O-15) | **Nach Release 1**; Architektur sieht sie vor (Bots liefern Inputs wie Spieler) | Entscheidung Projektinhaber |
-| E-036 | 2026-09-25 | Meilensteine (O-21) | Claude schlägt Roadmap bis Release 1 vor, Projektinhaber entscheidet je Meilenstein → [`06-roadmap.md`](06-roadmap.md) | Entscheidung Projektinhaber |
-| E-037 | 2026-09-25 | Roadmap (O-21) | Meilensteine M0–M8 aus [`06-roadmap.md`](06-roadmap.md) angenommen | Entscheidung Projektinhaber |
-| E-038 | 2026-09-25 | Rust-Toolchain | Umstieg auf **rustup**; Version fixiert in `rust-toolchain.toml` | Entscheidung Projektinhaber; reproduzierbar für alle Entwickler |
-| E-039 | 2026-09-25 | Lokale Prüfungen (O-41) | **`cargo xtask`** (Rust-Programm im Workspace, plattformunabhängig) | Entscheidung Projektinhaber |
-| E-040 | 2026-09-25 | Zusatz-Tools | **cargo-deny** (Lizenzen, Advisories) und **cargo-nextest** (Tests) | Entscheidung Projektinhaber |
-| E-041 | 2026-09-25 | Workspace-Ort | Direkt im Projektordner (`Cargo.toml`, `crates/`, `apps/`, `docs/` im Root) | Entscheidung Projektinhaber |
-| E-042 | 2026-09-25 | M0 Abnahme | M0 Projekt-Setup abgenommen (Commit `5ab9055`) | Entscheidung Projektinhaber |
-| E-043 | 2026-09-25 | M1-Plan | Plan aus [`07-m1-plan.md`](07-m1-plan.md) inkl. technischer Festlegungen angenommen | Entscheidung Projektinhaber |
-| E-044 | 2026-09-25 | Kamera (D-01) | **Statisch** wie 0.7-Standard: Kamera exakt auf Elora (korrigiert, siehe Analyse §9) | Entscheidung Projektinhaber |
-| E-045 | 2026-09-25 | Sichtbereich (D-02) | Start mit Original (1,15 Mio. Einheiten², max. 1500 × 1050), als **Tuning-Regler** – finaler Wert in M1-Abnahme | Entscheidung Projektinhaber |
-| E-046 | 2026-09-25 | Tuning speichern (D-03) | Sandbox speichert Werte in **`tuning.toml`**, wird beim Start geladen; Defaults bleiben im Code | Entscheidung Projektinhaber |
-| E-047 | 2026-09-25 | Schriften | egui-Standardschriften (`epaint_default_fonts`, OFL-1.1 + Ubuntu Font Licence) **nicht** verwenden; stattdessen **Inter** (UI) und **JetBrains Mono** (Monospace), beide OFL-1.1, als Assets in `assets/fonts/` | Entscheidung Projektinhaber; keine Sonderlizenzen in Crate-Abhängigkeiten |
-| E-048 | 2026-09-25 | Advisories | „unmaintained“-Meldungen von cargo-deny nur als **Warnung** (`-W unmaintained`), Sicherheitslücken bleiben Fehler. Anlass: `ttf-parser` (RUSTSEC-2026-0192, indirekt über egui) | Entscheidung Projektinhaber |
-| E-049 | 2026-09-25 | M1 Abnahme | Physik-Sandbox abgenommen: Bewegungsgefühl „perfekt“, Tuning-Startwerte (E-023) bleiben unverändert | Entscheidung Projektinhaber |
-| E-050 | 2026-09-25 | M2-Plan | Plan aus [`08-m2-plan.md`](08-m2-plan.md) inkl. technischer Festlegungen umsetzen | Entscheidung Projektinhaber |
-| E-051 | 2026-09-25 | Waffenwahl (D-M2-01/02) | Tasten **1 Hammer, 2 Granate, 3 Laser**; Mausrad blättert in dieser Reihenfolge | Entscheidung Projektinhaber |
-| E-052 | 2026-09-25 | Laser-Knockback (D-M2-03) | **Ja, leicht**: Stoß in Schussrichtung, Startwert **2** (Tuning-Regler) – Abweichung vom Original (0) | Entscheidung Projektinhaber |
-| E-053 | 2026-09-25 | Trainings-Dummies (D-M2-04) | Dummies **aus der Karte** mit **Bewegungsmustern**: Stehen, Hin-und-her-Laufen, Springen, Laufen + Springen | Entscheidung Projektinhaber |
-| E-054 | 2026-09-25 | Dummy-Kartenzeichen | Ein Zeichen pro Muster: `D` steht, `W` läuft, `J` springt, `X` läuft + springt (Erweiterung von E-024) | Entscheidung Projektinhaber |
-| E-055 | 2026-09-25 | Kill-Taste (D-M2-05) | Erst in **M4** mit den Spielregeln | Entscheidung Projektinhaber |
-| E-056 | 2026-09-29 | M2 Abnahme | Kampf lokal freigegeben („weiter gehts“); Respawn-Verhalten wie im Original (frühestens 0,5 s per Klick, sonst 3 s) bleibt, da kein Einwand | Entscheidung Projektinhaber |
-| E-057 | 2026-09-29 | Vorhersage (D-M3-03) | Eigene Bewegung/Hook **und eigene Waffen** (Schüsse, Laserstrahl, Hammer-Effekt, Rückstoß) werden vorhergesagt; Schaden/Tod nur auf dem Server; andere Spieler interpoliert | Entscheidung Projektinhaber |
-| E-058 | 2026-09-29 | Lag-Kompensation (D-M3-04) | **Keine** – wie Original | Entscheidung Projektinhaber |
-| E-059 | 2026-09-29 | Kapazität (D-M3-01/02) | **Bis 64 Spieler** pro Server; Snapshots **25 Hz**, **50 Hz als LAN-Option** | Entscheidung Projektinhaber |
-| E-060 | 2026-09-29 | Lokal hosten (D-M3-06) | Server als **eigener Prozess**; **Einrichtung und Konfiguration des Servers aus dem Client heraus** (Dialog, startet den Prozess) | Entscheidung Projektinhaber |
-| E-061 | 2026-09-29 | Schutz (D-M3-05) | **Token-Handshake + Verschlüsselung** | Entscheidung Projektinhaber |
-| E-062 | 2026-09-29 | Server-Vertrauen | **Wie SSH (TOFU):** Client merkt sich den Server-Schlüssel beim ersten Verbinden und warnt bei Änderung; Umsetzung Noise-Protokoll `XX` (Crate `snow`, Apache-2.0/MIT) | Entscheidung Projektinhaber |
-| E-063 | 2026-09-29 | Kompression (D-M3-07) | „Bessere Methode als Original, sonst Huffman“ → **feldweises Delta mit Änderungsmaske + kompakte Zahlen, danach statischer Huffman mit auf eigenem Verkehr trainierter Tabelle** (Begründung: siehe `09-m3-plan.md`) | Entscheidung Projektinhaber, Methode von Claude ausgearbeitet |
-| E-064 | 2026-09-29 | M3-Plan | Plan aus [`09-m3-plan.md`](09-m3-plan.md) mit obigen Antworten umsetzen | Entscheidung Projektinhaber |
-| E-065 | 2026-09-29 | M3 Abnahme | Netzwerk abgenommen („erst mal alles super“) | Entscheidung Projektinhaber |
-| E-066 | 2026-09-29 | Siegbedingung (D-M4-01) | **Wie Original:** Score-Limit 20, kein Zeitlimit, Sudden Death bei Gleichstand (CTF siehe E-067) | Entscheidung Projektinhaber |
-| E-067 | 2026-09-29 | CTF-Wertung (D-M4-02) | Einzelpunkte wie Original (Träger +5, Aufnehmen/Zurückbringen/Träger töten +1, Kills wie DM); **Teamwertung = Eroberungen, Standard-Limit 5** (statt Rohwert 100/Eroberung) | Entscheidung Projektinhaber |
-| E-068 | 2026-09-29 | Aufwärmen (D-M4-03) | **10 s Aufwärmen nach Kartenwechsel** (Punkte zählen nicht), dann **3 s Countdown** (Welt eingefroren); Countdown auch vor jedem weiteren Match/jeder Runde | Entscheidung Projektinhaber |
-| E-069 | 2026-09-29 | Friendly Fire (D-M4-04) | **An:** Schaden und Rückstoß an Teammitgliedern, Teamkill −1 (Server-Einstellung, abschaltbar) | Entscheidung Projektinhaber |
-| E-070 | 2026-09-29 | TDM-Respawn (D-M4-05) | frühestens nach **3 s** (wie Original) | Entscheidung Projektinhaber (Teil der Antwort zu D-M4-04) |
-| E-071 | 2026-09-29 | Startausrüstung LMS/LTS (D-M4-06) | **Nur Hammer + Pickups** wie in allen Modi (E-025) | Entscheidung Projektinhaber |
-| E-072 | 2026-09-29 | Konsole (D-M4-07, O-20) | **Server-Konsole** (Terminal) **+ Abstimmungen**; Remote-Konsole später | Entscheidung Projektinhaber |
-| E-073 | 2026-09-29 | Team-Wahl (D-M4-08) | **Wie Original:** Beitritt ins kleinere Team, Wechsel und Zuschauen möglich, automatischer Ausgleich nach 1 min | Entscheidung Projektinhaber |
-| E-074 | 2026-09-29 | Rotation (D-M4-09) | **Wie Original:** Kartenliste, Matches pro Karte, Teamtausch nach jedem Match | Entscheidung Projektinhaber |
-| E-075 | 2026-09-29 | Sandbox-Modi (D-M4-10) | Spielmodi **in der Sandbox wählbar**, Dummies bekommen Teams | Entscheidung Projektinhaber |
-| E-076 | 2026-09-29 | Instagib (D-M4-11) | **Schalter für alle Modi** (iDM, iTDM, iCTF, iLMS, iLTS) | Entscheidung Projektinhaber |
-| E-077 | 2026-09-29 | Abstimmungen | Über **Karte, Modus, Kick (5 min Sperre), Zuschauer**; Ablauf wie Original (25 s) | Entscheidung Projektinhaber |
-| E-078 | 2026-09-29 | Tasten (D-M4-12) | **T** Chat, **Y** Team-Chat, **Tab** Scoreboard, **F3/F4** Ja/Nein, **K** kill; Abstimmungen und Team-Wahl im Panel | Entscheidung Projektinhaber |
-| E-079 | 2026-09-29 | M4-Plan | Plan aus [`10-m4-plan.md`](10-m4-plan.md) mit obigen Antworten umsetzen | Entscheidung Projektinhaber |
-| E-080 | 2026-09-29 | Grafik-Erstellung (D-M5-01) | **Claude erzeugt SVG** (mit Selbstprüfung am gerenderten Bild) **+ externe Vektor-Bild-API** für aufwendige Motive; Freigabe per Screenshot durch den Projektinhaber | Entscheidung Projektinhaber |
-| E-081 | 2026-09-29 | Sounds (D-M5-05) | **Prozedural generiert + CC0 gemischt** (generiert für UI/einfache Effekte, CC0 z. B. für Explosion/Treffer; Quellenliste) | Entscheidung Projektinhaber |
-| E-082 | 2026-09-29 | Musik (D-M5-06) | **Nur im Menü**, kommt mit M7 | Entscheidung Projektinhaber |
-| E-083 | 2026-09-29 | Reihenfolge M5 (D-M5-11) | **Erst Look, dann Sound** | Entscheidung Projektinhaber |
-| E-084 | 2026-09-29 | Bild-API | **Recraft** (SVG-Ausgabe); API-Schlüssel nur als Umgebungsvariable, nie im Repo; Nutzungsbedingungen vor dem ersten Einsatz prüfen | Entscheidung Projektinhaber |
-| E-085 | 2026-09-29 | Elora-Form (D-M5-03) | **Tropfenform** – nach oben spitz, starkes Squash & Stretch beim Springen/Landen | Entscheidung Projektinhaber |
-| E-086 | 2026-09-29 | Skins (D-M5-04, O-39) | **Nur Farben + wenige Teile** aus fester Auswahl (z. B. Körperfarbe, Muster, Augenform), **keine Community-Skins** – ersetzt den Community-Teil von E-029 | Entscheidung Projektinhaber |
-| E-087 | 2026-09-29 | Darstellungsgröße | **Etwas kleiner als Original:** sichtbarer Körper ≈ 36 Einheiten (Hitbox 28) | Entscheidung Projektinhaber |
-| E-088 | 2026-09-29 | Zusatz-Effekte (D-M5-07) | **Kamera-Wackeln** (nahe Explosionen, eigener Schaden) und **Treffer-Marker** beim Treffen anderer – beides abschaltbar; genaue Form im Entwurf | Entscheidung Projektinhaber |
-| E-089 | 2026-09-29 | Welt-Optik Textkarten (D-M5-08) | **Schlicht:** einfarbige Tiles mit Kontur, Verlaufs-Hintergrund; Aufwand in M6 | Entscheidung Projektinhaber |
-| E-090 | 2026-09-29 | HUD (D-M5-09) | **Modern, am Fadenkreuz:** Leben/Rüstung/Munition als Balken bzw. Ringe am Fadenkreuz oder unten mittig; genaue Form im Entwurf | Entscheidung Projektinhaber |
-| E-091 | 2026-09-29 | Emotes (D-M5-10) | **Emote-Rad mit 8 eigenen Emoticons** (Taste E halten, Maus wählt) + automatische Augen-Ausdrücke | Entscheidung Projektinhaber |
-| E-092 | 2026-09-29 | M4 Abnahme | Spielmodi „vorerst abgeschlossen“ | Entscheidung Projektinhaber |
-| E-093 | 2026-09-29 | M5-Plan | Plan aus [`11-m5-plan.md`](11-m5-plan.md) umsetzen | Entscheidung Projektinhaber |
-| E-094 | 2026-09-29 | Elora-Entwurf (M5.3) | **Entwurf B „Wirbel“:** Tropfen mit zur Seite geneigter Spitze, heller Bauchfleck, kleine Augen mit Lächeln ([`design/elora-entwuerfe.png`](design/elora-entwuerfe.png)) | Entscheidung Projektinhaber |
-| E-095 | 2026-09-29 | Skin-Teile (O-46) | Färbbar sind **Augen, Körper, Füße** – **nur Farben**, keine Form-Varianten je Teil | Entscheidung Projektinhaber |
-| E-096 | 2026-09-29 | Farbwahl (O-46) | **Feste Palette** je Teil, keine freien Regler; Farben der Palette als Entwurf zur Freigabe | Entscheidung Projektinhaber |
-| E-097 | 2026-09-29 | Bauchfleck (O-46) | Kein eigenes Teil – **hellere Abstufung der Körperfarbe** | Entscheidung Projektinhaber |
-| E-098 | 2026-09-29 | Skin-Palette | Entwurf [`design/elora-palette.png`](design/elora-palette.png) freigegeben: 16 Farben für Körper und Füße, 8 für Augen | Entscheidung Projektinhaber |
-| E-099 | 2026-09-29 | Skins in Team-Modi | Körper in **Teamfarbe**, Füße und Augen behalten die Farben des Spielers | Entscheidung Projektinhaber |
-| E-100 | 2026-09-29 | Huffman-Tabelle | Neu trainierte Tabelle (Commit `3a550bc`) wird behalten | Entscheidung Projektinhaber |
-| E-101 | 2026-09-29 | Pickups, Waffen, Flaggen (M5.5) | **Stil A „Rund“** aus [`design/elora-items.png`](design/elora-items.png) | Entscheidung Projektinhaber |
-| E-102 | 2026-09-29 | HUD (M5.8) | **Entwurf B „Leiste unten mittig“** aus [`design/elora-hud.png`](design/elora-hud.png); zusätzlich färbt sich das **Fadenkreuz nach dem Leben: Weiß → Gelb → Rot** (fließend) | Entscheidung Projektinhaber |
-| E-103 | 2026-09-29 | Emotes (M5.9) | Vorschlag aus [`design/elora-emotes.png`](design/elora-emotes.png) freigegeben: Herz, Lachen, Wut, Traurig, Staunen, Frage, GG, Schlaf; Rad mit Taste E, Anzeige ca. 2 s | Entscheidung Projektinhaber |
-| E-104 | 2026-09-29 | Augen-Ausdrücke (M5.9) | Augen reagieren **zusätzlich automatisch**: zusammengekniffen bei Schaden, fröhlich nach einem Kill | Entscheidung Projektinhaber |
-| E-105 | 2026-09-29 | Look (M5) und Vorgehen Sound (M5.7) | Look im Playtest abgenommen („super“); Sound wie vorgeschlagen: Crate `elora-audio` mit kira, prozeduraler Generator (sfxr-Prinzip, Parameter in `assets/sounds/`), WAV-Hörproben zur Freigabe, CC0 nur wo nötig | Entscheidung Projektinhaber |
-| E-106 | 2026-09-30 | Hörprobe prozedurale Sounds | Behalten: `spawn`, `death`, `weapon_switch`, `pickup_weapon`. Alle anderen klingen „zu sehr nach Computersound“ → durch CC0-Sounds ersetzen, Ziel ist Atmosphäre | Entscheidung Projektinhaber |
-| E-107 | 2026-09-30 | CC0-Sounds | Quelle **Kenney** (Grundstock) **+ Freesound nur CC0** (Lücken; Freesound verworfen → E-108); Klangstil **organisch / weich** (Plopps, Glibber, Holz, Stoff, natürliche Schläge) | Entscheidung Projektinhaber |
-| E-108 | 2026-09-30 | Freesound | **Ohne Freesound** – nur Kenney-Pakete, Sounds dürfen bearbeitet und kombiniert werden. Hörprobe 2: Hammer soll nach Hammer-Schwung klingen, Granate nach Explosion, Laser organischer, Sprung passender; Rest in Ordnung | Entscheidung Projektinhaber |
-| E-109 | 2026-09-30 | Sounds (M5.7) | Stand „erst einmal in Ordnung“ – M5.7 abgeschlossen. **Neue Sounds besorgt der Projektinhaber künftig selbst** (Ablauf in README „Sounds austauschen“) | Entscheidung Projektinhaber |
-| E-110 | 2026-09-30 | M5 Abnahme | **M5 abgeschlossen** (Look im Playtest abgenommen, Sounds vorerst in Ordnung). Playtest-Aufzeichnung `rec-1790721458` als Golden-Regressionstest übernommen | Entscheidung Projektinhaber |
-| E-111 | 2026-09-30 | Reihenfolge M6/M7 | **M7 (Menüs & Infrastruktur) vor M6 (Karten & Editor)**; Nummern bleiben, Reihenfolge M5 → M7 → M6 → M8 | Entscheidung Projektinhaber |
-| E-112 | 2026-09-30 | Internet-Serverliste (D-M7-03, O-17) | **HTTP/JSON-Master** wie DDNet: Server melden sich per HTTP an, Client holt die Liste als JSON und fragt jeden Server selbst (Ping, Infos) | Entscheidung Projektinhaber |
-| E-113 | 2026-09-30 | Start (D-M7-02) | **Hauptmenü über einem ruhigen, gezeichneten Bild** | Entscheidung Projektinhaber |
-| E-114 | 2026-09-30 | Sprache (D-M7-10) | **Deutsch + Englisch**, umschaltbar; Texte in einer Übersetzungsdatei je Sprache | Entscheidung Projektinhaber |
-| E-115 | 2026-09-30 | Demos (D-M7-08, O-18) | **Später** (nach Release 1) | Entscheidung Projektinhaber |
-| E-116 | 2026-09-30 | Einstellungsdatei (D-M7-04) | **`settings.toml` im Benutzerverzeichnis** (Linux `~/.config/elora`, sonst der übliche Ort je System) für Spieler, Skin, Steuerung, Grafik, Ton, Sprache, Favoriten; `tuning.toml` bleibt Entwickler-Tuning | Entscheidung Projektinhaber |
-| E-117 | 2026-09-30 | Tastenbelegung (D-M7-05) | **Eine Taste je Aktion** | Entscheidung Projektinhaber |
-| E-118 | 2026-09-30 | Server-Passwort (D-M7-07) | **Nein** für Release 1 | Entscheidung Projektinhaber |
-| E-119 | 2026-09-30 | Remote-Konsole (D-M7-11, O-45) | **Später** | Entscheidung Projektinhaber |
-| E-120 | 2026-09-30 | Grafik-Einstellungen (D-M7-06) | **Fenster/Vollbild, VSync, Kantenglättung (MSAA), UI-Skalierung** | Entscheidung Projektinhaber |
-| E-121 | 2026-09-30 | Menümusik (D-M7-09) | **Abspielen vorbereiten:** Datei in `assets/music/` läuft im Menü in Schleife mit eigener Lautstärke; ohne Datei still. Musik liefert der Projektinhaber (E-109) | Entscheidung Projektinhaber |
-| E-122 | 2026-09-30 | Hosten (D-M7-12) | **„Server erstellen“ im Menü** (Name, Karte, Modus, Spieler), startet `elora-server` im Hintergrund und verbindet | Entscheidung Projektinhaber |
-| E-123 | 2026-09-30 | Menü-Design (D-M7-01) | **2–3 Entwürfe als Bild** (Hauptmenü, Server-Browser, Einstellungsseite) vor der Umsetzung | Entscheidung Projektinhaber |
-| E-124 | 2026-09-30 | M7-Plan | Plan aus [`12-m7-plan.md`](12-m7-plan.md) freigegeben, Umsetzung beginnt mit M7.0 (Entwürfe) | Entscheidung Projektinhaber |
-| E-125 | 2026-09-30 | Menü-Stil (M7.0) | **Aufbau von C „Leiste oben“** (Reiterleiste oben, Startseite mit „Schnell spielen“, Einstellungen mit Seitenleiste) **in den Farben und Formen von B „Hell & weich“** (cremefarbene Karten, weicher Schatten, farbige Pillen-Knöpfe) | Entscheidung Projektinhaber |
-| E-126 | 2026-09-30 | M7.0–M7.4 | Menü, Einstellungen und Sprache im Test „sieht gut aus“ – weiter mit M7.5 | Entscheidung Projektinhaber |
-| E-127 | 2026-09-30 | Master-Server-Verbindung (M7.8) | **HTTPS** für Clients und Server (rustls, Mozilla-Stammzertifikate); der Master spricht HTTP und läuft öffentlich hinter einem Reverse-Proxy mit Zertifikat. Lizenz **CDLA-Permissive-2.0** (webpki-roots) wird erlaubt | Entscheidung Projektinhaber |
-| E-128 | 2026-10-01 | M7 Abnahme | **M7 abgeschlossen** („sieht gut aus“) – weiter mit M6 (E-111) | Entscheidung Projektinhaber |
-| E-129 | 2026-10-01 | Release-Kartenformat (D-M6-01, O-37) | **Binär** (kompakt, wie das Original) | Entscheidung Projektinhaber |
-| E-130 | 2026-10-01 | Kartenlook (D-M6-02) | **Beides:** Vektor-Kacheln mit automatischen Kanten/Ecken je Material für die Spielfläche + frei platzierbare Vektor-Deko | Entscheidung Projektinhaber |
-| E-131 | 2026-10-01 | Ebenen (D-M6-03) | **Vereinfacht:** Game-Layer + Deko-Ebenen davor/dahinter + Hintergrund-Ebenen mit Parallax | Entscheidung Projektinhaber |
-| E-132 | 2026-10-01 | Animationen (D-M6-04) | **Wie das Original:** frei editierbare Kurven (Envelopes) für Position, Drehung, Farbe | Entscheidung Projektinhaber |
-| E-133 | 2026-10-01 | Editor-Umfang (D-M6-05) | **Alles:** Grundwerkzeuge, Deko und Hintergrund-Ebenen, Animations-Editor, Testspielen | Entscheidung Projektinhaber |
-| E-134 | 2026-10-01 | Release-Karten (D-M6-06, O-43) | **3 DM** (klein, mittel, groß; auch für TDM/LMS) **+ 2 CTF** | Entscheidung Projektinhaber |
-| E-135 | 2026-10-01 | Kartenbau | **Claude baut die Karten nach Vorgaben des Projektinhabers**, Abnahme im Playtest | Entscheidung Projektinhaber |
-| E-136 | 2026-10-01 | Karten-Download (D-M6-07) | **Automatisch:** Server schickt fehlende Karten komprimiert in Teilen, Prüfsumme, Zwischenspeicher im Client | Entscheidung Projektinhaber |
-| E-137 | 2026-10-01 | Neue Tile-Arten (D-M6-08) | **Plattform** (von unten/seitlich durchlässig), **Eis** (rutschig), **Sprungfeld** (wirft nach oben/schräg), **Beschleuniger** (Laufband) – Werte als Tuning-Vorschlag zur Freigabe | Entscheidung Projektinhaber |
-| E-138 | 2026-10-01 | M6-Plan | Plan aus [`13-m6-plan.md`](13-m6-plan.md) freigegeben, Beginn mit M6.0 (Entwürfe Kartenlook) | Entscheidung Projektinhaber |
-| E-139 | 2026-10-01 | Kartenlook (M6.0) | **Stil A „Weich & lebendig“** aus [`design/elora-kartenlook.png`](design/elora-kartenlook.png): Erde mit Grasnarbe, runde Außenecken, Kontur, Büsche/Blumen, Wolken- und Hügel-Ebenen; Spezial-Tiles werden an den Stil angepasst | Entscheidung Projektinhaber |
-| E-140 | 2026-10-01 | Tuning neue Tiles (M6.1) | Vorschlag angenommen: **T-31** Reibung Eis 0,985 · **T-32** Beschleunigung Eis 0,35 · **T-33** Kraft Sprungfeld 20 · **T-34** Richtungen hoch/schräg links/schräg rechts (45°) · **T-35** Beschleuniger 4,0 Einheiten/Tick · **T-36** Plattform von unten/seitlich durchlässig, Hook/Granate/Laser fliegen hindurch | Entscheidung Projektinhaber |
-| E-141 | 2026-10-01 | Durch Plattformen fallen | Neue belegbare Aktion **„Runter“** (Standard S); Spieler-Eingabe bekommt ein Feld dafür (**Protokollversion 3**) | Entscheidung Projektinhaber |
-| E-142 | 2026-10-01 | M6.1 abgenommen | Neue Tile-Arten im Playtest „fühlt sich perfekt an“; Werte T-31 bis T-36 bleiben | Entscheidung Projektinhaber |
-| E-143 | 2026-10-01 | Kompression Kartenformat (M6.2) | **Deflate/zlib** wie im Original (reines Rust, `miniz_oxide`) | Entscheidung Projektinhaber |
-| E-144 | 2026-10-01 | Eigene Grafiken in Karten | **Eingebettete SVGs erlaubt** (eigene Deko); Grenzen 64 Bilder × 512 KiB, Client parst ohne externe Verweise | Entscheidung Projektinhaber |
-| E-145 | 2026-10-01 | Dateiendung | **`.emap`** | Entscheidung Projektinhaber |
-| E-146 | 2026-10-01 | Textformat | **Textkarten umgewandelt, Textformat `.emap.toml` entfernt** (ersetzt E-024); Karten werden mit dem Editor gebaut, Tests nutzen `Map::from_rows`; Protokollversion 4 (Karte als Binärdaten im `Welcome`) | Entscheidung Projektinhaber |
-| E-147 | 2026-10-01 | Kartengrafik (M6.3) | Materialien Erde/Gras, Sand, Schnee, Stein (nicht hookbar), Eis; Spezial-Tiles Tod, Holz-Plattform, Sprungfeld, Beschleuniger; Deko Büsche, Blumen, Gras, Steine, Pilze, Bäume, Zaun, Schilder; Hintergründe Wolken, Hügel, Berge, Wald, Nachthimmel | Entscheidung Projektinhaber |
-| E-148 | 2026-10-01 | M6.3 abgenommen | Kartengrafik nach Überarbeitung (Stein, Beschleuniger-Pfeil, Büsche, Baum, Wald) angenommen; **Stein nur für nicht hookbare Wände**, hookbar sind Erde, Sand, Schnee | Entscheidung Projektinhaber |
-| E-149 | 2026-10-01 | M6.4 abgenommen | Kartenlook im Spiel (Parallax, Deko, Animationen, Zwischenspeicher) im Playtest angenommen | Entscheidung Projektinhaber |
-| E-150 | 2026-10-01 | Editor-Look (M6.6) | **egui dunkel** (Standard-Dunkeldesign), hebt sich vom Spiel ab | Entscheidung Projektinhaber |
-| E-151 | 2026-10-01 | Editor-Layout | **Alles rechts:** eine Seitenleiste mit Werkzeugen, Ebenen und Eigenschaften; Karte nimmt den Rest | Entscheidung Projektinhaber |
-| E-152 | 2026-10-01 | Speicherort eigener Karten | **Benutzerverzeichnis** (`~/.local/share/elora/maps`, Windows/macOS im Einstellungsordner); Training, Hosten und Download-Suche finden sie dort | Entscheidung Projektinhaber |
-| E-153 | 2026-10-01 | M6.5 und M6.6 abgenommen | Karten-Download und Editor-Grundlage angenommen („sieht super aus“) | Entscheidung Projektinhaber |
-| E-154 | 2026-10-01 | M6.7 abgenommen | Editor-Werkzeuge angenommen („sieht gut aus“) | Entscheidung Projektinhaber |
-| E-155 | 2026-10-01 | Themen der Release-Karten (M6.10) | **Jede Karte ein Thema:** DM klein Wiese (Erde, Tag) · DM mittel Wüste (Sand) · DM groß Winter (Schnee, Eis) · CTF 1 Wald (Tag) · CTF 2 Nacht (Stein, Sterne) | Entscheidung Projektinhaber |
-| E-156 | 2026-10-01 | Größe der Release-Karten | **Eher groß** (mehr Platz als Vanilla, für volle Server) | Entscheidung Projektinhaber |
-| E-157 | 2026-10-01 | Neue Tile-Arten in Release-Karten | **Gezielt:** Plattformen als Bauelement, Eis/Sprungfeld/Beschleuniger je Karte an ein bis zwei markanten Stellen | Entscheidung Projektinhaber |
-| E-158 | 2026-10-01 | Aufbau der CTF-Karten | **Spiegelsymmetrisch** (links Rot, rechts Blau) | Entscheidung Projektinhaber |
-| E-159 | 2026-10-01 | M6.10 abgenommen | Release-Karten `dm-wiese`, `dm-wueste`, `dm-winter`, `ctf-wald`, `ctf-nacht` angenommen, Namen bleiben | Entscheidung Projektinhaber |
-| E-160 | 2026-10-01 | M6 abgeschlossen (M6.11) | Abnahme erfüllt: Projektinhaber hat mit dem Editor eine eigene Karte von Grund auf gebaut und gespielt | Entscheidung Projektinhaber |
-| E-161 | 2026-10-01 | Vertrieb Release 1 (O-44) | **Erst GitHub Releases**; itch.io, Flathub, Steam als spätere Möglichkeit festgehalten (O-49) | Entscheidung Projektinhaber |
-| E-162 | 2026-10-01 | Betrieb Master-Server (O-47) | **Projektinhaber betreibt ihn**; Claude liefert Betriebsdateien (systemd, Docker) und Anleitung | Entscheidung Projektinhaber |
-| E-163 | 2026-10-01 | Release-Builds | **Automatisch per GitHub Actions** bei Versions-Tag: Linux (AppImage + tar.gz), Windows (ZIP), macOS (.app im DMG) | Entscheidung Projektinhaber |
-| E-164 | 2026-10-01 | Übersetzte Server-Meldungen (O-48) | **Vor Release 1** umsetzen | Entscheidung Projektinhaber |
-| E-165 | 2026-10-01 | Versionsnummer Release 1 (D-M8-05) | **0.9.0 Beta** | Entscheidung Projektinhaber |
-| E-166 | 2026-10-01 | Adresse des Master-Servers (D-M8-06) | voraussichtlich **https://elora.bastianswelt.de** (Standard in Client und Server) | Entscheidung Projektinhaber |
-| E-167 | 2026-10-01 | macOS-Signierung (D-M8-07) | **Unsigniert** (Hinweis „Rechtsklick → Öffnen“) | Entscheidung Projektinhaber |
-| E-168 | 2026-10-01 | Playtests (D-M8-08) | Projektinhaber fragt Bekannte für Spielrunden | Entscheidung Projektinhaber |
-| E-169 | 2026-10-01 | M8-Plan | Plan aus [`14-m8-plan.md`](14-m8-plan.md) angenommen (offene Punkte beantwortet), Beginn mit M8.1 | Entscheidung Projektinhaber |
-| E-170 | 2026-10-01 | Eintragen beim Master | **Dedizierte Server ja** (abschaltbar mit `--no-master`), **aus dem Client gehostete nein**, außer „Im Internet anzeigen“ ist angehakt | Entscheidung Projektinhaber |
-| E-171 | 2026-10-01 | Master auf Webspace | `elora.bastianswelt.de` ist **Webspace mit PHP** → Master zusätzlich als PHP-Skript (`deploy/master-php/`), gleiche Schnittstelle | Entscheidung Projektinhaber |
-| E-172 | 2026-10-01 | Projektseite | Onepager auf `elora.bastianswelt.de` (`deploy/master-php/index.php`): deutsch, Grafiken aus den Projekt-SVGs, Live-Status der Server, Verweis auf github.com/ehrenberg/elora, kein Impressum | Entscheidung Projektinhaber |
-| E-173 | 2026-10-01 | Release 0.9.0 Beta | Projektinhaber gibt 0.9.0 frei, nachdem der Master über IPv6 funktioniert; Credits-Seite im Menü (M8.5) und Playtests (M8.6) folgen nach der Beta | Entscheidung Projektinhaber |
+| E-023 | 2026-09-25 | Tuning (O-32) | All proposals T-01 to T-30 from [`../../handbook/tuning.md`](../../handbook/tuning.md) accepted | Decision of the project owner |
+| E-024 | 2026-09-25 | Map text format (O-33) | Proposal from [`../../handbook/map-format.md`](../../handbook/map-format.md) accepted (TOML + ASCII grid, legend, extension `.emap.toml`) – **only for test and development maps** | Decision of the project owner; too simple for Release 1 (no graphics layers) · **replaced by E-146** |
+| E-025 | 2026-09-25 | Starting equipment (O-35) | Elora spawns **with the hammer only**; laser and grenade exclusively via pickup | Decision of the project owner; pickups and map control become important |
+| E-026 | 2026-09-25 | Instagib rules | Classic: laser only, infinite ammo, one hit kills, no pickups | Decision of the project owner |
+| E-027 | 2026-09-25 | Asset license (O-36) | **CC-BY-SA 4.0** for own graphics/sounds | Decision of the project owner; copyleft matching GPL-3.0 |
+| E-028 | 2026-09-25 | Release map format + editor (O-10/O-16) | **Own format + own editor integrated into the game** (like Teeworlds) | Decision of the project owner; maximum control |
+| E-029 | 2026-09-25 | Character & skins (O-34/O-19) | Elora is the base character; **skin system built from parts** (body, eyes, decoration etc., like 0.7) including community skins | Decision of the project owner |
+| E-030 | 2026-09-25 | Graphics style | **Flat/vector**: clear shapes, modern palette, resolution-independent | Decision of the project owner; distinct from Teeworlds |
+| E-031 | 2026-09-25 | UI (O-27) | **egui** for editor, console, debug sliders; **own game UI** for main menu, server browser, HUD | Decision of the project owner |
+| E-032 | 2026-09-25 | Audio (O-26) | **kira** | Decision of the project owner |
+| E-033 | 2026-09-25 | Vector pipeline (O-38) | **Runtime tessellation** (e.g. lyon → triangles → wgpu), truly resolution-independent, dynamic deformation possible | Decision of the project owner |
+| E-034 | 2026-09-25 | Hosting (O-11) | Initially **local Git only**, hosting later | Decision of the project owner |
+| E-035 | 2026-09-25 | Bots (O-15) | **After Release 1**; the architecture provides for them (bots supply inputs like players) | Decision of the project owner |
+| E-036 | 2026-09-25 | Milestones (O-21) | Claude proposes a roadmap to Release 1, the project owner decides per milestone → [`06-roadmap.md`](06-roadmap.md) | Decision of the project owner |
+| E-037 | 2026-09-25 | Roadmap (O-21) | Milestones M0–M8 from [`06-roadmap.md`](06-roadmap.md) accepted | Decision of the project owner |
+| E-038 | 2026-09-25 | Rust toolchain | Switch to **rustup**; version pinned in `rust-toolchain.toml` | Decision of the project owner; reproducible for all developers |
+| E-039 | 2026-09-25 | Local checks (O-41) | **`cargo xtask`** (Rust program in the workspace, platform-independent) | Decision of the project owner |
+| E-040 | 2026-09-25 | Additional tools | **cargo-deny** (licenses, advisories) and **cargo-nextest** (tests) | Decision of the project owner |
+| E-041 | 2026-09-25 | Workspace location | Directly in the project folder (`Cargo.toml`, `crates/`, `apps/`, `docs/` in the root) | Decision of the project owner |
+| E-042 | 2026-09-25 | M0 acceptance | M0 project setup accepted (commit `5ab9055`) | Decision of the project owner |
+| E-043 | 2026-09-25 | M1 plan | Plan from [`07-m1-plan.md`](07-m1-plan.md) including technical specifications accepted | Decision of the project owner |
+| E-044 | 2026-09-25 | Camera (D-01) | **Static** like the 0.7 default: camera exactly on Elora (corrected, see analysis §9) | Decision of the project owner |
+| E-045 | 2026-09-25 | View area (D-02) | Start with the original (1.15 million units², max. 1500 × 1050), as a **tuning slider** – final value in the M1 acceptance | Decision of the project owner |
+| E-046 | 2026-09-25 | Saving tuning (D-03) | The sandbox saves values in **`tuning.toml`**, loaded at startup; defaults stay in the code | Decision of the project owner |
+| E-047 | 2026-09-25 | Fonts | Do **not** use the egui default fonts (`epaint_default_fonts`, OFL-1.1 + Ubuntu Font Licence); instead **Inter** (UI) and **JetBrains Mono** (monospace), both OFL-1.1, as assets in `assets/fonts/` | Decision of the project owner; no special licenses in crate dependencies |
+| E-048 | 2026-09-25 | Advisories | “unmaintained” reports from cargo-deny only as a **warning** (`-W unmaintained`), security vulnerabilities remain errors. Trigger: `ttf-parser` (RUSTSEC-2026-0192, indirectly via egui) | Decision of the project owner |
+| E-049 | 2026-09-25 | M1 acceptance | Physics sandbox accepted: movement feel “perfect”, initial tuning values (E-023) stay unchanged | Decision of the project owner |
+| E-050 | 2026-09-25 | M2 plan | Implement the plan from [`08-m2-plan.md`](08-m2-plan.md) including technical specifications | Decision of the project owner |
+| E-051 | 2026-09-25 | Weapon selection (D-M2-01/02) | Keys **1 hammer, 2 grenade, 3 laser**; the mouse wheel cycles in this order | Decision of the project owner |
+| E-052 | 2026-09-25 | Laser knockback (D-M2-03) | **Yes, slight**: push in the shot direction, initial value **2** (tuning slider) – deviation from the original (0) | Decision of the project owner |
+| E-053 | 2026-09-25 | Training dummies (D-M2-04) | Dummies **from the map** with **movement patterns**: standing, walking back and forth, jumping, walking + jumping | Decision of the project owner |
+| E-054 | 2026-09-25 | Dummy map characters | One character per pattern: `D` stands, `W` walks, `J` jumps, `X` walks + jumps (extension of E-024) | Decision of the project owner |
+| E-055 | 2026-09-25 | Kill key (D-M2-05) | Only in **M4** with the game rules | Decision of the project owner |
+| E-056 | 2026-09-29 | M2 acceptance | Local combat approved (“let's keep going”); respawn behavior as in the original (no earlier than 0.5 s by click, otherwise 3 s) stays, as there was no objection | Decision of the project owner |
+| E-057 | 2026-09-29 | Prediction (D-M3-03) | Own movement/hook **and own weapons** (shots, laser beam, hammer effect, knockback) are predicted; damage/death only on the server; other players interpolated | Decision of the project owner |
+| E-058 | 2026-09-29 | Lag compensation (D-M3-04) | **None** – like the original | Decision of the project owner |
+| E-059 | 2026-09-29 | Capacity (D-M3-01/02) | **Up to 64 players** per server; snapshots **25 Hz**, **50 Hz as a LAN option** | Decision of the project owner |
+| E-060 | 2026-09-29 | Local hosting (D-M3-06) | Server as a **separate process**; **setup and configuration of the server from within the client** (dialog, starts the process) | Decision of the project owner |
+| E-061 | 2026-09-29 | Protection (D-M3-05) | **Token handshake + encryption** | Decision of the project owner |
+| E-062 | 2026-09-29 | Server trust | **Like SSH (TOFU):** the client remembers the server key on first connect and warns when it changes; implemented with the Noise protocol `XX` (crate `snow`, Apache-2.0/MIT) | Decision of the project owner |
+| E-063 | 2026-09-29 | Compression (D-M3-07) | “Better method than the original, otherwise Huffman” → **field-wise delta with change mask + compact numbers, followed by static Huffman with a table trained on our own traffic** (rationale: see `09-m3-plan.md`) | Decision of the project owner, method worked out by Claude |
+| E-064 | 2026-09-29 | M3 plan | Implement the plan from [`09-m3-plan.md`](09-m3-plan.md) with the answers above | Decision of the project owner |
+| E-065 | 2026-09-29 | M3 acceptance | Network accepted (“everything great for now”) | Decision of the project owner |
+| E-066 | 2026-09-29 | Win condition (D-M4-01) | **Like the original:** score limit 20, no time limit, sudden death on a tie (CTF see E-067) | Decision of the project owner |
+| E-067 | 2026-09-29 | CTF scoring (D-M4-02) | Individual points like the original (carrier +5, pickup/return/killing the carrier +1, kills like DM); **team score = captures, default limit 5** (instead of the raw value 100/capture) | Decision of the project owner |
+| E-068 | 2026-09-29 | Warmup (D-M4-03) | **10 s warmup after a map change** (points do not count), then a **3 s countdown** (world frozen); countdown also before every further match/round | Decision of the project owner |
+| E-069 | 2026-09-29 | Friendly fire (D-M4-04) | **On:** damage and knockback to team members, teamkill −1 (server setting, can be turned off) | Decision of the project owner |
+| E-070 | 2026-09-29 | TDM respawn (D-M4-05) | no earlier than after **3 s** (like the original) | Decision of the project owner (part of the answer to D-M4-04) |
+| E-071 | 2026-09-29 | Starting equipment LMS/LTS (D-M4-06) | **Hammer only + pickups**, as in all modes (E-025) | Decision of the project owner |
+| E-072 | 2026-09-29 | Console (D-M4-07, O-20) | **Server console** (terminal) **+ votes**; remote console later | Decision of the project owner |
+| E-073 | 2026-09-29 | Team selection (D-M4-08) | **Like the original:** join the smaller team, switching and spectating possible, automatic balancing after 1 min | Decision of the project owner |
+| E-074 | 2026-09-29 | Rotation (D-M4-09) | **Like the original:** map list, matches per map, team swap after every match | Decision of the project owner |
+| E-075 | 2026-09-29 | Sandbox modes (D-M4-10) | Game modes **selectable in the sandbox**, dummies get teams | Decision of the project owner |
+| E-076 | 2026-09-29 | Instagib (D-M4-11) | **Toggle for all modes** (iDM, iTDM, iCTF, iLMS, iLTS) | Decision of the project owner |
+| E-077 | 2026-09-29 | Votes | On **map, mode, kick (5 min ban), spectator**; procedure like the original (25 s) | Decision of the project owner |
+| E-078 | 2026-09-29 | Keys (D-M4-12) | **T** chat, **Y** team chat, **Tab** scoreboard, **F3/F4** yes/no, **K** kill; votes and team selection in the panel | Decision of the project owner |
+| E-079 | 2026-09-29 | M4 plan | Implement the plan from [`10-m4-plan.md`](10-m4-plan.md) with the answers above | Decision of the project owner |
+| E-080 | 2026-09-29 | Creating graphics (D-M5-01) | **Claude generates SVG** (with self-review on the rendered image) **+ an external vector image API** for complex motifs; approval via screenshot by the project owner | Decision of the project owner |
+| E-081 | 2026-09-29 | Sounds (D-M5-05) | **Procedurally generated + CC0 mixed** (generated for UI/simple effects, CC0 e.g. for explosion/hit; source list) | Decision of the project owner |
+| E-082 | 2026-09-29 | Music (D-M5-06) | **Menu only**, comes with M7 | Decision of the project owner |
+| E-083 | 2026-09-29 | Order within M5 (D-M5-11) | **Look first, then sound** | Decision of the project owner |
+| E-084 | 2026-09-29 | Image API | **Recraft** (SVG output); API key only as an environment variable, never in the repo; check the terms of use before first use | Decision of the project owner |
+| E-085 | 2026-09-29 | Elora shape (D-M5-03) | **Drop shape** – pointed at the top, strong squash & stretch when jumping/landing | Decision of the project owner |
+| E-086 | 2026-09-29 | Skins (D-M5-04, O-39) | **Colors only + a few parts** from a fixed selection (e.g. body color, pattern, eye shape), **no community skins** – replaces the community part of E-029 | Decision of the project owner |
+| E-087 | 2026-09-29 | Display size | **Slightly smaller than the original:** visible body ≈ 36 units (hitbox 28) | Decision of the project owner |
+| E-088 | 2026-09-29 | Extra effects (D-M5-07) | **Camera shake** (nearby explosions, own damage) and **hit markers** when hitting others – both can be turned off; exact form in the draft | Decision of the project owner |
+| E-089 | 2026-09-29 | World look of text maps (D-M5-08) | **Plain:** single-color tiles with outline, gradient background; effort goes into M6 | Decision of the project owner |
+| E-090 | 2026-09-29 | HUD (D-M5-09) | **Modern, at the crosshair:** health/armor/ammo as bars or rings at the crosshair or bottom center; exact form in the draft | Decision of the project owner |
+| E-091 | 2026-09-29 | Emotes (D-M5-10) | **Emote wheel with 8 own emoticons** (hold E, the mouse selects) + automatic eye expressions | Decision of the project owner |
+| E-092 | 2026-09-29 | M4 acceptance | Game modes “done for now” | Decision of the project owner |
+| E-093 | 2026-09-29 | M5 plan | Implement the plan from [`11-m5-plan.md`](11-m5-plan.md) | Decision of the project owner |
+| E-094 | 2026-09-29 | Elora draft (M5.3) | **Draft B “Swirl”:** drop with its tip tilted to the side, light belly patch, small eyes with a smile ([`design/elora-entwuerfe.png`](design/elora-entwuerfe.png)) | Decision of the project owner |
+| E-095 | 2026-09-29 | Skin parts (O-46) | Colorable are **eyes, body, feet** – **colors only**, no shape variants per part | Decision of the project owner |
+| E-096 | 2026-09-29 | Color choice (O-46) | **Fixed palette** per part, no free sliders; palette colors as a draft for approval | Decision of the project owner |
+| E-097 | 2026-09-29 | Belly patch (O-46) | Not a separate part – **lighter shade of the body color** | Decision of the project owner |
+| E-098 | 2026-09-29 | Skin palette | Draft [`design/elora-palette.png`](design/elora-palette.png) approved: 16 colors for body and feet, 8 for eyes | Decision of the project owner |
+| E-099 | 2026-09-29 | Skins in team modes | Body in the **team color**, feet and eyes keep the player's colors | Decision of the project owner |
+| E-100 | 2026-09-29 | Huffman table | The newly trained table (commit `3a550bc`) is kept | Decision of the project owner |
+| E-101 | 2026-09-29 | Pickups, weapons, flags (M5.5) | **Style A “Round”** from [`design/elora-items.png`](design/elora-items.png) | Decision of the project owner |
+| E-102 | 2026-09-29 | HUD (M5.8) | **Draft B “Bar at the bottom center”** from [`design/elora-hud.png`](design/elora-hud.png); in addition, the **crosshair is colored by health: white → yellow → red** (smoothly) | Decision of the project owner |
+| E-103 | 2026-09-29 | Emotes (M5.9) | Proposal from [`design/elora-emotes.png`](design/elora-emotes.png) approved: heart, laugh, anger, sad, amazement, question, GG, sleep; wheel on key E, shown for approx. 2 s | Decision of the project owner |
+| E-104 | 2026-09-29 | Eye expressions (M5.9) | Eyes **additionally react automatically**: squinting on damage, happy after a kill | Decision of the project owner |
+| E-105 | 2026-09-29 | Look (M5) and approach to sound (M5.7) | Look accepted in the playtest (“great”); sound as proposed: crate `elora-audio` with kira, procedural generator (sfxr principle, parameters in `assets/sounds/`), WAV samples for approval, CC0 only where needed | Decision of the project owner |
+| E-106 | 2026-09-30 | Listening test of procedural sounds | Keep: `spawn`, `death`, `weapon_switch`, `pickup_weapon`. All others sound “too much like computer sounds” → replace with CC0 sounds, the goal is atmosphere | Decision of the project owner |
+| E-107 | 2026-09-30 | CC0 sounds | Source **Kenney** (base set) **+ Freesound CC0 only** (gaps; Freesound dropped → E-108); sound style **organic / soft** (plops, goo, wood, cloth, natural hits) | Decision of the project owner |
+| E-108 | 2026-09-30 | Freesound | **Without Freesound** – Kenney packs only; sounds may be edited and combined. Listening test 2: the hammer should sound like a hammer swing, the grenade like an explosion, the laser more organic, the jump more fitting; the rest is fine | Decision of the project owner |
+| E-109 | 2026-09-30 | Sounds (M5.7) | State “fine for now” – M5.7 completed. **From now on, the project owner sources new sounds himself** (procedure in the README “Replacing sounds”) | Decision of the project owner |
+| E-110 | 2026-09-30 | M5 acceptance | **M5 completed** (look accepted in the playtest, sounds fine for now). Playtest recording `rec-1790721458` adopted as a golden regression test | Decision of the project owner |
+| E-111 | 2026-09-30 | Order M6/M7 | **M7 (menus & infrastructure) before M6 (maps & editor)**; numbers stay, order M5 → M7 → M6 → M8 | Decision of the project owner |
+| E-112 | 2026-09-30 | Internet server list (D-M7-03, O-17) | **HTTP/JSON master** like DDNet: servers register via HTTP, the client fetches the list as JSON and queries each server itself (ping, info) | Decision of the project owner |
+| E-113 | 2026-09-30 | Start (D-M7-02) | **Main menu over a calm, drawn image** | Decision of the project owner |
+| E-114 | 2026-09-30 | Language (D-M7-10) | **German + English**, switchable; texts in one translation file per language | Decision of the project owner |
+| E-115 | 2026-09-30 | Demos (D-M7-08, O-18) | **Later** (after Release 1) | Decision of the project owner |
+| E-116 | 2026-09-30 | Settings file (D-M7-04) | **`settings.toml` in the user directory** (Linux `~/.config/elora`, otherwise the usual location per system) for player, skin, controls, graphics, sound, language, favorites; `tuning.toml` remains developer tuning | Decision of the project owner |
+| E-117 | 2026-09-30 | Key bindings (D-M7-05) | **One key per action** | Decision of the project owner |
+| E-118 | 2026-09-30 | Server password (D-M7-07) | **No** for Release 1 | Decision of the project owner |
+| E-119 | 2026-09-30 | Remote console (D-M7-11, O-45) | **Later** | Decision of the project owner |
+| E-120 | 2026-09-30 | Graphics settings (D-M7-06) | **Window/fullscreen, VSync, anti-aliasing (MSAA), UI scaling** | Decision of the project owner |
+| E-121 | 2026-09-30 | Menu music (D-M7-09) | **Prepare playback:** a file in `assets/music/` loops in the menu with its own volume; silent without a file. Music is supplied by the project owner (E-109) | Decision of the project owner |
+| E-122 | 2026-09-30 | Hosting (D-M7-12) | **“Create server” in the menu** (name, map, mode, players), starts `elora-server` in the background and connects | Decision of the project owner |
+| E-123 | 2026-09-30 | Menu design (D-M7-01) | **2–3 drafts as images** (main menu, server browser, settings page) before implementation | Decision of the project owner |
+| E-124 | 2026-09-30 | M7 plan | Plan from [`12-m7-plan.md`](12-m7-plan.md) approved, implementation starts with M7.0 (drafts) | Decision of the project owner |
+| E-125 | 2026-09-30 | Menu style (M7.0) | **Layout of C “Bar at the top”** (tab bar at the top, start page with “Quick play”, settings with a sidebar) **in the colors and shapes of B “Light & soft”** (cream-colored cards, soft shadow, colored pill buttons) | Decision of the project owner |
+| E-126 | 2026-09-30 | M7.0–M7.4 | Menu, settings and language “look good” in testing – continue with M7.5 | Decision of the project owner |
+| E-127 | 2026-09-30 | Master server connection (M7.8) | **HTTPS** for clients and servers (rustls, Mozilla root certificates); the master speaks HTTP and runs publicly behind a reverse proxy with a certificate. License **CDLA-Permissive-2.0** (webpki-roots) is allowed | Decision of the project owner |
+| E-128 | 2026-10-01 | M7 acceptance | **M7 completed** (“looks good”) – continue with M6 (E-111) | Decision of the project owner |
+| E-129 | 2026-10-01 | Release map format (D-M6-01, O-37) | **Binary** (compact, like the original) | Decision of the project owner |
+| E-130 | 2026-10-01 | Map look (D-M6-02) | **Both:** vector tiles with automatic edges/corners per material for the playing area + freely placeable vector decoration | Decision of the project owner |
+| E-131 | 2026-10-01 | Layers (D-M6-03) | **Simplified:** game layer + decoration layers in front/behind + background layers with parallax | Decision of the project owner |
+| E-132 | 2026-10-01 | Animations (D-M6-04) | **Like the original:** freely editable curves (envelopes) for position, rotation, color | Decision of the project owner |
+| E-133 | 2026-10-01 | Editor scope (D-M6-05) | **Everything:** basic tools, decoration and background layers, animation editor, test play | Decision of the project owner |
+| E-134 | 2026-10-01 | Release maps (D-M6-06, O-43) | **3 DM** (small, medium, large; also for TDM/LMS) **+ 2 CTF** | Decision of the project owner |
+| E-135 | 2026-10-01 | Map building | **Claude builds the maps according to the project owner's specifications**, acceptance in the playtest | Decision of the project owner |
+| E-136 | 2026-10-01 | Map download (D-M6-07) | **Automatic:** the server sends missing maps compressed in parts, checksum, cache in the client | Decision of the project owner |
+| E-137 | 2026-10-01 | New tile types (D-M6-08) | **Platform** (passable from below/the side), **ice** (slippery), **jump pad** (launches upward/diagonally), **booster** (conveyor belt) – values as a tuning proposal for approval | Decision of the project owner |
+| E-138 | 2026-10-01 | M6 plan | Plan from [`13-m6-plan.md`](13-m6-plan.md) approved, starting with M6.0 (map look drafts) | Decision of the project owner |
+| E-139 | 2026-10-01 | Map look (M6.0) | **Style A “Soft & lively”** from [`design/elora-kartenlook.png`](design/elora-kartenlook.png): soil with turf, rounded outer corners, outline, bushes/flowers, cloud and hill layers; special tiles are adapted to the style | Decision of the project owner |
+| E-140 | 2026-10-01 | Tuning of new tiles (M6.1) | Proposal accepted: **T-31** ice friction 0.985 · **T-32** ice acceleration 0.35 · **T-33** jump pad force 20 · **T-34** directions up/diagonal left/diagonal right (45°) · **T-35** booster 4.0 units/tick · **T-36** platform passable from below/the side, hook/grenade/laser pass through | Decision of the project owner |
+| E-141 | 2026-10-01 | Dropping through platforms | New bindable action **“Down”** (default S); the player input gets a field for it (**protocol version 3**) | Decision of the project owner |
+| E-142 | 2026-10-01 | M6.1 accepted | New tile types in the playtest “feel perfect”; values T-31 to T-36 stay | Decision of the project owner |
+| E-143 | 2026-10-01 | Map format compression (M6.2) | **Deflate/zlib** like the original (pure Rust, `miniz_oxide`) | Decision of the project owner |
+| E-144 | 2026-10-01 | Own graphics in maps | **Embedded SVGs allowed** (own decoration); limits 64 images × 512 KiB, the client parses without external references | Decision of the project owner |
+| E-145 | 2026-10-01 | File extension | **`.emap`** | Decision of the project owner |
+| E-146 | 2026-10-01 | Text format | **Text maps converted, text format `.emap.toml` removed** (replaces E-024); maps are built with the editor, tests use `Map::from_rows`; protocol version 4 (map as binary data in `Welcome`) | Decision of the project owner |
+| E-147 | 2026-10-01 | Map graphics (M6.3) | Materials soil/grass, sand, snow, stone (not hookable), ice; special tiles death, wooden platform, jump pad, booster; decoration bushes, flowers, grass, stones, mushrooms, trees, fence, signs; backgrounds clouds, hills, mountains, forest, night sky | Decision of the project owner |
+| E-148 | 2026-10-01 | M6.3 accepted | Map graphics accepted after rework (stone, booster arrow, bushes, tree, forest); **stone only for unhookable walls**, hookable are soil, sand, snow | Decision of the project owner |
+| E-149 | 2026-10-01 | M6.4 accepted | Map look in the game (parallax, decoration, animations, cache) accepted in the playtest | Decision of the project owner |
+| E-150 | 2026-10-01 | Editor look (M6.6) | **egui dark** (default dark theme), stands apart from the game | Decision of the project owner |
+| E-151 | 2026-10-01 | Editor layout | **Everything on the right:** one sidebar with tools, layers and properties; the map takes the rest | Decision of the project owner |
+| E-152 | 2026-10-01 | Storage location of own maps | **User directory** (`~/.local/share/elora/maps`, Windows/macOS in the settings folder); training, hosting and download lookup find them there | Decision of the project owner |
+| E-153 | 2026-10-01 | M6.5 and M6.6 accepted | Map download and editor foundation accepted (“looks great”) | Decision of the project owner |
+| E-154 | 2026-10-01 | M6.7 accepted | Editor tools accepted (“looks good”) | Decision of the project owner |
+| E-155 | 2026-10-01 | Themes of the release maps (M6.10) | **One theme per map:** DM small meadow (soil, day) · DM medium desert (sand) · DM large winter (snow, ice) · CTF 1 forest (day) · CTF 2 night (stone, stars) | Decision of the project owner |
+| E-156 | 2026-10-01 | Size of the release maps | **Rather large** (more space than vanilla, for full servers) | Decision of the project owner |
+| E-157 | 2026-10-01 | New tile types in release maps | **Targeted:** platforms as a building element, ice/jump pad/booster at one or two distinctive spots per map | Decision of the project owner |
+| E-158 | 2026-10-01 | Layout of the CTF maps | **Mirror-symmetric** (red on the left, blue on the right) | Decision of the project owner |
+| E-159 | 2026-10-01 | M6.10 accepted | Release maps `dm-wiese`, `dm-wueste`, `dm-winter`, `ctf-wald`, `ctf-nacht` accepted, names stay | Decision of the project owner |
+| E-160 | 2026-10-01 | M6 completed (M6.11) | Acceptance met: the project owner built an own map from scratch with the editor and played it | Decision of the project owner |
+| E-161 | 2026-10-01 | Distribution of Release 1 (O-44) | **GitHub Releases first**; itch.io, Flathub, Steam recorded as later options (O-49) | Decision of the project owner |
+| E-162 | 2026-10-01 | Operating the master server (O-47) | **The project owner operates it**; Claude supplies operations files (systemd, Docker) and instructions | Decision of the project owner |
+| E-163 | 2026-10-01 | Release builds | **Automatically via GitHub Actions** on a version tag: Linux (AppImage + tar.gz), Windows (ZIP), macOS (.app in a DMG) | Decision of the project owner |
+| E-164 | 2026-10-01 | Translated server messages (O-48) | Implement **before Release 1** | Decision of the project owner |
+| E-165 | 2026-10-01 | Version number of Release 1 (D-M8-05) | **0.9.0 Beta** | Decision of the project owner |
+| E-166 | 2026-10-01 | Address of the master server (D-M8-06) | presumably **https://elora.bastianswelt.de** (default in client and server) | Decision of the project owner |
+| E-167 | 2026-10-01 | macOS signing (D-M8-07) | **Unsigned** (note “right-click → Open”) | Decision of the project owner |
+| E-168 | 2026-10-01 | Playtests (D-M8-08) | The project owner asks acquaintances for play sessions | Decision of the project owner |
+| E-169 | 2026-10-01 | M8 plan | Plan from [`14-m8-plan.md`](14-m8-plan.md) accepted (open items answered), starting with M8.1 | Decision of the project owner |
+| E-170 | 2026-10-01 | Registering with the master | **Dedicated servers yes** (can be turned off with `--no-master`), **servers hosted from the client no**, unless “Show on the internet” is checked | Decision of the project owner |
+| E-171 | 2026-10-01 | Master on web hosting | `elora.bastianswelt.de` is **web hosting with PHP** → master additionally as a PHP script (`deploy/master-php/`), same interface | Decision of the project owner |
+| E-172 | 2026-10-01 | Project page | One-pager on `elora.bastianswelt.de` (`deploy/master-php/index.php`): German, graphics from the project SVGs, live server status, link to github.com/ehrenberg/elora, no legal notice (Impressum) | Decision of the project owner |
+| E-173 | 2026-10-01 | Release 0.9.0 Beta | The project owner releases 0.9.0 once the master works over IPv6; credits page in the menu (M8.5) and playtests (M8.6) follow after the beta | Decision of the project owner |
 
-> **Hinweis zu E-020:** GPL-3.0 ist kompatibel mit der Teeworlds-Lizenz (zlib-artig) und mit MIT/Apache-lizenzierten Rust-Crates (wgpu, winit, …). Nicht kompatibel wären Abhängigkeiten unter GPL-2.0-only – `cargo-deny` prüft das. Die eigenen Assets (E-006) brauchen eine eigene Lizenz (→ O-36).
+> **Note on E-020:** GPL-3.0 is compatible with the Teeworlds license (zlib-like) and with MIT/Apache-licensed Rust crates (wgpu, winit, …). Dependencies under GPL-2.0-only would not be compatible – `cargo-deny` checks this. The own assets (E-006) need their own license (→ O-36).
 
-> **Hinweis zu E-007:** Die Teeworlds-Lizenz (zlib-artig) erlaubt Übernahme/Anpassung, verlangt aber, dass veränderte Versionen als solche gekennzeichnet sind und der Lizenzhinweis erhalten bleibt. Werden Algorithmen 1:1 nach Rust portiert, sollte der Teeworlds-Lizenzhinweis vorsorglich im Projekt mitgeführt werden (Datei `THIRD_PARTY_LICENSES`). Reine Zahlenwerte (Tuning) sind unkritisch.
+> **Note on E-007:** The Teeworlds license (zlib-like) allows adoption/adaptation, but requires that modified versions are marked as such and that the license notice is retained. If algorithms are ported 1:1 to Rust, the Teeworlds license notice should be carried in the project as a precaution (file `THIRD_PARTY_LICENSES`). Pure numeric values (tuning) are uncritical.
 
-## Offene Entscheidungen
+## Open decisions
 
-### Grundlagen
-- [x] ~~O-01 Ziel/Umfang~~ → E-003
-- [x] ~~O-02 Plattform~~ → E-004
-- [x] ~~O-03 Referenzversion~~ → E-005
-- [x] ~~O-04 Kompatibilität~~ → E-008
+### Foundations
+- [x] ~~O-01 Goal/scope~~ → E-003
+- [x] ~~O-02 Platform~~ → E-004
+- [x] ~~O-03 Reference version~~ → E-005
+- [x] ~~O-04 Compatibility~~ → E-008
 - [x] ~~O-05 Assets~~ → E-006
-- [x] ~~O-06 Projektname~~ → E-018
-- [x] ~~O-22 Lizenz~~ → E-010
-- [x] ~~O-23 Code-Herkunft~~ → E-007
-- [x] ~~O-24 Konkrete Lizenz~~ → E-020
-- [x] ~~O-36 Lizenz der Assets~~ → E-027
+- [x] ~~O-06 Project name~~ → E-018
+- [x] ~~O-22 License~~ → E-010
+- [x] ~~O-23 Code origin~~ → E-007
+- [x] ~~O-24 Concrete license~~ → E-020
+- [x] ~~O-36 License of the assets~~ → E-027
 
-### Technik
-- [x] ~~O-07 Programmiersprache / Engine~~ → E-009
-- [x] ~~O-25 Grafik-/Fenster-Bibliothek~~ → E-011
-- [x] ~~O-26 Audio-Bibliothek~~ → E-032
-- [x] ~~O-27 UI-Lösung~~ → E-031
-- [x] ~~O-38 Vektor-Pipeline~~ → E-033
-- [x] ~~O-40 Vektor-Quellformat~~ → SVG (E-080, E-084)
-- [x] ~~O-09 Netzwerk-Transport~~ → E-012
-- [x] ~~O-28 Physik-Arithmetik~~ → E-021
-- [x] ~~O-29 Rust-Workspace-Struktur~~ → E-019
-- [x] ~~O-10 Release-Kartenformat~~ → E-028
-- [x] ~~O-37 Details Release-Kartenformat~~ → E-129, E-131, E-132
-- [x] ~~O-11 Versionskontrolle/Hosting~~ → E-034 (Repo-Struktur → E-019)
-- [x] ~~O-41 CI ohne Hosting~~ → E-039
+### Technology
+- [x] ~~O-07 Programming language / engine~~ → E-009
+- [x] ~~O-25 Graphics/window library~~ → E-011
+- [x] ~~O-26 Audio library~~ → E-032
+- [x] ~~O-27 UI solution~~ → E-031
+- [x] ~~O-38 Vector pipeline~~ → E-033
+- [x] ~~O-40 Vector source format~~ → SVG (E-080, E-084)
+- [x] ~~O-09 Network transport~~ → E-012
+- [x] ~~O-28 Physics arithmetic~~ → E-021
+- [x] ~~O-29 Rust workspace structure~~ → E-019
+- [x] ~~O-10 Release map format~~ → E-028
+- [x] ~~O-37 Details of the release map format~~ → E-129, E-131, E-132
+- [x] ~~O-11 Version control/hosting~~ → E-034 (repo structure → E-019)
+- [x] ~~O-41 CI without hosting~~ → E-039
 
-### Gameplay-Umfang
-- [x] ~~O-12 Spielmodi~~ → E-014
-- [x] ~~O-13 Waffen~~ → E-016
-- [x] ~~O-14 Multiplayer vs. Sandbox zuerst~~ → E-013
-- [x] ~~O-30 Physikwerte~~ → E-015
-- [x] ~~O-31 Sandbox-Testkarte~~ → E-017
-- [x] ~~O-32 Physikwerte im Einzelnen~~ → E-023
-- [x] ~~O-33 Syntax des Karten-Textformats~~ → E-024
-- [x] ~~O-34 Elora als Figur~~ → E-029
-- [x] ~~O-39 Skin-Aufbau~~ → E-086 (Details → O-46)
-- [x] ~~O-46 Skin-Auswahl im Detail~~ → E-095, E-096, E-097
-- [x] ~~O-35 Startausrüstung~~ → E-025
+### Gameplay scope
+- [x] ~~O-12 Game modes~~ → E-014
+- [x] ~~O-13 Weapons~~ → E-016
+- [x] ~~O-14 Multiplayer vs. sandbox first~~ → E-013
+- [x] ~~O-30 Physics values~~ → E-015
+- [x] ~~O-31 Sandbox test map~~ → E-017
+- [x] ~~O-32 Physics values in detail~~ → E-023
+- [x] ~~O-33 Syntax of the map text format~~ → E-024
+- [x] ~~O-34 Elora as a character~~ → E-029
+- [x] ~~O-39 Skin structure~~ → E-086 (details → O-46)
+- [x] ~~O-46 Skin selection in detail~~ → E-095, E-096, E-097
+- [x] ~~O-35 Starting equipment~~ → E-025
 - [x] ~~O-15 Bots~~ → E-035
-- [x] ~~O-16 Map-Editor~~ → E-028 (Zeitpunkt → Meilensteine O-21)
+- [x] ~~O-16 Map editor~~ → E-028 (timing → milestones O-21)
 
-### Features / Infrastruktur
-- [x] ~~O-17 Server-Browser / Master-Server~~ → E-112 (Betrieb des Masters → O-47)
-- [x] ~~O-18 Demos / Replays~~ → E-115 (später)
-- [x] ~~O-19 Skins-System~~ → E-029
-- [x] ~~O-20 Konsole~~ → E-072 (Remote-Konsole später → O-45)
-- [ ] **O-45 Remote-Konsole** (Admin-Befehle aus dem Client mit Passwort) – später (E-119)
-- [x] ~~O-48 Übersetzte Server-Meldungen~~ → E-164 (Umsetzung M8.1)
-- [x] ~~O-47 Betrieb des Master-Servers~~ → E-162 (Adresse offen: D-M8-06)
-- [x] ~~O-42 Netzwerk-Zielwerte~~ → E-059
-- [x] ~~O-43 Release-Karten~~ → E-134, E-135
-- [x] ~~O-44 Vertrieb~~ → E-161
-- [ ] **O-50 macOS auf Intel** – Release-Builds zunächst nur für Apple Silicon; Intel-Macs per Cross-Build oder eigenem Runner nachrüsten
-- [ ] **O-49 Weitere Vertriebskanäle** (itch.io, Flathub, Steam, eigene Website) – nach Release 1 (E-161)
-- [x] ~~O-21 Meilensteine~~ → E-037
+### Features / infrastructure
+- [x] ~~O-17 Server browser / master server~~ → E-112 (operating the master → O-47)
+- [x] ~~O-18 Demos / replays~~ → E-115 (later)
+- [x] ~~O-19 Skin system~~ → E-029
+- [x] ~~O-20 Console~~ → E-072 (remote console later → O-45)
+- [ ] **O-45 Remote console** (admin commands from the client with a password) – later (E-119)
+- [x] ~~O-48 Translated server messages~~ → E-164 (implementation M8.1)
+- [x] ~~O-47 Operating the master server~~ → E-162 (address open: D-M8-06)
+- [x] ~~O-42 Network targets~~ → E-059
+- [x] ~~O-43 Release maps~~ → E-134, E-135
+- [x] ~~O-44 Distribution~~ → E-161
+- [ ] **O-50 macOS on Intel** – release builds initially only for Apple Silicon; add Intel Macs later via cross-build or a dedicated runner
+- [ ] **O-49 Further distribution channels** (itch.io, Flathub, Steam, own website) – after Release 1 (E-161)
+- [x] ~~O-21 Milestones~~ → E-037

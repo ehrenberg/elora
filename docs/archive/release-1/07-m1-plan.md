@@ -1,46 +1,45 @@
-# M1 – Physik-Sandbox: Umsetzungsplan
+# M1 – Physics Sandbox: Implementation Plan
 
-Status: **abgeschlossen** (E-049) · angenommen (E-043–E-046) · Grundlage: [`06-roadmap.md`](06-roadmap.md) M1, E-013
+Status: **completed** (E-049) · accepted (E-043–E-046) · Basis: [`06-roadmap.md`](06-roadmap.md) M1, E-013
 
-## Ziel
+## Goal
 
-Elora läuft, springt, macht den Doppelsprung und hookt auf der Testkarte. Alle Tuning-Werte lassen sich live einstellen. Die Abnahme ist bestanden, wenn du bestätigst, dass sich die Bewegung richtig anfühlt.
+Elora runs, jumps, double-jumps and hooks on the test map. All tuning values can be adjusted live. Acceptance is passed when you confirm that the movement feels right.
 
-## Arbeitsschritte
+## Work Steps
 
-| # | Schritt | Crate | Inhalt | Prüfung |
+| # | Step | Crate | Content | Check |
 |---|---|---|---|---|
-| M1.1 ✅ | Simulationskern | `elora-sim` | `Vec2` mit Quantisierung (E-021), `Tuning` (E-023), Tile-Kollision (`MoveBox`, Raycast für den Hook), Bewegung, Sprung, Doppelsprung, Velocity Ramp, Hook-Zustandsautomat | Unit-Tests: Sprunghöhen aus `../../handbook/tuning.md` nachrechnen, Hook-Reichweite, keine Tunnel durch Wände |
-| M1.2 ✅ | Karten-Loader | `elora-map` | Parser für `.emap.toml` (E-024), Validierung mit Zeile und Spalte, Testkarte `maps/sandbox.emap.toml` | Tests: gültige und ungültige Karten |
-| M1.3 ✅ | Fenster & Renderer | `elora-render` | winit-Fenster, wgpu, Formen per lyon (Kreis, Rechteck, Linie; E-033), Kamera mit Sichtbereich (D-02) | Sichtprüfung |
-| M1.4 ✅ | Game-Loop & Eingabe | `elora-client` | Fester Tick mit 50 TPS und Akkumulator, Interpolation zwischen Ticks, Tastenbelegung (D-05), Mauszielen, Kamera (D-01) | Die Sandbox ist spielbar |
-| M1.5 ✅ | Debug-Werkzeuge | `elora-client` | egui-Panel: alle Tuning-Werte als Regler, Anzeige von Geschwindigkeit, Bodenkontakt und Hook-Zustand, Hot-Reload der Karte, Taste für Reset/Respawn, Speichern des Tunings (D-03) | Manuell |
-| M1.6 ✅ | Determinismus | `elora-sim` | Input-Aufzeichnung → Golden-Datei mit dem End-Zustand, Test im `cargo xtask check` | Test grün |
-| M1.7 ✅ | Abnahme | – | Du spielst die Sandbox, eventuell mit Nach-Tuning. Die finalen Werte kommen in `../../handbook/tuning.md`. | Deine Abnahme |
+| M1.1 ✅ | Simulation core | `elora-sim` | `Vec2` with quantization (E-021), `Tuning` (E-023), tile collision (`MoveBox`, raycast for the hook), movement, jump, double jump, velocity ramp, hook state machine | Unit tests: recompute jump heights from `../../handbook/tuning.md`, hook range, no tunneling through walls |
+| M1.2 ✅ | Map loader | `elora-map` | Parser for `.emap.toml` (E-024), validation with line and column, test map `maps/sandbox.emap.toml` | Tests: valid and invalid maps |
+| M1.3 ✅ | Window & renderer | `elora-render` | winit window, wgpu, shapes via lyon (circle, rectangle, line; E-033), camera with view area (D-02) | Visual check |
+| M1.4 ✅ | Game loop & input | `elora-client` | Fixed tick at 50 TPS with accumulator, interpolation between ticks, key bindings (D-05), mouse aiming, camera (D-01) | The sandbox is playable |
+| M1.5 ✅ | Debug tools | `elora-client` | egui panel: all tuning values as sliders, display of velocity, ground contact and hook state, map hot reload, key for reset/respawn, saving the tuning (D-03) | Manual |
+| M1.6 ✅ | Determinism | `elora-sim` | Input recording → golden file with the final state, test in `cargo xtask check` | Test green |
+| M1.7 ✅ | Acceptance | – | You play the sandbox, possibly with re-tuning. The final values go into `../../handbook/tuning.md`. | Your acceptance |
 
-Nach jedem Schritt: `cargo xtask check` grün, dann ein Commit.
+After each step: `cargo xtask check` green, then a commit.
 
-## Technische Festlegungen (Vorschlag)
+## Technical Specifications (Proposal)
 
-- **Mathe:** eigener, kleiner `Vec2` in `elora-sim` statt glam. Wir haben damit volle Kontrolle über jede Float-Operation und die Rundung, das ist wichtig für den Determinismus (E-021). `elora-sim` bleibt ohne externe Abhängigkeiten.
-- **Portierung:** Die Bewegung (`CCharacterCore::Tick`/`Move`) und `MoveBox` folgen dem Teeworlds-Code als Referenz (E-007), mit unseren Tuning-Werten.
-- **Abhängigkeiten, nur stabile Versionen:** wgpu, winit (stabile 0.30-Reihe statt der 0.31-Beta), egui, egui-wgpu, egui-winit, lyon, toml und serde, notify für den Hot-Reload, tracing, anyhow/thiserror, pollster. Die genauen Versionen ergeben sich daraus, was untereinander kompatibel ist.
-- **Platzhalter-Optik:** Elora ist ein Kreis mit Blickrichtung, Tiles sind farbige Rechtecke je nach Art, der Hook ist eine Linie, dazu ein Fadenkreuz.
+- **Math:** our own small `Vec2` in `elora-sim` instead of glam. This gives us full control over every float operation and the rounding, which matters for determinism (E-021). `elora-sim` stays free of external dependencies.
+- **Porting:** Movement (`CCharacterCore::Tick`/`Move`) and `MoveBox` follow the Teeworlds code as reference (E-007), with our tuning values.
+- **Dependencies, stable versions only:** wgpu, winit (stable 0.30 series instead of the 0.31 beta), egui, egui-wgpu, egui-winit, lyon, toml and serde, notify for hot reload, tracing, anyhow/thiserror, pollster. The exact versions follow from what is mutually compatible.
+- **Placeholder look:** Elora is a circle with a facing direction, tiles are colored rectangles by type, the hook is a line, plus a crosshair.
 
-## Entscheidungen zu M1
+## Decisions for M1
 
-| # | Frage | Original-Verhalten (0.7) |
+| # | Question | Original behavior (0.7) |
 |---|---|---|
-| D-01 → E-044 | Kamera | Statisch (Standard): Kamera exakt auf der Figur, Fadenkreuz max. 400 Einheiten entfernt. Optional dynamisch mit Totzone 300, Folgefaktor 60 %, max. Mausdistanz 1000 |
-| D-02 → E-045 | Sichtbereich | Sichtfläche 1150 × 1000 = 1,15 Mio. Einheiten², höchstens 1500 × 1050 Einheiten. Das Seitenverhältnis bestimmt Breite und Höhe. |
-| D-03 → E-046 | Tuning speichern | – (im Original eine Server-Einstellung) |
-| D-05 → E-043 | Tastenbelegung | A/D laufen, Leertaste springen, LMB schießen, RMB hooken |
+| D-01 → E-044 | Camera | Static (default): camera exactly on the character, crosshair max. 400 units away. Optionally dynamic with dead zone 300, follow factor 60 %, max. mouse distance 1000 |
+| D-02 → E-045 | View area | View area 1150 × 1000 = 1.15 million units², at most 1500 × 1050 units. The aspect ratio determines width and height. |
+| D-03 → E-046 | Saving tuning | – (a server setting in the original) |
+| D-05 → E-043 | Key bindings | A/D run, Space jump, LMB shoot, RMB hook |
 
-## Umsetzungsnotizen
+## Implementation Notes
 
-- **Sandbox starten:** `cargo run --bin elora` (Standardkarte `maps/sandbox.emap.toml`) oder `cargo run --bin elora -- pfad/zur/karte.emap.toml`.
-- **Steuerung:** A/D, Leertaste, RMB (Hook), R Respawn, F1 Panel, F5 Aufzeichnung, Esc Maus freigeben / beenden.
-- **Tuning:** Regler im Panel; *Speichern* schreibt `tuning.toml` im Arbeitsverzeichnis (E-046).
-- **Aufzeichnungen (M1.6):** F5 setzt Elora auf den Spawn und zeichnet alle Eingaben auf; erneut F5 (oder R, Kartenänderung, Tuning-Änderung) beendet und speichert nach `crates/elora-sim/tests/recordings/rec-<zeit>.erec.toml`. Die Datei enthält Raster, Spawn, Tuning und Eingaben. Golden-Datei erzeugen: `ELORA_BLESS=1 cargo nextest run -p elora-sim --all-features`. Danach prüft `cargo xtask check` bei jeder Änderung, dass die Simulation bit-genau gleich bleibt.
-- **Platzhalter:** Elora wird in Hitbox-Größe (28) gezeichnet; die spätere Darstellungsgröße ist Teil von M5.
-
+- **Starting the sandbox:** `cargo run --bin elora` (default map `maps/sandbox.emap.toml`) or `cargo run --bin elora -- pfad/zur/karte.emap.toml`.
+- **Controls:** A/D, Space, RMB (hook), R respawn, F1 panel, F5 recording, Esc release mouse / quit.
+- **Tuning:** sliders in the panel; *Save* writes `tuning.toml` in the working directory (E-046).
+- **Recordings (M1.6):** F5 puts Elora on the spawn and records all inputs; pressing F5 again (or R, a map change, a tuning change) stops and saves to `crates/elora-sim/tests/recordings/rec-<zeit>.erec.toml`. The file contains grid, spawn, tuning and inputs. Generate the golden file: `ELORA_BLESS=1 cargo nextest run -p elora-sim --all-features`. After that, `cargo xtask check` verifies on every change that the simulation stays bit-identical.
+- **Placeholder:** Elora is drawn at hitbox size (28); the later display size is part of M5.

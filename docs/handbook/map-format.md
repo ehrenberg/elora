@@ -1,146 +1,146 @@
-# Kartenformat `.emap`
+# Map format `.emap`
 
-Status: **angenommen** (E-129, E-143 bis E-146) · ersetzt das frühere Textformat `.emap.toml` (E-024, entfernt mit M6.2) · Code: `crates/elora-map`
+Status: **accepted** (E-129, E-143 to E-146) · replaces the former text format `.emap.toml` (E-024, removed with M6.2) · Code: `crates/elora-map`
 
-## 1. Ziele
+## 1. Goals
 
-1. **Ein Format für alles:** Test-, Entwicklungs- und Release-Karten (E-146). Gebaut werden Karten mit dem Editor (ab M6.6).
-2. **Kompakt:** zlib-komprimiert (E-143), geeignet für den Download vom Server (E-136).
-3. **Robust:** Jede beschädigte oder bösartige Datei führt zu einem Fehler, nie zu einem Absturz. Feste Obergrenzen schützen vor zu großen Daten.
-4. **Erweiterbar:** Abschnitte mit Kennung; unbekannte Abschnitte werden übersprungen, die Formatversion steht im Kopf.
-5. **Aussehen inklusive:** Materialien, Deko, Hintergrund-Ebenen mit Parallax, Animationen und eingebettete SVGs (E-130 bis E-132, E-144).
+1. **One format for everything:** test, development and release maps (E-146). Maps are built with the editor (from M6.6).
+2. **Compact:** zlib-compressed (E-143), suitable for download from the server (E-136).
+3. **Robust:** Any damaged or malicious file leads to an error, never to a crash. Fixed upper limits protect against oversized data.
+4. **Extensible:** Sections with an identifier; unknown sections are skipped, the format version is in the header.
+5. **Looks included:** materials, decoration, background layers with parallax, animations and embedded SVGs (E-130 to E-132, E-144).
 
-## 2. Aufbau der Datei
+## 2. File layout
 
 ```
-Offset  Inhalt
-0       "EMAP"                       Kennung (4 Byte)
-4       Formatversion (u16)          zurzeit 1
-6       zlib-Strom                   Folge von Abschnitten (entpackt höchstens 32 MiB)
+Offset  Content
+0       "EMAP"                       identifier (4 bytes)
+4       format version (u16)         currently 1
+6       zlib stream                  sequence of sections (at most 32 MiB unpacked)
 ```
 
-Jeder **Abschnitt**: `Kennung (4 Byte ASCII) | Länge (u32) | Inhalt`. Zahlen sind Little Endian, Texte UTF-8 mit vorangestellter Länge (u32), Gleitkommazahlen `f32` und müssen endlich sein. Jeder Abschnitt darf höchstens einmal vorkommen.
+Each **section**: `Identifier (4 bytes ASCII) | Length (u32) | Content`. Numbers are little endian, texts UTF-8 prefixed with their length (u32), floating-point numbers are `f32` and must be finite. Each section may occur at most once.
 
-| Kennung | Pflicht | Inhalt |
+| Identifier | Required | Content |
 |---|---|---|
-| `INFO` | ja | Name, Autor (leer = keiner); je höchstens 128 Byte |
-| `GAME` | ja | Breite, Höhe (je 1–1000), dann je Tile 1 Byte Tile-Art (zeilenweise, oben links beginnend) |
-| `ENTS` | ja | Anzahl, je Entity: Art (u8), Spalte, Zeile |
-| `MATL` | nein | Materialnamen (höchstens 255), dann je Tile 1 Byte: 0 = Standard der Tile-Art, sonst Index + 1 |
-| `SKY ` | nein | Himmelsverlauf oben, unten (RGBA); fehlt er, gilt der bisherige Himmel |
-| `WTHR` | nein | Wetter (R2-W1): Art (u8: 0 schön, 1 Regen, 2 Gewitter, 3 Nebel, 4 Wind mit Blättern, 5 Wind mit Blüten, 6 Sandsturm, 7 Schnee, 8 Schneesturm), Stärke (f32, 0–1), Wind (f32, −1 bis 1); fehlt er, ist es schön. Nur geschrieben, wenn es Wetter gibt; ältere Programme überspringen ihn |
-| `BGRD` | nein | Hintergrund-Ebenen (höchstens 16), von hinten nach vorn: Name, Parallax (x, y), Versatz (x, y), Wiederholung waagerecht (0 = keine), Deko-Liste |
-| `DECO` | nein | Deko-Liste hinter der Spielfläche, Deko-Liste davor |
-| `ENVL` | nein | Animationen (höchstens 256): Name, Art (0 Bewegung, 1 Farbe), an Server-Zeit gebunden, Punkte (höchstens 1024, Zeit streng aufsteigend): Zeit (ms), 4 Werte, Kurve |
-| `IMGS` | nein | Eingebettete SVGs (höchstens 64, je höchstens 512 KiB): Name, Daten |
-| `ADVN` | nein | Abenteuer-Objekte (A1.5, höchstens 4096): Id, Position, Art und ihre Werte (siehe unten) |
+| `INFO` | yes | Name, author (empty = none); at most 128 bytes each |
+| `GAME` | yes | Width, height (1–1000 each), then 1 byte tile kind per tile (row by row, starting top left) |
+| `ENTS` | yes | Count, per entity: kind (u8), column, row |
+| `MATL` | no | Material names (at most 255), then 1 byte per tile: 0 = default of the tile kind, otherwise index + 1 |
+| `SKY ` | no | Sky gradient top, bottom (RGBA); if missing, the previous sky applies |
+| `WTHR` | no | Weather (R2-W1): kind (u8: 0 fair, 1 rain, 2 thunderstorm, 3 fog, 4 wind with leaves, 5 wind with blossoms, 6 sandstorm, 7 snow, 8 blizzard), strength (f32, 0–1), wind (f32, −1 to 1); if missing, the weather is fair. Only written if there is weather; older programs skip it |
+| `BGRD` | no | Background layers (at most 16), from back to front: name, parallax (x, y), offset (x, y), horizontal repetition (0 = none), decoration list |
+| `DECO` | no | Decoration list behind the playing field, decoration list in front of it |
+| `ENVL` | no | Animations (at most 256): name, kind (0 movement, 1 color), bound to server time, points (at most 1024, time strictly increasing): time (ms), 4 values, curve |
+| `IMGS` | no | Embedded SVGs (at most 64, at most 512 KiB each): name, data |
+| `ADVN` | no | Adventure objects (A1.5, at most 4096): id, position, kind and its values (see below) |
 
-**Deko-Objekt:** Grafik (0 = eingebaut + Name, 1 = eingebettetes SVG + Index), Position, Skalierung, Drehung (Grad), gespiegelt, Färbung (RGBA), Bewegungs-Animation und Farb-Animation (je Index u16 + Versatz in ms; `0xFFFF` = keine). Insgesamt höchstens 20 000 Deko-Objekte.
+**Decoration object:** graphic (0 = built-in + name, 1 = embedded SVG + index), position, scale, rotation (degrees), mirrored, tint (RGBA), movement animation and color animation (index u16 + offset in ms each; `0xFFFF` = none). At most 20 000 decoration objects in total.
 
-**Animationen** laufen in Schleife über die Zeit des letzten Punkts. Bewegung: Versatz x, y (Welteinheiten) und Drehung (Grad). Farbe: r, g, b, a (0 bis 1, multipliziert).
+**Animations** loop over the time of the last point. Movement: offset x, y (world units) and rotation (degrees). Color: r, g, b, a (0 to 1, multiplied).
 
-### Kodierung der Aufzählungen
+### Encoding of the enumerations
 
-| Code | Tile-Art | | Code | Entity |
+| Code | Tile kind | | Code | Entity |
 |---|---|---|---|---|
-| 0 | Luft | | 0 | Spawn (neutral) |
-| 1 | Fest | | 1 / 2 | Spawn Rot / Blau |
-| 2 | Nicht hookbar | | 3 / 4 | Flaggenstand Rot / Blau |
-| 3 | Tod | | 5 / 6 | Herz / Rüstung |
-| 4 | Plattform | | 7 / 8 | Laser / Granatwerfer |
-| 5 | Eis | | 9–12 | Dummy: steht, läuft, springt, läuft + springt |
-| 6 / 7 / 8 | Sprungfeld hoch / schräg links / schräg rechts | | | |
-| 9 / 10 | Beschleuniger links / rechts | | | |
-| 11 | Kletterwand (E-228) | | | |
-| 12 | Bröckelboden (E-230) | | | |
+| 0 | Air | | 0 | Spawn (neutral) |
+| 1 | Solid | | 1 / 2 | Spawn red / blue |
+| 2 | Unhookable | | 3 / 4 | Flag stand red / blue |
+| 3 | Death | | 5 / 6 | Heart / armor |
+| 4 | Platform | | 7 / 8 | Laser / grenade launcher |
+| 5 | Ice | | 9–12 | Dummy: stands, walks, jumps, walks + jumps |
+| 6 / 7 / 8 | Jump pad up / diagonal left / diagonal right | | | |
+| 9 / 10 | Conveyor left / right | | | |
+| 11 | Climbing wall (E-228) | | | |
+| 12 | Crumbling floor (E-230) | | | |
 
-Kurven der Animationen: 0 Stufe, 1 linear, 2 langsam beginnend, 3 schnell beginnend, 4 weich (wie im Original).
+Animation curves: 0 step, 1 linear, 2 slow start, 3 fast start, 4 smooth (as in the original).
 
-### Abenteuer-Objekte (`ADVN`, E-252 bis E-259)
+### Adventure objects (`ADVN`, E-252 to E-259)
 
-Je Objekt: Id (eindeutig, ohne `:`; Schlüssel im Spielstand), Position (f32 × 2), Art (u8) und deren Werte. Figuren und Gegenstände liegen mit der Mitte, Bereiche und Türen mit der linken oberen Ecke auf `pos`. Eine Karte mit Eingang braucht keinen Mehrspieler-Spawn.
+Per object: id (unique, without `:`; key in the save game), position (f32 × 2), kind (u8) and its values. Characters and items are placed with their center at `pos`, areas and doors with their top left corner. A map with an entrance needs no multiplayer spawn.
 
-| Code | Art | Werte |
+| Code | Kind | Values |
 |---|---|---|
-| 0 | Gegner | Art aus `creatures.toml`, bleibt besiegt (Boss/besonders, E-235) |
-| 1 | NPC | Figur, Gespräch, Blickrichtung, halber Laufweg (0 = steht, E-257) |
-| 2 | Truhe | Inhalt (Gegenstand, Anzahl; höchstens 64), Schloss-Bedingung (leer = offen, E-255) |
-| 3 | Schalter | Merker, nur einmal, Auslöser: Aktionstaste / Hammer / Hook (E-256) |
-| 4 | Tür | Größe in Tiles (auf dem Raster), Bedingung zum Öffnen (E-254) |
-| 5 | Sammelstück | Gegenstand |
-| 6 | Speicherpunkt | – |
-| 7 | Heilpflanze | Leben (E-258) |
-| 8 | Eingang | – (Ziel von Übergängen) |
-| 9 | Übergang | Größe, Zielkarte, Ziel-Eingang, beim Hineinlaufen (sonst Aktionstaste, E-252) |
-| 10 | Zone | Größe (für Aufgaben „Ort erreichen“) |
-| 11 | Kamera | Größe, Art: festsetzen / begrenzen (E-259) |
+| 0 | Enemy | Kind from `creatures.toml`, stays defeated (boss/special, E-235) |
+| 1 | NPC | Character, dialog, facing direction, half walking distance (0 = stands, E-257) |
+| 2 | Chest | Content (item, count; at most 64), lock condition (empty = open, E-255) |
+| 3 | Switch | Flag, once only, trigger: action key / hammer / hook (E-256) |
+| 4 | Door | Size in tiles (on the grid), condition to open (E-254) |
+| 5 | Collectible | Item |
+| 6 | Save point | – |
+| 7 | Healing plant | Health (E-258) |
+| 8 | Entrance | – (target of transitions) |
+| 9 | Transition | Size, target map, target entrance, on walking in (otherwise action key, E-252) |
+| 10 | Zone | Size (for “reach location” quests) |
+| 11 | Camera | Size, kind: fix / limit (E-259) |
 
-Die Karte prüft den Aufbau (Ids, Lage, Größen, Raster); Verweise auf Gegnerarten, Figuren, Gespräche, Gegenstände, Bedingungen und Zielkarten prüft `elora-adventure` (`check::map_objects`, `check::map_links`).
+The map checks the structure (ids, position, sizes, grid); references to enemy kinds, characters, dialogs, items, conditions and target maps are checked by `elora-adventure` (`check::map_objects`, `check::map_links`).
 
-## 3. Bedeutung der Tile-Arten
+## 3. Meaning of the tile kinds
 
-| Tile | Bedeutung |
+| Tile | Meaning |
 |---|---|
-| Luft | Leer |
-| Fest | Wand, Hook greift |
-| Nicht hookbar | Wand, Hook greift **nicht** |
-| Tod | Tötet bei Berührung |
-| Plattform | Trägt von oben, von unten/seitlich durchlässig; Hook, Granate und Laser fliegen hindurch; mit „Runter“ fällt man hindurch (T-36, E-141) |
-| Eis | Wand, rutschig (T-31, T-32) |
-| Sprungfeld | Wirft eine darauf stehende Figur hoch oder schräg (T-33, T-34); Hook greift |
-| Beschleuniger | Trägt eine darauf stehende Figur wie ein Laufband (T-35); Hook greift |
-| Kletterwand | Wand, Hook greift **nicht**; mit Eisgriff kann Elora daran haften und abspringen (E-228) |
-| Bröckelboden | Wand, Hook greift; bricht beim Stampfen und bleibt zerbrochen (E-230) |
-| Hook-Blüte | Hookpunkt in der Luft; alles andere fliegt und läuft hindurch (R2-M2.1) |
-| Treibsand | Nicht fest; Figuren sinken ein und laufen langsamer, Springen befreit (E-318) |
-| Dünnes Eis | Trägt, Hook greift **nicht**; bricht nach kurzem Stehen (A-36) oder sofort beim Stampfen und wächst nach (A-37) (R2-M2.4) |
-| Eiswasser | Nicht fest; wer hineinfällt, nimmt Schaden (A-38) und kommt zurück an den Rand (R2-M2.4) |
+| Air | Empty |
+| Solid | Wall, hook grabs |
+| Unhookable | Wall, hook does **not** grab |
+| Death | Kills on contact |
+| Platform | Carries from above, passable from below/the sides; hook, grenade and laser fly through; with “down” you drop through (T-36, E-141) |
+| Ice | Wall, slippery (T-31, T-32) |
+| Jump pad | Throws a character standing on it upwards or diagonally (T-33, T-34); hook grabs |
+| Conveyor | Carries a character standing on it like a treadmill (T-35); hook grabs |
+| Climbing wall | Wall, hook does **not** grab; with ice grip Elora can cling to it and jump off (E-228) |
+| Crumbling floor | Wall, hook grabs; breaks on a stomp and stays broken (E-230) |
+| Hook blossom | Hook point in the air; everything else flies and walks through (R2-M2.1) |
+| Quicksand | Not solid; characters sink in and walk more slowly, jumping frees them (E-318) |
+| Thin ice | Carries, hook does **not** grab; breaks after standing on it briefly (A-36) or immediately on a stomp, and grows back (A-37) (R2-M2.4) |
+| Ice water | Not solid; whoever falls in takes damage (A-38) and is returned to the edge (R2-M2.4) |
 
-## 4. Regeln
+## 4. Rules
 
-| Regel | Festlegung |
+| Rule | Definition |
 |---|---|
-| Koordinaten | Ursprung oben links, x nach rechts, y nach unten. 1 Tile = 32 Einheiten. Entities sitzen in der Tile-Mitte |
-| Außerhalb der Karte | gilt als fest (niemand fällt aus der Welt) |
-| Validierung | mindestens 1 Spawn; Flaggen nur als Paar (genau 1× Rot und 1× Blau); Entities innerhalb des Rasters; Verweise auf Bilder und Animationen (der passenden Art) müssen existieren |
-| Unterstützte Modi | aus den Entities abgeleitet: neutrale Spawns → DM/LMS/Instagib, rote + blaue Spawns → TDM/LTS, dazu ein Flaggenpaar → CTF |
-| Prüfsumme | BLAKE2s-256 über die Datei-Bytes; identifiziert die Karte beim Download und im Zwischenspeicher (M6.5) |
-| Eingebettete SVGs | Die Karte prüft nur Anzahl und Größe. Der Client parst sie beim Zeichnen **ohne externe Verweise** (keine Dateien, keine Netzadressen, M6.4) |
+| Coordinates | Origin top left, x to the right, y downwards. 1 tile = 32 units. Entities sit in the tile center |
+| Outside the map | counts as solid (nobody falls out of the world) |
+| Validation | at least 1 spawn; flags only as a pair (exactly 1× red and 1× blue); entities within the grid; references to images and animations (of the matching kind) must exist |
+| Supported modes | derived from the entities: neutral spawns → DM/LMS/Instagib, red + blue spawns → TDM/LTS, plus a flag pair → CTF |
+| Checksum | BLAKE2s-256 over the file bytes; identifies the map during download and in the cache (M6.5) |
+| Embedded SVGs | The map only checks count and size. The client parses them when drawing **without external references** (no files, no network addresses, M6.4) |
 
-## 5. Werkzeuge
+## 5. Tools
 
-- **Ansehen:** `cargo xtask map-dump maps/<karte>.emap` gibt Kopf, Prüfsumme, Modi, Ebenen und das Raster als Zeichen aus.
-- **Tests:** `Map::from_rows` baut Karten aus Zeichenrastern (Tiles wie in den Aufzeichnungen: `. # % ^ = ~ ! \ / < >`; Entities `S R B r b h a L G D W J X`). Das ist eine Hilfe im Code, kein Dateiformat.
-- **Hot-Reload:** Die Sandbox beobachtet die Kartendatei und lädt sie beim Speichern neu (z. B. aus dem Editor).
+- **View:** `cargo xtask map-dump maps/<karte>.emap` prints header, checksum, modes, layers and the grid as characters.
+- **Tests:** `Map::from_rows` builds maps from character grids (tiles as in the recordings: `. # % ^ = ~ ! \ / < >`; entities `S R B r b h a L G D W J X`). This is a helper in code, not a file format.
+- **Hot reload:** The sandbox watches the map file and reloads it on save (e.g. from the editor).
 
-## 6. Eingebaute Grafik (Stil A, M6.3)
+## 6. Built-in graphics (style A, M6.3)
 
-Ablage `assets/map/`, Übersicht in [`../archive/release-1/design/elora-kartenteile.png`](../archive/release-1/design/elora-kartenteile.png). Erzeugt einmalig mit `tools/../archive/release-1/design/elora_map_assets.py`, danach normale, von Hand änderbare SVGs.
+Location `assets/map/`, overview in [`../archive/release-1/design/elora-kartenteile.png`](../archive/release-1/design/elora-kartenteile.png). Generated once with `tools/../archive/release-1/design/elora_map_assets.py`, afterwards normal SVGs that can be edited by hand.
 
-| Art | Namen | Hinweis |
+| Kind | Names | Note |
 |---|---|---|
-| Materialien (`MATL`) | `earth`, `sand`, `snow` (fest) · `stone` (nicht hookbar) · `ice` (Eis) | Farben, Rundung und Detail-Anteil in `materials.toml`; je Material ein SVG mit Kappen (`cap`, `cap-left`, `cap-right`, `cap-single`) und Details (`detail-1` …). Das erste Material einer Tile-Art ist ihr Standard |
-| Spezial-Tiles | `tiles/death`, `platform`, `jump`, `conveyor` | fest zugeordnet; Stacheln zeigen vom Untergrund weg, Sprungfeld links und Beschleuniger links sind gespiegelt |
-| Deko (`Art::Builtin`) | `bush-1`, `bush-2`, `flower-pink`, `flower-yellow`, `flower-blue`, `grass-1`, `grass-2`, `rock-1`, `rock-2`, `mushroom-red`, `mushroom-brown`, `tree-round`, `tree-pine`, `fence`, `sign-arrow`, `sign-board` | Ursprung unten in der Mitte |
-| Hintergrund (`Art::Builtin`) | `cloud-1` … `cloud-3`, `moon` (Ursprung Mitte) · `hills-far`, `hills-near`, `mountains`, `forest` (Ursprung unten links) · `stars` (oben links) | Streifen 1024 breit und nahtlos wiederholbar; bei Nacht über die Färbung abgedunkelt |
+| Materials (`MATL`) | `earth`, `sand`, `snow` (solid) · `stone` (unhookable) · `ice` (ice) | Colors, rounding and detail share in `materials.toml`; one SVG per material with caps (`cap`, `cap-left`, `cap-right`, `cap-single`) and details (`detail-1` …). The first material of a tile kind is its default |
+| Special tiles | `tiles/death`, `platform`, `jump`, `conveyor` | fixed assignment; spikes point away from the ground, jump pad left and conveyor left are mirrored |
+| Decoration (`Art::Builtin`) | `bush-1`, `bush-2`, `flower-pink`, `flower-yellow`, `flower-blue`, `grass-1`, `grass-2`, `rock-1`, `rock-2`, `mushroom-red`, `mushroom-brown`, `tree-round`, `tree-pine`, `fence`, `sign-arrow`, `sign-board` | Origin at the bottom center |
+| Background (`Art::Builtin`) | `cloud-1` … `cloud-3`, `moon` (origin center) · `hills-far`, `hills-near`, `mountains`, `forest` (origin bottom left) · `stars` (top left) | Strips 1024 wide and seamlessly repeatable; darkened at night via the tint |
 
-**Auto-Kanten:** Feste Tiles bilden mit Sprungfeldern und Beschleunigern eine Fläche. Außenecken mit zwei freien Nachbarn werden gerundet, die Kontur liegt nur an freien Kanten, Kappen an jeder freien Oberkante (mit Endstück an freien Seiten), Details fest je Tile verstreut.
+**Auto edges:** Solid tiles form one surface together with jump pads and conveyors. Outer corners with two free neighbors are rounded, the outline lies only on free edges, caps on every free top edge (with an end piece on free sides), details scattered deterministically per tile.
 
-## 7. Darstellung im Spiel (M6.4)
+## 7. In-game rendering (M6.4)
 
-- **Reihenfolge:** Himmel → Hintergrund-Ebenen (hinten nach vorn) → Deko hinten → Spielfläche → Figuren, Items, Geschosse → Deko vorn → Effekte.
-- **Parallax:** Ein Objekt einer Hintergrund-Ebene liegt bei `Position + Versatz + Kamera-Mitte × (1 − Parallax)`. Parallax 1 bewegt sich mit der Spielfläche, 0 steht fest im Bild. Mit Wiederholung wird die Ebene waagerecht über den ganzen Ausschnitt gelegt.
-- **Animationen:** Bewegung wirkt als Versatz (x, y) und Drehung, Farbe wird multipliziert. An die Server-Zeit gebundene Animationen sehen alle Spieler in derselben Phase (z. B. ziehende Wolken), die anderen laufen nach der Uhr des Clients.
-- **Zwischenspeicher:** Die Spielfläche wird in Stücken von 16 × 16 Tiles einmal tesselliert und nur bei Änderungen der Karte neu gebaut; nur sichtbare Stücke werden gebaut und gezeichnet. Die Pfeile der Beschleuniger laufen je Frame mit.
-- **Eingebettete SVGs** lädt der Client ohne jede Auflösung externer Verweise und mit höchstens 200 000 Ecken je Bild; ungültige Bilder bleiben unsichtbar.
-- **Vorführkarte:** `maps/look-test.emap` (erzeugt aus `map_view.rs`, Test `write_look_test_map`).
+- **Order:** sky → background layers (back to front) → decoration behind → playing field → characters, items, projectiles → decoration in front → effects.
+- **Parallax:** An object of a background layer is placed at `Position + Versatz + Kamera-Mitte × (1 − Parallax)` (position + offset + camera center × (1 − parallax)). Parallax 1 moves with the playing field, 0 stays fixed on screen. With repetition, the layer is tiled horizontally across the whole view.
+- **Animations:** Movement acts as offset (x, y) and rotation, color is multiplied. Animations bound to server time are seen by all players in the same phase (e.g. drifting clouds), the others run on the client's clock.
+- **Cache:** The playing field is tessellated once in chunks of 16 × 16 tiles and only rebuilt when the map changes; only visible chunks are built and drawn. The conveyor arrows animate every frame.
+- **Embedded SVGs** are loaded by the client without resolving any external references and with at most 200 000 vertices per image; invalid images stay invisible.
+- **Showcase map:** `maps/look-test.emap` (generated from `map_view.rs`, test `write_look_test_map`).
 
-## 8. Übertragung (M6.5, E-136)
+## 8. Transfer (M6.5, E-136)
 
-1. Client → `Join`. Der Server antwortet mit `MapInfo` (Name, Prüfsumme, Größe) – der Spieler ist **noch nicht** in der Welt.
-2. Der Client sucht die Karte mit genau dieser Prüfsumme: zuerst unter den Downloads (`~/.local/share/elora/downloads/<name>-<prüfsumme>.emap`, unter Windows/macOS im Einstellungsordner), dann in `maps/<name>.emap`.
-3. Fehlt sie, fordert er sie mit `MapRequest` in Teilen zu 16 KiB an (4 Teile gleichzeitig unterwegs) und zeigt den Fortschritt. Nach dem letzten Teil prüft er Größe und Prüfsumme und legt die Datei ab.
-4. Client → `MapReady`. Erst jetzt bekommt er einen Slot und `Welcome` (mit der Prüfsumme zur Kontrolle).
-5. **Kartenwechsel:** Der Server schickt allen erneut `MapInfo`; alle laden und treten neu bei.
+1. Client → `Join`. The server answers with `MapInfo` (name, checksum, size) – the player is **not yet** in the world.
+2. The client looks for the map with exactly this checksum: first among the downloads (`~/.local/share/elora/downloads/<name>-<prüfsumme>.emap`, on Windows/macOS in the settings folder), then in `maps/<name>.emap`.
+3. If it is missing, the client requests it with `MapRequest` in chunks of 16 KiB (4 chunks in flight at once) and shows the progress. After the last chunk it checks size and checksum and stores the file.
+4. Client → `MapReady`. Only now does it get a slot and `Welcome` (with the checksum for verification).
+5. **Map change:** The server sends `MapInfo` to everyone again; everyone loads and rejoins.
 
-Grenzen: Karten bis 4 MiB (größere lädt der Server gar nicht erst), jeder Teil höchstens zweimal je Client; Dateinamen aus Servernamen werden auf `A–Z a–z 0–9 - _` gekürzt. Protokollversion 5.
+Limits: maps up to 4 MiB (the server does not even load larger ones), each chunk at most twice per client; file names derived from server names are reduced to `A–Z a–z 0–9 - _`. Protocol version 5.

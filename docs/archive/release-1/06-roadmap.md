@@ -1,140 +1,140 @@
-# Roadmap bis Release 1
+# Roadmap to Release 1
 
-Status: **angenommen** (E-037, 2026-09-25)
+Status: **accepted** (E-037, 2026-09-25)
 
-## Prinzipien
+## Principles
 
-- **Zuerst das Gefühl, dann alles andere.** Jeder Meilenstein endet mit einer **Abnahme durch den Projektinhaber**: Es muss sich richtig anfühlen, nicht nur funktionieren.
-- **Immer spielbar.** Nach jedem Meilenstein gibt es ein lauffähiges Programm.
-- **Das Netzwerk kommt früh.** Prediction und Snapshots verändern die Architektur tief. Wir bauen es deshalb, bevor viel Gameplay darauf aufbaut (M3 vor den Spielmodi).
-- **Kunst und Assets kommen spät.** Bis M4 reichen einfache Vektorformen, so können Gameplay-Änderungen keine fertige Grafik entwerten.
+- **Feel first, everything else second.** Every milestone ends with an **acceptance by the project owner**: it has to feel right, not just work.
+- **Always playable.** After every milestone there is a running program.
+- **The network comes early.** Prediction and snapshots change the architecture deeply. So we build it before much gameplay builds on it (M3 before the game modes).
+- **Art and assets come late.** Up to M4, simple vector shapes are enough, so gameplay changes cannot invalidate finished graphics.
 
-## Übersicht
+## Overview
 
 ```
-M0 Setup ─► M1 Physik-Sandbox ─► M2 Kampf lokal ─► M3 Netzwerk ─► M4 Spielmodi
-                                                                     │
-      M8 Release ◄─ M6 Karten & Editor ◄─ M7 Menüs & Infrastruktur ◄─ M5 Look & Sound
+M0 Setup ─► M1 Physics sandbox ─► M2 Local combat ─► M3 Network ─► M4 Game modes
+                                                                         │
+      M8 Release ◄─ M6 Maps & editor ◄─ M7 Menus & infrastructure ◄─ M5 Look & sound
 ```
 
-**Reihenfolge seit E-111:** M7 vor M6 (Nummern bleiben).
+**Order since E-111:** M7 before M6 (numbers stay).
 
-| # | Meilenstein | Kern-Ergebnis | Offene Entscheidungen davor | Entscheidung |
+| # | Milestone | Core result | Open decisions beforehand | Decision |
 |---|---|---|---|---|
-| M0 | Projekt-Setup | Workspace kompiliert, lokale Prüfungen laufen | O-41 | ✅ |
-| M1 | Physik-Sandbox | Elora läuft, springt und hookt, das Gefühl ist abgenommen | – | ✅ |
-| M2 | Kampf lokal | Hammer, Laser, Granate, Schaden, Pickups, Tod und Respawn | – | ✅ |
-| M3 | Netzwerk | Dedizierter Server, mehrere Clients, Prediction, im LAN spielbar | O-42 | ✅ |
-| M4 | Spielmodi | DM, TDM, CTF, LMS, LTS, Instagib, Scoreboard, Chat | O-20 | ✅ |
-| M5 | Look & Sound | Vektor-Renderer, Elora-Art, Skins, Partikel, Audio, HUD | O-39, O-40 | ✅ |
-| M6 | Karten & Editor | Release-Kartenformat, integrierter Editor, erste echte Karten | O-37, O-43 | ✅ |
-| M7 | Menüs & Infrastruktur | Hauptmenü, Einstellungen, Tastenbelegung, Server-Browser | O-17, O-18 | ✅ |
-| M8 | Release | Pakete für 3 Betriebssysteme, Balancing, Playtests, Release 1 | O-44 | ✅ |
+| M0 | Project setup | Workspace compiles, local checks run | O-41 | ✅ |
+| M1 | Physics sandbox | Elora runs, jumps and hooks, the feel is accepted | – | ✅ |
+| M2 | Local combat | Hammer, laser, grenade, damage, pickups, death and respawn | – | ✅ |
+| M3 | Network | Dedicated server, multiple clients, prediction, playable on LAN | O-42 | ✅ |
+| M4 | Game modes | DM, TDM, CTF, LMS, LTS, Instagib, scoreboard, chat | O-20 | ✅ |
+| M5 | Look & sound | Vector renderer, Elora art, skins, particles, audio, HUD | O-39, O-40 | ✅ |
+| M6 | Maps & editor | Release map format, integrated editor, first real maps | O-37, O-43 | ✅ |
+| M7 | Menus & infrastructure | Main menu, settings, key bindings, server browser | O-17, O-18 | ✅ |
+| M8 | Release | Packages for 3 operating systems, balancing, playtests, Release 1 | O-44 | ✅ |
 
 ---
 
-## M0 – Projekt-Setup
+## M0 – Project setup
 
-- Lokales Git-Repository (E-034), `.gitignore`, `LICENSE` (GPL-3.0), `THIRD_PARTY_LICENSES`
-- Cargo-Workspace nach [`../../handbook/architecture.md`](../../handbook/architecture.md), zunächst nur mit den M1-Crates
-- `rust-toolchain.toml`, rustfmt, clippy-Lints, cargo-deny
-- Lokales Prüfskript (fmt + clippy + test + deny) als Ersatz für die CI (O-41)
+- Local Git repository (E-034), `.gitignore`, `LICENSE` (GPL-3.0), `THIRD_PARTY_LICENSES`
+- Cargo workspace following [`../../handbook/architecture.md`](../../handbook/architecture.md), initially only with the M1 crates
+- `rust-toolchain.toml`, rustfmt, clippy lints, cargo-deny
+- Local check script (fmt + clippy + test + deny) as a substitute for CI (O-41)
 
-**Abnahme:** `cargo build` und `cargo xtask check` laufen fehlerfrei.
+**Acceptance:** `cargo build` and `cargo xtask check` run without errors.
 
-**Stand 2026-09-25:** umgesetzt, `cargo xtask check` grün (fmt, clippy, nextest, deny). **Abgenommen** (E-042).
+**Status 2026-09-25:** implemented, `cargo xtask check` green (fmt, clippy, nextest, deny). **Accepted** (E-042).
 
-## M1 – Physik-Sandbox (E-013)
+## M1 – Physics sandbox (E-013)
 
-- `elora-sim`: Tuning (E-023), Quantisierung (E-021), Tile-Kollision, Bewegung, Sprung und Doppelsprung, Hook samt Zustandsautomat, Velocity Ramp
-- `elora-map`: Textformat (E-024), Validierung, Hot-Reload
-- `elora-render`: Fenster (winit), wgpu, Kamera mit Maus-Versatz, einfache Formen (Kreis für Elora, Rechtecke für Tiles, Linie für den Hook)
-- Fester Tick-Loop mit 50 TPS und Render-Interpolation
-- egui-Debug-Panel: alle Tuning-Werte live einstellbar, Anzeige von Geschwindigkeit und Zustand
-- Golden-Tests für Determinismus (Input-Aufzeichnung → erwarteter Zustand)
-- Testkarte `maps/sandbox.emap.toml`
+- `elora-sim`: tuning (E-023), quantization (E-021), tile collision, movement, jump and double jump, hook including its state machine, velocity ramp
+- `elora-map`: text format (E-024), validation, hot reload
+- `elora-render`: window (winit), wgpu, camera with mouse offset, simple shapes (circle for Elora, rectangles for tiles, line for the hook)
+- Fixed tick loop at 50 TPS with render interpolation
+- egui debug panel: all tuning values adjustable live, display of velocity and state
+- Golden tests for determinism (input recording → expected state)
+- Test map `maps/sandbox.emap.toml`
 
-**Abnahme:** Der Projektinhaber spielt die Sandbox und bestätigt das Bewegungsgefühl, eventuell nach Nach-Tuning.
+**Acceptance:** The project owner plays the sandbox and confirms the movement feel, possibly after re-tuning.
 
-**Stand 2026-09-25:** **Abgenommen** (E-049).
+**Status 2026-09-25:** **Accepted** (E-049).
 
-## M2 – Kampf lokal
+## M2 – Local combat
 
-- Zielen per Maus, Waffenwechsel
-- Hammer (Knockback T-19), Laser (Hitscan mit Abprall), Granate (ballistisch, Explosion, Rocket-Jump)
-- HP und Rüstung, Eigenschaden, Tod, Respawn, Todes-Tiles
-- Pickups mit Respawn-Timer, Startausrüstung nur Hammer (E-025)
-- **Trainings-Dummies:** unbewegliche oder skriptgesteuerte Ziele zum Testen. Das sind keine Bots (E-035).
-- Einfaches HUD per egui (Platzhalter)
+- Mouse aiming, weapon switching
+- Hammer (knockback T-19), laser (hitscan with bounce), grenade (ballistic, explosion, rocket jump)
+- HP and armor, self-damage, death, respawn, death tiles
+- Pickups with respawn timer, starting equipment hammer only (E-025)
+- **Training dummies:** stationary or scripted targets for testing. These are not bots (E-035).
+- Simple HUD via egui (placeholder)
 
-**Abnahme:** Die Waffen fühlen sich treffsicher und wuchtig an, Rocket-Jumps und Hammer-Sprünge funktionieren.
+**Acceptance:** The weapons feel accurate and punchy, rocket jumps and hammer jumps work.
 
-## M3 – Netzwerk (E-008, E-012)
+## M3 – Network (E-008, E-012)
 
-- `elora-net`: UDP, Verbindungsaufbau, Zuverlässigkeitsschicht, Timeouts
-- `elora-protocol`: Input-Nachrichten, Snapshots, Delta-Kompression
-- `elora-server`: dedizierter Server ohne Grafik
-- Client: Prediction der eigenen Figur, Interpolation der anderen, Korrektur bei Abweichungen
-- **Netzwerk-Simulator:** künstlicher Ping, Jitter und Paketverlust zum Testen
-- Lokal Hosten und Direkt-Verbinden über IP (noch ohne Server-Browser)
+- `elora-net`: UDP, connection setup, reliability layer, timeouts
+- `elora-protocol`: input messages, snapshots, delta compression
+- `elora-server`: dedicated server without graphics
+- Client: prediction of the own character, interpolation of the others, correction on mismatches
+- **Network simulator:** artificial ping, jitter and packet loss for testing
+- Local hosting and direct connect via IP (no server browser yet)
 
-**Abnahme:** 2 bis 8 Spieler im LAN. Bei simulierten 100 ms Ping fühlt sich die eigene Bewegung genauso an wie offline.
+**Acceptance:** 2 to 8 players on LAN. With a simulated 100 ms ping, the own movement feels exactly as it does offline.
 
-## M4 – Spielmodi (E-014)
+## M4 – Game modes (E-014)
 
-- `elora-game`: Framework für Spielregeln, dazu DM, TDM, CTF, LMS, LTS und Instagib (E-026)
-- Teams, Spawn-Logik, Flaggen, Runden, Warmup, Score- und Zeitlimit
-- Scoreboard, Killfeed, Chat und Team-Chat
-- Server-Konfiguration (Datei und Kommandozeile), Konsole (O-20)
+- `elora-game`: framework for game rules, plus DM, TDM, CTF, LMS, LTS and Instagib (E-026)
+- Teams, spawn logic, flags, rounds, warmup, score and time limit
+- Scoreboard, kill feed, chat and team chat
+- Server configuration (file and command line), console (O-20)
 
-**Abnahme:** Jeder Modus ist in einer Playtest-Runde spielbar.
+**Acceptance:** Every mode is playable in a playtest round.
 
-## M5 – Look & Sound (E-029, E-030, E-032, E-033)
+## M5 – Look & sound (E-029, E-030, E-032, E-033)
 
-- Vektor-Renderer: lyon-Tessellierung, Transformationen, Verformung (Squash und Stretch)
-- Elora-Design, Animationen (Laufen, Springen, Hook, Augen und Emotes)
-- Skin-System aus Teilen (E-029, O-39)
-- Partikel, Explosionen, Treffer-Feedback
-- kira-Audio: alle Spielsounds, Lautstärke nach Entfernung
-- Finales HUD (eigene Spiel-UI, E-031)
+- Vector renderer: lyon tessellation, transformations, deformation (squash and stretch)
+- Elora design, animations (running, jumping, hook, eyes and emotes)
+- Skin system built from parts (E-029, O-39)
+- Particles, explosions, hit feedback
+- kira audio: all game sounds, volume by distance
+- Final HUD (own game UI, E-031)
 
-**Abnahme:** Stil und Feedback sind abgenommen. Elora ist klar von einem Tee zu unterscheiden.
+**Acceptance:** Style and feedback are accepted. Elora is clearly distinguishable from a Tee.
 
-**Stand 2026-09-30:** **Abgeschlossen** (E-110), Plan und Umsetzung in [`11-m5-plan.md`](11-m5-plan.md).
+**Status 2026-09-30:** **Completed** (E-110), plan and implementation in [`11-m5-plan.md`](11-m5-plan.md).
 
-## M6 – Karten & Editor (E-028) – nach M7 (E-111)
+## M6 – Maps & editor (E-028) – after M7 (E-111)
 
-- Release-Kartenformat (O-37): Game-Layer, Grafik-Layer, Parallax, Quads, Animationen
-- Integrierter Editor (egui, E-031): Layer, Tiles, Entities, Testspielen direkt aus dem Editor
-- Import von Textkarten (E-024) ins Release-Format
-- Erste Release-Karten (O-43: wie viele und welche Modi)
+- Release map format (O-37): game layer, graphics layers, parallax, quads, animations
+- Integrated editor (egui, E-031): layers, tiles, entities, test play directly from the editor
+- Import of text maps (E-024) into the release format
+- First release maps (O-43: how many and which modes)
 
-**Abnahme:** Mit dem Editor lässt sich eine Karte von Grund auf bauen und spielen.
+**Acceptance:** The editor can be used to build a map from scratch and play it.
 
-**Stand 2026-10-01:** **Abgeschlossen** (E-160), Plan und Umsetzung in [`13-m6-plan.md`](13-m6-plan.md).
+**Status 2026-10-01:** **Completed** (E-160), plan and implementation in [`13-m6-plan.md`](13-m6-plan.md).
 
-## M7 – Menüs & Infrastruktur – vor M6 (E-111)
+## M7 – Menus & infrastructure – before M6 (E-111)
 
-- Hauptmenü, Einstellungen (Grafik, Audio, Steuerung, Spieler und Skin), Tastenbelegung
-- Server-Browser: LAN plus Internet über einen Master-Server (O-17)
-- Eventuell Demos und Replays (O-18)
+- Main menu, settings (graphics, audio, controls, player and skin), key bindings
+- Server browser: LAN plus internet via a master server (O-17)
+- Possibly demos and replays (O-18)
 
-**Abnahme:** Ein neuer Spieler findet ohne Hilfe einen Server und kann spielen.
+**Acceptance:** A new player finds a server without help and can play.
 
-**Stand 2026-10-01:** **Abgeschlossen** (E-128), Plan und Umsetzung in [`12-m7-plan.md`](12-m7-plan.md).
+**Status 2026-10-01:** **Completed** (E-128), plan and implementation in [`12-m7-plan.md`](12-m7-plan.md).
 
 ## M8 – Release 1 (E-003)
 
-- Pakete und Installer für Linux, Windows und macOS (O-44: Vertriebskanäle)
-- Balancing-Runden, öffentliche Playtests, Fehlerbehebung
-- Lizenz- und Credits-Seite (GPL-3.0, CC-BY-SA 4.0, Drittanbieter)
+- Packages and installers for Linux, Windows and macOS (O-44: distribution channels)
+- Balancing rounds, public playtests, bug fixing
+- License and credits page (GPL-3.0, CC-BY-SA 4.0, third parties)
 
-**Abnahme:** Release 1 ist veröffentlicht.
+**Acceptance:** Release 1 is published.
 
 ---
 
-## Neue offene Punkte aus dieser Roadmap
+## New open items from this roadmap
 
-- **O-42 Netzwerk-Zielwerte:** maximale Spielerzahl pro Server, Snapshot-Rate, Ziel-Bandbreite
-- **O-43 Release-Karten:** Anzahl und Modi für Release 1
-- **O-44 Vertrieb:** Wo wird Release 1 veröffentlicht (itch.io, Steam, Flathub, eigene Website …)?
+- **O-42 Network targets:** maximum player count per server, snapshot rate, target bandwidth
+- **O-43 Release maps:** number and modes for Release 1
+- **O-44 Distribution:** Where will Release 1 be published (itch.io, Steam, Flathub, own website …)?

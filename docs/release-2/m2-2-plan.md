@@ -1,85 +1,85 @@
-# R2-M2.2 – Kapitel 2: Murmelwald – Umsetzungsplan
+# R2-M2.2 – Chapter 2: Murmelwald – Implementation Plan
 
-Status: **Abgeschlossen, angenommen (E-314)** · Entscheidungen E-306 bis E-313 · Grundlage: [`world-book.md`](world-book.md) §4.2 und §5, [`m2-1-plan.md`](m2-1-plan.md), E-296, E-305
+Status: **Completed, accepted (E-314)** · Decisions E-306 to E-313 · Basis: [`world-book.md`](world-book.md) §4.2 and §5, [`m2-1-plan.md`](m2-1-plan.md), E-296, E-305
 
-## Ziel
+## Goal
 
-Kapitel 2 ist von Anfang bis Ende spielbar: aus Tauwinkel in den Murmelwald, der alte Uhu **Plumm**, **Erinnerungsrunen**, die von einer sechsten Quelle erzählen, das verirrte **Pilzkind**, der Hüter **Wurzelwächter** und die neue Fähigkeit **Heranhooken**. Danach wird Tauwinkel noch etwas bunter (`quellen_befreit = 2`).
+Chapter 2 is playable from start to finish: from Tauwinkel into the Murmelwald, the old owl **Plumm**, **memory runes** that tell of a sixth spring, the lost **mushroom child**, the guardian **Root Warden** and the new ability **pull hook**. Afterwards Tauwinkel gets a bit more colourful (`quellen_befreit = 2`).
 
-**Abnahme:** Kapitel 2 einmal durchspielen (etwa 60–90 Minuten mit Nebenaufgaben), dazwischen speichern und fortsetzen.
+**Acceptance:** Play through chapter 2 once (about 60–90 minutes with side quests), saving and continuing in between.
 
-## Ausgangslage (aus R2-M1 und R2-M2.1)
+## Starting point (from R2-M1 and R2-M2.1)
 
-- Gegner-Verhalten: Läufer, Hüpfer, Schütze, Flieger, Hüter aus der Luft (`diver`); Hüter-Lebensleiste, Merker `besiegt.<art>`, Ereignisse für Klänge.
-- Fähigkeit **Heranhooken** (`Pull`) gibt es in der Simulation schon (A1.2): Hook zieht kleine Gegner zu Elora. Für Kapitel 2 fehlt noch das Ziehen von **Gegenständen und Schaltern**.
-- Bausteine aus Kapitel 1: Karten-Generatoren, Hook-Blüten, Ruck-Stellen, Deko mit Zustand (`-verdorrt`/`-befreit`, `-fest`), Figuren mit `show_if`, Musik je Gebiet, Kampfmusik.
-- Nach Kapitel 1 läuft die Aufgabe „Das Flüstern im Murmelwald“ (Ankündigung, Schritt von Hand).
+- Enemy behaviours: walker, hopper, shooter, flyer, guardian from the air (`diver`); guardian health bar, flag `besiegt.<art>`, events for sounds.
+- The ability **pull hook** (`Pull`) already exists in the simulation (A1.2): the hook pulls small enemies to Elora. For chapter 2, pulling **items and switches** is still missing.
+- Building blocks from chapter 1: map generators, hook flowers, jerk spots, decoration with state (`-verdorrt`/`-befreit`, `-fest`), characters with `show_if`, music per area, battle music.
+- After chapter 1 the quest "Whispers in the Murmelwald" is running (announcement, manual step).
 
-## Arbeitsschritte
+## Work steps
 
-| # | Schritt | Inhalt | Prüfung |
+| # | Step | Content | Check |
 |---|---|---|---|
-| M2.2.0 ✅ | Entwürfe ([`design/kapitel2-entwuerfe.png`](design/kapitel2-entwuerfe.png), E-312) | Uhu Plumm, Pilzkind, Wurzelschlange, Eichhornpirat (mit Nuss), Pilzwicht, Wurzelwächter (Ruhe, Wurzelangriff, Kern offen, besiegt), Erinnerungsrune, Kern, Waldquelle (verdorrt/befreit), Deko des Waldes (hohe Bäume, Baumhäuser, Hängebrücken, leuchtende Pilze, Wurzeln, Moos) | Deine Auswahl |
-| M2.2.1 ✅ | Neue Gegner | **Wurzelschlange**: versteckt im Boden, schießt hoch, wenn Elora nah ist, zieht sich zurück (verwundbar nur draußen). **Eichhornpirat**: sitzt auf Ästen, wirft Nüsse im Bogen. **Pilzwicht**: läuft, bei Berührung ein bunter Rausch (Elora regenbogenfarben und langsamer, E-311); **Begleiter** für das Pilzkind (folgt Elora, wartet an schwierigen Stellen, E-308) | Tests + Sandbox |
-| M2.2.2 ✅ | Heranhooken erweitern | Hook zieht **Gegenstände** (Truhen-Inhalt, Kerne, Sammelstücke) und **Hook-Schalter** (Hebel, die man nur mit Heranhooken umlegt) zu Elora; neue Schalter-Art „Zugschalter“ in Karte und Editor | Tests |
-| M2.2.3 ✅ | Hüter-Technik | **Wurzelwächter**: großer Hüter am Boden, verschließt Wege mit Wurzeln (zeitweise feste Tiles), schlägt mit Wurzeln aus dem Boden; **Kerne** in seiner Rinde: Hook daran und wegziehen (Tauziehen) legt einen Kern frei, dann verwundbar | Tests + Sandbox |
-| M2.2.4 ✅ | Inhalte | Figuren Plumm und Pilzkind; Hauptaufgabe „Das Flüstern im Murmelwald“ bis zum Quellfunken; Nebenaufgaben **„Erinnerungsrunen“** (Runen erzählen in Bruchstücken von der sechsten Quelle) und **„Das verirrte Pilzkind“**; Gespräche im Dorf nach Kapitel 2 | Tests |
-| M2.2.5 ✅ | Karten | Weg aus Tauwinkel in den Wald; `wald-1` bis `wald-3` und `wald-arena`: viel Vertikale, Baumhäuser, Hängebrücken, dunkle Höhlen unter Wurzeln, Abkürzungen, Rückkehr-Stellen für spätere Fähigkeiten; Ruck- und Hook-Stellen | Sichtprüfung + Durchlauf-Test |
-| M2.2.6 ✅ | Quellfunke und Heranhooken | Sieg → Quellfunke → Tüftel baut **Heranhooken**; Übungsstelle in Tüftels Hof; Stellen in Kapitel 1, die erst mit Heranhooken gehen (Rückkehr lohnt sich) | Tests |
-| M2.2.7 ✅ | Dorf nach Kapitel 2 | `quellen_befreit = 2` (mehr Farbe), Gespräche und Zurufe, Weltkarte; ggf. kleines Fest wie nach Kapitel 1 | Sichtprüfung |
-| M2.2.8 ✅ | Musik und Sounds | Musik des Waldes und des Hüters (zum Anhören vorgelegt), Klänge für Schlange, Nüsse, Pilzwicht, Wurzeln, Kerne | Deine Hörprobe |
-| M2.2.9 ✅ | Abnahme | Kapitel 2 durchspielen, speichern, fortsetzen | Deine Abnahme |
+| M2.2.0 ✅ | Drafts ([`design/kapitel2-entwuerfe.png`](design/kapitel2-entwuerfe.png), E-312) | Owl Plumm, mushroom child, root snake, squirrel pirate (with nut), mushroom imp, Root Warden (rest, root attack, core open, defeated), memory rune, core, Forest Spring (withered/freed), forest decoration (tall trees, tree houses, rope bridges, glowing mushrooms, roots, moss) | Your choice |
+| M2.2.1 ✅ | New enemies | **Root snake**: hidden in the ground, shoots up when Elora is close, retreats (vulnerable only when out). **Squirrel pirate**: sits on branches, throws nuts in an arc. **Mushroom imp**: walks, on contact a colourful rush (Elora rainbow-coloured and slower, E-311); **companion** for the mushroom child (follows Elora, waits at difficult spots, E-308) | Tests + sandbox |
+| M2.2.2 ✅ | Extend pull hook | The hook pulls **items** (chest contents, cores, collectibles) and **hook switches** (levers that can only be flipped with the pull hook) to Elora; new switch type "pull switch" in map and editor | Tests |
+| M2.2.3 ✅ | Guardian technology | **Root Warden**: large guardian on the ground, blocks paths with roots (temporary solid tiles), strikes with roots from the ground; **cores** in its bark: hooking one and pulling away (tug-of-war) exposes a core, then vulnerable | Tests + sandbox |
+| M2.2.4 ✅ | Content | Characters Plumm and mushroom child; main quest "Whispers in the Murmelwald" up to the spring spark; side quests **"Memory Runes"** (runes tell of the sixth spring in fragments) and **"The Lost Mushroom Child"**; conversations in the village after chapter 2 | Tests |
+| M2.2.5 ✅ | Maps | Path from Tauwinkel into the forest; `wald-1` to `wald-3` and `wald-arena`: lots of verticality, tree houses, rope bridges, dark caves under roots, shortcuts, return spots for later abilities; jerk and hook spots | Visual check + playthrough test |
+| M2.2.6 ✅ | Spring spark and pull hook | Victory → spring spark → Tüftel builds the **pull hook**; practice spot in Tüftel's yard; spots in chapter 1 that only work with the pull hook (returning pays off) | Tests |
+| M2.2.7 ✅ | Village after chapter 2 | `quellen_befreit = 2` (more colour), conversations and call-outs, world map; possibly a small festival as after chapter 1 | Visual check |
+| M2.2.8 ✅ | Music and sounds | Music for the forest and the guardian (presented for listening), sounds for snake, nuts, mushroom imp, roots, cores | Your listening test |
+| M2.2.9 ✅ | Acceptance | Play through chapter 2, save, continue | Your acceptance |
 
-**Stand M2.2.1:** Neue Verhalten in der Simulation: `burrower` (Wurzelschlange: versteckt, wächst ab gut 6 Tiles Abstand in 0,7 s aus dem Boden, nur draußen verwundbar, gefährlich und hookbar), Wurf im Bogen für Schützen (`lob`, Eichhornpirat), Berührung mit `daze_ms` (Pilzwicht: bunter Rausch für 5,5 s, Elora läuft mit A-23 = × 0,55, schimmert in Regenbogenfarben, die Welt wabert leicht), `follower` (Pilzkind: folgt Elora, springt über Stufen, wartet an Lücken und Dornen, unverwundbar, harmlos). Arten in `creatures.toml` (`wurzelschlange`, `eichhornpirat`, `pilzwicht`, `pilzkind`), Grafiken aus den Entwürfen (E-312), dazu Plumm und das Pilzkind als Figuren. Ausprobieren: Training, F1 → „Gegner (Abenteuer)“.
+**Status M2.2.1:** New behaviours in the simulation: `burrower` (root snake: hidden, grows out of the ground within 0.7 s from a distance of a good 6 tiles, vulnerable only when out, dangerous and hookable), arcing throw for shooters (`lob`, squirrel pirate), contact with `daze_ms` (mushroom imp: colourful rush for 5.5 s, Elora runs at A-23 = × 0.55, shimmers in rainbow colours, the world wobbles slightly), `follower` (mushroom child: follows Elora, jumps over steps, waits at gaps and thorns, invulnerable, harmless). Species in `creatures.toml` (`wurzelschlange`, `eichhornpirat`, `pilzwicht`, `pilzkind`), graphics from the drafts (E-312), plus Plumm and the mushroom child as characters. Try it: Training, F1 → "Enemies (Adventure)".
 
-**Stand M2.2.2:** Mit **Heranhooken** greift der Hook Sammelstücke (Bienen, Runen, Glitzersteine …) aus der Entfernung, Beute fliegt sofort zu Elora, und Hook-Schalter („Zugschalter“, im Editor unter den Auslösern des Schalters) reagieren nur noch mit dieser Fähigkeit – einmal je Hook-Schuss. Die Kerne des Wurzelwächters folgen mit dem Hüter (M2.2.3).
+**Status M2.2.2:** With the **pull hook**, the hook grabs collectibles (bees, runes, glitter stones …) from a distance, loot flies straight to Elora, and hook switches ("pull switch", in the editor among the switch's triggers) now only react to this ability – once per hook shot. The Root Warden's cores follow with the guardian (M2.2.3).
 
-**Stand M2.2.3:** Verhalten `warden` (Wurzelwächter, E-307): schläft, bis Elora kommt; der Boden bebt an Eloras Stelle (Warnung 0,9 s), dann schießen Wurzeln hoch (2 Schaden, Rückstoß nach oben). **Kerne:** Hook am Wächter halten und von ihm weglaufen (0,8 s Tauziehen) – ein Kern löst sich, der Wächter ist 3,5 s offen und nur dann verwundbar; der Hook zieht Elora dabei nicht zu ihm hin. Drei Kerne, die nachwachsen, wenn alle gezogen sind. Ab halbem Leben schneller und **Wurzelwände** (Spalte aus Stein, 5 Tiles hoch, 3,5 s) zwischen Elora und ihm; beim letzten Kern Wurzeln an zwei Stellen. Grafik mit Posen je Zustand (schläft, wach, Angriff, Kern gezogen), Wurzelstöße und Beben als Effekte, Lebensleiste und Kampfmusik wie beim ersten Hüter. Ausprobieren: Training, F1 → „Gegner (Abenteuer)“ → `wurzelwaechter`.
+**Status M2.2.3:** Behaviour `warden` (Root Warden, E-307): sleeps until Elora arrives; the ground quakes at Elora's position (warning 0.9 s), then roots shoot up (2 damage, upward knockback). **Cores:** keep the hook on the guardian and run away from it (0.8 s tug-of-war) – a core comes loose, the guardian is open for 3.5 s and vulnerable only then; the hook does not pull Elora towards it while doing so. Three cores, which grow back once all have been pulled. From half health faster and **root walls** (column of stone, 5 tiles high, 3.5 s) between Elora and it; at the last core roots at two spots. Graphics with poses per state (asleep, awake, attack, core pulled), root strikes and quakes as effects, health bar and battle music as with the first guardian. Try it: Training, F1 → "Enemies (Adventure)" → `wurzelwaechter`.
 
-**Stand M2.2.4:** Hauptaufgabe „Das Flüstern im Murmelwald“: Westhang → Plumm → Wurzelhöhlen → Waldquelle → Wurzelwächter beruhigen → Quellfunke zu Tüftel (**Heranhooken**, `quellen_befreit = 2`, Fest, Zugschalter im Hof `hof.zug`) → Fest bei Oma; danach „Spuren im Sand“ (Ankündigung Kapitel 3). Nebenaufgaben **„Erinnerungsrunen“** (5 Runen, Plumm liest Bruchstücke vor; alle fünf ergeben die Geschichte der sechsten Quelle unter dem ältesten Brunnen, Merker `sechste_quelle`; Belohnung Eulenfeder mit größerem Beute-Magnet und ein Tautropfen-Punkt, E-309) und **„Das verirrte Pilzkind“** (Krümel folgt Elora über Kartenwechsel bis zum Pilzring, dort Mama Morchel). **Begleiter** als Daten in `characters.toml` (`follower`, `follow_if`, `home_zone`). Figuren Plumm, Pilzkind (verirrt/daheim), Mama Morchel, Wurzelwächter nach dem Kampf (Quelle blüht, Merker `befreit.waldquelle`); Schilder Westhang, Wald, Pilzring; Gespräche und Zurufe im Dorf. Tests in `tests/story.rs` und `tests/session.rs`.
+**Status M2.2.4:** Main quest "Whispers in the Murmelwald": west slope → Plumm → root caves → Forest Spring → calm the Root Warden → spring spark to Tüftel (**pull hook**, `quellen_befreit = 2`, festival, pull switch in the yard `hof.zug`) → festival at Oma's; afterwards "Tracks in the Sand" (announcement of chapter 3). Side quests **"Memory Runes"** (5 runes, Plumm reads fragments aloud; all five together tell the story of the sixth spring beneath the oldest well, flag `sechste_quelle`; reward owl feather with a larger loot magnet and one dewdrop point, E-309) and **"The Lost Mushroom Child"** (Krümel follows Elora across map changes to the mushroom ring, where Mama Morel waits). **Companions** as data in `characters.toml` (`follower`, `follow_if`, `home_zone`). Characters Plumm, mushroom child (lost/at home), Mama Morel, Root Warden after the fight (spring blooms, flag `befreit.waldquelle`); signs west slope, forest, mushroom ring; conversations and call-outs in the village. Tests in `tests/story.rs` and `tests/session.rs`.
 
-**Stand M2.2.5:** Karten aus `apps/elora-client/src/editor/kapitel2.rs` (neu schreiben: `write_kapitel2_maps -- --ignored`, Übersicht `kapitel2_sheets`), von rechts (Tauwinkel) nach links (tiefer in den Wald): **Westhang** in Tauwinkel (Erdstufen und Wurzeln zum Hooken, oben der Übergang); `wald-1` (220 × 60: Pilzring mit Mama Morchel am Waldrand, sanfte Hügel ohne Lücken für das Pilzkind, Stege in den Kronen, Rune 1 auf einem Ast, Rune 2 auf einer schwebenden Steinsäule – nur mit Heranhooken); `wald-2` (200 × 90: Baumhaus-Siedlung mit Zickzack-Stegen, Hängebrücke, Plumm in den Kronen, Pilzkind am Boden, Rune 3 hoch oben); `wald-3` (200 × 70: Wurzelhöhlen mit Dornen, Bröckelboden, hängenden Wurzeln, Zugschalter-Kammer mit Rune 5 – nur mit Heranhooken, oben eine Ruck-Stelle mit Rune 4); `wald-arena` (100 × 50: Wurzelwächter auf der Waldquelle, Hook-Blüten zum Ausweichen, Tor nach dem Sieg, Wurzelpfad zurück nach Tauwinkel). Wald-Look aus dem Release-Thema „Wald“ mit schattigerem Himmel; Deko Waldbaum, Baumhaus, Hängebrücke, Leuchtpilze, Wurzelbogen, Pilzring, Waldquelle.
+**Status M2.2.5:** Maps from `apps/elora-client/src/editor/kapitel2.rs` (rewrite: `write_kapitel2_maps -- --ignored`, overview `kapitel2_sheets`), from right (Tauwinkel) to left (deeper into the forest): **west slope** in Tauwinkel (earth steps and roots for hooking, the transition at the top); `wald-1` (220 × 60: mushroom ring with Mama Morel at the forest edge, gentle hills without gaps for the mushroom child, walkways in the treetops, rune 1 on a branch, rune 2 on a floating stone pillar – only with the pull hook); `wald-2` (200 × 90: tree house settlement with zigzag walkways, rope bridge, Plumm in the treetops, mushroom child on the ground, rune 3 high up); `wald-3` (200 × 70: root caves with thorns, crumbling floor, hanging roots, pull switch chamber with rune 5 – only with the pull hook, a jerk spot with rune 4 at the top); `wald-arena` (100 × 50: Root Warden on the Forest Spring, hook flowers for dodging, gate after the victory, root path back to Tauwinkel). Forest look from the release theme "Forest" with a shadier sky; decoration forest tree, tree house, rope bridge, glowing mushrooms, root arch, mushroom ring, Forest Spring.
 
-**Stand M2.2.6:** Sieg → Quellfunke → Tüftel baut **Heranhooken** (M2.2.4). Baustein **Zugtruhe** (`pull_vault` in `editor/prolog.rs`): Steinhütte mit Tor und Truhe, 10 Tiles darüber eine Wurzel mit Zugschalter. Übung in Tüftels Hof (mit Schild „schild-zug“), Rückkehr-Belohnungen in `wiese-1` und `wiese-2`; im Wald zusätzlich Rune 2 (Steinsäule) und Rune 5 (Kammer in `wald-3`). Heranhooken prüft die ganze Strecke der Hook-Spitze. Test: alle Zugschalter mit einem echten Hook-Schuss (`tests/prolog.rs`).
+**Status M2.2.6:** Victory → spring spark → Tüftel builds the **pull hook** (M2.2.4). Building block **pull vault** (`pull_vault` in `editor/prolog.rs`): stone hut with a gate and a chest, 10 tiles above it a root with a pull switch. Practice in Tüftel's yard (with sign "schild-zug"), return rewards in `wiese-1` and `wiese-2`; in the forest additionally rune 2 (stone pillar) and rune 5 (chamber in `wald-3`). The pull hook checks the entire path of the hook tip. Test: all pull switches with a real hook shot (`tests/prolog.rs`).
 
-**Stand M2.2.7:** Nach dem Heranhooken: `quellen_befreit = 2` (mehr Beete, Blumenkästen, Blumentöpfe und Fahnen bunt), Fest mit Girlanden, Laternen und Festmusik bis Elora das Dorf verlässt, Oma beim Fest (sechste Quelle, grauer Wanderer, Ankündigung Glutsandwüste), Lotte schenkt Pilzsuppe (neu: heilt 8), Klonk spricht vom Harz für den Waffen-Ausbau, neue Zurufe von Pip und Lotte. Weltkarte: Murmelwald mit Lichtkranz „Quelle befreit“ (Tüftel setzt `befreit.<quelle>` zur Sicherheit mit, falls Elora nach dem Kampf nicht mit dem Hüter spricht).
+**Status M2.2.7:** After the pull hook: `quellen_befreit = 2` (more flower beds, flower boxes, flower pots and flags colourful), festival with garlands, lanterns and festival music until Elora leaves the village, Oma at the festival (sixth spring, grey wanderer, announcement Glutsandwüste), Lotte gives away mushroom soup (new: heals 8), Klonk talks about resin for the weapon upgrade, new call-outs from Pip and Lotte. World map: Murmelwald with a halo "Spring freed" (Tüftel also sets `befreit.<quelle>` as a safeguard, in case Elora does not talk to the guardian after the fight).
 
-**Stand M2.2.8:** Musik (E-313): Murmelwald „Woodland Fantasy“ (Matthew Pablo, CC BY 3.0), Wurzelwächter „Bamboo Blitz“ (Tsorthan Grove, CC0) – Kampfmusik jetzt je Gebiet (`boss_music` in `worldmap.toml`). Klänge: Wurzelschlange knarrt beim Auftauchen und Abtauchen, der Boden grollt vor dem Wurzelstoß, Holz kracht beim Stoß, ein Plopp beim gelösten Kern (Kenney CC0 und prozedural), schillerndes Glitzern, wenn der bunte Rausch beginnt.
+**Status M2.2.8:** Music (E-313): Murmelwald "Woodland Fantasy" (Matthew Pablo, CC BY 3.0), Root Warden "Bamboo Blitz" (Tsorthan Grove, CC0) – battle music now per area (`boss_music` in `worldmap.toml`). Sounds: the root snake creaks when surfacing and submerging, the ground rumbles before the root strike, wood cracks on the strike, a pop when a core comes loose (Kenney CC0 and procedural), shimmering glitter when the colourful rush begins.
 
-## Ablauf von Kapitel 2 (Vorschlag)
+## Flow of chapter 2 (proposal)
 
-| # | Ort | Was passiert |
+| # | Location | What happens |
 |---|---|---|
-| 1 | Tauwinkel | Oma schickt Elora los; ein neuer Weg führt aus dem Dorf in den Wald |
-| 2 | `wald-1` | Waldrand, erste Wurzelschlangen und Pilzwichte; erste Erinnerungsrune |
-| 3 | `wald-2` | Baumhaus-Siedlung in den Kronen: **Uhu Plumm** sammelt Geschichten, das **Pilzkind** weint, es hat sich verirrt; Eichhornpiraten auf den Ästen |
-| 4 | `wald-3` | Wurzelhöhlen, der Weg wird von Wurzeln versperrt; Quellstein vor der Arena; weitere Runen |
-| 5 | `wald-arena` | Waldquelle, der **Wurzelwächter** schläft mitten auf ihr; Kampf |
-| 6 | `wald-arena` | Sieg: Der Wächter war müde und verwirrt (wie die Hummel); Quellfunke; die Runen ergeben einen Satz über die **sechste Quelle** |
-| 7 | Tauwinkel | Tüftel baut **Heranhooken**; Fest; Oma kündigt die Glutsandwüste an |
-| 8 | frei | Pilzkind nach Hause bringen, alle Runen zu Plumm bringen, Rückkehr nach Kapitel 1 |
+| 1 | Tauwinkel | Oma sends Elora off; a new path leads out of the village into the forest |
+| 2 | `wald-1` | Forest edge, first root snakes and mushroom imps; first memory rune |
+| 3 | `wald-2` | Tree house settlement in the treetops: **owl Plumm** collects stories, the **mushroom child** is crying, it has got lost; squirrel pirates on the branches |
+| 4 | `wald-3` | Root caves, the path is blocked by roots; spring stone before the arena; more runes |
+| 5 | `wald-arena` | Forest Spring, the **Root Warden** sleeps right on top of it; fight |
+| 6 | `wald-arena` | Victory: the guardian was tired and confused (like the bumblebee); spring spark; the runes form a sentence about the **sixth spring** |
+| 7 | Tauwinkel | Tüftel builds the **pull hook**; festival; Oma announces the Glutsandwüste |
+| 8 | free | Bring the mushroom child home, bring all runes to Plumm, return to chapter 1 |
 
-## Der Kampf gegen den Wurzelwächter (Vorschlag)
+## The fight against the Root Warden (proposal)
 
-- **Phase 1:** Er steht in der Mitte, schlägt mit Wurzeln aus dem Boden (Warnung: Boden bebt, Erde bröckelt an der Stelle). Drei **Kerne** leuchten in seiner Rinde. Elora hookt einen Kern und zieht (Hook halten und weglaufen bzw. springen): Der Kern löst sich, der Wächter ist kurz offen.
-- **Phase 2 – ab halbem Leben:** Er verschließt Teile der Arena mit Wurzelwänden; Elora muss über Hook-Stellen ausweichen.
-- **Phase 3 – letzter Kern:** schneller, Wurzeln an zwei Stellen gleichzeitig.
-- Treffer nur, solange ein Kern gelöst ist.
+- **Phase 1:** It stands in the middle and strikes with roots from the ground (warning: the ground quakes, earth crumbles at the spot). Three **cores** glow in its bark. Elora hooks a core and pulls (hold the hook and run or jump away): the core comes loose, the guardian is briefly open.
+- **Phase 2 – from half health:** It closes off parts of the arena with root walls; Elora has to dodge via hook spots.
+- **Phase 3 – last core:** faster, roots at two spots at once.
+- Hits only while a core is loose.
 
-## Entscheidungen zu R2-M2.2
+## Decisions on R2-M2.2
 
-| # | Frage | Entscheidung |
+| # | Question | Decision |
 |---|---|---|
-| D-M22-01 | Weg in den Murmelwald | **Pfad am Westhang** von Tauwinkel hinauf (Stufen, Hook-Stellen), oben beginnt der Wald (E-306) |
-| D-M22-02 | Kampf gegen den Wurzelwächter | **Wie vorgeschlagen** (E-307) |
-| D-M22-03 | Pilzkind nach Hause bringen | **Es folgt Elora** (neue Technik Begleiter, wartet an schwierigen Stellen) (E-308) |
-| D-M22-04 | Belohnung für die Runen | **Ausrüstungsstück und ein Tautropfen-Punkt**, dazu die Geschichte der sechsten Quelle (E-309) |
-| D-M22-05 | Fest nach Kapitel 2 | **Wie nach Kapitel 1** (E-310) |
-| D-M22-06 | Pilzwicht-Wirkung | **Bunter Rausch:** Elora schimmert ein paar Sekunden in Regenbogenfarben und läuft langsamer, die Welt wabert leicht (kindgerecht, ohne Bezug auf Drogen im Spiel) (E-311) |
+| D-M22-01 | Path into the Murmelwald | **Path up the west slope** of Tauwinkel (steps, hook spots), the forest begins at the top (E-306) |
+| D-M22-02 | Fight against the Root Warden | **As proposed** (E-307) |
+| D-M22-03 | Bringing the mushroom child home | **It follows Elora** (new companion technology, waits at difficult spots) (E-308) |
+| D-M22-04 | Reward for the runes | **A piece of equipment and one dewdrop point**, plus the story of the sixth spring (E-309) |
+| D-M22-05 | Festival after chapter 2 | **As after chapter 1** (E-310) |
+| D-M22-06 | Mushroom imp effect | **Colourful rush:** Elora shimmers in rainbow colours for a few seconds and runs slower, the world wobbles slightly (child-friendly, no reference to drugs in the game) (E-311) |
 
-## Technische Festlegungen (Vorschlag)
+## Technical decisions (proposal)
 
-- Neue Verhalten und der Hüter in der Simulation (deterministisch), Werte als Daten in `creatures.toml`.
-- **Zeitweise Wurzelwände** als Tiles, die die Simulation setzt und wieder entfernt (wie Bröckelboden, aber zurück zum Ursprung); Ereignis für Grafik und Klang.
-- **Heranhooken von Gegenständen**: Beute und Sammelstücke als hookbare Ziele; Zugschalter als Abenteuer-Objekt.
-- Karten aus einem Generator `editor/kapitel2.rs`; Durchlauf-Test um Kapitel 2 erweitert.
+- New behaviours and the guardian in the simulation (deterministic), values as data in `creatures.toml`.
+- **Temporary root walls** as tiles that the simulation sets and removes again (like crumbling floor, but back to the original); event for graphics and sound.
+- **Pulling items with the hook**: loot and collectibles as hookable targets; pull switch as an adventure object.
+- Maps from a generator `editor/kapitel2.rs`; playthrough test extended with chapter 2.

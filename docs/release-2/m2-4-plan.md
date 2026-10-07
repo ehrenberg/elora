@@ -1,124 +1,124 @@
-# R2-M2.4 – Kapitel 4: Frostspitzen – Umsetzungsplan
+# R2-M2.4 – Chapter 4: Frostspitzen – implementation plan
 
-Status: **Abgenommen** (E-349) · Entscheidungen E-340 bis E-349 · Grundlage: [`world-book.md`](world-book.md) §4.4 und §5, [`m2-3-plan.md`](m2-3-plan.md), [`w1-plan.md`](w1-plan.md), E-228, E-243, E-320
+Status: **Accepted** (E-349) · Decisions E-340 to E-349 · Basis: [`world-book.md`](world-book.md) §4.4 and §5, [`m2-3-plan.md`](m2-3-plan.md), [`w1-plan.md`](w1-plan.md), E-228, E-243, E-320
 
-## Ziel
+## Goal
 
-Kapitel 4 ist von Anfang bis Ende spielbar: aus Tauwinkel hinauf in die Frostspitzen, Bergführerin
-**Flocke** im verlassenen Bergdorf, die neue Fähigkeit **Eisgriff** schon mitten im Kapitel,
-**Kälte**, die Elora an Feuerstellen vertreibt, Eiszapfen, Lawinen und dünnes Eis, verlorene
-Kletterer und Eiskristalle für Klonk, die Hüterin **Eiskönigin Kristella** und ihre Warnung:
-„Er ist einsam, nicht böse.“ Danach wird Tauwinkel noch bunter (`quellen_befreit = 4`), und Oma
-kündigt die Sternschlucht an.
+Chapter 4 is playable from start to finish: from Tauwinkel up into the Frostspitzen, mountain guide
+**Flocke** in the abandoned mountain village, the new ability **ice grip** already in the middle of the chapter,
+**cold** that Elora drives off at fireplaces, icicles, avalanches and thin ice, lost
+climbers and ice crystals for Klonk, the guardian **Ice Queen Kristella** and her warning:
+“He is lonely, not wicked.” Afterwards Tauwinkel becomes even more colourful (`quellen_befreit = 4`), and Oma
+announces the Sternschlucht.
 
-**Abnahme:** Kapitel 4 einmal durchspielen (etwa 60–90 Minuten mit Nebenaufgaben), dazwischen
-speichern und fortsetzen.
+**Acceptance:** play through chapter 4 once (about 60–90 minutes with side quests), saving and
+continuing in between.
 
-## Grundsatzentscheidungen
+## Core decisions
 
-| # | Frage | Entscheidung |
+| # | Question | Decision |
 |---|---|---|
-| E-340 | Eisgriff | **Mitten im Kapitel:** Flocke gibt Elora im Bergdorf Steigkrallen (= Eisgriff); ab da öffnen sich Wege, der Hüterkampf nutzt die Wände. Der Quellfunke nach dem Sieg **stärkt** den Eisgriff |
-| E-341 | Kampf gegen Kristella | **Frostwellen und Wände:** Sie schwebt über einer Eishalle und friert den Boden in Wellen ein (frisch gefrorener Boden schadet); Elora rettet sich an Kletterwände; nach dem Frosthauch ist Kristella erschöpft, sinkt herab und ist verwundbar; später fallen Eiszapfen |
-| E-342 | Kälte | **Kälte-Leiste** (Gegenstück zur Hitze, E-320): draußen füllt sie sich, im Schneesturm schneller; an Feuerstellen und unter Dächern wärmt Elora sich auf; voll = Elora wird langsamer |
-| E-343 | Neues Gelände | **Eiszapfen, Lawinen, dünnes Eis** (keine Sprungfelder) |
+| E-340 | Ice grip | **In the middle of the chapter:** Flocke gives Elora climbing claws (= ice grip) in the mountain village; from then on paths open up, and the guardian fight uses the walls. The spring spark after the victory **strengthens** the ice grip |
+| E-341 | Fight against Kristella | **Frost waves and walls:** she hovers above an ice hall and freezes the floor in waves (freshly frozen floor hurts); Elora escapes onto climbing walls; after the frost breath Kristella is exhausted, sinks down and is vulnerable; later icicles fall |
+| E-342 | Cold | **Cold bar** (counterpart to the heat, E-320): it fills outside, faster in a blizzard; Elora warms up at fireplaces and under roofs; full = Elora gets slower |
+| E-343 | New terrain | **Icicles, avalanches, thin ice** (no jump pads) |
 
-## Ausgangslage (aus R2-M1 bis R2-W1)
+## Starting point (from R2-M1 to R2-W1)
 
-- **Eisgriff** gibt es in der Simulation (A1.1, E-228): in der Luft gegen ein **Kletterwand-Tile**
-  laufen, kurz haften (A-06: 1,0 s), abspringen; im Fähigkeitenbaum „Fester Griff“ (Haftdauer).
-- Tiles **Eis** (rutschig), **Kletterwand**, **Bröckelboden** (bricht beim Stampfen), Treibsand.
-- **Wetter** (R2-W1): Schnee und Schneesturm mit Wind, der Elora in der Luft schiebt, nasser
-  Boden; Gebiet `frostspitzen` in `worldmap.toml` (Karten `frost-`, trüb: Schneesturm, sonst
-  Schnee oder schön).
-- **Hitze-Leiste** (E-320) mit Zonen `schatten…`/`oase…` und Dach-Erkennung – Vorlage für die Kälte.
-- Gegner-Bausteine: Läufer, Hüpfer, Schütze (auch im Bogen), Flieger (mit Abwurf), `diver`,
-  `burrower`, `leaper`, `warden`, `serpent`; Hüter-Technik mit Phasen, Warnungen, Erschöpfung.
-- Material **Eiskristall** und Ausbauten bei Klonk, die es brauchen (`upgrades.toml`); Aufgabe
-  „Der Ruf der Frostspitzen“ (Ankündigung, Schritt von Hand).
+- **Ice grip** exists in the simulation (A1.1, E-228): run against a **climbing wall tile** in the air,
+  cling briefly (A-06: 1.0 s), jump off; in the skill tree “Firm grip” (cling time).
+- Tiles **ice** (slippery), **climbing wall**, **crumbly floor** (breaks when stomping), quicksand.
+- **Weather** (R2-W1): snow and blizzard with wind that pushes Elora in the air, wet
+  ground; area `frostspitzen` in `worldmap.toml` (maps `frost-`, dull: blizzard, otherwise
+  snow or fair).
+- **Heat bar** (E-320) with zones `schatten…`/`oase…` and roof detection – template for the cold.
+- Enemy building blocks: walker, hopper, shooter (also arcing), flyer (with drop), `diver`,
+  `burrower`, `leaper`, `warden`, `serpent`; guardian tech with phases, warnings, exhaustion.
+- Material **ice crystal** and upgrades at Klonk that need it (`upgrades.toml`); quest
+  “The Call of the Frostspitzen” (teaser, step set by hand).
 
-## Arbeitsschritte
+## Work steps
 
-| # | Schritt | Inhalt | Prüfung |
+| # | Step | Content | Check |
 |---|---|---|---|
-| M2.4.0 ✅ | Entwürfe | Flocke, Kletterer (3), Kristella (schwebend, Frosthauch, erschöpft, beruhigt), Schneeballrobbe, Eisspitzen-Fledermaus, Frostgeist, Steigkrallen, Eiszapfen, Lawinen-Schneeball, dünnes Eis und Eiswasser, Feuerstelle, Quelle (vereist/befreit); Deko: Gipfel, Tannen im Schnee, Berghütten, Seilbrücken, Gletscher | Deine Auswahl |
-| M2.4.1 ✅ | Gelände in der Simulation | **Eiszapfen** (zittern, fallen, zerschellen), **dünnes Eis** (neues Tile: bricht nach kurzem Stehen oder sofort beim Stampfen, wächst nach), **Eiswasser** (neues Tile: kleiner Schaden, zurück an den Rand), **Lawinen** (Zone: Stampfen oder Explosion löst rollende Schneebrocken aus) | Tests |
-| M2.4.2 ✅ | Kälte | Kälte-Leiste im HUD, Frostrand als Bildeffekt (Post-Shader); Feuerstellen und Hütten wärmen; Werte als Tuning | Tests |
-| M2.4.3 ✅ | Neue Gegner | **Schneeballrobbe**: rutscht auf dem Bauch heran, hält an und wirft Schneebälle im Bogen. **Eisspitzen-Fledermaus**: hängt schlafend an der Decke, stürzt herab, wenn Elora darunter ist, flattert zurück. **Frostgeist**: schwebt durch Wände, Berührung lässt Elora kurz erstarren | Tests + Sandbox |
-| M2.4.4 ✅ | Hüter-Technik | **Kristella** nach E-341, Phasen siehe unten | Tests + Sandbox |
-| M2.4.5 ✅ | Inhalte | Figuren Flocke und Kletterer; Hauptaufgabe bis zum Quellfunken mit Steigkrallen in der Mitte; Nebenaufgaben **„Verlorene Kletterer“** und **„Eiskristalle für Klonk“**; Spuren des Dürren; Gespräche im Dorf nach Kapitel 4 | Tests |
-| M2.4.6 ✅ | Karten | Bergsteig aus Tauwinkel; `frost-1` bis `frost-3` und `frost-arena` | Sichtprüfung + Durchlauf-Test |
-| M2.4.7 ✅ | Quellfunke und Dorf | Sieg → Quellfunke → Tüftel stärkt den Eisgriff; Kletterstellen in Kapitel 1–3 (Rückkehr lohnt); `quellen_befreit = 4`, Fest, Weltkarte; Oma kündigt die Sternschlucht an | Tests + Sichtprüfung |
-| M2.4.8 ✅ | Musik und Sounds | Musik der Frostspitzen und Kristellas (zum Anhören vorgelegt), Klänge für Robbe, Fledermaus, Geist, Eiszapfen, Lawine, brechendes Eis, Feuerstelle, Kristella | Deine Hörprobe |
-| M2.4.9 ✅ | Abnahme | Kapitel 4 durchspielen, speichern, fortsetzen | Deine Abnahme |
+| M2.4.0 ✅ | Drafts | Flocke, climbers (3), Kristella (hovering, frost breath, exhausted, calmed), snowball seal, ice bat, frost ghost, climbing claws, icicle, avalanche snowball, thin ice and ice water, fireplace, spring (frozen/freed); decoration: peaks, firs in snow, mountain huts, rope bridges, glacier | Your selection |
+| M2.4.1 ✅ | Terrain in the simulation | **Icicles** (tremble, fall, shatter), **thin ice** (new tile: breaks after standing on it briefly or instantly when stomping, grows back), **ice water** (new tile: small damage, back to the edge), **avalanches** (zone: stomping or an explosion sets off rolling snow chunks) | Tests |
+| M2.4.2 ✅ | Cold | Cold bar in the HUD, frost border as an image effect (post shader); fireplaces and huts warm; values as tuning | Tests |
+| M2.4.3 ✅ | New enemies | **Snowball seal**: slides up on its belly, stops and throws snowballs in an arc. **Ice bat**: hangs asleep from the ceiling, swoops down when Elora is below, flutters back. **Frost ghost**: floats through walls, touch makes Elora freeze briefly | Tests + sandbox |
+| M2.4.4 ✅ | Guardian tech | **Kristella** per E-341, phases see below | Tests + sandbox |
+| M2.4.5 ✅ | Content | Characters Flocke and climbers; main quest up to the spring spark with climbing claws in the middle; side quests **“Lost Climbers”** and **“Ice Crystals for Klonk”**; tracks of the Withered One; village dialogues after chapter 4 | Tests |
+| M2.4.6 ✅ | Maps | Mountain path out of Tauwinkel; `frost-1` to `frost-3` and `frost-arena` | Visual check + run-through test |
+| M2.4.7 ✅ | Spring spark and village | Victory → spring spark → Tüftel strengthens the ice grip; climbing spots in chapters 1–3 (going back pays off); `quellen_befreit = 4`, celebration, world map; Oma announces the Sternschlucht | Tests + visual check |
+| M2.4.8 ✅ | Music and sounds | Music for the Frostspitzen and Kristella (presented for listening), sounds for seal, bat, ghost, icicle, avalanche, breaking ice, fireplace, Kristella | Your listening test |
+| M2.4.9 ✅ | Acceptance | Play through chapter 4, save, continue | Your acceptance |
 
-**Stand M2.4.0–M2.4.1:** Entwürfe angenommen (E-345). Tiles **dünnes Eis** (`-`) und **Eiswasser** (`+`) in Simulation, Kartenformat, Editor und Grafik; Risse als Warnung, Bruch und Nachwachsen über die zeitweisen Tiles (wachsen nie in eine Figur hinein). Gegnerarten **`eiszapfen`** (Verhalten `icicle`) und **`schneebrocken`** (`roller`); **Lawinen** als Zonen `lawine…` mit Auslöse-Zone `…-tritt` in der Sitzung. Werte A-36 bis A-41. Klänge vorerst Platzhalter (M2.4.8).
+**Status M2.4.0–M2.4.1:** Drafts accepted (E-345). Tiles **thin ice** (`-`) and **ice water** (`+`) in simulation, map format, editor and graphics; cracks as a warning, breaking and regrowing via the temporary tiles (never grow into a character). Enemy kinds **`eiszapfen`** (behaviour `icicle`) and **`schneebrocken`** (`roller`); **avalanches** as zones `lawine…` with trigger zone `…-tritt` in the session. Values A-36 to A-41. Sounds placeholders for now (M2.4.8).
 
-**Stand M2.4.2:** Kälte-Leiste im HUD (Schneeflocke, Hellblau bis Tiefblau, pulsiert voll) für Gebiete mit `cold = true` (Frostspitzen): draußen 60 s bis voll, im Schneesturm 30 s, unter Dächern 10 s und in Zonen `feuer…` 3 s bis leer, in Hüter-Arenen wärmt sie; voll bremst wie die Hitze (A-27) bis unter die Hälfte. Bonus `cold_pct` für Ausrüstung. Frostrand als Post-Shader (Eisblumen von den Rändern, ab einem Drittel der Leiste).
+**Status M2.4.2:** Cold bar in the HUD (snowflake, light blue to deep blue, pulses when full) for areas with `cold = true` (Frostspitzen): outside 60 s until full, in a blizzard 30 s, under roofs 10 s and in zones `feuer…` 3 s until empty, it warms up in guardian arenas; full slows down like the heat (A-27) until below half. Bonus `cold_pct` for equipment. Frost border as a post shader (frost flowers from the edges, from a third of the bar).
 
-**Stand M2.4.3:** Neue Verhalten `seal` (Schneeballrobbe: rutscht heran, richtet sich in Wurfweite auf und wirft alle 1,5 s im Bogen), `bat` (Eisspitzen-Fledermaus: schläft kopfüber und harmlos, stürzt auf Elora herab, sobald sie darunter ist, flattert heim und ruht kurz), `ghost` (Frostgeist: schwebt durch Wände, Berührung mit `freeze_ms` lässt Elora 0,6 s erstarren – nur Zielen wirkt, sie steckt im Eisblock –, danach weicht er 1,8 s zurück; nicht hookbar). Arten `schneeballrobbe`, `fledermaus`, `frostgeist` mit Beute (Eiskristall selten). Ausprobieren: Training, F1 → „Gegner (Abenteuer)“.
+**Status M2.4.3:** New behaviours `seal` (snowball seal: slides up, straightens up within throwing range and throws in an arc every 1.5 s), `bat` (ice bat: sleeps upside down and harmless, swoops down on Elora as soon as she is below, flutters home and rests briefly), `ghost` (frost ghost: floats through walls, touch with `freeze_ms` freezes Elora for 0.6 s – only aiming works, she is stuck in an ice block –, then it backs off for 1.8 s; not hookable). Kinds `schneeballrobbe`, `fledermaus`, `frostgeist` with loot (ice crystal, rare). Try it: training, F1 → “Gegner (Abenteuer)”.
 
-**Stand M2.4.4:** Verhalten `queen` (Art `kristella`, 36 Leben): schläft, bis Elora nahe ist, schwebt über der Halle (1100 breit) und zieht alle 2,6 s eine Frostwelle über den Boden (Front 6 Einheiten/Tick, dahinter 170 frischer Frost mit 2 Schaden und Stoß nach oben, davor kriecht Reif als Warnung) – an Kletterwänden, auf Simsen und im Sprung sicher. Ruhig kommt die Welle von der Seite, auf der Elora nicht ist. Nach drei Wellen sinkt sie erschöpft herab und ist 3,4 s ab der Landung verwundbar. Ab der Hälfte: schneller, Wellen abwechselnd von beiden Seiten, dazwischen drei Eiszapfen über Elora. Im letzten Viertel ruft sie einen Schneesturm (die Sitzung setzt das Wetter der Halle: Wind schiebt Elora von der Wand, Bild und Klang); nach dem Sieg legt er sich.
+**Status M2.4.4:** Behaviour `queen` (kind `kristella`, 36 health): sleeps until Elora is close, hovers above the hall (1100 wide) and sends a frost wave across the floor every 2.6 s (front 6 units/tick, behind it 170 of fresh frost with 2 damage and a push upwards, ahead of it rime creeps as a warning) – safe on climbing walls, on ledges and while jumping. When calm, the wave comes from the side Elora is not on. After three waves she sinks down exhausted and is vulnerable for 3.4 s from landing. From half health: faster, waves alternating from both sides, with three icicles above Elora in between. In the last quarter she calls up a blizzard (the session sets the hall's weather: wind pushes Elora off the wall, visuals and sound); after the victory it dies down.
 
-**Stand M2.4.5:** Inhalte nach [`m2-4-content.md`](m2-4-content.md) (E-346): Figuren Flocke, Bolle, Kiesel, Wicke (draußen und danach in der Hütte), Kristella nach dem Kampf, graue Stelle; Hauptaufgabe „Der Ruf der Frostspitzen“ mit Steigkrallen (Eisgriff) für Flockes Seil, danach Ankündigung „Das Lied der Sterne“; Nebenaufgaben „Verlorene Kletterer“ (Bommelmütze) und „Klarkristalle für Klonk“ (Anhänger nach Wahl); Kräutertee (Wirkung `warm`), Fellstiefel, Laden `flocke`; Gespräche für Oma, Tüftel (Merker `eisgriff.stark`), Klonk; fünf Schilder; Gebiet mit Quelle, Kapitel 4, Hüterin und Gewinn-Bildschirm („Gipfelstürmerin“).
+**Status M2.4.5:** Content per [`m2-4-content.md`](m2-4-content.md) (E-346): characters Flocke, Bolle, Kiesel, Wicke (outside and afterwards in the hut), Kristella after the fight, grey patch; main quest “The Call of the Frostspitzen” with climbing claws (ice grip) for Flocke's rope, then the teaser “The Song of the Stars”; side quests “Lost Climbers” (bobble hat) and “Clear Crystals for Klonk” (pendant of your choice); herbal tea (effect `warm`), fur boots, shop `flocke`; dialogues for Oma, Tüftel (flag `eisgriff.stark`), Klonk; five signs; area with spring, chapter 4, guardian and victory screen (“Summit Climber”).
 
-**Stand M2.4.6:** Karten aus `editor/kapitel4.rs`: **Bergsteig** in Tauwinkel (Eisdeckel aus Bröckelboden oben im Oberdorf, nur mit Stampfen; darunter der Gang zum Übergang). **`frost-1` Gletscherfuß** (Feuer am Eingang, Eisflächen, Felsgang mit drei Eiszapfen, dünne Eisbrücke über Eiswasser mit einem Kristall darunter auf trockenem Fels, Bolles Nische nur über einen Kletterschacht, Lawinenhang mit Auslöse-Stelle). **`frost-2` Bergdorf** (Käserei mit Keller: dünnes Eis über Eiswasser, zwei Fledermäuse, Seil-Truhe; Flockes Hütte mit Feuer und den heimgekehrten Kletterern; Kletterkamin hinter der Hütte, 26 Reihen hoch; Hochebene mit Kiesels Gletscherspalte). **`frost-3` Gipfelgrat** (fest im Schneesturm, zwei Lawinenhänge, Tal mit Wickes Sims über einem Kamin, Fledermäuse unter einem Felsdach, graue Stelle, drei Feuerstellen, Quellstein vor der Halle). **`frost-arena` Eishalle** (Eisboden genau so breit wie die Frostwellen, Kletterwände und zwei Kletterpfeiler, Decke für die Eiszapfen, Tor nach dem Sieg). Acht Klarkristalle, im Gebirge nur Wolken und ferne Gipfel im Hintergrund. Tests: Kamin mit Eisgriff kletterbar (nur mit Eingaben), Durchlauf des Kapitels auf den Karten.
+**Status M2.4.6:** Maps from `editor/kapitel4.rs`: **mountain path** in Tauwinkel (ice lid of crumbly floor at the top of the upper village, stomp only; below it the passage to the transition). **`frost-1` glacier foot** (fire at the entrance, ice surfaces, rock passage with three icicles, thin ice bridge over ice water with a crystal underneath on dry rock, Bolle's niche only via a climbing shaft, avalanche slope with a trigger spot). **`frost-2` mountain village** (cheese dairy with cellar: thin ice over ice water, two bats, rope chest; Flocke's hut with a fire and the returned climbers; climbing chimney behind the hut, 26 rows high; plateau with Kiesel's glacier crevasse). **`frost-3` summit ridge** (fixed blizzard, two avalanche slopes, valley with Wicke's ledge above a chimney, bats under a rock overhang, grey patch, three fireplaces, spring stone in front of the hall). **`frost-arena` ice hall** (ice floor exactly as wide as the frost waves, climbing walls and two climbing pillars, ceiling for the icicles, gate after the victory). Eight clear crystals; in the mountains only clouds and distant peaks in the background. Tests: chimney climbable with ice grip (inputs only), run-through of the chapter on the maps.
 
-**Stand M2.4.7:** Gestärkter Eisgriff (Merker `eisgriff.stark` von Tüftel): Haftdauer doppelt, wer zur Wand drückt, zieht sich mit A-42 hinauf; gilt sofort nach dem Gespräch. Kletterstellen für die Rückkehr in `wiese-2`, `wald-1` und `wueste-2` (hängender Kamin, unten frei, Sims mit Truhe 19 Reihen hoch, nur mit Eisgriff; im Test nur mit Eingaben erklettert). Dorf nach Kapitel 4: `quellen_befreit = 4` und Fest (Tüftel), neue Zurufe von Pip, Lotte und Tüftel, Kräutertee bei Lotte; die Weltkarte zeigt die Frostquelle befreit.
+**Status M2.4.7:** Strengthened ice grip (flag `eisgriff.stark` from Tüftel): double cling time, pushing towards the wall pulls Elora up with A-42; applies right after the dialogue. Climbing spots for going back in `wiese-2`, `wald-1` and `wueste-2` (hanging chimney, open at the bottom, ledge with a chest 19 rows high, ice grip only; climbed in the test with inputs only). Village after chapter 4: `quellen_befreit = 4` and celebration (Tüftel), new calls from Pip, Lotte and Tüftel, herbal tea at Lotte's; the world map shows the Frost Spring freed.
 
-**Stand M2.4.8:** Musik (E-347): Frostspitzen „Ice Village“ (KarateStudios, CC0), Kristella „Dramatic Boss Encounter“ (cynicmusic, CC0). Klänge: dünnes Eis knackt und bricht, Eiszapfen klirrt und zerschellt, Lawine grollt beim Start, Schneebrocken und Schneebälle knirschen (Kenney, CC0); Fledermaus quiekt, Elora erstarrt klirrend, Kristellas Frosthauch (prozedural); Feuerstellen knistern in der Umgebungsspur, je näher, desto lauter („Fireplace Sound loop“, PagDev, CC0).
+**Status M2.4.8:** Music (E-347): Frostspitzen “Ice Village” (KarateStudios, CC0), Kristella “Dramatic Boss Encounter” (cynicmusic, CC0). Sounds: thin ice cracks and breaks, icicle clinks and shatters, avalanche rumbles at the start, snow chunks and snowballs crunch (Kenney, CC0); bat squeaks, Elora freezes with a clink, Kristella's frost breath (procedural); fireplaces crackle in the ambient track, louder the closer you are (“Fireplace Sound loop”, PagDev, CC0).
 
-**Playtest 2026-10-07** (alle Kapitel in 29 min): Konfetti des Gewinn-Bildschirms über die ganze Breite (die Zufallszahl für x reichte nur bis zur Mitte); Wetterteilchen laufen um den Ausschnitt herum statt oben neu zu entstehen (Blätter kamen beim Laufen und Springen in Schüben); Katze sitzt auf Pips Baumhaus; kein Schuss mehr beim Betreten einer Karte (die erste Eingabe nach dem Beitritt ist nur Ausgangspunkt der Klick-Erkennung); dünnes Eis wächst nach 5,5 s nach; Eiszapfen 3 Schaden; **Kristella deutlich schwerer**: 52 Leben, nach 4 Treffern in einer Erschöpfung sofort wieder hinauf, Erschöpfung 3,0 s, Wellen schneller (7) und häufiger (2,1 s), ab 60 % wütend mit vier Eiszapfen, ab 30 % Schneesturm.
+**Playtest 2026-10-07** (all chapters in 29 min): victory screen confetti across the whole width (the random number for x only reached the middle); weather particles wrap around the view instead of spawning anew at the top (leaves came in bursts while running and jumping); cat sits on Pip's tree house; no more shot when entering a map (the first input after joining is only the starting point of click detection); thin ice grows back after 5.5 s; icicle 3 damage; **Kristella clearly harder**: 52 health, after 4 hits during one exhaustion straight back up, exhaustion 3.0 s, waves faster (7) and more frequent (2.1 s), enraged from 60 % with four icicles, blizzard from 30 %.
 
-## Ablauf von Kapitel 4 (Vorschlag)
+## Course of chapter 4 (proposal)
 
-| # | Ort | Was passiert |
+| # | Place | What happens |
 |---|---|---|
-| 1 | Tauwinkel | Oma schickt Elora los; oben im Oberdorf führt ein **Bergsteig** nach Norden, bisher von einem Eisblock versperrt – mit **Stampfen** zerbricht er |
-| 2 | `frost-1` Gletscherfuß | Erste Hänge und Eisflächen, Schneeballrobben, Eiszapfen in einem Felsgang, dünnes Eis über einem Eiswasser-Becken; Kälte-Leiste mit der ersten Feuerstelle eingeführt |
-| 3 | `frost-2` Verlassenes Bergdorf | **Flocke** wartet in einer Hütte; Elora holt ihr Seil aus einem vereisten Keller zurück (Fledermäuse, dünnes Eis) und bekommt die **Steigkrallen (Eisgriff)**; gleich danach ein Kamin aus Kletterwänden hinaus. Erster Kletterer, Klonks Auftrag (Eiskristalle) |
-| 4 | `frost-3` Gipfelgrat | Schneesturm-Abschnitte mit Wind, Lawinenhänge, Kletterwand-Schächte, Frostgeister; graue Spuren und eine vereiste Stelle, an der jemand „Farbe getrunken“ hat; Quellstein vor der Halle |
-| 5 | `frost-arena` Eishalle | Frostquelle unter einer Eisdecke, Kristella schwebt darüber; Kampf |
-| 6 | `frost-arena` | Sieg: Kristella beruhigt sich – „Er ist einsam, nicht böse.“ Quellfunke; sie zeigt nach Osten, zur Sternschlucht |
-| 7 | Tauwinkel | Tüftel stärkt den Eisgriff mit dem Quellfunken; Fest; Oma kündigt die Sternschlucht an |
-| 8 | frei | Kletterer retten, Eiskristalle für Klonk, Kletterstellen in Kapitel 1–3 |
+| 1 | Tauwinkel | Oma sends Elora off; at the top of the upper village a **mountain path** leads north, so far blocked by an ice block – it breaks with **stomp** |
+| 2 | `frost-1` glacier foot | First slopes and ice surfaces, snowball seals, icicles in a rock passage, thin ice over an ice water pool; cold bar introduced with the first fireplace |
+| 3 | `frost-2` abandoned mountain village | **Flocke** waits in a hut; Elora fetches her rope back from a frozen cellar (bats, thin ice) and receives the **climbing claws (ice grip)**; right after that a chimney of climbing walls leads out. First climber, Klonk's task (ice crystals) |
+| 4 | `frost-3` summit ridge | Blizzard sections with wind, avalanche slopes, climbing wall shafts, frost ghosts; grey tracks and a frozen patch where someone “drank colour”; spring stone in front of the hall |
+| 5 | `frost-arena` ice hall | Frost Spring beneath a sheet of ice, Kristella hovers above it; fight |
+| 6 | `frost-arena` | Victory: Kristella calms down – “He is lonely, not wicked.” Spring spark; she points east, to the Sternschlucht |
+| 7 | Tauwinkel | Tüftel strengthens the ice grip with the spring spark; celebration; Oma announces the Sternschlucht |
+| 8 | free | Rescue climbers, ice crystals for Klonk, climbing spots in chapters 1–3 |
 
-## Der Kampf gegen Kristella (Vorschlag nach E-341)
+## The fight against Kristella (proposal per E-341)
 
-- **Arena:** Eishalle, etwa zwei Bildschirme breit; links und rechts sowie an zwei Säulen
-  Kletterwände; Boden aus Eis; die Kälte-Leiste ruht im Kampf.
-- **Phase 1:** Kristella schwebt oben und zieht von einer Seite eine **Frostwelle** über den Boden:
-  Reif kriecht als Warnung voraus, dann friert der Boden – wer darauf steht, nimmt Schaden. Elora
-  springt an eine Kletterwand und hält sich (Eisgriff) oder springt über die Welle. Nach drei
-  Wellen ist Kristella **erschöpft**, sinkt herab und ist kurz verwundbar (Hammer, Granaten, Laser).
-- **Phase 2 – ab halbem Leben:** Wellen von beiden Seiten nacheinander; zwischen den Wellen fallen
-  **Eiszapfen** von der Decke (mit Zittern als Warnung).
-- **Phase 3 – letztes Viertel:** Schneesturm in der Halle (Wind schiebt Elora von der Wand),
-  kürzere Pausen, eine Welle mehr.
+- **Arena:** ice hall, about two screens wide; climbing walls on the left and right and on two pillars;
+  ice floor; the cold bar rests during the fight.
+- **Phase 1:** Kristella hovers above and sends a **frost wave** across the floor from one side:
+  rime creeps ahead as a warning, then the floor freezes – whoever stands on it takes damage. Elora
+  jumps onto a climbing wall and holds on (ice grip) or jumps over the wave. After three
+  waves Kristella is **exhausted**, sinks down and is briefly vulnerable (hammer, grenades, laser).
+- **Phase 2 – from half health:** waves from both sides one after another; between the waves
+  **icicles** fall from the ceiling (with trembling as a warning).
+- **Phase 3 – last quarter:** blizzard in the hall (wind pushes Elora off the wall),
+  shorter pauses, one more wave.
 
-## Offen zur Freigabe
+## Open for approval
 
-| # | Frage | Vorschlag |
+| # | Question | Proposal |
 |---|---|---|
-| D-M24-01 | Weg in die Frostspitzen | **Bergsteig oben im Oberdorf** nach Norden, versperrt von einem Eisblock, den Elora mit Stampfen zerbricht (nutzt die Fähigkeit aus Kapitel 3) |
-| D-M24-02 | Steigkrallen | Flocke gibt sie, nachdem Elora ihr **Seil aus dem vereisten Keller** geholt hat; der Keller kommt noch ohne Eisgriff aus |
-| D-M24-03 | Quellfunke | **Eisgriff gestärkt:** doppelte Haftdauer, und Elora kann an der Wand ein Stück **hinaufziehen** (Taste hoch) statt nur abzurutschen |
-| D-M24-04 | Kälte-Leiste | Füllt sich draußen in etwa 60 s (Schneesturm etwa 30 s), Feuerstelle wärmt in etwa 3 s ganz auf, Dach in etwa 10 s; voll = Tempo × 0,7 wie die Hitze; Ausrüstung mit Kälteschutz (Mütze, Umhang) verlangsamt das Füllen. In Arenen ruht sie |
-| D-M24-05 | Eiswasser | Kleiner Schaden (1) und zurück an den Rand, wie ganz eingesunkener Treibsand (E-318); dünnes Eis wächst nach etwa 4 s nach |
-| D-M24-06 | Lawinen | Nur in markierten Zonen; Auslöser Stampfen, Granate oder ein Schritt auf eine Auslöse-Stelle; 6–8 rollende Schneebrocken (2 Schaden, Stoß), Schutz in Nischen oder an einer Kletterwand darüber |
-| D-M24-07 | Frostgeist | Schwebt langsam durch Wände auf Elora zu; Berührung lässt sie 0,6 s erstarren (wie Rausch, aber starr); verwundbar durch alles, außerhalb der Felsen sichtbar heller |
-| D-M24-08 | Kletterer | **Drei Kletterer**, je einer in `frost-1` bis `frost-3`, nur mit Eisgriff erreichbar (der erste nach der Rückkehr); Belohnung von Flocke: Kälteschutz-Mütze |
-| D-M24-09 | Eiskristalle | **Acht Kristalle** versteckt (unter dünnem Eis, hinter Lawinenhängen, in Kletterschächten); Klonk baut daraus einen Ausbau nach Wahl |
-| D-M24-10 | Wetter | Gletscherfuß und Bergdorf: Schnee (trüb: Schneesturm); Gipfelgrat: Schneesturm-Abschnitte fest in der Karte; Eishalle: schön (D-W1-01) |
+| D-M24-01 | Way into the Frostspitzen | **Mountain path at the top of the upper village** leading north, blocked by an ice block that Elora breaks with stomp (uses the ability from chapter 3) |
+| D-M24-02 | Climbing claws | Flocke gives them after Elora has fetched her **rope from the frozen cellar**; the cellar still works without ice grip |
+| D-M24-03 | Spring spark | **Ice grip strengthened:** double cling time, and Elora can **pull herself up** the wall a bit (up key) instead of only sliding down |
+| D-M24-04 | Cold bar | Fills outside in about 60 s (blizzard about 30 s), a fireplace warms fully in about 3 s, a roof in about 10 s; full = speed × 0.7 like the heat; equipment with cold protection (hat, cloak) slows the filling. Rests in arenas |
+| D-M24-05 | Ice water | Small damage (1) and back to the edge, like fully sunken quicksand (E-318); thin ice grows back after about 4 s |
+| D-M24-06 | Avalanches | Only in marked zones; triggered by stomp, grenade or a step on a trigger spot; 6–8 rolling snow chunks (2 damage, push), shelter in niches or on a climbing wall above |
+| D-M24-07 | Frost ghost | Floats slowly through walls towards Elora; touch freezes her for 0.6 s (like the rush, but rigid); vulnerable to everything, visibly brighter outside the rock |
+| D-M24-08 | Climbers | **Three climbers**, one each in `frost-1` to `frost-3`, reachable only with ice grip (the first one after going back); reward from Flocke: cold protection hat |
+| D-M24-09 | Ice crystals | **Eight crystals** hidden (under thin ice, behind avalanche slopes, in climbing shafts); Klonk builds an upgrade of your choice from them |
+| D-M24-10 | Weather | Glacier foot and mountain village: snow (dull: blizzard); summit ridge: blizzard sections fixed in the map; ice hall: fair (D-W1-01) |
 
-## Technische Festlegungen (Vorschlag)
+## Technical specifications (proposal)
 
-- Neue Tiles **dünnes Eis** und **Eiswasser** in Kollision, Kartenformat und Editor (wie Treibsand).
-- **Eiszapfen** als Karten-Objekt mit Zustand (hängt, zittert, fällt, zerschellt) in der
-  Simulation; **Lawinen** als Zonen `lawine…` mit Auslöser und rollenden Körpern (deterministisch).
-- **Kälte** teilt sich die Technik der Hitze: eine Temperatur-Leiste je Gebiet (`hot` / neu
-  `cold` in `worldmap.toml`), Zonen `feuer…` wärmen, Dach-Erkennung wie beim Schatten.
-- Gegner und Kristella als neue Verhalten in `elora-sim` (deterministisch), Werte in
-  `creatures.toml`; Frostgeist ignoriert die Kollision.
-- Karten aus einem Generator `editor/kapitel4.rs`; Durchlauf-Test um Kapitel 4 erweitert.
-- Musik und Klänge aus freien Quellen (CC0), zum Anhören vorgelegt (E-295).
+- New tiles **thin ice** and **ice water** in collision, map format and editor (like quicksand).
+- **Icicles** as a map object with state (hanging, trembling, falling, shattering) in the
+  simulation; **avalanches** as zones `lawine…` with a trigger and rolling bodies (deterministic).
+- **Cold** shares the heat tech: one temperature bar per area (`hot` / new
+  `cold` in `worldmap.toml`), zones `feuer…` warm, roof detection like the shade.
+- Enemies and Kristella as new behaviours in `elora-sim` (deterministic), values in
+  `creatures.toml`; the frost ghost ignores collision.
+- Maps from a generator `editor/kapitel4.rs`; run-through test extended to chapter 4.
+- Music and sounds from free sources (CC0), presented for listening (E-295).

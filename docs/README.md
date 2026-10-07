@@ -1,32 +1,32 @@
-# Dokumentation – Elora
+# Documentation – Elora
 
-Elora ist ein schnelles 2D-Multiplayer-Spiel nach dem Vorbild von Teeworlds; „Elora“ ist zugleich der Name der Figur.
+Elora is a fast 2D multiplayer game modeled on Teeworlds; “Elora” is also the name of the character.
 
-Einstieg: [README](../README.md) für Spielerinnen und Spieler, [DEVELOPMENT.md](../DEVELOPMENT.md) zum Bauen, Testen, Server-Betrieb und Mitentwickeln.
+Start here: [README](../README.md) for players, [DEVELOPMENT.md](../DEVELOPMENT.md) for building, testing, running servers and contributing.
 
-## Handbuch (gilt)
+## Handbook (current)
 
-| Dokument | Inhalt |
+| Document | Content |
 |---|---|
-| [handbook/principles.md](handbook/principles.md) | Verbindliche Grundsätze aus Release 1 (Zusammenarbeit, Spiel, Technik) |
-| [handbook/architecture.md](handbook/architecture.md) | Aufbau des Codes, Laufzeit, Standards und Werkzeuge |
-| [handbook/tuning.md](handbook/tuning.md) | Physik-, Hook- und Waffenwerte (T-01 bis T-36) |
-| [handbook/map-format.md](handbook/map-format.md) | Kartenformat `.emap`, Kartengrafik, Darstellung, Übertragung |
-| [handbook/master-operation.md](handbook/master-operation.md) | Master-Server betreiben (Webspace/PHP, systemd, Docker) |
+| [handbook/principles.md](handbook/principles.md) | Binding principles from Release 1 (collaboration, game, technology) |
+| [handbook/architecture.md](handbook/architecture.md) | Code structure, runtime, standards and tools |
+| [handbook/tuning.md](handbook/tuning.md) | Physics, hook and weapon values (T-01 to T-36) |
+| [handbook/map-format.md](handbook/map-format.md) | Map format `.emap`, map graphics, rendering, transfer |
+| [handbook/master-operation.md](handbook/master-operation.md) | Running the master server (web hosting/PHP, systemd, Docker) |
 
-## Release 2 (in Arbeit)
+## Release 2 (in progress)
 
-| Dokument | Inhalt |
+| Document | Content |
 |---|---|
-| [release-2/roadmap.md](release-2/roadmap.md) | Ziele, Abhängigkeiten, Meilensteine |
-| [release-2/a1-plan.md](release-2/a1-plan.md) | Plan R2-M1 Abenteuer-Grundlage |
-| [handbook/adventure-content.md](handbook/adventure-content.md) | Gespräche, Aufgaben und Abenteuer-Daten schreiben |
-| [release-2/progression.md](release-2/progression.md) | Fortschrittssystem: Stufen, Fähigkeitenbaum, Waffen, Ausrüstung, Tod, Spielstände |
-| [release-2/decisions.md](release-2/decisions.md) | Entscheidungslog ab E-200, offene Punkte |
-| [release-2/story-drafts.md](release-2/story-drafts.md) | Drei Entwürfe für Geschichte und Welt (gewählt: A) |
-| [release-2/world-book.md](release-2/world-book.md) | Weltbuch „Die verstummten Quellen“ (Entwurf) |
+| [release-2/roadmap.md](release-2/roadmap.md) | Goals, dependencies, milestones |
+| [release-2/a1-plan.md](release-2/a1-plan.md) | Plan R2-M1 adventure foundation |
+| [handbook/adventure-content.md](handbook/adventure-content.md) | Writing dialogs, quests and adventure data |
+| [release-2/progression.md](release-2/progression.md) | Progression system: levels, skill tree, weapons, equipment, death, save games |
+| [release-2/decisions.md](release-2/decisions.md) | Decision log from E-200, open points |
+| [release-2/story-drafts.md](release-2/story-drafts.md) | Three drafts for story and world (chosen: A) |
+| [release-2/world-book.md](release-2/world-book.md) | World book “The Silent Springs” (draft) |
 
-## Releases und Archiv
+## Releases and archive
 
-- [releases/](releases/) – Release-Notizen ([v0.9.0](releases/v0.9.0.md), [v0.9.1](releases/v0.9.1.md), [v0.9.2](releases/v0.9.2.md))
-- [archiv/release-1/](archive/release-1/README.md) – Analyse, Entscheidungen E-001 bis E-173, Roadmap und Pläne M1–M8, Entwürfe
+- [releases/](releases/) – release notes ([v0.9.0](releases/v0.9.0.md), [v0.9.1](releases/v0.9.1.md), [v0.9.2](releases/v0.9.2.md))
+- [archive/release-1/](archive/release-1/README.md) – analysis, decisions E-001 to E-173, roadmap and plans M1–M8, drafts

@@ -88,7 +88,7 @@ More chapters follow with the next versions.
   “Show on the internet” it appears in every player's list. For others to reach it, the UDP port
   (default **8303**) must be open in your router and firewall.
 - **Run a server permanently:** with the program `elora-server` – all options are in the
-  [guide for developers and server operators](DEVELOPMENT.md#server-konsole-und-master).
+  [guide for developers and server operators](DEVELOPMENT.md#server-console-and-master).
 
 The connection is encrypted. Elora remembers every server and warns you if its key changes.
 

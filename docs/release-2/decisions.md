@@ -1,188 +1,188 @@
-# Entscheidungslog – Release 2
+# Decision log – Release 2
 
-Fortsetzung ab **E-200**. Release 1 (E-001 bis E-173) steht im
-[Archiv](../archive/release-1/02-decisions.md), die weiter gültigen Grundsätze in
+Continued from **E-200**. Release 1 (E-001 to E-173) is in the
+[archive](../archive/release-1/02-decisions.md), the principles that still apply are in
 [`../handbook/principles.md`](../handbook/principles.md).
 
-## Getroffene Entscheidungen
+## Decisions made
 
-| # | Datum | Thema | Entscheidung | Begründung / Quelle |
+| # | Date | Topic | Decision | Reason / source |
 |---|---|---|---|---|
-| E-200 | 2026-10-02 | Dokumentation | **Archiv + Handbuch:** Release 1 nach `docs/archive/release-1/`, gültiges Wissen als Handbuch in `docs/handbook/`, Release 2 in `docs/release-2/` | Entscheidung Projektinhaber |
-| E-201 | 2026-10-02 | Entscheidungslog | Log von Release 1 archiviert, **neuer Log ab E-200**; Grundsätze als Kurzfassung im Handbuch | Entscheidung Projektinhaber |
-| E-202 | 2026-10-02 | Schwerpunkte Release 2 | **Spieler & Gemeinschaft, mehr Spielinhalt, Mitspieler-Bots** und ein **Rollenspiel-Abenteuer**: Einzelspieler mit Geschichte, NPCs und Rollenspiel-Elementen (Leveln, Waffen und Fähigkeiten ausbauen …), zusätzlich als Spielmodus | Entscheidung Projektinhaber |
-| E-203 | 2026-10-02 | Weltaufbau (O-200) | **Hub mit Gebieten:** ein Dorf als Treffpunkt mit NPCs, Händlern und Aufgaben; Gebiete (z. B. Wald, Wüste, Eisberge, Höhlen) werden nach und nach freigeschaltet | Entscheidung Projektinhaber |
-| E-204 | 2026-10-02 | Rollenspiel als Spielmodus (O-201) | **Rollenspiel-PvP-Modus:** eigener Spielmodus, in dem man während des Matches levelt und Waffen/Fähigkeiten ausbaut (Fortschritt gilt für die Runde). Kein Koop-Abenteuer vorgesehen | Entscheidung Projektinhaber |
-| E-205 | 2026-10-02 | Geschichte (O-203) | **Claude schlägt vor** (Welt, Figuren, Handlung in Varianten), **Projektinhaber entscheidet** | Entscheidung Projektinhaber |
-| E-206 | 2026-10-02 | Rollenspiel-Elemente (O-204) | **Alle vier:** Stufen & Fertigkeiten (Fähigkeitenbaum), Waffen ausbauen, Ausrüstung & Beute (Inventar, Händler, Währung), Aufgaben & Dialoge | Entscheidung Projektinhaber |
-| E-207 | 2026-10-02 | Geschichte (O-203) | **Entwurf A „Die verstummten Quellen“** aus [`story-drafts.md`](story-drafts.md): märchenhaft, warm; Dorf Tauwinkel, fünf Gebiete (Blütenwiesen, Murmelwald, Glutsandwüste, Frostspitzen, Sternschlucht), Gegenspieler „Der Dürre“, Versöhnung statt Sieg; PvP-Modus „Quellenkampf“ | Entscheidung Projektinhaber |
-| E-208 | 2026-10-02 | Credits: Name | Projektinhaber als **Bastian Ehrenberg** | Entscheidung Projektinhaber |
-| E-209 | 2026-10-02 | Credits: Ort (M8.5) | **Letzte Seite in den Einstellungen** („Über Elora“) | Entscheidung Projektinhaber |
-| E-210 | 2026-10-02 | Wendung der Geschichte | **Sechste Quelle unter dem Dorfbrunnen**, der Dürre als ihr vergessener Hüter – passt | Entscheidung Projektinhaber |
-| E-211 | 2026-10-02 | Altersgruppe | Das Abenteuer ist **immer für 12+ spielbar**: Kämpfe ja, aber ohne Blut und Grausamkeit; die Hüter-Kämpfe dürfen echte Kämpfe sein, die Geschichte erzählt sie als Beruhigen | Entscheidung Projektinhaber |
-| E-212 | 2026-10-02 | Namen, Fähigkeiten | Namen von Welt und Figuren sowie die fünf Fähigkeiten in ihrer Reihenfolge (Hook-Ruck, Heranhooken, Stampfen, Eisgriff, Gleiten) **bleiben** | Entscheidung Projektinhaber |
-| E-213 | 2026-10-02 | Dialoge | **Auswahl mit Folgen** erlaubt | Entscheidung Projektinhaber |
-| E-214 | 2026-10-02 | Spieldauer | Der Einzelspieler-Modus soll **lange tragen – mehrere Stunden** (Zielwerte siehe [Weltbuch §8](world-book.md)) | Entscheidung Projektinhaber |
-| E-215 | 2026-10-02 | Spieldauer: Zielwerte | **Hauptgeschichte 6–8 h, mit Nebeninhalten 12 h+**, etwa 20 Abenteuer-Karten, ~25 Nebenaufgaben, Sammelstücke, „Quellen-Prüfungen“ nach dem Ende ([Weltbuch §8](world-book.md)) | Entscheidung Projektinhaber |
-| E-216 | 2026-10-02 | Reihenfolge Release 2 | **Abenteuer-Grundlage zuerst** (R2-M1, Plan: [`a1-plan.md`](a1-plan.md)); Gegner-Steuerung und Wegfindung daraus nutzen später die Mehrspieler-Bots | Entscheidung Projektinhaber |
-| E-217 | 2026-10-02 | Sprache Abenteuer (D-A1-01) | **Deutsch und Englisch von Anfang an** | Entscheidung Projektinhaber |
-| E-218 | 2026-10-02 | Pflege von Gesprächen und Aufgaben (D-A1-02) | **Textdateien**, im Editor sichtbar (welcher NPC welches Gespräch hat) und direkt testbar | Entscheidung Projektinhaber |
-| E-219 | 2026-10-02 | Spielstände (D-A1-03, O-202) | **3 Plätze**, automatisch beim Kartenwechsel und an Speicherpunkten; kein Speichern mitten im Kampf | Entscheidung Projektinhaber |
-| E-220 | 2026-10-02 | Tod im Abenteuer (D-A1-04) | **Zurück zum letzten Speicherpunkt mit kleinem Verlust:** ein Teil der seitdem gesammelten Glanztropfen geht verloren; Gegenstände und Erfahrung bleiben | Entscheidung Projektinhaber |
-| E-221 | 2026-10-02 | Schwierigkeit (D-A1-05) | **Nur eine Schwierigkeitsstufe** | Entscheidung Projektinhaber |
-| E-222 | 2026-10-02 | Darstellung der Gespräche (D-A1-06) | **Beides:** Gespräche im Textfeld unten mit Bild der Figur und Auswahl; kurze Zurufe als Sprechblase über der Figur | Entscheidung Projektinhaber |
-| E-223 | 2026-10-02 | Fähigkeiten im Mehrspieler (D-A1-07) | Neue Fähigkeiten **nur im Abenteuer und im Quellenkampf**; die übrigen Modi bleiben unverändert | Entscheidung Projektinhaber |
-| E-224 | 2026-10-02 | Kamera im Abenteuer (D-A1-08) | **Leicht vorausschauend**, dazu **Kamera-Zonen** aus der Karte (z. B. Bossräume); Mausblick wie gewohnt | Entscheidung Projektinhaber |
-| E-225 | 2026-10-02 | Entwürfe A1.0 | **Figuren, Objekte und Oberfläche angenommen** ([`design/`](design/)); das Abenteuer-Menü bekommt zusätzlich eine **Karte** | Entscheidung Projektinhaber |
-| E-226 | 2026-10-02 | Hook-Ruck (A1.1) | Neue Taste **„Fähigkeit“** (frei belegbar): Ruck zum Hook-Punkt, während der Hook an einer Wand hängt, mit Abklingzeit | Entscheidung Projektinhaber |
-| E-227 | 2026-10-02 | Stampfen (A1.1) | **Runter in der Luft** drücken | Entscheidung Projektinhaber |
-| E-228 | 2026-10-02 | Eisgriff (A1.1) | Haften nur an einem **eigenen Klettertile**; dieses ist eine **feste, nicht hookbare** Wand | Entscheidung Projektinhaber |
-| E-229 | 2026-10-02 | Gleiten (A1.1) | **Springen halten beim Fallen** (nach dem Doppelsprung bzw. wenn er verbraucht ist) | Entscheidung Projektinhaber |
-| E-230 | 2026-10-02 | Bröckelboden | Bricht beim Stampfen und **bleibt zerbrochen**; im Abenteuer im Spielstand gemerkt, im PvP bis Rundenende | Entscheidung Projektinhaber |
-| E-231 | 2026-10-02 | Abnahme A1.1 | Fähigkeiten im Playtest **angenommen**; A-01 bis A-10 gelten als Startwerte | Entscheidung Projektinhaber |
-| E-232 | 2026-10-02 | Draufspringen (A1.2) | **Kein Effekt:** Gegner werden nur mit Waffen und Stampfen getroffen; Berührung schadet Elora | Entscheidung Projektinhaber |
-| E-233 | 2026-10-02 | Hook und Gegner (A1.2) | Hook **greift Gegner und zieht Elora heran**; mit Heranhooken werden kleine Gegner zu Elora gezogen | Entscheidung Projektinhaber |
-| E-234 | 2026-10-02 | Schutz nach Treffer (A1.2) | **Kurz unverwundbar (blinkend) und Rückstoß** weg vom Gegner | Entscheidung Projektinhaber |
-| E-235 | 2026-10-02 | Wiederkehr der Gegner (A1.2) | **Beim erneuten Betreten der Karte**; Bosse und besondere Gegner bleiben besiegt | Entscheidung Projektinhaber |
-| E-236 | 2026-10-02 | Beute (A1.2) | **Springt heraus, Elora zieht sie aus der Nähe an** (kleiner Magnet); liegende Beute verschwindet nicht | Entscheidung Projektinhaber |
-| E-237 | 2026-10-02 | Eigenschaden im Abenteuer | **Kein Eigenschaden**, nur Rückstoß (Granatensprünge bleiben frei) | Entscheidung Projektinhaber |
-| E-238 | 2026-10-02 | Leben der Gegner | **Kleiner Balken nach einem Treffer** für ein paar Sekunden; Bosse mit großem Balken oben | Entscheidung Projektinhaber |
-| E-239 | 2026-10-02 | Eloras Leben im Abenteuer | **10 wie im Mehrspieler**, Stufen und Ausrüstung erhöhen später; Rüstung nur über Ausrüstung | Entscheidung Projektinhaber |
-| E-240 | 2026-10-02 | Abnahme A1.2 | Gegner im Playtest **angenommen**; Werte in `creatures.toml` und A-03, A-11 bis A-15 gelten als Startwerte | Entscheidung Projektinhaber |
-| E-241 | 2026-10-02 | Stufen (O-204) | Höchststufe 30, Erfahrung bis zur nächsten Stufe 15 + 10 × Stufe, je Stufe 1 Tautropfen-Punkt; **alle 2 Stufen +1 Leben** (10 → 24) | Entscheidung Projektinhaber |
-| E-242 | 2026-10-02 | Fähigkeitenbaum (O-204) | Drei Zweige, 16 Knoten, **nicht alles erreichbar** (nachgezählt: 35 Ränge, 31 Punkte bis Stufe 30) ([`progression.md`](progression.md) §2) | Entscheidung Projektinhaber |
-| E-243 | 2026-10-02 | Waffen im Abenteuer (O-204) | Start mit Hammer, Granatwerfer nach Kapitel 1, Laser nach Kapitel 3; **Munition wie im Mehrspieler nur über Pickups und Truhen**; je Waffe 3 Ausbaustufen mit Glanztropfen und Gebietsmaterial | Entscheidung Projektinhaber |
-| E-244 | 2026-10-02 | Ausrüstung, Inventar, Tod (O-204) | Wie vorgeschlagen: keine Platzgrenze, keine Tempo- oder Sprungboni, Verlust beim Tod 25 % der seit dem Speichern gesammelten Glanztropfen | Entscheidung Projektinhaber |
-| E-245 | 2026-10-02 | Spielstände (O-202) | **Keine lesbaren Dateien:** Spielstände werden gepackt mit Prüfsumme gespeichert | Entscheidung Projektinhaber |
-| E-246 | 2026-10-02 | Format der Gespräche (A1.4) | **TOML wie die übrigen Daten** | Entscheidung Projektinhaber |
-| E-247 | 2026-10-02 | Übersetzungen (A1.4) | **Beide Sprachen nebeneinander** in derselben Datei; fehlende Übersetzungen meldet die Prüfung | Entscheidung Projektinhaber |
-| E-248 | 2026-10-02 | Folgen von Entscheidungen (E-213) | **Zuneigung je Figur** (öffnet Extras), **Belohnungen**, **Merker im Weltzustand**, **Aufgaben starten und abschließen** | Entscheidung Projektinhaber |
-| E-249 | 2026-10-02 | Aufgaben-Schritte (A1.4) | Sprechen mit, Ort erreichen, Gegner besiegen, Sammeln, Bringen, Auslöser in der Welt | Entscheidung Projektinhaber |
-| E-250 | 2026-10-02 | Scheitern von Aufgaben | **Manche Aufgaben können scheitern** (durch Entscheidungen oder Bedingungen) | Entscheidung Projektinhaber |
-| E-251 | 2026-10-02 | Aufgabenbuch | Zeigt **erledigte Schritte und den aktuellen**, weitere als „?“ | Entscheidung Projektinhaber |
-| E-252 | 2026-10-02 | Kartenübergänge (A1.5) | **Je Übergang wählbar:** offene Wege beim Hineinlaufen, Türen, Höhlen und Tore mit der Aktionstaste | Entscheidung Projektinhaber |
-| E-253 | 2026-10-02 | Aktionstaste | **E ist überall die Aktionstaste** (Sprechen, Öffnen, Benutzen); das **Emote-Rad liegt überall auf Strg** | Entscheidung Projektinhaber |
-| E-254 | 2026-10-02 | Türen und Tore | **Feste Wand wie Stein** (nicht hookbar), öffnet sich, sobald eine Bedingung gilt, und bleibt offen | Entscheidung Projektinhaber |
-| E-255 | 2026-10-02 | Truhen | **Fester Inhalt je Truhe**, einmal geöffnet bleibt sie offen; optional verschlossen (Schlüssel oder Bedingung) | Entscheidung Projektinhaber |
-| E-256 | 2026-10-02 | Schalter | **Hebel mit der Aktionstaste, umschaltbar** (Merker 1/0), wahlweise nur einmal; außerdem Schalter, die man mit dem Hammer oder per Heranhooken auslöst | Entscheidung Projektinhaber |
-| E-257 | 2026-10-02 | NPCs | **Stehen, drehen sich zu Elora**, rufen Zurufe; einzelne mit kurzem Laufweg | Entscheidung Projektinhaber |
-| E-258 | 2026-10-02 | Heilpflanzen | **Berühren heilt** (Grundwert 2 Leben, mehr mit „Heilblumen“), **wachsen beim Wiederbetreten der Karte nach** | Entscheidung Projektinhaber |
-| E-259 | 2026-10-02 | Kamera-Zonen | **Festsetzen** (fester Ausschnitt, z. B. Bossraum) **oder Begrenzen** (Kamera bleibt im Bereich), sanfter Übergang | Entscheidung Projektinhaber |
-| E-260 | 2026-10-02 | Abenteuer verlassen (A1.6) | Fortschritt **gilt bis zum letzten Speichern** (Kartenwechsel, Quellstein); das Pause-Menü warnt | Entscheidung Projektinhaber |
-| E-261 | 2026-10-02 | Tod im Abenteuer (A1.6) | **Eigener Bildschirm mit Auswahl:** „Weiter am Quellstein“ oder „Hauptmenü“ (Verlust nach E-220) | Entscheidung Projektinhaber |
-| E-262 | 2026-10-02 | Ablage der Abenteuer-Karten | **Eigener Ordner `maps/abenteuer/`**, nicht in Server- und Abstimmungslisten | Entscheidung Projektinhaber |
-| E-263 | 2026-10-02 | Abenteuer-Menü (A1.7) | Öffnet mit **Tab** (im Abenteuer gibt es kein Scoreboard), das Spiel steht solange still | Entscheidung Projektinhaber |
-| E-264 | 2026-10-02 | Reiter „Karte“ | **Weltkarte des Taulands:** Tauwinkel und die fünf Gebiete, freigeschaltete farbig, Eloras Ort, Abschnitte des aktuellen Gebiets | Entscheidung Projektinhaber |
-| E-265 | 2026-10-02 | Heiltränke | **Schnelltaste Q** trinkt einen Heiltrank, andere Verbrauchsgegenstände über das Inventar | Entscheidung Projektinhaber |
-| E-266 | 2026-10-02 | Vorausschauende Kamera (E-224) | **Leicht nach Laufrichtung** (bis etwa 3 Tiles, sanft), dazu Mausblick und Kamera-Zonen | Entscheidung Projektinhaber |
-| E-267 | 2026-10-02 | Kamera beim Stehenbleiben (Playtest A1.7) | **Vorausschau bleibt stehen:** Vorsprung in die zuletzt gelaufene Richtung, Wechsel erst nach kurzem Laufen in die andere Richtung (ersetzt das Zurückziehen aus E-266) | Entscheidung Projektinhaber |
-| E-268 | 2026-10-02 | Editor-Werkzeug (A1.8) | **Ein Werkzeug „Abenteuer“ (Taste 9):** Art in der Seitenleiste wählen, Klick setzt auf das Raster, Bereiche per Ziehen; Klick wählt, Ziehen verschiebt, Entf löscht, Rückgängig wie gewohnt | Entscheidung Projektinhaber |
-| E-269 | 2026-10-02 | Testspiel im Editor (A1.8) | **Teststand wählbar:** Stufe, Fähigkeiten, Waffen, Merker; Start am gewählten Eingang oder an der Maus; kein Spielstand wird verändert, Übergänge laden andere Karten mit | Entscheidung Projektinhaber |
-| E-270 | 2026-10-02 | Gespräche im Editor (E-218) | **Vorschau und Testfenster:** Einstiege, Knoten, Antworten und Bedingungen je NPC; Gespräch im Fenster mit dem Teststand durchspielen, Änderungen an Merkern, Aufgaben und Zuneigung sehen; Fehler anzeigen, Dateien ohne Neustart neu laden | Entscheidung Projektinhaber |
-| E-271 | 2026-10-02 | Speicherort der Abenteuer-Karten | **Benutzerordner `maps/abenteuer/`**, geht vor der mitgelieferten Karte gleichen Namens; ins Projekt nach Freigabe | Entscheidung Projektinhaber |
-| E-272 | 2026-10-02 | Prolog-Ablauf (A1.9) | **Wie im Entwurf** [`prolog.md`](prolog.md): Pip weckt Elora, Oma am Brunnen, Übungen bei Tüftel und Klonk, Lotte, Pips Nebenaufgabe, erster Abschnitt der Blütenwiesen bis zum Quellstein | Entscheidung Projektinhaber |
-| E-273 | 2026-10-02 | Erklärung der Steuerung | **Wegweiser-Schilder**, die man mit E liest | Entscheidung Projektinhaber |
-| E-274 | 2026-10-02 | Gebäude in Tauwinkel | **Erst Entwürfe zur Auswahl** (Häuser, Brunnen, Werkstatt, Schmiede, Laden, Baumhaus), dann die Karte | Entscheidung Projektinhaber |
-| E-275 | 2026-10-02 | Blässe des Dorfs (E-210) | ~~Entfärbter Look der Karte~~ (ersetzt durch E-277): über einen Farbfilter (Figuren bleiben bunt), wird mit jeder befreiten Quelle schwächer (Merker) | Entscheidung Projektinhaber |
-| E-276 | 2026-10-02 | Look der Gebäude (Entwürfe A1.9) | **Keine Tropfendächer**, nicht zu kindlich: kinderfreundlich, aber **ernst zu nehmen** (richtige Dächer, Fachwerk, Stein, Holz) | Entscheidung Projektinhaber |
-| E-277 | 2026-10-02 | Blässe des Dorfs (ersetzt E-275) | **Kein Farbfilter:** das Dorf bleibt normal gezeichnet, **einzelne Dinge sind verblasst** (Blumen, Fahnen, Beete, Brunnenplatz) und bekommen mit jeder befreiten Quelle ihre Farbe zurück (Deko-Varianten per Merker) | Entscheidung Projektinhaber |
-| E-278 | 2026-10-02 | Gebäude von Tauwinkel | **Zweite Fassung angenommen** (`design/tauwinkel-gebaeude.png`) | Entscheidung Projektinhaber |
-| E-279 | 2026-10-02 | Kartenränder (Playtest A1.9) | **Offen, wo es weitergeht:** der Weg läuft aus dem Bild, der Übergang reicht über die ganze Höhe; **wo die Welt endet, eine natürliche Grenze** (Steilhang, Felsen, dichter Wald), keine Wände | Entscheidung Projektinhaber |
-| E-280 | 2026-10-02 | Größe von Tauwinkel (Playtest A1.9) | **Etwa 450 Tiles breit**, Häuser und Figuren mit großen Abständen, längere Wege zwischen den Orten | Entscheidung Projektinhaber |
-| E-281 | 2026-10-02 | Übungsplatz (Playtest A1.9) | **Tüftels Hof im Dorf**, größer und verwinkelt: an der Decke hooken, über Lücken schwingen, Stein (Hook rutscht ab), Bröckelboden, oben eine Belohnung | Entscheidung Projektinhaber |
-| E-282 | 2026-10-02 | Blütenwiesen (Playtest A1.9) | **Auf Bewegung ausgelegt:** Höhenunterschiede (Klippen, Senken, Überhänge), Hook-Schluchten, mehrere Wege (oben schwerer mit Belohnungen, unten leichter); die Karten insgesamt voller | Entscheidung Projektinhaber |
-| E-283 | 2026-10-02 | Dornengruben | **Hineinfallen kostet Leben und setzt Elora an die Kante zurück**, kein Tod (Abenteuer) | Entscheidung Projektinhaber |
-| E-284 | 2026-10-02 | Abnahme R2-M1 (A1.10) | **Prolog angenommen** („das passt“), R2-M1 abgeschlossen | Entscheidung Projektinhaber |
-| E-285 | 2026-10-02 | Quelle neuer Sounds und Musik (ergänzt E-109) | **CC0 aus dem Netz:** Klicks aus Kenney „interface-sounds“, Musik aus CC0-Sammlungen; Musik wird vorher zum Anhören vorgelegt; Quellen in `assets/SOURCES.md` | Entscheidung Projektinhaber |
-| E-286 | 2026-10-02 | Sprechlaute | **Plapperlaute:** kurze, weiche Silbenlaute, während der Text erscheint, Tonhöhe je Figur | Entscheidung Projektinhaber |
-| E-287 | 2026-10-02 | Waffe beim Aufheben | **Einstellung mit drei Stufen:** aus / nur neue Waffen / immer; Standard: nur neue Waffen | Entscheidung Projektinhaber |
-| E-288 | 2026-10-02 | Verwischen bei schneller Bewegung (Playtest) | Beschreibung: **weiche Schlieren** (Bewegung flüssig, Bild unscharf); Ursache eingrenzen und Gegenmaßnahmen ausprobieren | Rückmeldung Projektinhaber |
-| E-289 | 2026-10-02 | Menümusik | **„FM fun“ von sla97** ([OpenGameArt](https://opengameart.org/content/fm-fun)) im Hauptmenü; Lizenz **CC BY 4.0** (Nennung in `SOURCES.md` und „Über“), Ausnahme zu E-285 auf Wunsch | Entscheidung Projektinhaber |
-| E-290 | 2026-10-02 | Musik je Gebiet | **Tauwinkel: „Heavenly Loop“** (isaiah658), **Blütenwiesen: „Sunset Plains“** (yoiyami), beide CC0 von OpenGameArt; Feld `music` je Gebiet in `worldmap.toml` | Entscheidung Projektinhaber |
-| E-291 | 2026-10-02 | Tageszeit im Hauptmenü | **4 Phasen nach Systemuhr:** Morgen (6–10 Uhr), Tag (10–17), Abend (17–21, Laternen an), Nacht (21–6, Sterne, Mond, leuchtende Fenster); weiche Übergänge | Entscheidung Projektinhaber |
-| E-292 | 2026-10-02 | Menü-Hintergrund verspielter | **Bestehende Grafiken:** Dorfszene (Häuser, Brunnen, Bäume, Requisiten), Figuren (Elora im Skin, Pip, Oma, Tüftel, Klonk, Lotte; einige laufen), Tiere und Bewegung (Schmetterlinge, Vögel, Rauch, Wolken, Fahnen), Gegner (Stachelkäfer, Gras-Hüpfer) | Entscheidung Projektinhaber |
-| E-293 | 2026-10-02 | Trainingskarte | **Etwa 120 × 40** mit allen Neuerungen (Kletterwände, Bröckelboden, Dornen, Sondertiles, Gegner-Übungsplatz) und verspielter Deko | Entscheidung Projektinhaber |
-| E-294 | 2026-10-02 | Haken im Online-Spiel (Rückmeldung) | „Alles scheint ein gewisses Zittern/Ruckeln zu haben“ – Ursachen suchen und beheben | Rückmeldung Projektinhaber |
-| E-295 | 2026-10-02 | KI-Dienste für Inhalte | **Keine** (OpenAI, openart.ai, Recraft verworfen): Grafiken entstehen weiter über die Python-Skripte in `tools/design/`, Musik und Sounds aus freien Quellen (E-285) | Entscheidung Projektinhaber |
-| E-296 | 2026-10-02 | Aufteilung von R2-M2 | **Teil-Meilensteine je Kapitel:** M2.1 Blütenwiesen, M2.2 Murmelwald, M2.3 Glutsandwüste, M2.4 Frostspitzen, M2.5 Sternschlucht, M2.6 Finale; je Teil Plan → Entwürfe → Umsetzung → Abnahme | Entscheidung Projektinhaber |
-| E-297 | 2026-10-02 | Abschnitte Kapitel 1 | **Drei neue:** `wiese-2` (Imkerei, Riesenblumen, Bach), `wiese-3` (Höhlen unter den Wurzeln), `wiese-arena` (Blütenquelle) | Entscheidung Projektinhaber |
-| E-298 | 2026-10-02 | Kampf Brummbär-Hummel | **Schwerer:** Kreisen mit Pollen, Sturzflug mit Warnung, benommen am Boden; ab halbem Leben schneller, zwei Sturzflüge, Hook-Blüten welken abwechselnd; ab einem Drittel ruft sie verwirrte Bienen, die nach dem Kampf zu Wabe zurückfliegen | Entscheidung Projektinhaber |
-| E-299 | 2026-10-02 | Verwundbarkeit der Hummel | **Nur benommen am Boden**, in der Luft prallen Treffer ab | Entscheidung Projektinhaber |
-| E-300 | 2026-10-02 | Belohnung „Wabes Bienen“ | **Wabenhut** (Ausrüstung mit kleinem Bonus) und Erfahrung | Entscheidung Projektinhaber |
-| E-301 | 2026-10-02 | Dorf nach Kapitel 1 | **Kleine Feier:** Gespräch am Brunnen, Laternen, Girlanden und Festmusik, bis Elora weiterzieht; dazu mehr Farbe und neue Zurufe | Entscheidung Projektinhaber |
-| E-302 | 2026-10-02 | Hook-Ruck erklären | **Übungsplatz im Hof:** Tüftel erklärt und öffnet einen neuen Teil seines Hofs mit einer Strecke, die nur mit Hook-Ruck geht | Entscheidung Projektinhaber |
-| E-303 | 2026-10-03 | Entwürfe Kapitel 1 (M2.1.0) | **Angenommen** wie vorgelegt ([`design/kapitel1-entwuerfe.png`](design/kapitel1-entwuerfe.png)) | Entscheidung Projektinhaber |
-| E-304 | 2026-10-04 | Musik Kapitel 1 | **Kampf: „Urban Boss Battle“** (mintodog), **Fest: „Minstrel Dance“** (randommind), beide CC0 von OpenGameArt | Entscheidung Projektinhaber |
-| E-305 | 2026-10-05 | Abnahme R2-M2.1 | **Vorerst angenommen** („erst einmal so belassen“) nach den Korrekturen aus dem Playtest (Hook-Ruck sofort, Symbolgrößen, Kartenliste); weiter mit R2-M2.2 | Entscheidung Projektinhaber |
-| E-306 | 2026-10-05 | Weg in den Murmelwald | **Pfad am Westhang** von Tauwinkel hinauf, oben beginnt der Wald | Entscheidung Projektinhaber |
-| E-307 | 2026-10-05 | Kampf Wurzelwächter | **Wie vorgeschlagen:** Wurzeln aus dem Boden mit Warnung, Kerne herausziehen macht ihn verwundbar, ab halbem Leben Wurzelwände, zum Schluss schneller | Entscheidung Projektinhaber |
-| E-308 | 2026-10-05 | Pilzkind | **Folgt Elora** als Begleiter, wartet an schwierigen Stellen | Entscheidung Projektinhaber |
-| E-309 | 2026-10-05 | Belohnung Erinnerungsrunen | **Ausrüstungsstück und ein Tautropfen-Punkt** | Entscheidung Projektinhaber |
-| E-310 | 2026-10-05 | Fest nach Kapitel 2 | **Wie nach Kapitel 1** | Entscheidung Projektinhaber |
-| E-311 | 2026-10-05 | Pilzwicht-Wirkung | **Bunter Rausch:** Elora regenbogenfarben und langsamer für ein paar Sekunden, die Welt wabert leicht; kindgerecht | Entscheidung Projektinhaber |
-| E-312 | 2026-10-05 | Entwürfe Kapitel 2 (M2.2.0) | **Angenommen** ([`design/kapitel2-entwuerfe.png`](design/kapitel2-entwuerfe.png)); der Wurzelwächter als wandelnder Baumriese mit Rindengesicht und Moosbart (Anlehnung an Baumbart) | Entscheidung Projektinhaber |
-| E-313 | 2026-10-05 | Musik Kapitel 2 | **Murmelwald: „Woodland Fantasy“** (Matthew Pablo, CC BY 3.0, Nennung in `SOURCES.md` und „Über“), **Wurzelwächter: „Bamboo Blitz“** (Tsorthan Grove, CC0) | Entscheidung Projektinhaber |
-| E-314 | 2026-10-05 | Abnahme R2-M2.2 | **Angenommen** („passt so“); weiter mit R2-M2.3 Glutsandwüste | Entscheidung Projektinhaber |
-| E-315 | 2026-10-05 | Weg in die Glutsandwüste | **Abzweig am Ostpfad:** Hohlweg nach Süden hinab in die Wüste | Entscheidung Projektinhaber |
-| E-316 | 2026-10-05 | Sandschlange und Stampfen | **Hammer und Granaten treffen** die aufgetauchte Schlange; Stampfen (nach dem Kampf) macht später doppelten Schaden | Entscheidung Projektinhaber |
-| E-317 | 2026-10-05 | Sandkrabbe | **Nur von oben verwundbar**, von der Seite prallen Treffer ab | Entscheidung Projektinhaber |
-| E-318 | 2026-10-05 | Treibsand | **Sinkt langsam ein, verlangsamt, Springen befreit;** tief eingesunken kleiner Schaden und zurück an den Rand | Entscheidung Projektinhaber |
-| E-319 | 2026-10-05 | Oasen-Aufgabe | **Wasserschlauch** in den Ruinen füllen, an drei verdorrten Stellen der Oase gießen | Entscheidung Projektinhaber |
-| E-320 | 2026-10-05 | Hitze in der Wüste | **Hitzeflimmern und Hitze-Leiste:** Sonne füllt, Schatten und Oase kühlen, voll = Elora wird langsamer | Entscheidung Projektinhaber |
-| E-321 | 2026-10-05 | Entwürfe Kapitel 3 (M2.3.0) | **Angenommen** ([`design/kapitel3-entwuerfe.png`](design/kapitel3-entwuerfe.png)); Hitzeflimmern als Shader (Nachbearbeitung der Welt), nicht als gezeichnetes Overlay | Entscheidung Projektinhaber |
-| E-322 | 2026-10-06 | Wasserschlauch | **Drei Füllungen:** einmal an der Ruinenquelle füllen, reicht für alle drei verdorrten Stellen | Entscheidung Projektinhaber |
-| E-323 | 2026-10-06 | Nebenaufgabe Ruine | **Sirup** gibt sie; in der verschütteten Kammer (mit Stampfen) eine Steintafel und als Lohn der **Sonnenschleier** (Hut: Hitze-Leiste füllt sich langsamer) | Entscheidung Projektinhaber |
-| E-324 | 2026-10-06 | Sirups Laden | **Kleiner Laden mit seltenen Waren** (Verbrauchsgut, Material, ein Schmuckstück) | Entscheidung Projektinhaber |
-| E-325 | 2026-10-06 | Der graue Wanderer in Kapitel 3 | **Spuren und Berichte:** graue Fußspuren, Ruinentafeln, Sirup sah nachts eine graue Gestalt an der Oase trinken; kein Auftritt | Entscheidung Projektinhaber |
-| E-326 | 2026-10-06 | Musik Kapitel 3 | **Glutsandwüste: „Desert Loop“** (iamoneabe, CC0), **Sandschlange: „Hard Boss Battle 1“** (MintoDog, CC0) | Entscheidung Projektinhaber |
-| E-327 | 2026-10-06 | Abnahme R2-M2.3 | **Kapitel 3 vorerst abgenommen**; aus dem Playtest umgesetzt: Hook-Ruck spürbar schneller, Klonk gibt Waffen zuerst, Munitionstruhen, Sandschlange deutlich schwerer, Gewinn-Bildschirm nach jedem Hüter | Entscheidung Projektinhaber |
-| E-328 | 2026-10-06 | Grafische Verbesserungen | **Umsetzen:** lebendige Bewegung (Stauchen, Strecken, Wippen, Atmen), Flugposen drehen mit der Bewegung, weiche Schatten unter Figuren und Gegnern, Farbe kehrt mit den Quellen zurück (Sättigung als Shader); später eigene Hintergründe je Gebiet und Licht in dunklen Bereichen | Entscheidung Projektinhaber |
-| E-329 | 2026-10-06 | Wetter: Umfang | **Abenteuer und Karten:** im Abenteuer je Gebiet, dazu als Karteneigenschaft im Editor (auch Mehrspieler-Karten, alle sehen dasselbe) | Entscheidung Projektinhaber |
-| E-330 | 2026-10-06 | Wetter: Spielwirkung | **Leichte Wirkung im Abenteuer** (Wind schiebt, nasser oder verschneiter Boden etwas rutschig, Nebel verkürzt die Sicht); im Mehrspieler nur Optik | Entscheidung Projektinhaber |
-| E-331 | 2026-10-06 | Wetter: Steuerung | **Geschichte und Zufall:** solange die Quelle eines Gebiets schweigt, trüb; danach beim Betreten zufällig zwischen schön und den Wettern des Gebiets | Entscheidung Projektinhaber |
-| E-332 | 2026-10-06 | Tageszeiten | **Später, erst Wetter** (O-209 bleibt für die Tageszeiten offen) | Entscheidung Projektinhaber |
-| E-333 | 2026-10-06 | Wetterarten | **Regen, Gewitter, Nebel, Wind (Blätter, Blüten), Sandsturm, Schnee und Schneesturm** | Entscheidung Projektinhaber |
-| E-334 | 2026-10-06 | Wetterklänge | **Freie Aufnahmen (CC0)**, zum Anhören vorgelegt | Entscheidung Projektinhaber |
-| E-335 | 2026-10-06 | Einstellung Wetter | **Voll, sanft, aus** unter Grafik; die Spielwirkung im Abenteuer bleibt gleich | Entscheidung Projektinhaber |
-| E-336 | 2026-10-06 | Plan R2-W1 | **Freigegeben** mit den Vorschlägen D-W1-01 bis D-W1-03; **Blitze können schaden** (nur im Abenteuer, mit kurzer Warnung am Boden) | Entscheidung Projektinhaber |
-| E-337 | 2026-10-06 | Entwürfe Wetter (W1.0) | **Angenommen** ([`design/wetter-entwuerfe.png`](design/wetter-entwuerfe.png)) | Entscheidung Projektinhaber |
-| E-338 | 2026-10-06 | Wetterklänge (W1.5) | Nach Hörprobe: **Regen** „Rain (loopable)“ Nr. 1 (Ylmir), **Wind** „Low Rumbling“ (Musheran), **Donner** „Rain + Long Thunder“ (WuxiaScrub, Ausschnitt), **Sand** aus „Mild Wind Background Noise“ (Bashar3A) hell gefiltert; alle CC0 (OpenGameArt) | Entscheidung Projektinhaber |
-| E-339 | 2026-10-06 | Abnahme R2-W1 | **Wetter abgenommen**: neun Wetterarten mit Optik, Klang und leichter Spielwirkung im Abenteuer (Wind, Nässe, Blitze mit Warnung, Sicht); Release-Karten `dm-winter`, `ctf-nacht`, `dm-wueste` mit Wetter; R2-W1 abgeschlossen | Entscheidung Projektinhaber |
-| E-340 | 2026-10-06 | Kapitel 4: Eisgriff | **Mitten im Kapitel:** Flocke gibt Steigkrallen (= Eisgriff) im Bergdorf; der Hüterkampf nutzt die Wände; der Quellfunke stärkt den Eisgriff | Entscheidung Projektinhaber |
-| E-341 | 2026-10-06 | Kapitel 4: Kristella | **Frostwellen und Wände:** schwebt über einer Eishalle, friert den Boden in Wellen ein (frischer Frost schadet), Elora rettet sich an Kletterwände; erschöpft sinkt sie herab und ist verwundbar; später Eiszapfen | Entscheidung Projektinhaber |
-| E-342 | 2026-10-06 | Kapitel 4: Kälte | **Kälte-Leiste** wie die Hitze gespiegelt: draußen füllt sie sich, im Schneesturm schneller; Feuerstellen und Hütten wärmen; voll = langsamer | Entscheidung Projektinhaber |
-| E-343 | 2026-10-06 | Kapitel 4: Gelände | **Eiszapfen, Lawinen, dünnes Eis**; keine Sprungfelder | Entscheidung Projektinhaber |
-| E-344 | 2026-10-06 | Plan R2-M2.4 | **Freigegeben** mit den Vorschlägen D-M24-01 bis D-M24-10 ([`m2-4-plan.md`](m2-4-plan.md)) | Entscheidung Projektinhaber |
-| E-345 | 2026-10-06 | Entwürfe Kapitel 4 (M2.4.0) | **Angenommen** ([`design/kapitel4-entwuerfe.png`](design/kapitel4-entwuerfe.png)) | Entscheidung Projektinhaber |
-| E-346 | 2026-10-07 | Texte Kapitel 4 (M2.4.5) | **Freigegeben** ([`m2-4-content.md`](m2-4-content.md)); Gewinn-Bildschirm: „Kristella lächelt wieder – und die Frostquelle glitzert klar wie ein Wintermorgen.“, Ehrentitel „Gipfelstürmerin“ | Entscheidung Projektinhaber |
-| E-347 | 2026-10-07 | Musik Kapitel 4 (M2.4.8) | Nach Hörprobe: **Frostspitzen** „Ice Village“ (KarateStudios, CC0), **Kristella** „Dramatic Boss Encounter“ (cynicmusic, CC0); Klänge aus Kenney-Paketen (CC0) und prozedural, Feuerstelle „Fireplace Sound loop“ (PagDev, CC0) | Entscheidung Projektinhaber |
+| E-200 | 2026-10-02 | Documentation | **Archive + handbook:** Release 1 moves to `docs/archive/release-1/`, knowledge that still applies becomes a handbook in `docs/handbook/`, Release 2 in `docs/release-2/` | Project owner decision |
+| E-201 | 2026-10-02 | Decision log | Release 1 log archived, **new log from E-200**; principles summarised in the handbook | Project owner decision |
+| E-202 | 2026-10-02 | Release 2 focus areas | **Players & community, more game content, teammate bots** and a **role-playing adventure**: single player with story, NPCs and role-playing elements (levelling, upgrading weapons and abilities …), also as a game mode | Project owner decision |
+| E-203 | 2026-10-02 | World structure (O-200) | **Hub with areas:** a village as a meeting point with NPCs, traders and quests; areas (e.g. forest, desert, ice mountains, caves) are unlocked step by step | Project owner decision |
+| E-204 | 2026-10-02 | Role-playing as a game mode (O-201) | **Role-playing PvP mode:** a separate game mode in which you level up and upgrade weapons/abilities during the match (progress applies to the round). No co-op adventure planned | Project owner decision |
+| E-205 | 2026-10-02 | Story (O-203) | **Claude proposes** (world, characters, plot in variants), **the project owner decides** | Project owner decision |
+| E-206 | 2026-10-02 | Role-playing elements (O-204) | **All four:** levels & skills (skill tree), weapon upgrades, equipment & loot (inventory, traders, currency), quests & dialogues | Project owner decision |
+| E-207 | 2026-10-02 | Story (O-203) | **Draft A “The Silent Springs”** from [`story-drafts.md`](story-drafts.md): fairy-tale, warm; village Tauwinkel, five areas (Blütenwiesen, Murmelwald, Glutsandwüste, Frostspitzen, Sternschlucht), antagonist “the Withered One”, reconciliation instead of victory; PvP mode “Quellenkampf” | Project owner decision |
+| E-208 | 2026-10-02 | Credits: name | Project owner as **Bastian Ehrenberg** | Project owner decision |
+| E-209 | 2026-10-02 | Credits: location (M8.5) | **Last page in the settings** (“About Elora”) | Project owner decision |
+| E-210 | 2026-10-02 | Story twist | **Sixth spring beneath the village well**, the Withered One as its forgotten guardian – fits | Project owner decision |
+| E-211 | 2026-10-02 | Age group | The adventure is **always playable for 12+**: fights yes, but without blood and cruelty; the guardian fights may be real fights, the story tells them as calming | Project owner decision |
+| E-212 | 2026-10-02 | Names, abilities | The names of the world and characters as well as the five abilities in their order (hook jerk, pull hook, stomp, ice grip, glide) **stay** | Project owner decision |
+| E-213 | 2026-10-02 | Dialogues | **Choices with consequences** allowed | Project owner decision |
+| E-214 | 2026-10-02 | Play time | The single-player mode should **last a long time – several hours** (target values see [world book §8](world-book.md)) | Project owner decision |
+| E-215 | 2026-10-02 | Play time: target values | **Main story 6–8 h, 12 h+ with side content**, about 20 adventure maps, ~25 side quests, collectibles, “spring trials” after the ending ([world book §8](world-book.md)) | Project owner decision |
+| E-216 | 2026-10-02 | Release 2 order | **Adventure foundation first** (R2-M1, plan: [`a1-plan.md`](a1-plan.md)); the multiplayer bots later reuse its enemy control and pathfinding | Project owner decision |
+| E-217 | 2026-10-02 | Adventure language (D-A1-01) | **German and English from the start** | Project owner decision |
+| E-218 | 2026-10-02 | Maintaining conversations and quests (D-A1-02) | **Text files**, visible in the editor (which NPC has which conversation) and directly testable | Project owner decision |
+| E-219 | 2026-10-02 | Save games (D-A1-03, O-202) | **3 slots**, automatic on map change and at save points; no saving in the middle of a fight | Project owner decision |
+| E-220 | 2026-10-02 | Death in the adventure (D-A1-04) | **Back to the last save point with a small loss:** part of the gleam drops collected since then is lost; items and experience are kept | Project owner decision |
+| E-221 | 2026-10-02 | Difficulty (D-A1-05) | **Only one difficulty level** | Project owner decision |
+| E-222 | 2026-10-02 | Presentation of conversations (D-A1-06) | **Both:** conversations in the text box at the bottom with a picture of the character and choices; short call-outs as a speech bubble above the character | Project owner decision |
+| E-223 | 2026-10-02 | Abilities in multiplayer (D-A1-07) | New abilities **only in the adventure and in Quellenkampf**; the other modes stay unchanged | Project owner decision |
+| E-224 | 2026-10-02 | Camera in the adventure (D-A1-08) | **Slightly look-ahead**, plus **camera zones** from the map (e.g. boss rooms); mouse look as usual | Project owner decision |
+| E-225 | 2026-10-02 | Designs A1.0 | **Characters, objects and UI accepted** ([`design/`](design/)); the adventure menu additionally gets a **map** | Project owner decision |
+| E-226 | 2026-10-02 | Hook jerk (A1.1) | New key **“Ability”** (freely bindable): jerk towards the hook point while the hook is attached to a wall, with cooldown | Project owner decision |
+| E-227 | 2026-10-02 | Stomp (A1.1) | Press **down in the air** | Project owner decision |
+| E-228 | 2026-10-02 | Ice grip (A1.1) | Clinging only on a **dedicated climbing tile**; it is a **solid, non-hookable** wall | Project owner decision |
+| E-229 | 2026-10-02 | Glide (A1.1) | **Hold jump while falling** (after the double jump, or once it is used up) | Project owner decision |
+| E-230 | 2026-10-02 | Crumbling floor | Breaks on a stomp and **stays broken**; remembered in the save game in the adventure, until the end of the round in PvP | Project owner decision |
+| E-231 | 2026-10-02 | Acceptance A1.1 | Abilities **accepted** in the playtest; A-01 to A-10 are starting values | Project owner decision |
+| E-232 | 2026-10-02 | Jumping on enemies (A1.2) | **No effect:** enemies are only hit by weapons and stomp; contact hurts Elora | Project owner decision |
+| E-233 | 2026-10-02 | Hook and enemies (A1.2) | The hook **grabs enemies and pulls Elora towards them**; with pull hook small enemies are pulled to Elora | Project owner decision |
+| E-234 | 2026-10-02 | Protection after a hit (A1.2) | **Briefly invulnerable (blinking) and knockback** away from the enemy | Project owner decision |
+| E-235 | 2026-10-02 | Enemy respawn (A1.2) | **When re-entering the map**; bosses and special enemies stay defeated | Project owner decision |
+| E-236 | 2026-10-02 | Loot (A1.2) | **Pops out, Elora attracts it from nearby** (small magnet); loot on the ground does not disappear | Project owner decision |
+| E-237 | 2026-10-02 | Self-damage in the adventure | **No self-damage**, only knockback (grenade jumps stay free) | Project owner decision |
+| E-238 | 2026-10-02 | Enemy health | **Small bar after a hit** for a few seconds; bosses with a large bar at the top | Project owner decision |
+| E-239 | 2026-10-02 | Elora's health in the adventure | **10 as in multiplayer**, raised later by levels and equipment; armour only via equipment | Project owner decision |
+| E-240 | 2026-10-02 | Acceptance A1.2 | Enemies **accepted** in the playtest; values in `creatures.toml` and A-03, A-11 to A-15 are starting values | Project owner decision |
+| E-241 | 2026-10-02 | Levels (O-204) | Maximum level 30, experience to the next level 15 + 10 × level, 1 dewdrop point per level; **+1 health every 2 levels** (10 → 24) | Project owner decision |
+| E-242 | 2026-10-02 | Skill tree (O-204) | Three branches, 16 nodes, **not everything reachable** (recounted: 35 ranks, 31 points up to level 30) ([`progression.md`](progression.md) §2) | Project owner decision |
+| E-243 | 2026-10-02 | Weapons in the adventure (O-204) | Start with the hammer, grenade launcher after chapter 1, laser after chapter 3; **ammo as in multiplayer, only via pickups and chests**; 3 upgrade levels per weapon with gleam drops and area material | Project owner decision |
+| E-244 | 2026-10-02 | Equipment, inventory, death (O-204) | As proposed: no slot limit, no speed or jump bonuses, loss on death 25 % of the gleam drops collected since saving | Project owner decision |
+| E-245 | 2026-10-02 | Save games (O-202) | **No readable files:** save games are stored compressed with a checksum | Project owner decision |
+| E-246 | 2026-10-02 | Conversation format (A1.4) | **TOML like the other data** | Project owner decision |
+| E-247 | 2026-10-02 | Translations (A1.4) | **Both languages side by side** in the same file; the check reports missing translations | Project owner decision |
+| E-248 | 2026-10-02 | Consequences of choices (E-213) | **Affection per character** (unlocks extras), **rewards**, **flags in the world state**, **starting and completing quests** | Project owner decision |
+| E-249 | 2026-10-02 | Quest steps (A1.4) | Talk to, reach a place, defeat enemies, collect, deliver, trigger in the world | Project owner decision |
+| E-250 | 2026-10-02 | Failing quests | **Some quests can fail** (through choices or conditions) | Project owner decision |
+| E-251 | 2026-10-02 | Quest log | Shows **completed steps and the current one**, further ones as “?” | Project owner decision |
+| E-252 | 2026-10-02 | Map transitions (A1.5) | **Selectable per transition:** open paths when walking in, doors, caves and gates with the action key | Project owner decision |
+| E-253 | 2026-10-02 | Action key | **E is the action key everywhere** (talk, open, use); the **emote wheel is on Ctrl everywhere** | Project owner decision |
+| E-254 | 2026-10-02 | Doors and gates | **Solid wall like stone** (not hookable), opens as soon as a condition holds and stays open | Project owner decision |
+| E-255 | 2026-10-02 | Chests | **Fixed content per chest**, once opened it stays open; optionally locked (key or condition) | Project owner decision |
+| E-256 | 2026-10-02 | Switches | **Lever with the action key, toggleable** (flag 1/0), optionally only once; also switches triggered with the hammer or by pull hook | Project owner decision |
+| E-257 | 2026-10-02 | NPCs | **Stand, turn towards Elora**, shout call-outs; some with a short walking route | Project owner decision |
+| E-258 | 2026-10-02 | Healing plants | **Touching heals** (base value 2 health, more with “Healing blossoms”), **grow back when re-entering the map** | Project owner decision |
+| E-259 | 2026-10-02 | Camera zones | **Lock** (fixed view, e.g. boss room) **or limit** (camera stays within the area), smooth transition | Project owner decision |
+| E-260 | 2026-10-02 | Leaving the adventure (A1.6) | Progress **counts up to the last save** (map change, spring stone); the pause menu warns | Project owner decision |
+| E-261 | 2026-10-02 | Death in the adventure (A1.6) | **Separate screen with choices:** “Continue at the spring stone” or “Main menu” (loss as per E-220) | Project owner decision |
+| E-262 | 2026-10-02 | Storage of adventure maps | **Separate folder `maps/abenteuer/`**, not in server and vote lists | Project owner decision |
+| E-263 | 2026-10-02 | Adventure menu (A1.7) | Opens with **Tab** (there is no scoreboard in the adventure), the game is paused meanwhile | Project owner decision |
+| E-264 | 2026-10-02 | “Map” tab | **World map of the Tauland:** Tauwinkel and the five areas, unlocked ones in colour, Elora's location, sections of the current area | Project owner decision |
+| E-265 | 2026-10-02 | Healing potions | **Hotkey Q** drinks a healing potion, other consumables via the inventory | Project owner decision |
+| E-266 | 2026-10-02 | Look-ahead camera (E-224) | **Slightly in the running direction** (up to about 3 tiles, smooth), plus mouse look and camera zones | Project owner decision |
+| E-267 | 2026-10-02 | Camera when standing still (playtest A1.7) | **Look-ahead stays:** offset in the last running direction, switching only after running briefly in the other direction (replaces the pull-back from E-266) | Project owner decision |
+| E-268 | 2026-10-02 | Editor tool (A1.8) | **One tool “Adventure” (key 9):** choose the kind in the sidebar, click places on the grid, areas by dragging; click selects, drag moves, Del deletes, undo as usual | Project owner decision |
+| E-269 | 2026-10-02 | Test play in the editor (A1.8) | **Selectable test state:** level, abilities, weapons, flags; start at the chosen entrance or at the mouse; no save game is changed, transitions load other maps along | Project owner decision |
+| E-270 | 2026-10-02 | Conversations in the editor (E-218) | **Preview and test window:** entries, nodes, answers and conditions per NPC; play through a conversation in the window with the test state, see changes to flags, quests and affection; show errors, reload files without restarting | Project owner decision |
+| E-271 | 2026-10-02 | Location of adventure maps | **User folder `maps/abenteuer/`**, takes precedence over the shipped map of the same name; into the project after approval | Project owner decision |
+| E-272 | 2026-10-02 | Prologue flow (A1.9) | **As in the draft** [`prolog.md`](prolog.md): Pip wakes Elora, Oma at the well, practice with Tüftel and Klonk, Lotte, Pip's side quest, first section of the Blütenwiesen up to the spring stone | Project owner decision |
+| E-273 | 2026-10-02 | Explaining the controls | **Signposts** that you read with E | Project owner decision |
+| E-274 | 2026-10-02 | Buildings in Tauwinkel | **Designs for selection first** (houses, well, workshop, smithy, shop, treehouse), then the map | Project owner decision |
+| E-275 | 2026-10-02 | Paleness of the village (E-210) | ~~Desaturated look of the map~~ (replaced by E-277): via a colour filter (characters stay colourful), gets weaker with every freed spring (flag) | Project owner decision |
+| E-276 | 2026-10-02 | Look of the buildings (designs A1.9) | **No drop-shaped roofs**, not too childish: child-friendly but **to be taken seriously** (proper roofs, half-timbering, stone, wood) | Project owner decision |
+| E-277 | 2026-10-02 | Paleness of the village (replaces E-275) | **No colour filter:** the village stays drawn normally, **individual things are faded** (flowers, flags, flowerbeds, well square) and get their colour back with every freed spring (decoration variants via flag) | Project owner decision |
+| E-278 | 2026-10-02 | Buildings of Tauwinkel | **Second version accepted** (`design/tauwinkel-gebaeude.png`) | Project owner decision |
+| E-279 | 2026-10-02 | Map edges (playtest A1.9) | **Open where the way continues:** the path runs out of the picture, the transition spans the full height; **where the world ends, a natural boundary** (steep slope, rocks, dense forest), no walls | Project owner decision |
+| E-280 | 2026-10-02 | Size of Tauwinkel (playtest A1.9) | **About 450 tiles wide**, houses and characters with large gaps, longer paths between places | Project owner decision |
+| E-281 | 2026-10-02 | Practice ground (playtest A1.9) | **Tüftel's yard in the village**, larger and winding: hooking on the ceiling, swinging over gaps, stone (hook slips off), crumbling floor, a reward at the top | Project owner decision |
+| E-282 | 2026-10-02 | Blütenwiesen (playtest A1.9) | **Designed for movement:** height differences (cliffs, hollows, overhangs), hook chasms, several routes (upper harder with rewards, lower easier); maps fuller overall | Project owner decision |
+| E-283 | 2026-10-02 | Thorn pits | **Falling in costs health and puts Elora back at the edge**, no death (adventure) | Project owner decision |
+| E-284 | 2026-10-02 | Acceptance R2-M1 (A1.10) | **Prologue accepted** (“that fits”), R2-M1 completed | Project owner decision |
+| E-285 | 2026-10-02 | Source of new sounds and music (extends E-109) | **CC0 from the web:** clicks from Kenney “interface-sounds”, music from CC0 collections; music is presented for listening first; sources in `assets/SOURCES.md` | Project owner decision |
+| E-286 | 2026-10-02 | Speech sounds | **Babble sounds:** short, soft syllable sounds while the text appears, pitch per character | Project owner decision |
+| E-287 | 2026-10-02 | Weapon on pickup | **Setting with three levels:** off / only new weapons / always; default: only new weapons | Project owner decision |
+| E-288 | 2026-10-02 | Smearing during fast movement (playtest) | Description: **soft streaks** (movement fluid, image blurry); narrow down the cause and try countermeasures | Project owner feedback |
+| E-289 | 2026-10-02 | Menu music | **“FM fun” by sla97** ([OpenGameArt](https://opengameart.org/content/fm-fun)) in the main menu; licence **CC BY 4.0** (credit in `SOURCES.md` and “About”), exception to E-285 on request | Project owner decision |
+| E-290 | 2026-10-02 | Music per area | **Tauwinkel: “Heavenly Loop”** (isaiah658), **Blütenwiesen: “Sunset Plains”** (yoiyami), both CC0 from OpenGameArt; field `music` per area in `worldmap.toml` | Project owner decision |
+| E-291 | 2026-10-02 | Time of day in the main menu | **4 phases by system clock:** morning (6–10 h), day (10–17), evening (17–21, lanterns on), night (21–6, stars, moon, glowing windows); smooth transitions | Project owner decision |
+| E-292 | 2026-10-02 | More playful menu background | **Existing graphics:** village scene (houses, well, trees, props), characters (Elora in her skin, Pip, Oma, Tüftel, Klonk, Lotte; some walking), animals and motion (butterflies, birds, smoke, clouds, flags), enemies (spike beetles, grass hoppers) | Project owner decision |
+| E-293 | 2026-10-02 | Training map | **About 120 × 40** with all new features (climbing walls, crumbling floor, thorns, special tiles, enemy practice area) and playful decoration | Project owner decision |
+| E-294 | 2026-10-02 | Stutter in online play (feedback) | “Everything seems to have a certain jitter/stutter” – find and fix the causes | Project owner feedback |
+| E-295 | 2026-10-02 | AI services for content | **None** (OpenAI, openart.ai, Recraft rejected): graphics continue to be made with the Python scripts in `tools/design/`, music and sounds from free sources (E-285) | Project owner decision |
+| E-296 | 2026-10-02 | Splitting R2-M2 | **Sub-milestones per chapter:** M2.1 Blütenwiesen, M2.2 Murmelwald, M2.3 Glutsandwüste, M2.4 Frostspitzen, M2.5 Sternschlucht, M2.6 finale; each part plan → designs → implementation → acceptance | Project owner decision |
+| E-297 | 2026-10-02 | Chapter 1 sections | **Three new ones:** `wiese-2` (apiary, giant flowers, stream), `wiese-3` (caves beneath the roots), `wiese-arena` (Blossom Spring) | Project owner decision |
+| E-298 | 2026-10-02 | Bumblebear fight | **Harder:** circling with pollen, dive with warning, dazed on the ground; from half health faster, two dives, hook blossoms wilt alternately; from one third she calls confused bees that fly back to Wabe after the fight | Project owner decision |
+| E-299 | 2026-10-02 | Bumblebee vulnerability | **Only when dazed on the ground**, in the air hits bounce off | Project owner decision |
+| E-300 | 2026-10-02 | Reward “Wabe's Bees” | **Honeycomb hat** (equipment with a small bonus) and experience | Project owner decision |
+| E-301 | 2026-10-02 | Village after chapter 1 | **Small celebration:** conversation at the well, lanterns, garlands and festive music until Elora moves on; plus more colour and new call-outs | Project owner decision |
+| E-302 | 2026-10-02 | Explaining hook jerk | **Practice ground in the yard:** Tüftel explains and opens a new part of his yard with a course that only works with hook jerk | Project owner decision |
+| E-303 | 2026-10-03 | Chapter 1 designs (M2.1.0) | **Accepted** as presented ([`design/kapitel1-entwuerfe.png`](design/kapitel1-entwuerfe.png)) | Project owner decision |
+| E-304 | 2026-10-04 | Chapter 1 music | **Fight: “Urban Boss Battle”** (mintodog), **celebration: “Minstrel Dance”** (randommind), both CC0 from OpenGameArt | Project owner decision |
+| E-305 | 2026-10-05 | Acceptance R2-M2.1 | **Accepted for now** (“leave it like this for now”) after the fixes from the playtest (hook jerk immediate, icon sizes, map list); continue with R2-M2.2 | Project owner decision |
+| E-306 | 2026-10-05 | Path into the Murmelwald | **Path up the western slope** of Tauwinkel, the forest begins at the top | Project owner decision |
+| E-307 | 2026-10-05 | Root Warden fight | **As proposed:** roots from the ground with warning, pulling out cores makes him vulnerable, from half health root walls, faster at the end | Project owner decision |
+| E-308 | 2026-10-05 | Mushroom child | **Follows Elora** as a companion, waits at difficult spots | Project owner decision |
+| E-309 | 2026-10-05 | Memory runes reward | **Piece of equipment and a dewdrop point** | Project owner decision |
+| E-310 | 2026-10-05 | Celebration after chapter 2 | **As after chapter 1** | Project owner decision |
+| E-311 | 2026-10-05 | Mushroom imp effect | **Colourful trip:** Elora rainbow-coloured and slower for a few seconds, the world wobbles slightly; child-friendly | Project owner decision |
+| E-312 | 2026-10-05 | Chapter 2 designs (M2.2.0) | **Accepted** ([`design/kapitel2-entwuerfe.png`](design/kapitel2-entwuerfe.png)); the Root Warden as a walking tree giant with a bark face and moss beard (inspired by Treebeard) | Project owner decision |
+| E-313 | 2026-10-05 | Chapter 2 music | **Murmelwald: “Woodland Fantasy”** (Matthew Pablo, CC BY 3.0, credit in `SOURCES.md` and “About”), **Root Warden: “Bamboo Blitz”** (Tsorthan Grove, CC0) | Project owner decision |
+| E-314 | 2026-10-05 | Acceptance R2-M2.2 | **Accepted** (“fits like this”); continue with R2-M2.3 Glutsandwüste | Project owner decision |
+| E-315 | 2026-10-05 | Path into the Glutsandwüste | **Branch off the east path:** sunken path south down into the desert | Project owner decision |
+| E-316 | 2026-10-05 | Sand Serpent and stomp | **Hammer and grenades hit** the surfaced serpent; stomp (after the fight) later does double damage | Project owner decision |
+| E-317 | 2026-10-05 | Sand crab | **Only vulnerable from above**, from the side hits bounce off | Project owner decision |
+| E-318 | 2026-10-05 | Quicksand | **Sinks in slowly, slows down, jumping frees you;** sunk in deep: small damage and back to the edge | Project owner decision |
+| E-319 | 2026-10-05 | Oasis quest | Fill a **water skin** in the ruins, water three withered patches of the oasis | Project owner decision |
+| E-320 | 2026-10-05 | Heat in the desert | **Heat shimmer and heat bar:** sun fills it, shade and oasis cool down, full = Elora gets slower | Project owner decision |
+| E-321 | 2026-10-05 | Chapter 3 designs (M2.3.0) | **Accepted** ([`design/kapitel3-entwuerfe.png`](design/kapitel3-entwuerfe.png)); heat shimmer as a shader (post-processing of the world), not as a drawn overlay | Project owner decision |
+| E-322 | 2026-10-06 | Water skin | **Three fillings:** fill once at the ruin spring, enough for all three withered patches | Project owner decision |
+| E-323 | 2026-10-06 | Ruin side quest | Given by **Sirup**; in the buried chamber (with stomp) a stone tablet and as reward the **sun veil** (hat: heat bar fills more slowly) | Project owner decision |
+| E-324 | 2026-10-06 | Sirup's shop | **Small shop with rare goods** (consumable, material, a trinket) | Project owner decision |
+| E-325 | 2026-10-06 | The grey wanderer in chapter 3 | **Traces and reports:** grey footprints, ruin tablets, Sirup saw a grey figure drinking at the oasis at night; no appearance | Project owner decision |
+| E-326 | 2026-10-06 | Chapter 3 music | **Glutsandwüste: “Desert Loop”** (iamoneabe, CC0), **Sand Serpent: “Hard Boss Battle 1”** (MintoDog, CC0) | Project owner decision |
+| E-327 | 2026-10-06 | Acceptance R2-M2.3 | **Chapter 3 accepted for now**; implemented from the playtest: hook jerk noticeably faster, Klonk hands out weapons first, ammo chests, Sand Serpent much harder, victory screen after every guardian | Project owner decision |
+| E-328 | 2026-10-06 | Graphical improvements | **Implement:** lively motion (squash, stretch, bob, breathing), flight poses rotate with the movement, soft shadows under characters and enemies, colour returns with the springs (saturation as a shader); later separate backgrounds per area and light in dark areas | Project owner decision |
+| E-329 | 2026-10-06 | Weather: scope | **Adventure and maps:** per area in the adventure, plus as a map property in the editor (multiplayer maps too, everyone sees the same) | Project owner decision |
+| E-330 | 2026-10-06 | Weather: gameplay effect | **Light effect in the adventure** (wind pushes, wet or snowy ground slightly slippery, fog shortens the view); visuals only in multiplayer | Project owner decision |
+| E-331 | 2026-10-06 | Weather: control | **Story and chance:** overcast as long as an area's spring is silent; afterwards, on entering, random between fair weather and the area's weather types | Project owner decision |
+| E-332 | 2026-10-06 | Times of day | **Later, weather first** (O-209 stays open for the times of day) | Project owner decision |
+| E-333 | 2026-10-06 | Weather types | **Rain, thunderstorm, fog, wind (leaves, blossoms), sandstorm, snow and blizzard** | Project owner decision |
+| E-334 | 2026-10-06 | Weather sounds | **Free recordings (CC0)**, presented for listening | Project owner decision |
+| E-335 | 2026-10-06 | Weather setting | **Full, gentle, off** under graphics; the gameplay effect in the adventure stays the same | Project owner decision |
+| E-336 | 2026-10-06 | Plan R2-W1 | **Approved** with the proposals D-W1-01 to D-W1-03; **lightning can do damage** (only in the adventure, with a short warning on the ground) | Project owner decision |
+| E-337 | 2026-10-06 | Weather designs (W1.0) | **Accepted** ([`design/wetter-entwuerfe.png`](design/wetter-entwuerfe.png)) | Project owner decision |
+| E-338 | 2026-10-06 | Weather sounds (W1.5) | After a listening test: **rain** “Rain (loopable)” no. 1 (Ylmir), **wind** “Low Rumbling” (Musheran), **thunder** “Rain + Long Thunder” (WuxiaScrub, excerpt), **sand** from “Mild Wind Background Noise” (Bashar3A) filtered brighter; all CC0 (OpenGameArt) | Project owner decision |
+| E-339 | 2026-10-06 | Acceptance R2-W1 | **Weather accepted**: nine weather types with visuals, sound and a light gameplay effect in the adventure (wind, wetness, lightning with warning, visibility); release maps `dm-winter`, `ctf-nacht`, `dm-wueste` with weather; R2-W1 completed | Project owner decision |
+| E-340 | 2026-10-06 | Chapter 4: ice grip | **In the middle of the chapter:** Flocke gives climbing claws (= ice grip) in the mountain village; the guardian fight uses the walls; the spring spark strengthens the ice grip | Project owner decision |
+| E-341 | 2026-10-06 | Chapter 4: Kristella | **Frost waves and walls:** hovers above an ice hall, freezes the floor in waves (fresh frost hurts), Elora escapes onto climbing walls; exhausted, she sinks down and is vulnerable; later icicles | Project owner decision |
+| E-342 | 2026-10-06 | Chapter 4: cold | **Cold bar** mirroring the heat: it fills outdoors, faster in a blizzard; fireplaces and huts warm; full = slower | Project owner decision |
+| E-343 | 2026-10-06 | Chapter 4: terrain | **Icicles, avalanches, thin ice**; no jump pads | Project owner decision |
+| E-344 | 2026-10-06 | Plan R2-M2.4 | **Approved** with the proposals D-M24-01 to D-M24-10 ([`m2-4-plan.md`](m2-4-plan.md)) | Project owner decision |
+| E-345 | 2026-10-06 | Chapter 4 designs (M2.4.0) | **Accepted** ([`design/kapitel4-entwuerfe.png`](design/kapitel4-entwuerfe.png)) | Project owner decision |
+| E-346 | 2026-10-07 | Chapter 4 texts (M2.4.5) | **Approved** ([`m2-4-content.md`](m2-4-content.md)); victory screen: „Kristella lächelt wieder – und die Frostquelle glitzert klar wie ein Wintermorgen.“, honorary title „Gipfelstürmerin“ | Project owner decision |
+| E-347 | 2026-10-07 | Chapter 4 music (M2.4.8) | After a listening test: **Frostspitzen** “Ice Village” (KarateStudios, CC0), **Kristella** “Dramatic Boss Encounter” (cynicmusic, CC0); sounds from Kenney packs (CC0) and procedural, fireplace “Fireplace Sound loop” (PagDev, CC0) | Project owner decision |
 | E-348 | 2026-10-07 | Language policy and refactoring | **From now on English** for README, code identifiers, code comments and documentation; player-facing text stays translated in `assets/lang`. Before the next release a refactoring pass ([`refactoring-plan.md`](refactoring-plan.md)) converts existing code and docs and improves structure. Nothing is converted yet. | Project owner decision |
 | E-349 | 2026-10-07 | Acceptance R2-M2.4 | **Chapter 4 accepted** after the playtest fixes (Kristella harder, thin ice, icicles, confetti, weather particles, no shot on map change) | Project owner decision |
 | E-350 | 2026-10-07 | Refactoring decisions | D-RF-01 **content ids in English** (with save-game migration); D-RF-02 **condition language in English** (German keywords accepted for one release); D-RF-03 **archive is translated too**; D-RF-04 **start after the chapter 4 acceptance** (now) | Project owner decision |
 | E-351 | 2026-10-07 | First-start setup screen | **One page** with name, language and Elora's look (colors with preview); **mandatory on the first start** (no settings file yet), no skipping; built **as part of the refactoring** (R2-RF, task RF-30), directly in English and in the new structure | Project owner decision |
 
-## Offene Punkte
+## Open points
 
-Übernommen aus Release 1:
+Carried over from Release 1:
 
-- [ ] **O-45 Remote-Konsole** (Admin-Befehle aus dem Client mit Passwort)
-- [ ] **O-49 Weitere Vertriebskanäle** (itch.io, Flathub, Steam, eigene Website)
-- [ ] **O-50 macOS auf Intel** (Cross-Build oder eigener Runner)
-- [ ] **O-51 Restpunkte M8:** ~~Credits-Seite~~ (erledigt, E-209); Playtests und Balancing (M8.6) und Tests der Pakete auf Windows/macOS macht der Projektinhaber später
-- [ ] **O-52 Demos und Replays** (E-115: nach Release 1)
+- [ ] **O-45 Remote console** (admin commands from the client with a password)
+- [ ] **O-49 More distribution channels** (itch.io, Flathub, Steam, own website)
+- [ ] **O-50 macOS on Intel** (cross-build or own runner)
+- [ ] **O-51 M8 leftovers:** ~~credits page~~ (done, E-209); playtests and balancing (M8.6) and tests of the packages on Windows/macOS are done later by the project owner
+- [ ] **O-52 Demos and replays** (E-115: after Release 1)
 
-Neu für Release 2 (Rollenspiel-Abenteuer, siehe [`roadmap.md`](roadmap.md)):
+New for Release 2 (role-playing adventure, see [`roadmap.md`](roadmap.md)):
 
-- [x] ~~O-200 Weltaufbau~~ → E-203
-- [x] ~~O-201 Rollenspiel als Spielmodus~~ → E-204
-- [x] ~~O-202 Fortschritt speichern~~ → E-219 (im PvP-Modus nur für die Runde, E-204)
-- [x] ~~O-203 Geschichte und Welt~~ → E-207 · Ausarbeitung: [`world-book.md`](world-book.md) (Entwurf)
-- [x] ~~O-204 Fortschrittssystem~~ → E-241 bis E-244 ([`progression.md`](progression.md))
-- [ ] **O-205 NPCs und Gegner** – Verhalten, Dialoge, Händler, Begleiter; Grundlage sind die Bots
-- [ ] **O-206 Abenteuer im Editor** – NPCs, Auslöser, Dialoge und Aufgaben in Karten
-- [ ] **O-207 Weitere Waffen** – welche, für welche Modi
+- [x] ~~O-200 World structure~~ → E-203
+- [x] ~~O-201 Role-playing as a game mode~~ → E-204
+- [x] ~~O-202 Saving progress~~ → E-219 (in PvP mode only for the round, E-204)
+- [x] ~~O-203 Story and world~~ → E-207 · elaboration: [`world-book.md`](world-book.md) (draft)
+- [x] ~~O-204 Progression system~~ → E-241 to E-244 ([`progression.md`](progression.md))
+- [ ] **O-205 NPCs and enemies** – behaviour, dialogues, traders, companions; based on the bots
+- [ ] **O-206 Adventure in the editor** – NPCs, triggers, dialogues and quests in maps
+- [ ] **O-207 More weapons** – which ones, for which modes
 
-Für die Zukunft festgehalten:
+Recorded for the future:
 
-- [ ] **O-208 Dauerhafte Welt** – ein Server mit fortlaufender Welt, auf dem Spielerfiguren ihren Fortschritt behalten (kleines Online-Rollenspiel; braucht Konten und Speicherung auf dem Server) – nach Release 2
-- [ ] **O-209 Tageszeiten und Wetter** (Wetter mit R2-W1 umgesetzt und abgenommen, E-329 bis E-339; Tageszeiten bleiben offen, E-332) – Tageszeit (Morgen, Tag, Abend, Nacht) und Wetter (Regen, Wind, Nebel, Schnee, Gewitter) in Abenteuer und Karten: Himmel, Licht, Deko-Färbung und Partikel; im Abenteuer ggf. mit Spielwirkung (Gegner nur nachts, leuchtende Pilze, rutschiger Boden bei Regen). Grundlage: Tageszeiten im Hauptmenü (E-291), Tag/Nacht-Vorlagen im Editor – offen, nach R2-M2.1
+- [ ] **O-208 Persistent world** – a server with an ongoing world on which player characters keep their progress (small online RPG; needs accounts and server-side storage) – after Release 2
+- [ ] **O-209 Times of day and weather** (weather implemented and accepted with R2-W1, E-329 to E-339; times of day stay open, E-332) – time of day (morning, day, evening, night) and weather (rain, wind, fog, snow, thunderstorm) in the adventure and maps: sky, light, decoration tinting and particles; in the adventure possibly with a gameplay effect (enemies only at night, glowing mushrooms, slippery ground in rain). Basis: times of day in the main menu (E-291), day/night templates in the editor – open, after R2-M2.1

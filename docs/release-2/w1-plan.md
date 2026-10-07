@@ -1,113 +1,113 @@
-# R2-W1 – Wetter – Umsetzungsplan
+# R2-W1 – Weather – Implementation Plan
 
-Status: **Abgenommen** (E-339) · Entscheidungen E-329 bis E-339 · Grundlage: O-209 (Tageszeiten bleiben offen, E-332), E-320 (Hitze), E-328 (Post-Shader, Farbe der Quellen)
+Status: **Accepted** (E-339) · Decisions E-329 to E-339 · Basis: O-209 (times of day stay open, E-332), E-320 (heat), E-328 (post shader, colour of the springs)
 
-## Ziel
+## Goal
 
-Wetter macht die Gebiete lebendiger und erzählt mit: Solange eine Quelle schweigt, ist ihr Gebiet
-trüb; nach der Befreiung klart es auf, und das Wetter wechselt beim Betreten. Im Abenteuer wirkt
-es leicht aufs Spiel (Wind, Nässe, Nebel), im Mehrspieler ist es reine Stimmung. Karten bekommen
-Wetter als Eigenschaft im Editor.
+Weather makes the areas more alive and helps tell the story: as long as a spring is silent, its area
+is gloomy; after it is freed the sky clears, and the weather changes on entering. In the adventure it
+has a light gameplay effect (wind, wetness, fog); in multiplayer it is pure atmosphere. Maps get
+weather as a property in the editor.
 
-**Abnahme:** jedes Wetter einmal sehen und hören (Wetter-Testkarte), Tauwinkel und Kapitel 1–3
-mit Wetter anspielen, eine Mehrspieler-Karte mit Wetter online.
+**Acceptance:** see and hear every weather once (weather test map), play Tauwinkel and chapters 1–3
+with weather, one multiplayer map with weather online.
 
-## Ausgangslage
+## Starting point
 
-| Baustein | Stand | Nutzen |
+| Building block | Status | Use |
 |---|---|---|
-| Post-Shader | Hitzeflimmern, Sättigung (E-320, E-328) | Farbstimmung, Abdunkeln, Nebel, Blitze |
-| Partikel | Staub, Funken, Sporen (`effects.rs`) | Vorlage für Wetterpartikel (eigene Schicht, weil viele) |
-| Himmel, Hintergründe | Verlauf und Färbung je Karte | trüber Himmel, dichtere Wolken |
-| Deko-Animationen | Wind in Bäumen, Fahnen | stärkerer Wind |
-| Musik | gestreamt je Gebiet (kira) | Vorlage für eine zweite, durchlaufende Umgebungsspur |
-| Kartenformat `.emap` | Abschnitte; unbekannte werden übersprungen | neuer Abschnitt `WTHR` bleibt mit 0.9.1 verträglich |
-| Simulation | deterministisch, gleich im Mehrspieler | Spielwirkung nur, wenn `world.adventure` (E-330) |
+| Post shader | heat shimmer, saturation (E-320, E-328) | colour mood, darkening, fog, lightning |
+| Particles | dust, sparks, spores (`effects.rs`) | template for weather particles (own layer, because there are many) |
+| Sky, backgrounds | gradient and tint per map | gloomy sky, denser clouds |
+| Decoration animations | wind in trees, flags | stronger wind |
+| Music | streamed per area (kira) | template for a second, continuous ambience track |
+| Map format `.emap` | sections; unknown ones are skipped | new section `WTHR` stays compatible with 0.9.1 |
+| Simulation | deterministic, the same in multiplayer | gameplay effect only when `world.adventure` (E-330) |
 
-## Wetterarten (E-333)
+## Weather types (E-333)
 
-| Wetter | Optik | Klang | Wirkung im Abenteuer (E-330) |
+| Weather | Visuals | Sound | Effect in the adventure (E-330) |
 |---|---|---|---|
-| **Schön** | wie bisher | – | – |
-| **Regen** (Niesel bis kräftig) | schräge Tropfen nach Wind, Spritzer auf Oberflächen, Himmel grauer, Bild leicht abgedunkelt | Regen | Boden nass: Bremsen etwas weicher (ein Drittel des Eis-Effekts) |
-| **Gewitter** | wie Regen, dunkler; Blitze hellen kurz das ganze Bild auf, Wolkenleuchten | Regen, Donner (passend zum Blitz verzögert) | wie Regen, dazu Wind in Böen; **Blitzeinschläge** mit Warnung am Boden, kleiner Schaden (E-336) |
-| **Nebel** | Schleier über der Welt, nach unten dichter; ferne Hintergründe verschwinden | leiser Wind | Sichtweite: die Kamera zeigt weniger weit voraus, Gegner tauchen aus dem Schleier auf |
-| **Wind** (mit Blättern oder Blüten) | Blätter bzw. Blütenblätter wirbeln, Bäume und Fahnen wiegen stärker | Wind | Wind schiebt Elora in der Luft und Granaten (am Boden kaum) |
-| **Sandsturm** | Sandschleier waagerecht, Bild gelb-braun, Sicht kürzer | Sturm, rieselnder Sand | Wind wie oben, stärker; Sicht kürzer wie Nebel |
-| **Schnee** | ruhige Flocken, Himmel hell-grau | sehr leise | Boden etwas rutschig (wie Regen) |
-| **Schneesturm** | dichte schräge Flocken, Sicht kurz | Sturm | Wind stark, Boden rutschig, Sicht kürzer |
+| **Clear** | as before | – | – |
+| **Rain** (drizzle to heavy) | slanted drops following the wind, splashes on surfaces, greyer sky, image slightly darkened | rain | wet ground: braking a bit softer (one third of the ice effect) |
+| **Thunderstorm** | like rain, darker; lightning briefly brightens the whole image, cloud glow | rain, thunder (delayed to match the lightning) | like rain, plus gusty wind; **lightning strikes** with a warning on the ground, small damage (E-336) |
+| **Fog** | veil over the world, denser towards the bottom; distant backgrounds disappear | soft wind | visibility: the camera looks less far ahead, enemies emerge from the veil |
+| **Wind** (with leaves or blossoms) | leaves or petals swirl, trees and flags sway more | wind | wind pushes Elora in the air and grenades (barely on the ground) |
+| **Sandstorm** | horizontal sand veil, yellow-brown image, shorter visibility | storm, trickling sand | wind as above, stronger; shorter visibility like fog |
+| **Snow** | calm flakes, light-grey sky | very quiet | ground somewhat slippery (like rain) |
+| **Blizzard** | dense slanted flakes, short visibility | storm | strong wind, slippery ground, shorter visibility |
 
-Stärke je Wetter 0–1 (Niesel bis Platzregen); Wind mit Richtung und Böen. Die Hitze der Wüste
-(E-320) bleibt: Bei Sandsturm füllt die Sonne die Hitze-Leiste nicht (Sand verdeckt die Sonne).
+Intensity per weather 0–1 (drizzle to downpour); wind with direction and gusts. The desert heat
+(E-320) stays: during a sandstorm the sun does not fill the heat bar (sand covers the sun).
 
-## Wetter je Gebiet (Vorschlag, E-331)
+## Weather per area (proposal, E-331)
 
-| Gebiet | solange die Quelle schweigt | danach beim Betreten zufällig |
+| Area | while the spring is silent | afterwards, random on entering |
 |---|---|---|
-| Tauwinkel | Nieselregen (nach der 1. Quelle nur noch selten) | schön (meist), Wind mit Blüten, Sommerregen |
-| Blütenwiesen | Regen, ab und zu Gewitter | schön, Wind mit Blüten, Sommerregen |
-| Murmelwald | Nebel, Regen | schön, Nebel am Morgen, Wind mit Blättern |
-| Glutsandwüste | Sandsturm, Hitzegewitter | schön (heiß), Sandsturm selten |
-| Frostspitzen (Kapitel 4) | Schneesturm | Schnee, schön |
-| Arenen der Hüter | festes Wetter je Arena (z. B. Gewitter über der Blütenquelle?) – oder schön, damit der Kampf lesbar bleibt | schön |
+| Tauwinkel | drizzle (only rarely after the 1st spring) | clear (mostly), wind with blossoms, summer rain |
+| Blütenwiesen | rain, now and then thunderstorms | clear, wind with blossoms, summer rain |
+| Murmelwald | fog, rain | clear, morning fog, wind with leaves |
+| Glutsandwüste | sandstorm, heat thunderstorm | clear (hot), rarely sandstorm |
+| Frostspitzen (chapter 4) | blizzard | snow, clear |
+| Guardian arenas | fixed weather per arena (e.g. thunderstorm over the Blossom Spring?) – or clear, so the fight stays readable | clear |
 
-Gewichte und Stärken stehen als Daten in `assets/adventure/worldmap.toml`; das Wetter wird beim
-Betreten einer Karte gewürfelt und gilt bis zum Kartenwechsel. Eine Karte mit eigenem Wetter
-aus dem Editor gilt vor den Gebietsregeln (z. B. Höhlen: kein Regen).
+Weights and intensities are stored as data in `assets/adventure/worldmap.toml`; the weather is rolled
+when entering a map and applies until the map changes. A map with its own weather from the editor
+takes precedence over the area rules (e.g. caves: no rain).
 
-## Mehrspieler-Karten (E-329)
+## Multiplayer maps (E-329)
 
-Wetter ist eine Karteneigenschaft (Art, Stärke, Wind) und wird mit der Karte übertragen; jeder
-Client zeichnet es selbst. Keine Spielwirkung, kein neues Protokoll. Vorschlag für die
-Release-Karten: `dm-winter` Schnee, `ctf-nacht` leichter Nebel, `dm-wueste` Wind mit Sand, die
-übrigen schön – zu entscheiden mit der Freigabe.
+Weather is a map property (type, intensity, wind) and is transferred with the map; each client
+renders it itself. No gameplay effect, no new protocol. Proposal for the release maps:
+`dm-winter` snow, `ctf-nacht` light fog, `dm-wueste` wind with sand, the rest clear – to be decided
+at approval.
 
-## Arbeitsschritte
+## Work steps
 
-| # | Schritt | Inhalt | Prüfung |
+| # | Step | Content | Check |
 |---|---|---|---|
-| W1.0 ✅ | Entwürfe | Stimmungsbilder: dieselbe Szene in allen acht Wettern (Python-Skript), dazu Partikelformen (Tropfen, Flocke, Blatt, Blüte, Sandkorn) | Deine Auswahl |
-| W1.1 ✅ | Datenmodell | Wetter-Typ (Art, Stärke, Wind, Böen) in `elora-map`; Abschnitt `WTHR` im Kartenformat; Eigenschaft im Editor mit Vorschau; Wetter-Testkarte | Tests (Format hin und zurück, alte Karten unverändert) |
-| W1.2 ✅ | Optik | Wetterpartikel in zwei Ebenen (hinter und vor der Spielfläche), Spritzer und Flocken auf Oberflächen, Blitze; Post-Shader: Farbstimmung, Abdunkeln, Nebel nach Höhe, Sandschleier; Himmel trüber; Wind lässt Deko stärker wiegen; Einstellung „Wetter: voll, sanft, aus“ (E-335) | Sichtprüfung, Bildrate bei vollem Regen |
-| W1.3 ✅ | Abenteuer-Steuerung | Gebietsregeln in `worldmap.toml` (trüb solange die Quelle schweigt, sonst gewichteter Zufall), Wahl beim Betreten, Übergänge weich; Sandsturm verdeckt die Sonne (Hitze) | Tests |
-| W1.4 ✅ | Spielwirkung | in der Simulation nur mit `world.adventure`: Windkraft auf Elora in der Luft und Granaten, nasser/verschneiter Boden (weichere Reibung), Blitze mit Warnung und Schaden im Gewitter (E-336), Sichtweite der Kamera bei Nebel/Sturm; Werte als Tuning (A-29 bis A-35) | Tests; Golden-Tests unverändert |
-| W1.5 ✅ | Klang | zweite Umgebungsspur mit weichem Überblenden; Regen, Wind, Sturm, Sand, Donner aus freien Quellen (CC0, zum Anhören vorgelegt, E-334, Auswahl E-338) | Deine Hörprobe |
-| W1.6 ✅ | Karten | Release-Karten: `dm-winter` Schnee (0,6), `ctf-nacht` leichter Nebel (0,35), `dm-wueste` Wind mit Sand (0,3), übrige schön; Hüter-Arenen bleiben schön (D-W1-01); in Höhlen und unter Dächern kein Niederschlag, Wetterklänge gedämpft | Sichtprüfung |
-| W1.7 ✅ | Abnahme | Wetter-Testkarte, Kapitel 1–3, eine Mehrspieler-Runde | Deine Abnahme |
+| W1.0 ✅ | Drafts | Mood images: the same scene in all eight weathers (Python script), plus particle shapes (drop, flake, leaf, blossom, sand grain) | Your choice |
+| W1.1 ✅ | Data model | weather type (kind, intensity, wind, gusts) in `elora-map`; section `WTHR` in the map format; property in the editor with preview; weather test map | Tests (format round trip, old maps unchanged) |
+| W1.2 ✅ | Visuals | weather particles in two layers (behind and in front of the play area), splashes and flakes on surfaces, lightning; post shader: colour mood, darkening, height fog, sand veil; gloomier sky; wind makes decoration sway more; setting "Weather: full, gentle, off" (E-335) | Visual check, frame rate in full rain |
+| W1.3 ✅ | Adventure control | area rules in `worldmap.toml` (gloomy while the spring is silent, otherwise weighted random), roll on entering, smooth transitions; sandstorm covers the sun (heat) | Tests |
+| W1.4 ✅ | Gameplay effect | in the simulation only with `world.adventure`: wind force on Elora in the air and on grenades, wet/snowy ground (softer friction), lightning with warning and damage in thunderstorms (E-336), camera visibility in fog/storm; values as tuning (A-29 to A-35) | Tests; golden tests unchanged |
+| W1.5 ✅ | Sound | second ambience track with smooth crossfading; rain, wind, storm, sand, thunder from free sources (CC0, presented for listening, E-334, selection E-338) | Your listening test |
+| W1.6 ✅ | Maps | Release maps: `dm-winter` snow (0.6), `ctf-nacht` light fog (0.35), `dm-wueste` wind with sand (0.3), the rest clear; guardian arenas stay clear (D-W1-01); no precipitation in caves and under roofs, weather sounds muffled | Visual check |
+| W1.7 ✅ | Acceptance | Weather test map, chapters 1–3, one multiplayer round | Your acceptance |
 
-## Prüfliste Abnahme (W1.7)
+## Acceptance checklist (W1.7)
 
-Wetter umschalten: Debug-Panel (F1) → „Wetter“ (Art, Stärke, Wind); im Abenteuer wirkt das auch
-auf Wind, Nässe und Blitze.
+Switching the weather: debug panel (F1) → "Weather" (type, intensity, wind); in the adventure this also
+affects wind, wetness and lightning.
 
-| # | Wo | Was prüfen |
+| # | Where | What to check |
 |---|---|---|
-| 1 | `elora maps/wetter-test.emap` | alle neun Wetter nacheinander: Partikel, Farbstimmung, Nebel, Blitze; unter dem Dach und in der Grube kein Niederschlag; Klang unter dem Dach leiser |
-| 2 | dieselbe Karte | Einstellung Grafik → Wetter „voll / sanft / aus“; Bildrate bei vollem Regen und Schneesturm (Debug-Panel) |
-| 3 | Kapitel 1 (Blütenwiesen) | Wetter beim Betreten wechselt mit der Zeit; Gewitter: Boden glimmt, Blitz schlägt ein und schadet, Donner; Ausweichen gelingt |
-| 4 | Kapitel 2 (Murmelwald) | Nebel: Kamera schaut weniger weit voraus, Spiel bleibt lesbar; Blätter-Wind: Elora treibt beim Springen über Gruben spürbar, aber beherrschbar |
-| 5 | Kapitel 3 (Glutsandwüste) | Sandsturm: Hitze-Leiste füllt sich nicht (Schatten), Granaten treiben mit dem Wind; Arena bleibt schön |
-| 6 | Regen/Schnee im Abenteuer | nasser Boden: weicheres Bremsen, an Kanten nicht unfair |
-| 7 | Mehrspieler | `dm-winter`, `ctf-nacht`, `dm-wueste` mit Server: Wetter sichtbar und hörbar, keine Spielwirkung |
+| 1 | `elora maps/wetter-test.emap` | all nine weathers in turn: particles, colour mood, fog, lightning; no precipitation under the roof and in the pit; sound quieter under the roof |
+| 2 | same map | setting Graphics → Weather "full / gentle / off"; frame rate in full rain and blizzard (debug panel) |
+| 3 | Chapter 1 (Blütenwiesen) | weather on entering changes over time; thunderstorm: ground glows, lightning strikes and deals damage, thunder; dodging works |
+| 4 | Chapter 2 (Murmelwald) | fog: camera looks less far ahead, game stays readable; leaf wind: Elora drifts noticeably but controllably when jumping over pits |
+| 5 | Chapter 3 (Glutsandwüste) | sandstorm: heat bar does not fill up (shade), grenades drift with the wind; arena stays clear |
+| 6 | Rain/snow in the adventure | wet ground: softer braking, not unfair at edges |
+| 7 | Multiplayer | `dm-winter`, `ctf-nacht`, `dm-wueste` with a server: weather visible and audible, no gameplay effect |
 
-## Technische Festlegungen (Vorschlag)
+## Technical decisions (proposal)
 
-- **Partikel als eigene Schicht** (nicht im allgemeinen Effektsystem): feste Obergrenze (voll etwa
-  600, sanft 200), am Kameraausschnitt verankert und mit leichtem Parallax, damit Regen nicht
-  „mitläuft“. Gezeichnet als Linien (Regen, Sand) bzw. kleine Formen (Flocken, Blätter).
-- **Shader:** ein zweiter Parametersatz für Farbstimmung (Tönung, Helligkeit), Nebel (Farbe,
-  Dichte, Höhenverlauf) und Blitz; derselbe Durchgang wie Hitzeflimmern und Sättigung.
-- **Spielwirkung deterministisch** in `elora-sim`: Wetter der Welt wird von der Sitzung gesetzt
-  (wie Hitze), Böen aus einem festen Pseudo-Zufall nach Tick – Aufzeichnungen bleiben gleich.
-- **Sichtweite** ist Darstellung (Kamera und Nebel), keine Simulation.
-- **Mehrspieler:** nur der Kartenabschnitt; Protokollversion bleibt 6.
-- **Leistung:** Partikel als ein Mesh je Frame; bei „sanft“ weniger Partikel und keine Blitze.
+- **Particles as their own layer** (not in the general effects system): fixed upper limit (full about
+  600, gentle 200), anchored to the camera view and with slight parallax so that rain does not
+  "move along". Drawn as lines (rain, sand) or small shapes (flakes, leaves).
+- **Shader:** a second parameter set for colour mood (tint, brightness), fog (colour,
+  density, height gradient) and lightning; the same pass as heat shimmer and saturation.
+- **Gameplay effect deterministic** in `elora-sim`: the world's weather is set by the session
+  (like heat), gusts from a fixed pseudo-random sequence by tick – recordings stay identical.
+- **Visibility** is presentation (camera and fog), not simulation.
+- **Multiplayer:** only the map section; protocol version stays 6.
+- **Performance:** particles as one mesh per frame; with "gentle" fewer particles and no lightning.
 
-## Offen zur Freigabe
+## Open for approval
 
-| # | Frage | Vorschlag |
+| # | Question | Proposal |
 |---|---|---|
-| D-W1-01 | Wetter in den Hüter-Arenen | schön, damit Kämpfe lesbar bleiben; höchstens leichter Wind |
-| D-W1-02 | Release-Karten mit Wetter | `dm-winter` Schnee, `ctf-nacht` leichter Nebel, `dm-wueste` Wind mit Sand |
-| D-W1-03 | Stärke der Spielwirkung | Wind: Elora in der Luft bis etwa 1/6 der Luftsteuerung, Granaten spürbar; Nässe: ein Drittel des Eis-Effekts |
-| D-W1-04 | Blitze | **E-336: Blitze können schaden** – nur im Abenteuer: kurz glimmt der Boden an der Einschlagstelle (Warnung), dann schlägt der Blitz ein (kleiner Schaden im Umkreis); im Mehrspieler nur Optik und Klang |
+| D-W1-01 | Weather in the guardian arenas | clear, so fights stay readable; at most light wind |
+| D-W1-02 | Release maps with weather | `dm-winter` snow, `ctf-nacht` light fog, `dm-wueste` wind with sand |
+| D-W1-03 | Strength of the gameplay effect | Wind: Elora in the air up to about 1/6 of the air control, grenades noticeable; wetness: one third of the ice effect |
+| D-W1-04 | Lightning | **E-336: lightning can deal damage** – only in the adventure: the ground briefly glows at the impact point (warning), then the lightning strikes (small damage in a radius); in multiplayer only visuals and sound |

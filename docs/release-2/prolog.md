@@ -1,35 +1,35 @@
-# Prolog „Der blasse Morgen“ – Entwurf (A1.9)
+# Prologue “Der blasse Morgen” (“The Pale Morning”) – draft (A1.9)
 
-Status: **Ablauf angenommen** (E-272 bis E-275) · Grundlage: [Weltbuch](world-book.md) §3, §4.1, §5 (Prolog), E-207 bis E-214 · Ziel: etwa 20–30 Minuten, Abnahme mit A1.10
+Status: **flow accepted** (E-272 to E-275) · Basis: [world book](world-book.md) §3, §4.1, §5 (prologue), E-207 to E-214 · Goal: about 20–30 minutes, acceptance with A1.10
 
-## Ablauf
+## Flow
 
-| # | Ort | Was passiert | Spielerisch |
+| # | Place | What happens | Gameplay |
 |---|---|---|---|
-| 1 | Eloras Zimmer, Tauwinkel West | Morgen; Pip stürmt herein: „Die Blumen am Brunnen sind ganz grau!“ | Laufen, Springen, Aktionstaste |
-| 2 | Weg zum Brunnenplatz | Häuser sind blass; Dorfbewohner tuscheln (Zurufe) | Doppelsprung über eine Hecke, durch eine Plattform fallen (Runter) |
-| 3 | Brunnenplatz | **Oma Pfütze** erzählt von den Quellen; Aufgabe „Der blasse Brunnen“ beginnt; Quellstein am Brunnen (erstes Speichern) | Gespräch mit Auswahl |
-| 4 | Tüftels Werkstatt | **Tüftel** erklärt den Hook („Halt dich an der Decke fest …“) | Hook-Übung: Schlucht mit Decke, Hook an der Wand |
-| 5 | Klonks Schmiede | **Klonk** gibt ein paar Schläge Übung an Strohpuppen | Hammer-Übung (Übungsgegner ohne Schaden) |
-| 6 | Lottes Laden | **Lotte** schenkt einen Heiltrank, zeigt den Laden | Laden öffnen, Q erklärt |
-| 7 | Pips Baumhaus | **Pip**: Nebenaufgabe „Der Glitzerstein im Gras“ (Stein liegt in den Blütenwiesen) | Plattformen hinauf |
-| 8 | Ostpfad | Wegweiser, das Tor zu den Blütenwiesen ist offen | Übergang beim Hineinlaufen |
-| 9 | Blütenwiesen 1 | Erste Gegner (Stachelkäfer, dann Gras-Hüpfer, ein Pollenbläser), Heilpflanzen, eine Truhe, versteckter Glitzerstein, Brücke über einen Bach | Kämpfen, Beute, erster Stufenaufstieg |
-| 10 | Wiesenrand | **Quellstein**; Abschluss „Der blasse Brunnen“ (Belohnung), neue Hauptaufgabe „Die Blütenquelle“ (Kapitel 1) beginnt | Prolog endet hier |
+| 1 | Elora's room, Tauwinkel West | Morning; Pip bursts in: „Die Blumen am Brunnen sind ganz grau!“ | Running, jumping, action key |
+| 2 | Path to the well square | Houses are pale; villagers whisper (call-outs) | Double jump over a hedge, drop through a platform (down) |
+| 3 | Well square | **Oma Pfütze** tells of the springs; quest “The Pale Well” starts; spring stone at the well (first save) | Conversation with choices |
+| 4 | Tüftel's workshop | **Tüftel** explains the hook („Halt dich an der Decke fest …“) | Hook practice: chasm with ceiling, hook on the wall |
+| 5 | Klonk's smithy | **Klonk** gives a few practice swings at straw dummies | Hammer practice (training enemies without damage) |
+| 6 | Lotte's shop | **Lotte** gives a healing potion as a gift, shows the shop | Opening the shop, Q explained |
+| 7 | Pip's treehouse | **Pip**: side quest “The Glitter Stone in the Grass” (the stone lies in the Blütenwiesen) | Platforms upwards |
+| 8 | East path | Signpost, the gate to the Blütenwiesen is open | Transition when walking in |
+| 9 | Blütenwiesen 1 | First enemies (spike beetles, then grass hoppers, one pollen blower), healing plants, a chest, hidden glitter stone, bridge over a stream | Fighting, loot, first level-up |
+| 10 | Meadow edge | **Spring stone**; completion of “The Pale Well” (reward), new main quest “The Blossom Spring” (chapter 1) starts | Prologue ends here |
 
-## Aufgaben
+## Quests
 
-- **Der blasse Brunnen** (Haupt, Oma Pfütze): mit Oma sprechen → Tüftel besuchen → Klonk besuchen → über den Ostpfad in die Blütenwiesen → drei Stachelkäfer an der Brücke vertreiben → den Quellstein am Wiesenrand erreichen. Belohnung: 50 Erfahrung, 30 Glanztropfen.
-- **Der Glitzerstein im Gras** (Neben, Pip): Glitzerstein finden und Pip bringen. Belohnung: 30 Erfahrung, 1 Heiltrank. *Scheitern (E-250):* Verrät Elora Pip bei Oma („Pip hat …“), ist er beleidigt.
-- **Die Blütenquelle** (Haupt, Kapitel 1): beginnt am Ende, erster Schritt „Tiefer in die Blütenwiesen“ (Fortsetzung mit Kapitel 1).
+- **The Pale Well** (main, Oma Pfütze): talk to Oma → visit Tüftel → visit Klonk → via the east path into the Blütenwiesen → drive off three spike beetles at the bridge → reach the spring stone at the meadow edge. Reward: 50 experience, 30 gleam drops.
+- **The Glitter Stone in the Grass** (side, Pip): find the glitter stone and bring it to Pip. Reward: 30 experience, 1 healing potion. *Failure (E-250):* if Elora gives Pip away to Oma („Pip hat …“), he is offended.
+- **The Blossom Spring** (main, chapter 1): starts at the end, first step “Venture deeper into the Blütenwiesen” (continued with chapter 1).
 
-## Karten
+## Maps
 
-| Karte | Größe (Tiles) | Inhalt |
+| Map | Size (tiles) | Content |
 |---|---|---|
-| `tauwinkel` | 450 × 50 (E-280) | Steilhang im Westen, Eloras Haus und Pips Baumhaus, Hecke, Steg, Brunnenplatz (Quellstein), Werkstatt mit Tüftels Hof (E-281: Decke über Grube, Felsbogen mit Stein und Erde, Bröckelbrücke, hoher Sitz mit Truhe), Oberdorf mit Schmiede, Strohpuppen und Laden, Ostpfad mit offenem Übergang (E-279) |
-| `wiese-1` | 300 × 60 (E-282) | Hügel, Tal mit Dornengrube und Hook-Decke zum Sims (oberer Weg), Brücke über eine Dornenschlucht, Hügelkamm, Bröckelboden über Dornen, Hook-Felsen zum Plateau mit dem Glitzerstein, Quellstein am Wiesenrand, Wald am Osthang |
+| `tauwinkel` | 450 × 50 (E-280) | Steep slope in the west, Elora's house and Pip's treehouse, hedge, footbridge, well square (spring stone), workshop with Tüftel's yard (E-281: ceiling over a pit, rock arch with stone and earth, crumbling bridge, high seat with chest), upper village with smithy, straw dummies and shop, east path with open transition (E-279) |
+| `wiese-1` | 300 × 60 (E-282) | Hills, valley with thorn pit and hook ceiling to the ledge (upper route), bridge over a thorn gorge, ridge, crumbling floor over thorns, hook rock to the plateau with the glitter stone, spring stone at the meadow edge, forest on the eastern slope |
 
-Dornen (E-283): Hineinfallen kostet 2 Leben (A-22) und setzt Elora auf den letzten sicheren Boden.
+Thorns (E-283): falling in costs 2 health (A-22) and puts Elora back on the last safe ground.
 
-Aussehen: Material Erde/Wiese, Hintergründe Tag (Wolken, Hügel), Deko aus dem Bestand; **Tauwinkel ist blass** (E-210: Farben kehren erst mit den Quellen zurück).
+Look: material earth/meadow, day backgrounds (clouds, hills), decoration from existing assets; **Tauwinkel is pale** (E-210: colours only return with the springs).

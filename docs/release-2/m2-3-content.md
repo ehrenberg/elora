@@ -1,175 +1,175 @@
-# R2-M2.3 – Inhalte von Kapitel 3 (Entwurf, M2.3.4)
+# R2-M2.3 – Chapter 3 content (draft, M2.3.4)
 
-Status: **Freigegeben und eingebaut** (Texte freigegeben 2026-10-06) · Grundlage: [`m2-3-plan.md`](m2-3-plan.md), [`world-book.md`](world-book.md) §4.3 und §5, E-243, E-316 bis E-325
+Status: **Approved and built in** (texts approved 2026-10-06) · Basis: [`m2-3-plan.md`](m2-3-plan.md), [`world-book.md`](world-book.md) §4.3 and §5, E-243, E-316 to E-325
 
-Deutsche Texte; die englischen kommen beim Einbau dazu. Bedingungen und Folgen in der Schreibweise
-der Inhaltsdateien ([`../handbook/adventure-content.md`](../handbook/adventure-content.md)).
+German texts were approved; the English ones were added when building them in (quoted below as in the game). Conditions and
+effects use the notation of the content files ([`../handbook/adventure-content.md`](../handbook/adventure-content.md)).
 
-## 1. Figuren
+## 1. Characters
 
-| Id | Name | Wo | Stimme | Wesen |
+| Id | Name | Where | Voice | Nature |
 |---|---|---|---|---|
-| `sirup` | Karawanenführer Sirup | Karawanenlager (`wueste-2`) | tief, gemütlich (0,85) | weitgereist, erzählt gern und ausschweifend, handelt mit Augenzwinkern |
-| `palma` | Oasen-Hüterin Palma | an der Oase (`wueste-2`) | hell (1,15) | ruhig, sorgt sich um ihre Oase, spricht in Bildern vom Wasser |
-| `schlange` | Sandschlange | Arena, nach dem Kampf (`show_if = "merker besiegt.sandschlange"`) | sehr tief (0,5) | müde, verlegen, warmherzig |
-| `tafel-1`, `tafel-2`, `tafel-kammer` | Ruinentafel | `wueste-3`, Kammer | stumm, fest | Steintafeln des Glutvolks |
-| `ruinenquelle` | Ruinenquelle | `wueste-3` | stumm, fest | kleine Quelle zwischen den Säulen (Schlauch füllen) |
-| `giessstelle-1` bis `-3` | Verdorrte Stelle | Oase | stumm, fest | trockene Erde; nach dem Gießen blüht sie (Deko `-verdorrt` → `-befreit`) |
+| `sirup` | Sirup the caravan leader | caravan camp (`wueste-2`) | deep, easygoing (0.85) | well-travelled, loves telling long rambling stories, trades with a wink |
+| `palma` | Palma, keeper of the oasis | at the oasis (`wueste-2`) | bright (1.15) | calm, worries about her oasis, speaks of water in images |
+| `schlange` | Sand Serpent | arena, after the fight (`show_if = "merker besiegt.sandschlange"`) | very deep (0.5) | tired, embarrassed, warm-hearted |
+| `tafel-1`, `tafel-2`, `tafel-kammer` | Ruin tablet | `wueste-3`, chamber | silent, fixed | stone tablets of the Ember Folk |
+| `ruinenquelle` | Ruin spring | `wueste-3` | silent, fixed | small spring between the pillars (fill the water skin) |
+| `giessstelle-1` to `-3` | Withered patch | oasis | silent, fixed | dry earth; blooms after watering (decoration `-verdorrt` → `-befreit`) |
 
-## 2. Hauptaufgabe „Spuren im Sand“ (`glutsand`, ersetzt die Ankündigung)
+## 2. Main quest “Tracks in the Sand” (`glutsand`, replaces the teaser)
 
-> Die dritte Quelle liegt in der Glutsandwüste. Eine Karawane erzählt von einem grauen Wanderer.
+> The third spring lies in the Glutsandwüste. A caravan tells of a grey wanderer.
 
-| Schritt | Text | Ziel |
+| Step | Text | Goal |
 |---|---|---|
-| `aufbruch` | Am Ostpfad den Hohlweg in die Wüste nehmen | `wueste-1` erreichen |
-| `sirup` | Die Karawane in der Wüste finden | mit Sirup sprechen |
-| `ruinen` | Den grauen Spuren zu den Ruinen folgen | `wueste-3` erreichen |
-| `quelle` | Die Glutquelle im Sandkessel erreichen | `wueste-arena` erreichen |
-| `hueter` | Die Sandschlange beruhigen | Sandschlange besiegen |
-| `funke` | Tüftel den Quellfunken bringen | Quellfunke zu Tüftel |
-| `fest` | Mit Oma Pfütze am Brunnen feiern | mit Oma sprechen |
+| `aufbruch` | Take the sunken path off the east path into the desert | reach `wueste-1` |
+| `sirup` | Find the caravan in the desert | talk to Sirup |
+| `ruinen` | Follow the grey tracks to the ruins | reach `wueste-3` |
+| `quelle` | Reach the Ember Spring in the sand basin | reach `wueste-arena` |
+| `hueter` | Calm the Sand Serpent | defeat the Sand Serpent |
+| `funke` | Bring Tüftel the spring spark | spring spark to Tüftel |
+| `fest` | Celebrate with Oma Pfütze at the well | talk to Oma |
 
-Lohn: 350 Erfahrung, 160 Glanztropfen. Danach beginnt die Ankündigung **„Der Ruf der Frostspitzen“** (Schritt von Hand, „bald“).
+Reward: 350 experience, 160 gleam drops. Afterwards the teaser **“The Call of the Frostspitzen”** begins (step set by hand, “soon”).
 
-## 3. Nebenaufgaben
+## 3. Side quests
 
-### „Wasser für die Oase“ (`oase`, von Palma, E-319, E-322)
+### “Water for the Oasis” (`oase`, from Palma, E-319, E-322)
 
-| Schritt | Text | Ziel |
+| Step | Text | Goal |
 |---|---|---|
-| `fuellen` | Den Wasserschlauch an der Ruinenquelle füllen | 3 Schluck Wasser haben |
-| `giessen` | Die drei verdorrten Stellen der Oase gießen | Merker `oase.gegossen` = 3 |
-| `danke` | Palma von der Oase erzählen | mit Palma sprechen |
+| `fuellen` | Fill the water skin at the ruin spring | have 3 sips of water |
+| `giessen` | Water the three withered patches of the oasis | flag `oase.gegossen` = 3 |
+| `danke` | Tell Palma about the oasis | talk to Palma |
 
-Palma gibt den leeren **Wasserschlauch**. An der Ruinenquelle: Schlauch voll = **3 Schluck Wasser**. Jede
-verdorrte Stelle nimmt einen Schluck, blüht auf und zählt `oase.gegossen` hoch. Lohn: 80 Erfahrung,
-1 Tautropfen-Punkt, 3 Kaktusfrüchte.
+Palma hands over the empty **water skin**. At the ruin spring: full skin = **3 sips of water**. Each
+withered patch takes one sip, blooms and counts `oase.gegossen` up. Reward: 80 experience,
+1 dewdrop point, 3 cactus fruits.
 
-### „Die verschüttete Ruine“ (`ruine`, von Sirup, E-323)
+### “The Buried Ruin” (`ruine`, from Sirup, E-323)
 
-| Schritt | Text | Ziel |
+| Step | Text | Goal |
 |---|---|---|
-| `kammer` | Einen Weg in die verschüttete Kammer finden | Zone `ruinenkammer` in `wueste-3` (Bröckelboden, nur mit Stampfen) |
-| `tafel` | Die Tafel in der Kammer lesen | mit `tafel-kammer` sprechen |
-| `bericht` | Sirup von der Kammer erzählen | mit Sirup sprechen |
+| `kammer` | Find a way into the buried chamber | zone `ruinenkammer` in `wueste-3` (crumbly floor, stomp only) |
+| `tafel` | Read the tablet in the chamber | talk to `tafel-kammer` |
+| `bericht` | Tell Sirup about the chamber | talk to Sirup |
 
-In der Kammer steht eine Truhe mit dem **Sonnenschleier**. Lohn bei Sirup: 80 Erfahrung, 1 Tautropfen-Punkt,
-60 Glanztropfen. Vor dem Kampf sieht man die Kammer nur durch einen Spalt; Sirup sagt, man brauche „jemanden,
-der kräftig aufstampfen kann“.
+The chamber holds a chest with the **sun veil**. Reward from Sirup: 80 experience, 1 dewdrop point,
+60 gleam drops. Before the fight the chamber can only be seen through a crack; Sirup says you'd need “someone
+who can stomp really hard”.
 
-## 4. Gegenstände und Sirups Laden (E-324)
+## 4. Items and Sirup's shop (E-324)
 
-| Id | Art | Name | Wirkung | Preis |
+| Id | Kind | Name | Effect | Price |
 |---|---|---|---|---|
-| `wasserschlauch` | Schlüssel | Wasserschlauch | „Aus Ziegenleder, riecht ein bisschen nach Kamel.“ | – |
-| `wasser` | Schlüssel | Schluck Wasser | „Klar und kühl, aus der Ruinenquelle.“ | – |
-| `kaktusfrucht` | Verbrauch | Kaktusfrucht | heilt 3 und **leert die Hitze-Leiste** (neu) | 12 |
-| `sonnenschleier` | Hut | Sonnenschleier | **Hitze-Leiste füllt sich 40 % langsamer** (neu) | – (Lohn) |
-| `karawanenkette` | Schmuck | Karawanenkette | Schutz nach Treffer +300 ms | 180 |
+| `wasserschlauch` | key | Water skin | “Made of goat leather, smells a little of camel.” | – |
+| `wasser` | key | Sip of water | “Clear and cool, from the ruin spring.” | – |
+| `kaktusfrucht` | consumable | Cactus fruit | heals 3 and **empties the heat bar** (new) | 12 |
+| `sonnenschleier` | hat | Sun veil | **heat bar fills 40 % slower** (new) | – (reward) |
+| `karawanenkette` | jewellery | Caravan chain | protection after a hit +300 ms | 180 |
 
-Sirups Laden: Kaktusfrucht, Glutstein (Material für den Laser-Ausbau, 25), Karawanenkette;
-Rabatt ab Zuneigung 5 (10 %) wie bei Lotte. Wüstengegner lassen auch Glutstein fallen (Chance 25 %),
-die Sandschlange 3 Glutstein statt Bernstein.
+Sirup's shop: cactus fruit, ember stone (material for the laser upgrade, 25), caravan chain;
+discount from affection 5 (10 %), as with Lotte. Desert enemies also drop ember stone (25 % chance),
+the Sand Serpent 3 ember stones instead of amber.
 
-## 5. Gespräche
+## 5. Dialogues
 
 ### Sirup
 
-**Begrüßung** (erster Besuch):
-> Na sieh mal an, ein Tropfen in der Glut! Willkommen in Sirups Karawane – Waren aus allen Ecken des Taulands, frisch, selten und nur ein kleines bisschen sandig.
+**Greeting** (first visit):
+> Well, look at that, a drop in the embers! Welcome to Sirup's caravan – goods from every corner of the Tauland, fresh, rare and only a tiny bit sandy.
 
-- *(neugierig)* „Hast du hier etwas Seltsames gesehen?“ → **Wanderer**
-- *(freundlich)* „Was verkaufst du denn?“ → Laden
-- *(frech)* „Nur ein bisschen sandig? Dein Turban ist voller Sand.“ → „Hoho! Der Turban ist ein Erbstück. Der Sand auch.“ (Zuneigung +1) → **Wanderer**
+- *(curious)* “Have you seen anything strange around here?” → **Wanderer**
+- *(friendly)* “What are you selling?” → shop
+- *(cheeky)* “Only a tiny bit sandy? Your turban is full of sand.” → “Ho ho! The turban is an heirloom. So is the sand.” (affection +1) → **Wanderer**
 
-**Wanderer** (setzt Schritt `sirup` fort):
-> Seltsam? Vor drei Nächten saß ich am Feuer, da kam einer aus den Dünen. Ganz grau, wie Asche, die laufen gelernt hat. Er kniete an Palmas Oase und trank. Und trank. Am Morgen war die Oase halb leer und so blass wie mein Großvater nach dem Bad.
+**Wanderer** (advances step `sirup`):
+> Strange? Three nights ago I sat by the fire, and someone came out of the dunes. All grey, like ash that has learned to walk. He knelt at Palma's oasis and drank. And drank. By morning the oasis was half empty and as pale as my grandfather after a bath.
 >
-> Seine Spuren führen zu den alten Ruinen. Grau, als hätte jemand die Farbe aus dem Sand gesogen. Ich gehe da nicht hin. Aber du hast so einen … unternehmungslustigen Blick.
+> His tracks lead to the old ruins. Grey, as if someone had sucked the colour out of the sand. I'm not going there. But you have such an … adventurous look.
 
-- „Ich folge den Spuren.“ → Ende
-- „Was sind das für Ruinen?“ → **Ruine** (startet die Nebenaufgabe)
+- “I'll follow the tracks.” → end
+- “What ruins are those?” → **Ruin** (starts the side quest)
 
-**Ruine:**
-> Das Glutvolk hat dort früher die Glutquelle gehütet. Unter den Ruinen liegt eine verschüttete Kammer – mein Vater schwor, da drin steht eine Tafel, die keiner je gelesen hat. Der Boden ist alt und mürbe. Man bräuchte jemanden, der kräftig aufstampfen kann.
+**Ruin:**
+> The Ember Folk used to guard the Ember Spring there. Beneath the ruins lies a buried chamber – my father swore there's a tablet inside that nobody has ever read. The floor is old and crumbly. You'd need someone who can stomp really hard.
 
-- *(freundlich)* „Ich schaue nach, wenn ich kann.“ → `quest ruine start`
-- „Vielleicht später.“
+- *(friendly)* “I'll take a look when I can.” → `quest ruine start`
+- “Maybe later.”
 
-**Bericht** (Schritt `bericht`):
-> Eine Tafel? Was stand drauf? … Er suchte ein Lied? Hm. Dann ist er vielleicht gar nicht böse, sondern nur verloren. Wie ich, als ich zum ersten Mal ohne Karte losgezogen bin. Hier, für deine Mühe. Und komm wieder – Sirup vergisst keinen Freund.
+**Report** (step `bericht`):
+> A tablet? What did it say? … He was looking for a song? Hm. Then maybe he isn't wicked at all, just lost. Like me, the first time I set off without a map. Here, for your trouble. And come back – Sirup never forgets a friend.
 
-**Danach / Zurufe:** „Frisch aus dem Norden: Kaktusfrüchte! Na gut, aus dem Süden.“ · „Halt dich im Schatten, Kleines!“
+**Afterwards / calls:** “Fresh from the north: cactus fruit! All right, from the south.” · “Stay in the shade, little one!”
 
 ### Palma
 
-**Begrüßung:**
-> Leise, bitte. Die Oase schläft. Früher hat sie gesungen wie ein Bach im Frühling. Seit der Graue hier war, wird sie jeden Tag stiller. Drei Stellen am Ufer sind schon ganz verdorrt.
+**Greeting:**
+> Quietly, please. The oasis is sleeping. It used to sing like a brook in spring. Since the grey one was here, it grows quieter every day. Three patches on the bank have already withered completely.
 
-- *(freundlich)* „Kann ich helfen?“ → **Auftrag**
-- *(neugierig)* „Wer ist der Graue?“ → „Ich habe ihn nur von weitem gesehen. Er war … traurig, glaube ich. Wer so trinkt, hat großen Durst nach etwas, das Wasser nicht stillen kann.“ → **Auftrag**
+- *(friendly)* “Can I help?” → **Task**
+- *(curious)* “Who is the grey one?” → “I only saw him from afar. He was … sad, I think. Whoever drinks like that thirsts for something water cannot quench.” → **Task**
 
-**Auftrag:**
-> In den Ruinen gibt es noch eine kleine Quelle, tief zwischen den Säulen. Nimm meinen Wasserschlauch. Er fasst genug für alle drei Stellen.
+**Task:**
+> There is still a little spring in the ruins, deep between the pillars. Take my water skin. It holds enough for all three patches.
 
-- „Ich bringe Wasser.“ → `gib wasserschlauch 1`, `quest oase start`
+- “I'll bring water.” → `gib wasserschlauch 1`, `quest oase start`
 
-**Erinnerung:** „Der Schlauch fasst drei Schluck. Jede verdorrte Stelle braucht einen.“
+**Reminder:** “The skin holds three sips. Each withered patch needs one.”
 
-**Danke** (alle drei gegossen):
-> Hörst du das? Sie summt wieder. Ganz leise, aber sie summt. Danke, kleiner Tropfen. Nimm diese Früchte – sie kühlen, wenn die Sonne zu sehr drückt.
+**Thanks** (all three watered):
+> Can you hear that? It's humming again. Very softly, but it hums. Thank you, little drop. Take these fruits – they cool you when the sun presses too hard.
 
-**Zurufe:** „Im Schatten der Palmen ist es kühl.“ · „Pssst … die Oase summt.“
+**Calls:** “It's cool in the shade of the palms.” · “Shhh … the oasis is humming.”
 
-### Ruinenquelle (fest)
-- ohne Schlauch: „Klares Wasser sprudelt zwischen den Steinen. Wenn man nur etwas hätte, um es mitzunehmen …“
-- mit leerem Schlauch: „Du füllst den Wasserschlauch bis zum Rand.“ → `gib wasser 3`
-- mit Wasser: „Der Schlauch ist schon voll.“
+### Ruin spring (fixed)
+- without the skin: “Clear water bubbles between the stones. If only you had something to carry it in …”
+- with the empty skin: “You fill the water skin to the brim.” → `gib wasser 3`
+- with water: “The skin is already full.”
 
-### Verdorrte Stelle 1–3 (fest)
-- ohne Wasser: „Trockene, rissige Erde. Hier wuchs einmal etwas.“
-- mit Wasser: „Du gießt einen Schluck Wasser. Die Erde trinkt gierig – und kleine Blüten öffnen sich.“ → `nimm wasser 1`, `merker befreit.giessstelle-N = 1`, `merker oase.gegossen +1`
-- danach: „Hier blüht es wieder.“
+### Withered patch 1–3 (fixed)
+- without water: “Dry, cracked earth. Something used to grow here.”
+- with water: “You pour a sip of water. The earth drinks greedily – and little blossoms open.” → `nimm wasser 1`, `merker befreit.giessstelle-N = 1`, `merker oase.gegossen +1`
+- afterwards: “It's blooming here again.”
 
-### Ruinentafeln (fest)
-- **Tafel 1:** „Wir, das Glutvolk, hüten das goldene Wasser. Seine Wärme gehört allen, die frieren.“
-- **Tafel 2** (Bild: eine graue Gestalt beugt sich über eine Quelle): „Einst kam ein Grauer in der Nacht. Wo er trank, wurde der Sand blass. Wir fürchteten ihn und verschlossen die Kammer.“
-- **Kammertafel:** „Doch er trank nicht aus Gier. Er suchte ein Lied, das er verloren hatte – das Lied der Quelle, die vor allen anderen war.“ → Schritt `tafel`
+### Ruin tablets (fixed)
+- **Tablet 1:** “We, the Ember Folk, guard the golden water. Its warmth belongs to all who are cold.”
+- **Tablet 2** (picture: a grey figure bends over a spring): “Once a grey one came in the night. Where he drank, the sand turned pale. We feared him and sealed the chamber.”
+- **Chamber tablet:** “Yet he did not drink out of greed. He was looking for a song he had lost – the song of the spring that came before all others.” → step `tafel`
 
-### Sandschlange (nach dem Kampf)
-> Sssso … kühl … endlich. Verzeih, kleiner Tropfen. Etwas Graues hat aus meiner Quelle getrunken. Danach war mir so kalt, so schrecklich kalt, dass ich jeden angefaucht habe, der näher kam.
+### Sand Serpent (after the fight)
+> Ssso … cool … at last. Forgive me, little drop. Something grey drank from my spring. Afterwards I was so cold, so terribly cold, that I hissed at anyone who came near.
 >
-> Es ging nach Norden. Zu den Bergen, wo der Schnee nie schmilzt. Nimm den Funken. Und wenn du ihn findest … sei sanft. Er hat sehr kalt geklungen. Kälter als ich.
+> It went north. To the mountains where the snow never melts. Take the spark. And if you find him … be gentle. He sounded very cold. Colder than me.
 
-### Tüftel (Schritt `funke`)
-> Ein goldener Funke! Warm wie … nein, wärmer! Halt das mal. Und das. Und – stell dich da hin. Jetzt spring. Und jetzt RUNTER! Siehst du? Stampfen! Damit brichst du mürbe Böden und haust Gegner um. Probier's auf dem Übungsplatz, da hab ich dir was Bröseliges hingelegt.
+### Tüftel (step `funke`)
+> A golden spark! Warm as … no, warmer! Hold this. And this. And – stand over there. Now jump. And now DOWN! See? Stomp! It breaks crumbly floors and knocks enemies over. Try it at the practice ground, I've put something crumbly there for you.
 
 → `faehigkeit stampfen`, `nimm quellfunke 1`, `quest glutsand weiter`
 
-### Klonk (nach Kapitel 3, E-243)
-> Hmpf. Du kommst aus der Wüste und hast nicht mal Sand in den Ohren. Respekt. Hier. Hab ich aus Glutstein und einer alten Linse gebaut. Ein Laser. Zeig damit auf nichts, was du magst.
+### Klonk (after chapter 3, E-243)
+> Hmph. You come back from the desert without even sand in your ears. Respect. Here. Built it from ember stone and an old lens. A laser. Don't point it at anything you like.
 
 → `waffe laser`, `gib munition_laser 1`, `merker klonk.laser = 1`
 
 ### Oma Pfütze
-- **Auftrag** (nach dem Fest von Kapitel 2, Quest aktiv): „Die Glutquelle, Kind. Sie hat mir als Mädchen die Hände gewärmt. Nimm am Ostpfad den Hohlweg nach Süden. Und trink genug – die Sonne dort ist nicht so freundlich wie ich.“
-- **Unterwegs:** „Die Wüste wird dich nicht beißen. Nur die Krabben.“
-- **Fest:** „Gold! Die Häuser leuchten wie Honig in der Abendsonne. Und du, mein mutiger Tropfen … Ein grauer Wanderer, sagst du? Der nach einem Lied sucht? … Ich weiß nicht warum, aber dabei wird mir ganz wehmütig. Die Berge im Norden, die Frostspitzen. Dort wartet die vierte Quelle.“ → `quest glutsand fertig`, `quest frostspitzen start`, Fest
+- **Task** (after the chapter 2 celebration, quest active): “The Ember Spring, dear. It warmed my hands when I was a girl. Take the sunken path south off the east path. And drink enough – the sun there isn't as friendly as I am.”
+- **On the way:** “The desert won't bite you. Only the crabs will.”
+- **Celebration:** “Gold! The houses glow like honey in the evening sun. And you, my brave little drop … A grey wanderer, you say? Who is looking for a song? … I don't know why, but it makes me feel quite wistful. The mountains in the north, the Frostspitzen. The fourth spring awaits there.” → `quest glutsand fertig`, `quest frostspitzen start`, celebration
 
-### Schilder
-- `schild-wueste` (Gabelung am Ostpfad): „↓ Glutsandwüste – Hohlweg. Wasser mitnehmen!“
-- `schild-treibsand`: „Vorsicht, Treibsand! Wer einsinkt: {taste:jump} drücken.“
-- `schild-hitze`: „Hitze macht müde. Schatten unter Felsen und Zeltdächern kühlt.“
-- `schild-kammer`: „Hier klingt der Boden hohl …“
+### Signs
+- `schild-wueste` (fork on the east path): “↓ Glutsandwüste – sunken path. Bring water!”
+- `schild-treibsand`: “Careful, quicksand! If you sink in: press {taste:jump}.”
+- `schild-hitze`: “Heat makes you tired. Shade under rocks and tent roofs cools you down.”
+- `schild-kammer`: “The ground sounds hollow here …”
 
-## 6. Graue Spuren (E-325)
+## 6. Grey tracks (E-325)
 
-Graue Fußspuren als Deko (`grauspur`) in `wueste-1` bis `wueste-3` und am Rand der Arena: von der Oase zu den
-Ruinen und vom Sandkessel nach Norden. Kein Auftritt des Wanderers.
+Grey footprints as decoration (`grauspur`) in `wueste-1` to `wueste-3` and at the edge of the arena: from the oasis to the
+ruins and from the sand basin to the north. The wanderer does not appear.
 
-## 7. Neue Technik für die Inhalte
+## 7. New tech for the content
 
-- Wirkung **`cool`** für Verbrauchsgegenstände (Hitze-Leiste leeren) und Bonus **`heat_pct`** für Ausrüstung.
-- Laden `sirup` in `shops.toml`.
-- Die Gesprächsdateien in `data.rs` (`dialogs!`) eintragen; Deko `giessstelle-verdorrt`/`-befreit` und `grauspur` aus den Entwürfen.
+- Effect **`cool`** for consumables (empty the heat bar) and bonus **`heat_pct`** for equipment.
+- Shop `sirup` in `shops.toml`.
+- Register the dialogue files in `data.rs` (`dialogs!`); decoration `giessstelle-verdorrt`/`-befreit` and `grauspur` from the drafts.

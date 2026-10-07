@@ -1,42 +1,42 @@
-# M8 – Release 1: Umsetzungsplan
+# M8 – Release 1: Implementation Plan
 
-Status: **angenommen** (E-169), in Umsetzung · Grundlage: [`06-roadmap.md`](06-roadmap.md) M8, E-003, E-027, E-161 bis E-164, O-44, O-47, O-48
+Status: **accepted** (E-169), in progress · Basis: [`06-roadmap.md`](06-roadmap.md) M8, E-003, E-027, E-161 to E-164, O-44, O-47, O-48
 
-## Ziel
+## Goal
 
-Release 1 ist veröffentlicht: Pakete für Linux, Windows und macOS auf GitHub (E-161), ein laufender Master-Server für die Internet-Liste (E-162), übersetzte Server-Meldungen (E-164), Lizenz- und Credits-Seite, Balancing und Playtests abgeschlossen.
+Release 1 is published: packages for Linux, Windows and macOS on GitHub (E-161), a running master server for the internet list (E-162), translated server messages (E-164), license and credits page, balancing and playtests completed.
 
-**Abnahme (Roadmap):** Release 1 ist veröffentlicht.
+**Acceptance (roadmap):** Release 1 is published.
 
-## Stand
+## Status
 
-- Spiel, Server, Master und Editor laufen aus dem Projektordner (`cargo run`).
-- Mehrere Dateien werden **relativ zum Arbeitsverzeichnis** gesucht: `maps/`, `tuning.toml`, `known_servers.toml`, `assets/music/menu.wav`, beim Hosten `elora-server` im Build-Ordner. Ein installiertes Paket findet sie so nicht.
-- Version `0.1.0`, Lizenz GPL-3.0 (Code), CC-BY-SA 4.0 für eigene Assets (E-027), `THIRD_PARTY_LICENSES` vorhanden, Quellen fremder Assets in `assets/SOURCES.md`.
-- Repository auf GitHub (`ehrenberg/elora`), noch ohne CI.
+- Game, server, master and editor run from the project folder (`cargo run`).
+- Several files are looked up **relative to the working directory**: `maps/`, `tuning.toml`, `known_servers.toml`, `assets/music/menu.wav`, and when hosting `elora-server` in the build folder. An installed package cannot find them this way.
+- Version `0.1.0`, license GPL-3.0 (code), CC-BY-SA 4.0 for own assets (E-027), `THIRD_PARTY_LICENSES` present, sources of third-party assets in `assets/SOURCES.md`.
+- Repository on GitHub (`ehrenberg/elora`), no CI yet.
 
-## Arbeitsschritte
+## Work Steps
 
-| # | Schritt | Inhalt | Prüfung |
+| # | Step | Content | Check |
 |---|---|---|---|
-| M8.1 | Übersetzte Server-Meldungen (O-48, E-164) | Server schickt Meldungs-Codes mit Werten statt deutscher Texte (Beitritt, Verlassen, Kartenwechsel, Abstimmungen, Kick, Modus, Runde …); Client übersetzt (DE/EN); Konsole/Log bleiben lesbar; Protokollversion 6 | Tests (alle Codes in beiden Sprachen, Integrationstest) · **umgesetzt** |
-| M8.2 | Paketfähigkeit | Daten neben dem Programm finden (Ordner `data/` bzw. `Resources` im macOS-Bundle), Arbeitsverzeichnis egal; schreibbare Dateien (`known_servers.toml`, eigenes Tuning, `server_key.toml` beim Hosten) ins Benutzerverzeichnis; `elora-server` neben dem Client finden | Tests + Start aus fremdem Ordner · **umgesetzt** (Server-Standardkarte jetzt `dm-wiese`) |
-| M8.3 | Release-Builds (E-163) | GitHub-Actions-Workflow: bei Versions-Tag `v*` bauen und an ein GitHub-Release hängen – Linux (AppImage + tar.gz), Windows (ZIP), macOS (.app im DMG, unsigniert, Hinweis zum Öffnen); dazu `cargo xtask package` für lokale Pakete; Prüf-Workflow (fmt, clippy, test, deny) bei jedem Push | Workflow-Lauf auf GitHub, Pakete starten · **umgesetzt** (`cargo xtask package`, `.github/workflows/`; macOS vorerst nur Apple Silicon, O-50), Lauf auf GitHub offen |
-| M8.4 | Master-Server-Betrieb (O-47, E-162) | Fertige Betriebsdateien für `elora-master`: systemd-Dienst und Dockerfile, Anleitung (HTTPS über Reverse-Proxy, Firewall, Updates); Standard-Adresse im Client und im Server | Probelauf lokal; danach dein Betrieb · **umgesetzt** (E-170; `deploy/master/`, [`../../handbook/master-operation.md`](../../handbook/master-operation.md)), dein Betrieb offen |
-| M8.5 | Lizenzen & Credits | Seite im Hauptmenü: Lizenz (GPL-3.0, CC-BY-SA 4.0), Mitwirkende, fremde Assets (aus `assets/SOURCES.md`), Bibliotheken (aus `THIRD_PARTY_LICENSES`); Lizenzdateien in jedem Paket | Sichtprüfung · Lizenzdateien im Paket umgesetzt; Seite im Menü **nach 0.9.0** (E-173) |
-| M8.6 | Balancing & Playtests | Spielrunden mit mehreren Leuten (UAT): Tuning, Karten, Modi; Rückmeldungen sammeln, Änderungen als Entscheidungen festhalten | Dein Playtest · **nach 0.9.0** (E-173) |
-| M8.7 | Release-Kandidat | Fehlerbehebung, Version setzen, Änderungsliste, Release-Notizen, Probe-Release (Pre-Release auf GitHub) | Deine Abnahme · Version 0.9.0, Notizen `docs/releases/v0.9.0.md`, Tag `v0.9.0` |
-| M8.8 | Veröffentlichung | Tag setzen → GitHub-Release öffentlich (nur nach deinem ausdrücklichen OK) | Release 1 veröffentlicht |
+| M8.1 | Translated server messages (O-48, E-164) | The server sends message codes with values instead of German texts (join, leave, map change, votes, kick, mode, round …); the client translates (DE/EN); console/log stay readable; protocol version 6 | Tests (all codes in both languages, integration test) · **implemented** |
+| M8.2 | Packageability | Find data next to the program (folder `data/` or `Resources` in the macOS bundle), working directory irrelevant; writable files (`known_servers.toml`, own tuning, `server_key.toml` when hosting) go to the user directory; find `elora-server` next to the client | Tests + start from a different folder · **implemented** (server default map is now `dm-wiese`) |
+| M8.3 | Release builds (E-163) | GitHub Actions workflow: on version tag `v*`, build and attach to a GitHub release – Linux (AppImage + tar.gz), Windows (ZIP), macOS (.app in DMG, unsigned, with a note on opening it); plus `cargo xtask package` for local packages; check workflow (fmt, clippy, test, deny) on every push | Workflow run on GitHub, packages start · **implemented** (`cargo xtask package`, `.github/workflows/`; macOS for now Apple Silicon only, O-50), run on GitHub open |
+| M8.4 | Master server operation (O-47, E-162) | Ready-made operation files for `elora-master`: systemd service and Dockerfile, guide (HTTPS via reverse proxy, firewall, updates); default address in the client and the server | Local trial run; then your operation · **implemented** (E-170; `deploy/master/`, [`../../handbook/master-operation.md`](../../handbook/master-operation.md)), your operation open |
+| M8.5 | Licenses & credits | Page in the main menu: license (GPL-3.0, CC-BY-SA 4.0), contributors, third-party assets (from `assets/SOURCES.md`), libraries (from `THIRD_PARTY_LICENSES`); license files in every package | Visual check · license files in the package implemented; menu page **after 0.9.0** (E-173) |
+| M8.6 | Balancing & playtests | Game rounds with several people (UAT): tuning, maps, modes; collect feedback, record changes as decisions | Your playtest · **after 0.9.0** (E-173) |
+| M8.7 | Release candidate | Bug fixing, set version, changelog, release notes, trial release (pre-release on GitHub) | Your acceptance · version 0.9.0, notes `docs/releases/v0.9.0.md`, tag `v0.9.0` |
+| M8.8 | Publication | Set tag → GitHub release public (only after your explicit OK) | Release 1 published |
 
-## Entscheidungen zu M8
+## Decisions for M8
 
-| # | Frage | Optionen | Entscheidung |
+| # | Question | Options | Decision |
 |---|---|---|---|
-| D-M8-01 | Vertrieb (O-44) | GitHub Releases / itch.io / Flathub / Steam | E-161: **erst GitHub Releases**; weitere Kanäle als Möglichkeit (O-49) |
-| D-M8-02 | Master-Server (O-47) | du betreibst ihn / keiner / später | E-162: **du betreibst ihn**, ich liefere Betriebsdateien und Anleitung |
-| D-M8-03 | Builds | GitHub Actions / lokal | E-163: **GitHub Actions** bei Versions-Tag |
-| D-M8-04 | Server-Meldungen (O-48) | vor Release 1 übersetzbar / später | E-164: **vor Release 1** |
-| D-M8-05 | Versionsnummer von Release 1 | z. B. `1.0.0` / `0.9.0` (Beta) | E-165: **0.9.0 Beta** |
-| D-M8-06 | Adresse des Master-Servers | deine Domain, z. B. `https://master.example.org` | E-166: **https://elora.bastianswelt.de** (voraussichtlich) |
-| D-M8-07 | macOS-Signierung | unsigniert (Hinweis „Rechtsklick → Öffnen“) / signiert und notarisiert (Apple-Entwicklerkonto, 99 $/Jahr) | E-167: **unsigniert** |
-| D-M8-08 | Playtest-Runden | Anzahl, Teilnehmer, Ablauf | E-168: Projektinhaber fragt Bekannte |
+| D-M8-01 | Distribution (O-44) | GitHub Releases / itch.io / Flathub / Steam | E-161: **GitHub Releases first**; further channels as an option (O-49) |
+| D-M8-02 | Master server (O-47) | you operate it / none / later | E-162: **you operate it**, I provide operation files and a guide |
+| D-M8-03 | Builds | GitHub Actions / local | E-163: **GitHub Actions** on version tag |
+| D-M8-04 | Server messages (O-48) | translatable before Release 1 / later | E-164: **before Release 1** |
+| D-M8-05 | Version number of Release 1 | e.g. `1.0.0` / `0.9.0` (beta) | E-165: **0.9.0 Beta** |
+| D-M8-06 | Master server address | your domain, e.g. `https://master.example.org` | E-166: **https://elora.bastianswelt.de** (tentative) |
+| D-M8-07 | macOS signing | unsigned (note "right-click → Open") / signed and notarized (Apple developer account, $99/year) | E-167: **unsigned** |
+| D-M8-08 | Playtest rounds | Number, participants, procedure | E-168: project owner asks acquaintances |
