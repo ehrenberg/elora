@@ -1,6 +1,6 @@
 //! Startup diagnostics: a log file, a crash report and – on Windows, where release builds have
-//! no console – an error dialog, so that Elora never quits silently (playtest: “nothing
-//! happened” on a Windows PC).
+//! no console – the report opened in Notepad, so that Elora never quits silently (playtest:
+//! “nothing happened” on a Windows PC). No `unsafe` and no extra dependency.
 
 use std::io::Write;
 use std::path::PathBuf;
@@ -58,36 +58,27 @@ pub fn report_fatal(message: &str) {
     if let Ok(mut f) = std::fs::File::create(&crash) {
         let _ = writeln!(
             f,
-            "Elora {} ({})\n\n{message}",
+            "Elora wurde wegen eines Fehlers beendet. / Elora stopped because of an error.\n\
+             Elora {} ({})\n\n{message}",
             env!("CARGO_PKG_VERSION"),
             std::env::consts::OS
         );
     }
-    let first_line = message.lines().next().unwrap_or(message);
-    show_error(&format!(
-        "Elora konnte nicht starten.\nElora could not start.\n\n{first_line}\n\n{}\n{}",
-        crash.display(),
-        file_in_config(LOG_FILE).display()
-    ));
+    show_report(&crash, message);
 }
 
+/// Windows release builds have no console: open the report in Notepad.
 #[cfg(windows)]
-fn show_error(text: &str) {
-    use windows_sys::Win32::UI::WindowsAndMessaging::{MB_ICONERROR, MB_OK, MessageBoxW};
-    let wide = |s: &str| s.encode_utf16().chain(Some(0)).collect::<Vec<u16>>();
-    let (text, title) = (wide(text), wide("Elora"));
-    // SAFETY: both strings are valid, zero-terminated UTF-16 buffers that outlive the call.
-    unsafe {
-        MessageBoxW(
-            std::ptr::null_mut(),
-            text.as_ptr(),
-            title.as_ptr(),
-            MB_OK | MB_ICONERROR,
-        );
-    }
+fn show_report(crash: &std::path::Path, _message: &str) {
+    let _ = std::process::Command::new("notepad").arg(crash).spawn();
 }
 
 #[cfg(not(windows))]
-fn show_error(text: &str) {
-    eprintln!("{text}");
+fn show_report(crash: &std::path::Path, message: &str) {
+    let first_line = message.lines().next().unwrap_or(message);
+    eprintln!(
+        "Elora wurde wegen eines Fehlers beendet. / Elora stopped because of an error.\n\n{first_line}\n\n{}\n{}",
+        crash.display(),
+        file_in_config(LOG_FILE).display()
+    );
 }
