@@ -36,6 +36,7 @@ node = "schmiede"
 [[node]]
 id = "uebung"
 text = { de = "Da bist du ja. Ohne Hammer gehst du mir nicht in die Wiesen. Hau mal auf die Strohpuppen da drüben – mit {taste:fire}. Feste! Die halten das aus.", en = "There you are. You're not going into the meadows without a hammer. Go and hit the straw dummies over there – with {taste:fire}. Hard! They can take it." }
+do = ["waffe hammer"]
 
 [[node.choice]]
 tone = "freundlich"

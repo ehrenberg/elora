@@ -68,6 +68,9 @@ fn chest_switch_and_door() {
         id: "glanztropfen".into(),
         count: 20
     })));
+    // sparkles and sound at the chest (playtest)
+    let at = s.map.adventure.object("truhe-1").unwrap().pos;
+    assert!(ev.contains(&SessionEvent::ChestOpened { pos: at }));
     assert_eq!(s.save.glanztropfen, 20);
     assert!(s.object_done("truhe-1"));
     // zweites Öffnen nicht möglich

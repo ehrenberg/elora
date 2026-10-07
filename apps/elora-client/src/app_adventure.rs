@@ -532,6 +532,13 @@ impl App {
                     a.barks.push((npc, line, until));
                 }
             }
+            SessionEvent::ChestOpened { pos } => {
+                self.effects.chest_sparkle(pos);
+                self.ui_cues.extend([
+                    elora_audio::Cue::at(elora_audio::Sound::ChestOpen, pos),
+                    elora_audio::Cue::at(elora_audio::Sound::Collect, pos).pitched(1.15),
+                ]);
+            }
             SessionEvent::Locked { .. } => {
                 let t = self.lang.t("adventure.locked").to_owned();
                 self.notice(t);

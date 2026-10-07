@@ -12,6 +12,7 @@
 
 # Lautstärke der Tondateien (alle beim Import auf −1 dBFS gebracht; 1 = unverändert)
 [gain]
+chest_open = 0.6
 ice_crack = 0.45
 ice_break = 0.7
 icicle_shatter = 0.6

@@ -680,3 +680,35 @@ fn climb_vaults_need_the_grip() {
         );
     }
 }
+
+/// Playtest: Elora starts without a weapon; Klonk hands out the hammer in the prologue.
+#[test]
+fn hammer_comes_from_klonk() {
+    let tuning = Tuning::default();
+    let mut s = Session::new_game(Content::builtin());
+    let mut w = s.enter("tauwinkel", load("tauwinkel"), "start", &tuning);
+    let hammer = elora_sim::Weapon::Hammer;
+    assert!(!w.character(s.player).unwrap().arsenal.has(hammer));
+    let swing = PlayerInput {
+        fire: 1,
+        target_x: 100,
+        ..PlayerInput::default()
+    };
+    step(&mut s, &mut w, PlayerInput::default(), false);
+    w.step(&[swing]);
+    assert!(
+        !w.events
+            .iter()
+            .any(|e| matches!(e, Event::Fire { .. } | Event::HammerHit { .. })),
+        "no swing without a hammer"
+    );
+    // Tüftel sends Elora to Klonk, Klonk gives the hammer
+    s.save
+        .run(&s.content.clone(), &["quest brunnen start".into()]);
+    talk(&mut s, &mut w, "tueftel");
+    assert!(holds(&s, "quest brunnen schritt klonk"));
+    assert_eq!(talk(&mut s, &mut w, "klonk")[0], "uebung");
+    s.sync_world(&mut w);
+    assert!(w.character(s.player).unwrap().arsenal.has(hammer));
+    assert_eq!(w.character(s.player).unwrap().arsenal.active, hammer);
+}

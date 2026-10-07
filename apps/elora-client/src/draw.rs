@@ -168,7 +168,9 @@ pub fn scene(
         }
         let facing = if aim.x < 0.0 { -1.0 } else { 1.0 };
         let swing = figures.weapon_swing(c.slot, facing);
-        items.draw_weapon(batch, pos, aim, swing, c.ch.arsenal.active);
+        if c.ch.arsenal.has(c.ch.arsenal.active) {
+            items.draw_weapon(batch, pos, aim, swing, c.ch.arsenal.active);
+        }
         if c.local && c.team.index().is_some() {
             // eigene Figur im Team: gelber Ring am Boden zur Unterscheidung
             batch.stroke_line(

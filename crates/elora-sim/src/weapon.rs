@@ -82,6 +82,16 @@ impl Arsenal {
         self.slot(w).got
     }
 
+    /// Grants or removes the hammer (adventure: Elora only gets it from Klonk). Without any
+    /// owned weapon the character cannot attack; with the hammer it becomes active if the
+    /// active weapon is not owned.
+    pub fn set_hammer(&mut self, owned: bool) {
+        self.slots[Weapon::Hammer.index()].got = owned;
+        if owned && !self.has(self.active) {
+            self.active = Weapon::Hammer;
+        }
+    }
+
     /// Gibt eine Waffe mit `ammo` Schuss (höchstens `max`). Liefert `false`, wenn die
     /// Waffe schon vorhanden und voll ist (dann wird das Pickup nicht verbraucht).
     pub fn give(&mut self, w: Weapon, ammo: i32, max: i32) -> bool {

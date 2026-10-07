@@ -106,10 +106,12 @@ pub enum Sound {
     Freeze,
     /// Kristellas Frosthauch: die Welle beginnt.
     FrostWave,
+    /// A chest opens (playtest: chests need feedback).
+    ChestOpen,
 }
 
 impl Sound {
-    pub const ALL: [Self; 63] = [
+    pub const ALL: [Self; 64] = [
         Self::HammerFire,
         Self::HammerHit,
         Self::GrenadeFire,
@@ -173,6 +175,7 @@ impl Sound {
         Self::BatScreech,
         Self::Freeze,
         Self::FrostWave,
+        Self::ChestOpen,
     ];
 
     pub fn name(self) -> &'static str {
@@ -240,6 +243,7 @@ impl Sound {
             Self::BatScreech => "bat_screech",
             Self::Freeze => "freeze",
             Self::FrostWave => "frost_wave",
+            Self::ChestOpen => "chest_open",
         }
     }
 

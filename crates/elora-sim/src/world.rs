@@ -414,6 +414,10 @@ impl World {
         let input = self.players[i].as_ref().expect("Slot existiert").input;
         let ch = self.character(i).expect("lebt");
         let weapon = ch.arsenal.active;
+        // no weapon yet (adventure start, before Klonk hands out the hammer)
+        if !ch.arsenal.has(weapon) {
+            return;
+        }
         let ammo = ch.arsenal.slot(weapon).ammo;
         let pos = ch.core.pos;
         let dir = Vec2::new(input.target_x as f32, input.target_y as f32).normalize();

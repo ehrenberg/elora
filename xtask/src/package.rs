@@ -88,6 +88,8 @@ Master:    elora-master      (Server-Liste fürs Internet, siehe docs im Reposit
 Einstellungen und eigene Karten liegen im Benutzerverzeichnis\n\
 (Linux ~/.config/elora und ~/.local/share/elora, Windows %APPDATA%\\Elora,\n\
 macOS ~/Library/Application Support/Elora).\n\n\
+Startet Elora nicht, stehen dort elora.log und crash.txt mit dem Grund.\n\
+If Elora does not start, elora.log and crash.txt in that folder tell why.\n\n\
 macOS: Das Programm ist nicht signiert. Beim ersten Start mit Rechtsklick →\n\
 „Öffnen“ starten und bestätigen.\n\n\
 Lizenzen: Code GPL-3.0 (LICENSE), eigene Grafiken und Sounds CC-BY-SA 4.0,\n\

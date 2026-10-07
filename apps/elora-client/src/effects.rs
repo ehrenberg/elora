@@ -327,6 +327,38 @@ impl Effects {
         }
     }
 
+    /// A chest opens: a golden glow and stars rising out of it.
+    pub fn chest_sparkle(&mut self, pos: Vec2) {
+        self.flashes.push(Flash {
+            pos,
+            age: 0.0,
+            life: 0.45,
+            radius: 46.0,
+        });
+        for _ in 0..28 {
+            let angle = self.range(-2.6, -0.55);
+            let speed = self.range(70.0, 190.0);
+            let life = self.range(0.6, 1.2);
+            let from = pos + Vec2::new(self.range(-10.0, 10.0), -6.0);
+            let color = if self.range(0.0, 1.0) < 0.5 {
+                GLITTER
+            } else {
+                WHITE
+            };
+            self.particles.push(Particle {
+                pos: from,
+                vel: Vec2::new(angle.cos(), angle.sin()) * speed,
+                age: 0.0,
+                life,
+                size: (4.0, 1.2),
+                color,
+                gravity: 60.0,
+                drag: 1.6,
+                star: true,
+            });
+        }
+    }
+
     /// Kamera-Wackeln anstoßen (0..1, addiert, begrenzt).
     fn add_shake(&mut self, amount: f32) {
         if self.settings.camera_shake {

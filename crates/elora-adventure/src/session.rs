@@ -67,6 +67,10 @@ pub enum SessionEvent {
     Locked {
         object: String,
     },
+    /// A chest was opened at `pos` (sparkles and sound in the client).
+    ChestOpened {
+        pos: Vec2,
+    },
     /// Andere Karte betreten (der Aufrufer lädt sie und ruft [`Session::enter`]).
     Travel {
         map: String,
@@ -285,6 +289,9 @@ impl Session {
         if let Some(ch) = world.character_mut(player) {
             ch.health = self.save.health.clamp(1, world_max_health(&self.save, c));
             ch.armor = stats.armor.max(0);
+            // the hammer comes from Klonk in the prologue, not with the character
+            ch.arsenal
+                .set_hammer(self.save.weapons.contains_key(&Weapon::Hammer));
             for &w in self.save.weapons.keys() {
                 if w != Weapon::Hammer {
                     let ammo = self.save.ammo.get(&w).copied().unwrap_or(max_ammo);
@@ -913,6 +920,8 @@ impl Session {
         world.tuning.grip_climb = t.grip_climb;
         let max_ammo = world.tuning.max_ammo;
         if let Some(ch) = world.character_mut(self.player) {
+            ch.arsenal
+                .set_hammer(self.save.weapons.contains_key(&Weapon::Hammer));
             for &w in self.save.weapons.keys() {
                 if w != Weapon::Hammer && !ch.arsenal.has(w) {
                     let ammo = self.save.ammo.get(&w).copied().unwrap_or(max_ammo);
@@ -1077,7 +1086,7 @@ impl Session {
                     return vec![SessionEvent::Locked { object: o.id }];
                 }
                 self.save.set_flag(&key("truhe", &self.map_name, &o.id), 1);
-                let mut out = Vec::new();
+                let mut out = vec![SessionEvent::ChestOpened { pos: o.pos }];
                 let max_ammo = world.tuning.max_ammo;
                 for (item, n) in contents {
                     if let Some(ItemKind::Ammo { weapon }) =

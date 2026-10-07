@@ -40,6 +40,7 @@ mod sandbox;
 mod settings;
 mod skins;
 mod sound;
+mod startup;
 mod tuning_file;
 mod ui;
 mod weather;
@@ -91,14 +92,16 @@ fn is_map_path(arg: &str) -> bool {
         .is_some_and(|e| e.eq_ignore_ascii_case(elora_map::EXTENSION))
 }
 
-fn main() -> anyhow::Result<()> {
-    tracing_subscriber::fmt()
-        .with_env_filter(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| "info,wgpu_core=warn,wgpu_hal=warn".into()),
-        )
-        .init();
+fn main() {
+    startup::init_logging();
+    startup::install_panic_hook();
+    if let Err(e) = run() {
+        startup::report_fatal(&format!("{e:#}"));
+        std::process::exit(1);
+    }
+}
 
+fn run() -> anyhow::Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
     let connect = args
         .iter()

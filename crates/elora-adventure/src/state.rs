@@ -102,7 +102,7 @@ pub enum Refusal {
 }
 
 impl SaveGame {
-    /// Neues Spiel: Stufe 1, nur der Hammer, volle Leben.
+    /// New game: level 1, no weapon yet (Klonk hands out the hammer in the prologue), full health.
     pub fn new(content: &Content, start: Location) -> Self {
         Self {
             level: 1,
@@ -114,7 +114,7 @@ impl SaveGame {
             skills: BTreeMap::new(),
             inventory: BTreeMap::new(),
             equipped: BTreeMap::new(),
-            weapons: BTreeMap::from([(Weapon::Hammer, 0)]),
+            weapons: BTreeMap::new(),
             abilities: 0,
             flags: BTreeMap::new(),
             broken: BTreeMap::new(),
@@ -610,6 +610,12 @@ mod tests {
     fn weapon_upgrades_cost_glanz_and_material() {
         let (c, mut g) = game();
         assert_eq!(g.upgrade(&c, Weapon::Laser), Err(Refusal::NoWeapon));
+        assert_eq!(
+            g.upgrade(&c, Weapon::Hammer),
+            Err(Refusal::NoWeapon),
+            "before Klonk"
+        );
+        g.weapons.insert(Weapon::Hammer, 0);
         g.add_item(&c, GLANZTROPFEN, 50).unwrap();
         assert_eq!(g.upgrade(&c, Weapon::Hammer), Err(Refusal::MissingMaterial));
         g.add_item(&c, "bernstein", 3).unwrap();

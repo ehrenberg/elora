@@ -777,6 +777,7 @@ dependencies = [
  "toml",
  "tracing",
  "tracing-subscriber",
+ "windows-sys 0.61.2",
  "winit",
 ]
 
@@ -843,6 +844,7 @@ dependencies = [
  "lyon",
  "naga",
  "thiserror 2.0.21",
+ "tracing",
  "ttf-parser",
  "usvg",
  "wgpu",

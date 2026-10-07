@@ -156,17 +156,34 @@ impl Renderer {
             wgpu::InstanceDescriptor::new_with_display_handle_from_env(Box::new(window.clone())),
         );
         let surface = instance.create_surface(window)?;
-        let adapter = instance
-            .request_adapter(&wgpu::RequestAdapterOptions {
-                power_preference: wgpu::PowerPreference::HighPerformance,
-                compatible_surface: Some(&surface),
-                force_fallback_adapter: false,
-                ..Default::default()
-            })
-            .await?;
+        let options = |fallback| wgpu::RequestAdapterOptions {
+            power_preference: wgpu::PowerPreference::HighPerformance,
+            compatible_surface: Some(&surface),
+            force_fallback_adapter: fallback,
+            ..Default::default()
+        };
+        // No hardware adapter (old drivers, virtual machines): fall back to the software
+        // renderer (WARP on Windows) instead of failing silently.
+        let adapter = match instance.request_adapter(&options(false)).await {
+            Ok(adapter) => adapter,
+            Err(e) => {
+                tracing::warn!("no hardware graphics adapter ({e}), trying the software fallback");
+                instance.request_adapter(&options(true)).await?
+            }
+        };
+        let info = adapter.get_info();
+        tracing::info!(
+            adapter = %info.name,
+            backend = ?info.backend,
+            driver = %info.driver,
+            "graphics adapter"
+        );
+        // Ask only for what weak and older GPUs offer; the renderer needs nothing more.
         let (device, queue) = adapter
             .request_device(&wgpu::DeviceDescriptor {
                 label: Some("elora"),
+                required_limits: wgpu::Limits::downlevel_defaults()
+                    .using_resolution(adapter.limits()),
                 ..Default::default()
             })
             .await?;
