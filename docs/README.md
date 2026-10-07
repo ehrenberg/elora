@@ -28,5 +28,5 @@ Einstieg: [README](../README.md) für Spielerinnen und Spieler, [DEVELOPMENT.md]
 
 ## Releases und Archiv
 
-- [releases/](releases/) – Release-Notizen ([v0.9.0](releases/v0.9.0.md), [v0.9.1](releases/v0.9.1.md))
+- [releases/](releases/) – Release-Notizen ([v0.9.0](releases/v0.9.0.md), [v0.9.1](releases/v0.9.1.md), [v0.9.2](releases/v0.9.2.md))
 - [archiv/release-1/](archiv/release-1/README.md) – Analyse, Entscheidungen E-001 bis E-173, Roadmap und Pläne M1–M8, Entwürfe

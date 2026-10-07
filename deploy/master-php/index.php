@@ -331,7 +331,7 @@ footer .logo { font-family: var(--head); font-weight: 900; font-size: 34px; colo
   <div class="layer hills-near" data-depth="0.5"></div>
 
   <div class="intro">
-    <span class="badge"><b>Version 0.9.1 Beta</b> · Neu: Abenteuer · Open Source · Linux, Windows, macOS</span>
+    <span class="badge"><b>Version 0.9.2 Beta</b> · Neu: Frostspitzen und Wetter · Open Source · Linux, Windows, macOS</span>
     <h1 class="title">Elora</h1>
     <p class="tagline">Schnelles 2D-Multiplayer: hooken, schwingen, sprengen – mit Freunden im Internet oder im LAN. Und jetzt auch allein im Abenteuer.</p>
     <div class="buttons">
@@ -411,7 +411,7 @@ footer .logo { font-family: var(--head); font-weight: 900; font-size: 34px; colo
 <section id="abenteuer" style="background:#fff">
   <div class="wrap editor">
     <div>
-      <span class="new reveal">Neu in 0.9.1 · Vorschau</span>
+      <span class="new reveal">Neu in 0.9.2 · Kapitel 4 und Wetter</span>
       <h2 class="reveal">Das Abenteuer: Die verstummten Quellen</h2>
       <p class="lead reveal">Die Quellen des Taulands verstummen, und die Farben weichen aus dem Dorf Tauwinkel. Elora zieht los – allein, mit Hook, Hammer und einer Menge Mut.</p>
       <div class="chapters">
@@ -419,13 +419,15 @@ footer .logo { font-family: var(--head); font-weight: 900; font-size: 34px; colo
         <div class="card chapter reveal"><span class="tag" style="background:var(--pink)">1</span><div><b>Blütenwiesen</b><p>Verirrte Bienen und eine sehr schlecht gelaunte Brummbär-Hummel.</p></div></div>
         <div class="card chapter reveal"><span class="tag" style="background:var(--green)">2</span><div><b>Murmelwald</b><p>Ein Uhu voller Geschichten, ein Pilzkind auf dem Heimweg und der Wurzelwächter.</p></div></div>
         <div class="card chapter reveal"><span class="tag" style="background:#e0b85a">3</span><div><b>Glutsandwüste</b><p>Sirups Karawane, Treibsand, flirrende Hitze und die Sandschlange.</p></div></div>
+        <div class="card chapter reveal"><span class="tag" style="background:#8fd0f0">4</span><div><b>Frostspitzen</b><p>Bergführerin Flocke, dünnes Eis, Lawinen, beißende Kälte und Eiskönigin Kristella.</p></div></div>
       </div>
       <ul class="ticks reveal" style="margin-top:22px">
-        <li><b>Neue Fähigkeiten</b> aus jeder Quelle: Hook-Ruck, Heranhooken, Stampfen</li>
+        <li><b>Neue Fähigkeiten</b> aus jeder Quelle: Hook-Ruck, Heranhooken, Stampfen, Eisgriff</li>
+        <li><b>Wetter</b>: Regen, Gewitter, Nebel, Wind, Sandsturm und Schnee – im Abenteuer spürbar, in den Mehrspieler-Karten als Stimmung</li>
         <li><b>Stufen, Fähigkeitenbaum, Ausrüstung</b> und Waffen-Ausbau bei Klonk</li>
         <li><b>Aufgaben und Gespräche</b> – und ein Dorf, das mit jeder Quelle bunter wird</li>
       </ul>
-      <p class="reveal" style="color:var(--ink-soft)">Frostspitzen, Sternschlucht und das Finale folgen mit den nächsten Versionen.</p>
+      <p class="reveal" style="color:var(--ink-soft)">Die Sternschlucht und das Finale folgen mit den nächsten Versionen.</p>
     </div>
     <div class="card adv-scene reveal" aria-hidden="true">
       <div class="sun"></div>
@@ -434,7 +436,8 @@ footer .logo { font-family: var(--head); font-weight: 900; font-size: 34px; colo
       <?= elora('sun', 'adv') ?>
       <img src="assets/figur-tueftel.svg" class="fig flip" style="left:36%" alt="">
       <img src="assets/figur-sirup.svg" class="fig flip hide-sm" style="left:56%" alt="">
-      <img src="assets/figur-palma.svg" class="fig flip" style="left:70%" alt="">
+      <img src="assets/figur-palma.svg" class="fig flip hide-sm" style="left:66%" alt="">
+      <img src="assets/figur-flocke.svg" class="fig flip" style="left:80%" alt="">
       <div class="floor"></div>
     </div>
   </div>

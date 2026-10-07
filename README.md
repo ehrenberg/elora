@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://github.com/ehrenberg/elora/releases"><b>Herunterladen</b></a> ·
   <a href="https://elora.bastianswelt.de">Projektseite und Live-Server</a> ·
-  <a href="docs/releases/v0.9.1.md">Was ist neu in 0.9.1?</a> ·
+  <a href="docs/releases/v0.9.2.md">Was ist neu in 0.9.2?</a> ·
   <a href="https://github.com/ehrenberg/elora/issues">Fehler melden</a>
 </p>
 
@@ -22,14 +22,14 @@ Elora ist ein schnelles 2D-Spiel im Stil der großen Klassiker des Genres: flink
 Haken zum Schwingen und eine Handvoll Waffen, die man in Sekunden versteht und in Wochen meistert.
 Elora ist auch der Name der Heldin – ein kleiner, mutiger Tropfen.
 
-**Version 0.9.1 Beta** · kostenlos und Open Source · Linux, Windows, macOS · Deutsch und Englisch
+**Version 0.9.2 Beta** · kostenlos und Open Source · Linux, Windows, macOS · Deutsch und Englisch
 
 ## Was dich erwartet
 
 - **Hook, Hammer, Granatwerfer, Laser** – häng dich an Wände, schwing durch die Karte, zieh Gegner zu dir
 - **Fünf Spielmodi:** Deathmatch, Team-Deathmatch, Capture the Flag, Last Man Standing, Last Team Standing – jeweils auch als Instagib
 - **Online und im LAN:** Serverliste mit Live-Status, Favoriten, eigener Server mit einem Klick
-- **Das Abenteuer „Die verstummten Quellen“** (Vorschau): Prolog und drei Kapitel für dich allein
+- **Das Abenteuer „Die verstummten Quellen“** (Vorschau): Prolog und vier Kapitel für dich allein
 - **Karten-Editor** direkt im Spiel – bauen, F5 drücken, losspielen
 - **Elora nach deinem Geschmack:** Farben für Augen, Körper und Füße, Emotes für schnelle Grüße
 
@@ -41,7 +41,7 @@ Die neueste Version gibt es unter **[Releases](https://github.com/ehrenberg/elor
 |---|---|---|
 | Linux | `elora-…-linux-x86_64.AppImage` | Rechtsklick → Eigenschaften → „Ausführbar“, dann doppelklicken (oder `chmod +x` im Terminal) |
 | Linux | `elora-…-linux-x86_64.tar.gz` | entpacken, `elora` starten |
-| Windows | `elora-…-windows-x86_64.zip` | entpacken, `elora.exe` starten |
+| Windows | `elora-…-windows-x86_64.zip` | das ganze ZIP entpacken (Rechtsklick → „Alle extrahieren“), dann `elora.exe` im entpackten Ordner starten |
 | macOS (Apple Silicon) | `elora-…-macos-aarch64.dmg` | Elora in „Programme“ ziehen; beim ersten Start **Rechtsklick → Öffnen** (die App ist nicht signiert) |
 
 Elora braucht eine Grafikkarte mit Vulkan, DirectX 12 oder Metal. Für Intel-Macs gibt es noch
@@ -71,11 +71,13 @@ los, um herauszufinden, warum.
 - **Kapitel 1 – Blütenwiesen:** verirrte Bienen und eine sehr schlecht gelaunte Brummbär-Hummel
 - **Kapitel 2 – Murmelwald:** ein Uhu voller Geschichten, ein Pilzkind auf dem Heimweg und der Wurzelwächter
 - **Kapitel 3 – Glutsandwüste:** Sirups Karawane, Treibsand, flirrende Hitze und die Sandschlange
+- **Kapitel 4 – Frostspitzen:** Bergführerin Flocke, dünnes Eis, Lawinen, Kälte und Eiskönigin Kristella
 
-Jede befreite Quelle bringt eine neue Fähigkeit (Hook-Ruck, Heranhooken, Stampfen) – und damit
+Jede befreite Quelle bringt eine neue Fähigkeit (Hook-Ruck, Heranhooken, Stampfen, Eisgriff) – und damit
 neue Wege in Gebieten, die du schon kennst. Dazu gibt es Stufen, einen Fähigkeitenbaum,
 Ausrüstung, Läden, Aufgaben und Gespräche. Gespeichert wird beim Kartenwechsel und an den
-Quellsteinen. Weitere Kapitel folgen mit den nächsten Versionen.
+Quellsteinen. Wetter – Regen, Gewitter, Nebel, Wind, Sandsturm, Schnee – macht die Gebiete
+lebendig und wirkt im Abenteuer aufs Spiel. Weitere Kapitel folgen mit den nächsten Versionen.
 
 ## Mit anderen spielen
 
