@@ -182,6 +182,10 @@ impl App {
                 self.save_adventure();
             }
             self.enter_game();
+            // every new adventure starts with the intro, always skippable (E-357)
+            if new {
+                self.start_intro();
+            }
         } else {
             self.leave_adventure();
         }

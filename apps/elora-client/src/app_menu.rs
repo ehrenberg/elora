@@ -33,7 +33,7 @@ impl App {
         self.screen == Screen::Menu || self.menu.paused || self.adventure_halted()
     }
 
-    fn menu_ctx_parts(&self) -> (Vec2, f32) {
+    pub(crate) fn menu_ctx_parts(&self) -> (Vec2, f32) {
         let size = self.gfx.as_ref().map_or((1, 1), |g| g.renderer.size());
         #[allow(clippy::cast_precision_loss)]
         let screen = Vec2::new(size.0 as f32, size.1 as f32);

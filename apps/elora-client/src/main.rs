@@ -10,6 +10,7 @@ mod adventure_hud;
 mod adventure_menu;
 mod app_adventure;
 mod app_editor;
+mod app_intro;
 mod app_menu;
 mod bindings;
 mod browser;
@@ -26,6 +27,7 @@ mod game_ui;
 mod gui;
 mod hosting;
 mod hud;
+mod intro;
 mod items;
 mod lang;
 mod map_art;
@@ -278,6 +280,8 @@ struct App {
     bind_capture: Option<GameAction>,
     /// Running adventure (A1.6).
     adventure: Option<app_adventure::AdventureMode>,
+    /// Intro video before a new adventure (E-355); the game waits while it runs.
+    intro: Option<intro::Intro>,
 }
 
 impl App {
@@ -338,6 +342,7 @@ impl App {
             maps: app_menu::map_names(),
             bind_capture: None,
             adventure: None,
+            intro: None,
         }
     }
 
@@ -987,6 +992,10 @@ impl App {
         let now = Instant::now();
         let elapsed = self.frame_time(now);
         let dt = elapsed.as_secs_f32();
+        if self.intro.is_some() {
+            self.redraw_intro();
+            return;
+        }
         if self.screen == Screen::Menu {
             self.redraw_menu(dt);
             return;
@@ -1190,6 +1199,12 @@ impl App {
         }
         if self.screen == Screen::Editor {
             return; // keyboard belongs to egui (shortcuts in the editor)
+        }
+        if self.intro.is_some() {
+            if pressed && !event.repeat {
+                self.intro_key(code);
+            }
+            return;
         }
         if self.adventure_halted() && !self.menu.paused {
             if pressed && !event.repeat {
@@ -1396,6 +1411,10 @@ impl ApplicationHandler for App {
             WindowEvent::MouseInput { state, button, .. } => {
                 if self.bind_capture.is_some() {
                     self.capture_trigger(Trigger::Mouse(button), state.is_pressed());
+                } else if self.intro.is_some() {
+                    if state.is_pressed() {
+                        self.skip_intro();
+                    }
                 } else if self.screen == Screen::Editor {
                     // mouse belongs to egui
                 } else if self.menu_active() {

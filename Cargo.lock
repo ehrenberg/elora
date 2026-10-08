@@ -802,6 +802,7 @@ dependencies = [
  "elora-render",
  "elora-server",
  "elora-sim",
+ "elora-video",
  "lyon",
  "notify",
  "pollster",

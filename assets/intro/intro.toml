@@ -1,0 +1,33 @@
+# Subtitles of the adventure intro (E-355, docs/release-2/intro-plan.md): from/to in seconds,
+# text from assets/lang (intro.<key>). The video itself has no text and no sound; the game
+# plays the Tauwinkel music (E-357).
+
+[[line]]
+from = 0.5
+to = 8.5
+key = "lands"
+
+[[line]]
+from = 9.5
+to = 17.5
+key = "village"
+
+[[line]]
+from = 18.5
+to = 29.0
+key = "silence"
+
+[[line]]
+from = 30.5
+to = 39.5
+key = "oma"
+
+[[line]]
+from = 40.5
+to = 49.5
+key = "elora"
+
+[[line]]
+from = 50.5
+to = 59.0
+key = "sets_out"
