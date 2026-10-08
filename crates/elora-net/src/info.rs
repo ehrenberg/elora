@@ -236,7 +236,7 @@ mod tests {
                 break;
             }
         }
-        let r = got.expect("Antwort");
+        let r = got.expect("reply");
         assert_eq!(r.addr, addr(8303));
         assert_eq!(r.data, b"Eloras Wiese");
         assert!(

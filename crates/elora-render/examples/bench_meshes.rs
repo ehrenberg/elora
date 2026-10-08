@@ -43,7 +43,7 @@ fn main() {
         )
         .build();
     println!(
-        "Figur: {} Dreiecke, Partikel: {} Dreiecke, tesselliert in {:.2} ms",
+        "figure: {} triangles, particle: {} triangles, tessellated in {:.2} ms",
         figure.triangle_count(),
         particle.triangle_count(),
         t0.elapsed().as_secs_f64() * 1000.0
@@ -82,7 +82,7 @@ fn main() {
     }
     let per_frame = t0.elapsed().as_secs_f64() * 1000.0 / f64::from(frames);
     println!(
-        "{} Dreiecke pro Frame, CPU-Aufbau {per_frame:.3} ms/Frame",
+        "{} triangles per frame, CPU build {per_frame:.3} ms/frame",
         batch.triangle_count()
     );
 }

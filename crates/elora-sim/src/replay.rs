@@ -169,7 +169,7 @@ impl Recording {
             Some(1) => Ok(toml::from_str::<RecordingV1>(src).map_err(err)?.into()),
             Some(2) => toml::from_str(src).map_err(err),
             other => Err(RecordingError(format!(
-                "Formatversion {other:?} nicht unterstützt"
+                "format version {other:?} not supported"
             ))),
         }
     }
@@ -187,14 +187,14 @@ impl Recording {
         for (y, row) in rows.iter().enumerate() {
             if row.chars().count() != width {
                 return Err(RecordingError(format!(
-                    "Rasterzeile {} hat falsche Länge",
+                    "grid row {} has the wrong length",
                     y + 1
                 )));
             }
             for c in row.chars() {
                 tiles.push(
                     Tile::from_char(c)
-                        .ok_or_else(|| RecordingError(format!("unbekanntes Tile `{c}`")))?,
+                        .ok_or_else(|| RecordingError(format!("unknown tile `{c}`")))?,
                 );
             }
         }
@@ -206,7 +206,7 @@ impl Recording {
             .lines()
             .enumerate()
             .map(|(i, line)| {
-                let err = || RecordingError(format!("Eingabezeile {}: `{line}`", i + 1));
+                let err = || RecordingError(format!("input line {}: `{line}`", i + 1));
                 let f: Vec<i32> = line
                     .split_whitespace()
                     .map(str::parse)
@@ -270,7 +270,7 @@ impl Recording {
         for p in &self.pickups {
             world.add_pickup(p.kind, v(p.pos));
         }
-        let human = human.ok_or_else(|| RecordingError("kein menschlicher Spieler".into()))?;
+        let human = human.ok_or_else(|| RecordingError("no human player".into()))?;
         Ok((world, human))
     }
 

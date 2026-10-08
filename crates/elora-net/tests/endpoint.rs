@@ -107,7 +107,7 @@ fn handshake_and_messages_both_ways() {
     assert!(n.client_events[c].contains(&ClientEvent::Connected { server_key: key }));
     let id = match n.server_events[0] {
         ServerEvent::Connected { id, .. } => id,
-        ref e => panic!("unerwartet: {e:?}"),
+        ref e => panic!("unexpected: {e:?}"),
     };
 
     n.clients[c].send(b"hallo", true);
@@ -119,7 +119,7 @@ fn handshake_and_messages_both_ways() {
     assert!(got.contains(&(true, b"welt".to_vec())));
     assert!(
         got.contains(&(false, vec![7; 3000])),
-        "großes unzuverlässiges Paket"
+        "large unreliable packet"
     );
 }
 
@@ -134,7 +134,7 @@ fn survives_latency_jitter_and_loss() {
     let mut n = Harness::new(bad, 8);
     let c = n.connect(None);
     n.run(3000);
-    assert!(n.clients[c].is_connected(), "Handshake trotz 20 % Verlust");
+    assert!(n.clients[c].is_connected(), "handshake despite 20 % loss");
     for k in 0..100u32 {
         n.clients[c].send(&k.to_le_bytes(), true);
     }
@@ -143,12 +143,12 @@ fn survives_latency_jitter_and_loss() {
     assert_eq!(
         n.server_messages(),
         expected,
-        "vollständig, in Reihenfolge, ohne Duplikate"
+        "complete, in order, without duplicates"
     );
     let rtt = n.clients[c].stats().unwrap().rtt;
     assert!(
         rtt >= Duration::from_millis(90),
-        "RTT ≈ 2 × 50 ms + Jitter: {rtt:?}"
+        "RTT ≈ 2 × 50 ms + jitter: {rtt:?}"
     );
 }
 

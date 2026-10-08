@@ -150,40 +150,40 @@ impl Adventure {
             h as f32 * TILE_SIZE as f32,
         );
         if self.objects.len() > MAX_OBJECTS {
-            return Err(format!("mehr als {MAX_OBJECTS} Abenteuer-Objekte"));
+            return Err(format!("more than {MAX_OBJECTS} adventure objects"));
         }
         let mut ids = std::collections::BTreeSet::new();
         for o in &self.objects {
-            let at = |m: &str| Err(format!("Objekt `{}` ({}): {m}", o.id, o.kind.name()));
+            let at = |m: &str| Err(format!("object `{}` ({}): {m}", o.id, o.kind.name()));
             if o.id.is_empty() || o.id.len() > crate::binary::MAX_NAME || o.id.contains(':') {
-                return at("Id leer, zu lang oder mit `:`");
+                return at("id empty, too long or containing `:`");
             }
             if !ids.insert(o.id.as_str()) {
-                return at("Id doppelt");
+                return at("duplicate id");
             }
             let inside = |p: Vec2| p.x >= 0.0 && p.y >= 0.0 && p.x <= mw && p.y <= mh;
             if !o.pos.x.is_finite() || !o.pos.y.is_finite() || !inside(o.pos) {
-                return at("liegt außerhalb der Karte");
+                return at("lies outside the map");
             }
             if let Some(size) = o.kind.area()
                 && (size.x <= 0.0 || size.y <= 0.0 || !inside(o.pos + size))
             {
-                return at("Bereich leer oder außerhalb der Karte");
+                return at("area empty or outside the map");
             }
             match &o.kind {
                 ObjectKind::Door { .. } if o.pos.x % ts != 0.0 || o.pos.y % ts != 0.0 => {
-                    return at("Tür liegt nicht auf dem Tile-Raster");
+                    return at("door is not on the tile grid");
                 }
                 ObjectKind::Chest { contents, .. } if contents.len() > MAX_LIST => {
-                    return at("zu viele Gegenstände");
+                    return at("too many items");
                 }
                 ObjectKind::Npc { facing, walk, .. }
                     if !matches!(facing, -1 | 1) || *walk < 0.0 =>
                 {
-                    return at("Blickrichtung oder Laufweg ungültig");
+                    return at("facing or walk path invalid");
                 }
                 ObjectKind::Exit { map, spawn, .. } if map.is_empty() || spawn.is_empty() => {
-                    return at("Ziel fehlt");
+                    return at("target missing");
                 }
                 _ => {}
             }

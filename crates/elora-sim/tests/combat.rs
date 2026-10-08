@@ -74,9 +74,9 @@ fn duel(a: i32, b: i32) -> World {
 fn hammer_hits_and_knocks_up_and_away() {
     let mut w = duel(10, 11);
     w.step(&[aim(100, 0, 1), idle()]);
-    assert_eq!(health(&w, 1), 7, "T-18: 3 Schaden");
+    assert_eq!(health(&w, 1), 7, "T-18: 3 damage");
     let v = w.core(1).unwrap().vel;
-    assert!(v.x > 0.0 && v.y < -5.0, "Knockback nach oben/weg: {v:?}");
+    assert!(v.x > 0.0 && v.y < -5.0, "knockback up/away: {v:?}");
     assert!(
         w.events
             .iter()
@@ -100,7 +100,7 @@ fn hammer_needs_a_click_not_just_holding() {
     let mut w = duel(10, 11);
     w.step(&[aim(100, 0, 1), idle()]);
     run(&mut w, &[aim(100, 0, 1), idle()], 60); // key stays pressed
-    assert_eq!(health(&w, 1), 7, "Hammer ist kein Dauerfeuer");
+    assert_eq!(health(&w, 1), 7, "hammer is not automatic fire");
 }
 
 #[test]
@@ -122,10 +122,10 @@ fn laser_hits_with_damage_and_light_knockback() {
     let mut w = duel(10, 30); // 640 units apart
     give(&mut w, 0, Weapon::Laser);
     w.step(&[aim(100, 0, 1), idle()]);
-    assert_eq!(health(&w, 1), 5, "T-20: 5 Schaden");
+    assert_eq!(health(&w, 1), 5, "T-20: 5 damage");
     // knockback 2 (E-052), ground friction 0.5 already applied once in the same tick → 1
     let vx = w.core(1).unwrap().vel.x;
-    assert!((vx - 1.0).abs() < 0.01, "E-052: leichter Stoß, war {vx}");
+    assert!((vx - 1.0).abs() < 0.01, "E-052: light push, was {vx}");
     assert_eq!(
         w.character(0).unwrap().arsenal.slot(Weapon::Laser).ammo,
         Some(9)
@@ -189,7 +189,7 @@ fn grenade_rocket_jump_and_self_damage() {
         min_vy = min_vy.min(w.core(0).unwrap().vel.y);
     }
     assert!(min_vy < -10.0, "Rocket-Jump: vy = {min_vy}");
-    assert_eq!(health(&w, 0), 7, "Eigenschaden 6/2 = 3 (T-26)");
+    assert_eq!(health(&w, 0), 7, "self damage 6/2 = 3 (T-26)");
 }
 
 #[test]
@@ -208,7 +208,7 @@ fn grenade_direct_hit_explodes_on_player() {
         }
     }
     assert!(exploded);
-    assert_eq!(health(&w, 1), 4, "voller Schaden 6 in der Explosionsmitte");
+    assert_eq!(health(&w, 1), 4, "full damage 6 at the explosion center");
 }
 
 #[test]
@@ -317,14 +317,14 @@ fn respawn_on_click_after_half_second_or_auto_after_three() {
     run(&mut w, &[aim(1, 0, 1)], 20);
     assert!(
         w.character(0).is_some(),
-        "nach 0,5 s mit gedrückter Feuertaste"
+        "after 0.5 s with the fire button held"
     );
 
     w.die(0, None, DeathCause::World);
     run(&mut w, &[idle()], 149);
     assert!(w.character(0).is_none());
     run(&mut w, &[idle()], 2);
-    assert!(w.character(0).is_some(), "Auto-Respawn nach 3 s");
+    assert!(w.character(0).is_some(), "auto respawn after 3 s");
     assert_eq!(
         w.character(0).unwrap().arsenal.active,
         Weapon::Hammer,
@@ -346,7 +346,7 @@ fn walking_dummy_turns_at_walls() {
     }
     assert!(
         min_x < 80.0 && max_x > 1800.0,
-        "läuft hin und her: {min_x}..{max_x}"
+        "walks back and forth: {min_x}..{max_x}"
     );
 }
 
@@ -362,7 +362,7 @@ fn jumping_dummy_uses_double_jump() {
     }
     assert!(
         start - min_y > 250.0,
-        "Doppelsprung-Höhe: {}",
+        "double jump height: {}",
         start - min_y
     );
 }
@@ -395,10 +395,10 @@ fn first_input_after_joining_does_not_fire() {
     };
     // counter is at 6 (pressed and released three times in the old world)
     w.step(&[aim(100, 0, 6)]);
-    assert_eq!(fires(&w), 0, "kein Schuss beim Betreten");
+    assert_eq!(fires(&w), 0, "no shot on entering");
     for _ in 0..30 {
         w.step(&[aim(100, 0, 6)]);
     }
     w.step(&[aim(100, 0, 7)]);
-    assert_eq!(fires(&w), 1, "der nächste Druck schießt");
+    assert_eq!(fires(&w), 1, "the next press fires");
 }

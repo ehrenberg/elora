@@ -153,10 +153,7 @@ fn frost_wave_hurts_on_the_floor_but_not_on_a_ledge() {
     run_until(&mut w, 600, |w| {
         w.character(0).is_none_or(|c| c.health < before)
     });
-    assert!(
-        w.character(0).unwrap().health < before,
-        "frischer Frost trifft"
-    );
+    assert!(w.character(0).unwrap().health < before, "fresh frost hits");
     assert_eq!(mode(&w, id), queen::WAVE);
     // Elora on the ledge: the wave passes beneath her
     let mut w = hall();
@@ -175,8 +172,8 @@ fn frost_wave_hurts_on_the_floor_but_not_on_a_ledge() {
         }
         last = m;
     }
-    assert!(waves >= 2, "Wellen sind gelaufen: {waves}");
-    assert_eq!(w.character(0).unwrap().health, before, "oben sicher");
+    assert!(waves >= 2, "waves have run: {waves}");
+    assert_eq!(w.character(0).unwrap().health, before, "safe up top");
 }
 
 #[test]
@@ -188,20 +185,20 @@ fn only_vulnerable_while_tired_after_three_waves() {
     let id = queen_id(&mut w);
     run_until(&mut w, 200, |w| mode(w, w.creatures[0].id) == queen::HOVER);
     w.hurt_creature(id, 5);
-    assert_eq!(health(&w, id), 36, "schwebend unverwundbar");
+    assert_eq!(health(&w, id), 36, "invulnerable while hovering");
     run_until(&mut w, 1500, |w| mode(w, w.creatures[0].id) == queen::TIRED);
-    assert_eq!(mode(&w, id), queen::TIRED, "nach drei Wellen erschöpft");
+    assert_eq!(mode(&w, id), queen::TIRED, "exhausted after three waves");
     // sinks down to the floor
     run_until(&mut w, 60, |_| false);
     let c = w.creatures.iter().find(|c| c.id == id).unwrap();
     assert!(
         (c.pos.y + 55.0 - FLOOR as f32 * 32.0).abs() < 2.0,
-        "liegt am Boden"
+        "lies on the ground"
     );
     w.hurt_creature(id, 5);
-    assert_eq!(health(&w, id), 31, "erschöpft verwundbar");
+    assert_eq!(health(&w, id), 31, "vulnerable while exhausted");
     run_until(&mut w, 400, |w| mode(w, w.creatures[0].id) == queen::HOVER);
-    assert_eq!(mode(&w, id), queen::HOVER, "steigt wieder auf");
+    assert_eq!(mode(&w, id), queen::HOVER, "rises again");
 }
 
 #[test]
@@ -234,12 +231,12 @@ fn angry_queen_alternates_sides_drops_icicles_and_calls_a_storm() {
             )
         });
     }
-    assert!(storm, "Schneesturm im letzten Viertel");
-    assert!(icicles, "Eiszapfen zwischen den Wellen");
+    assert!(storm, "blizzard in the last quarter");
+    assert!(icicles, "icicles between the waves");
     let dirs: Vec<i8> = sides.iter().map(|s| s.1).collect();
     assert!(
         dirs.windows(2).any(|p| p[0] != p[1]),
-        "Wellen von beiden Seiten: {dirs:?}"
+        "waves from both sides: {dirs:?}"
     );
 }
 
@@ -257,12 +254,8 @@ fn rises_again_after_enough_hits() {
         w.hurt_creature(id, 1);
     }
     run_until(&mut w, 2, |_| false);
-    assert_eq!(mode(&w, id), queen::TIRED, "drei Treffer: liegt noch");
+    assert_eq!(mode(&w, id), queen::TIRED, "three hits: still lying");
     w.hurt_creature(id, 1);
     run_until(&mut w, 2, |_| false);
-    assert_eq!(
-        mode(&w, id),
-        queen::RISE,
-        "der vierte: sofort wieder hinauf"
-    );
+    assert_eq!(mode(&w, id), queen::RISE, "the fourth: straight back up");
 }

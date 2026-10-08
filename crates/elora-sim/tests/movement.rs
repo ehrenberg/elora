@@ -42,14 +42,17 @@ fn run(w: &mut World, input: PlayerInput, ticks: u32) {
 }
 
 fn core(w: &World) -> &elora_sim::CharacterCore {
-    w.core(0).expect("Figur 0 lebt")
+    w.core(0).expect("character 0 alive")
 }
 
 /// Lets the figure land and come to rest.
 fn landed(w: &mut World, tx: i32) {
     w.spawn(tile_center(tx, 36));
     run(w, PlayerInput::default(), 60);
-    assert!(core(w).is_grounded(&w.collision), "Figur sollte stehen");
+    assert!(
+        core(w).is_grounded(&w.collision),
+        "character should be standing"
+    );
 }
 
 #[test]
@@ -71,7 +74,7 @@ fn ground_speed_is_capped() {
     };
     run(&mut w, right, 20);
     let vx = core(&w).vel.x;
-    assert!((vx - 10.5).abs() < 0.01, "T-02: erwartet 10.5, war {vx}");
+    assert!((vx - 10.5).abs() < 0.01, "T-02: expected 10.5, was {vx}");
 }
 
 #[test]
@@ -91,7 +94,7 @@ fn jump_and_double_jump_heights() {
         min_y = min_y.min(core(&w).pos.y);
     }
     let single = start_y - min_y;
-    assert!((180.0..=200.0).contains(&single), "Sprunghöhe {single}");
+    assert!((180.0..=200.0).contains(&single), "jump height {single}");
 
     // double jump (T-06): release at the apex and press again
     run(&mut w, PlayerInput::default(), 60);
@@ -108,7 +111,7 @@ fn jump_and_double_jump_heights() {
     let double = start_y - min_y;
     assert!(
         (310.0..=340.0).contains(&double),
-        "Doppelsprunghöhe {double}"
+        "double jump height {double}"
     );
 }
 
@@ -145,7 +148,7 @@ fn hook_in_open_air_retracts_at_max_length() {
     // As in the original the hook position is no longer updated once the maximum
     // length is reached (visible: last flight step); the hit check does reach
     // the full length though, see `hook_reaches_full_length`.
-    assert!(max <= 400.0, "Hook zu lang: {max}");
+    assert!(max <= 400.0, "hook too long: {max}");
     assert_eq!(core(&w).hook_state, HookState::Retracted);
 
     // release → idle, pressing again shoots again
@@ -208,7 +211,7 @@ fn hook_grabs_ceiling_and_pulls_up() {
     run(&mut w, hook, 6);
     assert_eq!(core(&w).hook_state, HookState::Grabbed);
     run(&mut w, hook, 40);
-    assert!(core(&w).pos.y < ground_y - 150.0, "Hook sollte hochziehen");
+    assert!(core(&w).pos.y < ground_y - 150.0, "hook should pull up");
 }
 
 #[test]
@@ -281,7 +284,7 @@ fn player_hook_releases_after_limit() {
     // T-16: 55 ticks (+1 because of the `>` comparison as in the original)
     assert!(
         (55..=57).contains(&grabbed_ticks),
-        "gehalten: {grabbed_ticks} Ticks"
+        "held: {grabbed_ticks} ticks"
     );
     assert_eq!(core(&w).hook_state, HookState::Retracted);
 }

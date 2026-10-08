@@ -62,19 +62,16 @@ fn drift(adventure: bool, weather: Option<WeatherEnv>) -> f32 {
 fn wind_pushes_elora_in_the_air_only_in_the_adventure() {
     let calm = drift(true, None);
     let windy = drift(true, wind(1.0));
-    assert!(calm.abs() < 0.5, "ohne Wind gerade: {calm}");
-    assert!(windy > 20.0, "Wind treibt nach rechts: {windy}");
-    assert!(drift(true, wind(-1.0)) < -20.0, "und nach links");
-    assert!(
-        drift(false, wind(1.0)).abs() < 0.5,
-        "Mehrspieler: kein Wind"
-    );
+    assert!(calm.abs() < 0.5, "straight without wind: {calm}");
+    assert!(windy > 20.0, "wind drives to the right: {windy}");
+    assert!(drift(true, wind(-1.0)) < -20.0, "and to the left");
+    assert!(drift(false, wind(1.0)).abs() < 0.5, "multiplayer: no wind");
     // on the ground it does not push
     let mut w = world(true, wind(1.0));
     run(&mut w, PlayerInput::default(), 10);
     let start = x(&w);
     run(&mut w, PlayerInput::default(), 50);
-    assert!((x(&w) - start).abs() < 0.5, "steht fest");
+    assert!((x(&w) - start).abs() < 0.5, "stands firm");
 }
 
 /// Braking distance after letting go: a wet floor brakes more softly.
@@ -97,7 +94,7 @@ fn wet_ground_brakes_softer() {
         wet: 1.0,
         ..WeatherEnv::default()
     }));
-    assert!(wet > dry * 1.2, "nass {wet} statt trocken {dry}");
+    assert!(wet > dry * 1.2, "wet {wet} instead of dry {dry}");
 }
 
 #[test]
@@ -124,13 +121,13 @@ fn wind_bends_grenades() {
                 Event::Explosion { pos, .. } => Some(pos.x),
                 _ => None,
             })
-            .expect("Granate explodiert")
+            .expect("grenade explodes")
     };
     let calm = landing(None);
     let windy = landing(wind(1.0));
     assert!(
         windy - calm > 30.0,
-        "Wind trägt die Granate: {calm} → {windy}"
+        "wind carries the grenade: {calm} → {windy}"
     );
 }
 
@@ -158,11 +155,11 @@ fn lightning_warns_then_strikes_and_hurts() {
             break;
         }
     }
-    let (tw, pw) = warn.expect("Warnung");
-    let (ts, ps) = strike.expect("Einschlag");
-    assert_eq!(pw, ps, "schlägt dort ein, wo es glimmt");
-    assert!(ts - tw >= 40, "Zeit zum Ausweichen: {} Ticks", ts - tw);
-    assert!((ps.y - FLOOR as f32 * 32.0).abs() < 0.5, "am Boden");
+    let (tw, pw) = warn.expect("warning");
+    let (ts, ps) = strike.expect("impact");
+    assert_eq!(pw, ps, "strikes where it glows");
+    assert!(ts - tw >= 40, "time to dodge: {} ticks", ts - tw);
+    assert!((ps.y - FLOOR as f32 * 32.0).abs() < 0.5, "on the ground");
     // Elora exactly at the impact point: damage
     let mut w = world(true, storm);
     let before = w.character(0).unwrap().health;
@@ -184,7 +181,7 @@ fn lightning_warns_then_strikes_and_hurts() {
             break;
         }
     }
-    assert!(hurt, "Blitz trifft Elora");
+    assert!(hurt, "lightning hits Elora");
     // no lightning in multiplayer
     let mut w = world(false, storm);
     let ev = run(&mut w, PlayerInput::default(), 3000);

@@ -57,7 +57,7 @@ impl Audio {
         let manager = match AudioManager::<DefaultBackend>::new(AudioManagerSettings::default()) {
             Ok(m) => Some(m),
             Err(e) => {
-                tracing::warn!("Kein Audiogerät, Spiel bleibt stumm: {e}");
+                tracing::warn!("No audio device, game stays silent: {e}");
                 None
             }
         };
@@ -68,7 +68,7 @@ impl Audio {
             .collect();
         for s in bank.missing() {
             tracing::warn!(
-                "Sound `{}` fehlt (weder sounds.toml noch Tondatei)",
+                "Sound `{}` missing (neither sounds.toml nor sound file)",
                 s.name()
             );
         }
@@ -137,7 +137,7 @@ impl Audio {
                 );
                 self.music = Some((handle, volume));
             }
-            Err(e) => tracing::debug!("Musik nicht abgespielt: {e}"),
+            Err(e) => tracing::debug!("Music not played: {e}"),
         }
         Ok(())
     }
@@ -187,7 +187,7 @@ impl Audio {
                 handle.set_volume(decibels(volume), fade(2000));
                 self.ambience.insert(name.to_owned(), (handle, volume));
             }
-            Err(e) => tracing::debug!("Umgebung `{name}` nicht abgespielt: {e}"),
+            Err(e) => tracing::debug!("Ambience `{name}` not played: {e}"),
         }
         Ok(())
     }
@@ -218,7 +218,7 @@ impl Audio {
             .volume(decibels(volume))
             .panning(Panning(pan));
         if let Err(e) = manager.play(sound) {
-            tracing::debug!("Klang nicht abgespielt: {e}");
+            tracing::debug!("Sound not played: {e}");
         }
         Ok(())
     }
@@ -243,7 +243,7 @@ impl Audio {
             .panning(Panning(pan))
             .playback_rate(kira::PlaybackRate(f64::from(cue.pitch)));
         if let Err(e) = manager.play(sound) {
-            tracing::debug!("Sound `{}` nicht abgespielt: {e}", cue.sound.name());
+            tracing::debug!("Sound `{}` not played: {e}", cue.sound.name());
         }
     }
 }
@@ -279,7 +279,7 @@ mod music_tests {
                 "{name}"
             );
         }
-        let junk: Arc<[u8]> = Arc::from(&b"keine Musik"[..]);
+        let junk: Arc<[u8]> = Arc::from(&b"not music"[..]);
         assert!(StreamingSoundData::from_cursor(std::io::Cursor::new(junk)).is_err());
     }
 }

@@ -40,41 +40,41 @@ pub const MAX_CONDITION: usize = 1024;
 /// Error while reading a map.
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
 pub enum MapError {
-    #[error("keine Elora-Karte (Kennung fehlt)")]
+    #[error("not an Elora map (magic missing)")]
     BadMagic,
-    #[error("nicht unterstützte Formatversion {found} (unterstützt: {FORMAT_VERSION})")]
+    #[error("unsupported format version {found} (supported: {FORMAT_VERSION})")]
     UnsupportedFormat { found: u16 },
-    #[error("Kartendaten sind beschädigt (Entpacken fehlgeschlagen)")]
+    #[error("map data is corrupt (decompression failed)")]
     Compression,
-    #[error("Kartendaten sind zu groß (über {MAX_PAYLOAD} Bytes entpackt)")]
+    #[error("map data is too large (over {MAX_PAYLOAD} bytes unpacked)")]
     PayloadTooLarge,
-    #[error("Kartendaten enden zu früh")]
+    #[error("map data ends too early")]
     Truncated,
-    #[error("Abschnitt `{0}` fehlt")]
+    #[error("section `{0}` missing")]
     MissingSection(&'static str),
-    #[error("Abschnitt `{0}` kommt doppelt vor")]
+    #[error("section `{0}` appears twice")]
     DuplicateSection(String),
-    #[error("ungültige Kartendaten: {0}")]
+    #[error("invalid map data: {0}")]
     Invalid(&'static str),
-    #[error("Raster {width}×{height} ist größer als erlaubt ({MAX_SIZE}×{MAX_SIZE})")]
+    #[error("grid {width}×{height} is larger than allowed ({MAX_SIZE}×{MAX_SIZE})")]
     TooLarge { width: usize, height: usize },
-    #[error("Zeile {line}: Länge {found}, erwartet {expected}")]
+    #[error("line {line}: length {found}, expected {expected}")]
     RaggedRow {
         line: usize,
         found: usize,
         expected: usize,
     },
-    #[error("Zeile {line}, Spalte {column}: unbekanntes Zeichen `{symbol}`")]
+    #[error("line {line}, column {column}: unknown character `{symbol}`")]
     UnknownSymbol {
         line: usize,
         column: usize,
         symbol: char,
     },
-    #[error("Abenteuer-Objekte: {0}")]
+    #[error("adventure objects: {0}")]
     Adventure(String),
-    #[error("Karte hat keinen Spawnpunkt")]
+    #[error("map has no spawn point")]
     NoSpawn,
-    #[error("Flaggen: {red}× rot, {blue}× blau – für CTF genau je eine, sonst keine")]
+    #[error("flags: {red}× red, {blue}× blue – exactly one each for CTF, otherwise none")]
     InvalidFlags { red: usize, blue: usize },
 }
 
@@ -127,11 +127,8 @@ const CURVES: [Curve; 5] = [
 ];
 
 fn code<T: PartialEq>(table: &[T], v: &T) -> u8 {
-    let i = table
-        .iter()
-        .position(|t| t == v)
-        .expect("Tabelle vollständig");
-    u8::try_from(i).expect("Tabelle < 256")
+    let i = table.iter().position(|t| t == v).expect("table complete");
+    u8::try_from(i).expect("table < 256")
 }
 
 fn lookup<T: Copy>(table: &[T], c: u8, what: &'static str) -> Result<T> {
@@ -167,7 +164,7 @@ impl Writer {
         self.f32(v.y);
     }
     fn len(&mut self, n: usize) {
-        self.u32(u32::try_from(n).expect("Länge passt in u32"));
+        self.u32(u32::try_from(n).expect("length fits in u32"));
     }
     fn bytes(&mut self, v: &[u8]) {
         self.len(v.len());
@@ -392,56 +389,56 @@ fn put_adventure(w: &mut Writer, a: &Adventure) {
 }
 
 fn get_adventure(r: &mut Reader<'_>) -> Result<Adventure> {
-    let n = r.len(MAX_OBJECTS, "Anzahl Abenteuer-Objekte")?;
+    let n = r.len(MAX_OBJECTS, "number of adventure objects")?;
     let mut objects = Vec::with_capacity(n);
     for _ in 0..n {
-        let id = r.str(MAX_NAME, "Objekt-Id")?;
+        let id = r.str(MAX_NAME, "object id")?;
         let pos = r.vec2()?;
         let kind = match r.u8()? {
             0 => ObjectKind::Creature {
-                kind: r.str(MAX_NAME, "Gegnerart")?,
+                kind: r.str(MAX_NAME, "creature kind")?,
                 persistent: r.bool()?,
             },
             1 => ObjectKind::Npc {
-                character: r.str(MAX_NAME, "Figur")?,
-                dialog: r.str(MAX_NAME, "Gespräch")?,
+                character: r.str(MAX_NAME, "character")?,
+                dialog: r.str(MAX_NAME, "dialog")?,
                 facing: if r.bool()? { 1 } else { -1 },
                 walk: r.f32()?,
             },
             2 => {
-                let k = r.len(MAX_LIST, "Truhen-Inhalt")?;
+                let k = r.len(MAX_LIST, "chest contents")?;
                 let contents = (0..k)
-                    .map(|_| Ok((r.str(MAX_NAME, "Gegenstand")?, r.u32()?)))
+                    .map(|_| Ok((r.str(MAX_NAME, "item")?, r.u32()?)))
                     .collect::<Result<Vec<_>>>()?;
                 ObjectKind::Chest {
                     contents,
-                    lock: r.str(MAX_CONDITION, "Schloss")?,
+                    lock: r.str(MAX_CONDITION, "lock")?,
                 }
             }
             3 => ObjectKind::Switch {
-                flag: r.str(MAX_NAME, "Merker")?,
+                flag: r.str(MAX_NAME, "flag")?,
                 once: r.bool()?,
                 trigger: match r.u8()? {
                     0 => SwitchTrigger::Interact,
                     1 => SwitchTrigger::Hammer,
                     2 => SwitchTrigger::Hook,
-                    _ => return Err(MapError::Invalid("Schalter-Auslöser")),
+                    _ => return Err(MapError::Invalid("switch trigger")),
                 },
             },
             4 => ObjectKind::Door {
                 size: (r.u8()?, r.u8()?),
-                open_if: r.str(MAX_CONDITION, "Tür-Bedingung")?,
+                open_if: r.str(MAX_CONDITION, "door condition")?,
             },
             5 => ObjectKind::Collectible {
-                item: r.str(MAX_NAME, "Gegenstand")?,
+                item: r.str(MAX_NAME, "item")?,
             },
             6 => ObjectKind::SavePoint,
             7 => ObjectKind::HealPlant { heal: r.i32()? },
             8 => ObjectKind::Spawn,
             9 => ObjectKind::Exit {
                 size: r.vec2()?,
-                map: r.str(MAX_NAME, "Zielkarte")?,
-                spawn: r.str(MAX_NAME, "Ziel-Eingang")?,
+                map: r.str(MAX_NAME, "target map")?,
+                spawn: r.str(MAX_NAME, "target entrance")?,
                 on_touch: r.bool()?,
             },
             10 => ObjectKind::Zone { size: r.vec2()? },
@@ -450,10 +447,10 @@ fn get_adventure(r: &mut Reader<'_>) -> Result<Adventure> {
                 mode: match r.u8()? {
                     0 => CameraMode::Fixed,
                     1 => CameraMode::Bounds,
-                    _ => return Err(MapError::Invalid("Kamera-Art")),
+                    _ => return Err(MapError::Invalid("camera kind")),
                 },
             },
-            _ => return Err(MapError::Invalid("Art eines Abenteuer-Objekts")),
+            _ => return Err(MapError::Invalid("adventure object kind")),
         };
         objects.push(Object { id, pos, kind });
     }
@@ -507,7 +504,7 @@ impl<'a> Reader<'a> {
         Ok(a)
     }
     fn array<const N: usize>(&mut self) -> Result<[u8; N]> {
-        Ok(self.take(N)?.try_into().expect("Länge stimmt"))
+        Ok(self.take(N)?.try_into().expect("length matches"))
     }
     fn u8(&mut self) -> Result<u8> {
         Ok(self.take(1)?[0])
@@ -516,7 +513,7 @@ impl<'a> Reader<'a> {
         match self.u8()? {
             0 => Ok(false),
             1 => Ok(true),
-            _ => Err(MapError::Invalid("Wahrheitswert")),
+            _ => Err(MapError::Invalid("boolean")),
         }
     }
     fn u16(&mut self) -> Result<u16> {
@@ -533,7 +530,7 @@ impl<'a> Reader<'a> {
         if v.is_finite() {
             Ok(v)
         } else {
-            Err(MapError::Invalid("Zahl ist nicht endlich"))
+            Err(MapError::Invalid("number is not finite"))
         }
     }
     fn vec2(&mut self) -> Result<Vec2> {
@@ -580,7 +577,7 @@ impl<'a> Sections<'a> {
         let mut s = Self::default();
         while !r.0.is_empty() {
             let tag = r.array::<4>()?;
-            let body = r.bytes(MAX_PAYLOAD, "Abschnittslänge")?;
+            let body = r.bytes(MAX_PAYLOAD, "section length")?;
             if s.found.iter().any(|(t, _)| *t == tag) {
                 return Err(MapError::DuplicateSection(
                     String::from_utf8_lossy(&tag).into_owned(),
@@ -603,7 +600,7 @@ impl<'a> Sections<'a> {
     #[allow(clippy::trivially_copy_pass_by_ref)]
     fn require(&self, tag: &'static [u8; 4]) -> Result<Reader<'a>> {
         self.get(*tag).ok_or(MapError::MissingSection(
-            std::str::from_utf8(tag).expect("Kennung ist ASCII"),
+            std::str::from_utf8(tag).expect("tag is ASCII"),
         ))
     }
 }
@@ -642,15 +639,15 @@ pub fn decode_draft(data: &[u8]) -> Result<Map> {
     let sections = Sections::parse(Reader(&payload))?;
 
     let mut r = sections.require(b"INFO")?;
-    let name = r.str(MAX_NAME, "Kartenname")?;
-    let author = r.str(MAX_NAME, "Autor")?;
+    let name = r.str(MAX_NAME, "map name")?;
+    let author = r.str(MAX_NAME, "author")?;
     r.done("INFO")?;
 
     let mut r = sections.require(b"GAME")?;
-    let width = r.len(usize::MAX, "Breite")?;
-    let height = r.len(usize::MAX, "Höhe")?;
+    let width = r.len(usize::MAX, "width")?;
+    let height = r.len(usize::MAX, "height")?;
     if width == 0 || height == 0 {
-        return Err(MapError::Invalid("leeres Raster"));
+        return Err(MapError::Invalid("empty grid"));
     }
     if width > MAX_SIZE || height > MAX_SIZE {
         return Err(MapError::TooLarge { width, height });
@@ -658,17 +655,17 @@ pub fn decode_draft(data: &[u8]) -> Result<Map> {
     let tiles = r
         .take(width * height)?
         .iter()
-        .map(|&c| lookup(&TILES, c, "Tile-Art"))
+        .map(|&c| lookup(&TILES, c, "tile kind"))
         .collect::<Result<Vec<_>>>()?;
     r.done("GAME")?;
 
     let mut r = sections.require(b"ENTS")?;
-    let n = r.len(width * height, "Anzahl Entities")?;
+    let n = r.len(width * height, "number of entities")?;
     let mut entities = Vec::with_capacity(n);
     for _ in 0..n {
-        let kind = lookup(&ENTITIES, r.u8()?, "Entity-Art")?;
-        let tx = r.len(width - 1, "Entity außerhalb")?;
-        let ty = r.len(height - 1, "Entity außerhalb")?;
+        let kind = lookup(&ENTITIES, r.u8()?, "entity kind")?;
+        let tx = r.len(width - 1, "entity out of bounds")?;
+        let ty = r.len(height - 1, "entity out of bounds")?;
         entities.push(Entity { kind, tx, ty });
     }
     r.done("ENTS")?;
@@ -700,13 +697,13 @@ fn decode_look(sections: &Sections<'_>, map: &mut Map) -> Result<()> {
     let (materials, material_map) = match sections.get(*b"MATL") {
         None => (Vec::new(), Vec::new()),
         Some(mut r) => {
-            let n = r.len(MAX_MATERIALS, "Anzahl Materialien")?;
+            let n = r.len(MAX_MATERIALS, "number of materials")?;
             let materials = (0..n)
-                .map(|_| r.str(MAX_NAME, "Material"))
+                .map(|_| r.str(MAX_NAME, "material"))
                 .collect::<Result<Vec<_>>>()?;
-            let map = r.bytes(width * height, "Materialraster")?.to_vec();
+            let map = r.bytes(width * height, "material grid")?.to_vec();
             if map.len() != width * height || map.iter().any(|&m| usize::from(m) > n) {
-                return Err(MapError::Invalid("Materialraster"));
+                return Err(MapError::Invalid("material grid"));
             }
             r.done("MATL")?;
             (materials, map)
@@ -733,15 +730,15 @@ fn decode_look(sections: &Sections<'_>, map: &mut Map) -> Result<()> {
     let backgrounds = match sections.get(*b"BGRD") {
         None => Vec::new(),
         Some(mut r) => {
-            let n = r.len(MAX_BACKGROUNDS, "Anzahl Hintergrund-Ebenen")?;
+            let n = r.len(MAX_BACKGROUNDS, "number of background layers")?;
             let mut list = Vec::with_capacity(n);
             for _ in 0..n {
-                let name = r.str(MAX_NAME, "Ebenenname")?;
+                let name = r.str(MAX_NAME, "layer name")?;
                 let parallax = r.vec2()?;
                 let offset = r.vec2()?;
                 let repeat = r.f32()?;
                 if repeat < 0.0 {
-                    return Err(MapError::Invalid("Wiederholung"));
+                    return Err(MapError::Invalid("repeat"));
                 }
                 let items = get_decor_list(&mut r, &mut decor_budget)?;
                 list.push(Background {
@@ -779,12 +776,12 @@ fn decode_look(sections: &Sections<'_>, map: &mut Map) -> Result<()> {
     let images = match sections.get(*b"IMGS") {
         None => Vec::new(),
         Some(mut r) => {
-            let n = r.len(MAX_IMAGES, "Anzahl Bilder")?;
+            let n = r.len(MAX_IMAGES, "number of images")?;
             let list = (0..n)
                 .map(|_| {
                     Ok(Image {
-                        name: r.str(MAX_NAME, "Bildname")?,
-                        svg: r.bytes(MAX_IMAGE_BYTES, "Bild zu groß")?.to_vec(),
+                        name: r.str(MAX_NAME, "image name")?,
+                        svg: r.bytes(MAX_IMAGE_BYTES, "image too large")?.to_vec(),
                     })
                 })
                 .collect::<Result<Vec<_>>>()?;
@@ -808,10 +805,10 @@ fn decode_look(sections: &Sections<'_>, map: &mut Map) -> Result<()> {
 fn get_weather(mut r: Reader<'_>) -> Result<Weather> {
     let kind = *WeatherKind::ALL
         .get(usize::from(r.u8()?))
-        .ok_or(MapError::Invalid("Wetter-Art"))?;
+        .ok_or(MapError::Invalid("weather kind"))?;
     let (intensity, wind) = (r.f32()?, r.f32()?);
     if !(0.0..=1.0).contains(&intensity) || !(-1.0..=1.0).contains(&wind) {
-        return Err(MapError::Invalid("Wetter-Werte"));
+        return Err(MapError::Invalid("weather values"));
     }
     r.done("WTHR")?;
     Ok(Weather {
@@ -833,14 +830,14 @@ fn get_env_ref(r: &mut Reader<'_>) -> Result<Option<EnvRef>> {
 }
 
 fn get_decor_list(r: &mut Reader<'_>, budget: &mut usize) -> Result<Vec<Decor>> {
-    let n = r.len(*budget, "zu viele Deko-Objekte")?;
+    let n = r.len(*budget, "too many decor objects")?;
     *budget -= n;
     let mut list = Vec::with_capacity(n);
     for _ in 0..n {
         let art = match r.u8()? {
-            0 => Art::Builtin(r.str(MAX_NAME, "Grafikname")?),
+            0 => Art::Builtin(r.str(MAX_NAME, "art name")?),
             1 => Art::Image(r.u16()?),
-            _ => return Err(MapError::Invalid("Grafik-Art")),
+            _ => return Err(MapError::Invalid("art kind")),
         };
         list.push(Decor {
             art,
@@ -857,25 +854,25 @@ fn get_decor_list(r: &mut Reader<'_>, budget: &mut usize) -> Result<Vec<Decor>> 
 }
 
 fn get_envelopes(r: &mut Reader<'_>) -> Result<Vec<Envelope>> {
-    let n = r.len(MAX_ENVELOPES, "Anzahl Animationen")?;
+    let n = r.len(MAX_ENVELOPES, "number of animations")?;
     let mut list = Vec::with_capacity(n);
     for _ in 0..n {
-        let name = r.str(MAX_NAME, "Animationsname")?;
+        let name = r.str(MAX_NAME, "animation name")?;
         let kind = match r.u8()? {
             0 => EnvKind::Position,
             1 => EnvKind::Color,
-            _ => return Err(MapError::Invalid("Animations-Art")),
+            _ => return Err(MapError::Invalid("animation kind")),
         };
         let synced = r.bool()?;
-        let count = r.len(MAX_ENV_POINTS, "Anzahl Animationspunkte")?;
+        let count = r.len(MAX_ENV_POINTS, "number of animation points")?;
         let mut points: Vec<EnvPoint> = Vec::with_capacity(count);
         for _ in 0..count {
             let time_ms = r.u32()?;
             if points.last().is_some_and(|p| p.time_ms >= time_ms) {
-                return Err(MapError::Invalid("Animationspunkte nicht aufsteigend"));
+                return Err(MapError::Invalid("animation points not ascending"));
             }
             let value = [r.f32()?, r.f32()?, r.f32()?, r.f32()?];
-            let curve = lookup(&CURVES, r.u8()?, "Kurve")?;
+            let curve = lookup(&CURVES, r.u8()?, "curve")?;
             points.push(EnvPoint {
                 time_ms,
                 value,
@@ -911,10 +908,10 @@ fn check_references(map: &Map) -> Result<()> {
         if let Art::Image(i) = d.art
             && usize::from(i) >= map.images.len()
         {
-            return Err(MapError::Invalid("Verweis auf fehlendes Bild"));
+            return Err(MapError::Invalid("reference to missing image"));
         }
         if !env_ok(d.pos_env, EnvKind::Position) || !env_ok(d.color_env, EnvKind::Color) {
-            return Err(MapError::Invalid("Verweis auf fehlende Animation"));
+            return Err(MapError::Invalid("reference to missing animation"));
         }
     }
     Ok(())
@@ -1090,7 +1087,7 @@ mod tests {
     fn adventure_map_needs_no_multiplayer_spawn() {
         let mut m = adventure_map();
         m.entities.clear();
-        assert!(decode(&encode(&m)).is_ok(), "Eingang genügt");
+        assert!(decode(&encode(&m)).is_ok(), "entrance is enough");
         m.adventure
             .objects
             .retain(|o| !matches!(o.kind, ObjectKind::Spawn));
@@ -1103,15 +1100,15 @@ mod tests {
         let cases: [(Breaker, &str); 5] = [
             (
                 |m| m.adventure.objects[1].id = "eingang".into(),
-                "Id doppelt",
+                "duplicate id",
             ),
             (
                 |m| m.adventure.objects[1].pos = Vec2::new(5000.0, 0.0),
-                "außerhalb",
+                "outside",
             ),
             (
                 |m| m.adventure.objects[6].pos = Vec2::new(250.0, 32.0),
-                "Raster",
+                "grid",
             ),
             (
                 |m| {
@@ -1119,7 +1116,7 @@ mod tests {
                         spawn.clear();
                     }
                 },
-                "Ziel fehlt",
+                "target missing",
             ),
             (
                 |m| {
@@ -1127,7 +1124,7 @@ mod tests {
                         *size = Vec2::new(0.0, 10.0);
                     }
                 },
-                "Bereich",
+                "area",
             ),
         ];
         for (break_it, expected) in cases {
@@ -1287,7 +1284,7 @@ mod tests {
         );
         // every truncation and every flipped byte leads to an error, never to a panic
         for cut in 0..data.len() {
-            assert!(decode(&data[..cut]).is_err(), "gekürzt auf {cut}");
+            assert!(decode(&data[..cut]).is_err(), "truncated to {cut}");
         }
         for i in 6..data.len() {
             let mut v = data.clone();
@@ -1370,11 +1367,11 @@ mod tests {
         );
         assert_eq!(
             decode(&raw(&[info(), game(1, 1, &[99]), ents(&[(0, 0, 0)])])).unwrap_err(),
-            MapError::Invalid("Tile-Art")
+            MapError::Invalid("tile kind")
         );
         assert_eq!(
             decode(&raw(&[info(), game(1, 1, &[0]), ents(&[(0, 1, 0)])])).unwrap_err(),
-            MapError::Invalid("Entity außerhalb")
+            MapError::Invalid("entity out of bounds")
         );
         assert_eq!(
             decode(&raw(&[info(), game(1, 1, &[0]), ents(&[])])).unwrap_err(),
@@ -1407,7 +1404,7 @@ mod tests {
         m.decor_front[0].art = Art::Image(5);
         assert_eq!(
             decode(&encode(&m)).unwrap_err(),
-            MapError::Invalid("Verweis auf fehlendes Bild")
+            MapError::Invalid("reference to missing image")
         );
         let mut m = rich_map();
         // color animation used as movement
@@ -1417,25 +1414,25 @@ mod tests {
         });
         assert_eq!(
             decode(&encode(&m)).unwrap_err(),
-            MapError::Invalid("Verweis auf fehlende Animation")
+            MapError::Invalid("reference to missing animation")
         );
         let mut m = rich_map();
         m.images[0].svg = vec![b' '; MAX_IMAGE_BYTES + 1];
         assert_eq!(
             decode(&encode(&m)).unwrap_err(),
-            MapError::Invalid("Bild zu groß")
+            MapError::Invalid("image too large")
         );
         let mut m = rich_map();
         m.envelopes[0].points[1].time_ms = 0;
         assert_eq!(
             decode(&encode(&m)).unwrap_err(),
-            MapError::Invalid("Animationspunkte nicht aufsteigend")
+            MapError::Invalid("animation points not ascending")
         );
         let mut m = rich_map();
         m.material_map[3] = 3;
         assert_eq!(
             decode(&encode(&m)).unwrap_err(),
-            MapError::Invalid("Materialraster")
+            MapError::Invalid("material grid")
         );
     }
 }

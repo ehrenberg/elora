@@ -30,7 +30,7 @@ fn check_golden(name: &str, actual: &str) {
         return;
     }
     let expected = std::fs::read_to_string(&path).unwrap_or_else(|_| {
-        panic!("{} fehlt – mit ELORA_BLESS=1 erzeugen", path.display());
+        panic!("{} missing – create it with ELORA_BLESS=1", path.display());
     });
     if expected != actual {
         // For comparison: put the actual log next to the golden file
@@ -40,9 +40,9 @@ fn check_golden(name: &str, actual: &str) {
             .zip(actual.lines())
             .find(|(e, a)| e != a)
             .map_or_else(String::new, |(e, a)| {
-                format!("\nerwartet: {e}\nerhalten: {a}")
+                format!("\nexpected: {e}\nactual:   {a}")
             });
-        panic!("{name}: Simulation weicht von der Golden-Datei ab{first}");
+        panic!("{name}: simulation differs from the golden file{first}");
     }
 }
 
@@ -155,7 +155,7 @@ fn scripted_combat() -> Recording {
 #[test]
 fn scripted_combat_matches_golden() {
     let log = scripted_combat().replay().unwrap();
-    assert!(log.contains("tot seit"), "Szenario soll Tode enthalten");
+    assert!(log.contains("tot seit"), "scenario should contain deaths");
     check_golden("scripted-combat", &log);
 }
 

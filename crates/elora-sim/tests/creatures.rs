@@ -152,9 +152,9 @@ fn walker_turns_at_walls_and_edges() {
         .fold((f32::MAX, f32::MIN), |(a, b), &x| (a.min(x), b.max(x)));
     assert!(
         min > 20.0 * 32.0 && max < 30.0 * 32.0,
-        "bleibt auf dem Podest: {min}..{max}"
+        "stays on the pedestal: {min}..{max}"
     );
-    assert!(max - min > 100.0, "läuft hin und her");
+    assert!(max - min > 100.0, "walks back and forth");
     assert!(w.creatures[0].pos.y < 20.0 * 32.0);
 }
 
@@ -165,11 +165,11 @@ fn touch_hurts_once_then_protects_with_knockback() {
     w.add_creature(0, on_floor(31, 26.0)).unwrap();
     w.step(&[]);
     let after_hit = health(&w);
-    assert_eq!(after_hit, 8, "Berührung: 2 Schaden");
+    assert_eq!(after_hit, 8, "touch: 2 damage");
     let inv = w.character(0).unwrap().invulnerable_until;
-    assert!(inv > w.tick, "danach geschützt");
+    assert!(inv > w.tick, "protected afterwards");
     run(&mut w, PlayerInput::default(), 20);
-    assert_eq!(health(&w), 8, "kein zweiter Treffer im Schutzfenster");
+    assert_eq!(health(&w), 8, "no second hit in the protection window");
 }
 
 #[test]
@@ -213,7 +213,7 @@ fn hammer_kills_creature_and_loot_flies_to_elora() {
             _ => None,
         })
         .sum();
-    assert_eq!(collected, 3, "Beute eingesammelt");
+    assert_eq!(collected, 3, "loot collected");
     assert!(w.loot.is_empty());
 }
 
@@ -230,7 +230,11 @@ fn no_self_damage_in_adventure_but_knockback() {
     run(&mut w, fire(0, 100, 1), 1);
     run(&mut w, fire(0, 100, 2), 5);
     assert_eq!(health(&w), 10);
-    assert_ne!(w.character(0).unwrap().core.vel, before, "Rückstoß wirkt");
+    assert_ne!(
+        w.character(0).unwrap().core.vel,
+        before,
+        "knockback applies"
+    );
 }
 
 #[test]
@@ -244,7 +248,7 @@ fn turret_shoots_at_elora_in_sight() {
             .iter()
             .any(|e| matches!(e, Event::CreatureFire { .. }))
     );
-    assert!(health(&w) < 10, "Geschoss trifft");
+    assert!(health(&w) < 10, "projectile hits");
     // behind a wall: no shot
     let mut w = world(|t| (20..FLOOR).for_each(|y| set(t, 24, y, Tile::Solid)));
     elora(&mut w, 20);
@@ -267,7 +271,7 @@ fn hopper_jumps_toward_elora() {
     run(&mut w, PlayerInput::default(), 40);
     assert!(
         w.creatures[0].pos.x < start - 20.0,
-        "springt nach links zu Elora"
+        "jumps left towards Elora"
     );
 }
 
@@ -279,7 +283,7 @@ fn flyer_chases_and_returns() {
     run(&mut w, PlayerInput::default(), 50);
     assert!(
         w.creatures[0].pos.distance(home) < 8.0,
-        "schwebt am Startpunkt"
+        "hovers at the start point"
     );
     elora(&mut w, 35);
     w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
@@ -290,7 +294,7 @@ fn flyer_chases_and_returns() {
     let d1 = w.creatures[0]
         .pos
         .distance(w.character(0).unwrap().core.pos);
-    assert!(d1 < d0, "verfolgt Elora");
+    assert!(d1 < d0, "chases Elora");
 }
 
 fn hook_at(w: &mut World, x: i32, y: i32) {
@@ -304,7 +308,7 @@ fn hook_at(w: &mut World, x: i32, y: i32) {
             return;
         }
     }
-    panic!("Hook greift nicht");
+    panic!("hook does not grab");
 }
 
 #[test]
@@ -336,7 +340,7 @@ fn hook_grabs_creature_and_pulls_elora() {
     );
     assert!(
         w.character(0).unwrap().core.pos.x > x0 + 20.0,
-        "Elora wird hingezogen"
+        "Elora is pulled over"
     );
 }
 
@@ -364,10 +368,10 @@ fn pull_brings_small_creature_to_elora() {
         },
         25,
     );
-    assert!(w.creatures[0].pos.x < cx - 40.0, "Gegner kommt näher");
+    assert!(w.creatures[0].pos.x < cx - 40.0, "creature comes closer");
     assert!(
         (w.character(0).unwrap().core.pos.x - ex).abs() < 8.0,
-        "Elora bleibt"
+        "Elora stays"
     );
 }
 
@@ -405,7 +409,7 @@ fn stomp_damages_and_stuns() {
     assert!(ev.iter().any(|e| matches!(e, Event::Stomp { .. })));
     let c = &w.creatures[0];
     assert_eq!(c.health, 6 - Tuning::default().stomp_damage);
-    assert!(c.stun > 0, "betäubt");
+    assert!(c.stun > 0, "stunned");
 }
 
 #[test]
@@ -480,7 +484,7 @@ fn laser_pierce_hits_several_creatures() {
         let ev = run(&mut w, fire(100, 0, 1), 1);
         let mut ids = hits(&ev);
         ids.dedup();
-        assert_eq!(ids.len(), expected, "Durchschlag {pierce}");
+        assert_eq!(ids.len(), expected, "pierce {pierce}");
     }
 }
 
@@ -496,9 +500,9 @@ fn hammer_reach_stun_and_shockwave() {
         w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
         w.add_creature(1, on_floor(28, 26.0)).unwrap();
         let ev = run(&mut w, fire(100, 0, 1), 2);
-        assert_eq!(!hits(&ev).is_empty(), shockwave, "Schockwelle {shockwave}");
+        assert_eq!(!hits(&ev).is_empty(), shockwave, "shockwave {shockwave}");
         if shockwave {
-            assert!(w.creatures[0].stun > 0, "Hammer betäubt (A-17)");
+            assert!(w.creatures[0].stun > 0, "hammer stuns (A-17)");
         }
     }
     // larger range hits enemies further away
@@ -514,7 +518,7 @@ fn hammer_reach_stun_and_shockwave() {
         )
         .unwrap();
         let ev = run(&mut w, fire(100, 0, 1), 2);
-        assert_eq!(!hits(&ev).is_empty(), hit, "Reichweite {reach}");
+        assert_eq!(!hits(&ev).is_empty(), hit, "reach {reach}");
     }
 }
 
@@ -538,7 +542,7 @@ fn grenade_shards_add_small_blasts() {
         .iter()
         .filter(|e| matches!(e, Event::Explosion { .. }))
         .count();
-    assert_eq!(blasts, 4, "Einschlag + 3 Splitter");
+    assert_eq!(blasts, 4, "impact + 3 shards");
 }
 
 #[test]
@@ -564,12 +568,12 @@ fn thorns_hurt_and_put_elora_back_on_safe_ground() {
             break;
         }
     }
-    assert!(hurt, "in die Dornen gefallen");
-    let ch = w.character(0).expect("lebt noch (E-283)");
+    assert!(hurt, "fell into the thorns");
+    let ch = w.character(0).expect("still alive (E-283)");
     assert_eq!(ch.health, 10 - Tuning::default().thorn_damage);
     assert!(
         ch.core.pos.x < 18.0 * 32.0,
-        "zurück vor der Grube: {:?}",
+        "back before the pit: {:?}",
         ch.core.pos
     );
     assert!(ch.core.pos.y < FLOOR as f32 * 32.0);
@@ -655,7 +659,7 @@ fn diver_circles_aims_dives_and_lies_stunned() {
         ],
         "{seen:?}"
     );
-    assert!(dropped, "lässt beim Kreisen Pollen fallen");
+    assert!(dropped, "drops pollen while circling");
 }
 
 #[test]
@@ -664,7 +668,7 @@ fn diver_takes_damage_only_while_stunned() {
     let (mut w, id) = boss_world();
     run(&mut w, PlayerInput::default(), 5);
     w.hurt_creature(id, 5);
-    assert_eq!(boss(&w, id).health, 30, "in der Luft prallt es ab");
+    assert_eq!(boss(&w, id).health, 30, "bounces off in the air");
     // until it is dazed
     for _ in 0..400 {
         run(&mut w, PlayerInput::default(), 1);
@@ -695,24 +699,24 @@ fn angry_diver_dives_twice_and_summons_helpers() {
         }
         last = m;
     }
-    assert_eq!(dives, 2, "zwei Sturzflüge vor dem Liegen");
+    assert_eq!(dives, 2, "two dives before lying down");
     let helpers = w.creatures.iter().filter(|c| c.kind == 3).count();
-    assert!((1..=2).contains(&helpers), "{helpers} Helfer (höchstens 2)");
+    assert!((1..=2).contains(&helpers), "{helpers} helpers (at most 2)");
 }
 
 #[test]
 fn hook_flowers_wilt_while_the_diver_is_angry() {
     let (mut w, id) = boss_world();
     run(&mut w, PlayerInput::default(), 5);
-    assert_eq!(w.collision.hook_wilt, None, "noch nicht wütend");
+    assert_eq!(w.collision.hook_wilt, None, "not angry yet");
     w.creatures.iter_mut().find(|c| c.id == id).unwrap().health = 10;
     run(&mut w, PlayerInput::default(), 1);
     let first = w.collision.hook_wilt.expect("welkt");
     run(&mut w, PlayerInput::default(), 125);
-    assert_eq!(w.collision.hook_wilt, Some(!first), "die andere Hälfte");
+    assert_eq!(w.collision.hook_wilt, Some(!first), "the other half");
     w.creatures.clear();
     run(&mut w, PlayerInput::default(), 1);
-    assert_eq!(w.collision.hook_wilt, None, "nach dem Kampf alle frisch");
+    assert_eq!(w.collision.hook_wilt, None, "all fresh after the fight");
 }
 
 // ---------------------------------------------------------------- Chapter 2 (R2-M2.2)
@@ -743,14 +747,14 @@ fn burrower_hides_until_elora_comes_and_only_then_is_dangerous() {
     elora(&mut w, 10);
     run(&mut w, PlayerInput::default(), 60);
     let c = w.creatures.iter().find(|c| c.id == id).unwrap();
-    assert_eq!(c.mode, burrow::HIDDEN, "Elora ist weit weg");
+    assert_eq!(c.mode, burrow::HIDDEN, "Elora is far away");
     assert!(!c.vulnerable(&w.creature_kinds[kind]));
     // Elora comes closer: the snake shoots up
     w.spawn_character(0, on_floor(26, 28.0));
     let ev = run(&mut w, PlayerInput::default(), 5);
     assert!(ev.iter().any(|e| matches!(e, Event::CreatureAct { .. })));
     let c = w.creatures.iter().find(|c| c.id == id).unwrap();
-    assert_eq!(c.mode, burrow::RISING, "wächst erst langsam heraus");
+    assert_eq!(c.mode, burrow::RISING, "grows out slowly at first");
     assert!(!c.harmful(&w.creature_kinds[kind]));
     run(&mut w, PlayerInput::default(), 25);
     let c = w.creatures.iter().find(|c| c.id == id).unwrap();
@@ -785,9 +789,9 @@ fn lobbed_nuts_fly_in_an_arc() {
             ys.push(s.vel.y);
         }
     }
-    assert!(ys.len() > 5, "Nuss geworfen");
-    assert!(ys[0] < 0.0, "erst nach oben");
-    assert!(ys.windows(2).any(|v| v[1] > v[0]), "Schwerkraft wirkt");
+    assert!(ys.len() > 5, "nut thrown");
+    assert!(ys[0] < 0.0, "upwards first");
+    assert!(ys.windows(2).any(|v| v[1] > v[0]), "gravity applies");
 }
 
 #[test]
@@ -807,8 +811,8 @@ fn mushroom_touch_dazes_and_slows_elora() {
     elora(&mut w, 11);
     run(&mut w, PlayerInput::default(), 3);
     let dazed = w.character(0).unwrap().core.dazed;
-    assert!(dazed > 0, "Rausch");
-    assert_eq!(health(&w), 10, "kein Schaden");
+    assert!(dazed > 0, "daze");
+    assert_eq!(health(&w), 10, "no damage");
     // walk slower
     let right = PlayerInput {
         direction: 1,
@@ -845,13 +849,17 @@ fn follower_follows_waits_at_gaps_and_never_hurts() {
     elora(&mut w, 25);
     run(&mut w, PlayerInput::default(), 150);
     let c = w.creatures.iter().find(|c| c.id == id).unwrap();
-    assert!(c.pos.x > 20.0 * 32.0, "folgt: {}", c.pos.x);
+    assert!(c.pos.x > 20.0 * 32.0, "follows: {}", c.pos.x);
     assert_eq!(health(&w), 10, "harmlos");
     // Elora on the other side of the gap: the child waits at the edge
     w.spawn_character(0, on_floor(40, 28.0));
     run(&mut w, PlayerInput::default(), 200);
-    let c = w.creatures.iter().find(|c| c.id == id).expect("lebt noch");
-    assert!(c.pos.x < 30.0 * 32.0, "wartet: {}", c.pos.x);
+    let c = w
+        .creatures
+        .iter()
+        .find(|c| c.id == id)
+        .expect("still alive");
+    assert!(c.pos.x < 30.0 * 32.0, "waits: {}", c.pos.x);
     assert!(!c.vulnerable(&w.creature_kinds[kind]));
 }
 
@@ -911,8 +919,11 @@ fn warden_strikes_with_warning_where_elora_stands() {
             }
         )
     });
-    assert!(warn.is_some() && strike > warn, "erst Warnung, dann Stoß");
-    assert!(health(&w) < 10, "Elora stand still und wurde getroffen");
+    assert!(
+        warn.is_some() && strike > warn,
+        "warning first, then strike"
+    );
+    assert!(health(&w) < 10, "Elora stood still and was hit");
 }
 
 #[test]
@@ -943,9 +954,9 @@ fn pulling_a_core_opens_the_warden_for_hits() {
             break;
         }
     }
-    assert!(opened, "Kern gelöst");
+    assert!(opened, "core released");
     let c = w.creatures.iter().find(|c| c.id == id).unwrap();
-    assert_eq!(c.count, 2, "zwei Kerne übrig");
+    assert_eq!(c.count, 2, "two cores left");
     assert!(c.vulnerable(&w.creature_kinds[kind]));
 }
 
@@ -968,8 +979,8 @@ fn angry_warden_raises_root_walls_that_disappear() {
             }
         }
     }
-    assert!(set > 0, "Wurzelwand");
-    assert!(reset > 0, "verschwindet wieder");
+    assert!(set > 0, "root wall");
+    assert!(reset > 0, "disappears again");
 }
 
 // ---------------------------------------------------------------- Chapter 3 (R2-M2.3)
@@ -999,7 +1010,7 @@ fn armored_crab_only_takes_hits_from_above() {
     w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
     // hammer from the side bounces off
     let ev = run(&mut w, fire(100, 0, 1), 2);
-    assert_eq!(damage_of(&ev, id), Some(0), "Panzer hält");
+    assert_eq!(damage_of(&ev, id), Some(0), "shell holds");
     assert_eq!(w.creatures[0].health, 6);
     // laser from the side too
     w.spawn_character(0, on_floor(24, 28.0));
@@ -1010,7 +1021,7 @@ fn armored_crab_only_takes_hits_from_above() {
         .give(Weapon::Laser, 10, 10);
     w.character_mut(0).unwrap().arsenal.active = Weapon::Laser;
     let ev = run(&mut w, fire(100, 0, 3), 2);
-    assert_eq!(damage_of(&ev, id), Some(0), "Laser prallt ab");
+    assert_eq!(damage_of(&ev, id), Some(0), "laser bounces off");
     // hammer from above hits
     w.character_mut(0).unwrap().arsenal.active = Weapon::Hammer;
     let top = w.creatures[0].pos - Vec2::new(0.0, 13.0 + 14.0 + 4.0);
@@ -1019,7 +1030,7 @@ fn armored_crab_only_takes_hits_from_above() {
     let ev = run(&mut w, fire(0, 100, 5), 2);
     assert!(
         damage_of(&ev, id).is_some_and(|d| d > 0),
-        "von oben verwundbar"
+        "vulnerable from above"
     );
     assert!(w.creatures[0].health < 6);
 }
@@ -1052,10 +1063,10 @@ fn dune_worm_travels_under_sand_warns_and_leaps_at_elora() {
     run(&mut w, PlayerInput::default(), 10);
     let c = get(&w);
     assert_eq!(c.mode, leaper::UNDER);
-    assert!(c.pos.x < on_floor(40, 26.0).x, "wandert auf Elora zu");
+    assert!(c.pos.x < on_floor(40, 26.0).x, "moves towards Elora");
     assert!(!c.vulnerable(&w.creature_kinds[kind]) && !c.harmful(&w.creature_kinds[kind]));
     w.hurt_creature(id, 1);
-    assert_eq!(get(&w).health, 6, "unter dem Sand nicht zu treffen");
+    assert_eq!(get(&w).health, 6, "cannot be hit under the sand");
     // warning, then jump
     let mut modes = Vec::new();
     let mut top = f32::MAX;
@@ -1074,9 +1085,9 @@ fn dune_worm_travels_under_sand_warns_and_leaps_at_elora() {
         modes
             .windows(3)
             .any(|m| m == [leaper::WARN, leaper::LEAP, leaper::UNDER]),
-        "Warnung, Sprung, Eintauchen: {modes:?}"
+        "warning, jump, dive: {modes:?}"
     );
-    assert!(top < on_floor(40, 26.0).y - 64.0, "springt im Bogen");
+    assert!(top < on_floor(40, 26.0).y - 64.0, "jumps in an arc");
 }
 
 #[test]
@@ -1100,8 +1111,8 @@ fn dune_worm_lands_where_elora_stood_at_the_warning() {
         }
         was_leaping = c.mode == leaper::LEAP;
     }
-    let x = landed.expect("gesprungen und gelandet");
-    assert!((x - stood).abs() < 40.0, "landet bei Elora: {x} vs {stood}");
+    let x = landed.expect("jumped and landed");
+    assert!((x - stood).abs() < 40.0, "lands at Elora: {x} vs {stood}");
 }
 
 #[test]
@@ -1127,10 +1138,10 @@ fn spark_moth_hovers_above_elora_and_sparks_glow_on_the_ground() {
     run(&mut w, PlayerInput::default(), 150);
     let elora_pos = w.character(0).unwrap().core.pos;
     let m = &w.creatures[0];
-    assert!((m.pos.x - elora_pos.x).abs() < 30.0, "über Elora");
+    assert!((m.pos.x - elora_pos.x).abs() < 30.0, "above Elora");
     assert!(
         (elora_pos.y - m.pos.y - 120.0).abs() < 20.0,
-        "in Schwebehöhe"
+        "at hover height"
     );
     // Elora steps aside: the spark lands and glows
     w.spawn_character(0, on_floor(10, 28.0));
@@ -1140,13 +1151,13 @@ fn spark_moth_hovers_above_elora_and_sparks_glow_on_the_ground() {
         run(&mut w, PlayerInput::default(), 1);
         landed = landed.max(w.creature_shots.iter().filter(|s| s.landed).count());
     }
-    assert!(landed > 0, "Funke liegt glühend am Boden");
+    assert!(landed > 0, "spark lies glowing on the ground");
     let s = w.creature_shots.iter().find(|s| s.landed).unwrap();
-    assert!(s.pos.y > on_floor(20, 26.0).y, "am Boden");
+    assert!(s.pos.y > on_floor(20, 26.0).y, "on the ground");
     // burnt out after glow_ms
     w.creatures.clear();
     run(&mut w, PlayerInput::default(), 60);
-    assert!(w.creature_shots.is_empty(), "verglüht");
+    assert!(w.creature_shots.is_empty(), "burns out");
 }
 
 #[test]
@@ -1166,7 +1177,7 @@ fn glowing_spark_burns_elora() {
     });
     let before = health(&w);
     run(&mut w, PlayerInput::default(), 2);
-    assert!(health(&w) < before, "glühender Funke brennt");
+    assert!(health(&w) < before, "glowing spark burns");
 }
 
 /// Quicksand pit in columns 20 to 26 (one tile row instead of floor).
@@ -1189,14 +1200,14 @@ fn quicksand_sinks_slowly_slows_and_a_jump_frees() {
     w.spawn_character(0, on_floor(23, 28.0));
     run(&mut w, PlayerInput::default(), 20);
     let ch = w.character(0).unwrap();
-    assert!(ch.core.in_quicksand(&w.collision), "steckt im Sand");
+    assert!(ch.core.in_quicksand(&w.collision), "stuck in the sand");
     let sunk = ch.core.pos.y + 14.0 - surface;
-    assert!(sunk > 1.0 && sunk < 8.0, "sinkt langsam ein: {sunk}");
+    assert!(sunk > 1.0 && sunk < 8.0, "sinks in slowly: {sunk}");
     run(&mut w, right, 10);
     let slow = w.character(0).unwrap().core.vel.x;
     assert!(
         slow > 0.0 && slow < fast * 0.5,
-        "langsamer: {slow} statt {fast}"
+        "slower: {slow} instead of {fast}"
     );
     // jumping frees her
     let jump = PlayerInput {
@@ -1206,7 +1217,7 @@ fn quicksand_sinks_slowly_slows_and_a_jump_frees() {
     run(&mut w, jump, 1);
     run(&mut w, PlayerInput::default(), 10);
     let ch = w.character(0).unwrap();
-    assert!(ch.core.pos.y + 14.0 < surface - 32.0, "frei gesprungen");
+    assert!(ch.core.pos.y + 14.0 < surface - 32.0, "jumped free");
 }
 
 #[test]
@@ -1226,10 +1237,14 @@ fn sinking_deep_hurts_a_little_and_puts_elora_back_at_the_edge() {
             break;
         }
     }
-    assert!(hurt, "ganz eingesunken");
+    assert!(hurt, "fully sunk in");
     let ch = w.character(0).expect("lebt");
     assert_eq!(ch.health, 10 - Tuning::default().quicksand_damage);
-    assert!(ch.core.pos.x < 20.0 * 32.0, "am Rand: {:?}", ch.core.pos);
+    assert!(
+        ch.core.pos.x < 20.0 * 32.0,
+        "at the edge: {:?}",
+        ch.core.pos
+    );
     assert!(!ch.core.in_quicksand(&w.collision));
 }
 
@@ -1255,7 +1270,7 @@ fn full_heat_bar_slows_elora() {
     };
     let (normal, hot) = (speed(false), speed(true));
     let expected = normal * Tuning::default().heat_speed;
-    assert!((hot - expected).abs() < 0.5, "{hot} statt {expected}");
+    assert!((hot - expected).abs() < 0.5, "{hot} instead of {expected}");
 }
 
 fn serpent_def() -> elora_sim::SerpentDef {
@@ -1321,16 +1336,16 @@ fn sand_serpent_trails_warns_leaps_and_lies_stunned() {
     w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
     run(&mut w, PlayerInput::default(), 20);
     let get = |w: &World| w.creatures.iter().find(|c| c.id == id).unwrap().clone();
-    assert_eq!(get(&w).mode, serpent::SLEEP, "Elora ist weit weg");
+    assert_eq!(get(&w).mode, serpent::SLEEP, "Elora is far away");
     // Elora enters the basin
     w.spawn_character(i, on_sand(22, 28.0));
     w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
     run(&mut w, PlayerInput::default(), 3);
     let c = get(&w);
-    assert_eq!(c.mode, serpent::TRAIL, "wacht auf");
+    assert_eq!(c.mode, serpent::TRAIL, "wakes up");
     assert!(!c.vulnerable(&w.creature_kinds[kind]) && !c.harmful(&w.creature_kinds[kind]));
     w.hurt_creature(id, 3);
-    assert_eq!(get(&w).health, 20, "unter dem Sand nicht zu treffen");
+    assert_eq!(get(&w).health, 20, "cannot be hit under the sand");
     let (modes, ev) = modes_over(&mut w, id, 400);
     assert!(
         modes.windows(4).any(|m| m
@@ -1340,13 +1355,13 @@ fn sand_serpent_trails_warns_leaps_and_lies_stunned() {
                 serpent::LEAP,
                 serpent::STUNNED
             ]),
-        "Spur, Beben, Bogen, benommen: {modes:?}"
+        "trail, quake, arc, dazed: {modes:?}"
     );
     assert!(
         modes
             .windows(2)
             .any(|m| m == [serpent::STUNNED, serpent::TRAIL]),
-        "taucht wieder ein"
+        "dives back in"
     );
     // the warning came under Elora
     let warn = ev
@@ -1359,10 +1374,10 @@ fn sand_serpent_trails_warns_leaps_and_lies_stunned() {
             } => Some(*pos),
             _ => None,
         })
-        .expect("Warnung");
+        .expect("warning");
     assert!(
         (warn.x - on_sand(22, 28.0).x).abs() < 24.0,
-        "bebt unter Elora"
+        "quakes under Elora"
     );
 }
 
@@ -1395,7 +1410,7 @@ fn sand_serpent_is_hit_only_in_the_air_or_stunned_and_stomp_hits_double() {
     assert_eq!(
         c.health,
         20 - 2 * Tuning::default().stomp_damage,
-        "Stampfen doppelt"
+        "stomp doubles"
     );
 }
 
@@ -1421,12 +1436,12 @@ fn angry_serpent_turns_the_basin_to_quicksand_and_leaps_twice() {
             )
         })
         .count();
-    assert!(sand > 0, "wütend: Treibsand im Kessel");
+    assert!(sand > 0, "angry: quicksand in the basin");
     let (_, ev) = modes_over(&mut w, id, 200);
     assert!(
         ev.iter()
             .any(|e| matches!(e, Event::TileSet { tile, .. } if *tile != Tile::Quicksand)),
-        "Treibsand vergeht wieder"
+        "quicksand fades again"
     );
     // last quarter: two arcs before it lies dazed
     let (mut w, kind) = serpent_world();
@@ -1458,7 +1473,7 @@ fn angry_serpent_turns_the_basin_to_quicksand_and_leaps_twice() {
             break;
         }
     }
-    assert_eq!(emerges, 2, "zwei Bögen hintereinander");
+    assert_eq!(emerges, 2, "two arcs in a row");
 }
 
 /// Playtest 2026-10-06: the sand snake was finished off in a single opening. After
@@ -1483,7 +1498,7 @@ fn serpent_dives_after_a_few_hits() {
     }
     let ev = run(&mut w, PlayerInput::default(), 1);
     let c = w.creatures.iter().find(|c| c.id == id).unwrap();
-    assert_eq!(c.mode, serpent::TRAIL, "taucht sofort ab");
+    assert_eq!(c.mode, serpent::TRAIL, "dives immediately");
     assert_eq!(c.health, 17);
     assert!(ev.iter().any(|e| matches!(
         e,
@@ -1493,7 +1508,7 @@ fn serpent_dives_after_a_few_hits() {
         }
     )));
     w.hurt_creature(id, 1);
-    assert_eq!(w.creatures[0].health, 17, "unter dem Sand wieder geschützt");
+    assert_eq!(w.creatures[0].health, 17, "protected again under the sand");
 }
 
 /// The landing hurls sand: damage in a radius; when enraged it lands on Elora.
@@ -1536,8 +1551,8 @@ fn angry_serpent_aims_at_elora_and_its_landing_hurts() {
     let x = landed_at.expect("gelandet");
     assert!(
         (x - side.x).abs() < 60.0,
-        "landet bei Elora: {x} statt {}",
+        "lands at Elora: {x} instead of {}",
         side.x
     );
-    assert!(health(&w) < before, "Sand trifft Elora");
+    assert!(health(&w) < before, "sand hits Elora");
 }

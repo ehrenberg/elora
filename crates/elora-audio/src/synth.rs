@@ -315,7 +315,7 @@ mod tests {
         let mean = s.iter().sum::<f32>() / s.len() as f32;
         // without compensation it would be −0.3; a small remainder comes from the soft
         // clipping (tanh) of the asymmetric wave
-        assert!(mean.abs() < 0.05, "Gleichanteil {mean}");
+        assert!(mean.abs() < 0.05, "DC offset {mean}");
     }
 
     #[test]
@@ -345,10 +345,10 @@ mod tests {
         let silent = SAMPLE_RATE as usize / 20; // 0.05 s
         assert!(
             s[..silent].iter().all(|v| v.abs() < f32::EPSILON),
-            "vor dem Einsatz still"
+            "silent before the onset"
         );
         assert!(s[silent..].iter().any(|v| v.abs() > 0.5));
-        assert!(s.last().unwrap().abs() < 0.05, "klingt aus");
+        assert!(s.last().unwrap().abs() < 0.05, "fades out");
     }
 
     #[test]
@@ -359,6 +359,6 @@ mod tests {
         let loud: f32 = d.render().iter().map(|v| v * v).sum();
         d.layers[0].lowpass = 300.0;
         let dull: f32 = d.render().iter().map(|v| v * v).sum();
-        assert!(dull < loud * 0.8, "Tiefpass nimmt Energie heraus");
+        assert!(dull < loud * 0.8, "low-pass removes energy");
     }
 }

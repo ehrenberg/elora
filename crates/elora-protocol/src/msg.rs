@@ -35,7 +35,7 @@ fn put_checksum(w: &mut Writer, c: &MapChecksum) {
 fn get_checksum(r: &mut Reader<'_>) -> DecodeResult<MapChecksum> {
     r.bytes(32)?
         .try_into()
-        .map_err(|_| DecodeError::Invalid("Prüfsumme"))
+        .map_err(|_| DecodeError::Invalid("checksum"))
 }
 /// Inputs per packet (redundancy against loss).
 pub const MAX_INPUTS: usize = 8;
@@ -100,7 +100,7 @@ impl Skin {
         if skin.is_valid() {
             Ok(skin)
         } else {
-            Err(DecodeError::Invalid("Skin"))
+            Err(DecodeError::Invalid("skin"))
         }
     }
 }
@@ -214,7 +214,7 @@ fn emote(r: &mut Reader<'_>) -> DecodeResult<u8> {
     if e < EMOTES {
         Ok(e)
     } else {
-        Err(DecodeError::Invalid("Emote"))
+        Err(DecodeError::Invalid("emote"))
     }
 }
 
@@ -232,16 +232,16 @@ fn put_input(w: &mut Writer, i: &PlayerInput) {
 }
 
 fn get_input(r: &mut Reader<'_>) -> DecodeResult<PlayerInput> {
-    let direction: i8 = r.int("Richtung")?;
-    let target_x = r.int("Ziel")?;
-    let target_y = r.int("Ziel")?;
+    let direction: i8 = r.int("direction")?;
+    let target_x = r.int("target")?;
+    let target_y = r.int("target")?;
     let flags = r.u8()?;
     let fire = r.u8()?;
     let wanted_weapon = r.u8()?;
     let next_weapon = r.u8()?;
     let prev_weapon = r.u8()?;
     if !(-1..=1).contains(&direction) || flags > 7 || wanted_weapon > 3 {
-        return Err(DecodeError::Invalid("Eingabe"));
+        return Err(DecodeError::Invalid("input"));
     }
     Ok(PlayerInput {
         direction,
@@ -263,7 +263,7 @@ fn put_tuning(w: &mut Writer, t: &Tuning) {
 }
 
 fn get_tuning(r: &mut Reader<'_>) -> DecodeResult<Tuning> {
-    toml::from_str(r.str(64 * 1024)?).map_err(|_| DecodeError::Invalid("Tuning"))
+    toml::from_str(r.str(64 * 1024)?).map_err(|_| DecodeError::Invalid("tuning"))
 }
 
 fn put_vec(w: &mut Writer, v: Vec2) {
@@ -280,7 +280,7 @@ fn put_opt(w: &mut Writer, v: Option<usize>) {
 }
 
 fn get_opt(r: &mut Reader<'_>) -> DecodeResult<Option<usize>> {
-    let v: usize = r.uint("Index")?;
+    let v: usize = r.uint("index")?;
     Ok(v.checked_sub(1))
 }
 
@@ -292,7 +292,7 @@ fn get_weapon(r: &mut Reader<'_>) -> DecodeResult<Weapon> {
     Weapon::ALL
         .get(usize::from(r.u8()?))
         .copied()
-        .ok_or(DecodeError::Invalid("Waffe"))
+        .ok_or(DecodeError::Invalid("weapon"))
 }
 
 pub(crate) fn team_code(t: Team) -> u8 {
@@ -310,7 +310,7 @@ pub(crate) fn team_from(c: u8) -> DecodeResult<Team> {
         1 => Team::Red,
         2 => Team::Blue,
         3 => Team::Spectator,
-        _ => return Err(DecodeError::Invalid("Team")),
+        _ => return Err(DecodeError::Invalid("team")),
     })
 }
 
@@ -330,7 +330,7 @@ fn get_pickup(r: &mut Reader<'_>) -> DecodeResult<PickupKind> {
         0 => PickupKind::Health,
         1 => PickupKind::Armor,
         2 => PickupKind::Weapon(get_weapon(r)?),
-        _ => return Err(DecodeError::Invalid("Pickup")),
+        _ => return Err(DecodeError::Invalid("pickup")),
     })
 }
 
@@ -452,7 +452,7 @@ fn put_event(w: &mut Writer, e: &Event) {
         | Event::CreatureAct { .. }
         | Event::LootCollect { .. }
         | Event::LightningWarn { .. }
-        | Event::Lightning { .. } => unreachable!("nicht im Netz"),
+        | Event::Lightning { .. } => unreachable!("not sent over the network"),
     }
 }
 
@@ -495,7 +495,7 @@ fn put_flag_event(w: &mut Writer, e: &Event) {
 }
 
 fn get_event(r: &mut Reader<'_>) -> DecodeResult<Event> {
-    let player = |r: &mut Reader<'_>| r.uint::<usize>("Spieler");
+    let player = |r: &mut Reader<'_>| r.uint::<usize>("player");
     Ok(match r.u8()? {
         0 => Event::Fire {
             player: player(r)?,
@@ -522,8 +522,8 @@ fn get_event(r: &mut Reader<'_>) -> DecodeResult<Event> {
         6 => Event::Damage {
             player: player(r)?,
             from: get_opt(r)?,
-            health: r.int("Schaden")?,
-            armor: r.int("Schaden")?,
+            health: r.int("damage")?,
+            armor: r.int("damage")?,
         },
         7 => {
             let (player, killer) = (player(r)?, get_opt(r)?);
@@ -536,7 +536,7 @@ fn get_event(r: &mut Reader<'_>) -> DecodeResult<Event> {
                     Weapon::ALL
                         .get(usize::from(x))
                         .copied()
-                        .ok_or(DecodeError::Invalid("Waffe"))?,
+                        .ok_or(DecodeError::Invalid("weapon"))?,
                 ),
             };
             Event::Death {
@@ -578,7 +578,7 @@ fn get_event(r: &mut Reader<'_>) -> DecodeResult<Event> {
             player: player(r)?,
             ticks: r.uvar()?,
         },
-        _ => return Err(DecodeError::Invalid("Ereignis")),
+        _ => return Err(DecodeError::Invalid("event")),
     })
 }
 
@@ -611,7 +611,7 @@ pub fn unpack(data: &[u8]) -> DecodeResult<std::borrow::Cow<'_, [u8]>> {
         Some((&HUFFMAN, body)) => Ok(std::borrow::Cow::Owned(
             crate::huffman::game().decode(body, MAX_UNPACKED)?,
         )),
-        _ => Err(DecodeError::Invalid("Kompression")),
+        _ => Err(DecodeError::Invalid("compression")),
     }
 }
 
@@ -711,7 +711,7 @@ impl ClientMsg {
         let mut r = Reader::new(data);
         let msg = match r.u8()? {
             0 => {
-                let version = r.uint("Version")?;
+                let version = r.uint("version")?;
                 let name = r.str(MAX_NAME)?.to_owned();
                 let skin = Skin::get(&mut r)?;
                 Self::Join {
@@ -722,9 +722,9 @@ impl ClientMsg {
             }
             1 => {
                 let ack = r.uvar()?.checked_sub(1);
-                let n: usize = r.uint("Anzahl")?;
+                let n: usize = r.uint("count")?;
                 if n > MAX_INPUTS {
-                    return Err(DecodeError::Invalid("Anzahl"));
+                    return Err(DecodeError::Invalid("count"));
                 }
                 let first = r.uvar()?;
                 let mut inputs = Vec::with_capacity(n);
@@ -748,21 +748,21 @@ impl ClientMsg {
                 0 => VoteKind::Map(r.str(MAX_NAME * 4)?.to_owned()),
                 1 => VoteKind::Mode {
                     mode: elora_game::Mode::from_index(r.u8()?)
-                        .ok_or(DecodeError::Invalid("Modus"))?,
+                        .ok_or(DecodeError::Invalid("mode"))?,
                     instagib: r.bool()?,
                 },
-                2 => VoteKind::Kick(r.uint("Slot")?),
-                3 => VoteKind::Spectate(r.uint("Slot")?),
-                _ => return Err(DecodeError::Invalid("Abstimmung")),
+                2 => VoteKind::Kick(r.uint("slot")?),
+                3 => VoteKind::Spectate(r.uint("slot")?),
+                _ => return Err(DecodeError::Invalid("vote")),
             }),
             7 => Self::Vote(r.bool()?),
             8 => Self::SetSkin(Skin::get(&mut r)?),
             9 => Self::Emote(emote(&mut r)?),
             10 => Self::MapRequest {
-                chunk: r.uint("Kartenteil")?,
+                chunk: r.uint("map chunk")?,
             },
             11 => Self::MapReady,
-            _ => return Err(DecodeError::Invalid("Nachricht")),
+            _ => return Err(DecodeError::Invalid("message")),
         };
         r.finish()?;
         Ok(msg)
@@ -913,10 +913,10 @@ impl ServerMsg {
         let msg = match r.u8()? {
             0 => {
                 if r.uvar()? != u64::from(PROTOCOL_VERSION) {
-                    return Err(DecodeError::Invalid("Protokollversion"));
+                    return Err(DecodeError::Invalid("protocol version"));
                 }
                 Self::Welcome {
-                    slot: r.uint("Slot")?,
+                    slot: r.uint("slot")?,
                     tick: r.uvar()?,
                     map_name: r.str(MAX_TEXT)?.to_owned(),
                     map_checksum: get_checksum(&mut r)?,
@@ -932,11 +932,11 @@ impl ServerMsg {
                 } else {
                     Some(tick.checked_sub(back).ok_or(DecodeError::Overflow)?)
                 };
-                let checksum = r.uint("Prüfsumme")?;
+                let checksum = r.uint("checksum")?;
                 let delta = r.bytes(1 << 20)?.to_vec();
-                let n: usize = r.uint("Anzahl")?;
+                let n: usize = r.uint("count")?;
                 if n > MAX_EVENTS {
-                    return Err(DecodeError::Invalid("Anzahl"));
+                    return Err(DecodeError::Invalid("count"));
                 }
                 let events = (0..n)
                     .map(|_| get_event(&mut r))
@@ -951,19 +951,19 @@ impl ServerMsg {
             }
             2 => Self::InputTiming {
                 tick: r.uvar()?,
-                time_left_ms: r.int("Zeit")?,
+                time_left_ms: r.int("time")?,
             },
             3 => Self::Tuning(get_tuning(&mut r)?),
             4 => Self::Kick {
                 reason: r.str(MAX_TEXT)?.to_owned(),
             },
             5 => Self::Chat {
-                from: r.uint::<u32>("Slot")?.checked_sub(1),
+                from: r.uint::<u32>("slot")?.checked_sub(1),
                 team: r.bool()?,
                 text: r.str(MAX_CHAT * 4)?.to_owned(),
             },
             6 => {
-                let slot = r.uint("Slot")?;
+                let slot = r.uint("slot")?;
                 let name = if r.bool()? {
                     Some(r.str(MAX_NAME * 4)?.to_owned())
                 } else {
@@ -975,25 +975,25 @@ impl ServerMsg {
             7 => Self::Vote(if r.bool()? {
                 Some(VoteInfo {
                     subject: crate::text::VoteSubject::get(&mut r)?,
-                    yes: r.uint("Stimmen")?,
-                    no: r.uint("Stimmen")?,
-                    voters: r.uint("Stimmen")?,
-                    seconds_left: r.uint("Zeit")?,
+                    yes: r.uint("votes")?,
+                    no: r.uint("votes")?,
+                    voters: r.uint("votes")?,
+                    seconds_left: r.uint("time")?,
                 })
             } else {
                 None
             }),
             8 => Self::Notice(crate::text::Message::get(&mut r)?),
             9 => Self::Emote {
-                slot: r.uint("Slot")?,
+                slot: r.uint("slot")?,
                 emote: emote(&mut r)?,
             },
             10 => {
                 let name = r.str(MAX_TEXT)?.to_owned();
                 let checksum = get_checksum(&mut r)?;
-                let size: u32 = r.uint("Kartengröße")?;
+                let size: u32 = r.uint("map size")?;
                 if size == 0 || size as usize > MAX_MAP {
-                    return Err(DecodeError::Invalid("Kartengröße"));
+                    return Err(DecodeError::Invalid("map size"));
                 }
                 Self::MapInfo {
                     name,
@@ -1002,10 +1002,10 @@ impl ServerMsg {
                 }
             }
             11 => Self::MapChunk {
-                index: r.uint("Kartenteil")?,
+                index: r.uint("map chunk")?,
                 data: r.bytes(MAP_CHUNK)?.to_vec(),
             },
-            _ => return Err(DecodeError::Invalid("Nachricht")),
+            _ => return Err(DecodeError::Invalid("message")),
         };
         r.finish()?;
         Ok(msg)
@@ -1212,7 +1212,7 @@ mod tests {
         assert!(ClientMsg::decode(&[9]).is_err());
         assert!(
             ClientMsg::decode_raw(&[9, EMOTES]).is_err(),
-            "Emote außerhalb"
+            "emote out of range"
         );
         // palette numbers outside the palette
         for skin in [[16, 0, 0], [0, 16, 0], [0, 0, 8]] {

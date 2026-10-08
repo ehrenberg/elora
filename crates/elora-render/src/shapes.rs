@@ -82,7 +82,7 @@ impl ShapeBatch {
     /// # Panics
     /// With more than `u32::MAX` vertices in one batch.
     pub fn fill_rect(&mut self, min: Vec2, max: Vec2, color: Color) {
-        let base = u32::try_from(self.geometry.vertices.len()).expect("zu viele Vertices");
+        let base = u32::try_from(self.geometry.vertices.len()).expect("too many vertices");
         let c = color.0;
         self.geometry.vertices.extend_from_slice(&[
             Vertex {
@@ -117,7 +117,7 @@ impl ShapeBatch {
     /// # Panics
     /// With more than `u32::MAX` vertices in one batch.
     pub fn fill_rect_vgradient(&mut self, min: Vec2, max: Vec2, top: Color, bottom: Color) {
-        let base = u32::try_from(self.geometry.vertices.len()).expect("zu viele Vertices");
+        let base = u32::try_from(self.geometry.vertices.len()).expect("too many vertices");
         let (t, b) = (top.0, bottom.0);
         self.geometry.vertices.extend_from_slice(&[
             Vertex {

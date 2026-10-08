@@ -149,7 +149,7 @@ impl UdpSocket {
                     s.set_nonblocking(true)?;
                 }
                 if v6.is_err() {
-                    tracing::info!("kein IPv6 verfügbar – nur IPv4");
+                    tracing::info!("no IPv6 available – IPv4 only");
                 }
                 Ok(Self::with(v4, v6.ok()))
             }
@@ -250,10 +250,10 @@ mod udp_tests {
         };
         let mut c4 = UdpSocket::bind(SocketAddr::from(([127, 0, 0, 1], 0))).unwrap();
         c4.send_to(b"v4", SocketAddr::from(([127, 0, 0, 1], port)), now);
-        let (n, from) = wait(&mut server, &mut buf).expect("IPv4 kommt an");
+        let (n, from) = wait(&mut server, &mut buf).expect("IPv4 arrives");
         assert_eq!(&buf[..n], b"v4");
         server.send_to(b"ok", from, now);
-        assert!(wait(&mut c4, &mut buf).is_some(), "Antwort über IPv4");
+        assert!(wait(&mut c4, &mut buf).is_some(), "reply over IPv4");
         if server.has_ipv6()
             && let Ok(mut c6) = UdpSocket::bind(SocketAddr::from(([0, 0, 0, 0, 0, 0, 0, 1], 0)))
         {
@@ -262,7 +262,7 @@ mod udp_tests {
                 SocketAddr::from(([0, 0, 0, 0, 0, 0, 0, 1], port)),
                 now,
             );
-            let (n, from) = wait(&mut server, &mut buf).expect("IPv6 kommt an");
+            let (n, from) = wait(&mut server, &mut buf).expect("IPv6 arrives");
             assert_eq!(&buf[..n], b"v6");
             assert!(from.is_ipv6());
         }

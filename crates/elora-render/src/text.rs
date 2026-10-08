@@ -17,7 +17,7 @@ use crate::mesh::{Affine, Mesh, MeshBuilder, Paint, Tint};
 use crate::{Color, ShapeBatch};
 
 #[derive(Debug, thiserror::Error)]
-#[error("Schrift nicht lesbar: {0}")]
+#[error("font not readable: {0}")]
 pub struct FontError(#[from] ttf_parser::FaceParsingError);
 
 /// Alignment of a line relative to the anchor point.
@@ -204,7 +204,7 @@ mod tests {
     fn glyphs_are_cached_and_measured() {
         let font = Font::new(INTER).unwrap();
         let w = font.width("12", 20.0);
-        assert!(w > 15.0 && w < 30.0, "Breite {w}");
+        assert!(w > 15.0 && w < 30.0, "width {w}");
         assert!(font.width("", 20.0).abs() < f32::EPSILON);
         let mut batch = ShapeBatch::default();
         font.draw(
@@ -221,7 +221,7 @@ mod tests {
         // Glyphs lie above the baseline (y < 0) and centered around the anchor
         let (min, max) = batch_bounds(&batch);
         assert!(min.y < -10.0 && max.y <= 0.5, "{min:?} {max:?}");
-        assert!((min.x + max.x).abs() < 3.0, "zentriert: {min:?} {max:?}");
+        assert!((min.x + max.x).abs() < 3.0, "centered: {min:?} {max:?}");
     }
 
     fn batch_bounds(b: &ShapeBatch) -> (Vec2, Vec2) {

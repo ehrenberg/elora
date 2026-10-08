@@ -411,8 +411,8 @@ impl World {
             return;
         }
         self.do_weapon_switch(i);
-        let input = self.players[i].as_ref().expect("Slot existiert").input;
-        let ch = self.character(i).expect("lebt");
+        let input = self.players[i].as_ref().expect("slot exists").input;
+        let ch = self.character(i).expect("alive");
         let weapon = ch.arsenal.active;
         // no weapon yet (adventure start, before Klonk hands out the hammer)
         if !ch.arsenal.has(weapon) {
@@ -427,7 +427,7 @@ impl World {
             return;
         }
         if ammo == Some(0) {
-            self.character_mut(i).expect("lebt").arsenal.reload_timer =
+            self.character_mut(i).expect("alive").arsenal.reload_timer =
                 ms_to_ticks(NO_AMMO_DELAY_MS);
             self.events.push(Event::NoAmmo { player: i });
             return;
@@ -850,7 +850,7 @@ impl World {
             let Some((j, _)) = best else { continue };
             let t = self.tuning.clone();
             let adventure = self.adventure;
-            let ch = self.character_mut(j).expect("lebt");
+            let ch = self.character_mut(j).expect("alive");
             let picked = match pk.kind {
                 PickupKind::Health if ch.health < t.max_health => {
                     ch.health = (ch.health + 1).min(t.max_health);

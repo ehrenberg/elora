@@ -89,7 +89,7 @@ fn hook_ceiling(abilities: Abilities) -> World {
             break;
         }
     }
-    assert_eq!(core(&w).hook_state, HookState::Grabbed, "Hook greift");
+    assert_eq!(core(&w).hook_state, HookState::Grabbed, "hook grabs");
     w
 }
 
@@ -113,7 +113,7 @@ fn hook_jerk_pulls_hard_with_cooldown() {
     assert!(c.triggered_events & events::HOOK_JERK != 0);
     assert!(
         c.vel.y < -Tuning::default().hook_drag_speed,
-        "schneller als normaler Hook-Zug: {:?}",
+        "faster than a normal hook pull: {:?}",
         c.vel
     );
     // holding the key does not trigger again, a new press only after the cooldown
@@ -125,11 +125,7 @@ fn hook_jerk_pulls_hard_with_cooldown() {
     };
     w.step(&[released]);
     w.step(&[held]);
-    assert_eq!(
-        core(&w).triggered_events & events::HOOK_JERK,
-        0,
-        "Abklingzeit"
-    );
+    assert_eq!(core(&w).triggered_events & events::HOOK_JERK, 0, "cooldown");
 }
 
 /// The jerk pulls noticeably faster than the normal hook (playtest 2026-10-06, A-28):
@@ -151,12 +147,12 @@ fn hook_jerk_reaches_the_hook_point_much_faster() {
                 w.step(&[hold]);
                 start - core(&w).pos.y > 160.0
             })
-            .expect("kommt oben an")
+            .expect("reaches the top")
     };
     let (normal, jerk) = (ticks_to_ceiling(false), ticks_to_ceiling(true));
     assert!(
         jerk * 3 <= normal * 2,
-        "Ruck {jerk} Ticks statt {normal} – mindestens ein Drittel schneller"
+        "jerk {jerk} ticks instead of {normal} – at least a third faster"
     );
 }
 
@@ -172,7 +168,11 @@ fn hook_jerk_needs_ability() {
         target_y: -100,
         ..PlayerInput::default()
     }]);
-    assert_eq!(core(&w).vel, core(&plain).vel, "ohne Fähigkeit wirkungslos");
+    assert_eq!(
+        core(&w).vel,
+        core(&plain).vel,
+        "no effect without the ability"
+    );
 }
 
 // ---------------------------------------------------------------- Stomp
@@ -199,12 +199,12 @@ fn stomp_breaks_crumble_floor_and_stays_broken() {
     }
     assert!(
         broken.contains(&(22, 20)),
-        "unter der Figur zerbrochen: {broken:?}"
+        "broken under the character: {broken:?}"
     );
     assert_eq!(w.collision.tile(22, 20), Tile::Air);
     assert!(
         w.collision.tile(25, 20) == Tile::Crumble,
-        "außerhalb des Radius bleibt"
+        "outside the radius stays"
     );
     // Elora falls through the hole onto the floor
     run(&mut w, PlayerInput::default(), 60);
@@ -225,7 +225,7 @@ fn stomp_does_not_break_normal_ground_and_lands_on_platforms() {
             break;
         }
     }
-    assert!(landed, "Aufprall auf der Plattform");
+    assert!(landed, "impact on the platform");
     assert!((core(&w).pos.y - (20.0 * 32.0 - 14.0)).abs() < 1.5);
     assert_eq!(w.collision.tile(22, 20), Tile::Platform);
 }
@@ -260,7 +260,7 @@ fn climb_world(abilities: Abilities, wall: Tile) -> World {
 fn grip_holds_on_climbing_wall_then_slides_off() {
     let mut w = climb_world(with(Ability::Grip), Tile::Climb);
     let c = core(&w);
-    assert_eq!(c.grip, 1, "haftet rechts");
+    assert_eq!(c.grip, 1, "clings to the right");
     assert!(c.vel.y <= Tuning::default().grip_slide_speed + 0.01);
     // after the grip time (1 s) the figure falls normally
     run(&mut w, input(1, false, false), 50);
@@ -283,7 +283,7 @@ fn wall_jump_pushes_away_and_keeps_air_jump() {
     assert!(c.triggered_events & events::WALL_JUMP != 0);
     assert!(
         c.vel.x < 0.0 && c.vel.y < 0.0,
-        "weg von der Wand: {:?}",
+        "away from the wall: {:?}",
         c.vel
     );
     // double jump still possible afterwards
@@ -356,7 +356,7 @@ fn down_on_platform_still_drops_through_with_stomp() {
     assert!(!core(&w).stomping);
     assert!(
         core(&w).pos.y > 21.0 * 32.0,
-        "durch die Plattform gefallen: {:?}",
+        "fell through the platform: {:?}",
         core(&w).pos
     );
 }
@@ -473,8 +473,8 @@ fn jerk_gate_needs_the_hook_jerk() {
             })
         })
     };
-    assert!(!reach(false), "ohne Hook-Ruck erreichbar");
-    assert!(reach(true), "mit Hook-Ruck nicht erreichbar");
+    assert!(!reach(false), "reachable without hook jerk");
+    assert!(reach(true), "not reachable with hook jerk");
 }
 
 /// Frostspitzen climbing chimney (R2-M2.4): two climbing walls with three tiles of air
@@ -516,9 +516,9 @@ fn tall_chimney_can_be_climbed_with_grip_only() {
     let top = 4.0 * 32.0;
     assert!(
         climb(with(Ability::Grip)) < top,
-        "mit Eisgriff oben angekommen"
+        "reached the top with ice grip"
     );
-    assert!(climb(Abilities::NONE) > 12.0 * 32.0, "ohne Eisgriff nicht");
+    assert!(climb(Abilities::NONE) > 12.0 * 32.0, "not without ice grip");
 }
 
 /// Strengthened ice grip (R2-M2.4, D-M24-03, A-42): whoever presses towards the wall pulls
@@ -545,10 +545,10 @@ fn strong_grip_pulls_elora_up_the_wall() {
         (gripped_at.expect("haftet"), highest)
     };
     let (start, end) = height_after(1.6);
-    assert!(end < start - 100.0, "zieht sich hinauf: {start} → {end}");
+    assert!(end < start - 100.0, "pulls itself up: {start} → {end}");
     let (start, end) = height_after(0.0);
     assert!(
         end >= start - 1.0,
-        "ohne Stärkung geht es nicht hinauf: {start} → {end}"
+        "cannot get up without the boost: {start} → {end}"
     );
 }

@@ -29,9 +29,9 @@ use crate::mesh::{Mesh, MeshBuilder, Paint};
 
 #[derive(Debug, thiserror::Error)]
 pub enum SvgError {
-    #[error("SVG nicht lesbar: {0}")]
+    #[error("SVG not readable: {0}")]
     Parse(#[from] usvg::Error),
-    #[error("SVG-Merkmal nicht unterstützt: {0}")]
+    #[error("SVG feature not supported: {0}")]
     Unsupported(String),
 }
 
@@ -72,7 +72,7 @@ impl SvgAsset {
         let vertices: usize = asset.parts.iter().map(|(_, m)| m.vertex_count()).sum();
         if vertices > max_vertices {
             return Err(SvgError::Unsupported(format!(
-                "zu aufwendig ({vertices} Ecken, erlaubt {max_vertices})"
+                "too complex ({vertices} vertices, allowed {max_vertices})"
             )));
         }
         Ok(asset)
@@ -80,7 +80,7 @@ impl SvgAsset {
 
     fn load_with(data: &[u8], tolerance: f32, options: &usvg::Options) -> Result<Self, SvgError> {
         let text = std::str::from_utf8(data)
-            .map_err(|e| SvgError::Unsupported(format!("keine UTF-8-Datei: {e}")))?;
+            .map_err(|e| SvgError::Unsupported(format!("not a UTF-8 file: {e}")))?;
         let tree = usvg::Tree::from_str(text, options)?;
         let local = to_local(text, &tree);
         let mut asset = Self::default();
@@ -189,9 +189,9 @@ fn add_node(
             }
             Ok(())
         }
-        usvg::Node::Image(_) => Err(SvgError::Unsupported("Bild".into())),
+        usvg::Node::Image(_) => Err(SvgError::Unsupported("image".into())),
         // Without the font feature, usvg yields no text
-        usvg::Node::Text(_) => Err(SvgError::Unsupported("Text".into())),
+        usvg::Node::Text(_) => Err(SvgError::Unsupported("text".into())),
     }
 }
 
@@ -267,11 +267,11 @@ fn paint(p: &usvg::Paint, alpha: f32, t: &Transform) -> Result<Paint, SvgError> 
         usvg::Paint::Color(c) => Ok(Paint::Solid(color(*c, alpha))),
         usvg::Paint::LinearGradient(g) => {
             let (Some(first), Some(last)) = (g.stops().first(), g.stops().last()) else {
-                return Err(SvgError::Unsupported("Verlauf ohne Farben".into()));
+                return Err(SvgError::Unsupported("gradient without colors".into()));
             };
             if g.stops().len() > 2 {
                 return Err(SvgError::Unsupported(
-                    "Verlauf mit mehr als zwei Farben".into(),
+                    "gradient with more than two colors".into(),
                 ));
             }
             let gt = t.pre_concat(g.transform());
@@ -287,8 +287,8 @@ fn paint(p: &usvg::Paint, alpha: f32, t: &Transform) -> Result<Paint, SvgError> 
                 b: color(last.color(), last.opacity().get() * alpha),
             })
         }
-        usvg::Paint::RadialGradient(_) => Err(SvgError::Unsupported("radialer Verlauf".into())),
-        usvg::Paint::Pattern(_) => Err(SvgError::Unsupported("Muster".into())),
+        usvg::Paint::RadialGradient(_) => Err(SvgError::Unsupported("radial gradient".into())),
+        usvg::Paint::Pattern(_) => Err(SvgError::Unsupported("pattern".into())),
     }
 }
 
@@ -391,7 +391,7 @@ mod tests {
 
     #[test]
     fn parts_and_local_coordinates() {
-        let asset = SvgAsset::load(FIGURE.as_bytes(), 0.25).expect("lesbar");
+        let asset = SvgAsset::load(FIGURE.as_bytes(), 0.25).expect("readable");
         let names: Vec<&str> = asset.parts.iter().map(|(n, _)| n.as_str()).collect();
         assert_eq!(names, ["body", "foot", ""]);
         // viewBox coordinates, not pixels: circle r=50 + half the stroke around (0,0)
@@ -406,7 +406,7 @@ mod tests {
 
     #[test]
     fn tint_replaces_keyed_fill_only() {
-        let asset = SvgAsset::load(FIGURE.as_bytes(), 0.25).expect("lesbar");
+        let asset = SvgAsset::load(FIGURE.as_bytes(), 0.25).expect("readable");
         let body = asset.part("body").unwrap();
         let blue = Color::rgb(0.0, 0.0, 1.0);
         let v = emitted(body, &Tint::new(vec![Color::rgb(1.0, 0.0, 0.0), blue]));
@@ -414,13 +414,13 @@ mod tests {
             v.iter()
                 .any(|x| x.color.iter().zip(c).all(|(a, b)| (a - b).abs() < 1e-3))
         };
-        assert!(has([0.0, 0.0, 1.0, 1.0]), "Körper in Schlüsselfarbe");
-        assert!(has([0.45, 0.45, 1.0, 1.0]), "Bauchfleck aufgehellt");
+        assert!(has([0.0, 0.0, 1.0, 1.0]), "body in key color");
+        assert!(has([0.45, 0.45, 1.0, 1.0]), "belly patch lightened");
         let outline = f32::from(0x2b_u8) / 255.0;
-        assert!(has([outline, outline, outline, 1.0]), "Kontur bleibt");
+        assert!(has([outline, outline, outline, 1.0]), "outline stays");
         assert!(
             !has([242.0 / 255.0, 193.0 / 255.0, 78.0 / 255.0, 1.0]),
-            "Vorschaufarbe ersetzt"
+            "preview color replaced"
         );
     }
 
@@ -428,7 +428,7 @@ mod tests {
     fn key_tints_stroke_of_unfilled_shape() {
         let svg = r##"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10">
   <path id="tint-1" d="M 1,1 L 9,9" fill="none" stroke="#2b2b2b" stroke-width="2"/></svg>"##;
-        let asset = SvgAsset::load(svg.as_bytes(), 0.25).expect("lesbar");
+        let asset = SvgAsset::load(svg.as_bytes(), 0.25).expect("readable");
         let v = emitted(
             asset.part("").unwrap(),
             &Tint::new(vec![Color::rgb(0.0, 1.0, 0.0)]),
@@ -447,7 +447,7 @@ mod tests {
   <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="10" gradientUnits="userSpaceOnUse">
     <stop offset="0" stop-color="#000000"/><stop offset="1" stop-color="#ffffff"/></linearGradient></defs>
   <rect width="10" height="10" fill="url(#g)"/></svg>"##;
-        let asset = SvgAsset::load(svg.as_bytes(), 0.25).expect("lesbar");
+        let asset = SvgAsset::load(svg.as_bytes(), 0.25).expect("readable");
         let v = emitted(asset.part("").unwrap(), &Tint::default());
         let top = v.iter().find(|x| x.pos[1] < 0.01).unwrap();
         let bottom = v.iter().find(|x| x.pos[1] > 9.99).unwrap();

@@ -170,7 +170,7 @@ impl Collision {
         assert_eq!(
             tiles.len(),
             width * height,
-            "Tile-Anzahl passt nicht zur Rastergröße"
+            "tile count does not match the grid size"
         );
         Self {
             width,
@@ -437,7 +437,7 @@ mod tests {
         let mut vel = Vec2::new(500.0, 0.0);
         c.move_box(&mut pos, &mut vel, Vec2::new(28.0, 28.0), 0.0);
         // right wall starts at x = 128, box half-width 14
-        assert!(pos.x <= 128.0 - 14.0, "durch die Wand getunnelt: {pos:?}");
+        assert!(pos.x <= 128.0 - 14.0, "tunneled through the wall: {pos:?}");
         assert!(pos.x > 100.0);
         assert!(vel.x.abs() < f32::EPSILON);
     }
@@ -446,7 +446,7 @@ mod tests {
     fn intersect_line_hits_first_wall() {
         let c = boxed();
         let hit = c.intersect_line(Vec2::new(80.0, 80.0), Vec2::new(80.0, -200.0));
-        let (p, tile) = hit.expect("Decke muss getroffen werden");
+        let (p, tile) = hit.expect("ceiling must be hit");
         assert_eq!(tile, Tile::Solid);
         assert!(p.y < 32.0 && p.y > 20.0);
     }

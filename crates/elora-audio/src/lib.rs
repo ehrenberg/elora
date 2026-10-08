@@ -40,11 +40,11 @@ const PAN_RANGE: f32 = 900.0;
 
 #[derive(Debug, thiserror::Error)]
 pub enum BankError {
-    #[error("sounds.toml ist ungültig: {0}")]
+    #[error("sounds.toml is invalid: {0}")]
     Parse(#[from] toml::de::Error),
-    #[error("unbekannter Sound `{0}`")]
+    #[error("unknown sound `{0}`")]
     Unknown(String),
-    #[error("Tondatei `{0}`: {1}")]
+    #[error("sound file `{0}`: {1}")]
     Wav(String, &'static str),
 }
 
@@ -177,7 +177,7 @@ pub fn decode_wav(data: &[u8]) -> Result<Vec<f32>, &'static str> {
             .map(|b| u32::from_le_bytes([b[0], b[1], b[2], b[3]]))
     };
     if data.get(0..4) != Some(b"RIFF") || data.get(8..12) != Some(b"WAVE") {
-        return Err("keine WAV-Datei");
+        return Err("not a WAV file");
     }
     let mut pos = 12;
     let mut channels = None;
@@ -187,16 +187,16 @@ pub fn decode_wav(data: &[u8]) -> Result<Vec<f32>, &'static str> {
         match id {
             b"fmt " => {
                 if u16_at(body) != Some(1) || u16_at(body + 14) != Some(16) {
-                    return Err("nur 16-Bit-PCM");
+                    return Err("only 16-bit PCM");
                 }
                 if u32_at(body + 4) != Some(SAMPLE_RATE) {
-                    return Err("Abtastrate muss 44100 Hz sein");
+                    return Err("sample rate must be 44100 Hz");
                 }
                 channels = u16_at(body + 2).filter(|c| (1..=2).contains(c));
             }
             b"data" => {
-                let ch = usize::from(channels.ok_or("fmt fehlt oder mehr als 2 Kanäle")?);
-                let bytes = data.get(body..body + len).ok_or("data zu kurz")?;
+                let ch = usize::from(channels.ok_or("fmt missing or more than 2 channels")?);
+                let bytes = data.get(body..body + len).ok_or("data too short")?;
                 return Ok(bytes
                     .chunks_exact(2 * ch)
                     .map(|frame| {
@@ -216,7 +216,7 @@ pub fn decode_wav(data: &[u8]) -> Result<Vec<f32>, &'static str> {
         }
         pos = body + len + (len & 1);
     }
-    Err("data fehlt")
+    Err("data missing")
 }
 
 /// Volume (amplitude 0..1) and panning (−1..1) of a sound at `pos`,
@@ -275,14 +275,14 @@ mod tests {
 
     #[test]
     fn embedded_bank_is_complete_and_renders() {
-        let bank = Bank::load().expect("sounds.toml und Tondateien gültig");
-        assert_eq!(bank.missing(), Vec::<Sound>::new(), "alle Sounds definiert");
+        let bank = Bank::load().expect("sounds.toml and sound files valid");
+        assert_eq!(bank.missing(), Vec::<Sound>::new(), "all sounds defined");
         for (s, src) in &bank.sounds {
             let samples = src.samples();
             let peak = samples.iter().fold(0.0_f32, |m, v| m.max(v.abs()));
-            assert!(!samples.is_empty(), "{}: leer", s.name());
-            assert!(peak > 0.05, "{}: zu leise ({peak})", s.name());
-            assert!(src.duration() <= 2.5, "{}: zu lang", s.name());
+            assert!(!samples.is_empty(), "{}: empty", s.name());
+            assert!(peak > 0.05, "{}: too quiet ({peak})", s.name());
+            assert!(src.duration() <= 2.5, "{}: too long", s.name());
         }
     }
 
@@ -299,10 +299,7 @@ mod tests {
         bank.add_file("jump", &wav(&samples)).unwrap();
         let src = &bank.sounds[&Sound::Jump];
         assert!(src.is_file());
-        assert!(
-            (src.samples()[1] - 0.25).abs() < 1e-3,
-            "Lautstärke aus [gain]"
-        );
+        assert!((src.samples()[1] - 0.25).abs() < 1e-3, "volume from [gain]");
     }
 
     #[test]

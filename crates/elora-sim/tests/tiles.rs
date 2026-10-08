@@ -65,7 +65,7 @@ fn platform_carries_from_above_and_lets_through_from_below() {
     let p = pos(&w);
     assert!(
         (p.y - (20.0 * 32.0 - 14.0)).abs() < 1.5,
-        "landet auf der Plattform: {p:?}"
+        "lands on the platform: {p:?}"
     );
     assert!(w.character(0).unwrap().core.is_grounded(&w.collision));
 
@@ -80,12 +80,12 @@ fn platform_carries_from_above_and_lets_through_from_below() {
     }
     assert!(
         highest < 25.0 * 32.0 - 14.0,
-        "Sprung geht durch die Plattform nach oben: {highest}"
+        "jump passes up through the platform: {highest}"
     );
     run(&mut w, PlayerInput::default(), 80);
     assert!(
         (pos(&w).y - (25.0 * 32.0 - 14.0)).abs() < 1.5,
-        "landet danach oben auf ihr"
+        "then lands on top of it"
     );
 }
 
@@ -96,11 +96,11 @@ fn down_drops_through_platform() {
     run(&mut w, PlayerInput::default(), 20);
     let on_top = pos(&w).y;
     run(&mut w, input(0, false, true), 30);
-    assert!(pos(&w).y > on_top + 32.0, "fällt mit „Runter“ hindurch");
+    assert!(pos(&w).y > on_top + 32.0, "falls through with \"down\"");
     run(&mut w, PlayerInput::default(), 80);
     assert!(
         (pos(&w).y - (FLOOR as f32 * 32.0 - 14.0)).abs() < 1.5,
-        "landet auf dem Boden darunter"
+        "lands on the floor below"
     );
 }
 
@@ -124,7 +124,7 @@ fn hook_passes_through_platform() {
     assert_eq!(core.hook_state, elora_sim::HookState::Grabbed);
     assert!(
         core.hook_pos.y <= 20.0 * 32.0 + 1.0,
-        "Hook hängt an der Decke, nicht an der Plattform: {:?}",
+        "hook hangs on the ceiling, not on the platform: {:?}",
         core.hook_pos
     );
 }
@@ -143,8 +143,8 @@ fn slide_after_run(surface: Tile) -> f32 {
 fn ice_slides_much_further() {
     let normal = slide_after_run(Tile::Solid);
     let ice = slide_after_run(Tile::Ice);
-    assert!(normal < 25.0, "normal kurz: {normal}");
-    assert!(ice > 10.0 * normal, "Eis rutscht weit: {ice} vs {normal}");
+    assert!(normal < 25.0, "normal short: {normal}");
+    assert!(ice > 10.0 * normal, "ice slides far: {ice} vs {normal}");
 }
 
 #[test]
@@ -162,11 +162,11 @@ fn jump_pad_throws_up_and_sideways() {
         let v = core.vel;
         assert!(
             v.y < -tuning.jump_pad_force * 0.6,
-            "{dir:?}: nach oben geworfen: {v:?}"
+            "{dir:?}: thrown upwards: {v:?}"
         );
         assert!(
             v.x * sign >= 0.0 && (sign == 0.0) == (v.x.abs() < 0.5),
-            "{dir:?}: Richtung {v:?}"
+            "{dir:?}: direction {v:?}"
         );
         // higher than a normal jump
         let mut highest = f32::MAX;
@@ -178,7 +178,7 @@ fn jump_pad_throws_up_and_sideways() {
             let height = FLOOR as f32 * 32.0 - 14.0 - highest;
             assert!(
                 height > 9.0 * 32.0,
-                "Sprungfeld wirft etwa 12 Tiles hoch: {height}"
+                "jump pad throws about 12 tiles high: {height}"
             );
         }
     }
@@ -195,7 +195,7 @@ fn conveyor_carries_standing_figure() {
     let moved = pos(&w).x - start;
     assert!(
         (moved - 50.0 * tuning.conveyor_speed).abs() < 8.0,
-        "Laufband trägt: {moved}"
+        "conveyor carries: {moved}"
     );
     // walking against the direction makes slower progress than without a belt
     let mut w = world(|t| (10..50).for_each(|x| set(t, x, FLOOR, Tile::Conveyor(BeltDir::Right))));
@@ -206,7 +206,7 @@ fn conveyor_carries_standing_figure() {
     let against = start - pos(&w).x;
     assert!(
         against > 0.0 && against < 30.0 * tuning.ground_control_speed - 50.0,
-        "gegen das Band: {against}"
+        "against the belt: {against}"
     );
 }
 

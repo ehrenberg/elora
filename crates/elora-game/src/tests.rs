@@ -40,7 +40,7 @@ fn game(mode: Mode, n: usize) -> (World, Rules) {
     }
     let mut r = Rules::new(cfg(mode), &mut w, false);
     run(&mut w, &mut r, 3 * 50 + 2);
-    assert_eq!(r.phase, Phase::Running, "Match sollte laufen");
+    assert_eq!(r.phase, Phase::Running, "match should be running");
     (w, r)
 }
 
@@ -71,16 +71,16 @@ fn waits_for_players_then_counts_down() {
     assert_eq!(
         r.phase,
         Phase::Warmup { until: None },
-        "allein: unbegrenztes Aufwärmen"
+        "alone: unlimited warmup"
     );
     let i = w.join();
     r.on_join(&mut w, i);
     run(&mut w, &mut r, 1);
     assert!(matches!(r.phase, Phase::Countdown { .. }));
-    assert!(w.paused, "Countdown friert die Welt ein");
+    assert!(w.paused, "countdown freezes the world");
     let before = w.core(0).unwrap().pos;
     run(&mut w, &mut r, 100);
-    assert_eq!(w.core(0).unwrap().pos, before, "eingefroren");
+    assert_eq!(w.core(0).unwrap().pos, before, "frozen");
     run(&mut w, &mut r, 60);
     assert_eq!(r.phase, Phase::Running);
     assert!(!w.paused);
@@ -95,7 +95,7 @@ fn fresh_map_warms_up_ten_seconds() {
     run(&mut w, &mut r, 9 * 50);
     assert!(matches!(r.phase, Phase::Warmup { until: Some(_) }));
     kill(&mut w, &mut r, 1, Some(0));
-    assert_eq!(score(&r, 0), 0, "Punkte zählen im Aufwärmen nicht");
+    assert_eq!(score(&r, 0), 0, "points do not count during warmup");
     run(&mut w, &mut r, 60);
     assert!(matches!(r.phase, Phase::Countdown { .. }));
 }
@@ -109,7 +109,7 @@ fn dm_scoring_and_limit() {
     w.events.clear();
     w.kill(0);
     r.update(&mut w);
-    assert_eq!(score(&r, 0), 0, "Selbstmord −1");
+    assert_eq!(score(&r, 0), 0, "suicide −1");
     r.stats.get_mut(&0).unwrap().score = 19;
     run(&mut w, &mut r, 200);
     kill(&mut w, &mut r, 1, Some(0));
@@ -135,7 +135,7 @@ fn sudden_death_on_tie_at_time_limit() {
         false,
     );
     run(&mut w, &mut r, 3 * 50 + 60 * 50 + 5);
-    assert_eq!(r.phase, Phase::Running, "Gleichstand → weiter");
+    assert_eq!(r.phase, Phase::Running, "tie → continue");
     assert!(r.sudden_death);
     kill(&mut w, &mut r, 1, Some(0));
     run(&mut w, &mut r, 1);
@@ -149,7 +149,7 @@ fn tdm_teams_scores_friendly_fire_and_respawn_delay() {
     assert_eq!(
         teams,
         [Team::Red, Team::Blue, Team::Red, Team::Blue],
-        "abwechselnd ins kleinere Team"
+        "alternating into the smaller team"
     );
     kill(&mut w, &mut r, 1, Some(0));
     assert_eq!((score(&r, 0), r.team_score), (1, [1, 0]));
@@ -166,7 +166,7 @@ fn tdm_teams_scores_friendly_fire_and_respawn_delay() {
         w.step(&[fire, fire, fire, fire]);
         r.update(&mut w);
     }
-    assert!(w.character(1).is_none(), "vor 3 s kein Respawn");
+    assert!(w.character(1).is_none(), "no respawn before 3 s");
     run(&mut w, &mut r, 30);
     assert!(w.character(1).is_some());
 }
@@ -202,9 +202,9 @@ fn friendly_fire_off_keeps_knockback_only() {
         w.step(&[hammer]);
         r.update(&mut w);
         let mate = w.character(2).unwrap();
-        assert!(mate.core.vel.y < -3.0, "Rückstoß wirkt immer");
+        assert!(mate.core.vel.y < -3.0, "knockback always applies");
         let expected = if ff { 10 - 3 } else { 10 };
-        assert_eq!(mate.health, expected, "Friendly Fire {ff}");
+        assert_eq!(mate.health, expected, "friendly fire {ff}");
     }
 }
 
@@ -219,12 +219,12 @@ fn ctf_grab_capture_drop_return() {
     w.character_mut(red).unwrap().core.pos = blue_stand;
     run(&mut w, &mut r, 1);
     assert_eq!(w.flags[1].carrier, Some(red));
-    assert_eq!(score(&r, red), 1, "Aufnehmen +1");
+    assert_eq!(score(&r, red), 1, "pickup +1");
     // … and brings it to its own flag
     let red_stand = w.flags[0].stand;
     w.character_mut(red).unwrap().core.pos = red_stand;
     run(&mut w, &mut r, 2);
-    assert_eq!(r.team_score, [1, 0], "Eroberung = Teampunkt (E-067)");
+    assert_eq!(r.team_score, [1, 0], "capture = team point (E-067)");
     assert_eq!(score(&r, red), 1 + 5);
     assert!(w.flags[1].at_stand);
 
@@ -237,12 +237,12 @@ fn ctf_grab_capture_drop_return() {
     let before = score(&r, red);
     kill(&mut w, &mut r, blue, Some(red));
     assert_eq!(w.flags[0].carrier, None);
-    assert_eq!(score(&r, red), before + 2, "Kill +1, Flaggenträger +1");
+    assert_eq!(score(&r, red), before + 2, "kill +1, flag carrier +1");
     // Red returns its own flag
     let dropped = w.flags[0].pos;
     w.character_mut(red).unwrap().core.pos = dropped;
     run(&mut w, &mut r, 2);
-    assert!(w.flags[0].at_stand, "zurückgebracht");
+    assert!(w.flags[0].at_stand, "returned");
 }
 
 #[test]
@@ -258,7 +258,7 @@ fn ctf_flag_returns_after_30_seconds() {
     run(&mut w, &mut r, 29 * 50);
     assert!(!w.flags[0].at_stand);
     run(&mut w, &mut r, 60);
-    assert!(w.flags[0].at_stand, "nach 30 s zurück");
+    assert!(w.flags[0].at_stand, "back after 30 s");
 }
 
 #[test]
@@ -266,19 +266,19 @@ fn lms_no_respawn_and_round_winner() {
     let (mut w, mut r) = game(Mode::Lms, 3);
     kill(&mut w, &mut r, 1, Some(0));
     run(&mut w, &mut r, 200);
-    assert!(w.character(1).is_none(), "kein Respawn in der Runde");
+    assert!(w.character(1).is_none(), "no respawn during the round");
     kill(&mut w, &mut r, 2, Some(0));
     run(&mut w, &mut r, 1);
     assert!(matches!(r.phase, Phase::RoundOver { .. }));
-    assert_eq!(score(&r, 0), 2 + 1, "2 Kills + Rundensieg");
+    assert_eq!(score(&r, 0), 2 + 1, "2 kills + round win");
     run(&mut w, &mut r, 5 * 50 + 1);
     assert!(
         matches!(r.phase, Phase::Countdown { .. }),
-        "neue Runde mit Countdown (E-068)"
+        "new round with countdown (E-068)"
     );
     assert!(
         w.character(1).is_some() && w.character(2).is_some(),
-        "alle wieder da"
+        "everyone back"
     );
 }
 
@@ -313,7 +313,7 @@ fn instagib_laser_only_one_hit_no_pickups() {
     let a = &w.character(0).unwrap().arsenal;
     assert_eq!(a.active, Weapon::Laser);
     assert!(!a.has(Weapon::Hammer));
-    assert_eq!(a.slot(Weapon::Laser).ammo, None, "unbegrenzt");
+    assert_eq!(a.slot(Weapon::Laser).ammo, None, "unlimited");
     assert!(!w.pickups_enabled);
     assert!(w.tuning.laser_damage > w.tuning.max_health + w.tuning.max_armor);
 }
@@ -323,13 +323,13 @@ fn team_change_and_spectator() {
     let (mut w, mut r) = game(Mode::Tdm, 2);
     r.set_team(&mut w, 1, Team::Spectator);
     assert!(w.character(1).is_none());
-    assert_eq!(score(&r, 1), 0, "Team-Wechsel wird nicht gewertet");
+    assert_eq!(score(&r, 1), 0, "team change is not scored");
     run(&mut w, &mut r, 400);
-    assert!(w.character(1).is_none(), "Zuschauer spawnt nie");
+    assert!(w.character(1).is_none(), "spectator never spawns");
     assert_eq!(
         r.phase,
         Phase::Warmup { until: None },
-        "Team leer → Aufwärmen"
+        "team empty → warmup"
     );
 }
 
@@ -345,7 +345,7 @@ fn balance_moves_player_after_a_minute() {
     // now 3 red, 1 blue
     run(&mut w, &mut r, 61 * 50);
     let sizes = Rules::team_sizes(&w);
-    assert_eq!(sizes, [2, 2], "nach 1 min ausgeglichen");
+    assert_eq!(sizes, [2, 2], "balanced after 1 min");
 }
 
 #[test]
@@ -357,7 +357,7 @@ fn match_end_swaps_teams_and_requests_next_map() {
     assert!(matches!(r.phase, Phase::MatchOver { .. }));
     let _ = r.take_events();
     run(&mut w, &mut r, 10 * 50 + 1);
-    assert_eq!(w.team(0), Team::Blue, "Teamtausch nach dem Match (E-074)");
+    assert_eq!(w.team(0), Team::Blue, "team swap after the match (E-074)");
     assert!(r.take_events().contains(&GameEvent::NextMap));
     assert_eq!(r.team_score, [0, 0]);
 }

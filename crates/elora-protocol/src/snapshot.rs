@@ -447,27 +447,27 @@ impl Snapshot {
         s.tick = tick;
         for (kind, fields) in FIELDS.iter().copied().enumerate() {
             let table = &mut s.objects[kind];
-            let removed: usize = r.uint("Anzahl")?;
+            let removed: usize = r.uint("count")?;
             if removed > MAX_OBJECTS {
-                return Err(DecodeError::Invalid("Anzahl"));
+                return Err(DecodeError::Invalid("count"));
             }
             let mut key = 0u64;
             for _ in 0..removed {
                 key = key.checked_add(r.uvar()?).ok_or(DecodeError::Overflow)?;
                 table
                     .remove(&key)
-                    .ok_or(DecodeError::Invalid("unbekanntes Objekt"))?;
+                    .ok_or(DecodeError::Invalid("unknown object"))?;
             }
-            let changed: usize = r.uint("Anzahl")?;
+            let changed: usize = r.uint("count")?;
             if changed > MAX_OBJECTS {
-                return Err(DecodeError::Invalid("Anzahl"));
+                return Err(DecodeError::Invalid("count"));
             }
             let mut key = 0u64;
             for _ in 0..changed {
                 key = key.checked_add(r.uvar()?).ok_or(DecodeError::Overflow)?;
                 let mask = r.uvar()?;
                 if mask >> fields != 0 {
-                    return Err(DecodeError::Invalid("Maske"));
+                    return Err(DecodeError::Invalid("mask"));
                 }
                 let v = table.entry(key).or_insert_with(|| vec![0; fields]);
                 for (i, field) in v.iter_mut().enumerate() {
@@ -477,7 +477,7 @@ impl Snapshot {
                 }
             }
             if table.len() > MAX_OBJECTS {
-                return Err(DecodeError::Invalid("Anzahl"));
+                return Err(DecodeError::Invalid("count"));
             }
         }
         s.validate()?;
@@ -492,11 +492,11 @@ impl Snapshot {
             .copied()
             .unwrap_or(0);
         if players > 255 {
-            return Err(DecodeError::Invalid("Spieler-Slot"));
+            return Err(DecodeError::Invalid("player slot"));
         }
         for (&k, v) in self.objects[PROJECTILE].iter().chain(&self.objects[LASER]) {
             if key_owner(k) as i64 != v[0] || v[0] > 255 || v[0] < 0 {
-                return Err(DecodeError::Invalid("Schütze"));
+                return Err(DecodeError::Invalid("shooter"));
             }
         }
         Ok(())
@@ -671,7 +671,7 @@ mod tests {
             let (out, len) = roundtrip(&cur, Some(&prev));
             assert_eq!(out, cur, "Tick {t}");
             assert_eq!(out.checksum(), cur.checksum());
-            assert!(len < full_len.max(60), "Delta {len} B, voll {full_len} B");
+            assert!(len < full_len.max(60), "delta {len} B, full {full_len} B");
             prev = cur;
         }
     }

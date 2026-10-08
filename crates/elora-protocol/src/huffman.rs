@@ -116,7 +116,7 @@ impl Huffman {
                         return Ok(out);
                     }
                     if out.len() >= max {
-                        return Err(DecodeError::Invalid("zu groß"));
+                        return Err(DecodeError::Invalid("too large"));
                     }
                     out.push(sym as u8);
                     code = 0;

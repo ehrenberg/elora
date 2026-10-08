@@ -22,7 +22,7 @@ fn main() {
         .unwrap_or_default();
     entries.sort();
     let mut out = String::from(
-        "/// Eingebettete Tondateien: (Sound-Name, WAV-Daten).\npub static FILES: &[(&str, &[u8])] = &[\n",
+        "/// Embedded sound files: (sound name, WAV data).\npub static FILES: &[(&str, &[u8])] = &[\n",
     );
     for (name, path) in &entries {
         println!("cargo:rerun-if-changed={path}");
@@ -30,5 +30,5 @@ fn main() {
     }
     out.push_str("];\n");
     let target = Path::new(&std::env::var("OUT_DIR").expect("OUT_DIR")).join("files.rs");
-    std::fs::write(target, out).expect("files.rs schreibbar");
+    std::fs::write(target, out).expect("files.rs writable");
 }

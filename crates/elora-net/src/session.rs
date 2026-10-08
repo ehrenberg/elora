@@ -24,9 +24,9 @@ const MAX_ASSEMBLIES: usize = 32;
 /// Error caused by malformed or malicious packets; the connection is closed.
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 pub enum SessionError {
-    #[error("fehlerhaftes Paket")]
+    #[error("malformed packet")]
     Malformed,
-    #[error("Nachricht zu groß")]
+    #[error("message too large")]
     TooLarge,
 }
 

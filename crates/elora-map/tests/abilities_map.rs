@@ -54,20 +54,20 @@ fn layout() -> Vec<String> {
 fn layout_is_valid() {
     let rows = layout();
     let refs: Vec<&str> = rows.iter().map(String::as_str).collect();
-    let map = Map::from_rows("Fähigkeiten-Test", &refs).expect("gültig");
+    let map = Map::from_rows("Fähigkeiten-Test", &refs).expect("valid");
     assert_eq!((map.width, map.height), (W, H));
 }
 
 #[test]
-#[ignore = "schreibt maps/faehigkeiten-test.emap"]
+#[ignore = "writes maps/faehigkeiten-test.emap"]
 fn write_map() {
     let rows = layout();
     let refs: Vec<&str> = rows.iter().map(String::as_str).collect();
-    let mut map = Map::from_rows("Fähigkeiten-Test", &refs).expect("gültig");
+    let mut map = Map::from_rows("Fähigkeiten-Test", &refs).expect("valid");
     map.author = Some("Elora".into());
     let path = concat!(
         env!("CARGO_MANIFEST_DIR"),
         "/../../maps/faehigkeiten-test.emap"
     );
-    std::fs::write(path, elora_map::encode(&map)).expect("schreiben");
+    std::fs::write(path, elora_map::encode(&map)).expect("write");
 }

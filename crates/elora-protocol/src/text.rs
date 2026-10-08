@@ -1,6 +1,6 @@
 //! Translatable server messages (M8.1, O-48, E-164).
 //!
-//! The server sends codes with values; the client shows them in its language. The German
+//! The server sends codes with values; the client shows them in its language. The English
 //! representation ([`std::fmt::Display`]) is the server's language for log and console and
 //! the fallback for unknown codes.
 //!
@@ -116,17 +116,17 @@ pub mod reason {
         ALL.contains(&text).then(|| format!("reason.{code}"))
     }
 
-    /// German text for log and old clients.
-    pub fn german(text: &str) -> &str {
+    /// English text for log and old clients.
+    pub fn english(text: &str) -> &str {
         match text {
-            BANNED => "Du bist vorübergehend gesperrt",
-            INVALID_MESSAGE => "Ungültige Nachricht",
-            WRONG_VERSION => "Falsche Spielversion",
-            LEFT => "Verlassen",
-            SHUTDOWN => "Server wird beendet",
-            KICKED_BY_VOTE => "Per Abstimmung gekickt",
-            KICKED => "Vom Server getrennt",
-            SERVER_FULL => "Server ist voll",
+            BANNED => "You are temporarily banned",
+            INVALID_MESSAGE => "Invalid message",
+            WRONG_VERSION => "Wrong game version",
+            LEFT => "Left",
+            SHUTDOWN => "Server is shutting down",
+            KICKED_BY_VOTE => "Kicked by vote",
+            KICKED => "Disconnected by the server",
+            SERVER_FULL => "Server is full",
             other => other,
         }
     }
@@ -159,7 +159,7 @@ fn get_winner(r: &mut Reader<'_>) -> DecodeResult<WinnerName> {
         0 => WinnerName::Player(r.str(MAX_NAME)?.to_owned()),
         1 => WinnerName::Team(team_from(r.u8()?)?),
         2 => WinnerName::Nobody,
-        _ => return Err(DecodeError::Invalid("Gewinner")),
+        _ => return Err(DecodeError::Invalid("winner")),
     })
 }
 
@@ -190,12 +190,12 @@ impl VoteSubject {
         Ok(match r.u8()? {
             0 => Self::Map(r.str(MAX_NAME)?.to_owned()),
             1 => Self::Mode {
-                mode: Mode::from_index(r.u8()?).ok_or(DecodeError::Invalid("Modus"))?,
+                mode: Mode::from_index(r.u8()?).ok_or(DecodeError::Invalid("mode"))?,
                 instagib: r.bool()?,
             },
             2 => Self::Kick(r.str(MAX_NAME)?.to_owned()),
             3 => Self::Spectate(r.str(MAX_NAME)?.to_owned()),
-            _ => return Err(DecodeError::Invalid("Abstimmung")),
+            _ => return Err(DecodeError::Invalid("vote")),
         })
     }
 
@@ -304,17 +304,17 @@ impl Message {
             20 => Self::MapChangeFailed {
                 map: text(r, MAX_NAME)?,
             },
-            _ => return Err(DecodeError::Invalid("Meldung")),
+            _ => return Err(DecodeError::Invalid("message")),
         })
     }
 }
 
-fn team_de(t: Team) -> &'static str {
+fn team_en(t: Team) -> &'static str {
     match t {
-        Team::Red => "Rot",
-        Team::Blue => "Blau",
-        Team::Spectator => "die Zuschauer",
-        Team::None => "das Spiel",
+        Team::Red => "Red",
+        Team::Blue => "Blue",
+        Team::Spectator => "the spectators",
+        Team::None => "the game",
     }
 }
 
@@ -322,9 +322,9 @@ impl fmt::Display for WinnerName {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Player(p) => f.write_str(p),
-            Self::Team(Team::Red) => f.write_str("Team Rot"),
-            Self::Team(Team::Blue) => f.write_str("Team Blau"),
-            Self::Team(_) | Self::Nobody => f.write_str("niemand"),
+            Self::Team(Team::Red) => f.write_str("Team Red"),
+            Self::Team(Team::Blue) => f.write_str("Team Blue"),
+            Self::Team(_) | Self::Nobody => f.write_str("nobody"),
         }
     }
 }
@@ -332,12 +332,12 @@ impl fmt::Display for WinnerName {
 impl fmt::Display for VoteSubject {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Self::Map(m) => write!(f, "Karte wechseln: {m}"),
+            Self::Map(m) => write!(f, "Change map: {m}"),
             Self::Mode { mode, instagib } => {
-                write!(f, "Modus wechseln: {}", Self::mode_label(*mode, *instagib))
+                write!(f, "Change mode: {}", Self::mode_label(*mode, *instagib))
             }
-            Self::Kick(n) => write!(f, "{n} kicken"),
-            Self::Spectate(n) => write!(f, "{n} zu den Zuschauern"),
+            Self::Kick(n) => write!(f, "Kick {n}"),
+            Self::Spectate(n) => write!(f, "Move {n} to the spectators"),
         }
     }
 }
@@ -346,30 +346,30 @@ impl fmt::Display for Message {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Text(t) => f.write_str(t),
-            Self::Joined { name } => write!(f, "{name} ist beigetreten"),
-            Self::Left { name } => write!(f, "{name} hat das Spiel verlassen"),
-            Self::TeamJoined { name, team } => write!(f, "{name} wechselt zu {}", team_de(*team)),
+            Self::Joined { name } => write!(f, "{name} joined"),
+            Self::Left { name } => write!(f, "{name} left the game"),
+            Self::TeamJoined { name, team } => write!(f, "{name} switched to {}", team_en(*team)),
             Self::TeamBalanced { name, team } => {
-                write!(f, "{name} wechselt zum Ausgleich zu {}", team_de(*team))
+                write!(f, "{name} was moved to {} for balance", team_en(*team))
             }
-            Self::MatchStarted { mode } => write!(f, "{mode} – Match beginnt"),
-            Self::RoundWon(w) => write!(f, "{w} gewinnt die Runde"),
-            Self::RoundDraw => f.write_str("Unentschieden"),
-            Self::MatchWon(w) => write!(f, "{w} gewinnt das Match!"),
-            Self::SuddenDeath => f.write_str("Gleichstand – Sudden Death!"),
-            Self::MapChanged { map } => write!(f, "Karte: {map}"),
-            Self::ModeChanged { mode } => write!(f, "Modus: {mode}"),
+            Self::MatchStarted { mode } => write!(f, "{mode} – match starts"),
+            Self::RoundWon(w) => write!(f, "{w} wins the round"),
+            Self::RoundDraw => f.write_str("Draw"),
+            Self::MatchWon(w) => write!(f, "{w} wins the match!"),
+            Self::SuddenDeath => f.write_str("Tie – sudden death!"),
+            Self::MapChanged { map } => write!(f, "Map: {map}"),
+            Self::ModeChanged { mode } => write!(f, "Mode: {mode}"),
             Self::VoteStarted { who, subject } => {
-                write!(f, "{who} startet eine Abstimmung: {subject}")
+                write!(f, "{who} started a vote: {subject}")
             }
-            Self::VoteFailed(s) => write!(f, "Abstimmung abgelehnt: {s}"),
-            Self::VotePassed(s) => write!(f, "Abstimmung angenommen: {s}"),
-            Self::VoteCancelled => f.write_str("Abstimmung abgebrochen"),
-            Self::VotesDisabled => f.write_str("Abstimmungen sind auf diesem Server abgeschaltet"),
-            Self::VoteRunning => f.write_str("Es läuft bereits eine Abstimmung"),
-            Self::UnknownMap { map } => write!(f, "Karte `{map}` unbekannt"),
-            Self::InvalidPlayer => f.write_str("Ungültiger Spieler"),
-            Self::MapChangeFailed { map } => write!(f, "Kartenwechsel fehlgeschlagen: {map}"),
+            Self::VoteFailed(s) => write!(f, "Vote failed: {s}"),
+            Self::VotePassed(s) => write!(f, "Vote passed: {s}"),
+            Self::VoteCancelled => f.write_str("Vote cancelled"),
+            Self::VotesDisabled => f.write_str("Votes are disabled on this server"),
+            Self::VoteRunning => f.write_str("A vote is already running"),
+            Self::UnknownMap { map } => write!(f, "Unknown map `{map}`"),
+            Self::InvalidPlayer => f.write_str("Invalid player"),
+            Self::MapChangeFailed { map } => write!(f, "Map change failed: {map}"),
         }
     }
 }
@@ -447,7 +447,7 @@ mod tests {
         );
         assert_eq!(reason::key("irgendwas"), None);
         assert_eq!(reason::key("#unbekannt"), None);
-        assert_eq!(reason::german(reason::SERVER_FULL), "Server ist voll");
-        assert_eq!(reason::german("frei"), "frei");
+        assert_eq!(reason::english(reason::SERVER_FULL), "Server is full");
+        assert_eq!(reason::english("frei"), "frei");
     }
 }

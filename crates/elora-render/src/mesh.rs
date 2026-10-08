@@ -252,7 +252,7 @@ impl Mesh {
         tint: &Tint,
         out: &mut VertexBuffers<crate::shapes::Vertex, u32>,
     ) {
-        let base = u32::try_from(out.vertices.len()).expect("zu viele Vertices");
+        let base = u32::try_from(out.vertices.len()).expect("too many vertices");
         out.vertices.extend(self.vertices.iter().map(|v| {
             let p = transform.apply(Vec2::new(v.pos[0], v.pos[1]));
             crate::shapes::Vertex {

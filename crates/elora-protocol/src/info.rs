@@ -63,15 +63,15 @@ impl ServerInfo {
     /// On faulty data.
     pub fn decode(data: &[u8]) -> DecodeResult<Self> {
         let mut r = Reader::new(data);
-        let version = r.uint("Version")?;
+        let version = r.uint("version")?;
         let name = r.str(MAX_TEXT)?.to_owned();
         let map = r.str(MAX_TEXT)?.to_owned();
         let mode = r.str(MAX_NAME)?.to_owned();
-        let clients = r.uint("Spieler")?;
-        let max_clients = r.uint("Spieler")?;
-        let n: usize = r.uint("Anzahl")?;
+        let clients = r.uint("players")?;
+        let max_clients = r.uint("players")?;
+        let n: usize = r.uint("count")?;
         if n > MAX_LISTED {
-            return Err(DecodeError::Invalid("Anzahl"));
+            return Err(DecodeError::Invalid("count"));
         }
         let mut players = Vec::with_capacity(n);
         for _ in 0..n {
@@ -106,7 +106,7 @@ mod tests {
     #[test]
     fn roundtrip_and_limit() {
         let player = |i: i32| InfoPlayer {
-            name: format!("Spieler {i}"),
+            name: format!("Player {i}"),
             score: i - 3,
             team: if i % 2 == 0 { Team::Red } else { Team::Blue },
             dummy: i == 1,
@@ -121,7 +121,7 @@ mod tests {
             players: (0..40).map(player).collect(),
         };
         let data = info.encode();
-        assert!(data.len() < 1400, "passt in ein Datagramm: {}", data.len());
+        assert!(data.len() < 1400, "fits into one datagram: {}", data.len());
         let back = ServerInfo::decode(&data).unwrap();
         assert_eq!(back.players.len(), MAX_LISTED);
         assert_eq!(back.players[..], info.players[..MAX_LISTED]);

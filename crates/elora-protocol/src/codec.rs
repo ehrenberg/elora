@@ -3,15 +3,15 @@
 /// Error while decoding. Every faulty packet is rejected, never "guessed".
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 pub enum DecodeError {
-    #[error("Daten zu kurz")]
+    #[error("data too short")]
     UnexpectedEnd,
-    #[error("Zahl zu groß")]
+    #[error("number too large")]
     Overflow,
-    #[error("ungültiger Wert: {0}")]
+    #[error("invalid value: {0}")]
     Invalid(&'static str),
-    #[error("ungültiges UTF-8")]
+    #[error("invalid UTF-8")]
     Utf8,
-    #[error("überzählige Bytes am Ende")]
+    #[error("trailing bytes at the end")]
     TrailingBytes,
 }
 
@@ -160,9 +160,9 @@ impl<'a> Reader<'a> {
     /// # Errors
     /// On data that is too short or a length over `max`.
     pub fn bytes(&mut self, max: usize) -> DecodeResult<&'a [u8]> {
-        let len: usize = self.uint("Länge")?;
+        let len: usize = self.uint("length")?;
         if len > max {
-            return Err(DecodeError::Invalid("Länge"));
+            return Err(DecodeError::Invalid("length"));
         }
         let end = self.pos.checked_add(len).ok_or(DecodeError::Overflow)?;
         let v = self
@@ -224,7 +224,7 @@ mod tests {
 
         let mut w = Writer::new();
         w.ivar(-3);
-        assert_eq!(w.buf.len(), 1, "kleine Beträge brauchen 1 Byte");
+        assert_eq!(w.buf.len(), 1, "small magnitudes need 1 byte");
     }
 
     #[test]
@@ -235,7 +235,7 @@ mod tests {
         let mut w = Writer::new();
         w.str("hallo");
         let b = w.into_bytes();
-        assert_eq!(Reader::new(&b).str(3), Err(DecodeError::Invalid("Länge")));
+        assert_eq!(Reader::new(&b).str(3), Err(DecodeError::Invalid("length")));
         assert_eq!(Reader::new(&b).str(10).unwrap(), "hallo");
         assert!(Reader::new(&[2]).bool().is_err());
     }

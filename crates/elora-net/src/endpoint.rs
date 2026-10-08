@@ -63,7 +63,7 @@ impl Keypair {
     /// # Panics
     /// If the operating system provides no random numbers.
     pub fn generate() -> Self {
-        let kp = builder().generate_keypair().expect("Schlüsselerzeugung");
+        let kp = builder().generate_keypair().expect("key generation");
         Self {
             private: kp.private,
             public: kp.public,
@@ -83,7 +83,7 @@ pub fn hex(bytes: &[u8]) -> String {
 }
 
 fn builder() -> snow::Builder<'static> {
-    snow::Builder::new(NOISE_PARAMS.parse().expect("gültige Noise-Parameter"))
+    snow::Builder::new(NOISE_PARAMS.parse().expect("valid Noise parameters"))
 }
 
 /// Reason of a disconnection.
@@ -839,10 +839,10 @@ mod tests {
         let mut w = ReplayWindow::default();
         assert!(w.accept(1));
         assert!(w.accept(3));
-        assert!(w.accept(2), "umgeordnet, aber neu");
-        assert!(!w.accept(2), "Duplikat");
+        assert!(w.accept(2), "reordered but new");
+        assert!(!w.accept(2), "duplicate");
         assert!(w.accept(100));
-        assert!(!w.accept(30), "älter als das Fenster");
+        assert!(!w.accept(30), "older than the window");
         assert!(w.accept(99));
         assert!(!w.accept(100));
     }

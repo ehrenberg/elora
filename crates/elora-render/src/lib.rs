@@ -27,13 +27,13 @@ use shapes::Vertex;
 /// Error while setting up the renderer.
 #[derive(Debug, thiserror::Error)]
 pub enum RenderError {
-    #[error("Surface konnte nicht erstellt werden: {0}")]
+    #[error("could not create surface: {0}")]
     Surface(#[from] wgpu::CreateSurfaceError),
-    #[error("kein passender Grafikadapter gefunden: {0}")]
+    #[error("no suitable graphics adapter found: {0}")]
     Adapter(#[from] wgpu::RequestAdapterError),
-    #[error("Grafikgerät konnte nicht erstellt werden: {0}")]
+    #[error("could not create graphics device: {0}")]
     Device(#[from] wgpu::RequestDeviceError),
-    #[error("Surface wird vom Adapter nicht unterstützt")]
+    #[error("surface not supported by the adapter")]
     UnsupportedSurface,
 }
 
@@ -366,7 +366,7 @@ impl Renderer {
         if self.post.scene.is_none() {
             self.post.scene = Some(self.post.create_scene(&self.device, &self.config));
         }
-        let (scene, bind_group) = self.post.scene.as_ref().expect("eben angelegt");
+        let (scene, bind_group) = self.post.scene.as_ref().expect("just created");
         self.world.upload(&self.device, &self.queue, camera, batch);
         let [r, g, b, a] = clear.0.map(f64::from);
         {
@@ -605,7 +605,7 @@ impl Layer {
         if batch.is_empty() {
             return;
         }
-        let count = u32::try_from(batch.geometry.indices.len()).expect("zu viele Indizes");
+        let count = u32::try_from(batch.geometry.indices.len()).expect("too many indices");
         pass.set_pipeline(pipeline);
         pass.set_bind_group(0, &self.bind_group, &[]);
         pass.set_vertex_buffer(0, self.vertices.slice(..));

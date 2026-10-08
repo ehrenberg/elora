@@ -124,22 +124,26 @@ fn seal_slides_closer_then_throws_snowballs_in_an_arc() {
     let c = creature(&w, id);
     assert!(
         c.pos.x > start + 100.0,
-        "rutscht heran: {} → {}",
+        "slides closer: {} → {}",
         start,
         c.pos.x
     );
     let before = w.character(0).unwrap().health;
     let ev = run(&mut w, idle(), 200);
-    assert_eq!(creature(&w, id).mode, seal::THROW, "wirft aus der Nähe");
+    assert_eq!(
+        creature(&w, id).mode,
+        seal::THROW,
+        "throws from close range"
+    );
     assert!(
         (standing(30).x - creature(&w, id).pos.x).abs() <= 300.0,
-        "bleibt in Wurfweite stehen"
+        "stops at throwing range"
     );
     assert!(
         ev.iter()
             .any(|e| matches!(e, Event::CreatureFire { id: i, .. } if *i == id))
     );
-    assert!(w.character(0).unwrap().health < before, "Schneeball trifft");
+    assert!(w.character(0).unwrap().health < before, "snowball hits");
 }
 
 #[test]
@@ -152,7 +156,7 @@ fn bat_sleeps_dives_at_elora_and_flies_home() {
     assert_eq!(
         creature(&w, id).mode,
         bat::HANG,
-        "schläft, Elora ist weit weg"
+        "sleeps, Elora is far away"
     );
     assert!(creature(&w, id).pos.distance(home) < 0.5);
     // Elora below
@@ -167,15 +171,12 @@ fn bat_sleeps_dives_at_elora_and_flies_home() {
             ..
         }
     )));
-    assert!(
-        w.character(0).unwrap().health < before,
-        "trifft im Sturzflug"
-    );
+    assert!(w.character(0).unwrap().health < before, "hits in a dive");
     // Elora walks away, the bat flies home
     w.spawn_character(0, standing(55));
     run(&mut w, idle(), 200);
     let c = creature(&w, id);
-    assert_eq!(c.mode, bat::HANG, "wieder an der Decke");
+    assert_eq!(c.mode, bat::HANG, "back on the ceiling");
     assert!(c.pos.distance(home) < 0.5);
 }
 
@@ -203,9 +204,9 @@ fn ghost_floats_through_walls_freezes_elora_and_backs_off() {
     }
     assert!(
         frozen_at.is_some(),
-        "kommt durch die Wand und lässt Elora erstarren"
+        "comes through the wall and freezes Elora"
     );
-    assert_eq!(creature(&w, id).mode, ghost::FLEE, "weicht zurück");
+    assert_eq!(creature(&w, id).mode, ghost::FLEE, "backs off");
     // frozen: walking has no effect (only the hit's knockback pushes)
     let x = w.character(0).unwrap().core.pos.x;
     let right = PlayerInput {
@@ -221,6 +222,6 @@ fn ghost_floats_through_walls_freezes_elora_and_backs_off() {
     let free = w.character(0).unwrap().core.pos.x - x;
     assert!(
         free > 80.0 && frozen < free / 2.0,
-        "erstarrt {frozen}, frei {free}"
+        "frozen {frozen}, free {free}"
     );
 }

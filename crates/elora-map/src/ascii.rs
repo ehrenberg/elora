@@ -55,7 +55,7 @@ impl Map {
         let width = rows.first().map_or(0, |r| r.chars().count());
         let height = rows.len();
         if width == 0 {
-            return Err(MapError::Invalid("leeres Raster"));
+            return Err(MapError::Invalid("empty grid"));
         }
         if width > crate::MAX_SIZE || height > crate::MAX_SIZE {
             return Err(MapError::TooLarge { width, height });
@@ -114,7 +114,7 @@ mod tests {
         let m = Map::from_rows("T", &rows).unwrap();
         assert_eq!((m.width, m.height), (5, 5));
         assert_eq!(m.tiles[2 * 5 + 1], Tile::Unhookable);
-        assert_eq!(m.tiles[5 + 1], Tile::Air, "Entity-Feld ist Luft");
+        assert_eq!(m.tiles[5 + 1], Tile::Air, "entity cell is air");
         assert_eq!(m.to_rows(), rows);
         assert_eq!(
             Map::from_rows("T", &["###", "#S##"]).unwrap_err(),

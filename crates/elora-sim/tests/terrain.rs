@@ -112,23 +112,23 @@ fn thin_ice_cracks_breaks_and_grows_back() {
     assert!(
         ev.iter()
             .any(|e| matches!(e, Event::IceCrack { broken: false, .. })),
-        "Risse unter Elora"
+        "cracks under Elora"
     );
-    assert_eq!(w.collision.tile(22, 20), Tile::ThinIce, "trägt noch");
+    assert_eq!(w.collision.tile(22, 20), Tile::ThinIce, "still holds");
     let ev = run(&mut w, idle(), 30);
     assert!(
         ev.iter()
             .any(|e| matches!(e, Event::IceCrack { broken: true, .. })),
-        "bricht nach A-36"
+        "breaks per A-36"
     );
     assert_eq!(w.collision.tile(22, 20), Tile::Air);
-    assert_eq!(w.collision.tile(25, 20), Tile::ThinIce, "nur unter Elora");
+    assert_eq!(w.collision.tile(25, 20), Tile::ThinIce, "only under Elora");
     // Elora falls through, the ice grows back after A-37
     run(&mut w, idle(), 60);
     assert!(w.character(0).unwrap().core.pos.y > 27.0 * 32.0);
     let regrow = elora_sim::tuning::ms_to_ticks(Tuning::default().thin_ice_regrow);
     run(&mut w, idle(), regrow);
-    assert_eq!(w.collision.tile(22, 20), Tile::ThinIce, "wieder zu");
+    assert_eq!(w.collision.tile(22, 20), Tile::ThinIce, "closed again");
     assert!(!Tile::ThinIce.is_hookable() && Tile::ThinIce.is_solid());
 }
 
@@ -139,7 +139,7 @@ fn thin_ice_does_not_grow_back_into_elora() {
     w.collision.set_tile(22, 27, Tile::Air);
     w.temp_tiles.push((22, 27, Tile::ThinIce, 5));
     run(&mut w, idle(), 20);
-    assert_eq!(w.collision.tile(22, 27), Tile::Air, "Elora steht darin");
+    assert_eq!(w.collision.tile(22, 27), Tile::Air, "Elora stands in it");
     // out of the way: now it closes up
     let right = PlayerInput {
         direction: 1,
@@ -168,7 +168,7 @@ fn stomp_breaks_thin_ice_at_once() {
     assert!(
         ev.iter()
             .any(|e| matches!(e, Event::IceCrack { broken: true, .. })),
-        "Stampfen bricht das Eis sofort"
+        "stomp breaks the ice at once"
     );
     assert_eq!(w.collision.tile(22, 20), Tile::Air);
 }
@@ -201,7 +201,7 @@ fn ice_water_hurts_and_returns_elora_to_the_edge() {
         }
     }
     assert_eq!(health(&w), before - Tuning::default().ice_water_damage);
-    assert!(back, "zurück auf sicherem Boden");
+    assert!(back, "back on safe ground");
 }
 
 #[test]
@@ -214,7 +214,7 @@ fn icicle_shakes_falls_hurts_and_shatters() {
         .unwrap();
     run(&mut w, idle(), 50);
     let c = w.creatures.iter().find(|c| c.id == id).unwrap();
-    assert_eq!(c.mode, icicle::HANG, "hängt, solange niemand darunter ist");
+    assert_eq!(c.mode, icicle::HANG, "hangs while nobody is below");
     // Elora stands beneath it
     let before = health(&w);
     w.spawn_character(0, standing(20, 28));
@@ -226,7 +226,7 @@ fn icicle_shakes_falls_hurts_and_shatters() {
         "zittert"
     );
     let ev = run(&mut w, idle(), 80);
-    assert!(health(&w) < before, "trifft Elora");
+    assert!(health(&w) < before, "hits Elora");
     assert!(w.creatures.iter().all(|c| c.id != id), "zerschellt");
     assert!(
         ev.iter()
@@ -250,10 +250,10 @@ fn icicle_can_be_dodged() {
     };
     run(&mut w, right, 80);
     run(&mut w, idle(), 60);
-    assert_eq!(health(&w), before, "im Lauf entkommen");
+    assert_eq!(health(&w), before, "escaped by running");
     assert!(
         w.creatures.iter().all(|c| c.id != id),
-        "am Boden zerschellt"
+        "shattered on the ground"
     );
 }
 
@@ -266,12 +266,9 @@ fn snow_rock_rolls_downhill_and_bursts_at_a_wall() {
     w.creatures.iter_mut().find(|c| c.id == id).unwrap().facing = 1;
     run(&mut w, idle(), 20);
     let x = w.creatures.iter().find(|c| c.id == id).unwrap().pos.x;
-    assert!(x > 30.0 * 32.0 + 60.0, "rollt nach rechts: {x}");
+    assert!(x > 30.0 * 32.0 + 60.0, "rolls to the right: {x}");
     let ev = run(&mut w, idle(), 200);
-    assert!(
-        w.creatures.iter().all(|c| c.id != id),
-        "zerplatzt an der Wand"
-    );
+    assert!(w.creatures.iter().all(|c| c.id != id), "bursts on the wall");
     assert!(ev.iter().any(|e| matches!(e, Event::CreatureDeath { .. })));
     assert!(health(&w) > 0);
 }
@@ -285,5 +282,5 @@ fn snow_rock_hurts_elora_and_bursts() {
     w.creatures.iter_mut().find(|c| c.id == id).unwrap().facing = 1;
     run(&mut w, idle(), 60);
     assert!(health(&w) < before, "trifft");
-    assert!(w.creatures.iter().all(|c| c.id != id), "zerplatzt an Elora");
+    assert!(w.creatures.iter().all(|c| c.id != id), "bursts on Elora");
 }
