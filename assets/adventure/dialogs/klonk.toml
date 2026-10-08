@@ -30,6 +30,11 @@ node = "kristalle_erinnerung"
 if = "quest brunnen schritt klonk"
 node = "uebung"
 
+# no hammer yet and not sent by Tüftel (E-354)
+[[start]]
+if = "nicht waffe hammer und nicht quest brunnen schritt klonk"
+node = "erst_tueftel"
+
 [[start]]
 node = "schmiede"
 
@@ -48,6 +53,10 @@ tone = "frech"
 text = { de = "Dein Bart ist größer als dein Hammer.", en = "Your beard is bigger than your hammer." }
 next = "bart"
 do = ["zuneigung klonk -1"]
+
+[[node]]
+id = "erst_tueftel"
+text = { de = "Hmpf. Erst zu Tüftel. Dann reden wir über Hämmer.", en = "Hmph. Tüftel first. Then we'll talk hammers." }
 
 [[node]]
 id = "bart"
@@ -85,7 +94,7 @@ text = { de = "Später.", en = "Later." }
 
 [[node]]
 id = "laser"
-text = { de = "Hmpf. Du kommst aus der Wüste und hast nicht mal Sand in den Ohren. Respekt. Hier. Hab ich aus Glutstein und einer alten Linse gebaut. Ein Laser. Zeig damit auf nichts, was du magst.", en = "Hmph. You come back from the desert without even sand in your ears. Respect. Here. Built it from ember stone and an old lens. A laser. Don't point it at anything you like." }
+text = { de = "Hmpf. Du kommst aus der Wüste und hast nicht mal Sand in den Ohren. Respekt. Hier. Hab ich aus Glutstein und einer alten Linse gebaut. Ein Laser. Mit {taste:laser} nimmst du ihn in die Hand. Zeig damit auf nichts, was du magst.", en = "Hmph. You come back from the desert without even sand in your ears. Respect. Here. Built it from ember stone and an old lens. A laser. Press {taste:laser} to pick it up. Don't point it at anything you like." }
 do = ["waffe laser", "gib munition_laser 1", "merker klonk.laser = 1", "zuneigung klonk +1"]
 
 [[node.choice]]

@@ -259,11 +259,11 @@ next = "fest4_lied"
 
 [[node]]
 id = "fest4_lied"
-text = { de = "… Einsam. Wie ein Brunnen ohne Lied. Ach, warum fällt mir das jetzt ein? Geh nach Osten, Kind, in die Sternschlucht. Dort wohnt Luma, die Sternenweberin. Sie kennt alle Lieder.", en = "… Lonely. Like a well without a song. Oh, why does that come to mind now? Go east, dear, to the Sternschlucht. Luma the star weaver lives there. She knows every song." }
+text = { de = "… Einsam. Wie ein Brunnen ohne Lied. Ach, warum fällt mir das jetzt ein? Irgendwann musst du nach Osten, in die Sternschlucht … Dort wohnt Luma, die Sternenweberin. Sie kennt alle Lieder.", en = "… Lonely. Like a well without a song. Oh, why does that come to mind now? One day you must go east, to the Sternschlucht … Luma the star weaver lives there. She knows every song." }
 
 [[node]]
 id = "stern"
-text = { de = "Die Sternschlucht wartet. Aber ruh dich ruhig noch ein bisschen aus – das Fest war lang.", en = "The Sternschlucht is waiting. But do rest a little longer – it was a long party." }
+text = { de = "Die Sternschlucht … der Weg dorthin ist noch verschlossen. Ruh dich aus, Kind – bald geht's weiter.", en = "The Sternschlucht … the way there is still closed. Rest, dear – soon we'll go on." }
 
 [[bark]]
 if = "merker fest"

@@ -223,6 +223,9 @@ pub struct Shop {
     #[serde(default)]
     pub discount: Vec<Discount>,
     pub stock: Vec<String>,
+    /// Items that are only on offer under a condition, e.g. once Elora can use them (E-354).
+    #[serde(default)]
+    pub stock_if: BTreeMap<String, String>,
 }
 
 /// Progression values (P-01, P-02, P-05, P-25, P-26, P-30).
@@ -664,6 +667,17 @@ impl Content {
                     _ => {
                         return bad(format!("shop `{}`: `{it}` unknown or without price", s.id));
                     }
+                }
+            }
+            for (it, cond) in &s.stock_if {
+                if !s.stock.contains(it) {
+                    return bad(format!(
+                        "shop `{}`: condition for `{it}`, not in stock",
+                        s.id
+                    ));
+                }
+                if let Err(e) = crate::script::Cond::parse(cond) {
+                    return bad(format!("shop `{}`: {e}", s.id));
                 }
             }
         }

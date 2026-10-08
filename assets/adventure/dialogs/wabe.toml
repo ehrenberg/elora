@@ -52,7 +52,7 @@ next = "bitte"
 
 [[node]]
 id = "bitte"
-text = { de = "Würdest du nach meinen Bienen Ausschau halten? Manche sitzen bestimmt da oben, wo nur dein Hook hinkommt.", en = "Would you look out for my bees? Some are surely sitting up high where only your hook can reach." }
+text = { de = "Würdest du nach meinen Bienen Ausschau halten? Manche sitzen bestimmt da oben, wo nur dein Hook hinkommt. Zwei sind so hoch geflogen, da kommst du heute noch nicht hin. Lass dir Zeit.", en = "Would you look out for my bees? Some are surely sitting up high where only your hook can reach. Two flew so high you can't reach them yet. Take your time." }
 
 [[node.choice]]
 tone = "freundlich"
@@ -83,6 +83,10 @@ do = ["zuneigung wabe +2"]
 [[node]]
 id = "danke"
 text = { de = "Hörst du das Summen? Ganz zufrieden. Danke dir, Elora.", en = "Hear that humming? Perfectly content. Thank you, Elora." }
+
+[[bark]]
+if = "quest wabes_bienen aktiv und faehigkeit hook-ruck"
+text = { de = "Mit deinem Ruck kommst du jetzt bestimmt an die letzten Bienen!", en = "With your jolt you can surely reach the last bees now!" }
 
 [[bark]]
 if = "quest wabes_bienen aktiv"

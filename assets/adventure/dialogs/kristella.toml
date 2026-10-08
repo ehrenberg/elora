@@ -20,7 +20,7 @@ next = "osten"
 
 [[node]]
 id = "osten"
-text = { de = "Er zog nach Osten, zur Sternschlucht. Nimm den Funken. Und wenn du ihn findest … hör ihm zu.", en = "He went east, to the Sternschlucht. Take the spark. And if you find him … listen to him." }
+text = { de = "Er zog nach Osten, zur Sternschlucht. Noch ist der Weg dorthin verschlossen – doch eines Tages öffnet er sich. Nimm den Funken. Und wenn du ihn findest … hör ihm zu.", en = "He went east, to the Sternschlucht. The way there is still closed – but one day it will open. Take the spark. And if you find him … listen to him." }
 do = ["merker kristella.gesprochen = 1", "merker befreit.frostquelle = 1", "merker duerrer.osten = 1"]
 
 [[node]]

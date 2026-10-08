@@ -48,7 +48,7 @@ next = "runen"
 
 [[node]]
 id = "runen"
-text = { de = "Im Wald liegen fünf alte Runen. Jede trägt ein Stück einer Geschichte, die keiner mehr kennt. Bringst du sie mir, lese ich sie dir vor.", en = "Five old runes lie in the forest. Each carries a piece of a story nobody knows anymore. If you bring them to me, I'll read them to you." }
+text = { de = "Im Wald liegen fünf alte Runen. Jede trägt ein Stück einer Geschichte, die keiner mehr kennt. Bringst du sie mir, lese ich sie dir vor. Manche liegen gut versteckt. Die findest du vielleicht erst später.", en = "Five old runes lie in the forest. Each carries a piece of a story nobody knows anymore. If you bring them to me, I'll read them to you. Some are well hidden. You may only find those later." }
 
 [[node.choice]]
 tone = "freundlich"
@@ -115,6 +115,10 @@ do = ["zuneigung plumm +2"]
 [[node]]
 id = "danach"
 text = { de = "Huhu! Neue Geschichten? Ich bin ganz Ohr. Na ja, ganz Federohr.", en = "Hoo-hoo! New stories? I'm all ears. Well, all feather-ears." }
+
+[[bark]]
+if = "quest runen aktiv und faehigkeit heranhooken"
+text = { de = "Huhu! Mit deinem neuen Hook kommst du an die letzten Runen.", en = "Hoo-hoo! With your new hook you can reach the last runes." }
 
 [[bark]]
 if = "quest runen aktiv"

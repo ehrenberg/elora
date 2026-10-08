@@ -1,11 +1,14 @@
 # Shops (P-26). Selling works anywhere there is a shop.
 # discount: discount from a certain affection for the owner (E-248)
+# stock_if: condition per item, the item is only on offer while it holds (E-354)
 
 [[shop]]
 id = "lotte"
 owner = "lotte"
 discount = [{ affection = 5, pct = 10 }, { affection = 10, pct = 20 }]
 stock = ["heiltrank", "tautrank", "sandstiefel", "gluecksanhaenger", "strohhut", "kraeutertee"]
+# only once Elora can use them (E-354)
+stock_if = { tautrank = "faehigkeit hook-ruck", sandstiefel = "nicht quest glutsand neu", kraeutertee = "quest frostspitzen erledigt" }
 
 # Sirup the caravan leader (R2-M2.3, E-324)
 [[shop]]

@@ -834,3 +834,29 @@ fn signposts_explain_only_what_elora_already_has() {
         assert_eq!(talk.node, "text", "{sign} after `{unlock}`");
     }
 }
+
+#[test]
+fn klonk_sends_elora_to_tueftel_before_the_hammer() {
+    let (c, mut g) = game();
+    let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
+    assert_eq!(conv.node, "erst_tueftel", "no hammer, not sent yet");
+    // Oma, then Tüftel: now Klonk is on the step and hands out the hammer
+    let (mut conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
+    conv.choose(&c, &mut g, 0);
+    Conversation::start(&c, &mut g, "tueftel").unwrap();
+    assert!(g.holds(&c, "quest brunnen schritt klonk"));
+    let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
+    assert_eq!(conv.node, "uebung");
+    let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
+    assert_eq!(conv.node, "schmiede", "with the hammer back to the forge");
+}
+
+#[test]
+fn buried_chamber_sign_waits_for_the_stomp() {
+    let (c, mut g) = game();
+    let (talk, _) = Conversation::start(&c, &mut g, "schild-kammer").expect("sign");
+    assert_eq!(talk.node, "spaeter");
+    g.run(&c, &["faehigkeit stampfen".into()]);
+    let (talk, _) = Conversation::start(&c, &mut g, "schild-kammer").expect("sign");
+    assert_eq!(talk.node, "text");
+}

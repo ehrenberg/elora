@@ -13,6 +13,11 @@ node = "wald"
 if = "nicht merker lotte.geschenk"
 node = "erster"
 
+# sand boots only once the desert is in view (E-354)
+[[start]]
+if = "nicht quest glutsand neu"
+node = "laden_wueste"
+
 [[start]]
 node = "laden"
 
@@ -24,6 +29,24 @@ do = ["gib heiltrank 1", "merker lotte.geschenk = 1"]
 
 [[node]]
 id = "laden"
+text = { de = "Frisch reingekommen: ein Strohhut! Hält Sonne und Regen ab.", en = "Fresh in: a straw hat! Keeps off sun and rain." }
+
+[[node.choice]]
+tone = "neugierig"
+text = { de = "Zeig mal, was du hast.", en = "Show me what you've got." }
+do = ["laden lotte"]
+
+[[node.choice]]
+tone = "freundlich"
+text = { de = "Dein Hut ist wunderschön, Lotte!", en = "Your hat is beautiful, Lotte!" }
+next = "hut"
+do = ["zuneigung lotte +1"]
+
+[[node.choice]]
+text = { de = "Vielleicht später.", en = "Maybe later." }
+
+[[node]]
+id = "laden_wueste"
 text = { de = "Frisch reingekommen: Sandstiefel! Kaum gebraucht, nur ein bisschen verschluckt.", en = "Fresh in: sand boots! Barely used, only slightly swallowed." }
 
 [[node.choice]]
@@ -53,7 +76,7 @@ do = ["gib pilzsuppe 1", "merker lotte.wald = 1"]
 [[node]]
 id = "wueste"
 text = { de = "Elora! Heute Morgen stand ein Kamel vor meinem Laden – mit einem Brief von Sirup! Er schickt dir Kaktusfrüchte. Und mir gleich eine Rechnung dazu. Hier, die gehören dir.", en = "Elora! This morning a camel was standing outside my shop – with a letter from Sirup! He's sending you cactus fruit. And me an invoice to go with it. Here, these are yours." }
-next = "laden"
+next = "laden_wueste"
 do = ["gib kaktusfrucht 2", "merker lotte.wueste = 1"]
 
 [[bark]]

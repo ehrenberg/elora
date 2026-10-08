@@ -164,6 +164,7 @@ Continued from **E-200**. Release 1 (E-001 to E-173) is in the
 | E-353 | 2026-10-08 | Weather before a spring is freed (playtest) | Gloomy weather becomes **mostly dry**: about 55% dry and grey, 35% rain, 10% thunderstorm (or the area's own gloomy kind); after freeing unchanged |
 | E-354 | 2026-10-08 | Guidance for things that do not exist yet (playtest) | Signposts for abilities Elora does not have yet show **a different text** (come back later) and explain the ability only once she has it; path signs to the Glutsandwüste and Frostspitzen say the way is **blocked, with a hint** what is needed; all hints and conversations are checked for things that do not exist yet; signposts about **twice as high** |
 | E-355 | 2026-10-08 | Intro video for the adventure (playtest) | A **real video**, skippable (Esc/Space), at the start of a new adventure. **Exception to E-295:** the owner creates the video with an external AI tool (licence must allow redistribution); E-295 stays in force otherwise. Playback with a **built-in video decoder** in the client |
+| E-356 | 2026-10-08 | Video decoder for the intro (E-355) | **AV1 via `rav1d`** (BSD-2, pure Rust); `unsafe` is allowed **only** in a small separate crate `elora-video` that wraps its C-style API (exception to the workspace rule); everything else keeps `unsafe_code` denied |
 
 ## Open points
 

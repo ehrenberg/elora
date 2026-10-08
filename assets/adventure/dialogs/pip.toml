@@ -81,7 +81,7 @@ text = { de = "Juhu! Er liegt hoch oben, wo man nur mit dem Hook hinkommt.", en 
 
 [[node]]
 id = "handel"
-text = { de = "Ein Geheimnis! Unter der Brücke in den Wiesen ist ein Versteck. Glaub ich. Also: Holst du ihn?", en = "A secret! There's a hiding place under the bridge in the meadows. I think. So: will you get it?" }
+text = { de = "Ich zeig dir mein geheimes Klettereck im Baumhaus! Das kennt sonst keiner. Also: Holst du ihn?", en = "I'll show you my secret climbing spot in the tree house! Nobody else knows it. So: will you get it?" }
 
 [[node.choice]]
 tone = "freundlich"

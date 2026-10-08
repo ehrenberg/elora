@@ -648,6 +648,8 @@ fn skills(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState, area: Rect) -> 
             let c = Vec2::new(cx, y);
             let rank = d.save.skills.get(&n.id).copied().unwrap_or(0);
             let can = d.save.can_learn(d.content, &n.id);
+            // ability Elora does not have yet: "???" instead of name and effect (E-354)
+            let unknown = n.ability.is_some_and(|a| !d.save.abilities().has(a));
             if i + 1 < nodes.len() {
                 let line = if rank > 0 { *color } else { LOCKED };
                 ui.batch.stroke_line(
@@ -684,22 +686,24 @@ fn skills(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState, area: Rect) -> 
                 ui::TEXT_DIM
             };
             ui.label(
-                n.name.get(d.code),
+                if unknown { "???" } else { n.name.get(d.code) },
                 c + Vec2::new(26.0 * s, -6.0 * s),
                 11.0,
                 name_color,
                 Align::Left,
             );
-            ui.label(
-                &lang.f("adventure.rank", &[("r", &rank), ("max", &n.ranks)]),
-                c + Vec2::new(26.0 * s, 8.0 * s),
-                9.0,
-                ui::TEXT_DIM,
-                Align::Left,
-            );
+            if !unknown {
+                ui.label(
+                    &lang.f("adventure.rank", &[("r", &rank), ("max", &n.ranks)]),
+                    c + Vec2::new(26.0 * s, 8.0 * s),
+                    9.0,
+                    ui::TEXT_DIM,
+                    Align::Left,
+                );
+            }
             let hit = Rect::new(c.x - 18.0 * s, c.y - 18.0 * s, col_w - 30.0 * s, 36.0 * s);
             if ui.hovered(hit) {
-                hover_desc = Some((*n, can));
+                hover_desc = Some((*n, unknown));
             }
             if ui.click(&format!("skill{}", n.id), hit) {
                 match can {
@@ -709,10 +713,14 @@ fn skills(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState, area: Rect) -> 
             }
         }
     }
-    if let Some((n, _)) = hover_desc {
-        let mut text = n.desc.get(d.code).to_owned();
+    if let Some((n, unknown)) = hover_desc {
+        let mut text = if unknown {
+            lang.t("adventure.skill_unknown").to_owned()
+        } else {
+            n.desc.get(d.code).to_owned()
+        };
         let effects: Vec<String> = n.per_rank.iter().map(|b| bonus_text(lang, *b)).collect();
-        if !effects.is_empty() {
+        if !effects.is_empty() && !unknown {
             text = format!("{text}  ·  {}", effects.join(", "));
         }
         ui.label(
@@ -1039,9 +1047,10 @@ fn shop(
             .filter_map(|(id, _)| Some((id.to_owned(), SaveGame::sell_price(d.content, id)?)))
             .collect()
     } else {
-        sh.stock
-            .iter()
-            .filter_map(|it| Some((it.clone(), d.save.price(d.content, id, it)?)))
+        d.save
+            .stock(d.content, id)
+            .into_iter()
+            .filter_map(|it| Some((it.to_owned(), d.save.price(d.content, id, it)?)))
             .collect()
     };
     if rows.is_empty() {

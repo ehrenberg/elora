@@ -306,7 +306,7 @@ reward = { xp = 80, points = 1, glanztropfen = 60 }
 
 [[quest.step]]
 id = "kammer"
-text = { de = "Einen Weg in die verschüttete Kammer finden", en = "Find a way into the buried chamber" }
+text = { de = "Die verschüttete Kammer öffnen (später wiederkommen)", en = "Open the buried chamber (come back later)" }
 goal = { type = "reach", map = "wueste-3", zone = "ruinenkammer" }
 
 [[quest.step]]
@@ -325,7 +325,7 @@ id = "runen"
 kind = "side"
 giver = "plumm"
 name = { de = "Erinnerungsrunen", en = "Memory Runes" }
-desc = { de = "Fünf Runen liegen im Murmelwald verstreut. Plumm glaubt, sie erzählen zusammen eine vergessene Geschichte.", en = "Five runes lie scattered across the Murmelwald. Plumm believes that together they tell a forgotten story." }
+desc = { de = "Fünf Runen liegen im Murmelwald verstreut. Plumm glaubt, sie erzählen zusammen eine vergessene Geschichte. Zwei davon erreichst du erst später.", en = "Five runes lie scattered across the Murmelwald. Plumm believes that together they tell a forgotten story. Two of them you'll only reach later." }
 reward = { xp = 80, points = 1, items = [{ item = "eulenfeder", count = 1 }] }
 
 [[quest.step]]
@@ -362,7 +362,7 @@ id = "wabes_bienen"
 kind = "side"
 giver = "wabe"
 name = { de = "Wabes Bienen", en = "Wabe's Bees" }
-desc = { de = "Die Hummel hat Wabes Bienen aufgescheucht. Fünf haben sich in den Blütenwiesen verirrt – manche an Stellen, an die man nur mit dem Hook kommt.", en = "The bumblebee scared off Wabe's bees. Five have got lost in the Blütenwiesen – some in places only the hook can reach." }
+desc = { de = "Die Hummel hat Wabes Bienen aufgescheucht. Fünf haben sich in den Blütenwiesen verirrt – manche an Stellen, die du erst später erreichst.", en = "The bumblebee scared off Wabe's bees. Five have got lost in the Blütenwiesen – some in places you'll only reach later." }
 reward = { xp = 60, items = [{ item = "wabenhut", count = 1 }] }
 
 [[quest.step]]

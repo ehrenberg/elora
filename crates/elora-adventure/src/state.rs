@@ -374,8 +374,7 @@ impl SaveGame {
     /// # Errors
     /// Unknown shop or item, too expensive, bag full.
     pub fn buy(&mut self, content: &Content, shop: &str, id: &str) -> Result<(), Refusal> {
-        let s = content.shops.get(shop).ok_or(Refusal::Unknown)?;
-        if !s.stock.iter().any(|i| i == id) {
+        if !self.stock(content, shop).contains(&id) {
             return Err(Refusal::Unknown);
         }
         let price = self.price(content, shop, id).ok_or(Refusal::Unknown)?;
@@ -385,6 +384,18 @@ impl SaveGame {
         self.add_item(content, id, 1)?;
         self.gleam_drops -= price;
         Ok(())
+    }
+
+    /// What the shop offers right now: its stock without items whose condition does not hold
+    /// yet (E-354).
+    pub fn stock<'a>(&self, content: &'a Content, shop: &str) -> Vec<&'a str> {
+        content.shops.get(shop).map_or_else(Vec::new, |s| {
+            s.stock
+                .iter()
+                .filter(|it| s.stock_if.get(*it).is_none_or(|c| self.holds(content, c)))
+                .map(String::as_str)
+                .collect()
+        })
     }
 
     /// Purchase price with discount based on affection to the owner (E-248).
@@ -585,6 +596,20 @@ mod tests {
         assert!(t.hammer_damage >= 4);
         let total: u32 = c.skills.iter().map(|n| u32::from(n.ranks)).sum();
         assert!(total > 29 + 2, "not everything reachable (E-242): {total}");
+    }
+
+    /// Lotte only offers what Elora can use (E-354).
+    #[test]
+    fn shop_offers_items_once_their_condition_holds() {
+        let (c, mut g) = game();
+        g.gleam_drops = 1000;
+        let stock = g.stock(&c, "lotte");
+        assert!(stock.contains(&"heiltrank") && !stock.contains(&"tautrank"));
+        assert!(!stock.contains(&"kraeutertee"));
+        assert_eq!(g.buy(&c, "lotte", "tautrank"), Err(Refusal::Unknown));
+        g.run(&c, &["faehigkeit hook-ruck".into()]);
+        assert!(g.stock(&c, "lotte").contains(&"tautrank"));
+        assert_eq!(g.buy(&c, "lotte", "tautrank"), Ok(()));
     }
 
     #[test]
