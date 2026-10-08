@@ -334,27 +334,14 @@ fn get_pickup(r: &mut Reader<'_>) -> DecodeResult<PickupKind> {
     })
 }
 
-/// Does the event go over the network? Abilities only exist online in the source battle
-/// (E-223).
-fn networked(e: &Event) -> bool {
-    !matches!(
-        e,
-        Event::Stomp { .. }
-            | Event::TileBroken { .. }
-            | Event::TileSet { .. }
-            | Event::IceCrack { .. }
-            | Event::CreatureHit { .. }
-            | Event::CreatureDeath { .. }
-            | Event::CreatureFire { .. }
-            | Event::CreatureAct { .. }
-            | Event::LootCollect { .. }
-            | Event::LightningWarn { .. }
-            | Event::Lightning { .. }
-    )
-}
-
 /// Events (for effects) – positions rounded to whole units.
-fn put_event(w: &mut Writer, e: &Event) {
+///
+/// This is the single place that decides which events go over the network: the match
+/// has no wildcard, so every new event needs an explicit decision here. Adventure-only
+/// events (abilities, terrain, creatures, loot, weather) only exist locally; abilities
+/// only exist online in the source battle (E-223). Those write nothing and return
+/// `false`; all others are encoded and return `true`.
+fn put_event(w: &mut Writer, e: &Event) -> bool {
     match *e {
         Event::Fire {
             player,
@@ -452,8 +439,9 @@ fn put_event(w: &mut Writer, e: &Event) {
         | Event::CreatureAct { .. }
         | Event::LootCollect { .. }
         | Event::LightningWarn { .. }
-        | Event::Lightning { .. } => unreachable!("not sent over the network"),
+        | Event::Lightning { .. } => return false,
     }
+    true
 }
 
 /// Flag events (CTF).
@@ -849,11 +837,11 @@ impl ServerMsg {
                 w.uvar(base.map_or(0, |b| tick - b));
                 w.uvar(u64::from(*checksum));
                 w.bytes(delta);
-                let sent: Vec<&Event> = events.iter().filter(|e| networked(e)).collect();
-                w.uvar(sent.len() as u64);
-                for e in sent {
-                    put_event(&mut w, e);
-                }
+                // Encode first, then write the count of the events actually sent.
+                let mut sent = Writer::new();
+                let count = events.iter().filter(|e| put_event(&mut sent, e)).count();
+                w.uvar(count as u64);
+                w.buf.extend_from_slice(&sent.buf);
             }
             Self::InputTiming { tick, time_left_ms } => {
                 w.u8(2);
@@ -1197,6 +1185,29 @@ mod tests {
         ] {
             assert_eq!(ServerMsg::decode(&m.encode()).unwrap(), m);
         }
+    }
+
+    #[test]
+    fn local_events_are_not_sent() {
+        let networked = Event::Spawn {
+            player: 1,
+            pos: Vec2::new(4.0, 8.0),
+        };
+        let snapshot = |events| ServerMsg::Snapshot {
+            tick: 9,
+            base: None,
+            checksum: 1,
+            delta: vec![],
+            events,
+        };
+        let mixed = snapshot(vec![
+            Event::Lightning { pos: Vec2::ZERO },
+            networked.clone(),
+            Event::LightningWarn { pos: Vec2::ZERO },
+        ]);
+        let only_sent = snapshot(vec![networked]);
+        assert_eq!(mixed.encode(), only_sent.encode());
+        assert_eq!(ServerMsg::decode(&mixed.encode()).unwrap(), only_sent);
     }
 
     #[test]
