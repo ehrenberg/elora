@@ -830,6 +830,7 @@ dependencies = [
  "elora-sim",
  "miniz_oxide 0.9.1",
  "thiserror 2.0.21",
+ "toml",
 ]
 
 [[package]]

@@ -7,6 +7,7 @@ pub mod adventure;
 mod ascii;
 mod binary;
 pub mod look;
+pub mod rename;
 
 use elora_sim::{
     Collision, DummyPattern, PickupKind, TILE_SIZE, Tile, Tuning, Vec2, Weapon, World,
