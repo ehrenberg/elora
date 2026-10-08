@@ -1,26 +1,26 @@
-//! Release-Pakete bauen (M8.3, E-163): `cargo xtask package [--archive]`.
+//! Build release packages (M8.3, E-163): `cargo xtask package [--archive]`.
 //!
-//! Baut `elora`, `elora-server` und `elora-master` im Release-Profil und legt unter `dist/`
-//! einen Paketordner an:
+//! Builds `elora`, `elora-server` and `elora-master` in the release profile and creates a
+//! package folder under `dist/`:
 //!
 //! ```text
 //! elora-<version>-<system>-<arch>/
-//!   elora, elora-server, elora-master   Programme
-//!   maps/                               Release-Karten + Trainingskarte, abenteuer/ mit den Abenteuer-Karten
-//!   assets/music/                       Musik (Menü, Gebiete)
-//!   assets/ambience/                    Wetterklänge (Regen, Wind, Sand, Donner)
+//!   elora, elora-server, elora-master   programs
+//!   maps/                               release + training maps, abenteuer/: adventure maps
+//!   assets/music/                       music (menu, regions)
+//!   assets/ambience/                    weather sounds (rain, wind, sand, thunder)
 //!   LICENSE, THIRD_PARTY_LICENSES, SOURCES.md, LIESMICH.txt
-//!   elora.png                           Programmsymbol (256 × 256)
+//!   elora.png                           program icon (256 × 256)
 //! ```
 //!
-//! Unter macOS entsteht zusätzlich `Elora.app` (Daten in `Contents/Resources`). `--archive`
-//! packt den Ordner als `.tar.gz` (Linux, macOS) bzw. `.zip` (Windows). `AppImage` und DMG
-//! baut der GitHub-Workflow aus diesem Ordner.
+//! On macOS, `Elora.app` is created as well (data in `Contents/Resources`). `--archive`
+//! packs the folder as `.tar.gz` (Linux, macOS) or `.zip` (Windows). The GitHub workflow
+//! builds `AppImage` and DMG from this folder.
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-/// Karten, die ausgeliefert werden (Testkarten bleiben im Repository).
+/// Maps that are shipped (test maps stay in the repository).
 pub const SHIPPED_MAPS: [&str; 7] = [
     // the client starts with the training map (0.9.1 shipped without it and did not start)
     "training",
@@ -100,7 +100,7 @@ fn copy(from: &str, to: &Path) -> Result<(), String> {
     Ok(())
 }
 
-/// Programmsymbol aus der Figur (quadratisch, transparent).
+/// Program icon from the character (square, transparent).
 fn render_icon(out: &Path) -> Result<(), String> {
     let data = std::fs::read("assets/elora/elora.svg").map_err(|e| format!("Figur: {e}"))?;
     let tree = resvg::usvg::Tree::from_data(&data, &resvg::usvg::Options::default())
@@ -138,7 +138,7 @@ Lizenzen: Code GPL-3.0 (LICENSE), eigene Grafiken und Sounds CC-BY-SA 4.0,\n\
 fremde Assets siehe SOURCES.md, Bibliotheken siehe THIRD_PARTY_LICENSES.\n\
 Quelltext: https://github.com/ehrenberg/elora\n";
 
-/// Paketordner füllen (Programme, Daten, Lizenzen).
+/// Fills the package folder (programs, data, licences).
 fn fill(target: &Target, dir: &Path, bin_dir: &Path, data_dir: &Path) -> Result<(), String> {
     std::fs::create_dir_all(bin_dir).map_err(|e| e.to_string())?;
     for b in BINARIES {
@@ -151,7 +151,7 @@ fn fill(target: &Target, dir: &Path, bin_dir: &Path, data_dir: &Path) -> Result<
             .and_then(|s| s.to_str())
             .is_some_and(|s| SHIPPED_MAPS.contains(&s))
     })?;
-    // Abenteuer-Karten (E-262)
+    // adventure maps (E-262)
     copy_dir(
         Path::new("maps/abenteuer"),
         &data_dir.join("maps/abenteuer"),
@@ -174,7 +174,7 @@ fn fill(target: &Target, dir: &Path, bin_dir: &Path, data_dir: &Path) -> Result<
     render_icon(&dir.join("elora.png"))
 }
 
-/// macOS-Bundle `Elora.app` mit Programmen in `MacOS` und Daten in `Resources`.
+/// macOS bundle `Elora.app` with programs in `MacOS` and data in `Resources`.
 fn mac_bundle(target: &Target, dist: &Path) -> Result<PathBuf, String> {
     let app = dist.join("Elora.app");
     let _ = std::fs::remove_dir_all(&app);

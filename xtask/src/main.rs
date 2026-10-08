@@ -1,6 +1,6 @@
-//! Entwicklungsaufgaben für Elora (E-039).
+//! Development tasks for Elora (E-039).
 //!
-//! Aufruf: `cargo xtask <befehl>`
+//! Usage: `cargo xtask <befehl>`
 
 mod package;
 mod traffic;
@@ -102,7 +102,7 @@ fn check() -> Result<(), String> {
         ),
         (
             "Lizenzen & Advisories",
-            // „unmaintained“ nur als Warnung, echte Sicherheitslücken bleiben Fehler (E-048)
+            // "unmaintained" only as a warning, real security vulnerabilities stay errors (E-048)
             &["deny", "check", "-W", "unmaintained"],
         ),
     ];
@@ -129,7 +129,7 @@ fn cargo(args: &[&str]) -> Result<(), String> {
 
 const TABLE_FILE: &str = "crates/elora-protocol/src/huffman_table.rs";
 
-/// Zählt Byte-Häufigkeiten über Verkehr mit 8, 16 und 64 Spielern.
+/// Counts byte frequencies over traffic with 8, 16 and 64 players.
 fn train_huffman() -> Result<(), String> {
     let mut freq = [0u64; 256];
     for (players, seed) in [(8, 1), (16, 2), (64, 3)] {
@@ -140,7 +140,7 @@ fn train_huffman() -> Result<(), String> {
             }
         }
     }
-    // auf u32 skalieren
+    // scale to u32
     let max = *freq.iter().max().unwrap_or(&1);
     let scale = (max / u64::from(u32::MAX / 2)).max(1);
     let values: Vec<String> = freq
@@ -163,7 +163,7 @@ fn train_huffman() -> Result<(), String> {
     Ok(())
 }
 
-/// Misst durchschnittliche Nachrichtengrößen roh und komprimiert (anderer Seed als beim Training).
+/// Measures average message sizes raw and compressed (different seed than in training).
 fn net_stats() {
     println!(
         "| Spieler | Snapshot wie Original (Delta aller Felder + Huffman) | Elora roh | Elora + Huffman | vs. Original | Eingabe roh | Eingabe + Huffman | Server→Client kB/s (25 Hz) |"
@@ -187,7 +187,7 @@ fn net_stats() {
         let (sr, sp) = (avg(&t.server, false), avg(&t.server, true));
         let orig = avg(&t.original, true);
         let (cr, cp) = (avg(&t.client, false), avg(&t.client, true));
-        // Pro Client: ein Snapshot alle 2 Ticks, zzgl. ca. 40 Byte Kopf/Verschlüsselung
+        // per client: one snapshot every 2 ticks, plus approx. 40 bytes header/encryption
         let kbps = (sp + 40.0) * 25.0 / 1000.0;
         println!(
             "| {players} | {orig:.0} B | {sr:.0} B | {sp:.0} B | {:+.0} % | {cr:.0} B | {cp:.0} B | {kbps:.1} |",
@@ -196,8 +196,8 @@ fn net_stats() {
     }
 }
 
-/// Rastert ein SVG zu PNG (resvg), Breite optional (Höhe proportional).
-/// Bank wie im Spiel, aber frisch von der Platte (Änderungen ohne Neubau hörbar).
+/// Rasterises an SVG to PNG (resvg), width optional (height proportional).
+/// Bank as in the game, but fresh from disk (changes audible without a rebuild).
 fn load_bank() -> Result<elora_audio::Bank, String> {
     let src = std::fs::read_to_string("assets/sounds/sounds.toml")
         .map_err(|e| format!("assets/sounds/sounds.toml: {e}"))?;
@@ -224,7 +224,7 @@ fn load_bank() -> Result<elora_audio::Bank, String> {
 
 const SOUND_FILES: &str = "assets/sounds/files";
 
-/// Schreibt alle (oder die genannten) Sounds als WAV nach `target/sounds/`.
+/// Writes all (or the named) sounds as WAV to `target/sounds/`.
 fn sound_preview(names: &[String]) -> Result<(), String> {
     let bank = load_bank()?;
     let dir = std::path::Path::new("target/sounds");
@@ -250,9 +250,9 @@ fn sound_preview(names: &[String]) -> Result<(), String> {
     Ok(())
 }
 
-/// `sound-import <name> <eingabe> [start_s] [länge_s]`: Tondatei (jedes Format, das
-/// ffmpeg liest) nach `assets/sounds/files/<name>.wav` – Mono, 44,1 kHz, 16 Bit,
-/// Stille am Anfang entfernt, 15 ms Ausblenden am Ende, Spitze auf −1 dB.
+/// `sound-import <name> <eingabe> [start_s] [länge_s]`: sound file (any format that
+/// ffmpeg reads) to `assets/sounds/files/<name>.wav` – mono, 44.1 kHz, 16 bit,
+/// silence at the start removed, 15 ms fade-out at the end, peak at −1 dB.
 fn sound_import(args: &[String]) -> Result<(), String> {
     let usage = "Verwendung: cargo xtask sound-import <name> <eingabe> [start_s] [länge_s]";
     let (Some(name), Some(input)) = (args.first(), args.get(1)) else {
@@ -286,8 +286,8 @@ fn sound_import(args: &[String]) -> Result<(), String> {
         .iter()
         .map(|b| f32::from_le_bytes(*b))
         .collect();
-    // Stille am Anfang entfernen (Sounds sollen sofort einsetzen); Schwelle relativ zur
-    // Spitze, damit leise Aufnahmen und anschwellende Klänge erhalten bleiben
+    // remove silence at the start (sounds should start immediately); threshold relative
+    // to the peak, so that quiet recordings and swelling sounds are kept
     let raw_peak = samples.iter().fold(0.0_f32, |m, s| m.max(s.abs()));
     let first = samples
         .iter()
@@ -330,7 +330,7 @@ fn svg_preview(args: &[String]) -> Result<(), String> {
     };
     let data = std::fs::read(input).map_err(|e| format!("{input}: {e}"))?;
     let mut opt = resvg::usvg::Options::default();
-    // eigene Schrift statt Systemschriften (reproduzierbar)
+    // own font instead of system fonts (reproducible)
     if let Ok(font) = std::fs::read("assets/fonts/Inter-Regular.ttf") {
         opt.fontdb_mut().load_font_data(font);
     }
@@ -362,7 +362,8 @@ fn svg_preview(args: &[String]) -> Result<(), String> {
     Ok(())
 }
 
-/// Karte lesbar ausgeben (M6.2): Ersatz für das entfernte Textformat beim Prüfen von Karten.
+/// Prints a map in readable form (M6.2): replacement for the removed text format when
+/// checking maps.
 fn map_dump(path: &std::path::Path) -> Result<(), String> {
     let data = std::fs::read(path).map_err(|e| format!("{}: {e}", path.display()))?;
     let map = elora_map::decode(&data).map_err(|e| format!("{}: {e}", path.display()))?;

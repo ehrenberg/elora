@@ -1,15 +1,15 @@
-//! Synthetischer Spielverkehr zum Trainieren und Messen der Kompression (E-063).
+//! Synthetic game traffic for training and measuring the compression (E-063).
 
 use elora_protocol::{ClientMsg, ServerMsg, Snapshot};
 use elora_sim::{PlayerInput, Tuning, Weapon};
 
 const MAP: &[u8] = include_bytes!("../../maps/sandbox.emap");
 
-/// Aufgezeichnete, unkomprimierte Nachrichten.
+/// Recorded, uncompressed messages.
 pub struct Traffic {
     pub server: Vec<Vec<u8>>,
     pub client: Vec<Vec<u8>>,
-    /// Dieselben Snapshots, kodiert wie im Original (zum Vergleich).
+    /// The same snapshots, encoded as in the original (for comparison).
     pub original: Vec<Vec<u8>>,
 }
 
@@ -20,9 +20,9 @@ fn rng(state: &mut u64) -> u64 {
     *state
 }
 
-/// Simuliert `players` Menschen (plus Dummies der Karte) für `ticks` Ticks.
-/// Snapshots werden wie beim Server alle 2 Ticks als Delta gegen einen um
-/// `ack_lag` Snapshots älteren Stand erzeugt.
+/// Simulates `players` humans (plus the map's dummies) for `ticks` ticks.
+/// As on the server, snapshots are created every 2 ticks as a delta against a
+/// state that is `ack_lag` snapshots older.
 pub fn generate(players: usize, seed: u64, ticks: u64, ack_lag: usize) -> Traffic {
     let map = elora_map::decode(MAP).expect("Sandbox-Karte gültig");
     let mut world = map.world(Tuning::default());
@@ -37,7 +37,7 @@ pub fn generate(players: usize, seed: u64, ticks: u64, ack_lag: usize) -> Traffi
     };
     for t in 0..ticks {
         for &s in &slots {
-            // Waffen verteilen, damit geschossen wird
+            // hand out weapons so that there is shooting
             if let Some(ch) = world.character_mut(s) {
                 for w in [Weapon::Grenade, Weapon::Laser] {
                     ch.arsenal.give(w, 10, 10);
