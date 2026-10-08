@@ -89,7 +89,7 @@ impl Sounds {
     /// # Panics
     /// If `sounds.toml` or a sound file is faulty (covered by tests).
     pub fn new(settings: AudioSettings) -> Self {
-        let bank = Bank::load().expect("assets/sounds: sounds.toml und Tondateien gültig");
+        let bank = Bank::load().expect("assets/sounds: sounds.toml and sound files valid");
         Self {
             audio: Audio::new(&bank),
             settings,
@@ -332,22 +332,22 @@ mod tests {
     fn weather_sounds_follow_the_weather() {
         assert!(
             ambience_levels(Weather::CLEAR).iter().all(|l| *l <= 0.0),
-            "schön: still"
+            "clear: silent"
         );
         let [rain, wind, sand] = ambience_levels(w(WeatherKind::Storm, 1.0));
         assert!(
             rain > 0.9 && wind > 0.5 && sand == 0.0,
-            "Gewitter: Regen und Wind"
+            "storm: rain and wind"
         );
         let [_, _, sand] = ambience_levels(w(WeatherKind::Sandstorm, 1.0));
-        assert!(sand > 0.8, "Sandsturm rieselt");
+        assert!(sand > 0.8, "sandstorm trickles");
         let soft = ambience_levels(w(WeatherKind::Rain, 0.2))[0];
         let hard = ambience_levels(w(WeatherKind::Rain, 1.0))[0];
-        assert!(hard > soft, "stärkerer Regen ist lauter");
+        assert!(hard > soft, "heavier rain is louder");
         let open = ambience_levels(w(WeatherKind::Rain, 1.0))[0];
         assert!(
             sheltered_levels(w(WeatherKind::Rain, 1.0), 1.0)[0] < open * 0.5,
-            "unter Dach leiser"
+            "quieter under a roof"
         );
         for kind in WeatherKind::ALL {
             for l in ambience_levels(w(kind, 1.0)) {

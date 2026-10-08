@@ -392,7 +392,7 @@ mod tests {
         assert_eq!(
             e.selected_object().unwrap().pos,
             door.pos + Vec2::new(32.0, 0.0),
-            "auf Tiles"
+            "snapped to tiles"
         );
         assert!(e.rename_object("tor", now));
         assert!(!e.rename_object("a:b", now));

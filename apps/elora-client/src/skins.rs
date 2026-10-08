@@ -9,34 +9,34 @@ use crate::figure::{KEY_BODY, KEY_EYES, KEY_FEET};
 
 /// Body and feet (16), approved with `docs/archive/release-1/design/elora-palette.png`.
 pub const BODY: [(&str, Color); Skin::BODY_COLORS as usize] = [
-    ("Sonne", Color::hex(0xf2c14e)),
+    ("Sun", Color::hex(0xf2c14e)),
     ("Orange", Color::hex(0xf28c3a)),
-    ("Koralle", Color::hex(0xe8685a)),
-    ("Rot", Color::hex(0xd94a4a)),
-    ("Rosa", Color::hex(0xef7fb0)),
-    ("Violett", Color::hex(0xa77be0)),
+    ("Coral", Color::hex(0xe8685a)),
+    ("Red", Color::hex(0xd94a4a)),
+    ("Pink", Color::hex(0xef7fb0)),
+    ("Violet", Color::hex(0xa77be0)),
     ("Indigo", Color::hex(0x6a78e0)),
-    ("Himmel", Color::hex(0x5aaee8)),
-    ("Türkis", Color::hex(0x3fc1b0)),
+    ("Sky", Color::hex(0x5aaee8)),
+    ("Turquoise", Color::hex(0x3fc1b0)),
     ("Mint", Color::hex(0x7fd99a)),
-    ("Grün", Color::hex(0x6cbf4a)),
-    ("Limette", Color::hex(0xb8d94a)),
+    ("Green", Color::hex(0x6cbf4a)),
+    ("Lime", Color::hex(0xb8d94a)),
     ("Sand", Color::hex(0xe0c89a)),
-    ("Braun", Color::hex(0xa8744a)),
-    ("Grau", Color::hex(0x9aa4ae)),
-    ("Weiß", Color::hex(0xf0ece4)),
+    ("Brown", Color::hex(0xa8744a)),
+    ("Grey", Color::hex(0x9aa4ae)),
+    ("White", Color::hex(0xf0ece4)),
 ];
 
 /// Eyes (8).
 pub const EYES: [(&str, Color); Skin::EYE_COLORS as usize] = [
-    ("Schwarz", Color::hex(0x2b2b2b)),
-    ("Nachtblau", Color::hex(0x2e3f86)),
-    ("Tannengrün", Color::hex(0x2f6b4a)),
-    ("Kastanie", Color::hex(0x6b3a2a)),
-    ("Wein", Color::hex(0x7a2a4a)),
-    ("Pflaume", Color::hex(0x4a2a7a)),
+    ("Black", Color::hex(0x2b2b2b)),
+    ("Midnight blue", Color::hex(0x2e3f86)),
+    ("Fir green", Color::hex(0x2f6b4a)),
+    ("Chestnut", Color::hex(0x6b3a2a)),
+    ("Wine", Color::hex(0x7a2a4a)),
+    ("Plum", Color::hex(0x4a2a7a)),
     ("Petrol", Color::hex(0x1f6470)),
-    ("Schiefer", Color::hex(0x5a5a5a)),
+    ("Slate", Color::hex(0x5a5a5a)),
 ];
 
 /// Body color of the dummies (independent of the skin, to tell them apart).
@@ -93,9 +93,9 @@ pub fn rainbow(mut tint: Tint, t: f32) -> Tint {
 /// Choice in the panel; `true` on change.
 pub fn picker(ui: &mut egui::Ui, skin: &mut Skin) -> bool {
     let mut changed = false;
-    changed |= row(ui, "Körper", &BODY, &mut skin.body);
-    changed |= row(ui, "Füße", &BODY, &mut skin.feet);
-    changed |= row(ui, "Augen", &EYES, &mut skin.eyes);
+    changed |= row(ui, "Body", &BODY, &mut skin.body);
+    changed |= row(ui, "Feet", &BODY, &mut skin.feet);
+    changed |= row(ui, "Eyes", &EYES, &mut skin.eyes);
     changed
 }
 

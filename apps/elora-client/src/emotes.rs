@@ -27,7 +27,7 @@ fn load(data: &[u8], name: &str) -> Mesh {
         .into_iter()
         .map(|(_, m)| m)
         .next()
-        .unwrap_or_else(|| panic!("assets/emotes/{name} ist leer"))
+        .unwrap_or_else(|| panic!("assets/emotes/{name} is empty"))
 }
 
 #[derive(Debug)]
@@ -177,19 +177,19 @@ mod tests {
 
     #[test]
     fn wheel_selection_by_direction() {
-        assert_eq!(selection(Vec2::new(0.0, -100.0)), Some(0), "oben = Herz");
-        assert_eq!(selection(Vec2::new(100.0, -100.0)), Some(1), "oben rechts");
-        assert_eq!(selection(Vec2::new(100.0, 0.0)), Some(2), "rechts");
-        assert_eq!(selection(Vec2::new(0.0, 100.0)), Some(4), "unten");
-        assert_eq!(selection(Vec2::new(-100.0, 0.0)), Some(6), "links");
-        assert_eq!(selection(Vec2::new(-100.0, -90.0)), Some(7), "oben links");
-        assert_eq!(selection(Vec2::new(10.0, 5.0)), None, "Mitte");
+        assert_eq!(selection(Vec2::new(0.0, -100.0)), Some(0), "up = heart");
+        assert_eq!(selection(Vec2::new(100.0, -100.0)), Some(1), "up right");
+        assert_eq!(selection(Vec2::new(100.0, 0.0)), Some(2), "right");
+        assert_eq!(selection(Vec2::new(0.0, 100.0)), Some(4), "down");
+        assert_eq!(selection(Vec2::new(-100.0, 0.0)), Some(6), "left");
+        assert_eq!(selection(Vec2::new(-100.0, -90.0)), Some(7), "up left");
+        assert_eq!(selection(Vec2::new(10.0, 5.0)), None, "center");
     }
 
     /// Visual inspection: `cargo test -p elora-client --bin elora emote_sheet -- --ignored`,
     /// then `cargo xtask svg-preview target/emotes.svg target/emotes.png 1000`.
     #[test]
-    #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
+    #[ignore = "only writes a file for visual inspection"]
     fn emote_sheet() {
         let e = Emotes::new();
         let mut batch = ShapeBatch::default();

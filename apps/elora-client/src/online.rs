@@ -78,6 +78,14 @@ struct Download {
     total: u32,
 }
 
+/// Client-side disconnect reasons, written as `<code> <detail>` into [`Status::Disconnected`];
+/// the game shows them via the language key `reason.<code without #>` (E-352).
+pub mod fail_code {
+    pub const MAP_DAMAGED: &str = "#map-damaged";
+    pub const MAP_INVALID: &str = "#map-invalid";
+    pub const MAP_MISMATCH: &str = "#map-mismatch";
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Status {
     Connecting,
@@ -209,7 +217,10 @@ impl OnlineClient {
         self
     }
 
-    fn fail(&mut self, reason: String) {
+    /// Ends the connection with a client-side reason: `code` from [`fail_code`], `detail` is
+    /// technical and stays English (E-352).
+    fn fail(&mut self, code: &str, detail: &str) {
+        let reason = format!("{code} {detail}").trim_end().to_owned();
         tracing::warn!("{reason}");
         self.download = None;
         self.status = Status::Disconnected(reason);
@@ -231,12 +242,12 @@ impl OnlineClient {
             size,
         };
         if let Some(data) = self.store.find(&name, &checksum) {
-            tracing::info!(map = %name, "Karte aus dem Zwischenspeicher");
+            tracing::info!(map = %name, "map from the cache");
             self.finish_map(name, checksum, &data);
             return;
         }
         let total = u32::try_from(size.div_ceil(MAP_CHUNK)).unwrap_or(u32::MAX);
-        tracing::info!(map = %name, size, "Karte wird heruntergeladen");
+        tracing::info!(map = %name, size, "downloading map");
         self.download = Some(Download {
             name,
             checksum,
@@ -270,7 +281,7 @@ impl OnlineClient {
         }
         let expected = (d.size - offset).min(MAP_CHUNK);
         if data.len() != expected {
-            self.fail("Karte beschädigt (falsche Teilgröße)".into());
+            self.fail(fail_code::MAP_DAMAGED, "wrong chunk size");
             return;
         }
         d.data.extend_from_slice(data);
@@ -282,9 +293,9 @@ impl OnlineClient {
             self.request_next_chunk();
             return;
         }
-        let d = self.download.take().expect("eben geprüft");
+        let d = self.download.take().expect("checked above");
         if elora_map::checksum(&d.data) != d.checksum {
-            self.fail("Karte beschädigt (Prüfsumme stimmt nicht)".into());
+            self.fail(fail_code::MAP_DAMAGED, "checksum mismatch");
             return;
         }
         self.store.store(&d.name, &d.checksum, &d.data);
@@ -300,7 +311,7 @@ impl OnlineClient {
                 self.map_checksum = Some(checksum);
                 self.send(&ClientMsg::MapReady);
             }
-            Err(e) => self.fail(format!("Karte vom Server ungültig: {e}")),
+            Err(e) => self.fail(fail_code::MAP_INVALID, &e.to_string()),
         }
     }
 
@@ -435,7 +446,7 @@ impl OnlineClient {
     /// Processes a message from the server, received at time `at`.
     pub fn on_message(&mut self, data: &[u8], at: Instant) {
         let Ok(msg) = ServerMsg::decode(data) else {
-            tracing::warn!("ungültige Server-Nachricht");
+            tracing::warn!("invalid server message");
             return;
         };
         match msg {
@@ -458,7 +469,7 @@ impl OnlineClient {
                     .as_ref()
                     .filter(|_| self.map_checksum == Some(map_checksum))
                 else {
-                    self.fail(format!("Karte `{map_name}` passt nicht zum Server"));
+                    self.fail(fail_code::MAP_MISMATCH, &map_name);
                     return;
                 };
                 // also after a map change: discard the state of the old map
@@ -479,7 +490,7 @@ impl OnlineClient {
                     self.names
                         .get(&(f as usize))
                         .cloned()
-                        .unwrap_or_else(|| format!("Spieler {f}"))
+                        .unwrap_or_else(|| format!("Player {f}"))
                 });
                 self.push_chat(
                     Some(from.unwrap_or_else(|| "Server".into())),
@@ -818,8 +829,8 @@ impl OnlineClient {
 
     /// Snapshots immediately before and after `render`.
     fn bracket(&self, render: f64) -> (&Snapshot, &Snapshot) {
-        let latest = self.snapshots.back().expect("mindestens ein Snapshot");
-        let mut a = self.snapshots.front().expect("mindestens ein Snapshot");
+        let latest = self.snapshots.back().expect("at least one snapshot");
+        let mut a = self.snapshots.front().expect("at least one snapshot");
         for s in &self.snapshots {
             if s.tick as f64 <= render {
                 a = s;

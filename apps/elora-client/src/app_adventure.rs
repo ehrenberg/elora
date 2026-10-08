@@ -150,7 +150,7 @@ impl App {
                 Ok(Some(save)) => Session::new(content, save),
                 Ok(None) => Session::new_game(content),
                 Err(e) => {
-                    self.status = e.to_string();
+                    self.status = self.lang.f("adventure.load_failed", &[("e", &e)]);
                     return;
                 }
             }
@@ -200,7 +200,7 @@ impl App {
         let m = match editor_map.unwrap_or_else(|| load_map(map)) {
             Ok(m) => m,
             Err(e) => {
-                tracing::warn!("Abenteuer-Karte {map}: {e:#}");
+                tracing::warn!("adventure map {map}: {e:#}");
                 self.status = self.lang.f("adventure.map_missing", &[("map", &map)]);
                 return false;
             }
@@ -301,7 +301,7 @@ impl App {
 
     pub(crate) fn delete_slot(&mut self, slot: usize) {
         if let Err(e) = slots().delete(slot) {
-            self.status = e.to_string();
+            self.status = self.lang.f("adventure.delete_failed", &[("e", &e)]);
         }
     }
 

@@ -62,7 +62,7 @@ impl Grid {
         g[0][1] = 'S';
         let rows: Vec<String> = g.iter().map(|r| r.iter().collect()).collect();
         let r: Vec<&str> = rows.iter().map(String::as_str).collect();
-        let mut m = Map::from_rows(name, &r).expect("Layout gültig");
+        let mut m = Map::from_rows(name, &r).expect("layout valid");
         m.entities.clear();
         m
     }
@@ -253,7 +253,7 @@ fn envelope(map: &mut Map, name: &str, kind: EnvKind, points: &[(u32, [f32; 4], 
             })
             .collect(),
     });
-    u16::try_from(map.envelopes.len() - 1).expect("wenige Animationen")
+    u16::try_from(map.envelopes.len() - 1).expect("few animations")
 }
 
 /// Small movements (detail): butterflies flutter, smoke rises, flags wave.
@@ -919,7 +919,7 @@ mod tests {
         let c = Content::builtin();
         let (a, b) = (tauwinkel(), meadow());
         for m in [&a, &b] {
-            let back = elora_map::decode(&elora_map::encode(m)).expect("Karte gültig");
+            let back = elora_map::decode(&elora_map::encode(m)).expect("map valid");
             let errors = map_objects(&c, &back);
             assert!(errors.is_empty(), "{}: {errors:?}", m.name);
             assert!(!back.decor_back.is_empty() && !back.backgrounds.is_empty());
@@ -943,17 +943,17 @@ mod tests {
     #[test]
     fn shipped_prologue_maps_are_current() {
         for (name, map) in [("tauwinkel", tauwinkel()), ("wiese-1", meadow())] {
-            let file = std::fs::read(shipped(name)).expect("Karte vorhanden");
+            let file = std::fs::read(shipped(name)).expect("map present");
             assert_eq!(
-                elora_map::decode(&file).expect("gültig"),
+                elora_map::decode(&file).expect("valid"),
                 map,
-                "{name} veraltet – write_prologue_maps -- --ignored"
+                "{name} outdated – write_prologue_maps -- --ignored"
             );
         }
     }
 
     #[test]
-    #[ignore = "schreibt maps/abenteuer/*.emap"]
+    #[ignore = "writes maps/abenteuer/*.emap"]
     fn write_prologue_maps() {
         for (name, map) in [("tauwinkel", tauwinkel()), ("wiese-1", meadow())] {
             map.save(std::path::Path::new(&shipped(name))).unwrap();
@@ -962,7 +962,7 @@ mod tests {
 
     /// Overview: `… prologue_sheets -- --ignored` → `target/prolog-<karte>.svg`.
     #[test]
-    #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
+    #[ignore = "only writes files for visual inspection"]
     fn prologue_sheets() {
         use crate::editor::panel::Preview;
         use crate::editor::view;

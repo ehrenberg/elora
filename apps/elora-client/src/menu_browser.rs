@@ -124,8 +124,8 @@ fn server_list(
     if visible.is_empty() {
         let text = if e.browser.busy() {
             lang.t("browser.searching")
-        } else if !e.browser.status.is_empty() {
-            e.browser.status.as_str()
+        } else if let Some((key, detail)) = &e.browser.status {
+            &lang.f(key, &[("e", detail)])
         } else {
             lang.t("browser.empty")
         };

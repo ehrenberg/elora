@@ -123,7 +123,7 @@ fn client_joins_and_receives_snapshots() {
     assert_eq!(p.online.info.snapshot_errors, 0);
     assert!(
         p.online.scene(g.now).unwrap().local().is_some(),
-        "Elora ist gespawnt"
+        "Elora has spawned"
     );
 }
 
@@ -146,7 +146,7 @@ fn prediction_matches_server_at_100ms_ping() {
     }
     let p = &g.players[0];
     eprintln!(
-        "Info: {:?}, Snapshot-Tick {:?}, Server-Tick {}, max. Korrektur {}",
+        "info: {:?}, snapshot tick {:?}, server tick {}, max. correction {}",
         p.online.info,
         p.online.latest_snapshot_tick(),
         g.server.world.tick,
@@ -155,17 +155,17 @@ fn prediction_matches_server_at_100ms_ping() {
     assert_eq!(p.online.info.snapshot_errors, 0);
     assert!(
         p.online.info.prediction_ticks >= 5,
-        "bei 100 ms Ping ≥ 5 Ticks Vorhersage: {}",
+        "at 100 ms ping ≥ 5 ticks prediction: {}",
         p.online.info.prediction_ticks
     );
     assert!(
         g.max_correction_after_warmup < 0.01,
-        "Vorhersage weicht vom Server ab: {} Einheiten",
+        "prediction deviates from the server: {} units",
         g.max_correction_after_warmup
     );
     assert!(
         p.online.info.input_time_left_ms >= 0,
-        "Eingaben kommen rechtzeitig an"
+        "inputs arrive in time"
     );
 }
 
@@ -178,11 +178,8 @@ fn two_players_see_each_other() {
     for p in &g.players {
         let scene = p.online.scene(g.now).unwrap();
         let humans = scene.chars.iter().filter(|c| !c.dummy).count();
-        assert_eq!(humans, 2, "beide Spieler sichtbar");
-        assert!(
-            scene.chars.iter().any(|c| c.dummy),
-            "Dummies der Karte sichtbar"
-        );
+        assert_eq!(humans, 2, "both players visible");
+        assert!(scene.chars.iter().any(|c| c.dummy), "map dummies visible");
     }
 }
 
@@ -202,12 +199,12 @@ fn skins_are_shared_and_updated() {
     assert_eq!(
         g.players[1].online.skins.get(&slot_a),
         Some(&a),
-        "B kennt Skin von A"
+        "B knows A's skin"
     );
     assert_eq!(
         g.players[0].online.skins.get(&slot_b),
         Some(&Skin::default()),
-        "A kennt Skin von B (beigetreten nach A)"
+        "A knows B's skin (joined after A)"
     );
     let changed = Skin {
         body: 4,
@@ -259,7 +256,7 @@ fn info_query_lists_server_and_players() {
             break;
         }
     }
-    let reply = reply.expect("Server antwortet");
+    let reply = reply.expect("server replies");
     assert!(
         reply.ping >= Duration::from_millis(40),
         "Ping {:?}",
@@ -272,7 +269,7 @@ fn info_query_lists_server_and_players() {
     assert!(info.players.iter().any(|p| p.name == "Nimbus" && !p.dummy));
     assert!(
         info.players.iter().any(|p| p.dummy),
-        "Dummies der Karte stehen in der Liste"
+        "map dummies are in the list"
     );
 }
 
@@ -301,7 +298,7 @@ fn survives_loss_and_jitter() {
     }
     let p = &g.players[0];
     eprintln!(
-        "Info bei Verlust: {:?}, Stichproben mit Korrektur: {corrections}/40",
+        "info under loss: {:?}, samples with correction: {corrections}/40",
         p.online.info
     );
     assert_eq!(p.online.status, Status::Playing);
@@ -366,7 +363,7 @@ fn vote_changes_mode() {
             instagib: true,
         });
     });
-    assert!(g.players[1].online.vote.is_some(), "Abstimmung sichtbar");
+    assert!(g.players[1].online.vote.is_some(), "vote visible");
     g.act(1, 300, |o| o.vote(true));
     assert_eq!(g.server.rules.cfg.title(), "iCTF");
     let view = g.players[0].online.game().unwrap();
@@ -387,7 +384,7 @@ fn kill_and_spectate() {
     g.run(4000, false);
     assert!(
         g.server.world.character(slot).is_none(),
-        "Zuschauer spawnt nicht"
+        "spectator does not spawn"
     );
     assert_eq!(
         g.players[0].online.team_of(slot),
@@ -405,12 +402,12 @@ fn console_commands() {
     assert!(g.server.command("status", now).contains("Konsole"));
     assert!(g.server.command("instagib on", now).contains("iTDM"));
     assert!(g.server.command("map sandbox", now).contains("sandbox"));
-    assert!(g.server.command("gibtsnicht", now).contains("Unbekannt"));
+    assert!(g.server.command("gibtsnicht", now).contains("Unknown"));
     g.run(300, false);
     assert_eq!(
         g.players[0].online.status,
         Status::Playing,
-        "nach Kartenwechsel weiter verbunden"
+        "still connected after map change"
     );
     assert!(g.players[0].online.latest_snapshot_tick().is_some());
 }
@@ -457,7 +454,7 @@ fn missing_map_is_downloaded_in_parts_and_cached() {
     assert_eq!(
         g.players[i].online.status,
         Status::Playing,
-        "sofort aus dem Speicher"
+        "immediately from the store"
     );
     assert_eq!(g.server.player_count(), 2);
 }
@@ -475,12 +472,12 @@ fn loading_player_is_not_in_the_world_yet() {
             assert_eq!(
                 g.server.player_count(),
                 0,
-                "noch kein Slot während des Downloads"
+                "no slot yet during the download"
             );
             seen_partial |= received > 0;
         }
     }
-    assert!(seen_partial, "Fortschritt sichtbar");
+    assert!(seen_partial, "progress visible");
     assert_eq!(g.players[0].online.status, Status::Playing);
 }
 
@@ -564,8 +561,8 @@ fn own_character_moves_smoothly_every_frame() {
     }
     assert!(xs.len() > 50, "{}", xs.len());
     let frozen = xs.windows(2).filter(|w| (w[1] - w[0]).abs() < 1.0).count();
-    assert_eq!(frozen, 0, "Bilder ohne Bewegung: {xs:?}");
+    assert_eq!(frozen, 0, "frames without movement: {xs:?}");
     alphas.sort_unstable();
     alphas.dedup();
-    assert!(alphas.len() > 5, "alpha ändert sich: {alphas:?}");
+    assert!(alphas.len() > 5, "alpha changes: {alphas:?}");
 }

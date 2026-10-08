@@ -563,7 +563,7 @@ mod tests {
     /// Visual inspection: `cargo test -p elora-client --bin elora ui_sheet -- --ignored`,
     /// then `cargo xtask svg-preview target/ui.svg target/ui.png 1280`.
     #[test]
-    #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
+    #[ignore = "only writes a file for visual inspection"]
     #[allow(clippy::too_many_lines)] // sample data
     fn ui_sheet() {
         use elora_game::{Mode, Phase, Stats};

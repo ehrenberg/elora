@@ -163,7 +163,7 @@ impl CreatureArt {
                 let idle = a
                     .part("idle")
                     .cloned()
-                    .unwrap_or_else(|| panic!("{name}.svg: Teil `idle` fehlt"));
+                    .unwrap_or_else(|| panic!("{name}.svg: part `idle` missing"));
                 (
                     name,
                     Look {
@@ -183,7 +183,7 @@ impl CreatureArt {
             load(data, file)
                 .part("")
                 .cloned()
-                .unwrap_or_else(|| panic!("{file} ist leer"))
+                .unwrap_or_else(|| panic!("{file} is empty"))
         };
         let characters = CHARACTER_FILES
             .iter()
@@ -193,7 +193,7 @@ impl CreatureArt {
                 let m = a
                     .part("figure")
                     .cloned()
-                    .unwrap_or_else(|| panic!("{name}.svg: Teil `figure` fehlt"));
+                    .unwrap_or_else(|| panic!("{name}.svg: part `figure` missing"));
                 (name, m)
             })
             .collect();
@@ -204,7 +204,7 @@ impl CreatureArt {
                 let part = |p: &str| {
                     a.part(p)
                         .cloned()
-                        .unwrap_or_else(|| panic!("{name}.svg: Teil `{p}` fehlt"))
+                        .unwrap_or_else(|| panic!("{name}.svg: part `{p}` missing"))
                 };
                 (name, (part(off), part(on)))
             })
@@ -558,7 +558,7 @@ mod tests {
         for k in crate::sandbox::creature_kinds() {
             assert!(
                 art.looks.contains_key(k.name.as_str()),
-                "Grafik für {} fehlt",
+                "graphic for {} missing",
                 k.name
             );
         }
@@ -566,14 +566,14 @@ mod tests {
         for c in elora_adventure::Content::builtin().characters.keys() {
             assert!(
                 art.characters.contains_key(c.as_str()),
-                "Grafik für NPC {c} fehlt"
+                "graphic for NPC {c} missing"
             );
         }
         assert_eq!(art.objects.len(), 4);
     }
 
     #[test]
-    #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
+    #[ignore = "only writes a file for visual inspection"]
     #[allow(clippy::too_many_lines)]
     fn creature_sheet() {
         use elora_sim::creature::diver;

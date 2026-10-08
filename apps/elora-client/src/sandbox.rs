@@ -69,7 +69,7 @@ impl Sandbox {
         // training: all abilities on (E-293), can be switched off in the panel
         world.set_abilities(player, elora_sim::Abilities::ALL);
         let watcher = MapWatcher::new(map_path)
-            .inspect_err(|e| tracing::warn!("Hot-Reload nicht verfügbar: {e:#}"))
+            .inspect_err(|e| tracing::warn!("hot reload unavailable: {e:#}"))
             .ok();
         let mut s = Self {
             map_path: map_path.to_path_buf(),
@@ -166,7 +166,7 @@ impl Sandbox {
         }
         match load_map(&self.map_path) {
             Ok(map) => {
-                self.stop_recording("Karte geändert");
+                self.stop_recording("map changed");
                 let elora = self.character().cloned();
                 let abilities = self.abilities();
                 let (mut world, player) = fresh_world(&map, self.world.tuning.clone());
@@ -182,10 +182,10 @@ impl Sandbox {
                     self.rules = Some(Rules::new(cfg, &mut self.world, false));
                 }
                 self.sync_prev();
-                tracing::info!("Karte neu geladen");
+                tracing::info!("map reloaded");
             }
             Err(e) => {
-                tracing::warn!("Karte ungültig: {e:#}");
+                tracing::warn!("map invalid: {e:#}");
                 self.reload_error = Some(format!("{e:#}"));
             }
         }
@@ -198,7 +198,7 @@ impl Sandbox {
     /// If the map is unreadable or invalid.
     pub fn switch_map(&mut self, path: &Path) -> anyhow::Result<()> {
         let map = load_map(path)?;
-        self.stop_recording("Karte gewechselt");
+        self.stop_recording("map switched");
         let abilities = self.abilities();
         let adventure = self.world.adventure;
         let (mut world, player) = fresh_world(&map, self.world.tuning.clone());
@@ -209,7 +209,7 @@ impl Sandbox {
         self.map = map;
         self.map_path = path.to_path_buf();
         self.watcher = MapWatcher::new(path)
-            .inspect_err(|e| tracing::warn!("Hot-Reload nicht verfügbar: {e:#}"))
+            .inspect_err(|e| tracing::warn!("hot reload unavailable: {e:#}"))
             .ok();
         self.reload_error = None;
         self.notices.clear();
@@ -224,7 +224,7 @@ impl Sandbox {
     /// Play a fully built world (adventure, A1.6); without hot reload, rules and
     /// recording. Returns the previous map for restoring.
     pub fn play_world(&mut self, map: Map, world: World, player: usize) -> Map {
-        self.stop_recording("Abenteuer");
+        self.stop_recording("adventure");
         self.world = world;
         self.player = player;
         self.rules = None;
@@ -239,14 +239,14 @@ impl Sandbox {
     /// Switch hot reload of the current map file back on (after the adventure).
     pub fn watch_again(&mut self) {
         self.watcher = MapWatcher::new(&self.map_path)
-            .inspect_err(|e| tracing::warn!("Hot-Reload nicht verfügbar: {e:#}"))
+            .inspect_err(|e| tracing::warn!("hot reload unavailable: {e:#}"))
             .ok();
     }
 
     /// Play a map from memory (test play from the editor, M6.9): fresh world in
     /// free play. Returns the previous map for restoring.
     pub fn play_map(&mut self, map: Map) -> Map {
-        self.stop_recording("Testspiel");
+        self.stop_recording("test game");
         let abilities = self.abilities();
         let (mut world, player) = fresh_world(&map, self.world.tuning.clone());
         world.set_abilities(player, abilities);
@@ -262,7 +262,7 @@ impl Sandbox {
 
     /// Set or switch off the game mode (E-075). Starts a new match with a countdown.
     pub fn set_mode(&mut self, cfg: Option<RulesConfig>) {
-        self.stop_recording("Modus");
+        self.stop_recording("mode");
         let tuning = self
             .rules
             .as_ref()
@@ -386,7 +386,7 @@ impl Sandbox {
     pub fn stop_recording(&mut self, reason: &str) -> Option<String> {
         let rec = self.recording.take()?;
         if rec.is_empty() {
-            return Some("Aufzeichnung leer – verworfen".into());
+            return Some("recording empty – discarded".into());
         }
         let secs = std::time::SystemTime::now()
             .duration_since(std::time::UNIX_EPOCH)
@@ -398,11 +398,11 @@ impl Sandbox {
             .and_then(|text| std::fs::write(&path, text).map_err(anyhow::Error::from));
         Some(match result {
             Ok(()) => format!(
-                "Aufzeichnung ({reason}): {} Ticks → {} (Golden mit ELORA_BLESS=1 erzeugen)",
+                "recording ({reason}): {} ticks → {} (create the golden with ELORA_BLESS=1)",
                 rec.len(),
                 path.file_name().unwrap_or_default().to_string_lossy()
             ),
-            Err(e) => format!("Aufzeichnung nicht gespeichert: {e:#}"),
+            Err(e) => format!("recording not saved: {e:#}"),
         })
     }
 
@@ -552,8 +552,8 @@ fn fresh_world(map: &Map, tuning: Tuning) -> (World, usize) {
 
 pub fn load_map(path: &Path) -> anyhow::Result<Map> {
     let data =
-        std::fs::read(path).with_context(|| format!("Karte {} nicht lesbar", path.display()))?;
-    elora_map::decode(&data).with_context(|| format!("Karte {}", path.display()))
+        std::fs::read(path).with_context(|| format!("map {} not readable", path.display()))?;
+    elora_map::decode(&data).with_context(|| format!("map {}", path.display()))
 }
 
 /// Watches the map file. The directory is watched because many editors
@@ -573,10 +573,7 @@ impl MapWatcher {
     fn new(path: &Path) -> anyhow::Result<Self> {
         use notify::Watcher as _;
         let file = std::fs::canonicalize(path)?;
-        let dir = file
-            .parent()
-            .context("Karte hat kein Verzeichnis")?
-            .to_path_buf();
+        let dir = file.parent().context("map has no directory")?.to_path_buf();
         let (tx, events) = mpsc::channel();
         let mut watcher =
             notify::recommended_watcher(move |res: notify::Result<notify::Event>| {
@@ -613,7 +610,7 @@ mod tests {
         let mut sb = Sandbox::load(path, Tuning::default()).unwrap();
         let mut controls = Controls::default();
         sb.advance(TICK * 2, &mut controls);
-        assert_eq!(sb.world.creatures.len(), 5, "Gegner aus der Karte");
+        assert_eq!(sb.world.creatures.len(), 5, "enemies from the map");
         assert_eq!(
             sb.world.character(sb.player).unwrap().core.abilities,
             elora_sim::Abilities::ALL
@@ -624,7 +621,7 @@ mod tests {
         for _ in 0..TRAINEE_RESPAWN {
             sb.advance(TICK, &mut controls);
         }
-        assert_eq!(sb.world.creatures.len(), 5, "nach 5 s zurück");
+        assert_eq!(sb.world.creatures.len(), 5, "back after 5 s");
     }
 
     #[test]
@@ -639,7 +636,7 @@ mod tests {
         assert_eq!(sb.map, own);
         assert!(
             sb.character().is_some(),
-            "Elora steht am Spawn der Testkarte"
+            "Elora stands at the spawn of the test map"
         );
         assert_eq!(sb.world.collision.width(), 5);
         sb.play_map(previous);

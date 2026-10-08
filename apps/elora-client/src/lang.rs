@@ -184,15 +184,24 @@ impl Lang {
         }
     }
 
-    /// Disconnect reason: translate the code, leave free text unchanged.
+    /// Disconnect reason: translate the code, leave free text unchanged. Client-side codes
+    /// ([`elora_client::online::fail_code`]) carry a technical detail after the code.
     pub fn reason(&self, text: &str) -> String {
-        elora_protocol::reason::key(text).map_or_else(|| text.to_owned(), |k| self.t(&k).to_owned())
+        if let Some(k) = elora_protocol::reason::key(text) {
+            return self.t(&k).to_owned();
+        }
+        let (code, detail) = text.split_once(' ').unwrap_or((text, ""));
+        match code.strip_prefix('#').map(|c| format!("reason.{c}")) {
+            Some(key) if self.t(&key) != key => self.f(&key, &[("detail", &detail)]),
+            _ => text.to_owned(),
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use elora_client::online::fail_code;
 
     fn placeholders(s: &str) -> Vec<&str> {
         let mut v: Vec<&str> = s
@@ -253,7 +262,16 @@ mod tests {
                     "{text}"
                 );
             }
-            assert_eq!(lang.reason("freier Text"), "freier Text");
+            for code in [
+                fail_code::MAP_DAMAGED,
+                fail_code::MAP_INVALID,
+                fail_code::MAP_MISMATCH,
+            ] {
+                let text = lang.reason(&format!("{code} detail"));
+                assert!(!text.starts_with('#') && text.contains("detail"), "{text}");
+            }
+            assert_eq!(lang.reason("free text"), "free text");
+            assert_eq!(lang.reason("#unknown-code x"), "#unknown-code x");
         }
         let en = Lang::new(Language::En);
         assert_eq!(
@@ -277,12 +295,12 @@ mod tests {
         let mut ek: Vec<&String> = en.keys().collect();
         dk.sort();
         ek.sort();
-        assert_eq!(dk, ek, "gleiche Schlüssel in de.toml und en.toml");
+        assert_eq!(dk, ek, "same keys in de.toml and en.toml");
         for (k, v) in &de {
             assert_eq!(
                 placeholders(v),
                 placeholders(&en[k]),
-                "Platzhalter von `{k}`"
+                "placeholders of `{k}`"
             );
         }
     }
@@ -292,7 +310,7 @@ mod tests {
         let en = Lang::new(Language::En);
         assert_eq!(en.t("hud.round_over"), "Round over");
         assert_eq!(en.f("hud.red", &[("n", &3)]), "Red 3");
-        assert_eq!(en.t("gibt.es.nicht"), "gibt.es.nicht");
+        assert_eq!(en.t("does.not.exist"), "does.not.exist");
         let de = Lang::new(Language::De);
         assert_eq!(
             de.f(

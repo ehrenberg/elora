@@ -507,7 +507,7 @@ mod tests {
     /// Visual inspection: `cargo test -p elora-client --bin elora menu_scene_sheets -- --ignored`
     /// writes `target/menu-<phase>.svg`.
     #[test]
-    #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
+    #[ignore = "only writes files for visual inspection"]
     fn menu_scene_sheets() {
         let (map, creatures) = (MapArt::load(), CreatureArt::load());
         let screen = Vec2::new(1280.0, 720.0);

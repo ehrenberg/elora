@@ -387,7 +387,7 @@ mod tests {
         let c = Content::builtin();
         let maps = all_maps();
         for (name, m) in &maps {
-            let back = elora_map::decode(&elora_map::encode(m)).expect("Karte gültig");
+            let back = elora_map::decode(&elora_map::encode(m)).expect("map valid");
             let errors = map_objects(&c, &back);
             assert!(errors.is_empty(), "{name}: {errors:?}");
         }
@@ -412,7 +412,7 @@ mod tests {
                     .count()
             })
             .sum();
-        assert!(bees >= 4, "{bees} Bienen");
+        assert!(bees >= 4, "{bees} bees");
     }
 
     #[test]
@@ -422,17 +422,17 @@ mod tests {
             ("wiese-3", meadow_3()),
             ("wiese-arena", meadow_arena()),
         ] {
-            let file = std::fs::read(shipped(name)).expect("Karte vorhanden");
+            let file = std::fs::read(shipped(name)).expect("map present");
             assert_eq!(
-                elora_map::decode(&file).expect("gültig"),
+                elora_map::decode(&file).expect("valid"),
                 map,
-                "{name} veraltet – write_chapter1_maps -- --ignored"
+                "{name} outdated – write_chapter1_maps -- --ignored"
             );
         }
     }
 
     #[test]
-    #[ignore = "schreibt maps/abenteuer/*.emap"]
+    #[ignore = "writes maps/abenteuer/*.emap"]
     fn write_chapter1_maps() {
         for (name, map) in all_maps() {
             map.save(std::path::Path::new(&shipped(name))).unwrap();
@@ -441,7 +441,7 @@ mod tests {
 
     /// Overview: `… chapter1_sheets -- --ignored` → `target/chapter1-<karte>.svg`.
     #[test]
-    #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
+    #[ignore = "only writes files for visual inspection"]
     fn chapter1_sheets() {
         use crate::editor::panel::Preview;
         use crate::editor::view;

@@ -261,7 +261,7 @@ fn glow(map: &mut Map) {
 /// If the layout is invalid (covered by tests).
 pub fn build(theme: &Theme) -> Map {
     let mut editor = Editor::new(None, std::path::PathBuf::from("maps"));
-    editor.map = Map::from_rows(theme.name, theme.rows).expect("Layout gültig");
+    editor.map = Map::from_rows(theme.name, theme.rows).expect("layout valid");
     editor.map.author = Some("Elora-Team".into());
     let now = Instant::now();
     editor.apply_preset(theme.preset, now);
@@ -326,7 +326,7 @@ mod tests {
             let data = elora_map::encode(&map);
             assert!(
                 data.len() < elora_protocol::MAX_MAP,
-                "{} zu groß",
+                "{} too large",
                 theme.file
             );
             let back = elora_map::decode(&data).unwrap_or_else(|e| panic!("{}: {e}", theme.file));
@@ -338,7 +338,7 @@ mod tests {
             }
             assert!(
                 !back.decor_back.is_empty() && !back.decor_front.is_empty(),
-                "{} ohne Deko",
+                "{} without decor",
                 theme.file
             );
             assert!(!back.backgrounds.is_empty());
@@ -357,7 +357,7 @@ mod tests {
             let shipped = elora_map::decode(&std::fs::read(&path).unwrap()).unwrap();
             assert!(
                 shipped == build(theme),
-                "{} veraltet – write_release_maps -- --ignored",
+                "{} outdated – write_release_maps -- --ignored",
                 theme.file
             );
             assert_eq!(shipped.weather, weather_of(theme.file));
@@ -367,7 +367,7 @@ mod tests {
 
     /// Writes the release maps to `maps/` (after changes to layout or theme).
     #[test]
-    #[ignore = "schreibt maps/*.emap"]
+    #[ignore = "writes maps/*.emap"]
     fn write_release_maps() {
         for theme in &THEMES {
             let path = format!(
@@ -383,7 +383,7 @@ mod tests {
     /// Overview of every release map: `… release_sheets -- --ignored` →
     /// `target/release-<datei>.svg`.
     #[test]
-    #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
+    #[ignore = "only writes files for visual inspection"]
     fn release_sheets() {
         use crate::editor::panel::Preview;
         use crate::editor::view;

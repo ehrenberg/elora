@@ -64,19 +64,19 @@ mod tests {
 
     #[test]
     fn weather_test_map_is_current_and_rainy() {
-        let file = std::fs::read(shipped()).expect("Karte vorhanden");
-        let map = elora_map::decode(&file).expect("gültig");
+        let file = std::fs::read(shipped()).expect("map present");
+        let map = elora_map::decode(&file).expect("valid");
         assert_eq!(
             map,
             weather_test(),
-            "veraltet – write_weather_test_map -- --ignored"
+            "outdated – write_weather_test_map -- --ignored"
         );
         assert_eq!(map.weather.kind, WeatherKind::Rain);
     }
 
     /// Variants to look at: `… write_weather_variants -- --ignored` → `target/wetter-<art>.emap`.
     #[test]
-    #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
+    #[ignore = "only writes files for visual inspection"]
     fn write_weather_variants() {
         for kind in WeatherKind::ALL {
             let mut m = weather_test();
@@ -96,7 +96,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "schreibt maps/wetter-test.emap"]
+    #[ignore = "writes maps/wetter-test.emap"]
     fn write_weather_test_map() {
         weather_test()
             .save(std::path::Path::new(&shipped()))

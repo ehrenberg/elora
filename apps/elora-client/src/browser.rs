@@ -70,7 +70,8 @@ pub struct Browser<S: Socket = UdpSocket> {
     /// Running query of the master list (separate thread).
     master: Option<Receiver<anyhow::Result<Vec<SocketAddr>>>>,
     /// Hint for the UI (errors from the master, missing address …).
-    pub status: String,
+    /// Error for the list: language key and technical detail (E-352).
+    pub status: Option<(&'static str, String)>,
 }
 
 impl<S: Socket> std::fmt::Debug for Browser<S> {
@@ -98,7 +99,7 @@ impl<S: Socket> Browser<S> {
             entries: HashMap::new(),
             probe,
             master: None,
-            status: String::new(),
+            status: None,
         }
     }
 
@@ -141,12 +142,12 @@ impl<S: Socket> Browser<S> {
             match rx.try_recv() {
                 Ok(Ok(addrs)) => {
                     self.master = None;
-                    self.status.clear();
+                    self.status = None;
                     self.query(&addrs, now);
                 }
                 Ok(Err(e)) => {
                     self.master = None;
-                    self.status = format!("{e:#}");
+                    self.status = Some(("browser.master_failed", format!("{e:#}")));
                 }
                 Err(TryRecvError::Disconnected) => self.master = None,
                 Err(TryRecvError::Empty) => {}
@@ -241,13 +242,13 @@ impl Browser<UdpSocket> {
         match UdpSocket::bind_dual(0) {
             Ok(socket) => {
                 if let Err(e) = socket.set_broadcast(true) {
-                    tracing::warn!("Broadcast nicht möglich: {e}");
+                    tracing::warn!("broadcast not possible: {e}");
                 }
                 #[allow(clippy::cast_possible_truncation)]
                 let seed = Instant::now().elapsed().as_nanos() as u64 ^ 0x9e37_79b9;
                 self.probe = Some(InfoProbe::new(socket, seed));
             }
-            Err(e) => self.status = format!("Kein UDP-Socket: {e}"),
+            Err(e) => self.status = Some(("browser.no_socket", e.to_string())),
         }
     }
 
@@ -255,7 +256,7 @@ impl Browser<UdpSocket> {
     pub fn refresh(&mut self, master_url: &str, favorites: &[String], now: Instant) {
         self.ensure_probe();
         self.clear();
-        self.status.clear();
+        self.status = None;
         match self.tab {
             Tab::Internet => {
                 if master_url.trim().is_empty() {
@@ -270,7 +271,7 @@ impl Browser<UdpSocket> {
                     });
                 match spawned {
                     Ok(_) => self.master = Some(rx),
-                    Err(e) => self.status = format!("{e}"),
+                    Err(e) => self.status = Some(("browser.master_failed", e.to_string())),
                 }
             }
             Tab::Lan => {
@@ -365,7 +366,7 @@ mod tests {
             .collect();
         assert_eq!(names, ["Alpha", "Beta", "Gamma"]);
         br.sort = SortBy::Players;
-        assert_eq!(br.visible()[0].addr, addr(8304), "meiste Spieler zuerst");
+        assert_eq!(br.visible()[0].addr, addr(8304), "most players first");
         br.filter = Filter {
             hide_empty: true,
             hide_full: true,
@@ -410,7 +411,7 @@ mod tests {
             b.poll(now);
             br.poll(now);
         }
-        assert_eq!(br.visible().len(), 1, "einmal statt zweimal");
+        assert_eq!(br.visible().len(), 1, "once instead of twice");
     }
 
     #[test]

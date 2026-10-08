@@ -44,11 +44,11 @@ impl Default for Hosting {
 /// Path to `elora-server` next to the running client.
 fn server_binary() -> anyhow::Result<PathBuf> {
     let exe = std::env::current_exe()?;
-    let dir = exe.parent().context("kein Programmverzeichnis")?;
+    let dir = exe.parent().context("no program directory")?;
     let path = dir.join(format!("elora-server{}", std::env::consts::EXE_SUFFIX));
     anyhow::ensure!(
         path.exists(),
-        "{} nicht gefunden (einmal `cargo build` ausführen)",
+        "{} not found (run `cargo build` once)",
         path.display()
     );
     Ok(path)
@@ -86,7 +86,7 @@ impl Hosting {
             Some(child) => match child.try_wait() {
                 Ok(None) => true,
                 Ok(Some(status)) => {
-                    self.status = format!("Server beendet ({status})");
+                    self.status = format!("server ended ({status})");
                     self.process = None;
                     false
                 }
@@ -115,8 +115,8 @@ impl Hosting {
             .arg(&file)
             .stdin(Stdio::null())
             .spawn()
-            .context("Server konnte nicht gestartet werden")?;
-        self.status = format!("Server läuft (PID {})", child.id());
+            .context("could not start the server")?;
+        self.status = format!("server running (PID {})", child.id());
         self.process = Some(child);
         Ok(format!("127.0.0.1:{}", self.config.port))
     }
@@ -125,7 +125,7 @@ impl Hosting {
         if let Some(mut child) = self.process.take() {
             let _ = child.kill();
             let _ = child.wait();
-            self.status = "Server gestoppt".into();
+            self.status = "server stopped".into();
         }
     }
 }

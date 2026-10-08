@@ -590,7 +590,7 @@ mod tests {
         assert_eq!(
             e.map.tiles[e.map.width + 2],
             Tile::Solid,
-            "erster Strich bleibt"
+            "first stroke stays"
         );
         e.undo();
         assert_eq!(e.map.tiles[e.map.width + 1], Tile::Air);
@@ -701,7 +701,11 @@ mod tests {
     fn unsaved_changes_ask_before_leaving() {
         let mut e = editor();
         e.request(AfterDiscard::Leave);
-        assert_eq!(e.request, Some(Request::Leave), "ohne Änderungen sofort");
+        assert_eq!(
+            e.request,
+            Some(Request::Leave),
+            "immediately without changes"
+        );
         let mut e = editor();
         e.fill_cells(
             Cells::span((0, 0), (0, 0)),

@@ -132,7 +132,7 @@ fn part(asset: &SvgAsset, name: &str, file: &str) -> Mesh {
     asset
         .part(name)
         .cloned()
-        .unwrap_or_else(|| panic!("Teil `{name}` fehlt in assets/map/{file}"))
+        .unwrap_or_else(|| panic!("part `{name}` missing in assets/map/{file}"))
 }
 
 fn tile_kind(name: &str) -> Option<Tile> {
@@ -158,7 +158,7 @@ impl MapArt {
                 let file = format!("materials/{name}.svg");
                 let def = defs
                     .get(name)
-                    .unwrap_or_else(|| panic!("materials.toml: `{name}` fehlt"));
+                    .unwrap_or_else(|| panic!("materials.toml: `{name}` missing"));
                 let asset = svg(data, &file);
                 let caps = asset.part("cap").is_some().then(|| {
                     ["cap", "cap-left", "cap-right", "cap-single"].map(|p| part(&asset, p, &file))
@@ -169,14 +169,15 @@ impl MapArt {
                 Material {
                     name: name.to_owned(),
                     body: parse_hex(&def.body)
-                        .unwrap_or_else(|| panic!("materials.toml: Farbe von `{name}`")),
+                        .unwrap_or_else(|| panic!("materials.toml: color of `{name}`")),
                     radius: def.radius,
                     detail_chance: def.details,
                     tiles: def
                         .tiles
                         .iter()
                         .map(|t| {
-                            tile_kind(t).unwrap_or_else(|| panic!("materials.toml: Tile-Art `{t}`"))
+                            tile_kind(t)
+                                .unwrap_or_else(|| panic!("materials.toml: tile type `{t}`"))
                         })
                         .collect(),
                     caps,
@@ -733,7 +734,7 @@ mod tests {
     use elora_map::Sky;
 
     fn put(batch: &mut ShapeBatch, art: &MapArt, d: &Decor) {
-        let mesh = decor_mesh(art, &[], d).expect("eingebaut");
+        let mesh = decor_mesh(art, &[], d).expect("built in");
         draw_decor(batch, mesh, d, d.pos, &Anim::default());
     }
     use std::fmt::Write as _;
@@ -749,7 +750,7 @@ mod tests {
             Tile::Climb,
             Tile::Crumble,
         ] {
-            assert!(art.default_material(t).is_some(), "{t:?} ohne Material");
+            assert!(art.default_material(t).is_some(), "{t:?} without material");
         }
         assert_eq!(
             art.materials[art.material(Tile::Solid, Some("snow")).unwrap()].name,
@@ -761,10 +762,10 @@ mod tests {
             "earth"
         );
         for (name, _) in DECOR_FILES.iter().chain(BACKGROUND_FILES) {
-            assert!(!art.builtin(name).unwrap().is_empty(), "{name} leer");
+            assert!(!art.builtin(name).unwrap().is_empty(), "{name} empty");
         }
         for m in &art.materials {
-            assert!(!m.details.is_empty(), "{} ohne Details", m.name);
+            assert!(!m.details.is_empty(), "{} without details", m.name);
         }
     }
 
@@ -864,7 +865,7 @@ mod tests {
     /// Overview sheet for visual inspection: `cargo test -p elora-client --bin elora map_art_sheet -- --ignored`,
     /// then `cargo xtask svg-preview target/map-art.svg docs/archive/release-1/design/elora-kartenteile.png 1400`.
     #[test]
-    #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
+    #[ignore = "only writes a file for visual inspection"]
     #[allow(clippy::too_many_lines)]
     fn map_art_sheet() {
         let art = MapArt::load();
@@ -918,29 +919,29 @@ mod tests {
             "..eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee..",
         ];
         grid(&mut batch, &art, &rows, w, h);
-        label(16.0, 30.0, "Kartenteile im Stil A (M6.3)", 26);
+        label(16.0, 30.0, "Map parts in style A (M6.3)", 26);
         for (x, t) in [
-            (2, "Erde"),
+            (2, "Earth"),
             (10, "Sand"),
-            (18, "Schnee"),
-            (26, "Stein (nicht hookbar)"),
-            (34, "Eis"),
+            (18, "Snow"),
+            (26, "Stone (unhookable)"),
+            (34, "Ice"),
         ] {
             label(x as f32 * 32.0, 2.0 * 32.0 - 8.0, t, 15);
         }
-        label(43.0 * 32.0, 2.0 * 32.0 + 22.0, "Einzel-", 12);
-        label(43.0 * 32.0, 2.0 * 32.0 + 36.0, "stücke", 12);
+        label(43.0 * 32.0, 2.0 * 32.0 + 22.0, "Single", 12);
+        label(43.0 * 32.0, 2.0 * 32.0 + 36.0, "pieces", 12);
         for (x, t) in [
-            (2, "Plattformen"),
-            (13, "Sprungfelder"),
-            (21, "Beschleuniger"),
-            (35, "Tod (Grube)"),
+            (2, "Platforms"),
+            (13, "Jump pads"),
+            (21, "Boosters"),
+            (35, "Death (pit)"),
         ] {
             label(x as f32 * 32.0, 10.0 * 32.0 - 8.0, t, 15);
         }
-        label(4.0 * 32.0, 12.0 * 32.0 - 4.0, "Tod", 11);
-        label(26.0 * 32.0, 8.0 * 32.0 - 6.0, "Kletterwand", 15);
-        label(36.0 * 32.0, 8.0 * 32.0 - 6.0, "Bröckelboden", 15);
+        label(4.0 * 32.0, 12.0 * 32.0 - 4.0, "Death", 11);
+        label(26.0 * 32.0, 8.0 * 32.0 - 6.0, "Climbing wall", 15);
+        label(36.0 * 32.0, 8.0 * 32.0 - 6.0, "Crumble floor", 15);
 
         // 2) decoration on the ground (row 23)
         let ground_y = 23.0 * 32.0;
@@ -952,7 +953,7 @@ mod tests {
             put(&mut batch, &art, &d);
             label(x - 28.0, ground_y + 52.0 + (i % 2) as f32 * 16.0, name, 12);
         }
-        label(16.0, 16.0 * 32.0, "Deko", 18);
+        label(16.0, 16.0 * 32.0, "Decor", 18);
 
         // 3) backgrounds day and night
         let day_top = h as f32 * 32.0 + 40.0;
@@ -962,13 +963,13 @@ mod tests {
         label(
             16.0,
             day_top - 12.0,
-            "Hintergrund Tag: Wolken, Berge, ferne Hügel, Wald, nahe Hügel",
+            "Day background: clouds, mountains, far hills, forest, near hills",
             18,
         );
         label(
             16.0,
             night_top - 12.0,
-            "Hintergrund Nacht: Sterne, Mond, dieselben Ebenen abgedunkelt",
+            "Night background: stars, moon, the same layers darkened",
             18,
         );
 

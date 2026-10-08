@@ -200,14 +200,14 @@ fn images(ui: &mut egui::Ui, editor: &mut Editor, lang: &Lang, now: Instant) {
                 .map(|s| s.to_string_lossy().into_owned())
                 .unwrap_or_default();
             let result = std::fs::read(&path)
-                .map_err(|e| e.to_string())
+                .map_err(|e| ("editor.embed_failed", e.to_string()))
                 .and_then(|data| editor.embed_image(&name, data, now));
             editor.status = Some(match result {
                 Ok(i) => {
                     editor.decor_art = Art::Image(i);
                     ("editor.embedded", name)
                 }
-                Err(e) => ("editor.embed_failed", e),
+                Err(e) => e,
             });
         }
         let mut remove = None;

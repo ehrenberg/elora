@@ -448,7 +448,7 @@ mod tests {
         all.extend(super::super::chapter3::maps());
         all.extend(maps());
         for (name, m) in &all {
-            let back = elora_map::decode(&elora_map::encode(m)).expect("Karte gültig");
+            let back = elora_map::decode(&elora_map::encode(m)).expect("map valid");
             let errors = map_objects(&c, &back);
             assert!(errors.is_empty(), "{name}: {errors:?}");
         }
@@ -475,7 +475,7 @@ mod tests {
             "eiskoenigin",
             "tor",
         ] {
-            assert!(objects.iter().any(|o| o.id == id), "{id} fehlt");
+            assert!(objects.iter().any(|o| o.id == id), "{id} missing");
         }
         let crystals = objects
             .iter()
@@ -483,10 +483,10 @@ mod tests {
                 |o| matches!(&o.kind, ObjectKind::Collectible { item } if item == "klarkristall"),
             )
             .count();
-        assert_eq!(crystals, 8, "acht Klarkristalle (D-M24-09)");
+        assert_eq!(crystals, 8, "eight clear crystals (D-M24-09)");
         assert!(
             objects.iter().filter(|o| o.id.starts_with("feuer")).count() >= 6,
-            "genug Feuerstellen gegen die Kälte"
+            "enough fireplaces against the cold"
         );
     }
 
@@ -499,12 +499,12 @@ mod tests {
                     let t = m.tiles[y * m.width + x];
                     let below = m.tiles[(y + 1) * m.width + x];
                     if t == Tile::ThinIce {
-                        assert!(!below.is_solid(), "{name}: dünnes Eis bei {x},{y} auf Fels");
+                        assert!(!below.is_solid(), "{name}: thin ice at {x},{y} on rock");
                     }
                     if t == Tile::IceWater {
                         assert!(
                             below == Tile::IceWater || below.is_solid(),
-                            "{name}: Eiswasser bei {x},{y} ohne Boden"
+                            "{name}: ice water at {x},{y} without a floor"
                         );
                     }
                 }
@@ -519,7 +519,7 @@ mod tests {
         let c = Content::builtin();
         let k = c.creatures.iter().find(|k| k.name == "kristella").unwrap();
         let elora_sim::Behavior::Queen(d) = &k.behavior else {
-            panic!("Kristella ist eine Königin");
+            panic!("Kristella is a queen");
         };
         let m = frost_arena();
         let (lo, hi) = (HALL_MID - d.width / 2.0, HALL_MID + d.width / 2.0);
@@ -527,17 +527,17 @@ mod tests {
         let x0 = (lo / T).floor() as usize;
         let x1 = (hi / T).floor() as usize;
         for x in x0..=x1 {
-            assert_eq!(m.tiles[floor * m.width + x], Tile::Ice, "Eisboden bei {x}");
+            assert_eq!(m.tiles[floor * m.width + x], Tile::Ice, "ice floor at {x}");
         }
         assert_eq!(
             m.tiles[(floor - 1) * m.width + x0 - 1],
             Tile::Climb,
-            "Wand links"
+            "wall on the left"
         );
         assert_eq!(
             m.tiles[(floor - 1) * m.width + x1 + 1],
             Tile::Climb,
-            "Wand mit Tor rechts"
+            "wall with gate on the right"
         );
         let o = m.adventure.object("eiskoenigin").unwrap();
         assert!((o.pos.x - HALL_MID).abs() < 1.0);
@@ -546,17 +546,17 @@ mod tests {
     #[test]
     fn shipped_mountain_maps_are_current() {
         for (name, map) in maps() {
-            let file = std::fs::read(shipped(name)).expect("Karte vorhanden");
+            let file = std::fs::read(shipped(name)).expect("map present");
             assert_eq!(
-                elora_map::decode(&file).expect("gültig"),
+                elora_map::decode(&file).expect("valid"),
                 map,
-                "{name} veraltet – write_chapter4_maps -- --ignored"
+                "{name} outdated – write_chapter4_maps -- --ignored"
             );
         }
     }
 
     #[test]
-    #[ignore = "schreibt maps/abenteuer/*.emap"]
+    #[ignore = "writes maps/abenteuer/*.emap"]
     fn write_chapter4_maps() {
         for (name, map) in maps() {
             map.save(std::path::Path::new(&shipped(name))).unwrap();
@@ -565,7 +565,7 @@ mod tests {
 
     /// Overview: `… chapter4_sheets -- --ignored` → `target/chapter4-<karte>.svg`.
     #[test]
-    #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
+    #[ignore = "only writes files for visual inspection"]
     fn chapter4_sheets() {
         use crate::editor::panel::Preview;
         use crate::editor::view;

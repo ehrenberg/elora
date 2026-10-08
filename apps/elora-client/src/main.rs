@@ -134,9 +134,9 @@ fn run() -> anyhow::Result<()> {
     if let Some(i) = args.iter().position(|a| a == "--mode") {
         let name = args
             .get(i + 1)
-            .context("--mode erwartet dm, tdm, ctf, lms oder lts")?;
+            .context("--mode expects dm, tdm, ctf, lms or lts")?;
         let mode =
-            elora_game::Mode::parse(name).with_context(|| format!("unbekannter Modus `{name}`"))?;
+            elora_game::Mode::parse(name).with_context(|| format!("unknown mode `{name}`"))?;
         let instagib = args.iter().any(|a| a == "--instagib");
         sandbox.set_mode(Some(elora_game::RulesConfig {
             mode,
@@ -145,9 +145,9 @@ fn run() -> anyhow::Result<()> {
             ..elora_game::RulesConfig::default()
         }));
     }
-    tracing::info!(map = %map_path.display(), "Karte geladen");
+    tracing::info!(map = %map_path.display(), "map loaded");
 
-    let event_loop = EventLoop::new().context("Event-Loop konnte nicht erstellt werden")?;
+    let event_loop = EventLoop::new().context("could not create the event loop")?;
     event_loop.set_control_flow(ControlFlow::Poll);
     // map, mode or address on the command line: straight into the game (development)
     let direct = connect.is_some() || args.iter().any(|a| is_map_path(a) || a == "--mode");
@@ -160,12 +160,12 @@ fn run() -> anyhow::Result<()> {
         app.connect();
     }
     // development: straight into the adventure in slot 1–3 (continue or new)
-    if let Some(i) = args.iter().position(|a| a == "--abenteuer") {
+    if let Some(i) = args.iter().position(|a| a == "--adventure") {
         let slot: usize = args
             .get(i + 1)
             .and_then(|n| n.parse().ok())
             .filter(|n| (1..=3).contains(n))
-            .context("--abenteuer erwartet einen Platz 1, 2 oder 3")?;
+            .context("--adventure expects a slot 1, 2 or 3")?;
         let new = matches!(
             app_adventure::slot_views()[slot - 1],
             app_adventure::SlotView::Empty
@@ -352,7 +352,7 @@ impl App {
         s.audio = self.sounds.settings;
         let path = settings::settings_path();
         match s.save(&path) {
-            Ok(()) => tracing::info!("Einstellungen gespeichert: {}", path.display()),
+            Ok(()) => tracing::info!("settings saved: {}", path.display()),
             Err(e) => tracing::warn!("{e:#}"),
         }
     }
@@ -378,7 +378,7 @@ impl App {
             });
         match Connection::open(&address, expected, self.net.conditions()) {
             Ok(conn) => {
-                self.status = format!("Verbinde mit {} …", conn.server);
+                self.status = self.lang.f("menu.connecting", &[("server", &conn.server)]);
                 let client = OnlineClient::new(&self.net.name, self.net.skin, Instant::now())
                     .with_store(Box::new(elora_client::map_store::DiskStore {
                         maps_dirs: hosting::map_dirs(),
@@ -388,7 +388,11 @@ impl App {
                 self.online = Some(Online { client, conn });
                 self.sandbox.stop_recording("Online");
             }
-            Err(e) => self.status = format!("Verbindung fehlgeschlagen: {e:#}"),
+            Err(e) => {
+                self.status = self
+                    .lang
+                    .f("menu.connect_failed", &[("e", &format!("{e:#}"))]);
+            }
         }
     }
 
@@ -397,14 +401,14 @@ impl App {
         match action {
             Action::Save => {
                 self.status = match self.tuning_file().save(path) {
-                    Ok(()) => format!("Gespeichert in {TUNING_FILE}"),
-                    Err(e) => format!("Fehler: {e:#}"),
+                    Ok(()) => format!("saved to {TUNING_FILE}"),
+                    Err(e) => format!("error: {e:#}"),
                 };
             }
             Action::SwitchMap(path) => {
                 self.status = match self.sandbox.switch_map(&path) {
-                    Ok(()) => format!("Karte {} geladen", path.display()),
-                    Err(e) => format!("Fehler: {e:#}"),
+                    Ok(()) => format!("map {} loaded", path.display()),
+                    Err(e) => format!("error: {e:#}"),
                 };
             }
             Action::Load => {
@@ -412,9 +416,9 @@ impl App {
                     Ok(f) => {
                         self.sandbox.world.tuning = f.physics;
                         self.view = f.view.into();
-                        format!("Geladen aus {TUNING_FILE}")
+                        format!("loaded from {TUNING_FILE}")
                     }
-                    Err(e) => format!("Fehler: {e:#}"),
+                    Err(e) => format!("error: {e:#}"),
                 };
             }
             Action::Respawn => {
@@ -424,7 +428,7 @@ impl App {
             Action::Connect => self.connect(),
             Action::Disconnect => {
                 self.online = None;
-                self.status = "Getrennt – zurück in der Sandbox".into();
+                self.status = "disconnected – back in the sandbox".into();
             }
             Action::HostStart => match self.net.hosting.start() {
                 Ok(address) => {
@@ -433,7 +437,10 @@ impl App {
                     self.net.show_host = false;
                     self.connect();
                 }
-                Err(e) => self.net.hosting.status = format!("Fehler: {e:#}"),
+                Err(e) => {
+                    self.net.hosting.status =
+                        self.lang.f("menu.host_failed", &[("e", &format!("{e:#}"))]);
+                }
             },
             Action::HostStop => self.net.hosting.stop(),
             Action::TrustNewKey => {
@@ -443,7 +450,7 @@ impl App {
                         .filter_map(|i| u8::from_str_radix(&w.got[i..i + 2], 16).ok())
                         .collect();
                     if let Err(e) = self.known.trust(&known_servers_path(), w.server, &got) {
-                        self.status = format!("Fehler: {e:#}");
+                        self.status = format!("error: {e:#}");
                     }
                     self.connect();
                 }
@@ -467,10 +474,9 @@ impl App {
                 }
             }
             Action::SandboxMode(cfg) => {
-                self.status = cfg.as_ref().map_or_else(
-                    || "Freies Spiel".into(),
-                    |c| format!("Modus: {}", c.title()),
-                );
+                self.status = cfg
+                    .as_ref()
+                    .map_or_else(|| "free play".into(), |c| format!("mode: {}", c.title()));
                 self.sandbox.set_mode(cfg);
             }
             Action::ApplyConditions => {
@@ -490,7 +496,7 @@ impl App {
                 .or_else(|_| window.set_cursor_grab(CursorGrabMode::Confined))
                 .is_ok();
             if !ok {
-                tracing::warn!("Mauszeiger konnte nicht gefangen werden");
+                tracing::warn!("could not capture the mouse pointer");
             }
         } else {
             let _ = window.set_cursor_grab(CursorGrabMode::None);
@@ -512,10 +518,10 @@ impl App {
                             self.known
                                 .trust(&known_servers_path(), o.conn.server, &server_key)
                     {
-                        tracing::warn!("Server-Schlüssel nicht gespeichert: {e:#}");
+                        tracing::warn!("server key not saved: {e:#}");
                     }
                     o.client.on_connected();
-                    self.status = format!("Verbunden mit {}", o.conn.server);
+                    self.status = self.lang.f("menu.connected", &[("server", &o.conn.server)]);
                 }
                 ClientEvent::Message { data, .. } => o.client.on_message(&data, at),
                 ClientEvent::Disconnected(DisconnectReason::KeyMismatch { expected, got }) => {
@@ -541,7 +547,7 @@ impl App {
             ended = ended.or_else(|| Some(self.lang.reason(reason)));
         }
         if let Some(reason) = ended {
-            self.status = format!("Getrennt: {reason}");
+            self.status = self.lang.f("menu.disconnected", &[("reason", &reason)]);
             self.online = None;
             return;
         }
@@ -593,7 +599,7 @@ impl App {
                 .recording
                 .as_ref()
                 .is_some_and(|r| r.tuning != self.sandbox.world.tuning)
-                && let Some(msg) = self.sandbox.stop_recording("Tuning geändert")
+                && let Some(msg) = self.sandbox.stop_recording("tuning changed")
             {
                 self.status = msg;
             }
@@ -1225,11 +1231,11 @@ impl App {
                 }
                 KeyCode::F5 if unbound && !online && self.adventure.is_none() => {
                     self.status = if self.sandbox.rules.is_some() {
-                        "Aufzeichnung nur ohne Spielmodus (Golden-Tests = reine Simulation)".into()
+                        "recording only without a game mode (golden tests = pure simulation)".into()
                     } else {
                         self.sandbox.stop_recording("F5").unwrap_or_else(|| {
                             self.sandbox.start_recording();
-                            "Aufzeichnung läuft … (F5 beendet)".into()
+                            "recording … (F5 stops)".into()
                         })
                     };
                     return;
@@ -1345,7 +1351,7 @@ impl ApplicationHandler for App {
                 self.set_cursor_grab(self.screen == Screen::Game);
             }
             Err(e) => {
-                self.error = Some(e.context("Grafik konnte nicht initialisiert werden"));
+                self.error = Some(e.context("could not initialise graphics"));
                 event_loop.exit();
             }
         }

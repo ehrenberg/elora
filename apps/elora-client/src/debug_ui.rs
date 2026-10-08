@@ -160,9 +160,9 @@ pub fn panel(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
                     "Elora – Sandbox"
                 });
                 if cx.cursor_grabbed {
-                    ui.label("F1 zweimal: Maus wieder für das Panel freigeben");
+                    ui.label("Press F1 twice to free the mouse for the panel");
                 } else {
-                    ui.label("Ins Spielfeld klicken, um weiterzuspielen; F1 schließt das Panel");
+                    ui.label("Click into the game to keep playing; F1 closes the panel");
                 }
                 ui.separator();
                 action = network(ui, cx);
@@ -185,39 +185,39 @@ pub fn panel(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
                 } else if !cx.status.is_empty() {
                     ui.small(cx.status);
                 }
-                egui::CollapsingHeader::new("Aussehen")
+                egui::CollapsingHeader::new("Appearance")
                     .default_open(false)
                     .show(ui, |ui| {
                         crate::skins::picker(ui, &mut cx.net.skin);
-                        ui.small("In Team-Modi trägt der Körper die Teamfarbe.");
+                        ui.small("In team modes the body wears the team color.");
                     });
-                egui::CollapsingHeader::new("Effekte")
+                egui::CollapsingHeader::new("Effects")
                     .default_open(false)
                     .show(ui, |ui| {
-                        ui.checkbox(&mut cx.effects.camera_shake, "Kamera-Wackeln");
-                        ui.checkbox(&mut cx.effects.hit_marker, "Treffer-Marker");
-                        ui.small("„Speichern“ legt die Schalter in tuning.toml ab.");
+                        ui.checkbox(&mut cx.effects.camera_shake, "Camera shake");
+                        ui.checkbox(&mut cx.effects.hit_marker, "Hit marker");
+                        ui.small("“Save” stores the toggles in tuning.toml.");
                     });
-                egui::CollapsingHeader::new("Ton")
+                egui::CollapsingHeader::new("Sound")
                     .default_open(false)
                     .show(ui, |ui| {
                         if !cx.audio.device {
-                            ui.label("Kein Audiogerät gefunden – das Spiel bleibt stumm.");
+                            ui.label("No audio device found – the game stays silent.");
                         }
                         ui.add(
                             egui::Slider::new(&mut cx.audio.settings.volume, 0.0..=1.0)
-                                .text("Lautstärke"),
+                                .text("Volume"),
                         );
-                        ui.checkbox(&mut cx.audio.settings.muted, "Stumm");
-                        ui.small("„Speichern“ legt die Werte in tuning.toml ab.");
+                        ui.checkbox(&mut cx.audio.settings.muted, "Mute");
+                        ui.small("“Save” stores the values in tuning.toml.");
                     });
                 view(ui, cx.view);
-                egui::CollapsingHeader::new("Eingabe")
+                egui::CollapsingHeader::new("Input")
                     .default_open(false)
                     .show(ui, |ui| {
                         slider(
                             ui,
-                            "Maus-Empfindlichkeit %",
+                            "Mouse sensitivity %",
                             &mut cx.controls.sensitivity,
                             10.0..=400.0,
                             100.0,
@@ -238,27 +238,24 @@ pub fn panel(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
 
 fn network(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
     let mut action = None;
-    egui::CollapsingHeader::new("Netzwerk")
+    egui::CollapsingHeader::new("Network")
         .default_open(false)
         .show(ui, |ui| {
             if let Some(o) = &cx.online {
                 online_state(ui, o);
-                if ui.button("Trennen (zurück zur Sandbox)").clicked() {
+                if ui.button("Disconnect (back to sandbox)").clicked() {
                     action = Some(Action::Disconnect);
                 }
-                ui.label("Netzwerk-Simulator (ausgehend):");
+                ui.label("Network simulator (outgoing):");
                 let mut changed = false;
                 changed |= ui
-                    .add(
-                        egui::Slider::new(&mut cx.net.latency_ms, 0.0..=300.0)
-                            .text("Verzögerung ms"),
-                    )
+                    .add(egui::Slider::new(&mut cx.net.latency_ms, 0.0..=300.0).text("Delay ms"))
                     .changed();
                 changed |= ui
                     .add(egui::Slider::new(&mut cx.net.jitter_ms, 0.0..=100.0).text("Jitter ms"))
                     .changed();
                 changed |= ui
-                    .add(egui::Slider::new(&mut cx.net.loss_pct, 0.0..=50.0).text("Verlust %"))
+                    .add(egui::Slider::new(&mut cx.net.loss_pct, 0.0..=50.0).text("Loss %"))
                     .changed();
                 if changed {
                     action = Some(Action::ApplyConditions);
@@ -271,11 +268,11 @@ fn network(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
                 ui.horizontal(|ui| {
                     ui.label("Server");
                     ui.add(egui::TextEdit::singleline(&mut cx.net.address).desired_width(150.0));
-                    if ui.button("Verbinden").clicked() {
+                    if ui.button("Connect").clicked() {
                         action = Some(Action::Connect);
                     }
                 });
-                if ui.button("Server einrichten …").clicked() {
+                if ui.button("Set up server …").clicked() {
                     cx.net.show_host = true;
                 }
             }
@@ -288,7 +285,7 @@ fn network(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
 
 fn game_section(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
     let mut action = None;
-    egui::CollapsingHeader::new("Spiel")
+    egui::CollapsingHeader::new("Game")
         .default_open(false)
         .show(ui, |ui| {
             let online = cx.online.is_some();
@@ -307,18 +304,18 @@ fn game_section(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
 fn sandbox_mode(ui: &mut egui::Ui, net: &mut NetUi) -> Option<Action> {
     let mut action = None;
     ui.horizontal(|ui| {
-        ui.label("Modus");
-        let label = net.sandbox_mode.map_or("aus (freies Spiel)", Mode::name);
+        ui.label("Mode");
+        let label = net.sandbox_mode.map_or("off (free play)", Mode::name);
         egui::ComboBox::from_id_salt("sbmode")
             .selected_text(label)
             .show_ui(ui, |ui| {
-                ui.selectable_value(&mut net.sandbox_mode, None, "aus (freies Spiel)");
+                ui.selectable_value(&mut net.sandbox_mode, None, "off (free play)");
                 for m in Mode::ALL {
                     ui.selectable_value(&mut net.sandbox_mode, Some(m), m.name());
                 }
             });
         ui.checkbox(&mut net.sandbox_instagib, "Instagib");
-        if ui.button("Starten").clicked() {
+        if ui.button("Start").clicked() {
             let cfg = net.sandbox_mode.map(|mode| RulesConfig {
                 mode,
                 instagib: net.sandbox_instagib,
@@ -328,7 +325,7 @@ fn sandbox_mode(ui: &mut egui::Ui, net: &mut NetUi) -> Option<Action> {
             action = Some(Action::SandboxMode(cfg));
         }
     });
-    ui.small("CTF braucht eine Karte mit Flaggen, z. B. maps/ctf-test.emap");
+    ui.small("CTF needs a map with flags, e.g. maps/ctf-test.emap");
     action
 }
 
@@ -336,16 +333,16 @@ fn team_buttons(ui: &mut egui::Ui, team_mode: bool) -> Option<Action> {
     let mut action = None;
     ui.horizontal(|ui| {
         if team_mode {
-            if ui.button("Rot").clicked() {
+            if ui.button("Red").clicked() {
                 action = Some(Action::SetTeam(Team::Red));
             }
-            if ui.button("Blau").clicked() {
+            if ui.button("Blue").clicked() {
                 action = Some(Action::SetTeam(Team::Blue));
             }
-        } else if ui.button("Mitspielen").clicked() {
+        } else if ui.button("Join").clicked() {
             action = Some(Action::SetTeam(Team::None));
         }
-        if ui.button("Zuschauen").clicked() {
+        if ui.button("Spectate").clicked() {
             action = Some(Action::SetTeam(Team::Spectator));
         }
         if ui.button("kill (K)").clicked() {
@@ -358,27 +355,27 @@ fn team_buttons(ui: &mut egui::Ui, team_mode: bool) -> Option<Action> {
 /// Start a vote and vote (E-077).
 fn vote_ui(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
     let mut action = None;
-    ui.label("Abstimmung (E-077):");
+    ui.label("Vote (E-077):");
     if cx.vote_running {
         ui.horizontal(|ui| {
-            if ui.button("Ja (F3)").clicked() {
+            if ui.button("Yes (F3)").clicked() {
                 action = Some(Action::Vote(true));
             }
-            if ui.button("Nein (F4)").clicked() {
+            if ui.button("No (F4)").clicked() {
                 action = Some(Action::Vote(false));
             }
         });
     }
     let net = &mut *cx.net;
     ui.horizontal(|ui| {
-        for (k, label) in ["Karte", "Modus", "Kick", "Zuschauer"].iter().enumerate() {
+        for (k, label) in ["Map", "Mode", "Kick", "Spectator"].iter().enumerate() {
             ui.selectable_value(&mut net.vote_kind, k as u8, *label);
         }
     });
     match net.vote_kind {
         0 => {
             ui.horizontal(|ui| {
-                ui.label("Karte");
+                ui.label("Map");
                 ui.add(egui::TextEdit::singleline(&mut net.vote_map).desired_width(140.0));
             });
         }
@@ -399,7 +396,7 @@ fn vote_ui(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
                 .vote_target
                 .and_then(|t| cx.names.get(&t))
                 .cloned()
-                .unwrap_or_else(|| "Spieler wählen".into());
+                .unwrap_or_else(|| "Choose player".into());
             egui::ComboBox::from_id_salt("vtarget")
                 .selected_text(label)
                 .show_ui(ui, |ui| {
@@ -412,7 +409,7 @@ fn vote_ui(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
         }
     }
     if ui
-        .add_enabled(!cx.vote_running, egui::Button::new("Abstimmung starten"))
+        .add_enabled(!cx.vote_running, egui::Button::new("Start vote"))
         .clicked()
     {
         let slot = |t: Option<usize>| t.and_then(|t| u32::try_from(t).ok());
@@ -444,7 +441,7 @@ fn online_state(ui: &mut egui::Ui, o: &OnlineView<'_>) {
             };
             row("Server", o.server.to_string());
             row("Status", format!("{:?}", c.status));
-            row("Karte / Slot", format!("{} / {:?}", c.map_name, c.slot));
+            row("Map / slot", format!("{} / {:?}", c.map_name, c.slot));
             row(
                 "Snapshots",
                 if c.high_bandwidth {
@@ -455,28 +452,25 @@ fn online_state(ui: &mut egui::Ui, o: &OnlineView<'_>) {
             );
             if let Some(s) = o.stats {
                 row("Ping", format!("{:.0} ms", s.rtt.as_secs_f64() * 1000.0));
-                row("Verlust", format!("{:.1} %", s.loss * 100.0));
+                row("Loss", format!("{:.1} %", s.loss * 100.0));
                 row(
-                    "Gesendet / Empfangen",
+                    "Sent / received",
                     format!("{} / {} KiB", s.bytes_sent / 1024, s.bytes_received / 1024),
                 );
             }
-            row("Vorhersage", format!("{} Ticks", info.prediction_ticks));
-            row("Vorlauf", format!("{:.0} ms", info.lead_ms));
-            row(
-                "Eingabe-Restzeit",
-                format!("{} ms", info.input_time_left_ms),
-            );
-            row("Snapshot-Größe", format!("{} B", info.snapshot_bytes));
-            row("Snapshot-Fehler", info.snapshot_errors.to_string());
-            row("Korrektur", format!("{:.1} E", info.correction));
+            row("Prediction", format!("{} ticks", info.prediction_ticks));
+            row("Lead", format!("{:.0} ms", info.lead_ms));
+            row("Input time left", format!("{} ms", info.input_time_left_ms));
+            row("Snapshot size", format!("{} B", info.snapshot_bytes));
+            row("Snapshot errors", info.snapshot_errors.to_string());
+            row("Correction", format!("{:.1} u", info.correction));
         });
 }
 
 fn host_window(ctx: &egui::Context, net: &mut NetUi) -> Option<Action> {
     let mut action = None;
     let mut open = true;
-    egui::Window::new("Server einrichten")
+    egui::Window::new("Set up server")
         .open(&mut open)
         .resizable(false)
         .show(ctx, |ui| {
@@ -489,7 +483,7 @@ fn host_window(ctx: &egui::Context, net: &mut NetUi) -> Option<Action> {
                 ui.label("Port");
                 ui.add(egui::DragValue::new(&mut c.port).range(1024..=65535));
                 ui.end_row();
-                ui.label("Karte");
+                ui.label("Map");
                 egui::ComboBox::from_id_salt("map")
                     .selected_text(c.map.display().to_string())
                     .show_ui(ui, |ui| {
@@ -499,34 +493,34 @@ fn host_window(ctx: &egui::Context, net: &mut NetUi) -> Option<Action> {
                         }
                     });
                 ui.end_row();
-                ui.label("Max. Spieler");
+                ui.label("Max. players");
                 ui.add(egui::Slider::new(
                     &mut c.max_clients,
                     1..=elora_server::config::MAX_CLIENTS,
                 ));
                 ui.end_row();
                 ui.label("Snapshots");
-                ui.checkbox(&mut c.high_bandwidth, "50 Hz (nur LAN)");
+                ui.checkbox(&mut c.high_bandwidth, "50 Hz (LAN only)");
                 ui.end_row();
             });
             ui.checkbox(
                 &mut net.hosting.keep_running,
-                "Server beim Beenden des Clients weiterlaufen lassen",
+                "Keep the server running when the client quits",
             );
             ui.horizontal(|ui| {
                 let label = if running {
-                    "Neu starten und verbinden"
+                    "Restart and connect"
                 } else {
-                    "Starten und verbinden"
+                    "Start and connect"
                 };
                 if ui.button(label).clicked() {
                     action = Some(Action::HostStart);
                 }
-                if running && ui.button("Server stoppen").clicked() {
+                if running && ui.button("Stop server").clicked() {
                     action = Some(Action::HostStop);
                 }
             });
-            ui.small("Die Einstellungen werden in server.toml gespeichert.");
+            ui.small("The settings are saved in server.toml.");
         });
     if !open {
         net.show_host = false;
@@ -536,16 +530,16 @@ fn host_window(ctx: &egui::Context, net: &mut NetUi) -> Option<Action> {
 
 fn key_warning_window(ctx: &egui::Context, net: &mut NetUi, w: &KeyWarning) -> Option<Action> {
     let mut action = None;
-    egui::Window::new("Achtung: Server-Schlüssel geändert").collapsible(false).resizable(false).show(ctx, |ui| {
-        ui.label(format!("Der Server {} meldet einen anderen Schlüssel als beim letzten Mal.", w.server));
-        ui.label("Das kann ein neu eingerichteter Server sein – oder ein Angriff (jemand gibt sich als Server aus).");
-        ui.monospace(format!("bekannt: {}", &w.expected[..w.expected.len().min(32)]));
-        ui.monospace(format!("neu:     {}", &w.got[..w.got.len().min(32)]));
+    egui::Window::new("Warning: server key changed").collapsible(false).resizable(false).show(ctx, |ui| {
+        ui.label(format!("Server {} reports a different key than last time.", w.server));
+        ui.label("This can be a newly set up server – or an attack (someone pretending to be the server).");
+        ui.monospace(format!("known: {}", &w.expected[..w.expected.len().min(32)]));
+        ui.monospace(format!("new:   {}", &w.got[..w.got.len().min(32)]));
         ui.horizontal(|ui| {
-            if ui.button("Neuem Schlüssel vertrauen und verbinden").clicked() {
+            if ui.button("Trust the new key and connect").clicked() {
                 action = Some(Action::TrustNewKey);
             }
-            if ui.button("Abbrechen").clicked() {
+            if ui.button("Cancel").clicked() {
                 net.key_warning = None;
             }
         });
@@ -598,66 +592,63 @@ fn state(ui: &mut egui::Ui, s: &Sandbox, fps: f32, frames: &FrameStats) {
             };
             row("FPS / Tick", format!("{:.0} / {}", fps, s.world.tick));
             row(
-                "Bildzeit min/Ø/max",
+                "Frame time min/avg/max",
                 format!(
                     "{:.1} / {:.1} / {:.1} ms",
                     frames.min_ms, frames.avg_ms, frames.max_ms
                 ),
             );
             row(
-                "Bildschirm",
+                "Display",
                 format!(
                     "{} · VSync {}",
                     frames
                         .refresh_hz
                         .map_or_else(|| "? Hz".to_owned(), |h| format!("{h:.0} Hz")),
-                    if frames.vsync { "an" } else { "aus" }
+                    if frames.vsync { "on" } else { "off" }
                 ),
             );
             if let Some(ch) = s.character() {
                 let c = &ch.core;
                 let hook = match c.hook_state {
-                    HookState::Idle => "bereit".to_string(),
-                    HookState::Flying => "fliegt".to_string(),
+                    HookState::Idle => "ready".to_string(),
+                    HookState::Flying => "flying".to_string(),
                     HookState::Grabbed if c.hooked_player.is_some() => {
-                        format!("hält Spieler ({})", c.hook_tick)
+                        format!("holds player ({})", c.hook_tick)
                     }
-                    HookState::Grabbed => "hängt an Wand".to_string(),
-                    HookState::Retracting(n) => format!("fährt ein ({n}/3)"),
-                    HookState::Retracted => "eingefahren (Taste loslassen)".to_string(),
+                    HookState::Grabbed => "attached to wall".to_string(),
+                    HookState::Retracting(n) => format!("retracting ({n}/3)"),
+                    HookState::Retracted => "retracted (release key)".to_string(),
                 };
                 let grounded = if c.is_grounded(&s.world.collision) {
-                    "ja"
+                    "yes"
                 } else {
-                    "nein"
+                    "no"
                 };
                 let double = if c.jumped & 2 == 0 {
-                    "verfügbar"
+                    "available"
                 } else {
-                    "verbraucht"
+                    "used"
                 };
                 row("Position", format!("{:.0}, {:.0}", c.pos.x, c.pos.y));
+                row("Vel. (u/tick)", format!("{:+.2}, {:+.2}", c.vel.x, c.vel.y));
                 row(
-                    "Geschw. (E/Tick)",
-                    format!("{:+.2}, {:+.2}", c.vel.x, c.vel.y),
-                );
-                row(
-                    "Geschw. (Tiles/s)",
+                    "Vel. (tiles/s)",
                     format!("{:+.1}, {:+.1}", tiles_per_s(c.vel.x), tiles_per_s(c.vel.y)),
                 );
-                row("Am Boden", grounded.into());
-                row("Doppelsprung", double.into());
+                row("Grounded", grounded.into());
+                row("Double jump", double.into());
                 row("Hook", hook);
-                row("Leben / Rüstung", format!("{} / {}", ch.health, ch.armor));
+                row("Health / armor", format!("{} / {}", ch.health, ch.armor));
                 row(
-                    "Waffe / Reload",
+                    "Weapon / reload",
                     format!(
-                        "{:?} / {} Ticks",
+                        "{:?} / {} ticks",
                         ch.arsenal.active, ch.arsenal.reload_timer
                     ),
                 );
             } else {
-                row("Elora", "tot".into());
+                row("Elora", "dead".into());
             }
             let dummies = s
                 .world
@@ -667,16 +658,16 @@ fn state(ui: &mut egui::Ui, s: &Sandbox, fps: f32, frames: &FrameStats) {
                 .filter(|p| p.is_dummy())
                 .count();
             row("Dummies", dummies.to_string());
-            row("Karte", s.map_path.display().to_string());
+            row("Map", s.map_path.display().to_string());
             row(
-                "Aufzeichnung",
+                "Recording",
                 s.recording
                     .as_ref()
-                    .map_or_else(|| "aus (F5)".into(), |r| format!("● {} Ticks", r.len())),
+                    .map_or_else(|| "off (F5)".into(), |r| format!("● {} ticks", r.len())),
             );
         });
     if let Some(err) = &s.reload_error {
-        ui.colored_label(egui::Color32::LIGHT_RED, format!("Karte ungültig: {err}"));
+        ui.colored_label(egui::Color32::LIGHT_RED, format!("Map invalid: {err}"));
     }
 }
 
@@ -684,15 +675,15 @@ fn buttons(ui: &mut egui::Ui, status: &str) -> Option<Action> {
     let mut action = None;
     ui.horizontal(|ui| {
         if ui
-            .button("Speichern")
-            .on_hover_text("Werte in tuning.toml schreiben")
+            .button("Save")
+            .on_hover_text("Write values to tuning.toml")
             .clicked()
         {
             action = Some(Action::Save);
         }
         if ui
-            .button("Laden")
-            .on_hover_text("tuning.toml neu einlesen")
+            .button("Load")
+            .on_hover_text("Reload tuning.toml")
             .clicked()
         {
             action = Some(Action::Load);
@@ -710,7 +701,7 @@ fn buttons(ui: &mut egui::Ui, status: &str) -> Option<Action> {
 /// Abilities to try out (A1.1); in normal multiplayer they don't exist (E-223).
 fn abilities(ui: &mut egui::Ui, s: &mut Sandbox) {
     use elora_sim::{Abilities, Ability};
-    egui::CollapsingHeader::new("Fähigkeiten (Abenteuer)")
+    egui::CollapsingHeader::new("Abilities (adventure)")
         .default_open(false)
         .show(ui, |ui| {
             let mut a = s
@@ -719,30 +710,24 @@ fn abilities(ui: &mut egui::Ui, s: &mut Sandbox) {
                 .map_or(Abilities::NONE, |p| p.abilities);
             let before = a;
             for (ability, label) in [
-                (
-                    Ability::HookJerk,
-                    "Hook-Ruck (Fähigkeit-Taste bei hängendem Hook)",
-                ),
+                (Ability::HookJerk, "Hook jerk (ability key while hooked)"),
                 (
                     Ability::Pull,
-                    "Heranhooken (Hook zieht Gegner, Dinge, Zugschalter)",
+                    "Pull hook (hook pulls enemies, objects, pull switches)",
                 ),
-                (Ability::Stomp, "Stampfen (Runter in der Luft)"),
-                (Ability::Grip, "Eisgriff (gegen Kletterwand laufen)"),
-                (
-                    Ability::Glide,
-                    "Gleiten (Springen halten nach Doppelsprung)",
-                ),
+                (Ability::Stomp, "Stomp (down in the air)"),
+                (Ability::Grip, "Ice grip (run against a climbing wall)"),
+                (Ability::Glide, "Glide (hold jump after double jump)"),
             ] {
                 let mut on = a.has(ability);
                 ui.checkbox(&mut on, label);
                 a.set(ability, on);
             }
             ui.horizontal(|ui| {
-                if ui.button("Alle").clicked() {
+                if ui.button("All").clicked() {
                     a = Abilities::ALL;
                 }
-                if ui.button("Keine").clicked() {
+                if ui.button("None").clicked() {
                     a = Abilities::NONE;
                 }
             });
@@ -759,7 +744,7 @@ fn map_picker(
     choice: &mut Option<std::path::PathBuf>,
 ) -> Option<Action> {
     let mut action = None;
-    egui::CollapsingHeader::new("Karte")
+    egui::CollapsingHeader::new("Map")
         .default_open(false)
         .show(ui, |ui| {
             let maps = crate::hosting::available_maps();
@@ -778,12 +763,12 @@ fn map_picker(
                             }
                         }
                     });
-                if ui.button("Laden").clicked() {
+                if ui.button("Load").clicked() {
                     action = Some(Action::SwitchMap(current.clone()));
                     *choice = None;
                 }
             });
-            ui.small(format!("Aktuell: {}", s.map_path.display()));
+            ui.small(format!("Current: {}", s.map_path.display()));
         });
     action
 }
@@ -791,7 +776,7 @@ fn map_picker(
 /// Weather of the map to try out (R2-W1): kind, strength, wind – takes effect immediately.
 fn weather(ui: &mut egui::Ui, s: &mut Sandbox) {
     use elora_map::WeatherKind;
-    egui::CollapsingHeader::new("Wetter")
+    egui::CollapsingHeader::new("Weather")
         .default_open(false)
         .show(ui, |ui| {
             let w = &mut s.map.weather;
@@ -805,19 +790,19 @@ fn weather(ui: &mut egui::Ui, s: &mut Sandbox) {
             if !w.is_clear() && w.intensity <= 0.0 {
                 w.intensity = 0.7;
             }
-            ui.add(egui::Slider::new(&mut w.intensity, 0.0..=1.0).text("Stärke"));
+            ui.add(egui::Slider::new(&mut w.intensity, 0.0..=1.0).text("Intensity"));
             ui.add(egui::Slider::new(&mut w.wind, -1.0..=1.0).text("Wind"));
         });
 }
 
 /// Enemies to try out (A1.2): adventure rules, place and remove enemies.
 fn creatures(ui: &mut egui::Ui, s: &mut Sandbox, kind: &mut usize) {
-    egui::CollapsingHeader::new("Gegner (Abenteuer)")
+    egui::CollapsingHeader::new("Enemies (adventure)")
         .default_open(false)
         .show(ui, |ui| {
             ui.checkbox(
                 &mut s.world.adventure,
-                "Abenteuer-Regeln (Schutz nach Treffer, kein Eigenschaden)",
+                "Adventure rules (protection after hit, no self damage)",
             );
             let names: Vec<String> = s
                 .world
@@ -837,7 +822,7 @@ fn creatures(ui: &mut egui::Ui, s: &mut Sandbox, kind: &mut usize) {
                             ui.selectable_value(kind, i, n);
                         }
                     });
-                if ui.button("Setzen").clicked()
+                if ui.button("Place").clicked()
                     && let Some(c) = s.world.character(s.player)
                 {
                     // in front of Elora, in the facing direction
@@ -846,14 +831,14 @@ fn creatures(ui: &mut egui::Ui, s: &mut Sandbox, kind: &mut usize) {
                     let pos = c.core.pos + elora_sim::Vec2::new(side * 160.0, -40.0);
                     s.world.add_creature(*kind, pos);
                 }
-                if ui.button("Alle entfernen").clicked() {
+                if ui.button("Remove all").clicked() {
                     s.world.creatures.clear();
                     s.world.creature_shots.clear();
                     s.world.loot.clear();
                 }
             });
             ui.small(format!(
-                "{} Gegner, {} Beute liegt herum",
+                "{} enemies, {} loot lying around",
                 s.world.creatures.len(),
                 s.world.loot.len()
             ));
@@ -862,24 +847,24 @@ fn creatures(ui: &mut egui::Ui, s: &mut Sandbox, kind: &mut usize) {
 
 fn tuning(ui: &mut egui::Ui, t: &mut Tuning) {
     let d = Tuning::default();
-    if ui.button("Alle Werte auf Standard").clicked() {
+    if ui.button("Reset all values to default").clicked() {
         *t = d.clone();
     }
-    section(ui, "Boden (T-02 bis T-05)", false, |ui| ground(ui, t, &d));
-    section(ui, "Luft (T-06 bis T-10)", false, |ui| air(ui, t, &d));
-    section(ui, "Hook (T-12 bis T-17)", false, |ui| hook(ui, t, &d));
-    section(ui, "Tile-Arten (T-31 bis T-35)", false, |ui| {
+    section(ui, "Ground (T-02 to T-05)", false, |ui| ground(ui, t, &d));
+    section(ui, "Air (T-06 to T-10)", false, |ui| air(ui, t, &d));
+    section(ui, "Hook (T-12 to T-17)", false, |ui| hook(ui, t, &d));
+    section(ui, "Tile types (T-31 to T-35)", false, |ui| {
         tiles(ui, t, &d);
     });
-    section(ui, "Fähigkeiten & Gegner (A-01 bis A-15)", false, |ui| {
+    section(ui, "Abilities & enemies (A-01 to A-15)", false, |ui| {
         ability_values(ui, t, &d);
     });
-    section(ui, "Waffen (T-18 bis T-27)", false, |ui| {
+    section(ui, "Weapons (T-18 to T-27)", false, |ui| {
         weapons(ui, t, &d);
         weapons_grenade(ui, t, &d);
         weapons_laser(ui, t, &d);
     });
-    section(ui, "Leben & Pickups (T-28 bis T-30)", false, |ui| {
+    section(ui, "Health & pickups (T-28 to T-30)", false, |ui| {
         life(ui, t, &d);
     });
     section(ui, "Velocity Ramp (T-11)", false, |ui| {
@@ -892,14 +877,14 @@ fn tuning(ui: &mut egui::Ui, t: &mut Tuning) {
         );
         slider(
             ui,
-            "Bereich",
+            "Range",
             &mut t.velramp_range,
             1.0..=10000.0,
             d.velramp_range,
         );
         slider(
             ui,
-            "Krümmung",
+            "Curvature",
             &mut t.velramp_curvature,
             1.0..=5.0,
             d.velramp_curvature,
@@ -909,10 +894,10 @@ fn tuning(ui: &mut egui::Ui, t: &mut Tuning) {
 
 fn weapons(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
     ui.label("Hammer");
-    int(ui, "Schaden", &mut t.hammer_damage, 0..=20, d.hammer_damage);
+    int(ui, "Damage", &mut t.hammer_damage, 0..=20, d.hammer_damage);
     int(
         ui,
-        "Verzögerung ms",
+        "Delay ms",
         &mut t.hammer_fire_delay,
         20..=2000,
         d.hammer_fire_delay,
@@ -927,59 +912,59 @@ fn weapons(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
 }
 
 fn weapons_grenade(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
-    ui.label("Granate");
+    ui.label("Grenade");
     int(
         ui,
-        "Schaden",
+        "Damage",
         &mut t.grenade_damage,
         0..=20,
         d.grenade_damage,
     );
     int(
         ui,
-        "Verzögerung ms",
+        "Delay ms",
         &mut t.grenade_fire_delay,
         20..=3000,
         d.grenade_fire_delay,
     );
     slider(
         ui,
-        "Geschwindigkeit",
+        "Speed",
         &mut t.grenade_speed,
         100.0..=4000.0,
         d.grenade_speed,
     );
     slider(
         ui,
-        "Krümmung",
+        "Curvature",
         &mut t.grenade_curvature,
         0.0..=30.0,
         d.grenade_curvature,
     );
     slider(
         ui,
-        "Lebensdauer s",
+        "Lifetime s",
         &mut t.grenade_lifetime,
         0.1..=5.0,
         d.grenade_lifetime,
     );
     slider(
         ui,
-        "Explosionsradius",
+        "Explosion radius",
         &mut t.explosion_radius,
         20.0..=400.0,
         d.explosion_radius,
     );
     slider(
         ui,
-        "Innenradius",
+        "Inner radius",
         &mut t.explosion_inner_radius,
         0.0..=200.0,
         d.explosion_inner_radius,
     );
     slider(
         ui,
-        "Explosionskraft",
+        "Explosion force",
         &mut t.explosion_max_force,
         0.0..=40.0,
         d.explosion_max_force,
@@ -988,31 +973,31 @@ fn weapons_grenade(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
 
 fn weapons_laser(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
     ui.label("Laser");
-    int(ui, "Schaden", &mut t.laser_damage, 0..=20, d.laser_damage);
+    int(ui, "Damage", &mut t.laser_damage, 0..=20, d.laser_damage);
     int(
         ui,
-        "Verzögerung ms",
+        "Delay ms",
         &mut t.laser_fire_delay,
         20..=3000,
         d.laser_fire_delay,
     );
     slider(
         ui,
-        "Reichweite",
+        "Reach",
         &mut t.laser_reach,
         50.0..=3000.0,
         d.laser_reach,
     );
     int(
         ui,
-        "Abpraller",
+        "Bounces",
         &mut t.laser_bounce_num,
         0..=10,
         d.laser_bounce_num,
     );
     int(
         ui,
-        "Abprall-Verz. ms",
+        "Bounce delay ms",
         &mut t.laser_bounce_delay,
         0..=1000,
         d.laser_bounce_delay,
@@ -1024,12 +1009,12 @@ fn weapons_laser(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
         0.0..=20.0,
         d.laser_knockback,
     );
-    int(ui, "Max. Munition", &mut t.max_ammo, 1..=99, d.max_ammo);
+    int(ui, "Max. ammo", &mut t.max_ammo, 1..=99, d.max_ammo);
 }
 
 fn life(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
-    int(ui, "Max. Leben", &mut t.max_health, 1..=50, d.max_health);
-    int(ui, "Max. Rüstung", &mut t.max_armor, 0..=50, d.max_armor);
+    int(ui, "Max. health", &mut t.max_health, 1..=50, d.max_health);
+    int(ui, "Max. armor", &mut t.max_armor, 0..=50, d.max_armor);
     slider(
         ui,
         "Pickup-Respawn s",
@@ -1039,7 +1024,7 @@ fn life(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
     );
     slider(
         ui,
-        "Respawn frühestens s",
+        "Earliest respawn s",
         &mut t.respawn_delay,
         0.0..=10.0,
         d.respawn_delay,
@@ -1056,28 +1041,28 @@ fn life(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
 fn ground(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
     slider(
         ui,
-        "Laufgeschw.",
+        "Run speed",
         &mut t.ground_control_speed,
         1.0..=30.0,
         d.ground_control_speed,
     );
     slider(
         ui,
-        "Beschleunigung",
+        "Acceleration",
         &mut t.ground_control_accel,
         0.1..=10.0,
         d.ground_control_accel,
     );
     slider(
         ui,
-        "Reibung",
+        "Friction",
         &mut t.ground_friction,
         0.0..=1.0,
         d.ground_friction,
     );
     slider(
         ui,
-        "Sprungimpuls",
+        "Jump impulse",
         &mut t.ground_jump_impulse,
         1.0..=30.0,
         d.ground_jump_impulse,
@@ -1087,28 +1072,22 @@ fn ground(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
 fn tiles(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
     slider(
         ui,
-        "Reibung Eis",
+        "Ice friction",
         &mut t.ice_friction,
         0.0..=1.0,
         d.ice_friction,
     );
+    slider(ui, "Ice accel.", &mut t.ice_accel, 0.05..=10.0, d.ice_accel);
     slider(
         ui,
-        "Beschl. Eis",
-        &mut t.ice_accel,
-        0.05..=10.0,
-        d.ice_accel,
-    );
-    slider(
-        ui,
-        "Sprungfeld",
+        "Jump pad",
         &mut t.jump_pad_force,
         1.0..=40.0,
         d.jump_pad_force,
     );
     slider(
         ui,
-        "Beschleuniger",
+        "Booster",
         &mut t.conveyor_speed,
         0.0..=15.0,
         d.conveyor_speed,
@@ -1116,101 +1095,95 @@ fn tiles(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
 }
 
 fn ability_values(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
-    ui.label("Hook-Ruck");
-    slider(ui, "Tempo", &mut t.jerk_speed, 1.0..=40.0, d.jerk_speed);
+    ui.label("Hook jerk");
+    slider(ui, "Speed", &mut t.jerk_speed, 1.0..=40.0, d.jerk_speed);
     int(
         ui,
-        "Abklingzeit ms",
+        "Cooldown ms",
         &mut t.jerk_cooldown,
         0..=5000,
         d.jerk_cooldown,
     );
-    ui.label("Stampfen");
-    slider(ui, "Tempo", &mut t.stomp_speed, 1.0..=60.0, d.stomp_speed);
+    ui.label("Stomp");
+    slider(ui, "Speed", &mut t.stomp_speed, 1.0..=60.0, d.stomp_speed);
     slider(
         ui,
-        "Stoßwelle",
+        "Shockwave",
         &mut t.stomp_radius,
         0.0..=256.0,
         d.stomp_radius,
     );
-    ui.label("Eisgriff");
-    int(ui, "Haftdauer ms", &mut t.grip_time, 0..=5000, d.grip_time);
+    ui.label("Ice grip");
+    int(ui, "Grip time ms", &mut t.grip_time, 0..=5000, d.grip_time);
     slider(
         ui,
-        "Rutschtempo",
+        "Slide speed",
         &mut t.grip_slide_speed,
         0.0..=10.0,
         d.grip_slide_speed,
     );
     slider(
         ui,
-        "Wandsprung seitlich",
+        "Wall jump sideways",
         &mut t.wall_jump_x,
         0.0..=30.0,
         d.wall_jump_x,
     );
     slider(
         ui,
-        "Wandsprung hoch",
+        "Wall jump up",
         &mut t.wall_jump_y,
         0.0..=30.0,
         d.wall_jump_y,
     );
-    ui.label("Gegner (A1.2)");
+    ui.label("Enemies (A1.2)");
     slider(
         ui,
-        "Heranhooken Zug",
+        "Pull hook force",
         &mut t.pull_accel,
         0.0..=10.0,
         d.pull_accel,
     );
     int(
         ui,
-        "Schutz nach Treffer ms",
+        "Protection after hit ms",
         &mut t.hit_invulnerable,
         0..=5000,
         d.hit_invulnerable,
     );
     slider(
         ui,
-        "Rückstoß Berührung",
+        "Contact knockback",
         &mut t.hit_knockback,
         0.0..=30.0,
         d.hit_knockback,
     );
     int(
         ui,
-        "Stampf-Schaden",
+        "Stomp damage",
         &mut t.stomp_damage,
         0..=20,
         d.stomp_damage,
     );
-    int(
-        ui,
-        "Betäubung ms",
-        &mut t.stomp_stun,
-        0..=5000,
-        d.stomp_stun,
-    );
+    int(ui, "Stun ms", &mut t.stomp_stun, 0..=5000, d.stomp_stun);
     slider(
         ui,
-        "Beute-Magnet",
+        "Loot magnet",
         &mut t.loot_magnet,
         0.0..=400.0,
         d.loot_magnet,
     );
-    ui.label("Gleiten");
+    ui.label("Glide");
     slider(
         ui,
-        "max. Fallen",
+        "Max. fall",
         &mut t.glide_fall_speed,
         0.1..=20.0,
         d.glide_fall_speed,
     );
     slider(
         ui,
-        "Luftsteuerung",
+        "Air control",
         &mut t.glide_control_speed,
         0.5..=20.0,
         d.glide_control_speed,
@@ -1220,71 +1193,71 @@ fn ability_values(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
 fn air(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
     slider(
         ui,
-        "Doppelsprung",
+        "Double jump",
         &mut t.air_jump_impulse,
         0.0..=30.0,
         d.air_jump_impulse,
     );
     slider(
         ui,
-        "Luftgeschw.",
+        "Air speed",
         &mut t.air_control_speed,
         0.5..=20.0,
         d.air_control_speed,
     );
     slider(
         ui,
-        "Luftbeschl.",
+        "Air accel.",
         &mut t.air_control_accel,
         0.0..=10.0,
         d.air_control_accel,
     );
     slider(
         ui,
-        "Luftreibung",
+        "Air friction",
         &mut t.air_friction,
         0.5..=1.0,
         d.air_friction,
     );
-    slider(ui, "Gravitation", &mut t.gravity, 0.05..=2.0, d.gravity);
+    slider(ui, "Gravity", &mut t.gravity, 0.05..=2.0, d.gravity);
 }
 
 fn hook(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
     slider(
         ui,
-        "Länge",
+        "Length",
         &mut t.hook_length,
         50.0..=1000.0,
         d.hook_length,
     );
     slider(
         ui,
-        "Schussgeschw.",
+        "Shot speed",
         &mut t.hook_fire_speed,
         10.0..=200.0,
         d.hook_fire_speed,
     );
     slider(
         ui,
-        "Zug-Beschl.",
+        "Pull accel.",
         &mut t.hook_drag_accel,
         0.1..=10.0,
         d.hook_drag_accel,
     );
     slider(
         ui,
-        "Zug-Max.",
+        "Pull max.",
         &mut t.hook_drag_speed,
         1.0..=40.0,
         d.hook_drag_speed,
     );
     ui.horizontal(|ui| {
-        ui.add(egui::Slider::new(&mut t.player_hook_ticks, 1..=250).text("Spieler halten (Ticks)"));
+        ui.add(egui::Slider::new(&mut t.player_hook_ticks, 1..=250).text("Hold player (ticks)"));
         reset(ui, &mut t.player_hook_ticks, d.player_hook_ticks);
     });
     slider(
         ui,
-        "Spieler-Zugkraft",
+        "Player pull force",
         &mut t.player_hook_force,
         0.0..=5.0,
         d.player_hook_force,
@@ -1293,11 +1266,11 @@ fn hook(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
 
 fn view(ui: &mut egui::Ui, v: &mut ViewSettings) {
     let d = ViewSettings::default();
-    section(ui, "Sichtbereich (E-045)", false, |ui| {
+    section(ui, "View area (E-045)", false, |ui| {
         let mut area_k = v.area / 1000.0;
         slider(
             ui,
-            "Fläche (Tsd. E²)",
+            "Area (thousand u²)",
             &mut area_k,
             300.0..=4000.0,
             d.area / 1000.0,
@@ -1305,14 +1278,14 @@ fn view(ui: &mut egui::Ui, v: &mut ViewSettings) {
         v.area = area_k * 1000.0;
         slider(
             ui,
-            "Max. Breite",
+            "Max. width",
             &mut v.max_width,
             500.0..=4000.0,
             d.max_width,
         );
         slider(
             ui,
-            "Max. Höhe",
+            "Max. height",
             &mut v.max_height,
             300.0..=3000.0,
             d.max_height,
@@ -1321,19 +1294,19 @@ fn view(ui: &mut egui::Ui, v: &mut ViewSettings) {
 }
 
 fn help(ui: &mut egui::Ui) {
-    egui::CollapsingHeader::new("Steuerung")
+    egui::CollapsingHeader::new("Controls")
         .default_open(false)
         .show(ui, |ui| {
-            ui.label("A / D – laufen");
-            ui.label("Leertaste – springen / Doppelsprung");
-            ui.label("Rechte Maustaste – Hook (halten)");
-            ui.label("R – Respawn · F1 – Panel ein/aus");
-            ui.label("Linke Maustaste – schießen · 1/2/3 oder Mausrad – Waffe");
-            ui.label("F5 – Aufzeichnung starten/beenden (→ Golden-Test)");
-            ui.label("T – Chat · Y – Team-Chat · Tab – Punkte · K – kill");
-            ui.label("F3 / F4 – Ja / Nein bei Abstimmungen");
-            ui.label("Esc – Maus freigeben · erneut Esc – beenden");
-            ui.label("Karte speichern → wird automatisch neu geladen");
+            ui.label("A / D – run");
+            ui.label("Space – jump / double jump");
+            ui.label("Right mouse button – hook (hold)");
+            ui.label("R – respawn · F1 – panel on/off");
+            ui.label("Left mouse button – shoot · 1/2/3 or mouse wheel – weapon");
+            ui.label("F5 – start/stop recording (→ golden test)");
+            ui.label("T – chat · Y – team chat · Tab – scores · K – kill");
+            ui.label("F3 / F4 – yes / no in votes");
+            ui.label("Esc – free the mouse · Esc again – quit");
+            ui.label("Save the map → reloads automatically");
         });
 }
 
@@ -1371,7 +1344,7 @@ fn reset<T: PartialEq + Copy + std::fmt::Display>(ui: &mut egui::Ui, value: &mut
     let changed = *value != default;
     if ui
         .add_enabled(changed, egui::Button::new("↺").small())
-        .on_hover_text(format!("Standard: {default}"))
+        .on_hover_text(format!("Default: {default}"))
         .clicked()
     {
         *value = default;

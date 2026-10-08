@@ -90,7 +90,7 @@ pub fn training() -> Map {
 
     let rows: Vec<String> = g.0.iter().map(|r| r.iter().collect()).collect();
     let r: Vec<&str> = rows.iter().map(String::as_str).collect();
-    let mut m = Map::from_rows("Training", &r).expect("Layout gültig");
+    let mut m = Map::from_rows("Training", &r).expect("layout valid");
     // enemy practice ground (in training they come back after a while)
     m.adventure.objects = vec![
         creature("kaefer", "stachelkaefer", 111, f, 26.0),
@@ -176,7 +176,7 @@ mod tests {
             Tile::Conveyor(BeltDir::Left),
             Tile::Conveyor(BeltDir::Right),
         ] {
-            assert!(has(t), "{t:?} fehlt");
+            assert!(has(t), "{t:?} missing");
         }
         assert!(m.supported_modes().free_for_all);
         assert_eq!(creature_count(&m), 5);
@@ -186,23 +186,23 @@ mod tests {
 
     #[test]
     fn shipped_training_map_is_current() {
-        let file = std::fs::read(shipped()).expect("Karte vorhanden");
+        let file = std::fs::read(shipped()).expect("map present");
         assert_eq!(
             elora_map::decode(&file).unwrap(),
             training(),
-            "veraltet – write_training_map -- --ignored"
+            "outdated – write_training_map -- --ignored"
         );
     }
 
     #[test]
-    #[ignore = "schreibt maps/training.emap"]
+    #[ignore = "writes maps/training.emap"]
     fn write_training_map() {
         training().save(std::path::Path::new(&shipped())).unwrap();
     }
 
     /// Overview: `… training_sheet -- --ignored` → `target/training.svg`.
     #[test]
-    #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
+    #[ignore = "only writes a file for visual inspection"]
     fn training_sheet() {
         use crate::editor::panel::Preview;
         use crate::editor::view;

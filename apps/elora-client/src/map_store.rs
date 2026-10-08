@@ -91,8 +91,8 @@ impl MapStore for DiskStore {
             .and_then(|()| std::fs::write(&tmp, data))
             .and_then(|()| std::fs::rename(&tmp, &path));
         match result {
-            Ok(()) => tracing::info!(path = %path.display(), "Karte gespeichert"),
-            Err(e) => tracing::warn!(path = %path.display(), "Karte nicht gespeichert: {e}"),
+            Ok(()) => tracing::info!(path = %path.display(), "map saved"),
+            Err(e) => tracing::warn!(path = %path.display(), "map not saved: {e}"),
         }
     }
 }

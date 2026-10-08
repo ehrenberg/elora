@@ -479,7 +479,7 @@ mod tests {
         all.extend(maps());
         all.extend(super::super::chapter4::maps());
         for (name, m) in &all {
-            let back = elora_map::decode(&elora_map::encode(m)).expect("Karte gültig");
+            let back = elora_map::decode(&elora_map::encode(m)).expect("map valid");
             let errors = map_objects(&c, &back);
             assert!(errors.is_empty(), "{name}: {errors:?}");
         }
@@ -504,7 +504,7 @@ mod tests {
             "oase-1",
             "sandschlange",
         ] {
-            assert!(objects.iter().any(|o| o.id == id), "{id} fehlt");
+            assert!(objects.iter().any(|o| o.id == id), "{id} missing");
         }
     }
 
@@ -517,7 +517,7 @@ mod tests {
                     if m.tiles[y * m.width + x] == elora_sim::Tile::Quicksand {
                         assert!(
                             m.tiles[(y + 1) * m.width + x].is_solid(),
-                            "{name}: Treibsand bei {x},{y} ohne Grund"
+                            "{name}: quicksand at {x},{y} without a floor"
                         );
                     }
                 }
@@ -532,17 +532,17 @@ mod tests {
     #[test]
     fn shipped_desert_maps_are_current() {
         for (name, map) in maps() {
-            let file = std::fs::read(shipped(name)).expect("Karte vorhanden");
+            let file = std::fs::read(shipped(name)).expect("map present");
             assert_eq!(
-                elora_map::decode(&file).expect("gültig"),
+                elora_map::decode(&file).expect("valid"),
                 map,
-                "{name} veraltet – write_chapter3_maps -- --ignored"
+                "{name} outdated – write_chapter3_maps -- --ignored"
             );
         }
     }
 
     #[test]
-    #[ignore = "schreibt maps/abenteuer/*.emap"]
+    #[ignore = "writes maps/abenteuer/*.emap"]
     fn write_chapter3_maps() {
         for (name, map) in maps() {
             map.save(std::path::Path::new(&shipped(name))).unwrap();
@@ -551,7 +551,7 @@ mod tests {
 
     /// Overview: `… chapter3_sheets -- --ignored` → `target/chapter3-<karte>.svg`.
     #[test]
-    #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
+    #[ignore = "only writes files for visual inspection"]
     fn chapter3_sheets() {
         use crate::editor::panel::Preview;
         use crate::editor::view;

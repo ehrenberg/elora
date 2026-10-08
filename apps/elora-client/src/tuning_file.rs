@@ -60,10 +60,10 @@ impl TuningFile {
     pub fn load(path: &Path) -> anyhow::Result<Self> {
         match std::fs::read_to_string(path) {
             Ok(src) => {
-                toml::from_str(&src).with_context(|| format!("{} ist ungültig", path.display()))
+                toml::from_str(&src).with_context(|| format!("{} is invalid", path.display()))
             }
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(Self::default()),
-            Err(e) => Err(e).with_context(|| format!("{} nicht lesbar", path.display())),
+            Err(e) => Err(e).with_context(|| format!("{} not readable", path.display())),
         }
     }
 
@@ -75,9 +75,9 @@ impl TuningFile {
         );
         if let Some(dir) = path.parent().filter(|d| !d.as_os_str().is_empty()) {
             std::fs::create_dir_all(dir)
-                .with_context(|| format!("{} nicht anlegbar", dir.display()))?;
+                .with_context(|| format!("{} cannot be created", dir.display()))?;
         }
-        std::fs::write(path, text).with_context(|| format!("{} nicht schreibbar", path.display()))
+        std::fs::write(path, text).with_context(|| format!("{} not writable", path.display()))
     }
 }
 

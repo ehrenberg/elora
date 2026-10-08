@@ -20,7 +20,7 @@ fn whole(data: &[u8], name: &str) -> Mesh {
     load(data, name)
         .part("")
         .cloned()
-        .unwrap_or_else(|| panic!("assets/items/{name}.svg ist leer"))
+        .unwrap_or_else(|| panic!("assets/items/{name}.svg is empty"))
 }
 
 #[derive(Debug)]
@@ -42,7 +42,7 @@ impl ItemArt {
         let part = |n: &str| {
             flag.part(n)
                 .cloned()
-                .unwrap_or_else(|| panic!("Teil `{n}` fehlt in flag.svg"))
+                .unwrap_or_else(|| panic!("part `{n}` missing in flag.svg"))
         };
         Self {
             health: whole(include_bytes!("../../../assets/items/health.svg"), "health"),

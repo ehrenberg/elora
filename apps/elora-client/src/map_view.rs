@@ -136,7 +136,7 @@ impl Cache {
             .map(|img| {
                 SvgAsset::load_untrusted(&img.svg, IMAGE_TOLERANCE, IMAGE_MAX_VERTICES).map_or_else(
                     |e| {
-                        tracing::warn!(image = %img.name, "eingebettetes Bild übersprungen: {e}");
+                        tracing::warn!(image = %img.name, "embedded image skipped: {e}");
                         Mesh::default()
                     },
                     |a| merge(&a),
@@ -330,7 +330,7 @@ impl MapView {
         if !self.cache.as_ref().is_some_and(|c| c.key.matches(map)) {
             self.cache = Some(Cache::build(&self.art, map));
         }
-        self.cache.as_mut().expect("eben gesetzt")
+        self.cache.as_mut().expect("just set")
     }
 
     /// Everything behind the figures: sky, backgrounds, decoration behind, playfield.
@@ -657,7 +657,7 @@ mod tests {
             .map(|r| r.replace(['e', 's', 'n'], "#"))
             .collect();
         let refs: Vec<&str> = plain.iter().map(String::as_str).collect();
-        let mut m = Map::from_rows("Look-Test", &refs).expect("gültig");
+        let mut m = Map::from_rows("Look-Test", &refs).expect("valid");
         m.author = Some("Elora-Team".into());
         m.materials = vec!["earth".into(), "sand".into(), "snow".into()];
         m.material_map = LOOK_ROWS
@@ -787,7 +787,7 @@ mod tests {
 
     /// Writes `maps/look-test.emap`: `cargo test -p elora-client --bin elora write_look_test_map -- --ignored`.
     #[test]
-    #[ignore = "erzeugt die Vorführkarte"]
+    #[ignore = "writes the showcase map"]
     fn write_look_test_map() {
         let path = concat!(env!("CARGO_MANIFEST_DIR"), "/../../maps/look-test.emap");
         look_test_map().save(std::path::Path::new(path)).unwrap();
@@ -796,7 +796,7 @@ mod tests {
     /// Section of the demo map as in game: `cargo test -p elora-client --bin elora look_sheet -- --ignored`,
     /// then `cargo xtask svg-preview target/look.svg target/look.png 1400`.
     #[test]
-    #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
+    #[ignore = "only writes a file for visual inspection"]
     fn look_sheet() {
         let map = look_test_map();
         let mut view = MapView::default();
@@ -826,7 +826,7 @@ mod tests {
     /// Thin ice over ice water for visual inspection (R2-M2.4): `… ice_sheet -- --ignored`, then
     /// `cargo xtask svg-preview target/ice.svg target/ice.png 800`.
     #[test]
-    #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
+    #[ignore = "only writes a file for visual inspection"]
     fn ice_sheet() {
         let mut map = Map::from_rows(
             "Eis",
@@ -840,7 +840,7 @@ mod tests {
                 "############",
             ],
         )
-        .expect("gültig");
+        .expect("valid");
         map.materials = vec!["snow".into()];
         map.material_map = vec![1; map.tiles.len()];
         let mut view = MapView::default();
@@ -869,7 +869,7 @@ mod tests {
     /// Quicksand pit for visual inspection: `… quicksand_sheet -- --ignored`, then
     /// `cargo xtask svg-preview target/quicksand.svg target/quicksand.png 800`.
     #[test]
-    #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
+    #[ignore = "only writes a file for visual inspection"]
     fn quicksand_sheet() {
         let mut map = Map::from_rows(
             "Treibsand",
@@ -882,7 +882,7 @@ mod tests {
                 "############",
             ],
         )
-        .expect("gültig");
+        .expect("valid");
         map.materials = vec!["sand".into()];
         map.material_map = vec![1; map.tiles.len()];
         let mut view = MapView::default();
@@ -927,7 +927,7 @@ mod tests {
         view.draw_back(&mut batch, &map, &cam, LookTime::default());
         view.draw_front(&mut batch, &map, &cam, LookTime::default());
         let built = view.cache.as_ref().unwrap().chunks.len();
-        assert!(built > 0 && built <= 8, "nur sichtbare Stücke: {built}");
+        assert!(built > 0 && built <= 8, "only visible chunks: {built}");
         assert!(batch.triangle_count() > 1000);
         // same map → no rebuild; changed collision → rebuild
         view.draw_back(&mut batch, &map, &cam, LookTime::default());
@@ -967,7 +967,7 @@ mod tests {
         );
         assert!(
             (c.offset.x - 512.0).abs() < 1e-2,
-            "Wolken an Server-Zeit gebunden"
+            "clouds tied to server time"
         );
         let glow = map.decor_front.last().unwrap();
         let g = anim(
@@ -1006,7 +1006,7 @@ mod tests {
     /// Build time and size of the playfield for a large map:
     /// `cargo test --release -p elora-client --bin elora map_view_benchmark -- --ignored --nocapture`.
     #[test]
-    #[ignore = "Messung"]
+    #[ignore = "measurement"]
     fn map_view_benchmark() {
         let (w, h) = (400usize, 200usize);
         let mut rows = vec![String::new(); h];
@@ -1027,7 +1027,7 @@ mod tests {
                 .collect();
         }
         let refs: Vec<&str> = rows.iter().map(String::as_str).collect();
-        let map = Map::from_rows("Messung", &refs).unwrap();
+        let map = Map::from_rows("measurement", &refs).unwrap();
         let mut view = MapView::default();
         let start = std::time::Instant::now();
         view.sync(&map);
@@ -1048,7 +1048,7 @@ mod tests {
         }
         let frame = start.elapsed() / 100;
         println!(
-            "{w}×{h} Tiles: Aufbau {build:?}, {triangles} Dreiecke gesamt; je Frame {frame:?}, {} Dreiecke sichtbar",
+            "{w}×{h} tiles: build {build:?}, {triangles} triangles total; per frame {frame:?}, {} triangles visible",
             batch.triangle_count()
         );
     }

@@ -951,7 +951,7 @@ mod tests {
 
     /// Visual check: `cargo test -p elora-client --bin elora adventure_editor_sheet -- --ignored`.
     #[test]
-    #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
+    #[ignore = "only writes a file for visual inspection"]
     fn adventure_editor_sheet() {
         use crate::editor::view;
         let mut editor = Editor::new(None, std::path::PathBuf::from("maps"));

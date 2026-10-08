@@ -752,13 +752,13 @@ mod tests {
         for _ in 0..100 {
             fx.update(0.02, &[], &scene, &[], |_| WHITE);
         }
-        assert_eq!(fx.particle_count(), 0, "alle Partikel verblasst");
+        assert_eq!(fx.particle_count(), 0, "all particles faded");
     }
 
     /// Snapshots for visual inspection: `cargo test -p elora-client --bin elora effects_sheet -- --ignored`,
     /// then `cargo xtask svg-preview target/effects.svg target/effects.png 1200`.
     #[test]
-    #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
+    #[ignore = "only writes a file for visual inspection"]
     fn effects_sheet() {
         let scene = Scene::default();
         let mut batch = ShapeBatch::default();

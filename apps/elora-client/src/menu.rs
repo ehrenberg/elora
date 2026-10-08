@@ -591,7 +591,7 @@ mod tests {
     /// Visual inspection: `cargo test -p elora-client --bin elora menu_sheet -- --ignored`,
     /// then per page `cargo xtask svg-preview target/menu-<seite>.svg target/menu-<seite>.png 1280`.
     #[test]
-    #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
+    #[ignore = "only writes files for visual inspection"]
     #[allow(clippy::too_many_lines)] // sample data for all pages
     fn menu_sheet() {
         let font = Font::new(include_bytes!("../../../assets/fonts/Inter-Regular.ttf")).unwrap();
@@ -729,7 +729,7 @@ mod tests {
                         gleam: 128,
                     },
                     crate::app_adventure::SlotView::Empty,
-                    crate::app_adventure::SlotView::Damaged("Prüfsumme".into()),
+                    crate::app_adventure::SlotView::Damaged("checksum mismatch".into()),
                 ],
                 screen: Vec2::new(1280.0, 720.0),
                 s: 1.0,

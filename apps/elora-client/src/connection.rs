@@ -38,16 +38,16 @@ impl Connection {
     ) -> anyhow::Result<Self> {
         let server = address
             .to_socket_addrs()
-            .with_context(|| format!("Adresse `{address}` ungültig"))?
+            .with_context(|| format!("address `{address}` is invalid"))?
             .next()
-            .with_context(|| format!("Adresse `{address}` nicht auflösbar"))?;
+            .with_context(|| format!("address `{address}` cannot be resolved"))?;
         let bind: SocketAddr = if server.is_ipv4() {
             "0.0.0.0:0"
         } else {
             "[::]:0"
         }
         .parse()?;
-        let mut socket = UdpSocket::bind(bind).context("Socket nicht verfügbar")?;
+        let mut socket = UdpSocket::bind(bind).context("socket not available")?;
         socket.conditioner.conditions = conditions;
         let (commands, rx_cmd) = mpsc::channel();
         let (tx_events, events) = mpsc::channel();
@@ -158,8 +158,8 @@ impl KnownServers {
         );
         if let Some(dir) = path.parent().filter(|d| !d.as_os_str().is_empty()) {
             std::fs::create_dir_all(dir)
-                .with_context(|| format!("{} nicht anlegbar", dir.display()))?;
+                .with_context(|| format!("cannot create {}", dir.display()))?;
         }
-        std::fs::write(path, text).with_context(|| format!("{} nicht schreibbar", path.display()))
+        std::fs::write(path, text).with_context(|| format!("cannot write {}", path.display()))
     }
 }

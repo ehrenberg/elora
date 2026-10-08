@@ -774,7 +774,7 @@ mod tests {
     /// Visual check: `cargo test -p elora-client --bin elora adventure_hud_sheet -- --ignored`,
     /// then `cargo xtask svg-preview target/abenteuer-hud.svg target/abenteuer-hud.png 1280`.
     #[test]
-    #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
+    #[ignore = "only writes a file for visual inspection"]
     fn victory_sheet() {
         let font = Font::new(include_bytes!("../../../assets/fonts/Inter-Regular.ttf")).unwrap();
         let lang = Lang::new(Language::De);
@@ -825,7 +825,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
+    #[ignore = "only writes a file for visual inspection"]
     fn adventure_hud_sheet() {
         let font = Font::new(include_bytes!("../../../assets/fonts/Inter-Regular.ttf")).unwrap();
         let lang = Lang::new(Language::De);

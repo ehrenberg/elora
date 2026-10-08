@@ -310,7 +310,7 @@ mod tests {
 
     /// Preset „Tag“ on a new map with ground: `… preset_sheet -- --ignored` → `target/preset.svg`.
     #[test]
-    #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
+    #[ignore = "only writes a file for visual inspection"]
     fn preset_sheet() {
         let mut editor = Editor::new(None, std::path::PathBuf::from("maps"));
         let t = std::time::Instant::now();
@@ -349,7 +349,7 @@ mod tests {
     /// Editor view without UI: `cargo test -p elora-client --bin elora editor_sheet -- --ignored`,
     /// then `cargo xtask svg-preview target/editor.svg target/editor.png 1400`.
     #[test]
-    #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
+    #[ignore = "only writes a file for visual inspection"]
     fn editor_sheet() {
         let mut editor = Editor::new(None, std::path::PathBuf::from("maps"));
         editor.map = elora_map::decode(include_bytes!("../../../../maps/look-test.emap")).unwrap();

@@ -1248,7 +1248,7 @@ mod tests {
     /// Visual check: `cargo test -p elora-client --bin elora adventure_menu_sheet -- --ignored`,
     /// then per page `cargo xtask svg-preview target/abenteuer-menu-<seite>.svg … 1280`.
     #[test]
-    #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
+    #[ignore = "only writes files for visual inspection"]
     fn adventure_menu_sheet() {
         let font = Font::new(include_bytes!("../../../assets/fonts/Inter-Regular.ttf")).unwrap();
         let lang = Lang::new(Language::De);

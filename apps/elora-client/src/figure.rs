@@ -52,18 +52,18 @@ impl FigureArt {
     /// If the embedded asset is faulty (covered by tests).
     pub fn load() -> Self {
         let asset = SvgAsset::load(include_bytes!("../../../assets/elora/elora.svg"), 0.3)
-            .expect("assets/elora/elora.svg lesbar");
+            .expect("assets/elora/elora.svg readable");
         let part = |n: &str| {
             asset
                 .part(n)
                 .cloned()
-                .unwrap_or_else(|| panic!("Teil `{n}` fehlt in elora.svg"))
+                .unwrap_or_else(|| panic!("part `{n}` missing in elora.svg"))
         };
         let expression = |data: &[u8], name: &str| {
             SvgAsset::load(data, 0.3)
                 .ok()
                 .and_then(|a| a.part("eyes").cloned())
-                .unwrap_or_else(|| panic!("assets/elora/{name}: Teil `eyes` fehlt"))
+                .unwrap_or_else(|| panic!("assets/elora/{name}: part `eyes` missing"))
         };
         Self {
             body: part("body"),
@@ -330,7 +330,7 @@ mod tests {
     /// Pose sheet for visual inspection: `cargo test -p elora-client --bin elora pose_sheet -- --ignored`,
     /// then `cargo xtask svg-preview target/figure-poses.svg target/figure-poses.png 1200`.
     #[test]
-    #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
+    #[ignore = "only writes a file for visual inspection"]
     #[allow(clippy::too_many_lines)] // one pose per row
     fn pose_sheet() {
         let art = FigureArt::load();
@@ -339,51 +339,57 @@ mod tests {
         let ground = 100.0;
         // (label, velocity, on ground, spring, target)
         let poses = [
-            ("steht", Vec2::new(0.0, 0.0), true, 0.0, Vec2::new(1.0, 0.0)),
             (
-                "Blick links oben",
+                "standing",
+                Vec2::new(0.0, 0.0),
+                true,
+                0.0,
+                Vec2::new(1.0, 0.0),
+            ),
+            (
+                "looking up left",
                 Vec2::new(0.0, 0.0),
                 true,
                 0.0,
                 Vec2::new(-0.7, -0.7),
             ),
-            ("läuft", Vec2::new(8.0, 0.0), true, 0.0, Vec2::new(1.0, 0.0)),
-            ("läuft", Vec2::new(8.0, 0.0), true, 0.0, Vec2::new(1.0, 0.1)),
             (
-                "Sprung",
+                "running",
+                Vec2::new(8.0, 0.0),
+                true,
+                0.0,
+                Vec2::new(1.0, 0.0),
+            ),
+            (
+                "running",
+                Vec2::new(8.0, 0.0),
+                true,
+                0.0,
+                Vec2::new(1.0, 0.1),
+            ),
+            (
+                "jump",
                 Vec2::new(4.0, -12.0),
                 false,
                 0.3,
                 Vec2::new(0.8, -0.6),
             ),
             (
-                "fällt",
+                "falling",
                 Vec2::new(2.0, 14.0),
                 false,
                 0.0,
                 Vec2::new(1.0, 0.3),
             ),
             (
-                "Landung",
+                "landing",
                 Vec2::new(0.0, 0.0),
                 true,
                 -0.35,
                 Vec2::new(1.0, 0.0),
             ),
-            (
-                "Schmerz",
-                Vec2::new(0.0, 0.0),
-                true,
-                0.0,
-                Vec2::new(1.0, 0.0),
-            ),
-            (
-                "Freude",
-                Vec2::new(0.0, 0.0),
-                true,
-                0.0,
-                Vec2::new(-1.0, 0.0),
-            ),
+            ("pain", Vec2::new(0.0, 0.0), true, 0.0, Vec2::new(1.0, 0.0)),
+            ("joy", Vec2::new(0.0, 0.0), true, 0.0, Vec2::new(-1.0, 0.0)),
         ];
         let tint = crate::skins::tint(elora_protocol::Skin::default(), Team::None, false, |_| {
             Color::hex(0)
@@ -443,7 +449,7 @@ mod tests {
             concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/figure-poses.svg"),
             svg,
         )
-        .expect("schreibbar");
+        .expect("writable");
     }
 
     #[test]
@@ -461,7 +467,7 @@ mod tests {
         }
         // feet touch the ground (origin), the body stands above it
         let (_, max) = art.foot_front.bounds().unwrap();
-        assert!(max.y.abs() < 2.5, "Fußunterkante {}", max.y);
+        assert!(max.y.abs() < 2.5, "bottom of feet {}", max.y);
         let (min, _) = art.body.bounds().unwrap();
         assert!(min.y < -120.0);
     }

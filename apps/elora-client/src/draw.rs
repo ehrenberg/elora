@@ -348,10 +348,10 @@ mod tests {
         let mut batch = ShapeBatch::default();
         // feet directly above the ground (row 3 starts at 96)
         super::ground_shadow(&mut batch, &map, Vec2::new(48.0, 95.0), 28.0);
-        assert!(!batch.is_empty(), "Schatten am Boden");
+        assert!(!batch.is_empty(), "shadow on the ground");
         let mut high = ShapeBatch::default();
         super::ground_shadow(&mut high, &map, Vec2::new(48.0, 10.0), 28.0);
-        assert!(!high.is_empty(), "auch aus der Höhe");
+        assert!(!high.is_empty(), "also from above");
     }
 
     use super::*;
@@ -361,7 +361,7 @@ mod tests {
     /// Map section for visual inspection: `cargo test -p elora-client --bin elora world_sheet -- --ignored`,
     /// then `cargo xtask svg-preview target/world.svg target/world.png 1200`.
     #[test]
-    #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
+    #[ignore = "only writes a file for visual inspection"]
     fn world_sheet() {
         let map = elora_map::decode(include_bytes!("../../../maps/sandbox.emap")).unwrap();
         let world = map.world(Tuning::default());

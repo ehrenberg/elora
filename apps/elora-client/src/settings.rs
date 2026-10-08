@@ -254,10 +254,10 @@ impl Settings {
     pub fn load(path: &Path) -> anyhow::Result<Self> {
         match std::fs::read_to_string(path) {
             Ok(src) => {
-                toml::from_str(&src).with_context(|| format!("{} ist ungültig", path.display()))
+                toml::from_str(&src).with_context(|| format!("{} is invalid", path.display()))
             }
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => Ok(Self::default()),
-            Err(e) => Err(e).with_context(|| format!("{} nicht lesbar", path.display())),
+            Err(e) => Err(e).with_context(|| format!("{} not readable", path.display())),
         }
     }
 
@@ -265,14 +265,13 @@ impl Settings {
     pub fn save(&self, path: &Path) -> anyhow::Result<()> {
         if let Some(dir) = path.parent().filter(|d| !d.as_os_str().is_empty()) {
             std::fs::create_dir_all(dir)
-                .with_context(|| format!("{} nicht anlegbar", dir.display()))?;
+                .with_context(|| format!("{} cannot be created", dir.display()))?;
         }
         let body = toml::to_string_pretty(self)?;
-        let text = format!("# Elora – Einstellungen (vom Spiel geschrieben)\n\n{body}");
+        let text = format!("# Elora – settings (written by the game)\n\n{body}");
         let tmp = path.with_extension("toml.tmp");
-        std::fs::write(&tmp, text)
-            .with_context(|| format!("{} nicht schreibbar", tmp.display()))?;
-        std::fs::rename(&tmp, path).with_context(|| format!("{} nicht schreibbar", path.display()))
+        std::fs::write(&tmp, text).with_context(|| format!("{} not writable", tmp.display()))?;
+        std::fs::rename(&tmp, path).with_context(|| format!("{} not writable", path.display()))
     }
 
     /// Add a favourite (without duplicates) or remove it.
@@ -332,11 +331,7 @@ mod tests {
         assert!(s.graphics.vsync);
         let s: Settings =
             toml::from_str("[player]\nbody = 99\n[graphics]\nui_scale = 9.0\n").unwrap();
-        assert_eq!(
-            s.player.skin(),
-            Skin::default(),
-            "ungültiger Skin fällt zurück"
-        );
+        assert_eq!(s.player.skin(), Skin::default(), "invalid skin falls back");
         assert!((s.graphics.ui_scale() - 2.0).abs() < f32::EPSILON);
         assert_eq!(s.player.name, "Elora");
     }
@@ -345,7 +340,7 @@ mod tests {
     fn config_dir_follows_xdg() {
         if cfg!(target_os = "linux") {
             // only check that a path with “elora” results (don't change the environment)
-            let dir = config_dir().expect("HOME gesetzt");
+            let dir = config_dir().expect("HOME set");
             assert!(dir.ends_with("elora"));
         }
     }

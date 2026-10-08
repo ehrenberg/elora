@@ -434,15 +434,21 @@ impl Editor {
     /// Embed an SVG (E-144): checked as when loading a foreign map.
     ///
     /// # Errors
-    /// With too many or too large images or an invalid SVG.
-    pub fn embed_image(&mut self, name: &str, data: Vec<u8>, now: Instant) -> Result<u16, String> {
+    /// With too many or too large images or an invalid SVG: language key and value (E-352).
+    pub fn embed_image(
+        &mut self,
+        name: &str,
+        data: Vec<u8>,
+        now: Instant,
+    ) -> Result<u16, (&'static str, String)> {
         if self.map.images.len() >= MAX_IMAGES {
-            return Err(format!("höchstens {MAX_IMAGES} Bilder"));
+            return Err(("editor.embed_too_many", MAX_IMAGES.to_string()));
         }
         if data.len() > MAX_IMAGE_BYTES {
-            return Err(format!("größer als {} KiB", MAX_IMAGE_BYTES >> 10));
+            return Err(("editor.embed_too_big", (MAX_IMAGE_BYTES >> 10).to_string()));
         }
-        elora_render::SvgAsset::load_untrusted(&data, 0.1, 200_000).map_err(|e| e.to_string())?;
+        elora_render::SvgAsset::load_untrusted(&data, 0.1, 200_000)
+            .map_err(|e| ("editor.embed_failed", e.to_string()))?;
         self.begin_edit("image-add", now);
         self.end_edit();
         self.map.images.push(Image {
@@ -494,7 +500,7 @@ mod tests {
         assert_eq!(
             elora_map::decode_draft(&data).unwrap(),
             e.map,
-            "Karte bleibt gültig"
+            "map stays valid"
         );
     }
 
@@ -519,7 +525,7 @@ mod tests {
         assert_eq!(
             e.decor(r).unwrap().pos,
             Vec2::new(100.0, 200.0),
-            "Verschieben ist ein Schritt"
+            "moving is one step"
         );
         e.remove_decor(r, t);
         assert!(e.map.decor_back.is_empty());
@@ -552,7 +558,7 @@ mod tests {
         assert_eq!(
             e.decor_world_pos(r, cam, Vec2::new(1500.0, 100.0)),
             Some(Vec2::new(1524.0, 100.0)),
-            "nächste Wiederholung"
+            "next repetition"
         );
     }
 
@@ -569,7 +575,7 @@ mod tests {
                 let foot = bg.offset.y + cam * (1.0 - bg.parallax.y) - cam;
                 assert!(
                     (100.0..=400.0).contains(&foot),
-                    "{}: {foot} bei {cam}",
+                    "{}: {foot} at {cam}",
                     bg.name
                 );
             }
@@ -586,12 +592,12 @@ mod tests {
         e.move_background(0, true, t);
         assert_eq!(e.map.backgrounds[1].name, "A");
         e.move_background(1, true, t);
-        assert_eq!(e.map.backgrounds[1].name, "A", "vorderste bleibt vorn");
+        assert_eq!(e.map.backgrounds[1].name, "A", "frontmost stays in front");
         e.apply_preset(Preset::Day, t);
         assert_eq!(e.map.backgrounds.len(), 5);
         assert_eq!(e.map.envelopes.len(), 1, "Wolkenzug");
         e.apply_preset(Preset::Day, t);
-        assert_eq!(e.map.envelopes.len(), 1, "nicht doppelt");
+        assert_eq!(e.map.envelopes.len(), 1, "not duplicated");
         e.apply_preset(Preset::Night, t);
         assert_eq!(e.map.backgrounds[0].name, "Sterne");
         roundtrip(&e);

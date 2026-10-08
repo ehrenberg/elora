@@ -609,12 +609,12 @@ mod tests {
             None,
             true,
         );
-        assert!(v.particles.len() < full / 2, "sanft: weniger");
+        assert!(v.particles.len() < full / 2, "gentle: fewer");
         let mut v = WeatherView::default();
         v.update(0.016, rain(1.0), WeatherQuality::Off, &camera(), None, true);
         assert!(
             v.particles.is_empty() && v.grade().fog_density == 0.0,
-            "aus"
+            "off"
         );
         // weather change: old particles disappear gradually, new ones arrive
         let mut v = WeatherView::default();
@@ -637,8 +637,8 @@ mod tests {
                 true,
             );
         }
-        assert!(v.particles.is_empty(), "nach dem Regen klar");
-        assert!(v.grade().tint_amount < 0.01, "Stimmung klingt ab");
+        assert!(v.particles.is_empty(), "clear after the rain");
+        assert!(v.grade().tint_amount < 0.01, "mood fades");
     }
 
     #[test]
@@ -656,9 +656,9 @@ mod tests {
                 flashes += 1;
             }
         }
-        assert!(flashes > 0, "es blitzt");
-        assert!(!v.take_thunder().is_empty(), "und donnert");
-        assert!(v.take_thunder().is_empty(), "nur einmal abgeholt");
+        assert!(flashes > 0, "lightning strikes");
+        assert!(!v.take_thunder().is_empty(), "and thunders");
+        assert!(v.take_thunder().is_empty(), "taken only once");
     }
 
     #[test]
@@ -681,11 +681,11 @@ mod tests {
         assert!(!sheltered(&map, open, WeatherKind::Rain));
         assert!(
             !sheltered(&map, under, WeatherKind::Leaves),
-            "Blätter wehen hinein"
+            "leaves blow in"
         );
         assert!(
             sheltered(&map, Vec2::new(48.0, 2.5 * 32.0), WeatherKind::Leaves),
-            "im Fels nie"
+            "never inside rock"
         );
     }
 
@@ -735,7 +735,7 @@ mod tests {
                 .count()
         };
         let base = visible(&v, &cam);
-        assert!(base > 20, "Blätter im Bild: {base}");
+        assert!(base > 20, "leaves on screen: {base}");
         // run, jump, fall
         for k in 0..240 {
             let t = k as f32 * 0.05;
@@ -744,7 +744,7 @@ mod tests {
             let n = visible(&v, &cam);
             assert!(
                 n * 10 >= base * 7 && n * 10 <= base * 13,
-                "Frame {k}: {n} statt etwa {base}"
+                "frame {k}: {n} instead of about {base}"
             );
         }
     }

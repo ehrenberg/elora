@@ -49,7 +49,7 @@ impl Hud {
     pub fn new() -> Self {
         Self {
             font: Font::new(include_bytes!("../../../assets/fonts/Inter-Regular.ttf"))
-                .expect("Inter-Regular.ttf lesbar"),
+                .expect("Inter-Regular.ttf readable"),
         }
     }
 
@@ -299,7 +299,7 @@ mod tests {
     /// Visual inspection: `cargo test -p elora-client --bin elora hud_sheet -- --ignored`,
     /// then `cargo xtask svg-preview target/hud-dm.svg target/hud-dm.png 1280` (likewise `hud-ctf`).
     #[test]
-    #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
+    #[ignore = "only writes files for visual inspection"]
     fn hud_sheet() {
         use elora_game::Stats;
         let hud = Hud::new();

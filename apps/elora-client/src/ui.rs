@@ -754,7 +754,7 @@ mod tests {
         h.press(Vec2::new(50.0, 20.0));
         assert!(
             !h.frame(|ui| ui.button("b", BTN, "Los", GREEN)),
-            "erst beim Loslassen"
+            "only on release"
         );
         h.release();
         assert!(h.frame(|ui| ui.button("b", BTN, "Los", GREEN)));
@@ -804,10 +804,7 @@ mod tests {
         h.frame(|ui| ui.slider("s", r, &mut v, 0.0, 1.0));
         h.input.mouse = Vec2::new(0.0, 10.0);
         h.frame(|ui| ui.slider("s", r, &mut v, 0.0, 1.0));
-        assert!(
-            (v - 1.0).abs() < 1e-6,
-            "ohne gedrückte Taste keine Änderung"
-        );
+        assert!((v - 1.0).abs() < 1e-6, "no change without a pressed button");
     }
 
     #[test]
@@ -829,7 +826,7 @@ mod tests {
         assert_eq!(name, "lora");
         h.input.text.push('Ü');
         h.frame(|ui| ui.text_field("n", r, &mut name, 16, ""));
-        assert_eq!(name, "Ülora", "Cursor nach Pos1 am Anfang, Umlaute");
+        assert_eq!(name, "Ülora", "cursor at the start after Home, umlauts");
         h.input.keys = vec![UiKey::Enter];
         assert_eq!(
             h.frame(|ui| ui.text_field("n", r, &mut name, 16, "")),
@@ -884,7 +881,7 @@ mod tests {
     /// Gallery for visual inspection: `cargo test -p elora-client --bin elora ui_gallery -- --ignored`,
     /// then `cargo xtask svg-preview target/ui-gallery.svg target/ui-gallery.png 1280`.
     #[test]
-    #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
+    #[ignore = "only writes a file for visual inspection"]
     #[allow(clippy::too_many_lines)] // example page
     fn ui_gallery() {
         let mut h = Harness::new();

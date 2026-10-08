@@ -436,7 +436,7 @@ mod tests {
         assert_eq!(
             (c.x0, c.y0, c.x1, c.y1),
             (0, 0, 1, 1),
-            "mittig, am Rand abgeschnitten"
+            "centered, clipped at the edge"
         );
         let c = e.brush_cells(10, 10, 2);
         assert_eq!((c.width(), c.height()), (2, 2));
@@ -457,9 +457,9 @@ mod tests {
         assert_eq!(at(&e, 1, 1), Tile::Death);
         assert_eq!(at(&e, 3, 3), Tile::Death);
         assert_eq!(at(&e, 0, 0), Tile::Solid);
-        assert_eq!(at(&e, 6, 6), Tile::Air, "außen unberührt");
+        assert_eq!(at(&e, 6, 6), Tile::Air, "outside untouched");
         e.undo();
-        assert_eq!(at(&e, 2, 2), Tile::Air, "Füllen ist ein Schritt");
+        assert_eq!(at(&e, 2, 2), Tile::Air, "filling is one step");
         // same fill: nothing to do
         let steps = e.undo_len();
         e.flood_fill(10, 10, Tile::Air, t);
@@ -479,7 +479,7 @@ mod tests {
         assert_eq!(
             &e.map.material_map[..3],
             &[0, 0, 0],
-            "Standard = 0, Stein bleibt"
+            "default = 0, stone stays"
         );
         // map stays valid
         let data = elora_map::encode(&e.map);

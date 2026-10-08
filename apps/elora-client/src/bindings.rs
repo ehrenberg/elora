@@ -414,7 +414,7 @@ mod tests {
         assert_eq!(b.actions(Trigger::Key(KeyCode::KeyW)).len(), 2);
         assert!(
             !b.set(GameAction::Jump, Trigger::Key(KeyCode::Escape)),
-            "Esc ist fest"
+            "Esc is fixed"
         );
         let raw: BTreeMap<String, String> = [
             ("jump".to_owned(), "gibt_es_nicht".to_owned()),
@@ -428,7 +428,7 @@ mod tests {
         assert_eq!(
             b.trigger(GameAction::Jump),
             Trigger::Key(KeyCode::Space),
-            "ungültig → Standard"
+            "invalid → default"
         );
         assert_eq!(
             b.trigger(GameAction::Fire),
