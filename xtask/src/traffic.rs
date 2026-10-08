@@ -24,7 +24,7 @@ fn rng(state: &mut u64) -> u64 {
 /// As on the server, snapshots are created every 2 ticks as a delta against a
 /// state that is `ack_lag` snapshots older.
 pub fn generate(players: usize, seed: u64, ticks: u64, ack_lag: usize) -> Traffic {
-    let map = elora_map::decode(MAP).expect("Sandbox-Karte gültig");
+    let map = elora_map::decode(MAP).expect("sandbox map valid");
     let mut world = map.world(Tuning::default());
     let slots: Vec<usize> = (0..players).map(|_| world.join()).collect();
     let mut state = seed | 1;

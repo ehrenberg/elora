@@ -1,6 +1,6 @@
 //! Development tasks for Elora (E-039).
 //!
-//! Usage: `cargo xtask <befehl>`
+//! Usage: `cargo xtask <command>`
 
 mod package;
 mod traffic;
@@ -9,25 +9,25 @@ use std::fmt::Write as _;
 use std::process::{Command, ExitCode};
 
 const HELP: &str = "\
-Verwendung: cargo xtask <befehl>
+Usage: cargo xtask <command>
 
-Befehle:
-  check          Alle Prüfungen: fmt, clippy, test, deny
-  fmt            Code formatieren
-  train-huffman  Huffman-Tabelle aus synthetischem Verkehr erzeugen (E-063)
-  net-stats      Nachrichtengrößen für 8/16/64 Spieler messen
-  svg-preview <eingabe.svg> <ausgabe.png> [breite]
-                 SVG rastern (Entwürfe prüfen, M5)
+Commands:
+  check          all checks: fmt, clippy, test, deny
+  fmt            format the code
+  train-huffman  generate the Huffman table from synthetic traffic (E-063)
+  net-stats      measure message sizes for 8/16/64 players
+  svg-preview <input.svg> <output.png> [width]
+                 rasterise an SVG (check drafts, M5)
   sound-preview [name …]
-                 Sounds (prozedural + Dateien) als WAV nach target/sounds/ (Hörprobe, M5.7)
-  sound-import <name> <eingabe> [start_s] [länge_s]
-                 Tondatei per ffmpeg nach assets/sounds/files/<name>.wav (Quelle in assets/SOURCES.md eintragen!)
+                 sounds (procedural + files) as WAV to target/sounds/ (listening test, M5.7)
+  sound-import <name> <input> [start_s] [length_s]
+                 sound file via ffmpeg to assets/sounds/files/<name>.wav (add the source to assets/SOURCES.md!)
   package [--archive]
-                 Release-Paket unter dist/ (Programme, Karten, Lizenzen; macOS: Elora.app),
-                 mit --archive als .tar.gz bzw. .zip (M8.3)
-  map-dump <karte.emap>
-                 Karte lesbar ausgeben: Kopf, Prüfsumme, Raster, Ebenen (M6.2)
-  help           Diese Hilfe
+                 release package in dist/ (programs, maps, licenses; macOS: Elora.app),
+                 with --archive as .tar.gz or .zip (M8.3)
+  map-dump <map.emap>
+                 print a map in readable form: header, checksum, grid, layers (M6.2)
+  help           this help
 ";
 
 fn main() -> ExitCode {
@@ -53,7 +53,7 @@ fn main() -> ExitCode {
             package::package(&args)
         }
         Some("map-dump") => std::env::args().nth(2).map_or_else(
-            || Err("Verwendung: cargo xtask map-dump <karte.emap>".to_owned()),
+            || Err("Usage: cargo xtask map-dump <map.emap>".to_owned()),
             |p| map_dump(std::path::Path::new(&p)),
         ),
         Some("net-stats") => {
@@ -64,7 +64,7 @@ fn main() -> ExitCode {
             print!("{HELP}");
             Ok(())
         }
-        Some(other) => Err(format!("Unbekannter Befehl `{other}`\n\n{HELP}")),
+        Some(other) => Err(format!("Unknown command `{other}`\n\n{HELP}")),
     };
     match result {
         Ok(()) => ExitCode::SUCCESS,
@@ -77,7 +77,7 @@ fn main() -> ExitCode {
 
 fn check() -> Result<(), String> {
     let steps: [(&str, &[&str]); 4] = [
-        ("Formatierung", &["fmt", "--all", "--check"]),
+        ("Formatting", &["fmt", "--all", "--check"]),
         (
             "Clippy",
             &[
@@ -101,7 +101,7 @@ fn check() -> Result<(), String> {
             ],
         ),
         (
-            "Lizenzen & Advisories",
+            "Licenses & advisories",
             // "unmaintained" only as a warning, real security vulnerabilities stay errors (E-048)
             &["deny", "check", "-W", "unmaintained"],
         ),
@@ -110,7 +110,7 @@ fn check() -> Result<(), String> {
         println!("==> {name}");
         cargo(args)?;
     }
-    println!("==> Alle Prüfungen bestanden");
+    println!("==> All checks passed");
     Ok(())
 }
 
@@ -119,11 +119,11 @@ fn cargo(args: &[&str]) -> Result<(), String> {
     let status = Command::new(&cargo)
         .args(args)
         .status()
-        .map_err(|e| format!("`{cargo}` konnte nicht gestartet werden: {e}"))?;
+        .map_err(|e| format!("`{cargo}` could not be started: {e}"))?;
     if status.success() {
         Ok(())
     } else {
-        Err(format!("`cargo {}` fehlgeschlagen", args.join(" ")))
+        Err(format!("`cargo {}` failed", args.join(" ")))
     }
 }
 
@@ -152,21 +152,21 @@ fn train_huffman() -> Result<(), String> {
         let _ = writeln!(body, "    {},", row.join(", "));
     }
     let text = format!(
-        "//! Byte-Häufigkeiten für den statischen Huffman-Code (E-063).\n\
+        "//! Byte frequencies for the static Huffman code (E-063).\n\
          //!\n\
-         //! Erzeugt mit `cargo xtask train-huffman` – nicht von Hand ändern.\n\n\
-         /// Häufigkeiten der Byte-Werte 0..=255.\n\
+         //! Generated with `cargo xtask train-huffman` – do not edit by hand.\n\n\
+         /// Frequencies of the byte values 0..=255.\n\
          pub const FREQUENCIES: [u32; 256] = [\n{body}];\n"
     );
     std::fs::write(TABLE_FILE, text).map_err(|e| format!("{TABLE_FILE}: {e}"))?;
-    println!("Tabelle geschrieben: {TABLE_FILE} – neu bauen, dann `cargo xtask net-stats`");
+    println!("Table written: {TABLE_FILE} – rebuild, then `cargo xtask net-stats`");
     Ok(())
 }
 
 /// Measures average message sizes raw and compressed (different seed than in training).
 fn net_stats() {
     println!(
-        "| Spieler | Snapshot wie Original (Delta aller Felder + Huffman) | Elora roh | Elora + Huffman | vs. Original | Eingabe roh | Eingabe + Huffman | Server→Client kB/s (25 Hz) |"
+        "| Players | Snapshot like original (delta of all fields + Huffman) | Elora raw | Elora + Huffman | vs. original | Input raw | Input + Huffman | Server→client kB/s (25 Hz) |"
     );
     println!("|---|---|---|---|---|---|---|---|");
     for players in [8, 16, 64] {
@@ -237,30 +237,30 @@ fn sound_preview(names: &[String]) -> Result<(), String> {
         let path = dir.join(format!("{}.wav", sound.name()));
         std::fs::write(&path, elora_audio::wav(&src.samples()))
             .map_err(|e| format!("{}: {e}", path.display()))?;
-        let kind = if src.is_file() { "Datei" } else { "prozedural" };
+        let kind = if src.is_file() { "file" } else { "procedural" };
         println!("{} ({:.2} s, {kind})", path.display(), src.duration());
         count += 1;
     }
     for s in bank.missing() {
-        println!("fehlt: {}", s.name());
+        println!("missing: {}", s.name());
     }
     if count == 0 {
-        return Err("keine passenden Sounds".into());
+        return Err("no matching sounds".into());
     }
     Ok(())
 }
 
-/// `sound-import <name> <eingabe> [start_s] [länge_s]`: sound file (any format that
+/// `sound-import <name> <input> [start_s] [length_s]`: sound file (any format that
 /// ffmpeg reads) to `assets/sounds/files/<name>.wav` – mono, 44.1 kHz, 16 bit,
 /// silence at the start removed, 15 ms fade-out at the end, peak at −1 dB.
 fn sound_import(args: &[String]) -> Result<(), String> {
-    let usage = "Verwendung: cargo xtask sound-import <name> <eingabe> [start_s] [länge_s]";
+    let usage = "Usage: cargo xtask sound-import <name> <input> [start_s] [length_s]";
     let (Some(name), Some(input)) = (args.first(), args.get(1)) else {
         return Err(usage.into());
     };
     if elora_audio::Sound::from_name(name).is_none() {
         return Err(format!(
-            "unbekannter Sound `{name}` (siehe crates/elora-audio/src/cues.rs)"
+            "unknown sound `{name}` (see crates/elora-audio/src/cues.rs)"
         ));
     }
     let mut cmd = std::process::Command::new("ffmpeg");
@@ -275,7 +275,7 @@ fn sound_import(args: &[String]) -> Result<(), String> {
     cmd.args(["-ac", "1", "-ar", "44100", "-f", "f32le", "-"]);
     let out = cmd
         .output()
-        .map_err(|e| format!("ffmpeg nicht startbar: {e}"))?;
+        .map_err(|e| format!("ffmpeg could not be started: {e}"))?;
     if !out.status.success() {
         return Err(format!("ffmpeg: {}", String::from_utf8_lossy(&out.stderr)));
     }
@@ -307,7 +307,7 @@ fn sound_import(args: &[String]) -> Result<(), String> {
     }
     let peak = samples.iter().fold(0.0_f32, |m, s| m.max(s.abs()));
     if peak <= 0.0 {
-        return Err("Eingabe ist stumm".into());
+        return Err("input is silent".into());
     }
     let target = 0.89; // −1 dBFS
     for s in &mut samples {
@@ -324,9 +324,7 @@ fn sound_import(args: &[String]) -> Result<(), String> {
 
 fn svg_preview(args: &[String]) -> Result<(), String> {
     let [input, output, rest @ ..] = args else {
-        return Err(
-            "Verwendung: cargo xtask svg-preview <eingabe.svg> <ausgabe.png> [breite]".into(),
-        );
+        return Err("Usage: cargo xtask svg-preview <input.svg> <output.png> [width]".into());
     };
     let data = std::fs::read(input).map_err(|e| format!("{input}: {e}"))?;
     let mut opt = resvg::usvg::Options::default();
@@ -340,7 +338,7 @@ fn svg_preview(args: &[String]) -> Result<(), String> {
     let width: f32 = match rest.first() {
         Some(w) => w
             .parse()
-            .map_err(|_| "Breite muss eine Zahl sein".to_string())?,
+            .map_err(|_| "width must be a number".to_string())?,
         None => size.width(),
     };
     let scale = width / size.width();
@@ -349,7 +347,7 @@ fn svg_preview(args: &[String]) -> Result<(), String> {
         (size.width() * scale).ceil() as u32,
         (size.height() * scale).ceil() as u32,
     );
-    let mut pixmap = resvg::tiny_skia::Pixmap::new(w, h).ok_or("ungültige Größe")?;
+    let mut pixmap = resvg::tiny_skia::Pixmap::new(w, h).ok_or("invalid size")?;
     resvg::render(
         &tree,
         resvg::tiny_skia::Transform::from_scale(scale, scale),
@@ -374,43 +372,43 @@ fn map_dump(path: &std::path::Path) -> Result<(), String> {
             s
         });
     println!("Name:       {}", map.name);
-    println!("Autor:      {}", map.author.as_deref().unwrap_or("–"));
+    println!("Author:     {}", map.author.as_deref().unwrap_or("–"));
     println!(
-        "Größe:      {} × {} Tiles, {} Bytes",
+        "Size:       {} × {} tiles, {} bytes",
         map.width,
         map.height,
         data.len()
     );
-    println!("Prüfsumme:  {sum}");
+    println!("Checksum:   {sum}");
     let modes = map.supported_modes();
     println!(
-        "Modi:       DM/LMS {} · TDM/LTS {} · CTF {}",
+        "Modes:      DM/LMS {} · TDM/LTS {} · CTF {}",
         yes(modes.free_for_all),
         yes(modes.team),
         yes(modes.ctf)
     );
-    println!("Materialien: {:?}", map.materials);
+    println!("Materials:  {:?}", map.materials);
     println!(
-        "Himmel:     #{} → #{}",
+        "Sky:        #{} → #{}",
         hex(map.sky.top.0),
         hex(map.sky.bottom.0)
     );
     for b in &map.backgrounds {
         println!(
-            "Hintergrund „{}“: Parallax {:?}, {} Objekte",
+            "Background \"{}\": parallax {:?}, {} objects",
             b.name,
             (b.parallax.x, b.parallax.y),
             b.items.len()
         );
     }
     println!(
-        "Deko:       {} hinten, {} vorn",
+        "Decor:      {} back, {} front",
         map.decor_back.len(),
         map.decor_front.len()
     );
     for o in &map.adventure.objects {
         println!(
-            "Abenteuer:  {} „{}“ bei ({:.0}, {:.0})",
+            "Adventure:  {} \"{}\" at ({:.0}, {:.0})",
             o.kind.name(),
             o.id,
             o.pos.x,
@@ -419,7 +417,7 @@ fn map_dump(path: &std::path::Path) -> Result<(), String> {
     }
     for e in &map.envelopes {
         println!(
-            "Animation „{}“: {:?}, {} Punkte, {} ms",
+            "Animation \"{}\": {:?}, {} points, {} ms",
             e.name,
             e.kind,
             e.points.len(),
@@ -427,7 +425,7 @@ fn map_dump(path: &std::path::Path) -> Result<(), String> {
         );
     }
     for i in &map.images {
-        println!("Bild „{}“: {} Bytes", i.name, i.svg.len());
+        println!("Image \"{}\": {} bytes", i.name, i.svg.len());
     }
     println!();
     for row in map.to_rows() {
@@ -437,7 +435,7 @@ fn map_dump(path: &std::path::Path) -> Result<(), String> {
 }
 
 fn yes(b: bool) -> &'static str {
-    if b { "ja" } else { "nein" }
+    if b { "yes" } else { "no" }
 }
 
 fn hex(c: [u8; 4]) -> String {

@@ -102,15 +102,15 @@ fn copy(from: &str, to: &Path) -> Result<(), String> {
 
 /// Program icon from the character (square, transparent).
 fn render_icon(out: &Path) -> Result<(), String> {
-    let data = std::fs::read("assets/elora/elora.svg").map_err(|e| format!("Figur: {e}"))?;
+    let data = std::fs::read("assets/elora/elora.svg").map_err(|e| format!("character: {e}"))?;
     let tree = resvg::usvg::Tree::from_data(&data, &resvg::usvg::Options::default())
-        .map_err(|e| format!("Figur: {e}"))?;
+        .map_err(|e| format!("character: {e}"))?;
     let size = tree.size();
     let edge = 256.0_f32;
     let scale = edge * 0.9 / size.width().max(size.height());
     let dx = (edge - size.width() * scale) / 2.0;
     let dy = (edge - size.height() * scale) / 2.0;
-    let mut pixmap = resvg::tiny_skia::Pixmap::new(256, 256).ok_or("ungültige Größe")?;
+    let mut pixmap = resvg::tiny_skia::Pixmap::new(256, 256).ok_or("invalid size")?;
     resvg::render(
         &tree,
         resvg::tiny_skia::Transform::from_row(scale, 0.0, 0.0, scale, dx, dy),
@@ -123,20 +123,20 @@ fn render_icon(out: &Path) -> Result<(), String> {
 
 const README: &str = "Elora {version}\n\
 =====================\n\n\
-Ein schnelles 2D-Multiplayer-Spiel mit Hook, Hammer, Granate und Laser.\n\n\
-Starten:   elora             (Hauptmenü)\n\
-Server:    elora-server --port 8303 --map maps/dm-wiese.emap --name \"Mein Server\"\n\
-Master:    elora-master      (Server-Liste fürs Internet, siehe docs im Repository)\n\n\
-Einstellungen und eigene Karten liegen im Benutzerverzeichnis\n\
-(Linux ~/.config/elora und ~/.local/share/elora, Windows %APPDATA%\\Elora,\n\
+A fast 2D multiplayer game with hook, hammer, grenade launcher and laser.\n\n\
+Start:     elora             (main menu)\n\
+Server:    elora-server --port 8303 --map maps/dm-wiese.emap --name \"My server\"\n\
+Master:    elora-master      (server list for the internet, see the docs in the repository)\n\n\
+Settings and your own maps live in your user folder\n\
+(Linux ~/.config/elora and ~/.local/share/elora, Windows %APPDATA%\\Elora,\n\
 macOS ~/Library/Application Support/Elora).\n\n\
-Startet Elora nicht, stehen dort elora.log und crash.txt mit dem Grund.\n\
-If Elora does not start, elora.log and crash.txt in that folder tell why.\n\n\
-macOS: Das Programm ist nicht signiert. Beim ersten Start mit Rechtsklick →\n\
-„Öffnen“ starten und bestätigen.\n\n\
-Lizenzen: Code GPL-3.0 (LICENSE), eigene Grafiken und Sounds CC-BY-SA 4.0,\n\
-fremde Assets siehe SOURCES.md, Bibliotheken siehe THIRD_PARTY_LICENSES.\n\
-Quelltext: https://github.com/ehrenberg/elora\n";
+If Elora does not start, elora.log and crash.txt in that folder tell why.\n\
+Startet Elora nicht, stehen dort elora.log und crash.txt mit dem Grund.\n\n\
+macOS: the app is not signed. On the first start, right click it, choose\n\
+\"Open\" and confirm.\n\n\
+Licences: code GPL-3.0 (LICENSE), own graphics and sounds CC-BY-SA 4.0,\n\
+third-party assets see SOURCES.md, libraries see THIRD_PARTY_LICENSES.\n\
+Source: https://github.com/ehrenberg/elora\n";
 
 /// Fills the package folder (programs, data, licences).
 fn fill(target: &Target, dir: &Path, bin_dir: &Path, data_dir: &Path) -> Result<(), String> {
@@ -210,11 +210,11 @@ fn run(cmd: &mut Command) -> Result<(), String> {
     let shown = format!("{cmd:?}");
     let status = cmd
         .status()
-        .map_err(|e| format!("{shown} konnte nicht starten: {e}"))?;
+        .map_err(|e| format!("{shown} could not start: {e}"))?;
     if status.success() {
         Ok(())
     } else {
-        Err(format!("{shown} fehlgeschlagen"))
+        Err(format!("{shown} failed"))
     }
 }
 
@@ -241,7 +241,7 @@ pub fn package(args: &[String]) -> Result<(), String> {
     let dir = dist.join(&name);
     let _ = std::fs::remove_dir_all(&dir);
     fill(&target, &dir, &dir, &dir)?;
-    println!("Paket: {}", dir.display());
+    println!("Package: {}", dir.display());
     if cfg!(target_os = "macos") && target.triple.is_none() {
         let app = mac_bundle(&target, &dist)?;
         println!("Bundle: {}", app.display());
@@ -263,7 +263,7 @@ pub fn package(args: &[String]) -> Result<(), String> {
         tar.current_dir(&dist);
         tar.args(flags.split(' ')).arg(&file).arg(&name);
         run(&mut tar)?;
-        println!("Archiv: {}", dist.join(file).display());
+        println!("Archive: {}", dist.join(file).display());
     }
     Ok(())
 }
