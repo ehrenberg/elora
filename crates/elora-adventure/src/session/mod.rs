@@ -5,14 +5,26 @@
 //! Pure logic: loading the maps and writing the save games is done by the caller
 //! ([`SessionEvent::Travel`], [`SessionEvent::Save`]).
 
+mod decor;
+mod followers;
+mod objects;
+mod quests;
+mod temperature;
+mod weather;
+
+pub use decor::{PARTY, SPRINGS_FREED};
+pub use weather::weather_env;
+
+use decor::adapt_decor;
+use quests::outcomes;
+
 use std::collections::{BTreeMap, BTreeSet};
 
 use elora_map::adventure::SwitchTrigger;
 use elora_map::{Map, ObjectKind};
 use elora_sim::{Event, HookState, PHYS_SIZE, TILE_SIZE, Tile, Tuning, Vec2, Weapon, World};
 
-use crate::data::{Content, ItemKind, Text};
-use crate::quest::Outcome;
+use crate::data::{Content, Text};
 use crate::script::Open;
 use crate::state::{Location, Notice, SaveGame};
 
@@ -29,19 +41,6 @@ const MUSHROOM_RANGE: Vec2 = Vec2::new(40.0, 40.0);
 const MUSHROOM_DAZE_MS: u32 = 5500;
 /// This long Elora has to stand in the mushrooms.
 const MUSHROOM_DELAY_MS: u32 = 1200;
-/// Heat bar (E-320): this long in the sun until full, in the shade and at the oasis until empty.
-const HEAT_FILL_MS: u32 = 20_000;
-const HEAT_SHADE_MS: u32 = 8_000;
-const HEAT_OASIS_MS: u32 = 2_500;
-/// When it is full, Elora stays slower until the bar drops below this fraction again.
-const HEAT_RECOVER: f32 = 0.5;
-/// Cold bar (E-342, D-M24-04): this long outside until full (half as long in a blizzard),
-/// under a roof and at the fire until empty.
-const COLD_FILL_MS: u32 = 60_000;
-const COLD_ROOF_MS: u32 = 10_000;
-const COLD_FIRE_MS: u32 = 3_000;
-/// A roof (solid tile or platform) this many tiles above Elora gives shade.
-const SHADE_TILES: i32 = 10;
 /// This close the hook has to be to a collectible or loot (pull hook).
 const HOOK_PICK_RANGE: f32 = 28.0;
 /// Health after „Zweite Chance“ (node, P-xx).
@@ -336,15 +335,6 @@ impl Session {
         world
     }
 
-    fn push_outcomes(&mut self, outs: Vec<Outcome>) {
-        for o in outs {
-            self.pending.push(match o {
-                Outcome::Notice(n) => SessionEvent::Notice(n),
-                Outcome::Open(o) => SessionEvent::Open(o),
-            });
-        }
-    }
-
     /// Ids of the zones and transitions that contain `p`.
     fn areas_at(map: &Map, p: Vec2) -> BTreeSet<String> {
         map.adventure
@@ -534,58 +524,6 @@ impl Session {
         out
     }
 
-    /// Pull hook: collectibles on the hook are collected, loot flies to Elora.
-    fn hook_pickups(
-        &mut self,
-        world: &mut World,
-        from: Vec2,
-        hook: Vec2,
-        elora: Vec2,
-    ) -> Vec<SessionEvent> {
-        let mut out = Vec::new();
-        let near_path =
-            |p: Vec2| Vec2::closest_point_on_segment(from, hook, p).distance(p) < HOOK_PICK_RANGE;
-        let near: Vec<String> = self
-            .map
-            .adventure
-            .objects
-            .iter()
-            .filter(|o| matches!(o.kind, ObjectKind::Collectible { .. }) && near_path(o.pos))
-            .map(|o| o.id.clone())
-            .collect();
-        for id in near {
-            out.extend(self.collect(&id));
-        }
-        for l in &mut world.loot {
-            if near_path(l.pos) {
-                l.pos = elora;
-                l.vel = Vec2::ZERO;
-            }
-        }
-        out
-    }
-
-    /// Collect collectible `id` (once per save game).
-    fn collect(&mut self, id: &str) -> Vec<SessionEvent> {
-        let mut out = Vec::new();
-        let Some(ObjectKind::Collectible { item }) =
-            self.map.adventure.object(id).map(|o| o.kind.clone())
-        else {
-            return out;
-        };
-        let k = key("find", &self.map_name, id);
-        if self.save.flag(&k) == 0 && self.save.add_item(&self.content, &item, 1).is_ok() {
-            self.save.set_flag(&k, 1);
-            out.push(SessionEvent::Notice(Notice::Item {
-                id: item.clone(),
-                count: 1,
-            }));
-            let up = self.save.update_quests(&self.content);
-            out.extend(outcomes(up));
-        }
-        out
-    }
-
     /// Healing plants and collectibles on touch.
     fn touch(&mut self, world: &mut World, pos: Vec2) -> Vec<SessionEvent> {
         let mut out = Vec::new();
@@ -641,29 +579,6 @@ impl Session {
         out
     }
 
-    /// Doors open as soon as their condition holds, and stay open (E-254).
-    fn update_doors(&mut self, world: &mut World) -> Vec<SessionEvent> {
-        let mut changed = false;
-        for o in self.map.adventure.objects.clone() {
-            if let ObjectKind::Door { size, open_if } = &o.kind {
-                let k = key("door", &self.map_name, &o.id);
-                if self.save.flag(&k) == 0 && self.save.holds(&self.content, open_if) {
-                    self.save.set_flag(&k, 1);
-                    for (tx, ty) in tile_range(o.pos, *size) {
-                        world.collision.set_tile(tx, ty, Tile::Air);
-                        set_map_tile(&mut self.map, tx, ty, Tile::Air);
-                    }
-                    changed = true;
-                }
-            }
-        }
-        if changed {
-            vec![SessionEvent::TilesChanged]
-        } else {
-            Vec::new()
-        }
-    }
-
     fn barks(&mut self, pos: Vec2) -> Vec<SessionEvent> {
         let mut out = Vec::new();
         for o in &self.map.adventure.objects {
@@ -684,77 +599,6 @@ impl Session {
             }
         }
         out
-    }
-
-    /// Flip switches of a kind near `at`.
-    fn switches_at(&mut self, at: Vec2, trigger: SwitchTrigger, range: f32) -> Vec<SessionEvent> {
-        let ids: Vec<String> = self
-            .map
-            .adventure
-            .objects
-            .iter()
-            .filter(|o| matches!(&o.kind, ObjectKind::Switch { trigger: t, .. } if *t == trigger))
-            .filter(|o| o.pos.distance(at) < range)
-            .map(|o| o.id.clone())
-            .collect();
-        ids.iter().flat_map(|id| self.toggle(id)).collect()
-    }
-
-    /// Pull switches on the path of the hook tip.
-    fn switches_along(&mut self, from: Vec2, to: Vec2, range: f32) -> Vec<SessionEvent> {
-        let ids: Vec<String> = self
-            .map
-            .adventure
-            .objects
-            .iter()
-            .filter(|o| {
-                matches!(&o.kind, ObjectKind::Switch { trigger, .. } if *trigger == SwitchTrigger::Hook)
-            })
-            .filter(|o| Vec2::closest_point_on_segment(from, to, o.pos).distance(o.pos) < range)
-            .map(|o| o.id.clone())
-            .collect();
-        ids.iter().flat_map(|id| self.toggle(id)).collect()
-    }
-
-    fn toggle(&mut self, id: &str) -> Vec<SessionEvent> {
-        let Some(ObjectKind::Switch { flag, once, .. }) =
-            self.map.adventure.object(id).map(|o| o.kind.clone())
-        else {
-            return Vec::new();
-        };
-        let v = self.save.flag(&flag);
-        if once && v != 0 {
-            return Vec::new();
-        }
-        self.save.set_flag(&flag, i64::from(v == 0));
-        outcomes(self.save.update_quests(&self.content))
-    }
-
-    /// Companions appear next to Elora as soon as their condition holds, and leave when not.
-    fn sync_followers(&mut self, world: &mut World) {
-        let Some(elora) = world.character(self.player).map(|c| c.core.pos) else {
-            return;
-        };
-        for (id, ch) in &self.content.characters {
-            let (Some(kind), Some(cond)) = (&ch.follower, &ch.follow_if) else {
-                continue;
-            };
-            let wanted = self.save.holds(&self.content, cond);
-            match (wanted, self.followers.get(id).copied()) {
-                (true, None) => {
-                    if let Some(k) = world.creature_kind(kind)
-                        && let Some(cid) = world.add_creature(k, elora + Vec2::new(-40.0, -8.0))
-                    {
-                        self.followers.insert(id.clone(), cid);
-                    }
-                }
-                (false, Some(cid)) => {
-                    world.creatures.retain(|c| c.id != cid);
-                    self.followers.remove(id);
-                }
-                _ => {}
-            }
-        }
     }
 
     /// Whoever stands in glow mushrooms for 1.2 s gets the colourful daze (E-311).
@@ -779,130 +623,6 @@ impl Session {
                 ch.core.dazed = ticks;
             }
         }
-    }
-
-    /// Is the map a hot area (desert, E-320)?
-    pub fn hot(&self) -> bool {
-        self.content.area_of(&self.map_name).is_some_and(|a| a.hot)
-    }
-
-    /// Is the map a cold area (Frostspitzen, E-342)?
-    pub fn chilly(&self) -> bool {
-        self.content.area_of(&self.map_name).is_some_and(|a| a.cold)
-    }
-
-    /// Cold bar (E-342): outside it fills up (twice as fast in a blizzard, equipment
-    /// `cold_pct` slows it down), under a roof and at the fire (zones `feuer…`) Elora warms up;
-    /// in the guardians' arenas it rests (warms slowly). Full = slower until it has dropped below
-    /// half.
-    fn chill(&mut self, world: &mut World, pos: Vec2) {
-        let fire = self.map.adventure.objects.iter().any(|o| {
-            o.id.starts_with("fire")
-                && matches!(o.kind, ObjectKind::Zone { size } if inside(pos, o.pos, size))
-        });
-        let roof = (1..=SHADE_TILES).any(|k| {
-            #[allow(clippy::cast_precision_loss)]
-            let p = pos - Vec2::new(0.0, (k * TILE_SIZE) as f32);
-            let t = world.collision.tile_at(p);
-            t.is_solid() || t == Tile::Platform
-        });
-        #[allow(clippy::cast_precision_loss)]
-        let step = |ms: u32| 1.0 / elora_sim::tuning::ms_to_ticks(ms).max(1) as f32;
-        if !self.chilly() {
-            self.cold = 0.0;
-        } else if fire {
-            self.cold -= step(COLD_FIRE_MS);
-        } else if roof || self.map_name.ends_with("-arena") {
-            self.cold -= step(COLD_ROOF_MS);
-        } else {
-            let storm = if self.map.weather.kind == elora_map::WeatherKind::Blizzard {
-                2.0
-            } else {
-                1.0
-            };
-            let pct = self.save.stats(&self.content).cold_pct;
-            self.cold += step(COLD_FILL_MS) * storm * (1.0 + pct / 100.0).max(0.1);
-        }
-        self.cold = self.cold.clamp(0.0, 1.0);
-        if self.cold >= 1.0 {
-            self.frozen = true;
-        } else if self.cold < HEAT_RECOVER {
-            self.frozen = false;
-        }
-        // heat and cold slow down equally (A-27)
-        if let Some(ch) = world.character_mut(self.player) {
-            ch.core.overheated = self.overheated || self.frozen;
-        }
-    }
-
-    /// Heat bar (E-320): sun fills it (equipment `heat_pct` slows it down); shade (roof above
-    /// Elora, zones `schatten…`) and oasis (zones `oase…`) cool. Full = Elora gets slower until
-    /// she has cooled down.
-    fn heat(&mut self, world: &mut World, pos: Vec2) {
-        let zone = |prefix: &str| {
-            self.map.adventure.objects.iter().any(|o| {
-                o.id.starts_with(prefix)
-                    && matches!(o.kind, ObjectKind::Zone { size } if inside(pos, o.pos, size))
-            })
-        };
-        let roof = (1..=SHADE_TILES).any(|k| {
-            #[allow(clippy::cast_precision_loss)]
-            let p = pos - Vec2::new(0.0, (k * TILE_SIZE) as f32);
-            let t = world.collision.tile_at(p);
-            t.is_solid() || t == Tile::Platform
-        });
-        #[allow(clippy::cast_precision_loss)]
-        let step = |ms: u32| 1.0 / elora_sim::tuning::ms_to_ticks(ms).max(1) as f32;
-        self.in_sun = false;
-        if !self.hot() {
-            self.heat = 0.0;
-        } else if zone("oasis") {
-            self.heat -= step(HEAT_OASIS_MS);
-        } else if roof
-            || zone("shade")
-            // sand hides the sun (R2-W1)
-            || self.map.weather.kind == elora_map::WeatherKind::Sandstorm
-        {
-            self.heat -= step(HEAT_SHADE_MS);
-        } else {
-            self.in_sun = true;
-            // sun veil: fills more slowly
-            let pct = self.save.stats(&self.content).heat_pct;
-            self.heat += step(HEAT_FILL_MS) * (1.0 + pct / 100.0).max(0.1);
-        }
-        self.heat = self.heat.clamp(0.0, 1.0);
-        if self.heat >= 1.0 {
-            self.overheated = true;
-        } else if self.heat < HEAT_RECOVER {
-            self.overheated = false;
-        }
-        if let Some(ch) = world.character_mut(self.player) {
-            ch.core.overheated = self.overheated;
-        }
-    }
-
-    /// Companions in their home zone: flag `<id>.daheim`, the companion stays there.
-    fn followers_home(&mut self, world: &mut World) -> Vec<SessionEvent> {
-        let mut out = Vec::new();
-        let arrived: Vec<String> = self
-            .followers
-            .iter()
-            .filter_map(|(id, cid)| {
-                let zone = self.content.characters.get(id)?.home_zone.as_ref()?;
-                let z = self.map.adventure.object(zone)?;
-                let size = z.kind.area()?;
-                let c = world.creatures.iter().find(|c| c.id == *cid)?;
-                inside(c.pos, z.pos, size).then(|| id.clone())
-            })
-            .collect();
-        for id in arrived {
-            if let Some(cid) = self.followers.remove(&id) {
-                world.creatures.retain(|c| c.id != cid);
-            }
-            self.save.set_flag(&format!("{id}.home"), 1);
-            out.extend(outcomes(self.save.update_quests(&self.content)));
-        }
-        out
     }
 
     /// Take over abilities and weapons from the save game into the running world (after
@@ -930,98 +650,6 @@ impl Session {
                 }
             }
         }
-    }
-
-    /// Rearrange the decor according to the world state (after dialogs that set flags);
-    /// `true` if it changed.
-    pub fn refresh_decor(&mut self) -> bool {
-        let before = (self.map.decor_front.clone(), self.map.decor_back.clone());
-        self.map.decor_back.clone_from(&self.base_decor.0);
-        self.map.decor_front.clone_from(&self.base_decor.1);
-        adapt_decor(&mut self.map, &self.save);
-        let weather = self.refresh_weather();
-        weather || before.0 != self.map.decor_front || before.1 != self.map.decor_back
-    }
-
-    /// Is the area still gloomy? As long as its spring is silent; without its own spring until
-    /// `clears_after_springs` springs are freed (E-331).
-    fn gloomy(&self, area: &crate::data::Area) -> bool {
-        match area.clears_after_springs {
-            Some(n) => self.save.flag(SPRINGS_FREED) < n,
-            None => area.spring.is_some() && !area.freed(&self.save),
-        }
-    }
-
-    /// Weather for the map `name` (R2-W1): own weather from the editor comes first, guardians'
-    /// arenas stay fair (D-W1-01), otherwise rolled from the area's lists – fixed by map and
-    /// play time, so it does not change when loading.
-    pub fn pick_weather(&self, name: &str) -> elora_map::Weather {
-        use elora_map::{Weather, WeatherKind};
-        if !self.base_weather.is_clear() {
-            return self.base_weather;
-        }
-        if name.ends_with("-arena") {
-            return Weather::CLEAR;
-        }
-        let Some(area) = self.content.area_of(name) else {
-            return Weather::CLEAR;
-        };
-        let list = if self.gloomy(area) && !area.weather_gloomy.is_empty() {
-            &area.weather_gloomy
-        } else {
-            &area.weather
-        };
-        let total: u32 = list.iter().map(|w| w.weight).sum();
-        if total == 0 {
-            return Weather::CLEAR;
-        }
-        let mut seed = name.bytes().fold(0xcbf2_9ce4_8422_2325_u64, |h, b| {
-            (h ^ u64::from(b)).wrapping_mul(0x100_0000_01b3)
-        }) ^ self.save.play_time_secs.wrapping_mul(0x9e37_79b9_7f4a_7c15);
-        let mut next = || {
-            seed = seed.wrapping_add(0x9e37_79b9_7f4a_7c15);
-            let mut z = seed;
-            z = (z ^ (z >> 30)).wrapping_mul(0xbf58_476d_1ce4_e5b9);
-            z = (z ^ (z >> 27)).wrapping_mul(0x94d0_49bb_1331_11eb);
-            z ^ (z >> 31)
-        };
-        let mut roll = next() % u64::from(total);
-        let chosen = list
-            .iter()
-            .find(|w| {
-                let hit = roll < u64::from(w.weight);
-                roll = roll.saturating_sub(u64::from(w.weight));
-                hit
-            })
-            .unwrap_or(&list[0]);
-        #[allow(clippy::cast_precision_loss)]
-        let mut unit = || (next() >> 40) as f32 / (1u64 << 24) as f32;
-        let lerp = |r: [f32; 2], t: f32| r[0] + (r[1] - r[0]) * t;
-        let kind = WeatherKind::from_key(&chosen.kind).unwrap_or_default();
-        if kind == WeatherKind::Clear {
-            return Weather::CLEAR;
-        }
-        Weather {
-            kind,
-            intensity: lerp(chosen.intensity, unit()),
-            wind: lerp(chosen.wind, unit()),
-        }
-    }
-
-    /// Does the area get brighter (spring freed while Elora is there)? Then roll again.
-    fn refresh_weather(&mut self) -> bool {
-        let Some(area) = self.content.area_of(&self.map_name) else {
-            return false;
-        };
-        let gloomy = self.gloomy(area);
-        if gloomy == self.gloomy {
-            return false;
-        }
-        self.gloomy = gloomy;
-        let weather = self.pick_weather(&self.map_name.clone());
-        let changed = weather != self.map.weather;
-        self.map.weather = weather;
-        changed
     }
 
     /// Is the character visible right now (`show_if` in `characters.toml`)?
@@ -1071,71 +699,6 @@ impl Session {
             })
             .min_by(|a, b| a.2.total_cmp(&b.2))
             .map(|(id, p, _)| (id, p))
-    }
-
-    fn interact(&mut self, world: &mut World, id: &str) -> Vec<SessionEvent> {
-        let Some(o) = self.map.adventure.object(id).cloned() else {
-            return Vec::new();
-        };
-        match &o.kind {
-            ObjectKind::Npc { dialog, .. } => vec![SessionEvent::Talk {
-                npc: o.id.clone(),
-                dialog: dialog.clone(),
-            }],
-            ObjectKind::Chest { contents, lock } => {
-                if !lock.is_empty() && !self.save.holds(&self.content, lock) {
-                    return vec![SessionEvent::Locked { object: o.id }];
-                }
-                self.save.set_flag(&key("chest", &self.map_name, &o.id), 1);
-                let mut out = vec![SessionEvent::ChestOpened { pos: o.pos }];
-                let max_ammo = world.tuning.max_ammo;
-                for (item, n) in contents {
-                    if let Some(ItemKind::Ammo { weapon }) =
-                        self.content.item(item).map(|i| &i.kind)
-                    {
-                        if let Some(ch) = world.character_mut(self.player)
-                            && ch.arsenal.has(*weapon)
-                        {
-                            ch.arsenal.give(*weapon, max_ammo, max_ammo);
-                        }
-                    } else if self.save.add_item(&self.content, item, *n).is_err() {
-                        continue;
-                    }
-                    out.push(SessionEvent::Notice(Notice::Item {
-                        id: item.clone(),
-                        count: *n,
-                    }));
-                }
-                out.extend(outcomes(self.save.update_quests(&self.content)));
-                out
-            }
-            ObjectKind::Switch { .. } => self.toggle(id),
-            ObjectKind::SavePoint => {
-                self.rest(world, &o.id);
-                vec![SessionEvent::Save]
-            }
-            ObjectKind::Exit { map, spawn, .. } => vec![SessionEvent::Travel {
-                map: map.clone(),
-                spawn: spawn.clone(),
-            }],
-            _ => Vec::new(),
-        }
-    }
-
-    /// Rest at the spring stone (P-31): refill health and armour, remember the place.
-    fn rest(&mut self, world: &mut World, id: &str) {
-        let at = Location {
-            map: self.map_name.clone(),
-            spawn: id.to_owned(),
-        };
-        self.save.rest(&self.content, at);
-        let max = world_max_health(&self.save, &self.content);
-        let armor = self.save.stats(&self.content).armor.max(0);
-        if let Some(ch) = world.character_mut(self.player) {
-            ch.health = max;
-            ch.armor = armor;
-        }
-        self.save.health = max;
     }
 
     /// Use a consumable (inventory, A1.7): healing in the world, dew potion.
@@ -1231,110 +794,6 @@ impl Session {
             None => self.npc_pos.get(id).copied().unwrap_or(o.pos),
         })
     }
-
-    /// Is the chest already open, the switch flipped, the collectible found …?
-    pub fn object_done(&self, id: &str) -> bool {
-        let Some(o) = self.map.adventure.object(id) else {
-            return false;
-        };
-        let m = &self.map_name;
-        match &o.kind {
-            ObjectKind::Chest { .. } => self.save.flag(&key("chest", m, id)) != 0,
-            ObjectKind::Collectible { .. } => self.save.flag(&key("find", m, id)) != 0,
-            ObjectKind::Switch { flag, .. } => self.save.flag(flag) != 0,
-            ObjectKind::Door { .. } => self.save.flag(&key("door", m, id)) != 0,
-            ObjectKind::HealPlant { .. } => self.plants_used.contains(id),
-            _ => false,
-        }
-    }
-}
-
-/// Flag: number of freed springs (0–5).
-pub const SPRINGS_FREED: &str = "springs_freed";
-
-/// Faded decor (`…-blass`) gets part of its colour back with every freed spring
-/// (`…-bunt`, E-277): each piece fixed by its position, everything after five springs.
-/// How the simulation feels the weather (R2-W1, E-330): wind (sandstorm and blizzard always
-/// blow), gusts, wetness in rain and snow, lightning in thunderstorms.
-pub fn weather_env(w: elora_map::Weather) -> Option<elora_sim::WeatherEnv> {
-    use elora_map::WeatherKind as K;
-    if w.is_clear() {
-        return None;
-    }
-    let strong = matches!(w.kind, K::Sandstorm | K::Blizzard);
-    let wind = if strong && w.wind.abs() < 0.2 {
-        0.7
-    } else {
-        w.wind
-    };
-    let (wet, lightning) = match w.kind {
-        K::Rain => (w.intensity, 0.0),
-        K::Storm => (w.intensity, w.intensity),
-        K::Snow | K::Blizzard => (w.intensity * 0.8, 0.0),
-        _ => (0.0, 0.0),
-    };
-    Some(elora_sim::WeatherEnv {
-        wind,
-        gusty: matches!(
-            w.kind,
-            K::Storm | K::Blizzard | K::Sandstorm | K::Leaves | K::Petals
-        ),
-        wet,
-        lightning,
-    })
-}
-
-/// Flag of a festival in the village: decor `…-fest` (garlands, lanterns) only hangs then (E-301).
-pub const PARTY: &str = "party";
-
-/// Decor by world state: faded flowers become colourful (E-277), withered springs bloom
-/// after `freed.<spring>` (`…-withered` → `…-freed`; decor names use `-`, the spring id `_`),
-/// festival decorations only during the festival.
-fn adapt_decor(map: &mut Map, save: &SaveGame) {
-    use elora_map::Art;
-    recolor(map, save.flag(SPRINGS_FREED));
-    let party = save.flag(PARTY) != 0;
-    let keep =
-        |d: &elora_map::Decor| party || !matches!(&d.art, Art::Builtin(n) if n.ends_with("-party"));
-    map.decor_back.retain(keep);
-    map.decor_front.retain(keep);
-    for d in map.decor_back.iter_mut().chain(map.decor_front.iter_mut()) {
-        if let Art::Builtin(name) = &d.art
-            && let Some(stem) = name.strip_suffix("-withered")
-            && save.flag(&format!("freed.{}", stem.replace('-', "_"))) != 0
-        {
-            d.art = Art::Builtin(format!("{stem}-freed"));
-        }
-    }
-}
-
-fn recolor(map: &mut Map, freed: i64) {
-    use elora_map::Art;
-    let mut fix = |d: &mut elora_map::Decor| {
-        if let Art::Builtin(name) = &d.art
-            && let Some(stem) = name.strip_suffix("-pale")
-        {
-            #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-            let h = (d.pos.x as i64 * 31 + d.pos.y as i64 * 17).rem_euclid(5);
-            if h < freed {
-                d.art = Art::Builtin(format!("{stem}-colourful"));
-            }
-        }
-    };
-    map.decor_back.iter_mut().for_each(&mut fix);
-    map.decor_front.iter_mut().for_each(&mut fix);
-    for b in &mut map.backgrounds {
-        b.items.iter_mut().for_each(&mut fix);
-    }
-}
-
-fn outcomes(v: Vec<Outcome>) -> Vec<SessionEvent> {
-    v.into_iter()
-        .map(|o| match o {
-            Outcome::Notice(n) => SessionEvent::Notice(n),
-            Outcome::Open(o) => SessionEvent::Open(o),
-        })
-        .collect()
 }
 
 fn world_max_health(save: &SaveGame, c: &Content) -> i32 {
@@ -1344,7 +803,6 @@ fn world_max_health(save: &SaveGame, c: &Content) -> i32 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use elora_map::{Art, Decor};
 
     #[test]
     fn characters_appear_when_their_condition_holds() {
@@ -1353,59 +811,5 @@ mod tests {
         assert!(!s.present("bumblebee"), "only after the fight");
         s.save.set_flag("defeated.bumblebear", 1);
         assert!(s.present("bumblebee"));
-    }
-
-    #[test]
-    fn party_decor_and_freed_spring_follow_the_flags() {
-        let mut m = Map::new("t", 4, 4);
-        m.decor_back = vec![
-            Decor::new(Art::Builtin("garland-party".into()), Vec2::ZERO),
-            Decor::new(Art::Builtin("blossom-spring-withered".into()), Vec2::ZERO),
-        ];
-        let mut save = Session::new_game(crate::Content::builtin()).save;
-        let mut a = m.clone();
-        adapt_decor(&mut a, &save);
-        assert_eq!(a.decor_back.len(), 1, "no decoration without the festival");
-        assert_eq!(
-            a.decor_back[0].art,
-            Art::Builtin("blossom-spring-withered".into())
-        );
-        save.set_flag(PARTY, 1);
-        save.set_flag("freed.blossom_spring", 1);
-        adapt_decor(&mut m, &save);
-        assert_eq!(m.decor_back.len(), 2);
-        assert_eq!(
-            m.decor_back[1].art,
-            Art::Builtin("blossom-spring-freed".into())
-        );
-    }
-
-    #[test]
-    fn freed_springs_bring_colour_back() {
-        let mut m = Map::new("t", 4, 4);
-        m.decor_front = (0..20)
-            .map(|k| {
-                Decor::new(
-                    Art::Builtin("flower-bed-pale".into()),
-                    Vec2::new(k as f32 * 32.0, 0.0),
-                )
-            })
-            .collect();
-        m.decor_back = vec![Decor::new(Art::Builtin("house-oma".into()), Vec2::ZERO)];
-        let colourful = |m: &Map| {
-            m.decor_front
-                .iter()
-                .filter(|d| d.art == Art::Builtin("flower-bed-colourful".into()))
-                .count()
-        };
-        let mut none = m.clone();
-        recolor(&mut none, 0);
-        assert_eq!(colourful(&none), 0);
-        let mut some = m.clone();
-        recolor(&mut some, 2);
-        assert!(colourful(&some) > 0 && colourful(&some) < 20);
-        recolor(&mut m, 5);
-        assert_eq!(colourful(&m), 20, "all five springs");
-        assert_eq!(m.decor_back[0].art, Art::Builtin("house-oma".into()));
     }
 }
