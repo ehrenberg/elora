@@ -1,9 +1,12 @@
 //! Combat tests (M2): weapons, damage, pickups, death and respawn.
 
+mod support;
+
 use elora_sim::{
     Collision, DeathCause, DummyPattern, Event, PickupKind, PlayerInput, Tile, Tuning, Vec2,
     Weapon, World,
 };
+use support::{fire, idle};
 
 /// Open arena 60×20 tiles, floor in row 18.
 fn arena_tiles() -> Vec<Tile> {
@@ -29,20 +32,6 @@ fn arena() -> World {
 /// 1 unit above the floor, otherwise the rounded corner would already be in the floor.
 fn ground(tx: i32) -> Vec2 {
     Vec2::new(tx as f32 * 32.0 + 16.0, 18.0 * 32.0 - 15.0)
-}
-
-fn idle() -> PlayerInput {
-    PlayerInput::default()
-}
-
-/// Input "aims at (x, y) relative" with fire counter `fire`.
-fn aim(x: i32, y: i32, fire: u8) -> PlayerInput {
-    PlayerInput {
-        target_x: x,
-        target_y: y,
-        fire,
-        ..PlayerInput::default()
-    }
 }
 
 fn run(w: &mut World, inputs: &[PlayerInput], ticks: u32) {
@@ -73,7 +62,7 @@ fn duel(a: i32, b: i32) -> World {
 #[test]
 fn hammer_hits_and_knocks_up_and_away() {
     let mut w = duel(10, 11);
-    w.step(&[aim(100, 0, 1), idle()]);
+    w.step(&[fire(100, 0, 1), idle()]);
     assert_eq!(health(&w, 1), 7, "T-18: 3 damage");
     let v = w.core(1).unwrap().vel;
     assert!(v.x > 0.0 && v.y < -5.0, "knockback up/away: {v:?}");
@@ -90,7 +79,7 @@ fn hammer_hits_and_knocks_up_and_away() {
 #[test]
 fn hammer_miss_uses_fire_delay() {
     let mut w = duel(10, 20);
-    w.step(&[aim(100, 0, 1), idle()]);
+    w.step(&[fire(100, 0, 1), idle()]);
     assert_eq!(health(&w, 1), 10);
     assert_eq!(w.character(0).unwrap().arsenal.reload_timer, 6 - 1);
 }
@@ -98,8 +87,8 @@ fn hammer_miss_uses_fire_delay() {
 #[test]
 fn hammer_needs_a_click_not_just_holding() {
     let mut w = duel(10, 11);
-    w.step(&[aim(100, 0, 1), idle()]);
-    run(&mut w, &[aim(100, 0, 1), idle()], 60); // key stays pressed
+    w.step(&[fire(100, 0, 1), idle()]);
+    run(&mut w, &[fire(100, 0, 1), idle()], 60); // key stays pressed
     assert_eq!(health(&w, 1), 7, "hammer is not automatic fire");
 }
 
@@ -113,7 +102,7 @@ fn hammer_does_not_hit_through_walls() {
     w.spawn(Vec2::new(11.0 * 32.0 - 15.0, 18.0 * 32.0 - 14.0));
     w.spawn(Vec2::new(12.0 * 32.0 + 15.0, 18.0 * 32.0 - 14.0));
     run(&mut w, &[idle(), idle()], 5);
-    w.step(&[aim(100, 0, 1), idle()]);
+    w.step(&[fire(100, 0, 1), idle()]);
     assert_eq!(health(&w, 1), 10);
 }
 
@@ -121,7 +110,7 @@ fn hammer_does_not_hit_through_walls() {
 fn laser_hits_with_damage_and_light_knockback() {
     let mut w = duel(10, 30); // 640 units apart
     give(&mut w, 0, Weapon::Laser);
-    w.step(&[aim(100, 0, 1), idle()]);
+    w.step(&[fire(100, 0, 1), idle()]);
     assert_eq!(health(&w, 1), 5, "T-20: 5 damage");
     // knockback 2 (E-052), ground friction 0.5 already applied once in the same tick → 1
     let vx = w.core(1).unwrap().vel.x;
@@ -136,7 +125,7 @@ fn laser_hits_with_damage_and_light_knockback() {
 fn laser_range_is_limited() {
     let mut w = duel(5, 33); // 896 units > 850 (T-21)
     give(&mut w, 0, Weapon::Laser);
-    w.step(&[aim(100, 0, 1), idle()]);
+    w.step(&[fire(100, 0, 1), idle()]);
     assert_eq!(health(&w, 1), 10);
 }
 
@@ -149,7 +138,7 @@ fn laser_bounces_off_walls() {
     // diagonally at the floor: first bounce right at the shot
     let mut bounced = false;
     for _ in 0..20 {
-        w.step(&[aim(100, 60, 1)]);
+        w.step(&[fire(100, 60, 1)]);
         bounced |= w
             .events
             .iter()
@@ -165,7 +154,7 @@ fn laser_is_full_auto() {
     give(&mut w, 0, Weapon::Laser);
     let mut shots = 0;
     for _ in 0..100 {
-        w.step(&[aim(100, -50, 1)]); // hold pressed
+        w.step(&[fire(100, -50, 1)]); // hold pressed
         shots += w
             .events
             .iter()
@@ -182,10 +171,10 @@ fn grenade_rocket_jump_and_self_damage() {
     w.spawn(ground(20));
     run(&mut w, &[idle()], 5);
     give(&mut w, 0, Weapon::Grenade);
-    w.step(&[aim(0, 100, 1)]); // straight down
+    w.step(&[fire(0, 100, 1)]); // straight down
     let mut min_vy = 0.0f32;
     for _ in 0..10 {
-        w.step(&[aim(0, 100, 1)]);
+        w.step(&[fire(0, 100, 1)]);
         min_vy = min_vy.min(w.core(0).unwrap().vel.y);
     }
     assert!(min_vy < -10.0, "Rocket-Jump: vy = {min_vy}");
@@ -198,7 +187,7 @@ fn grenade_direct_hit_explodes_on_player() {
     give(&mut w, 0, Weapon::Grenade);
     let mut exploded = false;
     for _ in 0..40 {
-        w.step(&[aim(100, -8, 1), idle()]);
+        w.step(&[fire(100, -8, 1), idle()]);
         exploded |= w
             .events
             .iter()
@@ -218,7 +207,7 @@ fn armor_absorbs_damage_like_original() {
     w2.character_mut(1).unwrap().armor = 5;
     give(&mut w2, 0, Weapon::Grenade);
     for _ in 0..40 {
-        w2.step(&[aim(100, -8, 1), idle()]);
+        w2.step(&[fire(100, -8, 1), idle()]);
         if w2
             .events
             .iter()
@@ -237,8 +226,8 @@ fn no_ammo_blocks_and_reports() {
     w.spawn(ground(10));
     give(&mut w, 0, Weapon::Laser);
     w.character_mut(0).unwrap().arsenal.slots[Weapon::Laser.index()].ammo = Some(0);
-    w.step(&[aim(100, 0, 0)]); // first input after joining does not count as a click
-    w.step(&[aim(100, 0, 1)]);
+    w.step(&[fire(100, 0, 0)]); // first input after joining does not count as a click
+    w.step(&[fire(100, 0, 1)]);
     assert!(w.events.iter().any(|e| matches!(e, Event::NoAmmo { .. })));
     assert_eq!(w.character(0).unwrap().arsenal.reload_timer, 6 - 1);
 }
@@ -248,10 +237,10 @@ fn weapon_switch_waits_for_reload() {
     let mut w = arena();
     w.spawn(ground(10));
     give(&mut w, 0, Weapon::Laser);
-    w.step(&[aim(100, -50, 1)]); // fire laser → 37 ticks reload
+    w.step(&[fire(100, -50, 1)]); // fire laser → 37 ticks reload
     let switch = PlayerInput {
         wanted_weapon: 1,
-        ..aim(100, -50, 2)
+        ..fire(100, -50, 2)
     };
     w.step(&[switch]);
     assert_eq!(w.character(0).unwrap().arsenal.active, Weapon::Laser);
@@ -312,9 +301,9 @@ fn respawn_on_click_after_half_second_or_auto_after_three() {
     w.spawn(ground(10));
     w.die(0, None, DeathCause::World);
     // click right away: still too early
-    run(&mut w, &[aim(1, 0, 1)], 10);
+    run(&mut w, &[fire(1, 0, 1)], 10);
     assert!(w.character(0).is_none());
-    run(&mut w, &[aim(1, 0, 1)], 20);
+    run(&mut w, &[fire(1, 0, 1)], 20);
     assert!(
         w.character(0).is_some(),
         "after 0.5 s with the fire button held"
@@ -394,11 +383,11 @@ fn first_input_after_joining_does_not_fire() {
             .count()
     };
     // counter is at 6 (pressed and released three times in the old world)
-    w.step(&[aim(100, 0, 6)]);
+    w.step(&[fire(100, 0, 6)]);
     assert_eq!(fires(&w), 0, "no shot on entering");
     for _ in 0..30 {
-        w.step(&[aim(100, 0, 6)]);
+        w.step(&[fire(100, 0, 6)]);
     }
-    w.step(&[aim(100, 0, 7)]);
+    w.step(&[fire(100, 0, 7)]);
     assert_eq!(fires(&w), 1, "the next press fires");
 }

@@ -1,7 +1,10 @@
 //! Weather in the simulation (R2-W1, W1.4, E-330, E-336): wind, wetness, grenades, lightning –
 //! only in the adventure.
 
+mod support;
+
 use elora_sim::{Collision, Event, PlayerInput, Tile, Tuning, Vec2, Weapon, WeatherEnv, World};
+use support::{pos, run};
 
 const W: usize = 80;
 const H: usize = 30;
@@ -31,31 +34,18 @@ fn wind(v: f32) -> Option<WeatherEnv> {
     })
 }
 
-fn run(w: &mut World, input: PlayerInput, ticks: u32) -> Vec<Event> {
-    let mut all = Vec::new();
-    for _ in 0..ticks {
-        w.step(&[input]);
-        all.extend(w.events.iter().cloned());
-    }
-    all
-}
-
-fn x(w: &World) -> f32 {
-    w.character(0).unwrap().core.pos.x
-}
-
 /// Straight jump: how far does Elora drift sideways?
 fn drift(adventure: bool, weather: Option<WeatherEnv>) -> f32 {
     let mut w = world(adventure, weather);
     run(&mut w, PlayerInput::default(), 10);
-    let start = x(&w);
+    let start = pos(&w).x;
     let jump = PlayerInput {
         jump: true,
         ..PlayerInput::default()
     };
     run(&mut w, jump, 1);
     run(&mut w, PlayerInput::default(), 25);
-    x(&w) - start
+    pos(&w).x - start
 }
 
 #[test]
@@ -69,9 +59,9 @@ fn wind_pushes_elora_in_the_air_only_in_the_adventure() {
     // on the ground it does not push
     let mut w = world(true, wind(1.0));
     run(&mut w, PlayerInput::default(), 10);
-    let start = x(&w);
+    let start = pos(&w).x;
     run(&mut w, PlayerInput::default(), 50);
-    assert!((x(&w) - start).abs() < 0.5, "stands firm");
+    assert!((pos(&w).x - start).abs() < 0.5, "stands firm");
 }
 
 /// Braking distance after letting go: a wet floor brakes more softly.
@@ -82,9 +72,9 @@ fn stop_distance(weather: Option<WeatherEnv>) -> f32 {
         ..PlayerInput::default()
     };
     run(&mut w, right, 40);
-    let start = x(&w);
+    let start = pos(&w).x;
     run(&mut w, PlayerInput::default(), 40);
-    x(&w) - start
+    pos(&w).x - start
 }
 
 #[test]

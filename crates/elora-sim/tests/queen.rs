@@ -1,34 +1,19 @@
 //! Guardian of the Frostspitzen (Ice Queen Kristella, R2-M2.4, E-341): frost waves, exhaustion,
 //! icicles, blizzard.
 
+mod support;
+
 use elora_sim::creature::queen;
 use elora_sim::{
-    Abilities, Behavior, Collision, CreatureAct, CreatureKind, Event, PlayerInput, QueenDef, Tile,
-    Tuning, Vec2, World,
+    Abilities, Behavior, Collision, CreatureAct, Event, PlayerInput, QueenDef, Tile, Tuning, Vec2,
+    World,
 };
+use support::{FLOOR, creature, kind, spawn_vulnerable, standing};
 
 const W: usize = 50;
 const H: usize = 30;
-const FLOOR: usize = 28;
 /// Centre of the hall.
 const MID: f32 = 25.0 * 32.0;
-
-fn kind(name: &str, size: [f32; 2], health: i32, behavior: Behavior) -> CreatureKind {
-    CreatureKind {
-        name: name.into(),
-        size,
-        health,
-        touch_damage: 2,
-        small: false,
-        boss: name == "kristella",
-        xp: 0,
-        loot: Vec::new(),
-        daze_ms: 0,
-        freeze_ms: 0,
-        armor: false,
-        behavior,
-    }
-}
 
 /// Hall with ceiling in row 8 and a ledge (row 25, columns 10–14) above the floor.
 fn hall() -> World {
@@ -50,8 +35,6 @@ fn hall() -> World {
     w.creature_kinds = vec![
         kind(
             "kristella",
-            [90.0, 110.0],
-            36,
             Behavior::Queen(Box::new(QueenDef {
                 sight: 640.0,
                 width: 1100.0,
@@ -66,32 +49,32 @@ fn hall() -> World {
                 storm_at: 0.25,
                 open_hits: 4,
             })),
-        ),
+        )
+        .size(90.0, 110.0)
+        .health(36)
+        .boss(true)
+        .build(),
         kind(
             "icicle",
-            [20.0, 48.0],
-            1,
             Behavior::Icicle {
                 sight: 48.0,
                 reach: 420.0,
                 warn_ms: 450,
             },
-        ),
+        )
+        .size(20.0, 48.0)
+        .build(),
     ];
     w
 }
 
 fn spawn(w: &mut World, at: Vec2) {
-    let i = w.join();
-    w.set_abilities(i, Abilities::NONE);
-    w.spawn_character(i, at);
-    w.character_mut(i).unwrap().invulnerable_until = 0;
+    spawn_vulnerable(w, at, Abilities::NONE);
 }
 
 /// On the floor of the hall in column `tx`.
 fn floor_at(tx: usize) -> Vec2 {
-    #[allow(clippy::cast_precision_loss)]
-    Vec2::new(tx as f32 * 32.0 + 16.0, FLOOR as f32 * 32.0 - 15.0)
+    standing(tx, FLOOR)
 }
 
 fn queen_id(w: &mut World) -> u32 {
@@ -99,11 +82,11 @@ fn queen_id(w: &mut World) -> u32 {
 }
 
 fn mode(w: &World, id: u32) -> u8 {
-    w.creatures.iter().find(|c| c.id == id).unwrap().mode
+    creature(w, id).mode
 }
 
 fn health(w: &World, id: u32) -> i32 {
-    w.creatures.iter().find(|c| c.id == id).unwrap().health
+    creature(w, id).health
 }
 
 /// Runs until `until` holds (at most `max` ticks); collects the events.

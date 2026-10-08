@@ -1,34 +1,22 @@
 //! Creatures (R2-M1, A1.2, E-232 to E-239): behaviour, hits, contact, loot.
 
+mod support;
+
 use elora_sim::character::events;
 use elora_sim::{
-    Abilities, Ability, Behavior, Collision, CreatureKind, Event, HookState, LootEntry,
-    PlayerInput, Tile, Tuning, Vec2, Weapon, World,
+    Abilities, Ability, Behavior, Collision, CreatureKind, Event, HookState, PlayerInput, Tile,
+    Tuning, Vec2, Weapon, World,
 };
-
-const W: usize = 60;
-const H: usize = 30;
-const FLOOR: usize = 28;
+use support::{FLOOR, H, W, adventure_arena, aim, creature, fire, health, on_floor, run, set};
 
 fn kinds() -> Vec<CreatureKind> {
-    let kind = |name: &str, behavior| CreatureKind {
-        name: name.into(),
-        size: [40.0, 26.0],
-        health: 6,
-        touch_damage: 2,
-        small: true,
-        boss: false,
-        xp: 5,
-        loot: vec![LootEntry {
-            item: "gleam_drops".into(),
-            min: 3,
-            max: 3,
-            chance: 1.0,
-        }],
-        daze_ms: 0,
-        freeze_ms: 0,
-        armor: false,
-        behavior,
+    let kind = |name: &str, behavior| {
+        support::kind(name, behavior)
+            .health(6)
+            .small()
+            .xp(5)
+            .loot("gleam_drops", 3)
+            .build()
     };
     vec![
         kind(
@@ -73,39 +61,7 @@ fn kinds() -> Vec<CreatureKind> {
 
 /// Arena with floor in row 28, adventure rules on.
 fn world(edit: impl FnOnce(&mut Vec<Tile>)) -> World {
-    let mut tiles = vec![Tile::Air; W * H];
-    for x in 0..W {
-        tiles[FLOOR * W + x] = Tile::Solid;
-        tiles[(H - 1) * W + x] = Tile::Solid;
-    }
-    for y in 0..H {
-        tiles[y * W] = Tile::Solid;
-        tiles[y * W + W - 1] = Tile::Solid;
-    }
-    edit(&mut tiles);
-    let mut w = World::new(Tuning::default(), Collision::new(W, H, tiles));
-    w.creature_kinds = kinds();
-    w.adventure = true;
-    w
-}
-
-fn set(tiles: &mut [Tile], x: usize, y: usize, t: Tile) {
-    tiles[y * W + x] = t;
-}
-
-/// Centre above the floor of column `tx` for a box of height `h`.
-fn on_floor(tx: usize, h: f32) -> Vec2 {
-    #[allow(clippy::cast_precision_loss)]
-    Vec2::new(tx as f32 * 32.0 + 16.0, FLOOR as f32 * 32.0 - h / 2.0 - 1.0)
-}
-
-fn run(w: &mut World, i: PlayerInput, ticks: u32) -> Vec<Event> {
-    let mut all = Vec::new();
-    for _ in 0..ticks {
-        w.step(&[i]);
-        all.extend(w.events.iter().cloned());
-    }
-    all
+    adventure_arena(W, H, kinds(), edit)
 }
 
 fn elora(w: &mut World, tx: usize) -> usize {
@@ -114,26 +70,6 @@ fn elora(w: &mut World, tx: usize) -> usize {
     w.players[i].as_mut().unwrap().fresh = false;
     w.spawn_character(i, on_floor(tx, 28.0));
     i
-}
-
-fn health(w: &World) -> i32 {
-    w.character(0).map_or(0, |c| c.health)
-}
-
-fn aim(x: i32, y: i32) -> PlayerInput {
-    PlayerInput {
-        target_x: x,
-        target_y: y,
-        ..PlayerInput::default()
-    }
-}
-
-/// Fire counter: odd = pressed.
-fn fire(x: i32, y: i32, counter: u8) -> PlayerInput {
-    PlayerInput {
-        fire: counter,
-        ..aim(x, y)
-    }
 }
 
 #[test]
@@ -630,10 +566,6 @@ fn boss_world() -> (World, u32) {
     (w, id)
 }
 
-fn boss(w: &World, id: u32) -> &elora_sim::Creature {
-    w.creatures.iter().find(|c| c.id == id).expect("alive")
-}
-
 #[test]
 fn diver_circles_aims_dives_and_lies_stunned() {
     use elora_sim::creature::diver;
@@ -643,7 +575,7 @@ fn diver_circles_aims_dives_and_lies_stunned() {
     for _ in 0..400 {
         let ev = run(&mut w, PlayerInput::default(), 1);
         dropped |= ev.iter().any(|e| matches!(e, Event::CreatureFire { .. }));
-        let m = boss(&w, id).mode;
+        let m = creature(&w, id).mode;
         if seen.last() != Some(&m) {
             seen.push(m);
         }
@@ -668,17 +600,17 @@ fn diver_takes_damage_only_while_stunned() {
     let (mut w, id) = boss_world();
     run(&mut w, PlayerInput::default(), 5);
     w.hurt_creature(id, 5);
-    assert_eq!(boss(&w, id).health, 30, "bounces off in the air");
+    assert_eq!(creature(&w, id).health, 30, "bounces off in the air");
     // until it is dazed
     for _ in 0..400 {
         run(&mut w, PlayerInput::default(), 1);
-        if boss(&w, id).mode == diver::STUNNED {
+        if creature(&w, id).mode == diver::STUNNED {
             break;
         }
     }
-    assert_eq!(boss(&w, id).mode, diver::STUNNED);
+    assert_eq!(creature(&w, id).mode, diver::STUNNED);
     w.hurt_creature(id, 5);
-    assert_eq!(boss(&w, id).health, 25);
+    assert_eq!(creature(&w, id).health, 25);
 }
 
 #[test]
@@ -690,7 +622,7 @@ fn angry_diver_dives_twice_and_summons_helpers() {
     let mut last = diver::SLEEP;
     for _ in 0..300 {
         run(&mut w, PlayerInput::default(), 1);
-        let m = boss(&w, id).mode;
+        let m = creature(&w, id).mode;
         if m == diver::DIVE && last != diver::DIVE {
             dives += 1;
         }

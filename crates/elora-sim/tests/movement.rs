@@ -1,6 +1,9 @@
 //! Behaviour tests of the movement physics against the values from docs/handbook/tuning.md.
 
+mod support;
+
 use elora_sim::{Collision, HookState, PlayerInput, Tile, Tuning, Vec2, World};
+use support::{core, run};
 
 /// Map from ASCII: `#` wall, `%` unhookable, `^` death, otherwise air.
 fn world(rows: &[&str]) -> World {
@@ -33,16 +36,6 @@ fn arena() -> World {
 /// Centre of the tile (tx, ty).
 fn tile_center(tx: i32, ty: i32) -> Vec2 {
     Vec2::new(tx as f32 * 32.0 + 16.0, ty as f32 * 32.0 + 16.0)
-}
-
-fn run(w: &mut World, input: PlayerInput, ticks: u32) {
-    for _ in 0..ticks {
-        w.step(&[input]);
-    }
-}
-
-fn core(w: &World) -> &elora_sim::CharacterCore {
-    w.core(0).expect("character 0 alive")
 }
 
 /// Lets the figure land and come to rest.

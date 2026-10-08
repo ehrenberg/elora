@@ -1,106 +1,43 @@
 //! Frostspitzen terrain (R2-M2.4, E-343): thin ice, ice water, icicles, snow chunks.
 
+mod support;
+
 use elora_sim::creature::icicle;
-use elora_sim::{
-    Abilities, Ability, Behavior, Collision, CreatureKind, Event, PlayerInput, Tile, Tuning, Vec2,
-    World,
+use elora_sim::{Abilities, Ability, Behavior, Event, PlayerInput, Tile, Tuning, Vec2, World};
+use support::{
+    H, W, adventure_arena, health, idle, kind, on_floor, run, set, spawn_vulnerable as spawn,
+    standing,
 };
-
-const W: usize = 60;
-const H: usize = 30;
-const FLOOR: usize = 28;
-
-fn kind(name: &str, size: [f32; 2], behavior: Behavior) -> CreatureKind {
-    CreatureKind {
-        name: name.into(),
-        size,
-        health: 1,
-        touch_damage: 2,
-        small: false,
-        boss: false,
-        xp: 0,
-        loot: Vec::new(),
-        daze_ms: 0,
-        freeze_ms: 0,
-        armor: false,
-        behavior,
-    }
-}
 
 /// Adventure arena with floor in row 28 and walls; `edit` sets further tiles.
 fn world(edit: impl FnOnce(&mut Vec<Tile>)) -> World {
-    let mut tiles = vec![Tile::Air; W * H];
-    for x in 0..W {
-        tiles[FLOOR * W + x] = Tile::Solid;
-        tiles[(H - 1) * W + x] = Tile::Solid;
-    }
-    for y in 0..H {
-        tiles[y * W] = Tile::Solid;
-        tiles[y * W + W - 1] = Tile::Solid;
-    }
-    edit(&mut tiles);
-    let mut w = World::new(Tuning::default(), Collision::new(W, H, tiles));
-    w.adventure = true;
-    w.creature_kinds = vec![
+    let kinds = vec![
         kind(
             "icicle",
-            [20.0, 48.0],
             Behavior::Icicle {
                 sight: 48.0,
                 reach: 420.0,
                 warn_ms: 450,
             },
-        ),
+        )
+        .size(20.0, 48.0)
+        .build(),
         kind(
             "snow_chunk",
-            [36.0, 36.0],
             Behavior::Roller {
                 speed: 5.0,
                 life_ms: 6000,
             },
-        ),
+        )
+        .size(36.0, 36.0)
+        .build(),
     ];
-    w
-}
-
-fn set(tiles: &mut [Tile], x: usize, y: usize, t: Tile) {
-    tiles[y * W + x] = t;
+    adventure_arena(W, H, kinds, edit)
 }
 
 /// Snow chunk (36 high) on the floor in column `tx`.
 fn rock_at(tx: usize) -> Vec2 {
-    #[allow(clippy::cast_precision_loss)]
-    Vec2::new(tx as f32 * 32.0 + 16.0, FLOOR as f32 * 32.0 - 19.0)
-}
-
-/// Centre above tile column `tx`, standing on row `row`.
-fn standing(tx: usize, row: usize) -> Vec2 {
-    #[allow(clippy::cast_precision_loss)]
-    Vec2::new(tx as f32 * 32.0 + 16.0, row as f32 * 32.0 - 15.0)
-}
-
-fn spawn(w: &mut World, at: Vec2, abilities: Abilities) {
-    let i = w.join();
-    w.set_abilities(i, abilities);
-    w.spawn_character(i, at);
-    w.character_mut(i).unwrap().invulnerable_until = 0;
-}
-
-fn run(w: &mut World, input: PlayerInput, ticks: u32) -> Vec<Event> {
-    let mut all = Vec::new();
-    for _ in 0..ticks {
-        w.step(&[input]);
-        all.extend(w.events.iter().cloned());
-    }
-    all
-}
-
-fn idle() -> PlayerInput {
-    PlayerInput::default()
-}
-
-fn health(w: &World) -> i32 {
-    w.character(0).map_or(0, |c| c.health)
+    on_floor(tx, 36.0)
 }
 
 #[test]

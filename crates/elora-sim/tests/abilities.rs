@@ -1,65 +1,11 @@
 //! Abilities (R2-M1, A1.1, E-226 to E-230): hook jerk, stomp, ice grip, gliding
 //! as well as climbing wall and crumbling floor.
 
+mod support;
+
 use elora_sim::character::events;
-use elora_sim::{
-    Abilities, Ability, Collision, Event, HookState, PlayerInput, Tile, Tuning, Vec2, World,
-};
-
-const W: usize = 60;
-const H: usize = 30;
-/// Floor row of the arena.
-const FLOOR: usize = 28;
-
-/// Open arena with floor in row 28; `edit` sets further tiles.
-fn world(edit: impl FnOnce(&mut Vec<Tile>)) -> World {
-    let mut tiles = vec![Tile::Air; W * H];
-    for x in 0..W {
-        tiles[FLOOR * W + x] = Tile::Solid;
-        tiles[(H - 1) * W + x] = Tile::Solid;
-    }
-    for y in 0..H {
-        tiles[y * W] = Tile::Solid;
-        tiles[y * W + W - 1] = Tile::Solid;
-    }
-    edit(&mut tiles);
-    World::new(Tuning::default(), Collision::new(W, H, tiles))
-}
-
-fn set(tiles: &mut [Tile], x: usize, y: usize, t: Tile) {
-    tiles[y * W + x] = t;
-}
-
-/// Figure stands on row `row`, column `tx`.
-fn standing(tx: usize, row: usize) -> Vec2 {
-    #[allow(clippy::cast_precision_loss)]
-    Vec2::new(tx as f32 * 32.0 + 16.0, row as f32 * 32.0 - 15.0)
-}
-
-fn input(direction: i8, jump: bool, down: bool) -> PlayerInput {
-    PlayerInput {
-        direction,
-        jump,
-        down,
-        ..PlayerInput::default()
-    }
-}
-
-fn run(w: &mut World, i: PlayerInput, ticks: u32) {
-    for _ in 0..ticks {
-        w.step(&[i]);
-    }
-}
-
-fn core(w: &World) -> &elora_sim::CharacterCore {
-    w.core(0).expect("alive")
-}
-
-fn spawn(w: &mut World, at: Vec2, abilities: Abilities) {
-    let i = w.join();
-    w.set_abilities(i, abilities);
-    w.spawn_character(i, at);
-}
+use elora_sim::{Abilities, Ability, Event, HookState, PlayerInput, Tile, Tuning, Vec2, World};
+use support::{FLOOR, core, input, run, set, spawn, standing, test_world as world};
 
 fn with(a: Ability) -> Abilities {
     Abilities::NONE.with(a)

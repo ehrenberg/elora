@@ -1,54 +1,23 @@
 //! Frostspitzen enemies (R2-M2.4): snowball seal, ice-spike bat, frost ghost.
 
+mod support;
+
 use elora_sim::creature::{bat, ghost, seal};
-use elora_sim::{
-    Abilities, Behavior, Collision, CreatureAct, CreatureKind, Event, PlayerInput, Tile, Tuning,
-    Vec2, World,
-};
+use elora_sim::{Abilities, Behavior, CreatureAct, Event, PlayerInput, Tile, Vec2, World};
+use support::{FLOOR, adventure_arena, creature, idle, kind, run, spawn_vulnerable};
 
 const W: usize = 70;
 const H: usize = 30;
-const FLOOR: usize = 28;
-
-fn kind(name: &str, size: [f32; 2], freeze_ms: u32, behavior: Behavior) -> CreatureKind {
-    CreatureKind {
-        name: name.into(),
-        size,
-        health: 3,
-        touch_damage: 1,
-        small: false,
-        boss: false,
-        xp: 0,
-        loot: Vec::new(),
-        daze_ms: 0,
-        freeze_ms,
-        armor: false,
-        behavior,
-    }
-}
 
 const SEAL: usize = 0;
 const BAT: usize = 1;
 const GHOST: usize = 2;
 
 fn world(edit: impl FnOnce(&mut Vec<Tile>)) -> World {
-    let mut tiles = vec![Tile::Air; W * H];
-    for x in 0..W {
-        tiles[FLOOR * W + x] = Tile::Solid;
-        tiles[(H - 1) * W + x] = Tile::Solid;
-    }
-    for y in 0..H {
-        tiles[y * W] = Tile::Solid;
-        tiles[y * W + W - 1] = Tile::Solid;
-    }
-    edit(&mut tiles);
-    let mut w = World::new(Tuning::default(), Collision::new(W, H, tiles));
-    w.adventure = true;
-    w.creature_kinds = vec![
+    let kind = |name: &str, behavior| kind(name, behavior).health(3).touch_damage(1);
+    let kinds = vec![
         kind(
             "snowball_seal",
-            [48.0, 28.0],
-            0,
             Behavior::Seal {
                 sight: 520.0,
                 speed: 3.2,
@@ -57,58 +26,40 @@ fn world(edit: impl FnOnce(&mut Vec<Tile>)) -> World {
                 shot_speed: 5.5,
                 shot_damage: 1,
             },
-        ),
+        )
+        .size(48.0, 28.0)
+        .build(),
         kind(
             "bat",
-            [32.0, 36.0],
-            0,
             Behavior::Bat {
                 sight: 90.0,
                 reach: 380.0,
                 speed: 6.5,
             },
-        ),
+        )
+        .size(32.0, 36.0)
+        .build(),
         kind(
             "frost_ghost",
-            [40.0, 52.0],
-            600,
             Behavior::Ghost {
                 sight: 460.0,
                 speed: 1.6,
                 flee_ms: 1800,
             },
-        ),
+        )
+        .size(40.0, 52.0)
+        .freeze_ms(600)
+        .build(),
     ];
-    w
+    adventure_arena(W, H, kinds, edit)
 }
 
 fn standing(tx: usize) -> Vec2 {
-    #[allow(clippy::cast_precision_loss)]
-    Vec2::new(tx as f32 * 32.0 + 16.0, FLOOR as f32 * 32.0 - 15.0)
+    support::standing(tx, FLOOR)
 }
 
 fn spawn(w: &mut World, tx: usize) {
-    let i = w.join();
-    w.set_abilities(i, Abilities::NONE);
-    w.spawn_character(i, standing(tx));
-    w.character_mut(i).unwrap().invulnerable_until = 0;
-}
-
-fn run(w: &mut World, input: PlayerInput, ticks: u32) -> Vec<Event> {
-    let mut all = Vec::new();
-    for _ in 0..ticks {
-        w.step(&[input]);
-        all.extend(w.events.iter().cloned());
-    }
-    all
-}
-
-fn idle() -> PlayerInput {
-    PlayerInput::default()
-}
-
-fn creature(w: &World, id: u32) -> &elora_sim::Creature {
-    w.creatures.iter().find(|c| c.id == id).expect("alive")
+    spawn_vulnerable(w, standing(tx), Abilities::NONE);
 }
 
 #[test]
