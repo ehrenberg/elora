@@ -1,4 +1,4 @@
-//! Server und Online-Client zusammen über ein simuliertes Netz (virtuelle Zeit).
+//! Server and online client together over a simulated network (virtual time).
 
 use std::net::SocketAddr;
 use std::time::{Duration, Instant};
@@ -129,10 +129,10 @@ fn client_joins_and_receives_snapshots() {
 
 #[test]
 fn prediction_matches_server_at_100ms_ping() {
-    let mut g = Game::new(lag(50)); // 50 ms pro Richtung = 100 ms Ping
+    let mut g = Game::new(lag(50)); // 50 ms per direction = 100 ms ping
     g.join("Elora");
     g.run(2000, false);
-    // Laufen, Springen, Hooken
+    // running, jumping, hooking
     for step in 0..10 {
         g.players[0].input = PlayerInput {
             direction: [1, 1, -1, 0, 1][step % 5],
@@ -232,7 +232,7 @@ fn emotes_reach_everyone_with_spam_protection() {
     }
     let slot_a = g.players[0].online.slot.unwrap();
     g.players[0].online.emote(1);
-    g.players[0].online.emote(2); // zu schnell hintereinander → verworfen
+    g.players[0].online.emote(2); // too quickly in a row → discarded
     g.run(300, false);
     for p in &mut g.players {
         assert_eq!(p.online.take_emotes(), vec![(slot_a, 1)]);
@@ -247,7 +247,7 @@ fn emotes_reach_everyone_with_spam_protection() {
 fn info_query_lists_server_and_players() {
     let mut g = Game::new(lag(20));
     g.join("Nimbus");
-    // die Info wird einmal pro Sekunde erneuert
+    // the info is renewed once per second
     g.run(1200, false);
     let mut probe = elora_net::InfoProbe::new(g.net.socket(addr(9500), lag(20), 99), 5);
     probe.query(addr(8303), g.now);
@@ -309,7 +309,7 @@ fn survives_loss_and_jitter() {
 }
 
 impl Game {
-    /// Führt eine Aktion am Online-Client aus und lässt die Zeit laufen.
+    /// Performs an action on the online client and lets time run.
     fn act(&mut self, i: usize, ms: u64, f: impl FnOnce(&mut OnlineClient)) {
         f(&mut self.players[i].online);
         self.run(ms, false);
@@ -338,13 +338,13 @@ fn names_chat_and_team_chat() {
     );
 
     g.act(0, 100, |o| o.send_chat(false, "hallo alle"));
-    // Spam-Schutz: zweite Nachricht innerhalb von 0,7 s wird verworfen
+    // spam protection: a second message within 0.7 s is discarded
     g.act(0, 800, |o| o.send_chat(false, "zu schnell"));
     for p in &g.players {
         assert!(chat_texts(&p.online).contains(&"hallo alle".to_owned()));
         assert!(!chat_texts(&p.online).contains(&"zu schnell".to_owned()));
     }
-    // Team-Chat: nur Spieler im gleichen Team
+    // team chat: only players in the same team
     let anna_slot = g.players[0].online.slot.unwrap();
     let anna_team = g.players[0].online.team_of(anna_slot);
     g.act(0, 200, |o| o.send_chat(true, "nur Team"));
@@ -415,7 +415,7 @@ fn console_commands() {
     assert!(g.players[0].online.latest_snapshot_tick().is_some());
 }
 
-/// Große Karte (mehrere Download-Teile): eingebettetes „SVG“ aus schlecht komprimierbaren Bytes.
+/// Large map (several download parts): embedded "SVG" made of poorly compressible bytes.
 fn big_map() -> Vec<u8> {
     let mut m = elora_map::Map::from_rows("Gross", &["#####", "#S.S#", "#####"]).unwrap();
     let mut x: u32 = 1;
@@ -447,7 +447,7 @@ fn missing_map_is_downloaded_in_parts_and_cached() {
     assert_eq!(p.online.map.as_ref().unwrap().images.len(), 1);
     assert_eq!(g.server.player_count(), 1);
 
-    // zweiter Besuch mit gefülltem Zwischenspeicher: keine Teile mehr nötig
+    // second visit with a filled cache: no more parts needed
     let mut store = elora_client::map_store::MemoryStore::default();
     store.maps.insert(sum, data);
     let i = g.join("Wiederkehrer");
@@ -506,11 +506,11 @@ fn map_change_loads_new_map() {
     assert_eq!(g.server.player_count(), 2);
 }
 
-/// Eigene Figur und Kamera laufen online in jedem Bild weiter (E-294): 60 Bilder je
-/// Sekunde bei 50 Ticks; früher stand jedes sechste Bild still (immer alpha = 1).
+/// Own character and camera keep moving online in every frame (E-294): 60 frames per
+/// second at 50 ticks; previously every sixth frame stood still (always alpha = 1).
 #[test]
 fn own_character_moves_smoothly_every_frame() {
-    // lange, flache Bahn
+    // long, flat track
     let wall = "#".repeat(200);
     let open = format!("#S{}#", ".".repeat(197));
     let air = format!("#{}#", ".".repeat(198));
@@ -552,7 +552,7 @@ fn own_character_moves_smoothly_every_frame() {
                 p.endpoint.send(&data, reliable);
             }
             p.endpoint.flush(now);
-            // erst messen, wenn Elora auf voller Geschwindigkeit läuft
+            // only measure once Elora runs at full speed
             if ms > 500
                 && let Some(scene) = p.online.scene(now)
                 && let Some(me) = scene.local()
