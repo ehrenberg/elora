@@ -103,7 +103,7 @@ pub const THEMES: [Theme; 5] = [
     },
     Theme {
         file: "ctf-forest",
-        name: "Wald",
+        name: "Forest",
         rows: layouts::FOREST,
         material: None,
         preset: Preset::Day,
@@ -302,7 +302,7 @@ pub(super) fn apply_look(theme: &Theme, map: &mut Map) {
         map.sky = sky;
     }
     if theme.no_forest {
-        map.backgrounds.retain(|b| b.name != "Wald");
+        map.backgrounds.retain(|b| b.name != "Forest");
     }
     if let Some(t) = theme.background_tint {
         for b in &mut map.backgrounds {

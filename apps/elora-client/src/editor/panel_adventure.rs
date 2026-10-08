@@ -591,7 +591,7 @@ fn dialog_preview(ui: &mut Ui, editor: &mut Editor, lang: &Lang, c: &Content, di
                         .as_deref()
                         .map(|c| format!(" [{c}]"))
                         .unwrap_or_default();
-                    let next = ch.next.as_deref().unwrap_or("Ende");
+                    let next = ch.next.as_deref().unwrap_or("end");
                     ui.small(format!("  • {} → {next}{cond}", ch.text.de));
                 }
                 if let Some(next) = &n.next {
@@ -753,20 +753,20 @@ fn changes(a: &SaveGame, b: &SaveGame) -> Vec<String> {
     let mut out = Vec::new();
     for (k, v) in &b.flags {
         if a.flags.get(k) != Some(v) {
-            out.push(format!("merker {k} = {v}"));
+            out.push(format!("flag {k} = {v}"));
         }
     }
     for k in a.flags.keys().filter(|k| !b.flags.contains_key(*k)) {
-        out.push(format!("merker {k} = 0"));
+        out.push(format!("flag {k} = 0"));
     }
     for (k, v) in &b.affection {
         if a.affection.get(k) != Some(v) {
-            out.push(format!("zuneigung {k} = {v}"));
+            out.push(format!("affection {k} = {v}"));
         }
     }
     for (k, v) in &b.quests {
         if a.quests.get(k) != Some(v) {
-            out.push(format!("quest {k}: {:?}, Schritt {}", v.status, v.step + 1));
+            out.push(format!("quest {k}: {:?}, step {}", v.status, v.step + 1));
         }
     }
     for (k, v) in &b.inventory {
@@ -777,12 +777,12 @@ fn changes(a: &SaveGame, b: &SaveGame) -> Vec<String> {
     }
     if a.gleam_drops != b.gleam_drops {
         out.push(format!(
-            "glanztropfen: {} → {}",
+            "gleam_drops: {} → {}",
             a.gleam_drops, b.gleam_drops
         ));
     }
     if a.level != b.level || a.xp != b.xp {
-        out.push(format!("stufe {} ({} EP)", b.level, b.xp));
+        out.push(format!("level {} ({} XP)", b.level, b.xp));
     }
     out
 }

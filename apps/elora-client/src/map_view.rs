@@ -728,17 +728,17 @@ mod tests {
             });
         }
         m.backgrounds = vec![
-            layer("Wolken", 0.1, 1024.0, cloud_items),
-            layer("Berge", 0.2, 1024.0, vec![decor("mountains", 0.0, 0.0)]),
+            layer("Clouds", 0.1, 1024.0, cloud_items),
+            layer("Mountains", 0.2, 1024.0, vec![decor("mountains", 0.0, 0.0)]),
             layer(
-                "Ferne Hügel",
+                "Far hills",
                 0.35,
                 1024.0,
                 vec![decor("hills-far", 0.0, 0.0)],
             ),
-            layer("Wald", 0.5, 1024.0, vec![decor("forest", 0.0, 0.0)]),
+            layer("Forest", 0.5, 1024.0, vec![decor("forest", 0.0, 0.0)]),
             layer(
-                "Nahe Hügel",
+                "Near hills",
                 0.7,
                 1024.0,
                 vec![decor("hills-near", 0.0, 0.0)],

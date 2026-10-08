@@ -37,7 +37,7 @@ fn winter(m: Map) -> Map {
     release::apply_look(&WINTER, &mut map);
     // in the mountains only clouds and distant peaks – no green forest, no meadow hills
     map.backgrounds
-        .retain(|b| b.name == "Wolken" || b.name == "Berge");
+        .retain(|b| b.name == "Clouds" || b.name == "Mountains");
     animate(&mut map, &[]);
     map
 }

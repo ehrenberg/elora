@@ -694,7 +694,7 @@ fn new_dialog(
         Some(true) => {
             editor.dialog = None;
             let name: String = if name.trim().is_empty() {
-                "neu".into()
+                "new".into()
             } else {
                 name.chars().take(NAME_CHARS).collect()
             };

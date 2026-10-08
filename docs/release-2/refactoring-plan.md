@@ -45,7 +45,7 @@ New and changed code follows the rule immediately; existing code is converted in
 | RF-04 ✅ | Translate code comments and doc comments, crate by crate (`elora-sim` → `elora-map` → `elora-protocol` → `elora-net` → `elora-audio` → `elora-render` → `elora-game` → `elora-adventure` → apps → `xtask`) | One commit per crate; no code changes in the same commit |
 | RF-05 ✅ | Rename German identifiers in code (map generators `kapitel*` → `chapter*`, `wueste_*` → `desert_*`, helpers like `stampf`/`kletter`, test names) | Pure renames, compiler-checked |
 | RF-06 ✅ | Translate log, panic and error messages and `xtask` output | E-352: player-visible errors via `assets/lang`; logs, console, CLI help and xtask English only; `--abenteuer` → `--adventure` |
-| RF-06a → Phase 2 | Leftovers from RF-06 for Phase 2/3 | Editor defaults that end up as map data or editor UI (`"Ebene {n}"`, `"Animation {n}"`, background layer names, `"neu"`, `"Ende"`, dialog-test change list) → lang keys or English with the condition language (RF-11); replay text format (`ende`, `tot seit` …) only with a golden-file update; PHP master (`deploy/master-php`) still answers in German |
+| RF-06a ✅ | Leftovers from RF-06 for Phase 2/3 | Editor defaults that end up as map data or editor UI (`"Ebene {n}"`, `"Animation {n}"`, background layer names, `"neu"`, `"Ende"`, dialog-test change list) → lang keys or English with the condition language (RF-11); replay text format (`ende`, `tot seit` …) only with a golden-file update; PHP master (`deploy/master-php`) still answers in German |
 | RF-07 ✅ | Commit messages in English from the start of the refactoring | Conventional Commits stay |
 
 ### Phase 2 – data and content language (needs decisions, save-game impact)
@@ -80,7 +80,7 @@ listing the 0.9.x servers.
 | RF-11 ✅ | Condition parser: English keywords; the German ones are accepted for one release | Handbook updated |
 | RF-12 ✅ | Save format version bump; old saves are converted on load and saved again (no backup, E-358); test with the RF-10a fixture | Items, flags, quests and steps, skills, affection, location, opened/defeated objects |
 | RF-13 ✅ | Map format version bump; old maps (also self-made ones) are converted on load (decor, weather, object kinds and ids, exit targets); multiplayer maps renamed (`dm-wiese` → `dm-meadow` …); protocol version 7 | Server configs and docs follow |
-| RF-06a | Editor defaults that end up in maps or the editor UI (`Ebene {n}`, background layer names, `neu`, `Ende`, dialog-test list) via `assets/lang` or English | |
+| RF-06a ✅ | Editor defaults that end up in maps or the editor UI (`Ebene {n}`, background layer names, `neu`, `Ende`, dialog-test list) via `assets/lang` or English | |
 
 ### Phase 3 – structure and quality
 

@@ -773,9 +773,9 @@ fn lost_climbers_go_home_and_flocke_gives_the_bobble_hat() {
     let (c, mut g) = game();
     g.run(&c, &["quest climbers start".into()]);
     for who in ["bolle", "kiesel", "wicke"] {
-        assert!(g.holds(&c, &format!("nicht merker kletterer.{who}")));
+        assert!(g.holds(&c, &format!("not flag climbers.{who}")));
         Conversation::start(&c, &mut g, who).unwrap();
-        assert!(g.holds(&c, &format!("merker kletterer.{who}")));
+        assert!(g.holds(&c, &format!("flag climbers.{who}")));
     }
     assert!(g.holds(&c, "quest climbers step report"));
     let (conv, _) = Conversation::start(&c, &mut g, "flocke").unwrap();

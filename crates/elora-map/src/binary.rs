@@ -1176,7 +1176,7 @@ mod tests {
         m.decor_back = vec![bush.clone()];
         m.decor_front = vec![own];
         m.backgrounds = vec![Background {
-            name: "Wolken".into(),
+            name: "Clouds".into(),
             parallax: Vec2::new(0.2, 0.1),
             offset: Vec2::new(0.0, -100.0),
             repeat_x: Some(800.0),

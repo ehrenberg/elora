@@ -113,7 +113,7 @@ pub(super) fn pull_vault(
             corner(x0, floor - 3),
             ObjectKind::Door {
                 size: (1, 3),
-                open_if: format!("merker {flag}"),
+                open_if: format!("flag {flag}"),
             },
         ),
         chest(&format!("{id}-chest"), x0 + 2, floor, contents),

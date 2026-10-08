@@ -193,7 +193,7 @@ pub fn blank(name: &str, width: usize, height: usize) -> Map {
 
 impl Editor {
     pub fn new(user_dir: Option<PathBuf>, bundled_dir: PathBuf) -> Self {
-        let map = blank("neu", NEW_SIZE.0, NEW_SIZE.1);
+        let map = blank("new", NEW_SIZE.0, NEW_SIZE.1);
         let mut e = Self {
             resize: (map.width, map.height),
             map,
@@ -550,7 +550,7 @@ impl Editor {
         match after {
             AfterDiscard::New => {
                 self.dialog = Some(Dialog::New {
-                    name: "neu".into(),
+                    name: "new".into(),
                     width: NEW_SIZE.0,
                     height: NEW_SIZE.1,
                 });
@@ -618,7 +618,7 @@ mod tests {
         e.undo();
         assert_eq!(e.map.name, "ab");
         e.undo();
-        assert_eq!(e.map.name, "neu");
+        assert_eq!(e.map.name, "new");
     }
 
     #[test]

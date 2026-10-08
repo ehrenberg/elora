@@ -189,7 +189,7 @@ impl Editor {
         self.end_edit();
         let n = self.map.backgrounds.len() + 1;
         self.map.backgrounds.push(Background {
-            name: format!("Ebene {n}"),
+            name: format!("Layer {n}"),
             parallax: Vec2::new(0.5, 0.5),
             offset: Vec2::ZERO,
             repeat_x: None,
@@ -267,14 +267,10 @@ impl Editor {
         let dim = |c: u32| if night { Rgba::hex(c) } else { Rgba::WHITE };
         let mut layers = Vec::new();
         if night {
-            let mut sky = layer(
-                "Sterne",
-                0.05,
-                vec![deco("stars", 0.0, -200.0, Rgba::WHITE)],
-            );
+            let mut sky = layer("Stars", 0.05, vec![deco("stars", 0.0, -200.0, Rgba::WHITE)]);
             sky.offset.y = 0.0;
             layers.push(sky);
-            let mut moon = layer("Mond", 0.05, vec![deco("moon", 700.0, -150.0, Rgba::WHITE)]);
+            let mut moon = layer("Moon", 0.05, vec![deco("moon", 700.0, -150.0, Rgba::WHITE)]);
             moon.offset.y = 0.0;
             moon.repeat_x = None;
             layers.push(moon);
@@ -291,25 +287,25 @@ impl Editor {
                     offset_ms: 0,
                 });
             }
-            layers.push(layer("Wolken", 0.1, clouds));
+            layers.push(layer("Clouds", 0.1, clouds));
         }
         layers.push(layer(
-            "Berge",
+            "Mountains",
             0.2,
             vec![deco("mountains", 0.0, 0.0, dim(0x5c6a9a))],
         ));
         layers.push(layer(
-            "Ferne Hügel",
+            "Far hills",
             0.35,
             vec![deco("hills-far", 0.0, 0.0, dim(0x56638f))],
         ));
         layers.push(layer(
-            "Wald",
+            "Forest",
             0.5,
             vec![deco("forest", 0.0, 0.0, dim(0x4a5a80))],
         ));
         layers.push(layer(
-            "Nahe Hügel",
+            "Near hills",
             0.7,
             vec![deco("hills-near", 0.0, 0.0, dim(0x46557a))],
         ));
@@ -569,7 +565,7 @@ mod tests {
         e.map = elora_map::Map::new("high", 100, 90);
         e.apply_preset(Preset::Day, Instant::now());
         let ground = 88.0 * TILE_SIZE as f32;
-        for bg in e.map.backgrounds.iter().filter(|b| b.name != "Wolken") {
+        for bg in e.map.backgrounds.iter().filter(|b| b.name != "Clouds") {
             // foot of the layer relative to the camera center, camera at the very bottom and top
             for cam in [ground - LOWEST_CAMERA_ABOVE_GROUND, HIGHEST_CAMERA] {
                 let foot = bg.offset.y + cam * (1.0 - bg.parallax.y) - cam;
@@ -599,10 +595,10 @@ mod tests {
         e.apply_preset(Preset::Day, t);
         assert_eq!(e.map.envelopes.len(), 1, "not duplicated");
         e.apply_preset(Preset::Night, t);
-        assert_eq!(e.map.backgrounds[0].name, "Sterne");
+        assert_eq!(e.map.backgrounds[0].name, "Stars");
         roundtrip(&e);
         e.undo();
-        assert_eq!(e.map.backgrounds[0].name, "Wolken");
+        assert_eq!(e.map.backgrounds[0].name, "Clouds");
     }
 
     #[test]
