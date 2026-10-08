@@ -1,4 +1,4 @@
-//! Server-Konsole (E-072): Befehle im Terminal des Servers.
+//! Server console (E-072): commands in the server's terminal.
 
 use std::fmt::Write as _;
 use std::time::Instant;
@@ -37,7 +37,7 @@ fn on_off(arg: Option<&str>) -> Option<bool> {
 }
 
 impl<S: Socket> GameServer<S> {
-    /// Führt einen Konsolenbefehl aus und liefert die Ausgabe.
+    /// Runs a console command and returns the output.
     pub fn command(&mut self, line: &str, now: Instant) -> String {
         let line = line.trim();
         let (cmd, rest) = line

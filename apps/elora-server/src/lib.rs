@@ -1,7 +1,7 @@
-//! Server-Logik von Elora: Welt und Regeln simulieren, Eingaben anwenden, Snapshots
-//! senden (M3.5); Spielmodi, Chat, Team-Wahl, Abstimmungen, Rotation, Konsole (M4).
+//! Server logic of Elora: simulate world and rules, apply inputs, send snapshots
+//! (M3.5); game modes, chat, team choice, votes, rotation, console (M4).
 //!
-//! Unabhängig vom Socket, damit Tests den Server über ein Speicher-Netz betreiben.
+//! Independent of the socket so that tests can run the server over an in-memory network.
 
 pub mod config;
 mod console;
@@ -24,26 +24,26 @@ use elora_sim::{Controller, Event, PlayerInput, TICKS_PER_SECOND, Team, Tuning, 
 pub use config::ServerConfig;
 use vote::Vote;
 
-/// Dauer eines Ticks.
+/// Duration of a tick.
 pub const TICK: Duration = Duration::from_micros(1_000_000 / TICKS_PER_SECOND as u64);
-/// So viele Snapshots werden als Delta-Basis vorgehalten (≈ 2 s).
+/// This many snapshots are kept as delta base (≈ 2 s).
 const HISTORY: usize = 100;
-/// Eingaben weiter als so viele Ticks in der Zukunft werden verworfen.
+/// Inputs further than this many ticks in the future are dropped.
 const MAX_INPUT_AHEAD: u64 = 2 * TICKS_PER_SECOND as u64;
-/// Spam-Schutz: Mindestabstand zwischen zwei Chat-Nachrichten.
+/// Spam protection: minimum interval between two chat messages.
 const CHAT_INTERVAL: Duration = Duration::from_millis(700);
-/// So oft wird die Info für den Server-Browser erneuert.
+/// The info for the server browser is refreshed at this interval.
 const INFO_INTERVAL: Duration = Duration::from_secs(1);
-/// Mindestabstand zwischen zwei Emotes eines Spielers (Spam-Schutz).
+/// Minimum interval between two emotes of a player (spam protection).
 const EMOTE_INTERVAL: Duration = Duration::from_millis(1000);
-/// Sperre nach einem Kick per Abstimmung (E-077).
+/// Ban after a kick by vote (E-077).
 const KICK_BAN: Duration = Duration::from_mins(5);
 
-/// Eine Karte, die der Server kennt (Rotation und Abstimmungen).
+/// A map known to the server (rotation and votes).
 #[derive(Debug, Clone)]
 pub struct MapEntry {
     pub name: String,
-    /// Kartendatei (`.emap`).
+    /// Map file (`.emap`).
     pub data: Vec<u8>,
     pub checksum: MapChecksum,
 }
@@ -57,7 +57,7 @@ impl MapEntry {
         }
     }
 
-    /// Anzahl der Teile beim Download.
+    /// Number of chunks for the download.
     fn chunks(&self) -> usize {
         self.data.len().div_ceil(MAP_CHUNK)
     }
@@ -66,11 +66,11 @@ impl MapEntry {
 #[derive(Debug)]
 struct Client {
     slot: Option<usize>,
-    /// Hat `Join` geschickt und lädt die Karte (wartet auf `MapReady`, M6.5).
+    /// Has sent `Join` and is loading the map (waits for `MapReady`, M6.5).
     loading: bool,
-    /// War schon einmal im Spiel (Beitritts-Hinweis nur beim ersten Mal).
+    /// Has been in the game before (join notice only the first time).
     entered: bool,
-    /// Verschickte Kartenteile für die aktuelle Karte (begrenzt Anfragen).
+    /// Sent map chunks for the current map (limits requests).
     chunks_sent: usize,
     name: String,
     skin: Skin,
@@ -103,7 +103,7 @@ impl Client {
     }
 }
 
-/// Der Spielserver.
+/// The game server.
 pub struct GameServer<S: Socket> {
     pub endpoint: ServerEndpoint<S>,
     pub world: World,
@@ -111,7 +111,7 @@ pub struct GameServer<S: Socket> {
     maps: Vec<MapEntry>,
     rotation: Vec<String>,
     map_index: usize,
-    /// Aktuelle Karte.
+    /// Current map.
     map: MapEntry,
     base_tuning: Tuning,
     high_bandwidth: bool,
@@ -121,12 +121,12 @@ pub struct GameServer<S: Socket> {
     start: Instant,
     vote: Option<Vote>,
     bans: HashMap<IpAddr, Instant>,
-    /// Ausgaben für die Konsole (z. B. Chat), vom Programm abzuholen.
+    /// Output for the console (e.g. chat), to be fetched by the program.
     pub log: Vec<String>,
-    /// Anzeigename und Höchstzahl für den Server-Browser (M7.6).
+    /// Display name and maximum count for the server browser (M7.6).
     name: String,
     max_clients: usize,
-    /// Wann die Info für den Browser zuletzt erneuert wurde.
+    /// When the info for the browser was last refreshed.
     info_at: Option<Instant>,
 }
 
@@ -144,10 +144,10 @@ fn load_world(data: &[u8], tuning: Tuning) -> anyhow::Result<World> {
 }
 
 impl<S: Socket> GameServer<S> {
-    /// `maps[0]` ist die Startkarte; alle Karten stehen für Rotation und Abstimmungen bereit.
+    /// `maps[0]` is the start map; all maps are available for rotation and votes.
     ///
     /// # Errors
-    /// Bei ungültiger Startkarte.
+    /// On an invalid start map.
     pub fn new(
         socket: S,
         key: Keypair,
@@ -190,7 +190,7 @@ impl<S: Socket> GameServer<S> {
         })
     }
 
-    /// Startzeit von Tick `tick`.
+    /// Start time of tick `tick`.
     pub fn tick_start(&self, tick: u64) -> Instant {
         self.start + TICK * u32::try_from(tick).unwrap_or(u32::MAX)
     }
@@ -207,7 +207,7 @@ impl<S: Socket> GameServer<S> {
         self.maps.iter().map(|m| m.name.clone()).collect()
     }
 
-    /// Netzwerk abarbeiten und fällige Ticks simulieren. Oft aufrufen (≥ 500 Hz).
+    /// Process the network and simulate due ticks. Call often (≥ 500 Hz).
     pub fn update(&mut self, now: Instant) {
         for event in self.endpoint.poll(now) {
             self.handle(event, now);
@@ -224,7 +224,7 @@ impl<S: Socket> GameServer<S> {
         self.endpoint.flush(now);
     }
 
-    /// Info für den Server-Browser: Name, Karte, Modus, Spieler (M7.6).
+    /// Info for the server browser: name, map, mode, players (M7.6).
     pub fn server_info(&self) -> ServerInfo {
         let players = self
             .world
@@ -252,7 +252,7 @@ impl<S: Socket> GameServer<S> {
         }
     }
 
-    /// Nächster Zeitpunkt, zu dem ein Tick fällig ist.
+    /// Next point in time at which a tick is due.
     pub fn next_tick_at(&self) -> Instant {
         self.tick_start(self.world.tick + 1)
     }
@@ -270,7 +270,7 @@ impl<S: Socket> GameServer<S> {
         }
     }
 
-    /// Hinweis an alle (und ins Server-Log).
+    /// Notice to everyone (and into the server log).
     pub fn notice(&mut self, message: Message) {
         tracing::info!("{message}");
         self.broadcast(&ServerMsg::Notice(message));
@@ -286,7 +286,7 @@ impl<S: Socket> GameServer<S> {
         }
     }
 
-    /// Skin eines Slots; Dummies und unbekannte Slots: Standard.
+    /// Skin of a slot; dummies and unknown slots: default.
     fn skin_of(&self, slot: usize) -> Skin {
         self.clients
             .values()
@@ -343,7 +343,7 @@ impl<S: Socket> GameServer<S> {
         }
     }
 
-    /// Karte ankündigen; der Client meldet sich mit `MapReady`, sobald er sie hat (M6.5).
+    /// Announce the map; the client responds with `MapReady` as soon as it has it (M6.5).
     fn start_loading(&mut self, id: u32) {
         let Some(client) = self.clients.get_mut(&id) else {
             return;
@@ -358,7 +358,7 @@ impl<S: Socket> GameServer<S> {
         self.endpoint.send(id, &info.encode(), true);
     }
 
-    /// Kartenteil schicken – nur an ladende Clients, jeden Teil höchstens zweimal im Mittel.
+    /// Send a map chunk – only to loading clients, each chunk at most twice on average.
     fn on_map_request(&mut self, id: u32, chunk: u32) {
         let total = self.map.chunks();
         let Some(client) = self.clients.get_mut(&id) else {
@@ -377,7 +377,7 @@ impl<S: Socket> GameServer<S> {
         self.endpoint.send(id, &msg.encode(), true);
     }
 
-    /// Ladenden Client ins Spiel holen: Slot, `Welcome`, Namen.
+    /// Bring a loading client into the game: slot, `Welcome`, names.
     fn enter(&mut self, id: u32) {
         let slot = self.world.join();
         self.rules.on_join(&mut self.world, slot);
@@ -414,7 +414,7 @@ impl<S: Socket> GameServer<S> {
             high_bandwidth: self.high_bandwidth,
         };
         self.endpoint.send(id, &welcome.encode(), true);
-        // Namen aller Spieler und Dummies
+        // names of all players and dummies
         for (i, p) in self.world.players.iter().enumerate() {
             if p.is_some() {
                 let msg = ServerMsg::PlayerInfo {
@@ -433,7 +433,7 @@ impl<S: Socket> GameServer<S> {
         self.endpoint.send(id, &vote.encode(), true);
     }
 
-    /// Emote verteilen, höchstens eins je [`EMOTE_INTERVAL`].
+    /// Distribute an emote, at most one per [`EMOTE_INTERVAL`].
     fn on_emote(&mut self, id: u32, emote: u8, now: Instant) {
         let Some(client) = self.clients.get_mut(&id) else {
             return;
@@ -564,7 +564,7 @@ impl<S: Socket> GameServer<S> {
                 newest = Some(t);
             }
         }
-        // Rückmeldung wie `INPUTTIMING`: Zeit bis zur Verarbeitung dieses Ticks
+        // feedback like `INPUTTIMING`: time until this tick is processed
         if let Some(t) = newest {
             let due = self.start + TICK * u32::try_from(t).unwrap_or(u32::MAX);
             let left = due.saturating_duration_since(now).as_millis() as i64
@@ -577,7 +577,7 @@ impl<S: Socket> GameServer<S> {
         }
     }
 
-    /// Chat-Nachricht verteilen; Team-Chat nur an das eigene Team.
+    /// Distribute a chat message; team chat only to the own team.
     pub fn chat(&mut self, from: Option<usize>, team: bool, text: &str) {
         let sender_team = from.map_or(Team::None, |s| self.world.team(s));
         let who = from.map_or_else(|| "Server".to_owned(), |s| self.name_of(s));
@@ -608,7 +608,7 @@ impl<S: Socket> GameServer<S> {
         let mut inputs = vec![PlayerInput::default(); self.world.players.len()];
         for c in self.clients.values_mut() {
             let Some(slot) = c.slot else { continue };
-            // Eingabe für genau diesen Tick, sonst die letzte bekannte
+            // input for exactly this tick, otherwise the last known one
             let stale: Vec<u64> = c.inputs.range(..=next).map(|(t, _)| *t).collect();
             for t in stale {
                 if let Some(i) = c.inputs.remove(&t) {
@@ -693,10 +693,10 @@ impl<S: Socket> GameServer<S> {
         }
     }
 
-    /// Karte wechseln: neue Welt, alle Spieler laden die Karte und treten neu bei (E-074, M6.5).
+    /// Change the map: new world, all players load the map and rejoin (E-074, M6.5).
     ///
     /// # Errors
-    /// Wenn die Karte unbekannt oder ungültig ist.
+    /// If the map is unknown or invalid.
     pub fn change_map(&mut self, name: &str, now: Instant) -> anyhow::Result<()> {
         let entry = self
             .maps
@@ -705,7 +705,7 @@ impl<S: Socket> GameServer<S> {
             .cloned()
             .ok_or_else(|| anyhow::anyhow!("Karte `{name}` unbekannt"))?;
         let mut world = load_world(&entry.data, self.base_tuning.clone())?;
-        // Zeit läuft weiter: Tick der neuen Welt = aktueller Server-Tick
+        // time keeps running: tick of the new world = current server tick
         world.tick = self.world.tick;
         let mut ids: Vec<u32> = self
             .clients
@@ -737,7 +737,7 @@ impl<S: Socket> GameServer<S> {
         Ok(())
     }
 
-    /// Regeln wechseln (Modus, Instagib, Limits): neues Match auf derselben Karte.
+    /// Change the rules (mode, instagib, limits): new match on the same map.
     pub fn set_rules(&mut self, cfg: RulesConfig) {
         self.world.tuning = self.base_tuning.clone();
         self.rules = Rules::new(cfg, &mut self.world, false);
@@ -746,7 +746,7 @@ impl<S: Socket> GameServer<S> {
         });
     }
 
-    /// Server herunterfahren: alle Clients mit Grund trennen.
+    /// Shut down the server: disconnect all clients with a reason.
     pub fn shutdown(&mut self, reason: &str, now: Instant) {
         let ids: Vec<u32> = self.clients.keys().copied().collect();
         for id in ids {
@@ -755,7 +755,7 @@ impl<S: Socket> GameServer<S> {
         let _ = self.endpoint.poll(now);
     }
 
-    /// Spieler mit Slot `slot` trennen; `ban`: Adresse 5 min sperren.
+    /// Disconnect the player in slot `slot`; `ban`: ban the address for 5 min.
     pub fn kick(&mut self, slot: usize, reason: &str, ban: bool, now: Instant) -> bool {
         let Some(id) = self.client_by_slot(slot) else {
             return false;
@@ -768,7 +768,7 @@ impl<S: Socket> GameServer<S> {
     }
 }
 
-/// Ist die Trennung ein normaler Vorgang (für das Log)?
+/// Is the disconnection a normal event (for the log)?
 pub fn is_graceful(reason: &DisconnectReason) -> bool {
     matches!(
         reason,

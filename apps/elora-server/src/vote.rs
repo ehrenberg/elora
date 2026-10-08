@@ -1,7 +1,7 @@
-//! Abstimmungen (E-077): Karte, Modus, Kick, Zuschauer.
+//! Votes (E-077): map, mode, kick, spectator.
 //!
-//! Dauer 25 s. Angenommen sofort bei mehr als der Hälfte Ja, abgelehnt sofort bei
-//! mindestens der Hälfte Nein, sonst nach Ablauf angenommen, wenn mehr Ja als Nein.
+//! Duration 25 s. Passed immediately with more than half yes, rejected immediately with
+//! at least half no, otherwise passed at the end if there are more yes than no votes.
 
 use std::collections::HashSet;
 use std::time::{Duration, Instant};
@@ -23,7 +23,7 @@ pub struct Vote {
     ends: Instant,
 }
 
-/// Ergebnis einer Auswertung.
+/// Result of an evaluation.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Outcome {
     Pending,
@@ -89,7 +89,7 @@ impl Vote {
 }
 
 impl<S: Socket> GameServer<S> {
-    /// Stimmberechtigte: alle beigetretenen Spieler.
+    /// Eligible voters: all joined players.
     pub(crate) fn voters(&self) -> usize {
         self.player_count().max(1)
     }
@@ -194,7 +194,7 @@ impl<S: Socket> GameServer<S> {
         }
     }
 
-    /// Laufende Abstimmung abbrechen (Konsole).
+    /// Cancel the running vote (console).
     pub fn cancel_vote(&mut self, now: Instant) {
         if self.vote.take().is_some() {
             self.notice(Message::VoteCancelled);

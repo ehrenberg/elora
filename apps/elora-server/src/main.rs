@@ -1,6 +1,6 @@
-//! Elora – dedizierter Server (M3.5, M4). Befehle im Terminal: `help`.
+//! Elora – dedicated server (M3.5, M4). Commands in the terminal: `help`.
 //!
-//! Aufruf: `elora-server [--config server.toml] [--port 8303] [--map karte.emap]
+//! Usage: `elora-server [--config server.toml] [--port 8303] [--map karte.emap]
 //! [--name "…"] [--max-clients 8] [--high-bandwidth] [--key-file server_key.toml]
 //! [--mode dm|tdm|ctf|lms|lts] [--instagib] [--score-limit n] [--time-limit min]
 //! [--no-friendly-fire] [--no-votes]`
@@ -21,7 +21,7 @@ struct TuningFile {
     physics: Tuning,
 }
 
-/// Beim Master anmelden und die Anmeldung regelmäßig erneuern (eigener Thread, E-112).
+/// Register with the master and renew the registration regularly (own thread, E-112).
 fn register_loop(master: String, port: u16, family: elora_master::client::Family) {
     let spawned = std::thread::Builder::new()
         .name("master".into())
@@ -34,7 +34,7 @@ fn register_loop(master: String, port: u16, family: elora_master::client::Family
                     elora_protocol::PROTOCOL_VERSION,
                     family,
                 );
-                // nur Wechsel melden, nicht alle 20 s dasselbe
+                // only report changes, not the same thing every 20 s
                 let ok = result.as_ref().is_ok_and(|r| r.ok);
                 if last_ok != Some(ok) {
                     match &result {
@@ -69,7 +69,7 @@ fn main() -> anyhow::Result<()> {
         None => ServerConfig::default(),
     };
     cfg.apply_args(&args)?;
-    // mitgelieferte Karten auch finden, wenn der Server aus einem anderen Ordner startet (M8.2)
+    // find bundled maps even when the server starts from a different folder (M8.2)
     cfg.map = elora_server::paths::resolve(&cfg.map);
     cfg.maps_dir = elora_server::paths::resolve(&cfg.maps_dir);
 
@@ -110,8 +110,8 @@ fn main() -> anyhow::Result<()> {
     );
 
     tracing::info!(maps = %server.map_names().join(", "), mode = %server.rules.cfg.title(), "`help` zeigt die Konsolenbefehle");
-    // je Adressfamilie, auf der der Server lauscht, eine Anmeldung: gelistet wird, was der
-    // Master erreicht (z. B. nur IPv6 hinter DS-Lite)
+    // one registration per address family the server listens on: whatever the master
+    // reaches gets listed (e.g. only IPv6 behind DS-Lite)
     for master in cfg.masters.clone() {
         for &family in &families {
             register_loop(master.clone(), cfg.port, family);
@@ -131,7 +131,7 @@ fn main() -> anyhow::Result<()> {
             }
         }
         server.update(now);
-        // bis zum nächsten Tick kurz schlafen, Netzwerk aber häufig abfragen
+        // sleep briefly until the next tick, but poll the network often
         let wait = server
             .next_tick_at()
             .saturating_duration_since(Instant::now());
@@ -142,7 +142,7 @@ fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-/// Karte aus `--map` zuerst, dazu alle Karten aus `maps_dir` (Rotation, Abstimmungen).
+/// Map from `--map` first, plus all maps from `maps_dir` (rotation, votes).
 fn load_maps(cfg: &ServerConfig) -> anyhow::Result<Vec<MapEntry>> {
     let name_of = |p: &Path| {
         p.file_name()
@@ -193,8 +193,8 @@ fn load_maps(cfg: &ServerConfig) -> anyhow::Result<Vec<MapEntry>> {
     Ok(maps)
 }
 
-/// Zeilen von der Standardeingabe (Konsole, E-072). Ist keine Eingabe angeschlossen
-/// (z. B. vom Client gestartet), läuft der Server einfach weiter.
+/// Lines from standard input (console, E-072). If no input is attached (e.g. started
+/// by the client), the server simply keeps running.
 fn console_input() -> std::io::Result<mpsc::Receiver<String>> {
     let (tx, rx) = mpsc::channel();
     std::thread::Builder::new()

@@ -1,4 +1,4 @@
-//! Server-Konfiguration (Datei `server.toml` und Kommandozeile) und Server-Schlüssel.
+//! Server configuration (file `server.toml` and command line) and server key.
 
 use std::net::SocketAddr;
 use std::path::{Path, PathBuf};
@@ -8,43 +8,43 @@ use elora_game::{Mode, RulesConfig};
 use elora_net::Keypair;
 use serde::{Deserialize, Serialize};
 
-/// Standard-Port (wie im Original).
+/// Default port (as in the original).
 pub const DEFAULT_PORT: u16 = 8303;
-/// Technisches Maximum an Spielern (E-059).
+/// Technical maximum of players (E-059).
 pub const MAX_CLIENTS: usize = 64;
 
-/// Standard-Master für die Internet-Liste (E-166); dedizierte Server tragen sich dort ein (E-170).
+/// Default master for the internet list (E-166); dedicated servers register there (E-170).
 pub const DEFAULT_MASTER: &str = "https://elora.bastianswelt.de";
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct ServerConfig {
-    /// Anzeigename des Servers.
+    /// Display name of the server.
     pub name: String,
-    /// Adresse, an die gebunden wird: `::` = IPv4 und IPv6 (Standard), `0.0.0.0` = nur IPv4,
-    /// sonst eine bestimmte Adresse.
+    /// Address to bind to: `::` = IPv4 and IPv6 (default), `0.0.0.0` = IPv4 only,
+    /// otherwise a specific address.
     pub bind: String,
     pub port: u16,
-    /// Karte im Textformat.
+    /// Map in text format.
     pub map: PathBuf,
-    /// Maximale Spielerzahl (1..=64, Standard wie Original: 8).
+    /// Maximum number of players (1..=64, default as in the original: 8).
     pub max_clients: usize,
-    /// Snapshots jeden Tick (50 Hz) statt jeden zweiten (25 Hz) – nur für LAN (E-059).
+    /// Snapshots every tick (50 Hz) instead of every second one (25 Hz) – LAN only (E-059).
     pub high_bandwidth: bool,
-    /// Datei mit dem dauerhaften Server-Schlüssel (E-062); wird bei Bedarf erzeugt.
+    /// File with the persistent server key (E-062); created if needed.
     pub key_file: PathBuf,
-    /// Optionale Tuning-Datei (Format wie `tuning.toml` des Clients, Abschnitt `[physics]`).
+    /// Optional tuning file (format like the client's `tuning.toml`, section `[physics]`).
     pub tuning: Option<PathBuf>,
-    /// Kartenrotation (Namen ohne `.emap` aus `maps_dir`); leer = nur `map` (E-074).
+    /// Map rotation (names without `.emap` from `maps_dir`); empty = only `map` (E-074).
     pub rotation: Vec<String>,
-    /// Verzeichnis mit Karten für Rotation und Abstimmungen.
+    /// Directory with maps for rotation and votes.
     pub maps_dir: PathBuf,
-    /// Abstimmungen erlauben (E-077).
+    /// Allow votes (E-077).
     pub votes: bool,
-    /// Spielregeln (E-066 bis E-078).
+    /// Game rules (E-066 to E-078).
     pub rules: RulesConfig,
-    /// Master-Server, bei denen sich der Server anmeldet (HTTPS-Adressen, E-112/E-127);
-    /// leer = nicht in der Internet-Liste, nur LAN und Direkt-Verbinden.
+    /// Master servers the server registers with (HTTPS addresses, E-112/E-127);
+    /// empty = not in the internet list, only LAN and direct connect.
     pub masters: Vec<String>,
 }
 
@@ -69,10 +69,10 @@ impl Default for ServerConfig {
 }
 
 impl ServerConfig {
-    /// Lädt die Konfiguration aus einer TOML-Datei.
+    /// Loads the configuration from a TOML file.
     ///
     /// # Errors
-    /// Bei nicht lesbarer oder ungültiger Datei.
+    /// If the file is unreadable or invalid.
     pub fn load(path: &Path) -> anyhow::Result<Self> {
         let src = std::fs::read_to_string(path)
             .with_context(|| format!("{} nicht lesbar", path.display()))?;
@@ -80,16 +80,16 @@ impl ServerConfig {
     }
 
     /// # Errors
-    /// Wenn die Datei nicht geschrieben werden kann.
+    /// If the file cannot be written.
     pub fn save(&self, path: &Path) -> anyhow::Result<()> {
         std::fs::write(path, toml::to_string_pretty(self)?)
             .with_context(|| format!("{} nicht schreibbar", path.display()))
     }
 
-    /// Übernimmt Kommandozeilen-Argumente (`--port 8303`, `--map pfad`, …).
+    /// Applies command-line arguments (`--port 8303`, `--map pfad`, …).
     ///
     /// # Errors
-    /// Bei unbekannten Argumenten oder ungültigen Werten.
+    /// On unknown arguments or invalid values.
     pub fn apply_args(&mut self, args: &[String]) -> anyhow::Result<()> {
         let mut it = args.iter();
         while let Some(arg) = it.next() {
@@ -121,7 +121,7 @@ impl ServerConfig {
                 }
                 "--no-friendly-fire" => self.rules.friendly_fire = false,
                 "--no-votes" => self.votes = false,
-                // eigener Master ersetzt den Standard; mehrere `--master` sind möglich
+                // a custom master replaces the default; multiple `--master` are possible
                 "--master" => {
                     if self.masters == [DEFAULT_MASTER] {
                         self.masters.clear();
@@ -130,7 +130,7 @@ impl ServerConfig {
                 }
                 "--no-master" => self.masters.clear(),
                 "--config" => {
-                    value()?; // bereits in main ausgewertet
+                    value()?; // already evaluated in main
                 }
                 other => anyhow::bail!("unbekanntes Argument `{other}`"),
             }
@@ -139,7 +139,7 @@ impl ServerConfig {
     }
 
     /// # Errors
-    /// Bei Werten außerhalb der erlaubten Bereiche.
+    /// On values outside the allowed ranges.
     pub fn validate(&self) -> anyhow::Result<()> {
         anyhow::ensure!(
             (1..=MAX_CLIENTS).contains(&self.max_clients),
@@ -152,13 +152,13 @@ impl ServerConfig {
         Ok(())
     }
 
-    /// Lauscht der Server auf IPv4 und IPv6 (`bind = "::"`)?
+    /// Does the server listen on IPv4 and IPv6 (`bind = "::"`)?
     pub fn dual_stack(&self) -> bool {
         matches!(self.bind.trim(), "::" | "[::]" | "")
     }
 
     /// # Errors
-    /// Bei ungültiger Adresse.
+    /// On an invalid address.
     pub fn addr(&self) -> anyhow::Result<SocketAddr> {
         let host = self
             .bind
@@ -190,10 +190,10 @@ fn unhex(s: &str) -> anyhow::Result<Vec<u8>> {
         .collect()
 }
 
-/// Lädt den Server-Schlüssel oder erzeugt und speichert einen neuen.
+/// Loads the server key or creates and stores a new one.
 ///
 /// # Errors
-/// Bei ungültiger oder nicht schreibbarer Schlüsseldatei.
+/// If the key file is invalid or not writable.
 pub fn load_or_create_key(path: &Path) -> anyhow::Result<Keypair> {
     if path.exists() {
         let src = std::fs::read_to_string(path)?;

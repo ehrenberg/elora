@@ -1,12 +1,13 @@
-//! Mitgelieferte Daten finden (M8.2), egal aus welchem Ordner das Programm startet.
+//! Find the bundled data (M8.2), no matter from which folder the program starts.
 //!
-//! Ein relativer Pfad (z. B. `maps/dm-wiese.emap`) gilt zuerst im Arbeitsverzeichnis (Entwicklung
-//! mit `cargo run`), sonst im Datenordner: `ELORA_DATA`, neben dem Programm, `../share/elora`
-//! (Linux, `AppImage`) oder `../Resources` (macOS-Bundle) – der erste mit einem Ordner `maps`.
+//! A relative path (e.g. `maps/dm-wiese.emap`) is looked up first in the working directory
+//! (development with `cargo run`), otherwise in the data folder: `ELORA_DATA`, next to the
+//! program, `../share/elora` (Linux, `AppImage`) or `../Resources` (macOS bundle) – the first
+//! one with a `maps` folder.
 
 use std::path::{Path, PathBuf};
 
-/// Umgebungsvariable für einen eigenen Datenordner.
+/// Environment variable for a custom data folder.
 pub const DATA_ENV: &str = "ELORA_DATA";
 
 /// Folders searched for the game data, in this order.
@@ -25,7 +26,7 @@ pub fn candidates() -> Vec<PathBuf> {
     list
 }
 
-/// Datenordner der Installation (mit `maps/`), sonst das Arbeitsverzeichnis.
+/// Data folder of the installation (with `maps/`), otherwise the working directory.
 pub fn data_dir() -> PathBuf {
     candidates()
         .into_iter()
@@ -39,7 +40,7 @@ pub fn data_found() -> bool {
     Path::new("maps").is_dir() || candidates().iter().any(|d| d.join("maps").is_dir())
 }
 
-/// Relativen Pfad auflösen: erst im Arbeitsverzeichnis, dann im Datenordner.
+/// Resolve a relative path: first in the working directory, then in the data folder.
 pub fn resolve(path: &Path) -> PathBuf {
     if path.is_absolute() || path.exists() {
         return path.to_path_buf();
@@ -55,12 +56,12 @@ mod tests {
     fn absolute_and_existing_paths_stay() {
         let abs = std::env::temp_dir();
         assert_eq!(resolve(&abs), abs);
-        // Tests laufen im Crate-Ordner: Cargo.toml liegt dort
+        // tests run in the crate folder: Cargo.toml is there
         assert_eq!(
             resolve(Path::new("Cargo.toml")),
             PathBuf::from("Cargo.toml")
         );
-        // Unbekanntes fällt auf den Datenordner zurück
+        // unknown paths fall back to the data folder
         assert!(resolve(Path::new("gibt/es/nicht")).ends_with("gibt/es/nicht"));
     }
 }
