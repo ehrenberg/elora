@@ -1,8 +1,8 @@
-//! Trainingskarte (E-293): etwa 120 × 40, ein Bereich je Neuerung – Bewegung, Hook,
-//! Fähigkeiten (Kletterwand, Bröckelboden, Gleiten), Sondertiles (Eis, Beschleuniger,
-//! Sprungfelder), Waffen an Dummies und ein Gegner-Übungsplatz.
+//! Training map (E-293): about 120 × 40, one area per novelty – movement, hook,
+//! abilities (climbing wall, crumbling floor, glide), special tiles (ice, boosters,
+//! jump pads), weapons on dummies and an enemy practice ground.
 //!
-//! `cargo test -p elora-client --bin elora write_training_map -- --ignored` schreibt
+//! `cargo test -p elora-client --bin elora write_training_map -- --ignored` writes
 //! `maps/training.emap`.
 
 #![allow(clippy::cast_precision_loss, clippy::many_single_char_names)]
@@ -12,7 +12,7 @@ use elora_map::{Map, ObjectKind};
 use super::prolog::{Grid, animate, creature, decor, finish};
 use super::release;
 
-/// Zeichen setzen (Tiles wie im Textformat, Entities als Buchstaben).
+/// Set characters (tiles as in the text format, entities as letters).
 fn put(g: &mut Grid, x: usize, y: usize, c: char) {
     g.0[y][x] = c;
 }
@@ -20,12 +20,12 @@ fn put(g: &mut Grid, x: usize, y: usize, c: char) {
 pub fn training() -> Map {
     let (w, h, f) = (120, 40, 34);
     let mut g = Grid::new(w, h, f);
-    // Rahmen: Arena mit Decke und Wänden
+    // frame: arena with ceiling and walls
     g.fill((0, w - 1), (0, 0), '#');
     g.fill((0, 0), (0, h - 1), '#');
     g.fill((w - 1, w - 1), (0, h - 1), '#');
 
-    // Start: Spawns, Leben, Rüstung, Waffen auf zwei Stegen
+    // start: spawns, health, armor, weapons on two ledges
     put(&mut g, 3, f - 1, 'S');
     put(&mut g, 8, f - 1, 'S');
     put(&mut g, 12, f - 1, 'h');
@@ -35,7 +35,7 @@ pub fn training() -> Map {
     g.fill((12, 16), (30, 30), '=');
     put(&mut g, 14, 29, 'L');
 
-    // Bewegung: Treppe, Sprungfelder, Stege nach oben
+    // movement: stairs, jump pads, ledges going up
     g.ground(19, 21, 32);
     g.ground(22, 24, 30);
     g.ground(25, 27, 28);
@@ -45,18 +45,18 @@ pub fn training() -> Map {
     g.fill((30, 37), (18, 18), '=');
     put(&mut g, 33, 17, 'S');
 
-    // Hook: Grube mit Dornen unter einer Decke, in der Mitte Stein (Hook rutscht ab)
+    // hook: pit with thorns under a ceiling, stone in the middle (the hook slips off)
     g.fill((41, 56), (f, 36), '.');
     g.fill((41, 56), (37, 37), '^');
     g.fill((40, 57), (14, 15), '#');
     g.fill((46, 50), (14, 15), '%');
-    // Hook-Blüten (R2-M2.1): Hookpunkte mitten in der Luft
+    // hook flowers (R2-M2.1): hook points in mid-air
     for (x, y) in [(44, 22), (49, 20), (54, 22)] {
         put(&mut g, x, y, '*');
     }
     put(&mut g, 58, f - 1, 'D');
 
-    // Fähigkeiten: Kletterschacht (Halten), Bröckelboden (Stampfen), Gleiten zum Sims
+    // abilities: climbing shaft (holding), crumbling floor (stomp), glide to the ledge
     g.fill((60, 60), (10, f - 1), '|');
     g.fill((64, 64), (18, f - 1), '|');
     g.fill((65, 72), (18, 18), '#');
@@ -66,12 +66,12 @@ pub fn training() -> Map {
     g.fill((86, 91), (22, 22), '#');
     put(&mut g, 88, 21, 'S');
 
-    // Sondertiles: Eis, Beschleuniger am Boden und auf einem Steg
+    // special tiles: ice, boosters on the ground and on a ledge
     g.fill((76, 83), (f, f), '~');
     g.fill((86, 90), (f, f), '>');
     g.fill((77, 82), (28, 28), '<');
 
-    // Waffen und Gegner: Dummies, Waffen auf einem Steg, Sims für den Pollenbläser
+    // weapons and enemies: dummies, weapons on a ledge, ledge for the pollen blower
     put(&mut g, 96, f - 1, 'D');
     put(&mut g, 100, f - 1, 'W');
     put(&mut g, 104, f - 1, 'J');
@@ -83,7 +83,7 @@ pub fn training() -> Map {
     put(&mut g, 117, f - 1, 'h');
     put(&mut g, 116, f - 1, 'S');
 
-    // Rahmen zuletzt (Gelände überschreibt sonst die Decke)
+    // frame last (otherwise the terrain overwrites the ceiling)
     g.fill((0, w - 1), (0, 0), '#');
     g.fill((0, 0), (0, h - 1), '#');
     g.fill((w - 1, w - 1), (0, h - 1), '#');
@@ -91,7 +91,7 @@ pub fn training() -> Map {
     let rows: Vec<String> = g.0.iter().map(|r| r.iter().collect()).collect();
     let r: Vec<&str> = rows.iter().map(String::as_str).collect();
     let mut m = Map::from_rows("Training", &r).expect("Layout gültig");
-    // Gegner-Übungsplatz (im Training kehren sie nach einer Weile zurück)
+    // enemy practice ground (in training they come back after a while)
     m.adventure.objects = vec![
         creature("kaefer", "stachelkaefer", 111, f, 26.0),
         creature("huepfer", "grashuepfer", 114, f, 28.0),
@@ -136,7 +136,7 @@ pub fn training() -> Map {
     map
 }
 
-/// Gegner-Objekte der Karte (für das Training).
+/// Enemy objects of the map (for training).
 pub fn creature_count(map: &Map) -> usize {
     map.adventure
         .objects
@@ -200,7 +200,7 @@ mod tests {
         training().save(std::path::Path::new(&shipped())).unwrap();
     }
 
-    /// Übersicht: `… training_sheet -- --ignored` → `target/training.svg`.
+    /// Overview: `… training_sheet -- --ignored` → `target/training.svg`.
     #[test]
     #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
     fn training_sheet() {

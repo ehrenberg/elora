@@ -1,4 +1,4 @@
-//! Editor im Programm (M6.6): Wechsel aus dem Hauptmenü, Zeichnen und egui-Oberfläche je Frame.
+//! In-game editor (M6.6): switching from the main menu, drawing and egui UI per frame.
 
 use std::path::PathBuf;
 use std::time::Instant;
@@ -9,7 +9,7 @@ use crate::editor::{Editor, panel, view};
 use crate::{App, Screen, app_menu, settings};
 
 impl App {
-    /// Aus dem Hauptmenü in den Editor; der letzte Stand bleibt erhalten.
+    /// From the main menu into the editor; the last state is kept.
     pub(crate) fn enter_editor(&mut self) {
         if self.editor.is_none() {
             let mut editor = Editor::new(
@@ -27,13 +27,13 @@ impl App {
         self.set_cursor_grab(false);
     }
 
-    /// Karte des Editors in einer Trainingsrunde spielen (M6.9), ohne zu speichern.
+    /// Play the editor's map in a training round (M6.9), without saving.
     fn start_editor_test(&mut self) {
         let Some(editor) = &self.editor else { return };
         let map = editor.map.clone();
         self.online = None;
         let previous = self.sandbox.play_map(map);
-        // nur die erste Karte merken (nicht die eines vorigen Testspiels)
+        // only remember the first map (not the one of a previous test game)
         self.editor_test.get_or_insert(previous);
         self.sandbox.notice(elora_protocol::Message::Text(
             self.lang.t("editor.test_notice").to_owned(),
@@ -41,12 +41,12 @@ impl App {
         self.enter_game();
     }
 
-    /// Ist gerade ein Testspiel aus dem Editor aktiv?
+    /// Is a test game from the editor currently active?
     pub(crate) fn testing_map(&self) -> bool {
         self.editor_test.is_some()
     }
 
-    /// Testspiel beenden: vorige Trainingskarte zurück, Editor wie zuvor.
+    /// End the test game: previous training map back, editor as before.
     pub(crate) fn leave_editor_test(&mut self) {
         if let Some(previous) = self.editor_test.take() {
             self.sandbox.play_map(previous);
@@ -119,7 +119,7 @@ impl App {
     }
 
     fn leave_editor(&mut self) {
-        // im Editor gespeicherte Karten sofort in Training und „Server erstellen“
+        // maps saved in the editor appear in training and “Create server” right away
         self.maps = app_menu::map_names();
         self.screen = Screen::Menu;
     }

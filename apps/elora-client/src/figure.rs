@@ -1,12 +1,12 @@
-//! Elora-Figur (M5.3, E-094): Entwurf B aus `assets/elora/elora.svg`, animiert.
+//! Elora figure (M5.3, E-094): design B from `assets/elora/elora.svg`, animated.
 //!
-//! Reine Darstellung – Hitbox und Physik bleiben unverändert. Der Ursprung des
-//! Assets ist der Bodenkontakt; er liegt an der Hitbox-Unterkante.
+//! Pure presentation – hitbox and physics stay unchanged. The origin of the
+//! asset is the ground contact; it lies at the bottom edge of the hitbox.
 //!
-//! - **Squash & Stretch:** gedämpfte Feder, angestoßen bei Sprung und Landung,
-//!   dazu Streckung in der Luft nach Fallgeschwindigkeit. Fläche bleibt erhalten.
-//! - **Neigung** in Laufrichtung, **Füße** laufen nach zurückgelegtem Weg.
-//! - **Augen** folgen dem Ziel und blinzeln gelegentlich.
+//! - **Squash & stretch:** damped spring, triggered by jump and landing,
+//!   plus stretching in the air by fall speed. The area is preserved.
+//! - **Tilt** in running direction, **feet** walk according to the distance covered.
+//! - **Eyes** follow the target and blink occasionally.
 
 use std::collections::HashMap;
 
@@ -14,29 +14,29 @@ use elora_client::scene::{Scene, SceneChar};
 use elora_render::{Affine, Mesh, ShapeBatch, SvgAsset, Tint};
 use elora_sim::{Collision, Event, HookState, PHYS_SIZE, Vec2, Weapon};
 
-/// Welteinheiten je Asset-Einheit (sichtbarer Körper ≈ 36, E-087).
+/// World units per asset unit (visible body ≈ 36, E-087).
 const SCALE: f32 = 0.36;
-/// Ruhepositionen der Teile im Asset (für Animationen um ihren Mittelpunkt).
+/// Rest positions of the parts in the asset (for animations around their center).
 const EYES_CENTER: Vec2 = Vec2::new(14.0, -63.0);
-/// Wie weit die Augen dem Ziel folgen (Asset-Einheiten).
+/// How far the eyes follow the target (asset units).
 const EYES_LOOK: f32 = 5.0;
 
-/// Feder für Squash & Stretch: Frequenz (Hz) und Dämpfung.
+/// Spring for squash & stretch: frequency (Hz) and damping.
 const SPRING_HZ: f32 = 3.2;
 const SPRING_DAMPING: f32 = 0.35;
-/// Anstoß der Feder je Welteinheit/Tick Fallgeschwindigkeit bei der Landung.
+/// Spring impulse per world unit/tick of fall speed on landing.
 const LANDING_KICK: f32 = 0.28;
 const JUMP_KICK: f32 = 3.0;
-/// Hammer-Schwung: Dauer (s) und Ausholwinkel (rad).
+/// Hammer swing: duration (s) and wind-up angle (rad).
 const SWING_TIME: f32 = 0.14;
 const SWING_ANGLE: f32 = 1.4;
 
-/// Farbschlüssel im Asset (E-095).
+/// Color keys in the asset (E-095).
 pub const KEY_EYES: usize = 0;
 pub const KEY_BODY: usize = 1;
 pub const KEY_FEET: usize = 2;
 
-/// Geladene Teile der Figur.
+/// Loaded parts of the figure.
 #[derive(Debug)]
 pub struct FigureArt {
     body: Mesh,
@@ -49,7 +49,7 @@ pub struct FigureArt {
 
 impl FigureArt {
     /// # Panics
-    /// Wenn das eingebettete Asset fehlerhaft ist (wird von Tests abgedeckt).
+    /// If the embedded asset is faulty (covered by tests).
     pub fn load() -> Self {
         let asset = SvgAsset::load(include_bytes!("../../../assets/elora/elora.svg"), 0.3)
             .expect("assets/elora/elora.svg lesbar");
@@ -82,24 +82,24 @@ impl FigureArt {
     }
 }
 
-/// Automatischer Augen-Ausdruck (E-104).
+/// Automatic eye expression (E-104).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 enum Expression {
     #[default]
     Normal,
-    /// Nach erlittenem Schaden.
+    /// After taking damage.
     Pain,
-    /// Nach einem Kill.
+    /// After a kill.
     Happy,
 }
 
-/// Wie lange die Ausdrücke anhalten (s).
+/// How long the expressions last (s).
 const PAIN_TIME: f32 = 0.45;
 const HAPPY_TIME: f32 = 1.2;
 
 impl FigureArt {
-    /// Figur in Ruhe, z. B. als Deko im Menü: Bodenkontakt bei `ground`,
-    /// `size` = Höhe in Pixeln, `facing` 1 = nach rechts, −1 = nach links.
+    /// Figure at rest, e.g. as decoration in the menu: ground contact at `ground`,
+    /// `size` = height in pixels, `facing` 1 = to the right, −1 = to the left.
     pub fn draw_pose(
         &self,
         batch: &mut ShapeBatch,
@@ -108,7 +108,7 @@ impl FigureArt {
         facing: f32,
         tint: &Tint,
     ) {
-        // Asset: Spitze bei −131, Boden bei 0
+        // asset: tip at −131, ground at 0
         let scale = size / 131.0;
         let root = Affine::translate(ground).then(Affine::scale(facing * scale, scale));
         batch.draw_mesh(&self.foot_back, &root, tint);
@@ -118,31 +118,31 @@ impl FigureArt {
     }
 }
 
-/// Animationszustand einer Figur.
+/// Animation state of a figure.
 #[derive(Debug, Clone, Copy, Default)]
 struct Anim {
     expression: Expression,
-    /// Restdauer des Ausdrucks (s).
+    /// Remaining duration of the expression (s).
     expression_left: f32,
     grounded: bool,
     vel_y: f32,
-    /// Auslenkung der Feder: > 0 gestreckt, < 0 gestaucht.
+    /// Spring deflection: > 0 stretched, < 0 squashed.
     squash: f32,
     squash_vel: f32,
-    /// Hammer-Schwung: 1 = gerade ausgeholt, 0 = fertig.
+    /// Hammer swing: 1 = just wound up, 0 = done.
     swing: f32,
 }
 
-/// Landung einer Figur im letzten Frame (für Staub, M5.6).
+/// Landing of a figure in the last frame (for dust, M5.6).
 #[derive(Debug, Clone, Copy)]
 pub struct Landing {
-    /// Bodenkontakt (Hitbox-Unterkante).
+    /// Ground contact (bottom edge of the hitbox).
     pub pos: Vec2,
-    /// Stärke nach Fallgeschwindigkeit, etwa 0..2.
+    /// Strength by fall speed, about 0..2.
     pub strength: f32,
 }
 
-/// Animationszustände aller sichtbaren Figuren.
+/// Animation states of all visible figures.
 #[derive(Debug, Default)]
 pub struct Figures {
     anims: HashMap<usize, Anim>,
@@ -165,7 +165,7 @@ impl Figures {
                 ..Anim::default()
             });
             if grounded && !a.grounded {
-                // Landung: je schneller der Fall, desto stärker gestaucht
+                // landing: the faster the fall, the more strongly squashed
                 a.squash_vel -= a.vel_y.clamp(0.0, 25.0) * LANDING_KICK;
                 self.landings.push(Landing {
                     pos: c.pos() + Vec2::new(0.0, PHYS_SIZE / 2.0),
@@ -208,8 +208,8 @@ impl Figures {
         }
     }
 
-    /// Ausdruck setzen; Freude wird von kurzem Schmerz nicht sofort überschrieben,
-    /// Schmerz aber von Freude.
+    /// Set the expression; joy is not immediately overwritten by brief pain,
+    /// but pain is by joy.
     fn express(&mut self, slot: usize, expression: Expression, time: f32) {
         if let Some(a) = self.anims.get_mut(&slot) {
             if a.expression == Expression::Happy && expression == Expression::Pain {
@@ -220,20 +220,20 @@ impl Figures {
         }
     }
 
-    /// Winkel, um den die Waffe von `slot` gerade aus der Zielrichtung gedreht ist
-    /// (Hammer-Schwung: holt nach hinten oben aus und schlägt zum Ziel).
+    /// Angle by which the weapon of `slot` is currently rotated away from the aim direction
+    /// (hammer swing: winds up backwards and upwards and strikes towards the target).
     pub fn weapon_swing(&self, slot: usize, facing: f32) -> f32 {
         let s = self.anims.get(&slot).map_or(0.0, |a| a.swing);
         -facing * SWING_ANGLE * s * s
     }
 
-    /// Landungen des letzten [`Figures::update`].
+    /// Landings of the last [`Figures::update`].
     pub fn landings(&self) -> &[Landing] {
         &self.landings
     }
 
-    /// Laufzeit der Darstellung in Sekunden (für Animationen).
-    /// Uhr weiterlaufen lassen, ohne Figuren zu aktualisieren (z. B. Animationen im Editor).
+    /// Running time of the presentation in seconds (for animations).
+    /// Let the clock keep running without updating figures (e.g. animations in the editor).
     pub fn advance_time(&mut self, dt: f32) {
         self.time += dt;
     }
@@ -242,7 +242,7 @@ impl Figures {
         self.time
     }
 
-    /// Zeichnet eine Figur; `aim` ist die normierte Blickrichtung.
+    /// Draws a figure; `aim` is the normalized view direction.
     pub fn draw(
         &self,
         batch: &mut ShapeBatch,
@@ -256,13 +256,13 @@ impl Figures {
         let vel = core.vel;
         let facing = if aim.x < 0.0 { -1.0 } else { 1.0 };
 
-        // Streckung: Feder + Luft; Fläche erhalten
+        // stretching: spring + air; area preserved
         let air = if state.grounded {
             0.0
         } else {
             (vel.y.abs() / 60.0).min(0.15)
         };
-        // im Stand atmet sie leicht (E-328)
+        // standing, she breathes slightly (E-328)
         #[allow(clippy::cast_precision_loss)]
         let breathe = if state.grounded && vel.x.abs() < 0.5 {
             (self.time * 2.2 + c.slot as f32).sin() * 0.022
@@ -273,12 +273,12 @@ impl Figures {
         let sx = 1.0 / sy;
         let mut lean = (vel.x * 0.012).clamp(-0.2, 0.2);
         if matches!(core.hook_state, HookState::Grabbed) {
-            // am Hook in Zugrichtung neigen
+            // on the hook, tilt in the pull direction
             let d = (c.hook_pos() - c.pos()).normalize();
             lean = (d.x * 0.25).clamp(-0.25, 0.25);
         }
 
-        // beim Laufen wippt der Körper mit den Schritten (E-328)
+        // when running, the body bobs with the steps (E-328)
         let bob = if state.grounded && vel.x.abs() > 0.5 {
             -(c.pos().x / 14.0).sin().abs() * 1.6
         } else {
@@ -289,7 +289,7 @@ impl Figures {
             .then(Affine::rotate(lean))
             .then(Affine::scale(facing * SCALE * sx, SCALE * sy));
 
-        // Füße in Blickrichtung (lokal: vorne = +x)
+        // feet in view direction (local: front = +x)
         let forward = vel.x * facing;
         let (back, front) = if !state.grounded {
             (Vec2::new(-4.0, -3.0), Vec2::new(4.0, -7.0))
@@ -304,7 +304,7 @@ impl Figures {
         batch.draw_mesh(&art.foot_front, &root.then(Affine::translate(front)), tint);
         batch.draw_mesh(&art.body, &root, tint);
 
-        // Augen: Blick zum Ziel, gelegentlich blinzeln
+        // eyes: look at the target, blink occasionally
         let look = Vec2::new(aim.x * facing, aim.y) * EYES_LOOK;
         #[allow(clippy::cast_precision_loss)]
         let t = self.time + c.slot as f32 * 1.37;
@@ -327,17 +327,17 @@ mod tests {
     use elora_render::Color;
     use elora_sim::{Character, Team};
 
-    /// Posenblatt zur Sichtprüfung: `cargo test -p elora-client --bin elora pose_sheet -- --ignored`,
-    /// danach `cargo xtask svg-preview target/figure-poses.svg target/figure-poses.png 1200`.
+    /// Pose sheet for visual inspection: `cargo test -p elora-client --bin elora pose_sheet -- --ignored`,
+    /// then `cargo xtask svg-preview target/figure-poses.svg target/figure-poses.png 1200`.
     #[test]
     #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
-    #[allow(clippy::too_many_lines)] // eine Pose je Zeile
+    #[allow(clippy::too_many_lines)] // one pose per row
     fn pose_sheet() {
         let art = FigureArt::load();
         let mut figures = Figures::default();
         let mut batch = ShapeBatch::default();
         let ground = 100.0;
-        // (Bezeichnung, Geschwindigkeit, am Boden, Feder, Ziel)
+        // (label, velocity, on ground, spring, target)
         let poses = [
             ("steht", Vec2::new(0.0, 0.0), true, 0.0, Vec2::new(1.0, 0.0)),
             (
@@ -459,7 +459,7 @@ mod tests {
         ] {
             assert!(!m.is_empty());
         }
-        // Füße berühren den Boden (Ursprung), Körper steht darüber
+        // feet touch the ground (origin), the body stands above it
         let (_, max) = art.foot_front.bounds().unwrap();
         assert!(max.y.abs() < 2.5, "Fußunterkante {}", max.y);
         let (min, _) = art.body.bounds().unwrap();

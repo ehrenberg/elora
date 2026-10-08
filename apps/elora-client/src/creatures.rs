@@ -1,7 +1,7 @@
-//! Gegner, ihre Geschosse und Beute zeichnen (A1.2) aus `assets/adventure/`.
+//! Drawing enemies, their projectiles and loot (A1.2) from `assets/adventure/`.
 //!
-//! Gegner sind in Welteinheiten gezeichnet, Ursprung in der Mitte der Kollisionsbox,
-//! Blick nach rechts; nach links werden sie gespiegelt.
+//! Enemies are drawn in world units, origin in the center of the collision box,
+//! facing right; to the left they are mirrored.
 
 use std::collections::HashMap;
 
@@ -9,7 +9,7 @@ use elora_client::scene::SceneCreature;
 use elora_render::{Affine, Color, Mesh, ShapeBatch, SvgAsset, Tint};
 use elora_sim::Vec2;
 
-/// Wie lange der Lebensbalken nach einem Treffer sichtbar bleibt (Ticks, E-238).
+/// How long the health bar stays visible after a hit (ticks, E-238).
 const BAR_TICKS: u64 = 150;
 const OUTLINE: Color = Color::hex(0x2b2b2b);
 const BAR_BACK: Color = Color::rgba(0.118, 0.165, 0.212, 0.55);
@@ -21,17 +21,17 @@ const EMBER: Color = Color::hex(0xff9a3c);
 const EMBER_CORE: Color = Color::hex(0xfff0b0);
 const EMBER_GLOW: Color = Color::rgba(1.0, 0.6, 0.2, 0.3);
 
-/// Teile einer Gegnergrafik: `idle` und optional `air`.
+/// Parts of an enemy graphic: `idle` and optionally `air`.
 #[derive(Debug)]
 struct Look {
     idle: Mesh,
     air: Option<Mesh>,
-    /// Hüter: Sturzflug und benommen (R2-M2.1).
+    /// Guardian: dive and dazed (R2-M2.1).
     dive: Option<Mesh>,
     stunned: Option<Mesh>,
-    /// Versteckt im Boden (Wurzelschlange, Zustand 0).
+    /// Hidden in the ground (root snake, state 0).
     hidden: Option<Mesh>,
-    /// Pose je Zustand (`m<Zustand>`, z. B. `m3`): geht allen anderen vor (Wurzelwächter).
+    /// Pose per state (`m<Zustand>`, e.g. `m3`): takes precedence over all others (Root Warden).
     modes: HashMap<u8, Mesh>,
 }
 
@@ -40,11 +40,11 @@ pub struct CreatureArt {
     looks: HashMap<&'static str, Look>,
     glanztropfen: Mesh,
     item: Mesh,
-    /// Eigene Bilder einzelner Gegenstände.
+    /// Own images of individual items.
     items: HashMap<&'static str, Mesh>,
-    /// NPCs (A1.7), Ursprung am Boden.
+    /// NPCs (A1.7), origin on the ground.
     characters: HashMap<&'static str, Mesh>,
-    /// Objekte mit zwei Zuständen (aus, an), Ursprung am Boden.
+    /// Objects with two states (off, on), origin on the ground.
     objects: HashMap<&'static str, (Mesh, Mesh)>,
 }
 
@@ -54,8 +54,8 @@ macro_rules! adventure_svgs {
     };
 }
 
-/// Neigung der Flugpose einer Art in der Grafik (Bogenmaß, nach oben negativ) – `None`:
-/// die Pose dreht nicht mit (Sandschlange und Dünenwurm im Sprung, E-328).
+/// Tilt of a kind's flight pose in the graphic (radians, upwards negative) – `None`:
+/// the pose does not rotate along (sand snake and dune worm in the jump, E-328).
 fn flight_tilt(c: &SceneCreature) -> Option<f32> {
     match (c.kind.as_str(), c.mode) {
         ("sandschlange", elora_sim::creature::serpent::LEAP) => Some(-0.45),
@@ -65,7 +65,7 @@ fn flight_tilt(c: &SceneCreature) -> Option<f32> {
 }
 
 const CHARACTER_FILES: &[(&str, &[u8])] = adventure_svgs!("characters": "oma", "klonk", "lotte", "tueftel", "pip", "wegweiser", "wabe", "hummel", "plumm", "pilzkind", "pilzkind_froh", "pilzmama", "waechter", "sirup", "palma", "schlange", "ruinenquelle", "flocke", "bolle", "kiesel", "wicke", "kristella");
-/// Figuren, die sich ein Bild teilen (Tafeln, Stellen der Oase, R2-M2.3).
+/// Figures that share an image (boards, spots of the oasis, R2-M2.3).
 const SHARED_CHARACTER_FILES: &[(&str, &[u8])] = {
     const TAFEL: &[u8] = include_bytes!("../../../assets/adventure/characters/tafel.svg");
     const DRY: &[u8] = include_bytes!("../../../assets/adventure/characters/giessstelle.svg");
@@ -91,10 +91,10 @@ const SHARED_CHARACTER_FILES: &[(&str, &[u8])] = {
         ("graue-stelle", GREY),
     ]
 };
-/// Gegenstände mit eigenem Bild (R2-M2.1); alle anderen zeigen `item.svg`.
+/// Items with their own image (R2-M2.1); all others show `item.svg`.
 const ITEM_FILES: &[(&str, &[u8])] =
     adventure_svgs!("items": "biene", "quellfunke", "wabenhut", "rune", "wasserschlauch", "wasser");
-/// Objekt und die Namen seiner beiden Teile (aus, an).
+/// Object and the names of its two parts (off, on).
 const OBJECT_FILES: &[(&str, &[u8], [&str; 2])] = &[
     (
         "truhe",
@@ -154,7 +154,7 @@ const CREATURE_FILES: &[(&str, &[u8])] = creatures!(
 
 impl CreatureArt {
     /// # Panics
-    /// Wenn ein eingebettetes Asset fehlerhaft ist (wird von Tests abgedeckt).
+    /// If an embedded asset is faulty (covered by tests).
     pub fn load() -> Self {
         let looks = CREATURE_FILES
             .iter()
@@ -228,8 +228,8 @@ impl CreatureArt {
         }
     }
 
-    /// Gegner mit Lebensbalken nach Treffern; unbekannte Arten als Kreis. Sie atmen im Stand,
-    /// wippen beim Gehen, schweben in der Luft und neigen Flugposen in die Flugrichtung (E-328).
+    /// Enemies with a health bar after hits; unknown kinds as a circle. They breathe when standing,
+    /// bob when walking, hover in the air and tilt flight poses into the flight direction (E-328).
     #[allow(clippy::too_many_lines)]
     pub fn draw(&self, batch: &mut ShapeBatch, c: &SceneCreature, time: f32) {
         let flip = if c.facing < 0 { -1.0 } else { 1.0 };
@@ -244,7 +244,7 @@ impl CreatureArt {
         } else {
             Tint::default()
         };
-        // Frostwelle der Hüterin über den Boden der Halle (E-341)
+        // frost wave of the guardian across the floor of the hall (E-341)
         if let Some(hall) = c.hall
             && c.mode == elora_sim::creature::queen::WAVE
         {
@@ -263,14 +263,14 @@ impl CreatureArt {
                 })
                 .or_else(|| look.air.as_ref().filter(|_| c.airborne))
                 .unwrap_or(&look.idle);
-            // Fuß der Grafik (Unterkante): Atmen und Wachsen bleiben am Boden
+            // foot of the graphic (bottom edge): breathing and growing stay on the ground
             let h = mesh.bounds().map_or(0.0, |(_, max)| max.y);
-            // im Boden oder Sand versteckt: ruhig
+            // hidden in the ground or sand: still
             let hidden = look.hidden.as_ref().is_some_and(|m| std::ptr::eq(m, mesh))
                 || (c.kind == "sandschlange" && c.mode <= 2)
                 || (c.kind == "duenenwurm" && c.mode <= 1);
             let t = if c.kind == "eiszapfen" {
-                // hängt still, zittert vor dem Fall (R2-M2.4)
+                // hangs still, trembles before the fall (R2-M2.4)
                 let shake = if c.mode == elora_sim::creature::icicle::SHAKE {
                     (time * 70.0).sin() * 1.6
                 } else {
@@ -278,18 +278,18 @@ impl CreatureArt {
                 };
                 Affine::translate(c.pos + Vec2::new(shake, 0.0))
             } else if c.kind == "fledermaus" && c.mode == elora_sim::creature::bat::HANG {
-                // schläft kopfüber: kein Schweben
+                // sleeps upside down: no hovering
                 Affine::translate(c.pos).then(Affine::scale(flip, 1.0))
             } else if c.kind == "schneebrocken" {
-                // rollt: dreht sich mit dem Weg
+                // rolls: rotates with the distance travelled
                 Affine::translate(c.pos).then(Affine::rotate(c.pos.x / 18.0))
             } else if c.grow < 1.0 {
-                // Wurzelschlange wächst langsam aus dem Boden
+                // the root snake grows slowly out of the ground
                 Affine::translate(c.pos + Vec2::new(0.0, h))
                     .then(Affine::scale(flip, c.grow.max(0.05)))
                     .then(Affine::translate(Vec2::new(0.0, -h)))
             } else if let Some(tilt) = flight_tilt(c) {
-                // Flugpose zeigt in die Flugrichtung
+                // the flight pose points in the flight direction
                 let pitch = c.vel.y.atan2(c.vel.x.abs().max(0.5));
                 let a = ((pitch - tilt) * flip).clamp(-1.2, 1.2);
                 Affine::translate(c.pos)
@@ -298,14 +298,14 @@ impl CreatureArt {
             } else if hidden {
                 Affine::translate(c.pos).then(Affine::scale(flip, 1.0))
             } else if c.airborne {
-                // Flieger schweben auf und ab, Springer neigen sich leicht
+                // flyers hover up and down, jumpers tilt slightly
                 let bob = (phase * 3.1).sin() * 2.5;
                 let lean = (c.vel.x * 0.03).clamp(-0.25, 0.25);
                 Affine::translate(c.pos + Vec2::new(0.0, bob))
                     .then(Affine::rotate(lean))
                     .then(Affine::scale(flip, 1.0))
             } else if c.vel.x.abs() > 0.3 {
-                // Gang: wippt mit den Schritten
+                // gait: bobs with the steps
                 let step = c.pos.x * 0.22;
                 let bob = -step.sin().abs() * 2.5;
                 let rock = step.sin() * 0.05;
@@ -314,7 +314,7 @@ impl CreatureArt {
                     .then(Affine::scale(flip, 1.0))
                     .then(Affine::translate(Vec2::new(0.0, -h)))
             } else {
-                // Atmen: Höhe und Breite gegenläufig, Fläche bleibt
+                // breathing: height and width in opposite directions, the area stays
                 let sy = 1.0 + (phase * 2.4).sin() * 0.03;
                 Affine::translate(c.pos + Vec2::new(0.0, h))
                     .then(Affine::scale(flip / sy, sy))
@@ -343,7 +343,7 @@ impl CreatureArt {
         }
     }
 
-    /// Unbelebte Figuren (Schilder, Tafeln, Quellen, Pflanzen): atmen nicht, werfen keinen Schatten.
+    /// Inanimate figures (signs, boards, springs, plants): do not breathe, cast no shadow.
     pub fn is_still(id: &str) -> bool {
         [
             "wegweiser",
@@ -357,7 +357,7 @@ impl CreatureArt {
         .any(|p| id.starts_with(p))
     }
 
-    /// Wirft der Gegner einen Schatten? Nicht, solange er im Boden oder Sand steckt.
+    /// Does the enemy cast a shadow? Not while it is stuck in the ground or sand.
     pub fn casts_shadow(c: &SceneCreature) -> bool {
         !match c.kind.as_str() {
             "wurzelschlange" => c.mode == elora_sim::creature::burrow::HIDDEN,
@@ -367,8 +367,8 @@ impl CreatureArt {
         }
     }
 
-    /// Figur in der Welt: wie [`Self::draw_character`], dazu atmen lebende Figuren leicht
-    /// (Schilder, Tafeln, Quellen und Pflanzen stehen still, E-328).
+    /// Figure in the world: like [`Self::draw_character`], plus living figures breathe slightly
+    /// (signs, boards, springs and plants stand still, E-328).
     pub fn draw_character_alive(
         &self,
         batch: &mut ShapeBatch,
@@ -393,19 +393,19 @@ impl CreatureArt {
         true
     }
 
-    /// Grafik einer Figur (Ursprung am Boden), z. B. für das Hauptmenü.
+    /// Graphic of a figure (origin on the ground), e.g. for the main menu.
     pub fn character_mesh(&self, id: &str) -> Option<&Mesh> {
         self.characters.get(id)
     }
 
-    /// Grafik einer Gegnerart (Ursprung in der Mitte); `air` = Sprung-Pose, falls vorhanden.
+    /// Graphic of an enemy kind (origin in the center); `air` = jump pose, if present.
     pub fn creature_mesh(&self, kind: &str, air: bool) -> Option<&Mesh> {
         let look = self.looks.get(kind)?;
         Some(look.air.as_ref().filter(|_| air).unwrap_or(&look.idle))
     }
 
-    /// NPC am Boden `ground`, Blick `facing`; `scale` 1 = Spielgröße. `false`, wenn die
-    /// Figur keine eigene Grafik hat.
+    /// NPC on the ground `ground`, facing `facing`; `scale` 1 = game size. `false` if the
+    /// figure has no graphic of its own.
     pub fn draw_character(
         &self,
         batch: &mut ShapeBatch,
@@ -423,7 +423,7 @@ impl CreatureArt {
         true
     }
 
-    /// Objekt `name` (`truhe`, `quellstein`, `schalter`, `heilpflanze`) am Boden `ground`.
+    /// Object `name` (`truhe`, `quellstein`, `schalter`, `heilpflanze`) on the ground `ground`.
     pub fn draw_object(&self, batch: &mut ShapeBatch, name: &str, ground: Vec2, on: bool) {
         if let Some((off, on_mesh)) = self.objects.get(name) {
             batch.draw_mesh(
@@ -434,7 +434,7 @@ impl CreatureArt {
         }
     }
 
-    /// Geschoss: Pollenkugel, oder mit `spark` ein Funke (`Some(true)` = glüht am Boden).
+    /// Projectile: pollen ball, or with `spark` a spark (`Some(true)` = glows on the ground).
     pub fn draw_shot(batch: &mut ShapeBatch, pos: Vec2, spark: Option<bool>, time: f32) {
         match spark {
             None => {
@@ -443,7 +443,7 @@ impl CreatureArt {
                 batch.fill_circle(pos, 6.0, POLLEN);
             }
             Some(landed) => {
-                // flackernder Funke; am Boden flacher Glutfleck
+                // flickering spark; on the ground a flat ember spot
                 let flicker = 1.0 + 0.15 * (time * 23.0 + pos.x * 0.1).sin();
                 let r = if landed { 7.0 } else { 5.5 } * flicker;
                 batch.fill_circle(pos, r * 2.2, EMBER_GLOW);
@@ -458,9 +458,9 @@ impl CreatureArt {
         }
     }
 
-    /// Beute: Glanztropfen schweben leicht, andere Gegenstände als Glitzerstein.
-    /// Symbol eines Gegenstands (HUD, Menüs), Mitte `pos`, `scale` 1 = Spielgröße.
-    /// Bild eines Gegenstands (eigenes, Glanztropfen oder das allgemeine).
+    /// Loot: gleam drops hover slightly, other items as a glitter stone.
+    /// Icon of an item (HUD, menus), center `pos`, `scale` 1 = game size.
+    /// Image of an item (its own, gleam drop or the generic one).
     fn item_mesh(&self, item: &str) -> &Mesh {
         if item == "glanztropfen" {
             &self.glanztropfen
@@ -486,8 +486,8 @@ impl CreatureArt {
     }
 }
 
-/// Frostwelle: hinter der Front frischer Frost als Eiszacken (schadet), davor kriecht Reif als
-/// Warnung; alles nur innerhalb der Halle (`hall` = Ränder und Länge des frischen Frosts).
+/// Frost wave: behind the front fresh frost as ice spikes (deals damage), in front of it
+/// hoarfrost creeps as a warning; only inside the hall (`hall` = edges, fresh frost length).
 fn draw_frost_wave(
     batch: &mut ShapeBatch,
     front: Vec2,
@@ -499,7 +499,7 @@ fn draw_frost_wave(
     let dir = if facing < 0 { -1.0 } else { 1.0 };
     let floor = front.y;
     let inside = |x: f32| x >= left && x <= right;
-    // frischer Frost
+    // fresh frost
     let mut x = front.x;
     let mut k = 0u32;
     while (front.x - x) * dir <= fresh {
@@ -527,7 +527,7 @@ fn draw_frost_wave(
         x -= dir * 13.0;
         k += 1;
     }
-    // Reif kriecht voraus
+    // hoarfrost creeps ahead
     for j in 0..7 {
         #[allow(clippy::cast_precision_loss)]
         let x = front.x + dir * (10.0 + j as f32 * 13.0);
@@ -606,7 +606,7 @@ mod tests {
                     boss: false,
                     mode,
                     grow: 1.0,
-                    // Flugposen im Bogen (Neigung sichtbar)
+                    // flight poses in an arc (tilt visible)
                     vel: if airborne {
                         Vec2::new(f32::from(facing) * 6.0, -4.0)
                     } else {
@@ -616,7 +616,7 @@ mod tests {
                     goal: elora_sim::Vec2::ZERO,
                     hall: None,
                 };
-                // Kollisionsbox zur Kontrolle
+                // collision box for checking
                 let (hx, hy) = (k.size[0] / 2.0, k.size[1] / 2.0);
                 let corners = [
                     c.pos + Vec2::new(-hx, -hy),
@@ -665,7 +665,7 @@ mod tests {
             put("kristella", mode != 3, false, None, 1, mode);
         }
         put("schneebrocken", false, false, None, 1, 0);
-        // Elora zum Größenvergleich (Box 28)
+        // Elora for size comparison (box 28)
         batch.fill_circle(Vec2::new(x, ground - 14.0), 14.0, Color::hex(0xf2c14e));
         CreatureArt::draw_shot(&mut batch, Vec2::new(x + 80.0, ground - 60.0), None, 0.0);
         CreatureArt::draw_shot(
@@ -692,7 +692,7 @@ mod tests {
             Vec2::new(x + 180.0, ground - 8.0),
             0.0,
         );
-        // NPCs und Objekte (A1.7) auf einer zweiten Bodenlinie
+        // NPCs and objects (A1.7) on a second ground line
         let ground2 = 420.0;
         batch.fill_rect(
             Vec2::new(0.0, ground2),

@@ -1,5 +1,5 @@
-//! Lokal hosten (E-060): Server-Konfiguration im Client bearbeiten, `elora-server`
-//! als eigenen Prozess starten, stoppen oder weiterlaufen lassen.
+//! Host locally (E-060): edit the server configuration in the client, start
+//! `elora-server` as a separate process, stop it or keep it running.
 
 use std::path::{Path, PathBuf};
 use std::process::{Child, Command, Stdio};
@@ -7,7 +7,7 @@ use std::process::{Child, Command, Stdio};
 use anyhow::Context as _;
 use elora_server::ServerConfig;
 
-/// Konfigurationsdatei, die der Client für den Server schreibt (im Benutzerverzeichnis, M8.2).
+/// Configuration file the client writes for the server (in the user directory, M8.2).
 pub fn server_config_file() -> PathBuf {
     crate::settings::config_file("server.toml")
 }
@@ -15,7 +15,7 @@ pub fn server_config_file() -> PathBuf {
 #[derive(Debug)]
 pub struct Hosting {
     pub config: ServerConfig,
-    /// Server beim Beenden des Clients weiterlaufen lassen.
+    /// Keep the server running when the client exits.
     pub keep_running: bool,
     process: Option<Child>,
     pub status: String,
@@ -24,11 +24,11 @@ pub struct Hosting {
 impl Default for Hosting {
     fn default() -> Self {
         let mut config = ServerConfig::load(&server_config_file()).unwrap_or_default();
-        // Schlüssel des gehosteten Servers ebenfalls im Benutzerverzeichnis
+        // key of the hosted server in the user directory as well
         if config.key_file.is_relative() {
             config.key_file = crate::settings::config_file("server_key.toml");
         }
-        // aus dem Client gehostet = privat, bis „Im Internet anzeigen“ gewählt wird (E-170)
+        // hosted from the client = private until “Show on the internet” is chosen (E-170)
         config.masters.clear();
         config.map = elora_server::paths::resolve(&config.map);
         config.maps_dir = elora_server::paths::resolve(&config.maps_dir);
@@ -41,7 +41,7 @@ impl Default for Hosting {
     }
 }
 
-/// Pfad zu `elora-server` neben dem laufenden Client.
+/// Path to `elora-server` next to the running client.
 fn server_binary() -> anyhow::Result<PathBuf> {
     let exe = std::env::current_exe()?;
     let dir = exe.parent().context("kein Programmverzeichnis")?;
@@ -54,14 +54,14 @@ fn server_binary() -> anyhow::Result<PathBuf> {
     Ok(path)
 }
 
-/// Kartenordner: mitgelieferte (`maps/`) und eigene aus dem Editor (E-152).
+/// Map folders: bundled (`maps/`) and own ones from the editor (E-152).
 pub fn map_dirs() -> Vec<PathBuf> {
     let mut dirs = vec![elora_server::paths::resolve(Path::new("maps"))];
     dirs.extend(crate::settings::user_maps_dir());
     dirs
 }
 
-/// Karten aus allen Kartenordnern; bei gleichem Namen gilt die eigene nicht doppelt.
+/// Maps from all map folders; with the same name, the own one is not listed twice.
 pub fn available_maps() -> Vec<PathBuf> {
     let mut maps: Vec<PathBuf> = Vec::new();
     for dir in map_dirs() {
@@ -80,7 +80,7 @@ pub fn available_maps() -> Vec<PathBuf> {
 }
 
 impl Hosting {
-    /// Läuft der gestartete Server noch?
+    /// Is the started server still running?
     pub fn is_running(&mut self) -> bool {
         match &mut self.process {
             Some(child) => match child.try_wait() {
@@ -96,10 +96,10 @@ impl Hosting {
         }
     }
 
-    /// Speichert die Konfiguration und startet den Server. Liefert die Adresse zum Verbinden.
+    /// Saves the configuration and starts the server. Returns the address to connect to.
     ///
     /// # Errors
-    /// Bei ungültiger Konfiguration oder fehlendem Server-Programm.
+    /// On an invalid configuration or missing server program.
     pub fn start(&mut self) -> anyhow::Result<String> {
         self.config.validate()?;
         if self.is_running() {

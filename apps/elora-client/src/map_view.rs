@@ -1,8 +1,8 @@
-//! Karte zeichnen (M6.4): Himmel, Hintergrund-Ebenen mit Parallax, Deko hinter und vor der
-//! Spielfläche, Spielfläche aus zwischengespeicherten Stücken, Animationen (Envelopes).
+//! Map drawing (M6.4): sky, background layers with parallax, decoration behind and in front of
+//! the playfield, playfield from cached chunks, animations (envelopes).
 //!
-//! Reihenfolge: Himmel → Hintergründe (hinten nach vorn) → Deko hinten → Spielfläche →
-//! *(Figuren, Items, Geschosse)* → Deko vorn.
+//! Order: sky → backgrounds (back to front) → decoration behind → playfield →
+//! *(figures, items, projectiles)* → decoration in front.
 
 use std::collections::HashMap;
 
@@ -13,28 +13,28 @@ use elora_sim::{BeltDir, Collision, TILE_SIZE, Tile, Vec2};
 
 use crate::map_art::{self, Anim, MapArt, TileRange};
 
-/// Kantenlänge eines zwischengespeicherten Stücks der Spielfläche in Tiles.
+/// Edge length of a cached playfield chunk in tiles.
 const CHUNK: i32 = 16;
-/// Feinheit eingebetteter SVGs und Höchstzahl ihrer Ecken (Schutz vor überladenen Karten).
+/// Fineness of embedded SVGs and their maximum vertex count (protection against overloaded maps).
 const IMAGE_TOLERANCE: f32 = 0.1;
 const IMAGE_MAX_VERTICES: usize = 200_000;
-/// Laufende Pfeile der Beschleuniger: Durchläufe je Sekunde.
+/// Running arrows of the boosters: cycles per second.
 const BELT_ARROW_HZ: f32 = 1.5;
 
-/// Zeit für Animationen.
+/// Time for animations.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct LookTime {
-    /// Uhr des Clients (ms).
+    /// Client clock (ms).
     pub local_ms: i64,
-    /// Spielzeit des Servers (ms) – für an den Server gebundene Animationen.
+    /// Server game time (ms) – for animations bound to the server.
     pub server_ms: i64,
-    /// Welke Hook-Blüten aus der Welt ([`elora_sim::Collision::hook_wilt`]).
+    /// Wilted hook flowers from the world ([`elora_sim::Collision::hook_wilt`]).
     pub hook_wilt: Option<bool>,
-    /// Wind des Wetters (−1..1, R2-W1): Pflanzen neigen sich und wiegen stärker.
+    /// Weather wind (−1..1, R2-W1): plants lean and sway more strongly.
     pub wind: f32,
 }
 
-/// Wiegen sich im Wind (Bäume, Büsche, Gras, Blumen, Fahnen).
+/// Sway in the wind (trees, bushes, grass, flowers, flags).
 fn sways(name: &str) -> bool {
     [
         "tree-",
@@ -53,7 +53,7 @@ fn sways(name: &str) -> bool {
     .any(|p| name.starts_with(p))
 }
 
-/// Was sich an der Karte ändern muss, damit neu aufgebaut wird.
+/// What has to change about the map to trigger a rebuild.
 #[derive(Debug, Clone, PartialEq)]
 struct Key {
     width: usize,
@@ -61,7 +61,7 @@ struct Key {
     tiles: Vec<Tile>,
     materials: Vec<String>,
     material_map: Vec<u8>,
-    /// Name und Größe der eingebetteten Bilder (der Inhalt wird nicht jedes Bild verglichen).
+    /// Name and size of the embedded images (the content is not compared every frame).
     images: Vec<(String, usize)>,
 }
 
@@ -100,17 +100,17 @@ impl Key {
 struct Cache {
     key: Key,
     col: Collision,
-    /// Material je Tile (Index in [`MapArt::materials`]).
+    /// Material per tile (index into [`MapArt::materials`]).
     materials: Vec<Option<usize>>,
     chunks: HashMap<(i32, i32), Mesh>,
-    /// Eingebettete SVGs als Meshes; ungültige bleiben leer.
+    /// Embedded SVGs as meshes; invalid ones stay empty.
     images: Vec<Mesh>,
     belts: Vec<(Vec2, BeltDir)>,
-    /// Hook-Blüten: Ecke und Spalte (je Frame gezeichnet, sie welken).
+    /// Hook flowers: corner and column (drawn every frame, they wilt).
     hook_points: Vec<(Vec2, i32)>,
-    /// Treibsand: Ecke und ob oben frei (vor den Figuren gezeichnet, sie sinken ein).
+    /// Quicksand: corner and whether the top is free (drawn in front of the figures, they sink in).
     quicksand: Vec<(Vec2, bool)>,
-    /// Dünnes Eis und Eiswasser (R2-M2.4): Ecke, Art, ob oben frei.
+    /// Thin ice and ice water (R2-M2.4): corner, kind, whether the top is free.
     ice: Vec<(Vec2, Tile, bool)>,
 }
 
@@ -234,7 +234,7 @@ impl Cache {
     }
 }
 
-/// Alle Teile eines SVG-Assets als ein Mesh.
+/// All parts of an SVG asset as one mesh.
 fn merge(asset: &SvgAsset) -> Mesh {
     let mut batch = ShapeBatch::default();
     for (_, m) in &asset.parts {
@@ -247,11 +247,11 @@ fn merge(asset: &SvgAsset) -> Mesh {
     batch.to_mesh()
 }
 
-/// Welche Ebenen gezeichnet werden (der Editor blendet einzelne aus).
+/// Which layers are drawn (the editor hides individual ones).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[allow(clippy::struct_excessive_bools)]
 pub struct Layers {
-    /// Himmel über den ganzen Ausschnitt (der Editor zeichnet ihn nur innerhalb der Karte).
+    /// Sky over the whole view (the editor draws it only inside the map).
     pub sky: bool,
     pub backgrounds: bool,
     pub decor_back: bool,
@@ -269,7 +269,7 @@ impl Layers {
     };
 }
 
-/// Karte, Zwischenspeicher und Zeit für einen Frame.
+/// Map, cache and time for one frame.
 #[derive(Debug)]
 pub struct MapLayer<'a> {
     pub map: Option<&'a Map>,
@@ -277,7 +277,7 @@ pub struct MapLayer<'a> {
     pub time: LookTime,
 }
 
-/// Kartengrafik mit Zwischenspeicher.
+/// Map graphics with cache.
 #[derive(Debug)]
 pub struct MapView {
     pub art: MapArt,
@@ -293,7 +293,7 @@ impl Default for MapView {
     }
 }
 
-/// Wirkung der Animationen eines Deko-Objekts zur Zeit `time`.
+/// Effect of a decoration object's animations at time `time`.
 fn anim(map: &Map, d: &Decor, time: LookTime) -> Anim {
     let mut a = Anim::default();
     let at = |r: elora_map::look::EnvRef, kind: EnvKind| {
@@ -318,14 +318,14 @@ fn anim(map: &Map, d: &Decor, time: LookTime) -> Anim {
     a
 }
 
-/// Sichtbarer Bereich (Welt) mit etwas Rand.
+/// Visible area (world) with some margin.
 fn visible(camera: &Camera, margin: f32) -> (Vec2, Vec2) {
     let tl = camera.top_left() - Vec2::new(margin, margin);
     (tl, tl + camera.size + Vec2::new(2.0 * margin, 2.0 * margin))
 }
 
 impl MapView {
-    /// Zwischenspeicher zur Karte passend machen (neu aufbauen, wenn sie sich geändert hat).
+    /// Make the cache match the map (rebuild if it has changed).
     fn sync(&mut self, map: &Map) -> &mut Cache {
         if !self.cache.as_ref().is_some_and(|c| c.key.matches(map)) {
             self.cache = Some(Cache::build(&self.art, map));
@@ -333,7 +333,7 @@ impl MapView {
         self.cache.as_mut().expect("eben gesetzt")
     }
 
-    /// Alles hinter den Figuren: Himmel, Hintergründe, Deko hinten, Spielfläche.
+    /// Everything behind the figures: sky, backgrounds, decoration behind, playfield.
     pub fn draw_back(
         &mut self,
         batch: &mut ShapeBatch,
@@ -344,7 +344,7 @@ impl MapView {
         self.draw_back_layers(batch, map, camera, time, Layers::ALL);
     }
 
-    /// Wie [`MapView::draw_back`], nur die eingeschalteten Ebenen.
+    /// Like [`MapView::draw_back`], but only the enabled layers.
     pub fn draw_back_layers(
         &mut self,
         batch: &mut ShapeBatch,
@@ -374,14 +374,14 @@ impl MapView {
         }
     }
 
-    /// Umschließendes Rechteck der Grafik eines Deko-Objekts (lokal, ohne Lage und Drehung).
+    /// Bounding rectangle of a decoration object's graphic (local, without placement and rotation).
     pub fn decor_bounds(&mut self, map: &Map, d: &Decor) -> Option<(Vec2, Vec2)> {
         self.sync(map);
         let cache = self.cache.as_ref()?;
         map_art::decor_mesh(&self.art, &cache.images, d)?.bounds()
     }
 
-    /// Deko vor den Figuren.
+    /// Decoration in front of the figures.
     pub fn draw_front(
         &mut self,
         batch: &mut ShapeBatch,
@@ -393,7 +393,7 @@ impl MapView {
         self.draw_decor_front(batch, map, camera, time);
     }
 
-    /// Nur die Deko vor den Figuren (Editor).
+    /// Only the decoration in front of the figures (editor).
     pub fn draw_decor_front(
         &mut self,
         batch: &mut ShapeBatch,
@@ -405,8 +405,8 @@ impl MapView {
         self.decor(batch, map, &map.decor_front, camera, time);
     }
 
-    /// Treibsand vor den Figuren (E-318): wer einsinkt, verschwindet darin; ebenso Eiswasser
-    /// und dünnes Eis (R2-M2.4).
+    /// Quicksand in front of the figures (E-318): whoever sinks in disappears in it; likewise ice
+    /// water and thin ice (R2-M2.4).
     pub fn draw_quicksand(
         &mut self,
         batch: &mut ShapeBatch,
@@ -513,7 +513,7 @@ impl MapView {
             let Some(mesh) = map_art::decor_mesh(&self.art, &cache.images, d) else {
                 continue;
             };
-            // Ausdehnung der Grafik (große Bäume ragen weit über ihren Fuß hinaus)
+            // extent of the graphic (large trees reach far beyond their base)
             let reach = mesh
                 .bounds()
                 .map_or(400.0, |(lo, hi)| lo.length().max(hi.length()))
@@ -531,7 +531,7 @@ impl MapView {
                 && let elora_map::Art::Builtin(name) = &d.art
                 && sways(name)
             {
-                // in den Wind neigen und in Böen wiegen (Grad)
+                // lean into the wind and sway in gusts (degrees)
                 #[allow(clippy::cast_precision_loss)]
                 let t = time.local_ms as f32 / 1000.0;
                 let gust = (t * 1.7 + d.pos.x * 0.013).sin();
@@ -541,8 +541,8 @@ impl MapView {
         }
     }
 
-    /// Hintergrund-Ebenen: Lage = Position + Versatz + Kamera × (1 − Parallax);
-    /// wiederholte Ebenen werden waagerecht über den ganzen Ausschnitt gelegt.
+    /// Background layers: placement = position + offset + camera × (1 − parallax);
+    /// repeated layers are laid horizontally across the whole view.
     fn backgrounds(&self, batch: &mut ShapeBatch, map: &Map, camera: &Camera, time: LookTime) {
         let Some(cache) = self.cache.as_ref() else {
             return;
@@ -600,7 +600,7 @@ mod tests {
     use elora_map::look::{Curve, EnvPoint, EnvRef, Envelope};
     use elora_map::{Art, Background, Rgba};
 
-    /// Zeilen der Vorführkarte; `e`/`s`/`n` sind feste Tiles aus Erde, Sand, Schnee.
+    /// Rows of the demo map; `e`/`s`/`n` are solid tiles made of earth, sand, snow.
     const LOOK_ROWS: &[&str] = &[
         r"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%",
         r"%..............................................................%",
@@ -648,8 +648,8 @@ mod tests {
         }
     }
 
-    /// Vorführkarte für den Kartenlook (M6.4): Materialien, Spezial-Tiles, Hintergründe mit
-    /// Parallax, ziehende Wolken, Bäume im Wind, Deko vor und hinter der Spielfläche.
+    /// Demo map for the map look (M6.4): materials, special tiles, backgrounds with parallax,
+    /// drifting clouds, trees in the wind, decoration in front of and behind the playfield.
     #[allow(clippy::too_many_lines)]
     pub fn look_test_map() -> Map {
         let plain: Vec<String> = LOOK_ROWS
@@ -708,7 +708,7 @@ mod tests {
                 ],
             ),
         ];
-        // Kamera steht meist um y ≈ 450; Ebenen sollen dann knapp über dem Boden (y = 608) enden
+        // the camera is usually at y ≈ 450; layers should then end just above the ground (y = 608)
         let layer = |name: &str, p: f32, repeat: f32, items: Vec<Decor>| Background {
             name: name.into(),
             parallax: Vec2::new(p, p),
@@ -785,7 +785,7 @@ mod tests {
         m
     }
 
-    /// Schreibt `maps/look-test.emap`: `cargo test -p elora-client --bin elora write_look_test_map -- --ignored`.
+    /// Writes `maps/look-test.emap`: `cargo test -p elora-client --bin elora write_look_test_map -- --ignored`.
     #[test]
     #[ignore = "erzeugt die Vorführkarte"]
     fn write_look_test_map() {
@@ -793,8 +793,8 @@ mod tests {
         look_test_map().save(std::path::Path::new(path)).unwrap();
     }
 
-    /// Ausschnitt der Vorführkarte wie im Spiel: `cargo test -p elora-client --bin elora look_sheet -- --ignored`,
-    /// danach `cargo xtask svg-preview target/look.svg target/look.png 1400`.
+    /// Section of the demo map as in game: `cargo test -p elora-client --bin elora look_sheet -- --ignored`,
+    /// then `cargo xtask svg-preview target/look.svg target/look.png 1400`.
     #[test]
     #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
     fn look_sheet() {
@@ -823,7 +823,7 @@ mod tests {
         .unwrap();
     }
 
-    /// Dünnes Eis über Eiswasser zur Sichtprüfung (R2-M2.4): `… ice_sheet -- --ignored`, danach
+    /// Thin ice over ice water for visual inspection (R2-M2.4): `… ice_sheet -- --ignored`, then
     /// `cargo xtask svg-preview target/ice.svg target/ice.png 800`.
     #[test]
     #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
@@ -866,7 +866,7 @@ mod tests {
         .unwrap();
     }
 
-    /// Treibsand-Grube zur Sichtprüfung: `… quicksand_sheet -- --ignored`, danach
+    /// Quicksand pit for visual inspection: `… quicksand_sheet -- --ignored`, then
     /// `cargo xtask svg-preview target/quicksand.svg target/quicksand.png 800`.
     #[test]
     #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
@@ -893,7 +893,7 @@ mod tests {
         };
         let t = LookTime::default();
         view.draw_back(&mut batch, &map, &cam, t);
-        // halb eingesunkene Figur
+        // half-sunk figure
         batch.fill_circle(
             Vec2::new(150.0, 100.0),
             14.0,
@@ -929,7 +929,7 @@ mod tests {
         let built = view.cache.as_ref().unwrap().chunks.len();
         assert!(built > 0 && built <= 8, "nur sichtbare Stücke: {built}");
         assert!(batch.triangle_count() > 1000);
-        // gleiche Karte → kein Neuaufbau; geänderte Kollision → neu
+        // same map → no rebuild; changed collision → rebuild
         view.draw_back(&mut batch, &map, &cam, LookTime::default());
         assert_eq!(view.cache.as_ref().unwrap().chunks.len(), built);
         let mut changed = map.clone();
@@ -1003,7 +1003,7 @@ mod tests {
         assert!(view.cache.as_ref().unwrap().images[0].is_empty());
     }
 
-    /// Aufbauzeit und Größe der Spielfläche für eine große Karte:
+    /// Build time and size of the playfield for a large map:
     /// `cargo test --release -p elora-client --bin elora map_view_benchmark -- --ignored --nocapture`.
     #[test]
     #[ignore = "Messung"]

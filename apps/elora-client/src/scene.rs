@@ -1,17 +1,17 @@
-//! Was gezeichnet wird – unabhängig davon, ob die Daten aus der lokalen Sandbox
-//! oder aus Snapshots und Vorhersage (online) stammen.
+//! What is drawn – regardless of whether the data comes from the local sandbox
+//! or from snapshots and prediction (online).
 
 use elora_sim::{Character, CharacterCore, PickupKind, TICKS_PER_SECOND, Team, Vec2, World};
 
-/// Eine Figur mit Zustand vor und nach dem aktuellen Tick.
+/// A character with state before and after the current tick.
 #[derive(Debug, Clone)]
 pub struct SceneChar {
     pub slot: usize,
-    /// Aktueller Zustand (Leben, Waffen, Kern).
+    /// Current state (health, weapons, core).
     pub ch: Character,
-    /// Kern vor dem aktuellen Tick.
+    /// Core before the current tick.
     pub prev: CharacterCore,
-    /// Anteil zwischen `prev` und `ch.core` (0..1).
+    /// Fraction between `prev` and `ch.core` (0..1).
     pub alpha: f32,
     pub dummy: bool,
     pub local: bool,
@@ -28,16 +28,16 @@ impl SceneChar {
     }
 }
 
-/// Ein sichtbarer Laserabschnitt.
+/// A visible laser segment.
 #[derive(Debug, Clone, Copy)]
 pub struct SceneLaser {
     pub from: Vec2,
     pub to: Vec2,
-    /// 1 = frisch, 0 = verblasst.
+    /// 1 = fresh, 0 = faded.
     pub fade: f32,
 }
 
-/// Eine Flagge (CTF).
+/// A flag (CTF).
 #[derive(Debug, Clone, Copy)]
 pub struct SceneFlag {
     pub team: Team,
@@ -46,7 +46,7 @@ pub struct SceneFlag {
     pub stand: Vec2,
 }
 
-/// Aussehen eines Abenteuer-Objekts (A1.6).
+/// Appearance of an adventure object (A1.6).
 #[derive(Debug, Clone, PartialEq)]
 pub enum ObjectLook {
     Npc {
@@ -59,7 +59,7 @@ pub enum ObjectLook {
     Switch {
         on: bool,
     },
-    /// `active`: hier wurde zuletzt gerastet.
+    /// `active`: the last rest happened here.
     SavePoint {
         active: bool,
     },
@@ -77,45 +77,45 @@ pub struct SceneObject {
     pub pos: Vec2,
 }
 
-/// Ein Gegner (A1.2).
+/// An enemy (A1.2).
 #[derive(Debug, Clone)]
 pub struct SceneCreature {
     pub id: u32,
-    /// Name der Art (Grafik).
+    /// Name of the kind (graphics).
     pub kind: String,
     pub pos: Vec2,
     pub facing: i8,
     pub health: i32,
     pub max_health: i32,
-    /// Ticks seit dem letzten Treffer (Lebensbalken, E-238).
+    /// Ticks since the last hit (health bar, E-238).
     pub since_hit: Option<u64>,
     pub stunned: bool,
     pub airborne: bool,
     pub boss: bool,
-    /// Zustand mehrstufiger Verhalten (Hüter: Sturzflug, benommen; `elora_sim::creature::diver`).
+    /// State of multi-stage behaviours (guardian: dive, stunned; `elora_sim::creature::diver`).
     pub mode: u8,
-    /// Wie weit eine Wurzelschlange aus dem Boden gewachsen ist (0..1, sonst 1).
+    /// How far a root snake has grown out of the ground (0..1, otherwise 1).
     pub grow: f32,
-    /// Geschwindigkeit (Flugposen drehen mit, Gang wippt).
+    /// Velocity (flight poses rotate along, gait bobs).
     pub vel: Vec2,
-    /// Kollisionsbox (Breite, Höhe; Schatten).
+    /// Collision box (width, height; shadow).
     pub size: Vec2,
-    /// Ziel des Verhaltens (Kristella: Frostwelle x = Front, y = Boden der Halle).
+    /// Target of the behaviour (Kristella: frost wave x = front, y = floor of the hall).
     pub goal: Vec2,
-    /// Halle der Hüterin der Frostspitzen: linker und rechter Rand, Länge des frischen Frosts.
+    /// Hall of the guardian of the Frostspitzen: left and right edge, length of the fresh frost.
     pub hall: Option<(f32, f32, f32)>,
 }
 
 #[derive(Debug, Clone, Default)]
 pub struct Scene {
-    /// Simulations-Tick (Blinken, Anzeigen).
+    /// Simulation tick (blinking, displays).
     pub tick: u64,
     pub creatures: Vec<SceneCreature>,
-    /// Gegner-Geschosse: Position und ob Funke (`Some(true)` = glüht am Boden).
+    /// Enemy projectiles: position and whether spark (`Some(true)` = glows on the ground).
     pub creature_shots: Vec<(Vec2, Option<bool>)>,
-    /// Beute: Gegenstand und Position.
+    /// Loot: item and position.
     pub loot: Vec<(String, Vec2)>,
-    /// Abenteuer-Objekte (NPCs, Truhen, Schalter …).
+    /// Adventure objects (NPCs, chests, switches …).
     pub objects: Vec<SceneObject>,
     pub flags: Vec<SceneFlag>,
     pub chars: Vec<SceneChar>,
@@ -123,7 +123,7 @@ pub struct Scene {
     pub lasers: Vec<SceneLaser>,
     pub pickups: Vec<(PickupKind, Vec2)>,
     pub spawns: Vec<Vec2>,
-    /// Kameramitte.
+    /// Camera centre.
     pub camera: Vec2,
 }
 
@@ -132,9 +132,9 @@ impl Scene {
         self.chars.iter().find(|c| c.local)
     }
 
-    /// Projektile und Laser einer Welt zum Zeitpunkt `tick − span·(1 − alpha)` hinzufügen:
-    /// `span` Ticks zwischen dem vorigen und diesem Stand (online bei jedem 2. Tick: 2).
-    /// `filter` wählt nach Schütze aus.
+    /// Add projectiles and lasers of a world at time `tick − span·(1 − alpha)`:
+    /// `span` ticks between the previous and this state (online every 2nd tick: 2).
+    /// `filter` selects by shooter.
     pub fn add_shots(
         &mut self,
         world: &World,
@@ -161,7 +161,7 @@ impl Scene {
         }
     }
 
-    /// Flaggen; getragene Flaggen hängen am (gezeichneten) Träger.
+    /// Flags; carried flags hang on the (drawn) carrier.
     pub fn add_flags(&mut self, world: &World) {
         for f in &world.flags {
             let pos = f
@@ -177,7 +177,7 @@ impl Scene {
         }
     }
 
-    /// Gegner, ihre Geschosse und Beute; `prev` sind die Positionen vor dem Tick (Id → Position).
+    /// Enemies, their projectiles and loot; `prev` are the positions before the tick (id → pos).
     pub fn add_creatures(
         &mut self,
         world: &World,
@@ -245,7 +245,7 @@ impl Scene {
     }
 }
 
-/// Wachstum einer auftauchenden Wurzelschlange (R2-M2.2): 0 = im Boden, 1 = ganz draußen.
+/// Growth of an emerging root snake (R2-M2.2): 0 = in the ground, 1 = fully out.
 fn grow(kind: &elora_sim::CreatureKind, c: &elora_sim::Creature) -> f32 {
     use elora_sim::creature::{Behavior, burrow};
     match kind.behavior {

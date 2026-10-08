@@ -1,8 +1,8 @@
-//! Karten-Editor (M6.6, E-028, E-031): egui dunkel (E-150), eine Seitenleiste rechts (E-151),
-//! eigene Karten im Benutzerverzeichnis (E-152).
+//! Map editor (M6.6, E-028, E-031): egui dark (E-150), one sidebar on the right (E-151),
+//! custom maps in the user directory (E-152).
 //!
-//! Hier liegen Zustand und Logik (ohne egui, testbar); [`panel`] baut die Oberfläche,
-//! [`view`] zeichnet Karte, Raster und Entities.
+//! State and logic live here (without egui, testable); [`panel`] builds the UI,
+//! [`view`] draws map, grid and entities.
 
 pub mod adventure;
 #[cfg(test)]
@@ -39,17 +39,17 @@ use elora_sim::{TILE_SIZE, Tile, Vec2};
 use crate::map_view::Layers;
 use tools::{Cells, Clip, Tool};
 
-/// Rückgängig-Schritte, die aufbewahrt werden.
+/// Undo steps that are kept.
 const HISTORY: usize = 100;
-/// Änderungen derselben Art innerhalb dieser Zeit werden ein Schritt (Tippen, Farbe ziehen).
+/// Changes of the same kind within this time become one step (typing, dragging a color).
 const MERGE_WINDOW: Duration = Duration::from_millis(800);
-/// Zoom: Welteinheiten je Bildschirm-Pixel.
+/// Zoom: world units per screen pixel.
 pub const ZOOM_MIN: f32 = 0.25;
 pub const ZOOM_MAX: f32 = 8.0;
-/// Größe einer neuen Karte (Tiles).
+/// Size of a new map (tiles).
 pub const NEW_SIZE: (usize, usize) = (60, 30);
 
-/// Was sichtbar ist (Ebenen-Liste).
+/// What is visible (layer list).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[allow(clippy::struct_excessive_bools)]
 pub struct Visible {
@@ -68,7 +68,7 @@ impl Default for Visible {
     }
 }
 
-/// Offenes Fenster über dem Editor.
+/// Open window over the editor.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Dialog {
     New {
@@ -77,7 +77,7 @@ pub enum Dialog {
         height: usize,
     },
     Open,
-    /// Ungespeicherte Änderungen: wohin danach.
+    /// Unsaved changes: where to go afterwards.
     Discard(AfterDiscard),
 }
 
@@ -88,99 +88,99 @@ pub enum AfterDiscard {
     Leave,
 }
 
-/// Auftrag an die App.
+/// Request to the app.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Request {
-    /// Zurück ins Hauptmenü.
+    /// Back to the main menu.
     Leave,
-    /// Karte testspielen (M6.9).
+    /// Playtest the map (M6.9).
     Test,
-    /// Abenteuer-Karte im Abenteuer testen (A1.8, E-269).
+    /// Test an adventure map in the adventure (A1.8, E-269).
     TestAdventure,
 }
 
-/// Eine Karte zum Öffnen.
+/// A map to open.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct MapFile {
     pub path: PathBuf,
     pub name: String,
-    /// Aus dem Benutzerverzeichnis (sonst mitgeliefert; Speichern legt eine eigene Kopie an).
+    /// From the user directory (otherwise bundled; saving creates a custom copy).
     pub own: bool,
 }
 
 #[derive(Debug)]
 pub struct Editor {
     pub map: Map,
-    /// Werkzeug „Abenteuer“ (A1.8).
+    /// Tool „Abenteuer“ (A1.8).
     pub adventure: adventure::AdventureTool,
-    /// Name der Abenteuer-Karte (Dateiname unter `abenteuer/`, Ziel von Übergängen, E-271).
+    /// Name of the adventure map (file name under `abenteuer/`, target of transitions, E-271).
     pub adventure_id: String,
-    /// Weltpunkt unter der Maus (Testspiel „an der Maus“).
+    /// World point under the mouse (playtest „an der Maus“).
     pub mouse_world: Option<Vec2>,
-    /// Inhalte des Abenteuers (neu ladbar) bzw. der Fehler beim Laden.
+    /// Contents of the adventure (reloadable) or the error while loading.
     pub adventure_content: Option<Result<elora_adventure::Content, String>>,
-    /// Teststand für das Testspiel und den Gesprächstest (E-269).
+    /// Test state for the playtest and the dialogue test (E-269).
     pub adventure_test: panel_adventure::TestSetup,
-    /// Offenes Testfenster eines Gesprächs (E-270).
+    /// Open test window of a dialogue (E-270).
     pub dialog_test: Option<panel_adventure::DialogTest>,
-    /// Datei im Benutzerverzeichnis, in die zuletzt gespeichert wurde.
+    /// File in the user directory that was last saved to.
     pub file: Option<PathBuf>,
-    /// Kartenpunkt in der Mitte der Kartenfläche.
+    /// Map point in the center of the map area.
     pub center: Vec2,
-    /// Welteinheiten je Bildschirm-Pixel.
+    /// World units per screen pixel.
     pub zoom: f32,
     undo: Vec<Map>,
     redo: Vec<Map>,
-    /// Art und Zeitpunkt der letzten Änderung (zum Zusammenfassen).
+    /// Kind and time of the last change (for merging).
     last_edit: Option<(String, Instant)>,
     pub dirty: bool,
-    /// Gewählte Tile-Art des Pinsels.
+    /// Selected tile kind of the brush.
     pub brush: Tile,
     pub tool: Tool,
-    /// Kantenlänge des Pinsels in Tiles.
+    /// Edge length of the brush in tiles.
     pub brush_size: usize,
-    /// Material für neu gemalte feste Tiles.
+    /// Material for newly painted solid tiles.
     pub solid_material: String,
-    /// Wählbare Materialien fester Tiles; das erste ist der Standard (aus `materials.toml`).
+    /// Selectable materials of solid tiles; the first is the default (from `materials.toml`).
     pub solid_materials: Vec<String>,
-    /// Gewähltes Entity.
+    /// Selected entity.
     pub entity: elora_map::EntityKind,
-    /// Auswahl (Werkzeug Auswahl).
+    /// Selection (selection tool).
     pub selection: Option<Cells>,
     pub clipboard: Option<Clip>,
-    /// Einfügen läuft: Vorschau folgt der Maus, Klick setzt.
+    /// Pasting in progress: preview follows the mouse, click places.
     pub pasting: bool,
-    /// Beginn eines Rechtecks oder einer Auswahl und ob mit der linken Taste.
+    /// Start of a rectangle or selection and whether with the left button.
     pub drag: Option<((usize, usize), bool)>,
-    /// Ziel-Ebene für neue Deko (M6.8).
+    /// Target layer for new decoration (M6.8).
     pub decor_layer: look::DecorLayer,
-    /// Grafik für neue Deko.
+    /// Graphic for new decoration.
     pub decor_art: elora_map::Art,
     pub selected_decor: Option<look::DecorRef>,
-    /// Deko wird gezogen: letzter Weltpunkt der Maus.
+    /// Decoration is being dragged: last world point of the mouse.
     pub decor_drag: Option<Vec2>,
     pub selected_bg: Option<usize>,
     pub selected_env: Option<usize>,
-    /// Pfad zum Einbetten eines SVGs.
+    /// Path for embedding an SVG.
     pub image_path: String,
     pub visible: Visible,
     pub dialog: Option<Dialog>,
-    /// Letzte Meldung: Sprachschlüssel und Wert (`{arg}`).
+    /// Last message: language key and value (`{arg}`).
     pub status: Option<(&'static str, String)>,
-    /// Laufender Pinselstrich (Nummer), endet beim Loslassen.
+    /// Current brush stroke (number), ends on release.
     pub stroke: Option<u32>,
     next_stroke: u32,
-    /// Eingaben für Größe ändern (Seitenleiste).
+    /// Inputs for resizing (sidebar).
     pub resize: (usize, usize),
-    /// Was die App nach dem Frame tun soll (zurück ins Menü, Testspielen).
+    /// What the app should do after the frame (back to the menu, playtest).
     pub request: Option<Request>,
-    /// Ordner für eigene Karten.
+    /// Folder for custom maps.
     pub user_dir: Option<PathBuf>,
-    /// Ordner der mitgelieferten Karten.
+    /// Folder of the bundled maps.
     pub bundled_dir: PathBuf,
 }
 
-/// Leere Karte (nur Luft).
+/// Empty map (air only).
 pub fn blank(name: &str, width: usize, height: usize) -> Map {
     let mut m = Map::new(
         name,
@@ -244,7 +244,7 @@ impl Editor {
         self.status = Some((key, arg.into()));
     }
 
-    /// Pinselstrich beginnen; liefert seinen Schlüssel für [`Editor::paint`].
+    /// Begin a brush stroke; returns its key for [`Editor::paint`].
     pub fn start_stroke(&mut self) -> u32 {
         self.end_edit();
         self.next_stroke += 1;
@@ -258,7 +258,7 @@ impl Editor {
         }
     }
 
-    /// Ansicht auf die Kartenmitte.
+    /// View on the map center.
     pub fn center_view(&mut self) {
         let ts = TILE_SIZE as f32;
         #[allow(clippy::cast_precision_loss)]
@@ -267,7 +267,7 @@ impl Editor {
         }
     }
 
-    /// Vor einer Änderung aufrufen. Gleiche `kind` kurz hintereinander werden ein Schritt.
+    /// Call before a change. The same `kind` in quick succession becomes one step.
     pub fn begin_edit(&mut self, kind: &str, now: Instant) {
         let merge = self
             .last_edit
@@ -284,12 +284,12 @@ impl Editor {
         self.dirty = true;
     }
 
-    /// Laufende Änderung abschließen (z. B. Pinselstrich beendet): die nächste wird ein neuer Schritt.
+    /// Finish the current change (e.g. brush stroke ended): the next one becomes a new step.
     pub fn end_edit(&mut self) {
         self.last_edit = None;
     }
 
-    /// Anzahl der Rückgängig-Schritte.
+    /// Number of undo steps.
     #[cfg(test)]
     pub fn undo_len(&self) -> usize {
         self.undo.len()
@@ -318,7 +318,7 @@ impl Editor {
     }
 
     fn after_history(&mut self) {
-        // Indizes könnten nach Rückgängig ins Leere zeigen
+        // indices could point into nothing after undo
         self.selected_decor = None;
         self.selected_bg = self.selected_bg.filter(|&i| i < self.map.backgrounds.len());
         self.selected_env = self.selected_env.filter(|&i| i < self.map.envelopes.len());
@@ -327,7 +327,7 @@ impl Editor {
         self.resize = (self.map.width, self.map.height);
     }
 
-    /// Tile unter einem Weltpunkt, falls innerhalb der Karte.
+    /// Tile under a world point, if inside the map.
     pub fn tile_at(&self, world: Vec2) -> Option<(usize, usize)> {
         let ts = TILE_SIZE as f32;
         let (x, y) = ((world.x / ts).floor(), (world.y / ts).floor());
@@ -340,7 +340,7 @@ impl Editor {
             .then_some((x as usize, y as usize))
     }
 
-    /// Kartengröße ändern; der Inhalt bleibt oben links stehen, Entities außerhalb fallen weg.
+    /// Resize the map; the content stays at the top left, entities outside are dropped.
     pub fn resize_map(&mut self, width: usize, height: usize, now: Instant) {
         let (w, h) = (
             width.clamp(1, elora_map::MAX_SIZE),
@@ -374,7 +374,7 @@ impl Editor {
         self.resize = (w, h);
     }
 
-    /// Zoom um einen Bildschirmpunkt (`offset` = Abstand zur Mitte der Kartenfläche in Pixeln).
+    /// Zoom around a screen point (`offset` = distance to the center of the map area in pixels).
     pub fn zoom_at(&mut self, factor: f32, offset: Vec2) {
         let before = self.center + offset * self.zoom;
         self.zoom = (self.zoom * factor).clamp(ZOOM_MIN, ZOOM_MAX);
@@ -382,7 +382,7 @@ impl Editor {
         self.center += before - after;
     }
 
-    /// Neue leere Karte.
+    /// New empty map.
     pub fn new_map(&mut self, name: &str, width: usize, height: usize) {
         self.replace_map(blank(name, width, height), None);
         let size = format!("{}×{}", self.map.width, self.map.height);
@@ -407,7 +407,7 @@ impl Editor {
         self.center_view();
     }
 
-    /// Karte öffnen (auch Entwürfe ohne Spawn).
+    /// Open a map (also drafts without spawn).
     pub fn open(&mut self, file: &MapFile) {
         match std::fs::read(&file.path)
             .map_err(|e| e.to_string())
@@ -416,7 +416,7 @@ impl Editor {
             Ok(map) => {
                 self.note("editor.opened", file.path.display().to_string());
                 self.replace_map(map, file.own.then(|| file.path.clone()));
-                // Abenteuer-Karten heißen wie ihre Datei (Ziel von Übergängen)
+                // adventure maps are named like their file (target of transitions)
                 if file
                     .path
                     .parent()
@@ -434,8 +434,8 @@ impl Editor {
         }
     }
 
-    /// Zieldatei im Benutzerverzeichnis (nach dem Kartennamen); Abenteuer-Karten unter
-    /// `abenteuer/` nach ihrem Namen (E-271).
+    /// Target file in the user directory (after the map name); adventure maps under
+    /// `abenteuer/` after their name (E-271).
     pub fn target_path(&self) -> Option<PathBuf> {
         let dir = self.user_dir.as_ref()?;
         if self.is_adventure_map() {
@@ -456,7 +456,7 @@ impl Editor {
         )))
     }
 
-    /// Speichern ins Benutzerverzeichnis. Unspielbare Entwürfe werden gespeichert, aber gemeldet.
+    /// Save to the user directory. Unplayable drafts are saved, but reported.
     pub fn save(&mut self) {
         let Some(path) = self.target_path() else {
             self.note("editor.no_user_dir", "");
@@ -479,7 +479,7 @@ impl Editor {
         }
     }
 
-    /// Karten zum Öffnen: eigene zuerst, dann mitgelieferte.
+    /// Maps to open: custom ones first, then bundled ones.
     pub fn map_files(&self) -> Vec<MapFile> {
         let list = |dir: &Path, own: bool| -> Vec<MapFile> {
             let mut v: Vec<MapFile> = std::fs::read_dir(dir)
@@ -506,7 +506,7 @@ impl Editor {
             .map(|d| list(d, true))
             .unwrap_or_default();
         all.extend(list(&self.bundled_dir, false));
-        // Abenteuer-Karten (E-262, E-271)
+        // adventure maps (E-262, E-271)
         let adventure = |dir: &Path, own: bool| {
             list(&dir.join("abenteuer"), own).into_iter().map(|mut f| {
                 f.name = format!("abenteuer/{}", f.name);
@@ -520,7 +520,7 @@ impl Editor {
         all
     }
 
-    /// Testspielen anfordern; eine unspielbare Karte (z. B. ohne Spawn) wird gemeldet.
+    /// Request a playtest; an unplayable map (e.g. without spawn) is reported.
     pub fn request_test(&mut self) {
         if self.is_adventure_map() {
             match elora_map::validate(&self.map) {
@@ -535,7 +535,7 @@ impl Editor {
         }
     }
 
-    /// Aktion, die ungespeicherte Änderungen verwerfen würde: erst nachfragen.
+    /// Action that would discard unsaved changes: ask first.
     pub fn request(&mut self, after: AfterDiscard) {
         if self.dirty {
             self.dialog = Some(Dialog::Discard(after));
@@ -544,7 +544,7 @@ impl Editor {
         }
     }
 
-    /// Nach Rückfrage (oder ohne Änderungen) ausführen.
+    /// Execute after confirmation (or without changes).
     pub fn proceed(&mut self, after: AfterDiscard) {
         self.dialog = None;
         match after {
@@ -599,7 +599,7 @@ mod tests {
         e.redo();
         assert_eq!(e.map.tiles[e.map.width + 3], Tile::Ice);
         assert!(!e.can_redo());
-        // neue Änderung löscht das Wiederholen
+        // a new change clears redo
         e.undo();
         e.fill_cells(Cells::span((5, 5), (5, 5)), Tile::Death, "strich-3", t);
         assert!(!e.can_redo());

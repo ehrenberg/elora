@@ -1,7 +1,7 @@
-//! Hintergrund des Hauptmenüs (E-292): ein Stück Tauwinkel mit Figuren, Tieren und Gegnern,
-//! je nach Tageszeit anders (E-291: Morgen, Tag, Abend, Nacht nach der Systemuhr).
+//! Main menu background (E-292): a piece of Tauwinkel with figures, animals and enemies,
+//! varies with the time of day (E-291: morning, day, evening, night by the system clock).
 //!
-//! Alles in Bildschirmkoordinaten; Grafiken aus dem Bestand (Karten-Deko, Figuren, Gegner).
+//! All in screen coordinates; graphics from existing assets (map decoration, figures, enemies).
 
 #![allow(clippy::cast_precision_loss, clippy::many_single_char_names)]
 
@@ -11,18 +11,18 @@ use elora_sim::Vec2;
 use crate::creatures::CreatureArt;
 use crate::map_art::MapArt;
 
-/// Stimmung einer Tageszeit.
+/// Mood of a time of day.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Mood {
     pub sky_top: [f32; 3],
     pub sky_bottom: [f32; 3],
-    /// Licht auf allem (multipliziert).
+    /// Light on everything (multiplied).
     pub light: [f32; 3],
-    /// 0 = Tag, 1 = tiefe Nacht (Sterne, Fenster, Glühwürmchen).
+    /// 0 = day, 1 = deep night (stars, windows, fireflies).
     pub night: f32,
-    /// Laternen leuchten (Abend und Nacht).
+    /// Lanterns glow (evening and night).
     pub lamps: f32,
-    /// Sonnenhöhe 0 (Horizont) bis 1 (oben); unter 0 = nicht zu sehen.
+    /// Sun height 0 (horizon) to 1 (top); below 0 = not visible.
     pub sun: f32,
 }
 
@@ -59,9 +59,9 @@ const NIGHT: Mood = Mood {
     sun: -1.0,
 };
 
-/// Stimmung zur Uhrzeit `hour` (0..24): vier Phasen mit weichen Übergängen.
+/// Mood at clock time `hour` (0..24): four phases with soft transitions.
 pub fn mood(hour: f32) -> Mood {
-    // (Stunde, Stimmung); dazwischen wird gemischt
+    // (hour, mood); blended in between
     const KEYS: [(f32, Mood); 9] = [
         (0.0, NIGHT),
         (5.5, NIGHT),
@@ -94,7 +94,7 @@ pub fn mood(hour: f32) -> Mood {
     }
 }
 
-/// Aktuelle Ortszeit in Stunden.
+/// Current local time in hours.
 pub fn local_hour() -> f32 {
     use chrono::Timelike;
     let now = chrono::Local::now();
@@ -105,14 +105,14 @@ fn rgb(c: [f32; 3]) -> Color {
     Color::rgb(c[0], c[1], c[2])
 }
 
-/// Zeichenkontext der Szene.
+/// Drawing context of the scene.
 struct Scene<'a> {
     batch: &'a mut ShapeBatch,
     map: &'a MapArt,
     creatures: &'a CreatureArt,
     w: f32,
     ground: f32,
-    /// Welteinheiten → Pixel.
+    /// World units → pixels.
     k: f32,
     light: Tint,
     t: f32,
@@ -131,7 +131,7 @@ impl Scene<'_> {
         self.batch.draw_mesh(mesh, &t, tint);
     }
 
-    /// Deko `name` auf dem Boden bei `frac` der Breite.
+    /// Decoration `name` on the ground at `frac` of the width.
     fn decor(&mut self, name: &str, frac: f32, size: f32, flip: bool) {
         let at = Vec2::new(self.x(frac), self.ground);
         self.decor_at(name, at, size, flip, 0.0);
@@ -163,7 +163,7 @@ impl Scene<'_> {
         }
     }
 
-    /// Hin und her laufen zwischen `a` und `b` (Anteile der Breite); liefert x und Blickrichtung.
+    /// Walk back and forth between `a` and `b` (fractions of the width); returns x and facing.
     fn stroll(&self, a: f32, b: f32, speed: f32, phase: f32) -> (f32, f32) {
         let s = (self.t * speed + phase).sin();
         let ds = (self.t * speed + phase).cos();
@@ -172,8 +172,8 @@ impl Scene<'_> {
     }
 }
 
-/// Fenster der Gebäude (Mitte, Größe in Welteinheiten; aus `tauwinkel_gebaeude.py`).
-/// Fenster: Mitte x, y und Breite, Höhe (Breite 0 = unbenutzt).
+/// Windows of the buildings (center, size in world units; from `tauwinkel_gebaeude.py`).
+/// Windows: center x, y and width, height (width 0 = unused).
 type Window = (f32, f32, f32, f32);
 
 const WINDOWS: [(&str, [Window; 3]); 4] = [
@@ -211,7 +211,7 @@ const WINDOWS: [(&str, [Window; 3]); 4] = [
     ),
 ];
 
-/// Hintergrund zeichnen: `screen` in Pixeln, `s` UI-Skalierung, `t` Laufzeit (s), `hour` 0..24.
+/// Draw the background: `screen` in pixels, `s` UI scale, `t` running time (s), `hour` 0..24.
 #[allow(clippy::too_many_lines, clippy::too_many_arguments)]
 pub fn draw(
     batch: &mut ShapeBatch,
@@ -226,7 +226,7 @@ pub fn draw(
     let m = mood(hour);
     batch.fill_rect_vgradient(Vec2::ZERO, screen, rgb(m.sky_top), rgb(m.sky_bottom));
 
-    // Sterne und Mond
+    // stars and moon
     if m.night > 0.05 {
         for i in 0..70u32 {
             let fx = ((i * 7919) % 1000) as f32 / 1000.0;
@@ -248,7 +248,7 @@ pub fn draw(
             Color::rgba(m.sky_top[0], m.sky_top[1], m.sky_top[2], m.night),
         );
     }
-    // Sonne
+    // sun
     if m.sun > 0.0 {
         let p = Vec2::new(w * 0.22, h * (0.62 - m.sun * 0.5));
         batch.fill_circle(p, 70.0 * s, Color::rgba(1.0, 0.92, 0.6, 0.18));
@@ -272,7 +272,7 @@ pub fn draw(
         t,
     };
 
-    // Wolken ziehen
+    // clouds drift
     for (i, (name, y, speed, size)) in [
         ("cloud-1", 0.12, 9.0, 1.1),
         ("cloud-2", 0.24, 6.0, 0.9),
@@ -292,7 +292,7 @@ pub fn draw(
             sc.mesh(mesh, Vec2::new(x, h * y), size * s, false, 0.0, &cloud_tint);
         }
     }
-    // Hügel in zwei Reihen
+    // hills in two rows
     for (name, y, size) in [
         ("hills-far", ground - 40.0 * s, 1.1),
         ("hills-near", ground + 6.0 * s, 1.0),
@@ -308,7 +308,7 @@ pub fn draw(
         }
     }
 
-    // Boden
+    // ground
     let grass = Color::rgb(0.49 * m.light[0], 0.70 * m.light[1], 0.40 * m.light[2]);
     let earth = Color::rgb(0.63 * m.light[0], 0.45 * m.light[1], 0.31 * m.light[2]);
     sc.batch
@@ -319,7 +319,7 @@ pub fn draw(
         grass,
     );
 
-    // Dorf: Bäume, Häuser, Requisiten
+    // village: trees, houses, props
     for (name, frac, size, flip) in [
         ("tree-round", 0.02, 1.1, false),
         ("tree-pine", 0.205, 1.0, false),
@@ -341,7 +341,7 @@ pub fn draw(
     ] {
         sc.decor(name, frac, size, flip);
     }
-    // Fenster leuchten nachts
+    // windows glow at night
     if m.night > 0.05 {
         for (name, frac, flip) in [
             ("haus-elora", 0.10, false),
@@ -371,7 +371,7 @@ pub fn draw(
             }
         }
     }
-    // Laternen
+    // lanterns
     if m.lamps > 0.05 {
         for frac in [0.205, 0.565] {
             let c = Vec2::new(sc.x(frac), ground - 139.0 * k);
@@ -381,7 +381,7 @@ pub fn draw(
                 .fill_circle(c, 9.0 * k, Color::rgba(1.0, 0.92, 0.6, 0.9 * m.lamps));
         }
     }
-    // Beete und Fahne
+    // beds and flag
     for (name, frac) in [
         ("beet-bunt", 0.055),
         ("blumenkasten-bunt", 0.115),
@@ -394,7 +394,7 @@ pub fn draw(
     let wave = (t * 1.6).sin() * 2.0;
     let at = Vec2::new(sc.x(0.455), ground);
     sc.decor_at("fahne-bunt", at, 1.0, false, wave);
-    // Rauch aus den Schornsteinen
+    // smoke from the chimneys
     for (i, (frac, dx, dy)) in [(0.10, 48.0, -240.0), (0.65, -48.0, -246.0)]
         .into_iter()
         .enumerate()
@@ -421,7 +421,7 @@ pub fn draw(
         }
     }
 
-    // Figuren: einige gehen spazieren
+    // figures: some go for a walk
     sc.character("oma", sc.x(0.335), 1.0);
     let (x, f) = sc.stroll(0.13, 0.24, 0.35, 0.0);
     sc.character("pip", x, f);
@@ -429,7 +429,7 @@ pub fn draw(
     sc.character("klonk", sc.x(0.745), -1.0);
     let (x, f) = sc.stroll(0.44, 0.52, 0.22, 1.3);
     sc.character("tueftel", x, f);
-    // Gegner: ein Käfer krabbelt, ein Hüpfer springt ab und zu
+    // enemies: a beetle crawls, a hopper jumps now and then
     let (x, f) = sc.stroll(0.27, 0.36, 0.5, 2.0);
     sc.creature("stachelkaefer", x, 0.0, 13.0, f);
     let cycle = (t / 2.6).fract();
@@ -441,7 +441,7 @@ pub fn draw(
     let (x, f) = sc.stroll(0.02, 0.08, 0.18, 0.4);
     sc.creature("grashuepfer", x, hop, 14.0, f);
 
-    // Schmetterlinge am Tag, Glühwürmchen in der Nacht
+    // butterflies by day, fireflies at night
     for i in 0..6 {
         let fi = i as f32;
         let base = Vec2::new(
@@ -474,7 +474,7 @@ pub fn draw(
             );
         }
     }
-    // Vögel fliegen über den Himmel (nicht nachts)
+    // birds fly across the sky (not at night)
     if m.night < 0.6 {
         for (i, (y, speed)) in [(0.2, 40.0), (0.27, 55.0)].into_iter().enumerate() {
             let span = w + 200.0 * s;
@@ -498,14 +498,14 @@ mod tests {
         assert_eq!(mood(13.0), DAY);
         assert_eq!(mood(19.0), EVENING);
         assert_eq!(mood(23.0), NIGHT);
-        // weicher Übergang
+        // soft transition
         let m = mood(10.0);
         assert!(m.sun > MORNING.sun && m.sun < DAY.sun);
         assert!((mood(24.0).night - 1.0).abs() < 1e-6);
     }
 
-    /// Sichtprüfung: `cargo test -p elora-client --bin elora menu_scene_sheets -- --ignored`
-    /// schreibt `target/menu-<phase>.svg`.
+    /// Visual inspection: `cargo test -p elora-client --bin elora menu_scene_sheets -- --ignored`
+    /// writes `target/menu-<phase>.svg`.
     #[test]
     #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
     fn menu_scene_sheets() {

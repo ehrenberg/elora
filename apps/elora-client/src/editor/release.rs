@@ -1,7 +1,7 @@
-//! Release-Karten bauen (M6.10): Layout aus [`super::release_layouts`], Thema (Material,
-//! Himmel, Hintergrund-Vorlage, Deko) und Deko auf den Oberflächen – mit den Werkzeugen des Editors.
+//! Build the release maps (M6.10): layout from [`super::release_layouts`], theme (material,
+//! sky, background preset, decoration) and decoration on the surfaces – with the editor tools.
 //!
-//! `cargo test -p elora-client --bin elora write_release_maps -- --ignored` schreibt `maps/*.emap`.
+//! `cargo test -p elora-client --bin elora write_release_maps -- --ignored` writes `maps/*.emap`.
 
 use std::time::Instant;
 
@@ -13,26 +13,26 @@ use super::Editor;
 use super::look::Preset;
 use super::release_layouts as layouts;
 
-/// Thema einer Karte (E-155).
+/// Theme of a map (E-155).
 pub struct Theme {
     pub file: &'static str,
     pub name: &'static str,
     pub rows: &'static [&'static str],
-    /// Material fester Tiles (`None` = Standard Erde).
+    /// Material of solid tiles (`None` = default earth).
     pub material: Option<&'static str>,
     pub preset: Preset,
     pub sky: Option<Sky>,
-    /// Färbung der Hintergrund-Ebenen (nach Vorlage), `None` = unverändert.
+    /// Tint of the background layers (per preset), `None` = unchanged.
     pub background_tint: Option<Rgba>,
-    /// Wald-Ebene weglassen (Wüste).
+    /// Leave out the forest layer (desert).
     pub no_forest: bool,
-    /// Große Deko hinter der Spielfläche (braucht Platz nach oben): Name, nötige Höhe in Tiles.
+    /// Large decoration behind the playfield (needs room above): name, required height in tiles.
     pub back: &'static [(&'static str, usize)],
-    /// Kleine Deko vor der Spielfläche.
+    /// Small decoration in front of the playfield.
     pub front: &'static [&'static str],
-    /// Färbung aller Deko (Nacht).
+    /// Tint of all decoration (night).
     pub decor_tint: Option<Rgba>,
-    /// Anteil der Oberflächen-Tiles mit Deko (vorn) und Abstand großer Deko (Tiles).
+    /// Share of surface tiles with decoration (front) and spacing of large decoration (tiles).
     pub front_density: u32,
     pub back_spacing: usize,
 }
@@ -150,7 +150,7 @@ pub const THEMES: [Theme; 5] = [
     },
 ];
 
-/// Fester Pseudo-Zufall je Feld (gleiche Karte bei jedem Bauen).
+/// Fixed pseudo-random value per cell (same map on every build).
 fn hash(x: usize, y: usize, salt: u32) -> u32 {
     #[allow(clippy::cast_possible_truncation)]
     let mut h = (x as u32).wrapping_mul(0x9E37_79B1) ^ (y as u32).wrapping_mul(0x85EB_CA77) ^ salt;
@@ -159,7 +159,7 @@ fn hash(x: usize, y: usize, salt: u32) -> u32 {
     h ^ (h >> 13)
 }
 
-/// Freie Oberfläche: festes Tile (Erde/Sand/Schnee/Stein) mit Luft darüber, ohne Entity.
+/// Free surface: solid tile (earth/sand/snow/stone) with air above, without an entity.
 fn surface(map: &Map, x: usize, y: usize) -> bool {
     let w = map.width;
     y > 0
@@ -168,7 +168,7 @@ fn surface(map: &Map, x: usize, y: usize) -> bool {
         && !map.entities.iter().any(|e| e.tx == x && e.ty == y - 1)
 }
 
-/// So viele Tiles Luft über (x, y) (bis `max`).
+/// This many tiles of air above (x, y) (up to `max`).
 fn clearance(map: &Map, x: usize, y: usize, max: usize) -> usize {
     (1..=max)
         .take_while(|d| y >= *d && map.tiles[(y - d) * map.width + x] == Tile::Air)
@@ -187,7 +187,7 @@ pub(super) fn place(theme: &Theme, map: &mut Map) {
             #[allow(clippy::cast_precision_loss)]
             let ground = Vec2::new(x as f32 * ts + ts / 2.0, y as f32 * ts);
             let h = hash(x, y, 7);
-            // große Deko hinten: Abstand halten, genug Platz nach oben, nicht direkt an Kanten
+            // large decoration in the back: keep spacing, enough room above, not right at edges
             let edge = !surface(map, x - 1, y) || !surface(map, x + 1, y);
             if !edge && (y * 1000 + x) >= next_back && h.is_multiple_of(3) {
                 let (name, need) = theme.back[(h as usize / 3) % theme.back.len()];
@@ -211,7 +211,7 @@ pub(super) fn place(theme: &Theme, map: &mut Map) {
     }
 }
 
-/// Leuchtende Pilze in der Nacht: Farb-Animation, je Pilz versetzt.
+/// Glowing mushrooms at night: color animation, offset per mushroom.
 fn glow(map: &mut Map) {
     if !map
         .decor_front
@@ -255,10 +255,10 @@ fn glow(map: &mut Map) {
     }
 }
 
-/// Eine Release-Karte bauen.
+/// Build a release map.
 ///
 /// # Panics
-/// Wenn das Layout ungültig ist (von Tests abgedeckt).
+/// If the layout is invalid (covered by tests).
 pub fn build(theme: &Theme) -> Map {
     let mut editor = Editor::new(None, std::path::PathBuf::from("maps"));
     editor.map = Map::from_rows(theme.name, theme.rows).expect("Layout gültig");
@@ -273,7 +273,7 @@ pub fn build(theme: &Theme) -> Map {
     editor.map
 }
 
-/// Wetter der Release-Karten (R2-W1, D-W1-02, E-336); die übrigen bleiben schön.
+/// Weather of the release maps (R2-W1, D-W1-02, E-336); the others stay clear.
 pub fn weather_of(file: &str) -> Weather {
     let (kind, intensity, wind) = match file {
         "dm-winter" => (WeatherKind::Snow, 0.6, 0.2),
@@ -288,7 +288,7 @@ pub fn weather_of(file: &str) -> Weather {
     }
 }
 
-/// Material, Himmel und Hintergrund-Färbung des Themas (nach der Hintergrund-Vorlage).
+/// Material, sky and background tint of the theme (per background preset).
 pub(super) fn apply_look(theme: &Theme, map: &mut Map) {
     if let Some(m) = theme.material {
         map.materials = vec![m.into()];
@@ -365,7 +365,7 @@ mod tests {
         assert!(weather_of("dm-wiese").is_clear());
     }
 
-    /// Schreibt die Release-Karten nach `maps/` (nach Änderungen an Layout oder Thema).
+    /// Writes the release maps to `maps/` (after changes to layout or theme).
     #[test]
     #[ignore = "schreibt maps/*.emap"]
     fn write_release_maps() {
@@ -380,7 +380,8 @@ mod tests {
         }
     }
 
-    /// Übersicht jeder Release-Karte: `… release_sheets -- --ignored` → `target/release-<datei>.svg`.
+    /// Overview of every release map: `… release_sheets -- --ignored` →
+    /// `target/release-<datei>.svg`.
     #[test]
     #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
     fn release_sheets() {
@@ -396,7 +397,7 @@ mod tests {
                 Vec2::new(editor.map.width as f32, editor.map.height as f32) * TILE_SIZE as f32;
             let window = Vec2::new(1600.0, 1600.0 * size.y / size.x);
             editor.zoom = size.x / window.x;
-            // Kamera wie im Spiel etwa in Bodenhöhe, damit die Parallax-Ebenen stimmen
+            // camera roughly at ground level as in the game, so that the parallax layers are right
             let cam = view::camera(&editor, window, window * 0.5);
             let mut batch = elora_render::ShapeBatch::default();
             view::draw(

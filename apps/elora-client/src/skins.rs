@@ -1,5 +1,5 @@
-//! Skins (M5.4): feste Palette je Teil (E-095, E-096, E-098), Teamfarbe für den
-//! Körper in Team-Modi (E-099). Übertragen werden nur die Palettennummern.
+//! Skins (M5.4): fixed palette per part (E-095, E-096, E-098), team color for the
+//! body in team modes (E-099). Only the palette numbers are transmitted.
 
 use elora_protocol::Skin;
 use elora_render::{Color, Tint};
@@ -7,7 +7,7 @@ use elora_sim::Team;
 
 use crate::figure::{KEY_BODY, KEY_EYES, KEY_FEET};
 
-/// Körper und Füße (16), freigegeben mit `docs/archive/release-1/design/elora-palette.png`.
+/// Body and feet (16), approved with `docs/archive/release-1/design/elora-palette.png`.
 pub const BODY: [(&str, Color); Skin::BODY_COLORS as usize] = [
     ("Sonne", Color::hex(0xf2c14e)),
     ("Orange", Color::hex(0xf28c3a)),
@@ -27,7 +27,7 @@ pub const BODY: [(&str, Color); Skin::BODY_COLORS as usize] = [
     ("Weiß", Color::hex(0xf0ece4)),
 ];
 
-/// Augen (8).
+/// Eyes (8).
 pub const EYES: [(&str, Color); Skin::EYE_COLORS as usize] = [
     ("Schwarz", Color::hex(0x2b2b2b)),
     ("Nachtblau", Color::hex(0x2e3f86)),
@@ -39,14 +39,14 @@ pub const EYES: [(&str, Color); Skin::EYE_COLORS as usize] = [
     ("Schiefer", Color::hex(0x5a5a5a)),
 ];
 
-/// Körperfarbe der Dummies (unabhängig vom Skin, zur Unterscheidung).
+/// Body color of the dummies (independent of the skin, to tell them apart).
 const DUMMY: Color = Color::hex(0xb59fd6);
 
 fn body(i: u8) -> Color {
     BODY[usize::from(i) % BODY.len()].1
 }
 
-/// Farben einer Figur: Skin, Körper in Teamfarbe (E-099), Dummies eigene Körperfarbe.
+/// Colors of a figure: skin, body in team color (E-099), dummies their own body color.
 pub fn tint(skin: Skin, team: Team, dummy: bool, team_color: impl Fn(Team) -> Color) -> Tint {
     let mut colors = vec![Color::hex(0x2b2b2b); 3];
     colors[KEY_EYES] = EYES[usize::from(skin.eyes) % EYES.len()].1;
@@ -62,7 +62,7 @@ pub fn tint(skin: Skin, team: Team, dummy: bool, team_color: impl Fn(Team) -> Co
     Tint::new(colors)
 }
 
-/// Bunter Rausch (E-311): Körper und Füße wandern durch die Regenbogenfarben (`t` in s).
+/// Colorful rush (E-311): body and feet cycle through the rainbow colors (`t` in s).
 #[allow(
     clippy::many_single_char_names,
     clippy::cast_possible_truncation,
@@ -80,7 +80,7 @@ pub fn rainbow(mut tint: Tint, t: f32) -> Tint {
             4 => (x, 0.0, 1.0),
             _ => (1.0, 0.0, x),
         };
-        // pastellig wie der Rest des Spiels
+        // pastel like the rest of the game
         Color::rgb(0.45 + 0.55 * r, 0.45 + 0.55 * g, 0.45 + 0.55 * b)
     };
     if tint.colors.len() > KEY_BODY.max(KEY_FEET) {
@@ -90,7 +90,7 @@ pub fn rainbow(mut tint: Tint, t: f32) -> Tint {
     tint
 }
 
-/// Auswahl im Panel; `true` bei Änderung.
+/// Choice in the panel; `true` on change.
 pub fn picker(ui: &mut egui::Ui, skin: &mut Skin) -> bool {
     let mut changed = false;
     changed |= row(ui, "Körper", &BODY, &mut skin.body);
@@ -105,7 +105,7 @@ fn row(ui: &mut egui::Ui, label: &str, palette: &[(&str, Color)], value: &mut u8
     ui.horizontal_wrapped(|ui| {
         ui.spacing_mut().item_spacing = egui::vec2(3.0, 3.0);
         for (i, (name, color)) in palette.iter().enumerate() {
-            #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)] // Farben 0..=1
+            #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)] // colors 0..=1
             let [r, g, b, _] = color.0.map(|v| (v * 255.0).round() as u8);
             let selected = usize::from(*value) == i;
             let (rect, response) =

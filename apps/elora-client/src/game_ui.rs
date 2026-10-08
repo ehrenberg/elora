@@ -1,8 +1,8 @@
-//! Spielanzeigen als eigene Spiel-UI (M5.8, E-031) im Stil des HUDs (E-102):
-//! Abstimmung, Killfeed, Chat mit Eingabe und Scoreboard. Gezeichnet in
-//! Bildschirm-Pixeln mit dem Vektor-Renderer; Maße für 720 px Höhe, skaliert mit `s`.
+//! Game displays as a custom game UI (M5.8, E-031) in the style of the HUD (E-102):
+//! vote, killfeed, chat with input and scoreboard. Drawn in
+//! screen pixels with the vector renderer; sizes for 720 px height, scaled with `s`.
 
-// Layout-Code: `s` (Skalierung), `g` (Anzeige-Daten), `x`/`y`/`w`/`h` sind hier lesbarer als lange Namen
+// Layout code: `s` (scale), `g` (display data), `x`/`y`/`w`/`h` are more readable here than long names
 #![allow(clippy::many_single_char_names)]
 
 use std::collections::{BTreeMap, VecDeque};
@@ -17,7 +17,7 @@ use crate::draw::team_color;
 use crate::items::ItemArt;
 use crate::lang::Lang;
 
-/// Wie lange Chat-Zeilen ohne offenes Chat-Fenster sichtbar sind.
+/// How long chat lines are visible without an open chat window.
 const FADE: Duration = Duration::from_secs(10);
 const KILLFEED_TIME: Duration = Duration::from_secs(6);
 
@@ -36,7 +36,7 @@ pub struct KillEntry {
     pub at: Instant,
 }
 
-/// Killfeed aus Tod-Ereignissen ergänzen.
+/// Extend the killfeed from death events.
 pub fn record_kills(
     feed: &mut VecDeque<KillEntry>,
     events: &[elora_sim::Event],
@@ -74,7 +74,7 @@ pub fn record_kills(
     }
 }
 
-/// Offenes Chat-Eingabefeld.
+/// Open chat input field.
 #[derive(Debug, Default)]
 pub struct ChatInput {
     pub open: bool,
@@ -92,14 +92,14 @@ pub struct GameUi<'a> {
     pub scoreboard: bool,
     pub vote: Option<&'a VoteInfo>,
     pub killfeed: &'a VecDeque<KillEntry>,
-    /// Karte wird geladen: Name, empfangene und gesamte Bytes (M6.5).
+    /// Map is loading: name, received and total bytes (M6.5).
     pub loading: Option<(&'a str, usize, usize)>,
-    /// Laufzeit in s (blinkender Cursor).
+    /// Running time in s (blinking cursor).
     pub time: f32,
     pub lang: &'a Lang,
 }
 
-/// Namensfarbe: Teamfarbe in Team-Modi, sonst weiß.
+/// Name color: team color in team modes, otherwise white.
 fn name_color(team: Team) -> Color {
     match team {
         Team::Red | Team::Blue => team_color(team),
@@ -107,7 +107,7 @@ fn name_color(team: Team) -> Color {
     }
 }
 
-/// Kürzt `text` mit „…“, bis er in `max` Pixel passt.
+/// Shortens `text` with "…" until it fits into `max` pixels.
 fn fit(font: &Font, text: &str, size: f32, max: f32) -> String {
     if font.width(text, size) <= max {
         return text.to_owned();
@@ -142,7 +142,7 @@ pub fn draw(
     }
 }
 
-/// Ladeanzeige der Karte in der Bildmitte mit Fortschrittsbalken.
+/// Map loading indicator in the middle of the screen with a progress bar.
 #[allow(clippy::too_many_arguments)]
 fn loading(
     batch: &mut ShapeBatch,
@@ -180,7 +180,7 @@ fn loading(
     batch.fill_rounded_rect(bar, bar + Vec2::new(bw * frac, 8.0 * s), 4.0 * s, OWN);
 }
 
-/// Abstimmung unter der Statusanzeige.
+/// Vote below the status display.
 fn vote(batch: &mut ShapeBatch, font: &Font, screen: Vec2, s: f32, v: &VoteInfo, lang: &Lang) {
     let title = lang.f(
         "game.vote_title",
@@ -227,7 +227,7 @@ fn cause_weapon(cause: DeathCause) -> Option<Weapon> {
     }
 }
 
-/// Killfeed oben rechts: „Täter [Waffe] Opfer“.
+/// Killfeed at the top right: "killer [weapon] victim".
 fn killfeed(
     batch: &mut ShapeBatch,
     font: &Font,
@@ -310,7 +310,7 @@ fn killfeed(
     }
 }
 
-/// Chat unten links; offen mit Eingabezeile und längerem Verlauf.
+/// Chat at the bottom left; when open with input line and longer history.
 fn chat(batch: &mut ShapeBatch, font: &Font, screen: Vec2, s: f32, g: &GameUi<'_>) {
     let now = Instant::now();
     let open = g.input.open;
@@ -329,7 +329,7 @@ fn chat(batch: &mut ShapeBatch, font: &Font, screen: Vec2, s: f32, g: &GameUi<'_
     let rows = shown.len() + usize::from(open);
     #[allow(clippy::cast_precision_loss)]
     let height = rows as f32 * line_h + 16.0 * s;
-    // Unterkante über der HUD-Leiste
+    // bottom edge above the HUD bar
     let bottom = screen.y - 90.0 * s;
     let top = Vec2::new(14.0 * s, bottom - height);
     batch.fill_rounded_rect(top, top + Vec2::new(width, height), 12.0 * s, PANEL);
@@ -379,7 +379,7 @@ fn chat(batch: &mut ShapeBatch, font: &Font, screen: Vec2, s: f32, g: &GameUi<'_
 
 type Column = (Option<Team>, String, Vec<(usize, elora_game::Stats)>);
 
-/// Spalten des Scoreboards: je Team (bzw. alle Spieler) und Zuschauer, sortiert nach Punkten.
+/// Scoreboard columns: per team (or all players) and spectators, sorted by score.
 fn columns(g: &GameUi<'_>, view: &GameView) -> Vec<Column> {
     let groups: Vec<(Option<Team>, &str)> = if view.mode.teams() {
         vec![
@@ -418,7 +418,7 @@ fn columns(g: &GameUi<'_>, view: &GameView) -> Vec<Column> {
         .collect()
 }
 
-/// Scoreboard in der Mitte.
+/// Scoreboard in the middle.
 fn scoreboard(
     batch: &mut ShapeBatch,
     font: &Font,
@@ -467,7 +467,7 @@ fn scoreboard(
     }
 }
 
-/// Eine Spalte des Scoreboards ab `origin` (Kopfzeile, Überschriften, Zeilen).
+/// One scoreboard column from `origin` (header row, headings, rows).
 fn scoreboard_column(
     batch: &mut ShapeBatch,
     font: &Font,
@@ -560,11 +560,11 @@ fn scoreboard_column(
 mod tests {
     use super::*;
 
-    /// Sichtprüfung: `cargo test -p elora-client --bin elora ui_sheet -- --ignored`,
-    /// danach `cargo xtask svg-preview target/ui.svg target/ui.png 1280`.
+    /// Visual inspection: `cargo test -p elora-client --bin elora ui_sheet -- --ignored`,
+    /// then `cargo xtask svg-preview target/ui.svg target/ui.png 1280`.
     #[test]
     #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
-    #[allow(clippy::too_many_lines)] // Beispieldaten
+    #[allow(clippy::too_many_lines)] // sample data
     fn ui_sheet() {
         use elora_game::{Mode, Phase, Stats};
         let font = Font::new(include_bytes!("../../../assets/fonts/Inter-Regular.ttf")).unwrap();

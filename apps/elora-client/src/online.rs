@@ -1,8 +1,8 @@
-//! Online-Client (M3.6/M3.7): Snapshots empfangen, Zeit abgleichen, eigene Figur und
-//! eigene Waffen vorhersagen (E-057), fremde Figuren interpolieren.
+//! Online client (M3.6/M3.7): receive snapshots, synchronise time, predict the own character
+//! and own weapons (E-057), interpolate other characters.
 //!
-//! Reine Logik ohne Socket: Ereignisse von `elora-net` rein, Nachrichten raus. So
-//! lässt sich der Client zusammen mit dem Server in virtueller Zeit testen.
+//! Pure logic without a socket: events from `elora-net` in, messages out. This way
+//! the client can be tested together with the server in virtual time.
 
 use std::collections::{BTreeMap, VecDeque};
 use std::time::{Duration, Instant};
@@ -19,37 +19,37 @@ use elora_sim::{Event, PlayerInput, TICKS_PER_SECOND, Team, Tuning, World};
 use crate::map_store::{MapStore, MemoryStore};
 use crate::scene::{Scene, SceneChar};
 
-/// Zeitabgleich: so schnell folgt `offset` dem Ziel (s je s), ab dieser Abweichung springt er.
+/// Time sync: `offset` follows the target this fast (s per s); beyond this deviation it jumps.
 const OFFSET_RISE: f64 = 0.002;
 const OFFSET_FALL: f64 = 0.02;
 const OFFSET_SNAP: f64 = 0.05;
-/// So schnell folgt der gezeichnete Vorlauf dem Vorlauf der Eingaben (s je s).
+/// The drawn lead follows the input lead this fast (s per s).
 const LEAD_RATE: f64 = 0.01;
 const TICK_SECS: f64 = 1.0 / TICKS_PER_SECOND as f64;
-/// Angestrebte Zeit, die eine Eingabe vor ihrem Tick beim Server ankommt (Original: 10 ms).
+/// Target time by which an input arrives at the server before its tick (original: 10 ms).
 const INPUT_MARGIN_MS: f64 = 10.0;
-/// Snapshots für Delta-Basis und Interpolation.
+/// Snapshots for delta base and interpolation.
 const SNAPSHOT_HISTORY: usize = 64;
-/// Eingaben pro Paket (Redundanz gegen Verlust).
+/// Inputs per packet (redundancy against loss).
 const INPUT_REDUNDANCY: u64 = 4;
-/// Zeitfenster für die Schätzung der Server-Zeit (Minimum = schnellstes Paket).
+/// Time window for estimating the server time (minimum = fastest packet).
 const OFFSET_WINDOW: usize = 50;
 
-/// Eine Zeile im Chat-Verlauf.
+/// A line in the chat history.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ChatLine {
-    /// `None` = Server/Hinweis.
+    /// `None` = server/notice.
     pub from: Option<String>,
     pub team: bool,
-    /// Angezeigter Text (bei Server-Meldungen die deutsche Fassung als Rückfall).
+    /// Displayed text (for server messages the German version as fallback).
     pub text: String,
-    /// Server-Meldung zum Übersetzen (M8.1); `None` = Chat oder freier Text.
+    /// Server message to translate (M8.1); `None` = chat or free text.
     pub message: Option<elora_protocol::Message>,
     pub at: Instant,
 }
 
 impl ChatLine {
-    /// Hinweis ohne Absender aus einer übersetzbaren Meldung.
+    /// Notice without sender from a translatable message.
     pub fn notice(message: elora_protocol::Message, at: Instant) -> Self {
         Self {
             from: None,
@@ -61,19 +61,19 @@ impl ChatLine {
     }
 }
 
-/// Länge des Chat-Verlaufs.
+/// Length of the chat history.
 const CHAT_HISTORY: usize = 50;
-/// Gleichzeitig angeforderte Kartenteile beim Download.
+/// Map parts requested at the same time during download.
 const MAP_WINDOW: u32 = 4;
 
-/// Laufender Karten-Download (M6.5).
+/// Running map download (M6.5).
 #[derive(Debug)]
 struct Download {
     name: String,
     checksum: MapChecksum,
     size: usize,
     data: Vec<u8>,
-    /// Nächster anzufordernder Teil.
+    /// Next part to request.
     next_request: u32,
     total: u32,
 }
@@ -82,7 +82,7 @@ struct Download {
 pub enum Status {
     Connecting,
     Joining,
-    /// Karte wird geladen (Zwischenspeicher oder Download); Bytes empfangen / gesamt.
+    /// Map is loading (cache or download); bytes received / total.
     Loading {
         map: String,
         received: usize,
@@ -92,20 +92,20 @@ pub enum Status {
     Disconnected(String),
 }
 
-/// Messwerte für das Debug-Panel (M3.9).
+/// Measurements for the debug panel (M3.9).
 #[derive(Debug, Clone, Copy, Default)]
 pub struct NetInfo {
-    /// Vorhergesagte Ticks vor dem letzten Snapshot.
+    /// Predicted ticks before the last snapshot.
     pub prediction_ticks: u64,
-    /// Vorlauf der Eingaben (ms).
+    /// Lead of the inputs (ms).
     pub lead_ms: f64,
-    /// Zuletzt gemeldete Restzeit der Eingaben beim Server (ms).
+    /// Last reported remaining time of the inputs at the server (ms).
     pub input_time_left_ms: i32,
-    /// Größe des letzten Snapshots (Bytes, Delta).
+    /// Size of the last snapshot (bytes, delta).
     pub snapshot_bytes: usize,
-    /// Anzahl verworfener Snapshots (fehlende Basis oder Prüfsumme).
+    /// Number of discarded snapshots (missing base or checksum).
     pub snapshot_errors: u64,
-    /// Abweichung Vorhersage ↔ Server beim letzten Snapshot (Einheiten).
+    /// Deviation prediction ↔ server at the last snapshot (units).
     pub correction: f32,
 }
 
@@ -126,38 +126,38 @@ pub struct OnlineClient {
     inputs: BTreeMap<u64, PlayerInput>,
     last_input_tick: u64,
     epoch: Instant,
-    /// Empfangszeit − Tick·Dauer, Minimum über ein Fenster = Zeit „Tick 0 kommt an“.
+    /// Receive time − tick·duration, minimum over a window = time “tick 0 arrives”.
     offsets: VecDeque<f64>,
-    /// Ziel aus dem Fenster; `offset` folgt ihm sanft, damit die Zeit nicht springt (E-294).
+    /// Target from the window; `offset` follows it smoothly so the time does not jump (E-294).
     offset_target: Option<f64>,
     offset: Option<f64>,
-    /// Vorlauf der Vorhersage vor der geschätzten Server-Zeit (s).
+    /// Lead of the prediction ahead of the estimated server time (s).
     lead: f64,
-    /// Geglätteter Vorlauf fürs Zeichnen (Eingaben nutzen `lead`).
+    /// Smoothed lead for drawing (inputs use `lead`).
     render_lead: f64,
-    /// Zeit des letzten `update` (Glätten).
+    /// Time of the last `update` (smoothing).
     last_update: Option<Instant>,
-    /// Vorhergesagte Welt beim Tick `pred_tick` und Elora einen Tick davor.
+    /// Predicted world at tick `pred_tick` and Elora one tick before.
     pred: Option<World>,
     pred_prev: Option<elora_sim::CharacterCore>,
     pred_tick: u64,
     pred_dirty: bool,
-    /// Vorhergesagte Position von Elora je Tick (für die Korrektur-Messung).
+    /// Predicted position of Elora per tick (for measuring corrections).
     pred_history: BTreeMap<u64, elora_sim::Vec2>,
-    /// Ereignisse für Effekte (Server + eigene Vorhersage).
+    /// Events for effects (server + own prediction).
     events: Vec<Event>,
     predicted_events_upto: u64,
     outgoing: Vec<(Vec<u8>, bool)>,
     pub info: NetInfo,
-    /// Namen der Slots.
+    /// Names of the slots.
     pub names: BTreeMap<usize, String>,
-    /// Skins der Slots (E-095).
+    /// Skins of the slots (E-095).
     pub skins: BTreeMap<usize, Skin>,
-    /// Chat-Verlauf inkl. Server-Hinweise, neueste zuletzt.
+    /// Chat history incl. server notices, newest last.
     pub chat: VecDeque<ChatLine>,
-    /// Laufende Abstimmung.
+    /// Running vote.
     pub vote: Option<VoteInfo>,
-    /// Empfangene Emotes, abgeholt mit [`OnlineClient::take_emotes`].
+    /// Received emotes, fetched with [`OnlineClient::take_emotes`].
     emotes: Vec<(usize, u8)>,
 }
 
@@ -202,7 +202,7 @@ impl OnlineClient {
         }
     }
 
-    /// Karten aus diesem Speicher nehmen und Downloads dort ablegen (Standard: nur im Speicher).
+    /// Take maps from this store and put downloads there (default: memory only).
     #[must_use]
     pub fn with_store(mut self, store: Box<dyn MapStore>) -> Self {
         self.store = store;
@@ -215,7 +215,7 @@ impl OnlineClient {
         self.status = Status::Disconnected(reason);
     }
 
-    /// Neue Karte angekündigt: Spielzustand verwerfen, Karte suchen oder herunterladen.
+    /// New map announced: discard game state, look up or download the map.
     fn on_map_info(&mut self, name: String, checksum: MapChecksum, size: u32) {
         self.slot = None;
         self.template = None;
@@ -264,7 +264,7 @@ impl OnlineClient {
     fn on_map_chunk(&mut self, index: u32, data: &[u8]) {
         let Some(d) = &mut self.download else { return };
         let offset = index as usize * MAP_CHUNK;
-        // Teile kommen über den zuverlässigen Kanal in Reihenfolge
+        // parts arrive in order over the reliable channel
         if offset != d.data.len() {
             return;
         }
@@ -291,7 +291,7 @@ impl OnlineClient {
         self.finish_map(d.name, d.checksum, &d.data);
     }
 
-    /// Karte liegt vor: lesen und dem Server melden.
+    /// Map is available: read it and report to the server.
     fn finish_map(&mut self, name: String, checksum: MapChecksum, data: &[u8]) {
         match elora_map::decode(data) {
             Ok(map) => {
@@ -323,12 +323,12 @@ impl OnlineClient {
         self.send(&ClientMsg::Kill);
     }
 
-    /// Emote senden (Nummer `0..EMOTES`); angezeigt wird es, wenn der Server es verteilt.
+    /// Send an emote (number `0..EMOTES`); it is shown when the server distributes it.
     pub fn emote(&mut self, emote: u8) {
         self.send(&ClientMsg::Emote(emote));
     }
 
-    /// Seit dem letzten Aufruf empfangene Emotes (Slot, Nummer).
+    /// Emotes received since the last call (slot, number).
     pub fn take_emotes(&mut self) -> Vec<(usize, u8)> {
         std::mem::take(&mut self.emotes)
     }
@@ -354,12 +354,12 @@ impl OnlineClient {
         }
     }
 
-    /// Spielzustand aus dem neuesten Snapshot (Scoreboard, Timer).
+    /// Game state from the newest snapshot (scoreboard, timer).
     pub fn game(&self) -> Option<GameView> {
         self.snapshots.back()?.game_view()
     }
 
-    /// Teams aller Slots laut neuestem Snapshot.
+    /// Teams of all slots according to the newest snapshot.
     pub fn teams(&self) -> BTreeMap<usize, Team> {
         let (Some(t), Some(s)) = (&self.template, self.snapshots.back()) else {
             return BTreeMap::new();
@@ -373,7 +373,7 @@ impl OnlineClient {
             .collect()
     }
 
-    /// Team eines Slots laut neuestem Snapshot.
+    /// Team of a slot according to the newest snapshot.
     pub fn team_of(&self, slot: usize) -> Team {
         let (Some(t), Some(s)) = (&self.template, self.snapshots.back()) else {
             return Team::None;
@@ -383,9 +383,9 @@ impl OnlineClient {
         w.team(slot)
     }
 
-    /// Aktueller Server-Tick (geschätzt, für Timer).
+    /// Current server tick (estimated, for timers).
     pub fn server_tick(&self, now: Instant) -> Option<u64> {
-        #[allow(clippy::cast_sign_loss)] // durch max(0) ausgeschlossen
+        #[allow(clippy::cast_sign_loss)] // ruled out by max(0)
         self.arrival_tick(now).map(|t| t.max(0.0) as u64)
     }
 
@@ -397,7 +397,7 @@ impl OnlineClient {
         self.template.as_ref().map(|w| &w.tuning)
     }
 
-    /// Verbindung steht → beitreten.
+    /// Connection established → join.
     pub fn on_connected(&mut self) {
         self.status = Status::Joining;
         let msg = ClientMsg::Join {
@@ -408,7 +408,7 @@ impl OnlineClient {
         self.outgoing.push((msg.encode(), true));
     }
 
-    /// Eigenen Skin ändern; wird sofort an den Server geschickt.
+    /// Change the own skin; sent to the server right away.
     pub fn set_skin(&mut self, skin: Skin) {
         if skin != self.skin {
             self.skin = skin;
@@ -422,17 +422,17 @@ impl OnlineClient {
         self.status = Status::Disconnected(reason);
     }
 
-    /// Nachrichten, die gesendet werden sollen (Daten, zuverlässig?).
+    /// Messages to be sent (data, reliable?).
     pub fn take_outgoing(&mut self) -> Vec<(Vec<u8>, bool)> {
         std::mem::take(&mut self.outgoing)
     }
 
-    /// Ereignisse seit dem letzten Abholen.
+    /// Events since the last fetch.
     pub fn take_events(&mut self) -> Vec<Event> {
         std::mem::take(&mut self.events)
     }
 
-    /// Verarbeitet eine Nachricht vom Server, empfangen zum Zeitpunkt `at`.
+    /// Processes a message from the server, received at time `at`.
     pub fn on_message(&mut self, data: &[u8], at: Instant) {
         let Ok(msg) = ServerMsg::decode(data) else {
             tracing::warn!("ungültige Server-Nachricht");
@@ -461,7 +461,7 @@ impl OnlineClient {
                     self.fail(format!("Karte `{map_name}` passt nicht zum Server"));
                     return;
                 };
-                // auch nach einem Kartenwechsel: Zustand der alten Karte verwerfen
+                // also after a map change: discard the state of the old map
                 self.template = Some(map.world(tuning));
                 self.slot = Some(slot as usize);
                 self.high_bandwidth = high_bandwidth;
@@ -517,10 +517,10 @@ impl OnlineClient {
                 self.info.input_time_left_ms = time_left_ms;
                 let left = f64::from(time_left_ms);
                 if left < INPUT_MARGIN_MS {
-                    // zu spät: sofort mehr Vorlauf
+                    // too late: more lead right away
                     self.lead += (INPUT_MARGIN_MS - left) / 1000.0 * 0.5;
                 } else if left > INPUT_MARGIN_MS + 15.0 {
-                    // zu früh: langsam weniger Vorlauf
+                    // too early: slowly less lead
                     self.lead -= (left - INPUT_MARGIN_MS - 15.0) / 1000.0 * 0.02;
                 }
                 self.lead = self.lead.clamp(0.0, 1.0);
@@ -545,7 +545,7 @@ impl OnlineClient {
         at: Instant,
     ) {
         if self.snapshots.back().is_some_and(|s| s.tick >= tick) {
-            return; // veraltet oder doppelt
+            return; // outdated or duplicate
         }
         let base_snap = match base {
             Some(b) => {
@@ -574,7 +574,7 @@ impl OnlineClient {
                 .filter(|e| e.shooter().is_none() || e.shooter() != local),
         );
 
-        // Zeitabgleich
+        // time sync
         let sample = self.secs(at) - tick as f64 * TICK_SECS;
         self.offsets.push_back(sample);
         while self.offsets.len() > OFFSET_WINDOW {
@@ -585,7 +585,7 @@ impl OnlineClient {
             self.offset = self.offset_target;
         }
 
-        // Abweichung der Vorhersage messen (für das Panel)
+        // measure the deviation of the prediction (for the panel)
         if let Some(slot) = local
             && let Some(predicted) = self.pred_history.get(&tick)
             && let Some(server) = snapshot_core(&snap, self.template.as_ref(), slot)
@@ -601,23 +601,23 @@ impl OnlineClient {
         self.pred_dirty = true;
     }
 
-    /// Geschätzter Server-Tick, wie er gerade beim Client ankommt (mit Bruchteil).
+    /// Estimated server tick as it is currently arriving at the client (with fraction).
     fn arrival_tick(&self, now: Instant) -> Option<f64> {
         Some((self.secs(now) - self.offset?) / TICK_SECS)
     }
 
-    /// Tick, bis zu dem vorhergesagt wird (mit Bruchteil).
+    /// Tick up to which is predicted (with fraction).
     fn prediction_time(&self, now: Instant) -> Option<f64> {
         Some(self.arrival_tick(now)? + self.lead / TICK_SECS)
     }
 
-    /// Zeitpunkt der eigenen Figur beim Zeichnen: wie [`Self::prediction_time`], mit
-    /// geglättetem Vorlauf.
+    /// Time of the own character when drawing: like [`Self::prediction_time`], with
+    /// smoothed lead.
     fn render_time(&self, now: Instant) -> Option<f64> {
         Some(self.arrival_tick(now)? + self.render_lead / TICK_SECS)
     }
 
-    /// Zeitabgleich und Vorlauf langsam nachführen statt springen lassen (E-294).
+    /// Adjust time sync and lead slowly instead of letting them jump (E-294).
     fn smooth_clock(&mut self, now: Instant) {
         let dt = self
             .last_update
@@ -629,7 +629,7 @@ impl OnlineClient {
             self.offset = Some(if diff.abs() > OFFSET_SNAP {
                 target
             } else if diff < 0.0 {
-                // Pakete kommen früher als gedacht: zügig folgen
+                // packets arrive earlier than expected: follow quickly
                 offset + diff.max(-OFFSET_FALL * dt)
             } else {
                 offset + diff.min(OFFSET_RISE * dt)
@@ -642,8 +642,8 @@ impl OnlineClient {
         }
     }
 
-    /// Einmal pro Frame: fällige Eingaben erzeugen und senden, Vorhersage aktualisieren.
-    /// `sample_input` liefert die aktuelle Eingabe des Spielers.
+    /// Once per frame: create and send due inputs, update the prediction.
+    /// `sample_input` returns the player's current input.
     pub fn update(&mut self, now: Instant, mut sample_input: impl FnMut() -> PlayerInput) {
         self.smooth_clock(now);
         if self.status != Status::Playing || self.snapshots.is_empty() {
@@ -652,12 +652,12 @@ impl OnlineClient {
         let Some(target) = self.prediction_time(now) else {
             return;
         };
-        #[allow(clippy::cast_sign_loss)] // durch max(0) ausgeschlossen
-        // einen Tick voraus: gezeichnet wird zwischen diesem und dem vorigen Tick (wie das
-        // Original), sonst stünde die eigene Figur jedes sechste Bild still (E-294)
+        #[allow(clippy::cast_sign_loss)] // ruled out by max(0)
+        // one tick ahead: drawing happens between this and the previous tick (like the
+        // original), otherwise the own character would stand still every sixth frame (E-294)
         let target_tick = target.floor().max(0.0) as u64 + 1;
         let latest = self.snapshots.back().map_or(0, |s| s.tick);
-        // Nie mehr als 1 s vorausrechnen (Schutz bei Hängern)
+        // never compute more than 1 s ahead (protection against hangs)
         let target_tick = target_tick.clamp(latest, latest + u64::from(TICKS_PER_SECOND));
         if target_tick > self.last_input_tick {
             let input = sample_input();
@@ -676,7 +676,7 @@ impl OnlineClient {
             self.outgoing.push((msg.encode(), false));
             self.pred_dirty = true;
         }
-        // alte Eingaben vergessen
+        // forget old inputs
         let keep_from = self.snapshots.front().map_or(0, |s| s.tick);
         self.inputs = self.inputs.split_off(&keep_from);
 
@@ -695,7 +695,7 @@ impl OnlineClient {
             .unwrap_or_default()
     }
 
-    /// Vom neuesten Snapshot bis `to` vorwärtsrechnen (E-057).
+    /// Simulate forward from the newest snapshot to `to` (E-057).
     fn predict(&mut self, to: u64) {
         let (Some(template), Some(slot), Some(snap)) =
             (&self.template, self.slot, self.snapshots.back())
@@ -706,7 +706,7 @@ impl OnlineClient {
         snap.apply_to(&mut world, Some(slot));
         world.prediction = true;
         if let Some(p) = world.players.get_mut(slot).and_then(Option::as_mut) {
-            // Eingabe, die der Server für den Snapshot-Tick verwendet hat (Klick-Erkennung)
+            // input the server used for the snapshot tick (click detection)
             p.input = self.input_at(snap.tick);
         }
         let mut inputs = vec![PlayerInput::default(); world.players.len()];
@@ -737,16 +737,16 @@ impl OnlineClient {
         self.pred = Some(world);
     }
 
-    /// Was jetzt zu zeichnen ist.
+    /// What to draw now.
     pub fn scene(&self, now: Instant) -> Option<Scene> {
         let template = self.template.as_ref()?;
         let slot = self.slot?;
         let latest = self.snapshots.back()?;
         let mut scene = Scene::default();
 
-        // Fremde Figuren: zwischen den Snapshots um die Renderzeit interpolieren
+        // other characters: interpolate between the snapshots around the render time
         let interval = if self.high_bandwidth { 1.0 } else { 2.0 };
-        // ein Tick Reserve für schwankende Laufzeiten (E-294)
+        // one tick of reserve for fluctuating latencies (E-294)
         let render = self.arrival_tick(now).unwrap_or(latest.tick as f64) - (interval + 2.0);
         let (a, b) = self.bracket(render);
         let alpha = if b.tick > a.tick {
@@ -779,7 +779,7 @@ impl OnlineClient {
         #[allow(clippy::cast_possible_truncation)]
         scene.add_shots(&wb, alpha, interval as f32, |owner| owner != slot);
 
-        // Eigene Figur und eigene Schüsse aus der Vorhersage
+        // own character and own shots from the prediction
         let pred_alpha = self.render_time(now).map_or(1.0, |t| {
             (t - (self.pred_tick as f64 - 1.0)).clamp(0.0, 1.0) as f32
         });
@@ -800,7 +800,7 @@ impl OnlineClient {
             scene.add_shots(pred, pred_alpha, 1.0, |owner| owner == slot);
         }
         if scene.local().is_none() {
-            // tot: Kamera an die letzte Position
+            // dead: camera at the last position
             scene.camera = self.pred.as_ref().and_then(|w| w.core(slot)).map_or_else(
                 || {
                     latest_death_pos(&self.snapshots, template, slot)
@@ -816,7 +816,7 @@ impl OnlineClient {
         Some(scene)
     }
 
-    /// Snapshots unmittelbar vor und nach `render`.
+    /// Snapshots immediately before and after `render`.
     fn bracket(&self, render: f64) -> (&Snapshot, &Snapshot) {
         let latest = self.snapshots.back().expect("mindestens ein Snapshot");
         let mut a = self.snapshots.front().expect("mindestens ein Snapshot");
@@ -830,22 +830,22 @@ impl OnlineClient {
         (latest, latest)
     }
 
-    /// Server-Tick, bis zu dem die Vorhersage reicht (für Tests/Panel).
+    /// Server tick up to which the prediction reaches (for tests/panel).
     pub fn predicted_tick(&self) -> u64 {
         self.pred_tick
     }
 
-    /// Vorhergesagte Welt (für Tests).
+    /// Predicted world (for tests).
     pub fn predicted_world(&self) -> Option<&World> {
         self.pred.as_ref()
     }
 
-    /// Letzter empfangener Snapshot-Tick.
+    /// Last received snapshot tick.
     pub fn latest_snapshot_tick(&self) -> Option<u64> {
         self.snapshots.back().map(|s| s.tick)
     }
 
-    /// Zeitspanne seit der Verbindung (für die Anzeige).
+    /// Time span since connecting (for the display).
     pub fn uptime(&self, now: Instant) -> Duration {
         now.saturating_duration_since(self.epoch)
     }

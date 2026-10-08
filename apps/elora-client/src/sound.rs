@@ -1,8 +1,8 @@
-//! Sounds im Client (M5.7): Ereignisse der Szene → [`elora_audio`].
+//! Sounds in the client (M5.7): scene events → [`elora_audio`].
 //!
-//! Die Zustandsbits einer Figur (Sprung, Hook) gelten einen ganzen Tick, der
-//! Client zeichnet aber öfter. Deshalb werden sie je Figur gemerkt und nur neu
-//! gesetzte Bits bzw. Wechsel des Hook-Zustands lösen einen Sound aus.
+//! The state bits of a figure (jump, hook) apply for a whole tick, but the
+//! client draws more often. Therefore they are remembered per figure and only newly
+//! set bits or changes of the hook state trigger a sound.
 
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -14,7 +14,7 @@ use elora_sim::{Event, HookState, Vec2};
 
 use crate::figure::Landing;
 
-/// Musikstück `<dir>/<name>.ogg` (oder `.wav`) lesen; fehlt es, bleibt es still.
+/// Read the music track `<dir>/<name>.ogg` (or `.wav`); if it is missing, it stays silent.
 fn load_music(dir: &str, name: &str) -> Option<Arc<[u8]>> {
     ["ogg", "wav"].iter().find_map(|ext| {
         let rel = format!("{dir}/{name}.{ext}");
@@ -28,30 +28,30 @@ fn load_music(dir: &str, name: &str) -> Option<Arc<[u8]>> {
 pub struct Sounds {
     audio: Audio,
     pub settings: AudioSettings,
-    /// Zuletzt gesehene Bits und Hook-Zustand je Slot.
-    /// Je Figur: Ereignis-Bits, Hook-Zustand und ob sie im Treibsand steckt (letzter Frame).
+    /// Last seen bits and hook state per slot.
+    /// Per figure: event bits, hook state and whether it is stuck in quicksand (last frame).
     last: HashMap<usize, (u16, HookState, bool)>,
-    /// Art jedes Gegners der Szene (für Klänge, wenn er schon verschwunden ist).
+    /// Kind of each enemy in the scene (for sounds when it has already disappeared).
     kinds: HashMap<u32, String>,
-    /// Figuren, die im letzten Frame erstarrt waren (Frostgeist).
+    /// Figures that were frozen in the last frame (frost ghost).
     frozen: Vec<usize>,
-    /// Gelesene Musikstücke, gepackt (E-121, E-285); `None`: fehlt oder unlesbar.
+    /// Loaded music tracks, packed (E-121, E-285); `None`: missing or unreadable.
     tracks: HashMap<String, Option<Arc<[u8]>>>,
-    /// Gerade laufendes Stück.
+    /// Track currently playing.
     playing: Option<String>,
-    /// Gelesene Wetterklänge (`assets/ambience`, R2-W1).
+    /// Loaded weather sounds (`assets/ambience`, R2-W1).
     ambience: HashMap<String, Option<Arc<[u8]>>>,
-    /// Donner, der noch kommt: Ort und verbleibende Verzögerung (s).
+    /// Thunder still to come: place and remaining delay (s).
     thunder: Vec<(Vec2, f32)>,
 }
 
-/// Ordner der Wetterklänge: Schleifen `regen`, `wind`, `sand` und `donner` (R2-W1, E-338).
+/// Folder of the weather sounds: loops `regen`, `wind`, `sand` and `donner` (R2-W1, E-338).
 pub const AMBIENCE_DIR: &str = "assets/ambience";
 
-/// Die Schleifen der Umgebungsspur.
+/// The loops of the ambience track.
 pub const AMBIENCE: [&str; 3] = ["regen", "wind", "sand"];
 
-/// Wie [`ambience_levels`], unter Dach oder in Höhlen (`shelter` 0..1) gedämpft (W1.6).
+/// Like [`ambience_levels`], muffled under a roof or in caves (`shelter` 0..1) (W1.6).
 pub fn sheltered_levels(w: elora_map::Weather, shelter: f32) -> [f32; 3] {
     let s = shelter.clamp(0.0, 1.0);
     let [rain, wind, sand] = ambience_levels(w);
@@ -62,7 +62,7 @@ pub fn sheltered_levels(w: elora_map::Weather, shelter: f32) -> [f32; 3] {
     ]
 }
 
-/// Lautstärken (0..1) der Schleifen [`AMBIENCE`] für ein Wetter.
+/// Volumes (0..1) of the loops [`AMBIENCE`] for a weather.
 pub fn ambience_levels(w: elora_map::Weather) -> [f32; 3] {
     use elora_map::WeatherKind as K;
     let i = w.intensity.clamp(0.0, 1.0);
@@ -79,15 +79,15 @@ pub fn ambience_levels(w: elora_map::Weather) -> [f32; 3] {
     }
 }
 
-/// Ordner der Musik: `<name>.ogg` (Ogg Vorbis, 44,1 kHz) oder `<name>.wav`; `menu` im Hauptmenü.
+/// Music folder: `<name>.ogg` (Ogg Vorbis, 44.1 kHz) or `<name>.wav`; `menu` in the main menu.
 pub const MUSIC_DIR: &str = "assets/music";
 
-/// Grundlautstärke der Umgebungsspur unter der Gesamtlautstärke.
+/// Base volume of the ambience track below the master volume.
 const AMBIENCE_GAIN: f32 = 0.6;
 
 impl Sounds {
     /// # Panics
-    /// Wenn `sounds.toml` oder eine Tondatei fehlerhaft ist (wird von Tests abgedeckt).
+    /// If `sounds.toml` or a sound file is faulty (covered by tests).
     pub fn new(settings: AudioSettings) -> Self {
         let bank = Bank::load().expect("assets/sounds: sounds.toml und Tondateien gültig");
         Self {
@@ -103,15 +103,15 @@ impl Sounds {
         }
     }
 
-    /// Menümusik an (im Menü) oder aus (im Spiel); das Wetter verstummt.
+    /// Menu music on (in the menu) or off (in game); the weather falls silent.
     pub fn menu_music(&mut self, on: bool) {
         self.audio.stop_ambience();
         self.thunder.clear();
         self.music(on.then_some("menu"));
     }
 
-    /// Umgebungsspur des Wetters (jeden Frame): Schleifen weich nachführen, neuen Donner
-    /// (Ort, Verzögerung) einreihen und fälligen spielen – laut in der Nähe, leiser fern.
+    /// Ambience track of the weather (every frame): follow the loops smoothly, queue new thunder
+    /// (place, delay) and play due thunder – loud nearby, quieter far away.
     pub fn weather(
         &mut self,
         dt: f32,
@@ -157,7 +157,7 @@ impl Sounds {
         }
     }
 
-    /// Knistern der nächsten Feuerstelle (R2-M2.4): `level` 0..1 nach Abstand, weich nachgeführt.
+    /// Crackling of the nearest fireplace (R2-M2.4): `level` 0..1 by distance, followed smoothly.
     pub fn fire(&mut self, level: f32) {
         let Some(data) = self.ambience_file("feuer") else {
             return;
@@ -178,8 +178,8 @@ impl Sounds {
             .clone()
     }
 
-    /// Musikstück `name` spielen (jeden Frame aufrufen); ein anderes wird ausgeblendet,
-    /// `None` blendet aus. Fehlt das Stück, bleibt es still.
+    /// Play the music track `name` (call every frame); another one is faded out,
+    /// `None` fades out. If the track is missing, it stays silent.
     pub fn music(&mut self, name: Option<&str>) {
         self.audio.apply(self.settings);
         if self.playing.as_deref() != name {
@@ -202,7 +202,7 @@ impl Sounds {
         }
     }
 
-    /// Nicht räumliche Klänge (Oberfläche) sofort abspielen.
+    /// Play non-spatial sounds (UI) immediately.
     pub fn play_global(&mut self, cues: &[Cue]) {
         self.audio.apply(self.settings);
         for cue in cues {
@@ -214,8 +214,8 @@ impl Sounds {
         self.audio.has_device()
     }
 
-    /// Sounds des Frames abspielen. `extra`: Sounds aus dem Client selbst
-    /// (Chat, Emotes); Hörposition ist die Kameramitte.
+    /// Play the sounds of the frame. `extra`: sounds from the client itself
+    /// (chat, emotes); the listening position is the camera center.
     pub fn update(
         &mut self,
         scene: &Scene,
@@ -236,8 +236,8 @@ impl Sounds {
                 .find(|c| c.slot == slot)
                 .map(SceneChar::pos)
         };
-        // Gegner haben eigene Klänge (R2-M2.3, R2-M2.4): Art über die Id des Gegners; besiegte
-        // sind schon aus der Szene verschwunden, ihre Art ist gemerkt
+        // enemies have their own sounds (R2-M2.3, R2-M2.4): kind via the enemy's id; defeated
+        // ones have already disappeared from the scene, their kind is remembered
         let kinds = &self.kinds;
         let kind_of = |e: &Event| {
             let (Event::CreatureAct { id, .. }
@@ -285,11 +285,11 @@ impl Sounds {
                 last_hook,
                 hook,
             ));
-            // hinein in den Treibsand (E-318)
+            // into the quicksand (E-318)
             if sand && !last_sand {
                 cues.push(Cue::at(Sound::Quicksand, c.pos()));
             }
-            // erstarrt (Frostgeist, R2-M2.4)
+            // frozen (frost ghost, R2-M2.4)
             if c.ch.core.frozen > 0 && !self.frozen.contains(&c.slot) {
                 cues.push(Cue::at(Sound::Freeze, c.pos()));
             }

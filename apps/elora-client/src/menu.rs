@@ -1,9 +1,9 @@
-//! Hauptmenü und Pause-Menü (M7.3) im Stil „Leiste oben, hell & weich“ (E-125).
+//! Main menu and pause menu (M7.3) in the "bar at the top, light & soft" style (E-125).
 //!
-//! Das Menü zeichnet sich über [`crate::ui`] in Bildschirm-Pixeln und meldet
-//! [`MenuAction`]s; die App führt sie aus (Training starten, verbinden, hosten …).
+//! The menu draws itself via [`crate::ui`] in screen pixels and reports
+//! [`MenuAction`]s; the app executes them (start training, connect, host …).
 
-// Layout-Code: `s` (Skalierung), `w`/`h`/`x`/`y` sind hier lesbarer als lange Namen
+// Layout code: `s` (scale), `w`/`h`/`x`/`y` are more readable here than long names
 #![allow(clippy::many_single_char_names)]
 
 use elora_game::Mode;
@@ -19,30 +19,30 @@ use crate::ui::{
     self, BLUE, GRAY, GREEN, LOGO, ORANGE, Rect, TEXT, TEXT_DIM, Ui, UiInput, UiState, VIOLET,
 };
 
-/// Seiten des Hauptmenüs.
+/// Pages of the main menu.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Page {
     #[default]
     Play,
-    /// Abenteuer mit Spielständen (A1.6).
+    /// Adventure with save slots (A1.6).
     Adventure,
     Create,
     Settings,
 }
 
-/// Was die App tun soll.
+/// What the app should do.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum MenuAction {
     Training,
-    /// Karten-Editor öffnen (M6.6).
+    /// Open the map editor (M6.6).
     Editor,
     Connect(String),
-    /// Server mit den Werten aus [`CreateForm`] starten und verbinden.
+    /// Start a server with the values from [`CreateForm`] and connect.
     Host,
     ToggleFavorite(String),
-    /// Einstellungen wurden außerhalb der Einstellungsseiten geändert (speichern).
+    /// Settings were changed outside the settings pages (save).
     SettingsChanged,
-    /// Pause-Menü im Spiel (M7.9).
+    /// In-game pause menu (M7.9).
     SetTeam(Team),
     Kill,
     CallVote(elora_protocol::VoteKind),
@@ -51,21 +51,21 @@ pub enum MenuAction {
     Resume,
     ToMenu,
     Quit,
-    /// Abenteuer: neu auf Platz, fortsetzen, löschen (A1.6).
+    /// Adventure: new on slot, continue, delete (A1.6).
     AdventureNew(usize),
     AdventureContinue(usize),
     AdventureDelete(usize),
 }
 
-/// Formular „Server erstellen“ (E-122).
+/// "Create server" form (E-122).
 #[derive(Debug, Clone)]
 pub struct CreateForm {
     pub name: String,
-    /// Index in der Kartenliste.
+    /// Index into the map list.
     pub map: usize,
     pub mode: Mode,
     pub instagib: bool,
-    /// Im Internet anzeigen (beim Master eintragen, E-170); aus = private Runde.
+    /// Show on the internet (register with the master, E-170); off = private round.
     pub public: bool,
     pub max_clients: f32,
 }
@@ -85,21 +85,21 @@ impl Default for CreateForm {
 
 pub const MODES: [Mode; 5] = [Mode::Dm, Mode::Tdm, Mode::Ctf, Mode::Lms, Mode::Lts];
 
-/// Daten, die das Menü pro Frame braucht.
+/// Data the menu needs per frame.
 pub struct MenuCtx<'a> {
     pub font: &'a Font,
     pub lang: &'a Lang,
     pub art: &'a FigureArt,
-    /// Karten-Deko und Figuren für den Hintergrund (E-292).
+    /// Map decoration and figures for the background (E-292).
     pub map_art: &'a crate::map_art::MapArt,
     pub creatures: &'a crate::creatures::CreatureArt,
     pub last_server: Option<&'a str>,
     pub favorites: &'a [String],
-    /// Kartennamen für „Server erstellen“.
+    /// Map names for "Create server".
     pub maps: &'a [String],
-    /// Statuszeile (Verbindung, Hosting, Fehler).
+    /// Status line (connection, hosting, errors).
     pub status: &'a str,
-    /// Spielstand-Plätze (nur auf der Seite „Abenteuer“ gefüllt).
+    /// Save slots (only filled on the "Adventure" page).
     pub slots: &'a [crate::app_adventure::SlotView],
     pub screen: Vec2,
     pub s: f32,
@@ -113,29 +113,29 @@ pub struct Menu {
     pub ui: UiState,
     pub input: UiInput,
     pub address: String,
-    /// Server-Browser (M7.7) und zuletzt geladener Reiter.
+    /// Server browser (M7.7) and last loaded tab.
     pub browser: crate::browser::Browser,
     pub browser_loaded: Option<crate::browser::Tab>,
     pub master_input: String,
     pub create: CreateForm,
-    /// Pause-Menü im Spiel offen.
+    /// In-game pause menu open.
     pub paused: bool,
     pub pause: crate::menu_pause::PauseState,
-    /// „Beenden“ gewählt; die App beendet sich beim nächsten Durchlauf.
+    /// "Quit" chosen; the app quits on the next pass.
     pub quit: bool,
-    /// Einstellungen geändert, Speichern wartet auf das Loslassen der Maus.
+    /// Settings changed, saving waits for the mouse to be released.
     pub save_pending: bool,
-    /// Letzter Klick (Zeit, Ort) für die Doppelklick-Erkennung.
+    /// Last click (time, place) for double-click detection.
     pub last_click: Option<(std::time::Instant, Vec2)>,
-    /// Platz, dessen Löschen gerade bestätigt werden soll.
+    /// Slot whose deletion is about to be confirmed.
     pub confirm_delete: Option<usize>,
 }
 
-/// Farbe des gewählten Reiters (Editor, Training und Beenden sind Aktionen und nie gewählt).
+/// Color of the selected tab (editor, training and quit are actions and never selected).
 const TAB_COLORS: [Color; 7] = [GREEN, LOGO, BLUE, VIOLET, GRAY, ORANGE, GRAY];
 
 impl Menu {
-    /// Hauptmenü zeichnen; liefert eine Aktion und ob Einstellungen geändert wurden.
+    /// Draw the main menu; returns an action and whether settings were changed.
     pub fn draw_main(
         &mut self,
         batch: &mut ShapeBatch,
@@ -196,7 +196,7 @@ impl Menu {
         (action, changed)
     }
 
-    /// Pause-Menü über dem Spiel (M7.9); liefert eine Aktion und ob Einstellungen geändert wurden.
+    /// Pause menu over the game (M7.9); returns an action and whether settings were changed.
     pub fn draw_pause(
         &mut self,
         batch: &mut ShapeBatch,
@@ -251,7 +251,7 @@ impl Menu {
     }
 }
 
-/// Hintergrundbild (E-113, E-291, E-292): Tauwinkel zur Tageszeit, davor zwei Eloras.
+/// Background image (E-113, E-291, E-292): Tauwinkel at the time of day, two Eloras in front.
 fn background(batch: &mut ShapeBatch, cx: &MenuCtx<'_>, skin: Skin, time: f32) {
     let (w, h, s) = (cx.screen.x, cx.screen.y, cx.s);
     crate::menu_scene::draw(
@@ -286,7 +286,7 @@ fn background(batch: &mut ShapeBatch, cx: &MenuCtx<'_>, skin: Skin, time: f32) {
     );
 }
 
-/// Leiste oben: Logo und Reiter; Training und Beenden sind sofortige Aktionen.
+/// Bar at the top: logo and tabs; training and quit are immediate actions.
 fn top_bar(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, page: &mut Page) -> Option<MenuAction> {
     let s = cx.s;
     let bar = Rect::new(0.0, 0.0, cx.screen.x, 48.0 * s);
@@ -341,7 +341,7 @@ fn top_bar(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, page: &mut Page) -> Option<MenuAct
     None
 }
 
-/// „Spielen“: Begrüßung und „Schnell spielen“ links, Server-Browser rechts (M7.7).
+/// "Play": greeting and "Quick play" on the left, server browser on the right (M7.7).
 fn play_page(
     ui: &mut Ui<'_>,
     cx: &MenuCtx<'_>,
@@ -375,7 +375,7 @@ fn play_page(
     crate::menu_browser::card(ui, cx, card, browser).or(quick)
 }
 
-/// Karte „Schnell spielen“: letzter Server mit „Los!“.
+/// "Quick play" card: last server with "Go!".
 fn quick_card(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, area: Rect) -> Option<MenuAction> {
     let s = cx.s;
     let lang = cx.lang;
@@ -427,7 +427,7 @@ fn quick_card(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, area: Rect) -> Option<MenuActio
     action
 }
 
-/// „Server erstellen“ (E-122): Name, Karte, Modus, Instagib, Spielerzahl.
+/// "Create server" (E-122): name, map, mode, instagib, player count.
 #[allow(clippy::too_many_lines)]
 fn create_page(
     ui: &mut Ui<'_>,
@@ -437,7 +437,7 @@ fn create_page(
 ) -> Option<MenuAction> {
     let s = cx.s;
     let lang = cx.lang;
-    // Kartenliste bricht in Zeilen um; die Karte wächst mit
+    // the map list wraps into rows; the card grows with it
     let maps: Vec<&str> = cx.maps.iter().map(String::as_str).collect();
     let card_w = (area.w() - 16.0 * s).min(620.0 * s);
     let list_w = card_w - 40.0 * s;
@@ -543,7 +543,7 @@ fn create_page(
         .then_some(MenuAction::Host)
 }
 
-/// „Einstellungen“: Seitenleiste links, Seite rechts ([`crate::menu_settings`]).
+/// "Settings": sidebar on the left, page on the right ([`crate::menu_settings`]).
 fn settings_page(
     ui: &mut Ui<'_>,
     cx: &MenuCtx<'_>,
@@ -588,11 +588,11 @@ mod tests {
     use super::*;
     use crate::lang::{Lang, Language};
 
-    /// Sichtprüfung: `cargo test -p elora-client --bin elora menu_sheet -- --ignored`,
-    /// danach je Seite `cargo xtask svg-preview target/menu-<seite>.svg target/menu-<seite>.png 1280`.
+    /// Visual inspection: `cargo test -p elora-client --bin elora menu_sheet -- --ignored`,
+    /// then per page `cargo xtask svg-preview target/menu-<seite>.svg target/menu-<seite>.png 1280`.
     #[test]
     #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
-    #[allow(clippy::too_many_lines)] // Beispieldaten für alle Seiten
+    #[allow(clippy::too_many_lines)] // sample data for all pages
     fn menu_sheet() {
         let font = Font::new(include_bytes!("../../../assets/fonts/Inter-Regular.ttf")).unwrap();
         let lang = Lang::new(Language::De);

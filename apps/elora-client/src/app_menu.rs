@@ -1,5 +1,5 @@
-//! Anbindung von Hauptmenü und Pause-Menü an die App (M7.3): Zustand Menü ↔ Spiel,
-//! Eingaben für die Spiel-UI, Ausführen der Menü-Aktionen.
+//! Connects the main menu and pause menu to the app (M7.3): state menu ↔ game,
+//! input for the game UI, executing the menu actions.
 
 use std::time::Instant;
 
@@ -15,11 +15,11 @@ use crate::settings::GraphicsSettings;
 use crate::ui::UiKey;
 use crate::{Action, App, Screen, draw, hosting, hud};
 
-/// Zweiter Klick innerhalb dieser Zeit und Entfernung gilt als Doppelklick.
+/// A second click within this time and distance counts as a double click.
 const DOUBLE_CLICK_SECS: f32 = 0.4;
 const DOUBLE_CLICK_PX: f32 = 6.0;
 
-/// Kartennamen aus `maps/` (ohne `.emap`).
+/// Map names from `maps/` (without `.emap`).
 pub fn map_names() -> Vec<String> {
     hosting::available_maps()
         .iter()
@@ -28,7 +28,7 @@ pub fn map_names() -> Vec<String> {
 }
 
 impl App {
-    /// Ist gerade eine Menü-Oberfläche (Haupt- oder Pause-Menü) aktiv?
+    /// Is a menu UI (main or pause menu) currently active?
     pub(crate) fn menu_active(&self) -> bool {
         self.screen == Screen::Menu || self.menu.paused || self.adventure_halted()
     }
@@ -43,7 +43,7 @@ impl App {
         )
     }
 
-    /// Hauptmenü zeichnen (ersetzt das Spielbild).
+    /// Draw the main menu (replaces the game image).
     pub(crate) fn redraw_menu(&mut self, dt: f32) {
         self.sounds.menu_music(true);
         let mut cues: Vec<elora_audio::Cue> = self
@@ -132,7 +132,7 @@ impl App {
         }
     }
 
-    /// Pause-Menü in den HUD-Batch zeichnen (über dem Spiel).
+    /// Draw the pause menu into the HUD batch (above the game).
     pub(crate) fn draw_pause(&mut self, dt: f32, info: &crate::FrameInfo) -> Option<MenuAction> {
         let (screen, s) = self.menu_ctx_parts();
         let graphics_before = self.settings.graphics;
@@ -195,7 +195,7 @@ impl App {
         action
     }
 
-    /// Geänderte Einstellungen sofort anwenden und speichern.
+    /// Apply and save changed settings right away.
     fn settings_changed(&mut self, graphics_before: GraphicsSettings, language_before: Language) {
         let g = self.settings.graphics;
         if self.settings.language != language_before {
@@ -215,7 +215,7 @@ impl App {
                 gfx.renderer.set_msaa(g.msaa);
             }
         }
-        // Regler nicht bei jeder Bewegung speichern – erst beim Loslassen
+        // don't save sliders on every movement – only on release
         if self.menu.input.down {
             self.menu.save_pending = true;
         } else {
@@ -246,7 +246,7 @@ impl App {
                 }
                 config.rules.mode = form.mode;
                 config.rules.instagib = form.instagib;
-                // private Runde, außer „Im Internet anzeigen“ ist an (E-170)
+                // private round, unless “Show on the internet” is on (E-170)
                 config.masters = if form.public {
                     vec![self.settings.master_url.clone()]
                         .into_iter()
@@ -316,7 +316,7 @@ impl App {
         self.set_cursor_grab(true);
     }
 
-    /// Esc im Spiel öffnet die Pause, im Pause-Menü geht es weiter.
+    /// Esc in the game opens the pause, in the pause menu it resumes.
     pub(crate) fn toggle_pause(&mut self) {
         if self.menu.paused {
             self.apply_menu(MenuAction::Resume);
@@ -327,7 +327,7 @@ impl App {
         }
     }
 
-    /// Mausbewegung (Pixel) für die Spiel-UI.
+    /// Mouse movement (pixels) for the game UI.
     pub(crate) fn menu_cursor(&mut self, pos: Vec2) {
         self.menu.input.mouse = pos;
     }
@@ -364,7 +364,7 @@ impl App {
         };
     }
 
-    /// Tastatur in Menüs; Esc schließt die Pause bzw. führt zur ersten Seite zurück.
+    /// Keyboard in menus; Esc closes the pause or returns to the first page.
     pub(crate) fn menu_key(&mut self, code: KeyCode, event: &KeyEvent) {
         if !event.state.is_pressed() {
             return;

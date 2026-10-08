@@ -1,4 +1,4 @@
-//! Darstellung der Szene: Karte ([`crate::map_view`], M6.4), Figuren (M5.3), Items, Geschosse und Effekte.
+//! Scene presentation: map ([`crate::map_view`], M6.4), figures (M5.3), items, projectiles and effects.
 
 use elora_client::scene::Scene;
 
@@ -13,7 +13,7 @@ use crate::figure::{FigureArt, Figures};
 use crate::items::ItemArt;
 use crate::skins;
 
-/// Alles, was neben der Szene zum Zeichnen der Figuren und Effekte gebraucht wird.
+/// Everything besides the scene that is needed to draw the figures and effects.
 #[derive(Debug, Clone, Copy)]
 pub struct Looks<'a> {
     pub effects: &'a Effects,
@@ -22,11 +22,11 @@ pub struct Looks<'a> {
     pub items: &'a ItemArt,
     pub creatures: &'a CreatureArt,
     pub emotes: &'a Emotes,
-    /// Skins der anderen Slots (online).
+    /// Skins of the other slots (online).
     pub skins: &'a BTreeMap<usize, Skin>,
-    /// Eigener Skin (sofort sichtbar, ohne Umweg über den Server).
+    /// Own skin (visible immediately, without the detour via the server).
     pub own_skin: Skin,
-    /// Wetter (R2-W1): Partikel hinter und vor den Figuren.
+    /// Weather (R2-W1): particles behind and in front of the figures.
     pub weather: &'a crate::weather::WeatherView,
 }
 use elora_render::{Camera, Color, ShapeBatch};
@@ -37,7 +37,7 @@ use crate::map_view::MapLayer;
 
 pub const BACKGROUND: Color = Color::hex(0x8fb8d9);
 const ELORA: Color = Color::hex(0xf2c14e);
-/// Andere menschliche Spieler (online, ohne Team).
+/// Other human players (online, without a team).
 const OTHER: Color = Color::hex(0x7ccf8a);
 pub const RED: Color = Color::hex(0xe0574f);
 pub const BLUE: Color = Color::hex(0x4f86e0);
@@ -48,8 +48,8 @@ const HEALTH: Color = Color::hex(0xe05a7a);
 const ARMOR: Color = Color::hex(0xe0b85a);
 const SPAWN: Color = Color::rgba(1.0, 1.0, 1.0, 0.35);
 
-/// Zeichnet Karte, Pickups, Figuren, Projektile, Laser, Effekte und Fadenkreuz.
-#[allow(clippy::too_many_lines)] // eine Zeichenreihenfolge, bewusst an einem Ort
+/// Draws map, pickups, figures, projectiles, lasers, effects and crosshair.
+#[allow(clippy::too_many_lines)] // one drawing order, deliberately in one place
 pub fn scene(
     batch: &mut ShapeBatch,
     scene: &Scene,
@@ -79,7 +79,7 @@ pub fn scene(
     if let Some(map) = map {
         map_view.draw_back(batch, map, camera, look_time);
     }
-    // weiche Schatten auf dem Boden unter Figuren und Gegnern (E-328)
+    // soft shadows on the ground below figures and enemies (E-328)
     if let Some(map) = map {
         for o in &scene.objects {
             if let elora_client::scene::ObjectLook::Npc { character, .. } = &o.look
@@ -98,7 +98,7 @@ pub fn scene(
             ground_shadow(batch, map, c.pos() + Vec2::new(0.0, PHYS_SIZE / 2.0), 28.0);
         }
     }
-    // Wetter hinter den Figuren: Partikel der hinteren Ebene, Spritzer (R2-W1)
+    // weather behind the figures: particles of the back layer, splashes (R2-W1)
     weather.draw_back(batch);
     spawns_and_pickups(batch, scene, items, time);
     draw_objects(batch, scene, art, creatures, time);
@@ -120,7 +120,7 @@ pub fn scene(
             batch.stroke_line(pos, hook, 3.0, HOOK);
             batch.fill_circle(hook, 5.0, HOOK);
         }
-        // Blickrichtung: Elora folgt der Maus direkt, andere dem Winkel aus der Simulation
+        // view direction: Elora follows the mouse directly, others the angle from the simulation
         let aim = if c.local {
             mouse_pos.normalize()
         } else {
@@ -133,7 +133,7 @@ pub fn scene(
             skins.get(&c.slot).copied().unwrap_or_default()
         };
         let r = PHYS_SIZE / 2.0;
-        // Schutz nach Treffer im Abenteuer: Elora blinkt (E-234)
+        // protection after a hit in the adventure: Elora blinks (E-234)
         if c.ch.invulnerable_until > scene.tick && (scene.tick / 4).is_multiple_of(2) {
             continue;
         }
@@ -144,7 +144,7 @@ pub fn scene(
             tint = skins::rainbow(tint, t);
         }
         figures.draw(batch, art, c, aim, &tint);
-        // erstarrt (Frostgeist): Elora steckt kurz in einem Eisblock
+        // frozen (frost ghost): Elora is briefly stuck in an ice block
         if c.ch.core.frozen > 0 {
             let half = Vec2::new(r + 5.0, r + 6.0);
             batch.fill_rounded_rect(
@@ -172,7 +172,7 @@ pub fn scene(
             items.draw_weapon(batch, pos, aim, swing, c.ch.arsenal.active);
         }
         if c.local && c.team.index().is_some() {
-            // eigene Figur im Team: gelber Ring am Boden zur Unterscheidung
+            // own figure in a team: yellow ring on the ground to tell it apart
             batch.stroke_line(
                 pos + Vec2::new(-r, r + 3.0),
                 pos + Vec2::new(r, r + 3.0),
@@ -216,12 +216,12 @@ pub fn scene(
     if let Some(map) = map {
         map_view.draw_front(batch, map, camera, look_time);
     }
-    // Wetter vor allem: vordere Partikel, Blitze
+    // weather in front of everything: front particles, lightning
     weather.draw_front(batch);
     effects.draw(batch);
     emotes.draw(batch, scene);
 
-    // Fadenkreuz
+    // crosshair
     if let Some(local) = scene.local() {
         let c = local.pos() + mouse_pos;
         let color = crate::hud::crosshair_color(local.ch.health, tuning.max_health);
@@ -231,12 +231,12 @@ pub fn scene(
     }
 }
 
-/// Abenteuer-Objekte (A1.6, Grafik A1.7). `pos` ist die Mitte; der Boden liegt bei der
-/// halben Höhe des jeweiligen Objekts darunter (wie auf den Karten gesetzt).
-/// So weit unter den Füßen ist noch ein Schatten zu sehen (Einheiten).
+/// Adventure objects (A1.6, graphics A1.7). `pos` is the center; the ground lies half the
+/// height of the respective object below it (as placed on the maps).
+/// This far below the feet a shadow is still visible (units).
 const SHADOW_REACH: f32 = 320.0;
 
-/// Weicher Schatten auf dem ersten Boden unter `foot`: je höher, desto kleiner und blasser.
+/// Soft shadow on the first ground below `foot`: the higher, the smaller and paler.
 #[allow(
     clippy::cast_possible_wrap,
     clippy::cast_possible_truncation,
@@ -279,7 +279,7 @@ fn draw_objects(
             ObjectLook::Npc { character, facing } => {
                 let g = ground(p, PHYS_SIZE);
                 if !creatures.draw_character_alive(batch, character, g, *facing, time) {
-                    // Figur ohne eigene Grafik: graue Elora
+                    // figure without its own graphic: grey Elora
                     let tint = crate::skins::tint(
                         elora_protocol::Skin::default(),
                         Team::None,
@@ -346,7 +346,7 @@ mod tests {
     fn shadow_lands_on_the_ground_below() {
         let map = elora_map::Map::from_rows("s", &["S...", "....", "....", "####"]).unwrap();
         let mut batch = ShapeBatch::default();
-        // Füße direkt über dem Boden (Zeile 3 beginnt bei 96)
+        // feet directly above the ground (row 3 starts at 96)
         super::ground_shadow(&mut batch, &map, Vec2::new(48.0, 95.0), 28.0);
         assert!(!batch.is_empty(), "Schatten am Boden");
         let mut high = ShapeBatch::default();
@@ -358,8 +358,8 @@ mod tests {
     use elora_client::scene::{SceneChar, SceneFlag};
     use elora_sim::{Character, Weapon};
 
-    /// Kartenausschnitt zur Sichtprüfung: `cargo test -p elora-client --bin elora world_sheet -- --ignored`,
-    /// danach `cargo xtask svg-preview target/world.svg target/world.png 1200`.
+    /// Map section for visual inspection: `cargo test -p elora-client --bin elora world_sheet -- --ignored`,
+    /// then `cargo xtask svg-preview target/world.svg target/world.png 1200`.
     #[test]
     #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
     fn world_sheet() {
@@ -370,7 +370,7 @@ mod tests {
             center: Vec2::new(600.0, 420.0),
             size: Vec2::new(1200.0, 440.0),
         };
-        // (Position, Waffe, Zielwinkel in 1/256 rad, Team)
+        // (position, weapon, aim angle in 1/256 rad, team)
         let chars = [
             (Vec2::new(250.0, 530.0), Weapon::Hammer, 0, Team::None),
             (Vec2::new(420.0, 530.0), Weapon::Grenade, -100, Team::Red),

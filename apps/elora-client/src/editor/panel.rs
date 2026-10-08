@@ -1,5 +1,5 @@
-//! Editor-Oberfläche (egui dunkel, E-150): Seitenleiste rechts (E-151), Kartenfläche mit
-//! Verschieben, Zoomen und Pinsel, Dialoge für Neu, Öffnen und ungespeicherte Änderungen.
+//! Editor UI (egui dark, E-150): sidebar on the right (E-151), map area with panning,
+//! zooming and brush, dialogs for new, open and unsaved changes.
 
 use std::time::Instant;
 
@@ -14,14 +14,15 @@ use crate::map_view::MapView;
 
 use super::panel_look;
 
-/// Höchstlänge von Name und Autor in Zeichen (die Datei erlaubt 128 Bytes, UTF-8 bis 4 Bytes je Zeichen).
+/// Maximum length of name and author in characters (the file allows 128 bytes, UTF-8 up to
+/// 4 bytes per character).
 const NAME_CHARS: usize = 32;
-/// Größter Pinsel (Tiles).
+/// Largest brush (tiles).
 const MAX_BRUSH: usize = 9;
-/// Breite der Seitenleiste (Punkte).
+/// Width of the sidebar (points).
 const PANEL_WIDTH: f32 = 290.0;
 
-/// Tile-Arten des Pinsels mit Sprachschlüssel und Farbe der Vorschau.
+/// Brush tile kinds with language key and preview color.
 pub const BRUSHES: [(Tile, &str, u32); 17] = [
     (Tile::Air, "editor.tile_air", 0x3a3f47),
     (Tile::Solid, "editor.tile_solid", 0xa87a52),
@@ -58,25 +59,25 @@ pub const BRUSHES: [(Tile, &str, u32); 17] = [
     (Tile::IceWater, "editor.tile_ice_water", 0x2f6f9a),
 ];
 
-/// Ergebnis eines Frames für die Ansicht.
+/// Result of a frame for the view.
 #[derive(Debug, Clone, Copy, Default)]
 pub struct AreaInfo {
-    /// Mitte der Kartenfläche in Pixeln.
+    /// Center of the map area in pixels.
     pub center_px: Vec2,
-    /// Tile unter der Maus.
+    /// Tile under the mouse.
     pub hover: Option<(usize, usize)>,
-    /// Was das Werkzeug unter der Maus zeigt.
+    /// What the tool shows under the mouse.
     pub preview: Preview,
 }
 
-/// Vorschau des Werkzeugs in der Kartenansicht.
+/// Tool preview in the map view.
 #[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
 pub enum Preview {
     #[default]
     None,
-    /// Felder, die ein Klick ändern würde (Pinsel, Rechteck beim Ziehen, Füllen-Startfeld).
+    /// Cells a click would change (brush, rectangle while dragging, fill start cell).
     Cells(Cells),
-    /// Einzufügender Ausschnitt mit der linken oberen Ecke hier.
+    /// Clip to paste with its top-left corner here.
     Stamp(usize, usize),
 }
 
@@ -96,7 +97,7 @@ fn swatch(ui: &mut egui::Ui, color: u32) {
         .rect_filled(rect, 3.0, egui::Color32::from_rgb(r, g, b));
 }
 
-/// Baut die ganze Editor-Oberfläche. `window` = Fenstergröße in Pixeln, `ppp` = Pixel je Punkt.
+/// Builds the whole editor UI. `window` = window size in pixels, `ppp` = pixels per point.
 #[allow(clippy::too_many_arguments)]
 pub fn ui(
     ui: &mut egui::Ui,
@@ -168,7 +169,7 @@ fn shortcuts(ui: &egui::Ui, editor: &mut Editor, now: Instant) {
         }
     });
     if ui.ctx().egui_wants_keyboard_input() {
-        return; // Ziffern und Klammern gehören dem Textfeld
+        return; // digits and brackets belong to the text field
     }
     ui.input_mut(|i| {
         let digits = [
@@ -442,7 +443,7 @@ fn map_properties(ui: &mut egui::Ui, editor: &mut Editor, lang: &Lang, now: Inst
     });
 }
 
-/// Wetter der Karte (R2-W1, E-329): Art, Stärke und Wind.
+/// Weather of the map (R2-W1, E-329): kind, strength and wind.
 fn weather_properties(ui: &mut egui::Ui, editor: &mut Editor, lang: &Lang, now: Instant) {
     use elora_map::WeatherKind;
     let name = |k: WeatherKind| lang.t(&format!("weather.{}", k.key())).to_owned();
@@ -480,8 +481,8 @@ fn weather_properties(ui: &mut egui::Ui, editor: &mut Editor, lang: &Lang, now: 
     }
 }
 
-/// Kartenfläche: Verschieben (mittlere Maustaste oder Leertaste + Ziehen), Zoomen (Mausrad),
-/// Malen (links: Pinsel, rechts: Luft).
+/// Map area: pan (middle mouse button or space + drag), zoom (mouse wheel),
+/// paint (left: brush, right: air).
 fn area(
     ui: &mut egui::Ui,
     editor: &mut Editor,
@@ -546,7 +547,7 @@ fn area(
     info
 }
 
-/// Werkzeug anwenden: `down` = Taste über der Karte gehalten, `pressed` = in diesem Frame gedrückt.
+/// Apply the tool: `down` = button held over the map, `pressed` = pressed in this frame.
 fn use_tool(
     editor: &mut Editor,
     info: &mut AreaInfo,
@@ -636,7 +637,7 @@ fn use_tool(
     }
 }
 
-/// Fenster über der Kartenfläche (etwas nach links versetzt, weg von der Seitenleiste).
+/// Window over the map area (shifted a bit to the left, away from the sidebar).
 fn dialog_window(title: &str) -> egui::Window<'static> {
     egui::Window::new(title.to_owned())
         .collapsible(false)

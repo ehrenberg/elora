@@ -1,16 +1,16 @@
-//! Effekte (M5.6): Partikel aus Simulations-Ereignissen, Kamerawackeln und
-//! Treffer-Marker (E-088, beide abschaltbar). Reine Darstellung.
+//! Effects (M5.6): particles from simulation events, camera shake and
+//! hit markers (E-088, both can be switched off). Pure presentation.
 //!
-//! | Auslöser | Effekt |
+//! | Trigger | Effect |
 //! |---|---|
-//! | Explosion | Blitz, Rauchwolken, Funken, Wackeln in der Nähe |
-//! | Hammer-Treffer | Funkenstern |
-//! | Laser-Abprall | cyanfarbene Funken |
-//! | Schaden | Tropfen in Körperfarbe, eigenes Wackeln |
-//! | Tod | Spritzer in Körperfarbe mit Schwerkraft |
-//! | Spawn, Pickup | Glitzern |
-//! | Sprung / Luftsprung / Landung | Staub bzw. Wolkenring an den Füßen |
-//! | Granate im Flug | Rauchspur |
+//! | Explosion | flash, smoke clouds, sparks, shake nearby |
+//! | Hammer hit | spark star |
+//! | Laser bounce | cyan sparks |
+//! | Damage | drops in body color, own shake |
+//! | Death | splatter in body color with gravity |
+//! | Spawn, pickup | sparkle |
+//! | Jump / air jump / landing | dust or cloud ring at the feet |
+//! | Grenade in flight | smoke trail |
 
 use std::collections::HashMap;
 
@@ -21,7 +21,7 @@ use elora_sim::{Event, PHYS_SIZE, Vec2};
 
 use crate::figure::Landing;
 
-/// Schalter (E-088), gespeichert in `tuning.toml` unter `[effects]`.
+/// Switches (E-088), stored in `tuning.toml` under `[effects]`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, serde::Serialize, serde::Deserialize)]
 #[serde(default)]
 pub struct EffectSettings {
@@ -38,18 +38,18 @@ impl Default for EffectSettings {
     }
 }
 
-/// Größte Verschiebung der Kamera bei vollem Wackeln (Einheiten).
+/// Largest camera displacement at full shake (units).
 const SHAKE_MAX: f32 = 9.0;
-/// Abbau des Wackelns je Sekunde.
+/// Decay of the shake per second.
 const SHAKE_DECAY: f32 = 1.8;
-/// Explosionen weiter weg als das wackeln nicht.
+/// Explosions farther away than this do not shake.
 const SHAKE_RANGE: f32 = 500.0;
 const HIT_MARKER_TIME: f32 = 0.18;
-/// Rauchspur: Wolken je Sekunde und Granate.
+/// Smoke trail: clouds per second and grenade.
 const TRAIL_RATE: f32 = 40.0;
 
-/// Vorlage für einen Partikel-Ausstoß: Anzahl, Geschwindigkeit, Lebensdauer (s) und
-/// Radius (Anfang, Ende) sowie Schwerkraft und Luftwiderstand wie bei [`Particle`].
+/// Template for a particle emission: count, speed, lifetime (s) and
+/// radius (start, end) as well as gravity and air drag as in [`Particle`].
 #[derive(Debug, Clone, Copy)]
 struct Burst {
     count: u32,
@@ -69,7 +69,7 @@ const GROUND_JUMP: Burst = Burst {
     drag: 3.0,
 };
 
-/// Füllt etwa den Explosionsradius (135): Weg ≈ Geschwindigkeit / Widerstand.
+/// Fills roughly the explosion radius (135): distance ≈ speed / drag.
 const EXPLOSION_SMOKE: Burst = Burst {
     count: 18,
     speed: (150.0, 420.0),
@@ -157,18 +157,18 @@ struct Particle {
     vel: Vec2,
     age: f32,
     life: f32,
-    /// Radius am Anfang und am Ende.
+    /// Radius at the start and at the end.
     size: (f32, f32),
     color: Color,
-    /// Beschleunigung nach unten (Einheiten/s²), negativ = steigt.
+    /// Downward acceleration (units/s²), negative = rises.
     gravity: f32,
-    /// Anteil der Geschwindigkeit, der pro Sekunde verloren geht.
+    /// Fraction of the speed that is lost per second.
     drag: f32,
-    /// Als kleines Sternchen zeichnen (Leuchtpilze) statt als Kreis.
+    /// Draw as a small star (glowing mushrooms) instead of a circle.
     star: bool,
 }
 
-/// Kurzer, heller Kreis (Explosionsblitz).
+/// Short, bright circle (explosion flash).
 #[derive(Debug, Clone, Copy)]
 struct Flash {
     pos: Vec2,
@@ -182,16 +182,16 @@ pub struct Effects {
     pub settings: EffectSettings,
     particles: Vec<Particle>,
     flashes: Vec<Flash>,
-    /// Wurzelstöße des Wurzelwächters: Fuß am Boden, Alter (s).
+    /// Root strikes of the Root Warden: foot on the ground, age (s).
     roots: Vec<(Vec2, f32)>,
-    /// Dünnes Eis mit Rissen (R2-M2.4): Ecke des Tiles, Alter (s).
+    /// Thin ice with cracks (R2-M2.4): corner of the tile, age (s).
     cracks: Vec<(Vec2, f32)>,
     rng: u64,
     trail: f32,
     shake: f32,
     time: f32,
     hit_marker: f32,
-    /// Zuletzt gesehene Körperfarbe je Slot (für Tod und Schaden).
+    /// Last seen body color per slot (for death and damage).
     colors: HashMap<usize, Color>,
     circle: Mesh,
 }
@@ -229,7 +229,7 @@ const STOMP_DUST: Burst = Burst {
     drag: 4.0,
 };
 
-/// Brocken eines zerbrochenen Bröckelbodens.
+/// Chunks of a broken crumbling floor.
 const CRUMBS: Burst = Burst {
     count: 10,
     speed: (60.0, 200.0),
@@ -247,13 +247,13 @@ const LASER_SPARK: Color = Color::rgb(0.6, 0.95, 1.0);
 const GLITTER: Color = Color::rgb(1.0, 0.95, 0.6);
 const FALLBACK_BODY: Color = Color::hex(0xf2c14e);
 const CRUMB: Color = Color::hex(0xb08a5e);
-/// Splitter von brechendem dünnem Eis.
+/// Shards of breaking thin ice.
 const ICE_SHARD: Color = Color::hex(0xcfeefa);
-/// Risse bleiben höchstens so lange (s); das Eis bricht vorher (A-36).
+/// Cracks remain at most this long (s); the ice breaks before that (A-36).
 const CRACK_LIFE: f32 = 2.0;
-/// Sternchen der Leuchtpilze.
+/// Stars of the glowing mushrooms.
 const SPORE: Color = Color::rgba(0.55, 0.85, 1.0, 0.95);
-/// So lange steht ein Wurzelstoß (s).
+/// How long a root strike stands (s).
 const ROOT_LIFE: f32 = 0.7;
 
 impl Effects {
@@ -264,7 +264,7 @@ impl Effects {
         }
     }
 
-    /// Zufallszahl in 0..1 (xorshift; Darstellung muss nicht reproduzierbar sein).
+    /// Random number in 0..1 (xorshift; presentation does not need to be reproducible).
     fn rand(&mut self) -> f32 {
         self.rng ^= self.rng << 13;
         self.rng ^= self.rng >> 7;
@@ -283,7 +283,7 @@ impl Effects {
         Vec2::new(a.cos(), a.sin())
     }
 
-    /// Partikel nach Vorlage `b` um `pos`.
+    /// Particles from template `b` around `pos`.
     fn burst(&mut self, pos: Vec2, color: Color, b: &Burst) {
         for _ in 0..b.count {
             let vel = self.dir() * self.range(b.speed.0, b.speed.1);
@@ -302,11 +302,11 @@ impl Effects {
         }
     }
 
-    /// Leuchtpilze in der Nähe: kleine blaue Sternchen steigen auf (R2-M2.2).
+    /// Glowing mushrooms nearby: small blue stars rise (R2-M2.2).
     pub fn glow_spores(&mut self, dt: f32, sources: &[Vec2]) {
         let dt = dt.min(0.05);
         for &p in sources {
-            // etwa 3 Sternchen je Sekunde und Pilzgruppe
+            // about 3 stars per second and mushroom group
             if self.range(0.0, 1.0) > dt * 3.0 {
                 continue;
             }
@@ -359,14 +359,14 @@ impl Effects {
         }
     }
 
-    /// Kamera-Wackeln anstoßen (0..1, addiert, begrenzt).
+    /// Trigger camera shake (0..1, added, clamped).
     fn add_shake(&mut self, amount: f32) {
         if self.settings.camera_shake {
             self.shake = (self.shake + amount).min(1.0);
         }
     }
 
-    /// `body_color`: aktuelle Körperfarbe einer Figur der Szene.
+    /// `body_color`: current body color of a figure in the scene.
     pub fn update(
         &mut self,
         dt: f32,
@@ -388,7 +388,7 @@ impl Effects {
         for e in events_in {
             self.on_event(e, scene, local);
         }
-        // Sprünge aus den Bits des Figurenkerns
+        // jumps from the bits of the figure core
         for c in &scene.chars {
             let bits = c.ch.core.triggered_events;
             if bits & events::GROUND_JUMP != 0 {
@@ -438,7 +438,7 @@ impl Effects {
                 }
             }
         }
-        // Rauchspur hinter Granaten
+        // smoke trail behind grenades
         self.trail += dt * TRAIL_RATE;
         while self.trail >= 1.0 {
             self.trail -= 1.0;
@@ -460,7 +460,7 @@ impl Effects {
         }
     }
 
-    /// Dünnes Eis bekommt Risse (`broken = false`) oder bricht in Splitter.
+    /// Thin ice gets cracks (`broken = false`) or breaks into shards.
     fn ice_crack(&mut self, tx: i32, ty: i32, broken: bool) {
         #[allow(clippy::cast_precision_loss)]
         let ts = elora_sim::TILE_SIZE as f32;
@@ -531,7 +531,7 @@ impl Effects {
                     self.add_shake(0.35);
                 }
             }
-            // abgeprallt (Hüter in der Luft): nur Sternchen, keine Treffer-Rückmeldung
+            // bounced off (guardian in the air): only stars, no hit feedback
             Event::CreatureHit { pos, damage: 0, .. } => self.burst(pos, GLITTER, &HAMMER_SPARKS),
             Event::CreatureHit { pos, from, .. } => {
                 self.burst(pos, WHITE, &HAMMER_SPARKS);
@@ -543,7 +543,7 @@ impl Effects {
                 self.burst(pos, SMOKE, &DEATH_SMOKE);
                 self.burst(pos, GLITTER, &SPAWN_GLITTER);
             }
-            // Wurzelwächter (R2-M2.2): Boden bebt, dann Wurzelstoß; gelöster Kern glitzert
+            // Root Warden (R2-M2.2): the ground quakes, then a root strike; the freed core gleams
             Event::CreatureAct { pos, act, .. } => match act {
                 elora_sim::CreatureAct::Warn => {
                     self.burst(pos, CRUMB, &CRUMBS);
@@ -555,15 +555,15 @@ impl Effects {
                     self.shake = (self.shake + 0.3).min(1.0);
                 }
                 elora_sim::CreatureAct::Core => self.burst(pos, GLITTER, &SPAWN_GLITTER),
-                // Wurzelschlange und Dünenwurm: Erde/Sand spritzt beim Auf- und Abtauchen
+                // root snake and dune worm: earth/sand sprays when surfacing and diving
                 elora_sim::CreatureAct::Emerge | elora_sim::CreatureAct::Burrow => {
                     self.burst(pos, CRUMB, &CRUMBS);
                 }
                 _ => {}
             },
-            // dünnes Eis (R2-M2.4): Risse, dann Splitter
+            // thin ice (R2-M2.4): cracks, then shards
             Event::IceCrack { tx, ty, broken } => self.ice_crack(tx, ty, broken),
-            // zerbrochener Boden und Wurzelwände bröseln
+            // broken floor and root walls crumble
             Event::TileBroken { tx, ty } | Event::TileSet { tx, ty, .. } => {
                 #[allow(clippy::cast_precision_loss)]
                 let ts = elora_sim::TILE_SIZE as f32;
@@ -609,7 +609,7 @@ impl Effects {
         self.hit_marker = (self.hit_marker - dt).max(0.0);
     }
 
-    /// Verschiebung der Kamera durch Wackeln (Quadrat der Stärke, glatte Schwingungen).
+    /// Camera displacement from shake (square of the strength, smooth oscillations).
     pub fn camera_offset(&self) -> Vec2 {
         let s = self.shake * self.shake * SHAKE_MAX;
         let t = self.time;
@@ -621,7 +621,7 @@ impl Effects {
 
     pub fn draw(&self, batch: &mut ShapeBatch) {
         let mut tint = Tint::new(vec![WHITE]);
-        // Risse im dünnen Eis: wachsen, bis es bricht
+        // cracks in the thin ice: grow until it breaks
         #[allow(clippy::cast_precision_loss)]
         let ts = elora_sim::TILE_SIZE as f32;
         for &(min, age) in &self.cracks {
@@ -640,7 +640,7 @@ impl Effects {
                 );
             }
         }
-        // Wurzelstöße: schießen hoch, bleiben kurz, ziehen sich zurück
+        // root strikes: shoot up, stay briefly, retract
         for &(foot, age) in &self.roots {
             let t = age / ROOT_LIFE;
             let grow = if t < 0.15 {
@@ -677,7 +677,7 @@ impl Effects {
             let mut c = p.color;
             c.0[3] *= 1.0 - t * t;
             if p.star {
-                // vierzackiges Sternchen, funkelt leicht
+                // four-pointed star, twinkles slightly
                 let twinkle = 1.0 + 0.35 * (p.age * 9.0 + p.pos.x).sin();
                 let (tip, side) = (r * 2.4 * twinkle, r * 0.7);
                 let pts = [
@@ -702,7 +702,7 @@ impl Effects {
         }
     }
 
-    /// Treffer-Marker: kurzes X um das Fadenkreuz.
+    /// Hit marker: short X around the crosshair.
     pub fn draw_hit_marker(&self, batch: &mut ShapeBatch, crosshair: Vec2) {
         if self.hit_marker <= 0.0 {
             return;
@@ -755,14 +755,14 @@ mod tests {
         assert_eq!(fx.particle_count(), 0, "alle Partikel verblasst");
     }
 
-    /// Momentaufnahmen zur Sichtprüfung: `cargo test -p elora-client --bin elora effects_sheet -- --ignored`,
-    /// danach `cargo xtask svg-preview target/effects.svg target/effects.png 1200`.
+    /// Snapshots for visual inspection: `cargo test -p elora-client --bin elora effects_sheet -- --ignored`,
+    /// then `cargo xtask svg-preview target/effects.svg target/effects.png 1200`.
     #[test]
     #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
     fn effects_sheet() {
         let scene = Scene::default();
         let mut batch = ShapeBatch::default();
-        // je Effekt: (Ereignis, Zeitpunkte der Aufnahmen)
+        // per effect: (event, points in time of the snapshots)
         let cases = [
             Event::Explosion {
                 owner: 0,

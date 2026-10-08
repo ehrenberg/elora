@@ -1,7 +1,7 @@
-//! Server-Browser auf der Seite „Spielen“ (M7.7): Reiter Internet / LAN / Favoriten,
-//! Sortieren, Filter, Liste, Details mit Spielerliste, Direkt-Verbinden.
+//! Server browser on the "Play" page (M7.7): tabs internet / LAN / favorites,
+//! sorting, filters, list, details with player list, direct connect.
 
-// Layout-Code: `s` (Skalierung), `x`/`y`/`w`/`h` sind hier lesbarer als lange Namen
+// Layout code: `s` (scale), `x`/`y`/`w`/`h` are more readable here than long names
 #![allow(clippy::many_single_char_names)]
 
 use std::time::Instant;
@@ -13,21 +13,21 @@ use crate::browser::{Browser, SortBy, State, Tab};
 use crate::menu::{MenuAction, MenuCtx};
 use crate::ui::{BLUE, FieldEvent, GREEN, ORANGE, Rect, SAND, TEXT, TEXT_DIM, Ui};
 
-/// Was der Browser-Teil der Seite bearbeitet.
+/// What the browser part of the page edits.
 pub struct BrowserEdit<'a> {
     pub browser: &'a mut Browser,
-    /// Zuletzt geladener Reiter (ein Wechsel lädt neu).
+    /// Last loaded tab (switching reloads).
     pub loaded: &'a mut Option<Tab>,
     pub address: &'a mut String,
     pub master_url: &'a mut String,
-    /// Eingabe der Master-Adresse, bevor sie übernommen wird.
+    /// Input of the master address before it is applied.
     pub master_input: &'a mut String,
 }
 
 const TABS: [Tab; 3] = [Tab::Internet, Tab::Lan, Tab::Favorites];
 const SORTS: [SortBy; 3] = [SortBy::Ping, SortBy::Players, SortBy::Name];
 
-/// Karte mit dem Browser in `r`.
+/// Card with the browser in `r`.
 pub fn card(
     ui: &mut Ui<'_>,
     cx: &MenuCtx<'_>,
@@ -42,7 +42,7 @@ pub fn card(
     let mut y = r.min.y + 14.0 * s;
     let mut action = None;
 
-    // Reiter und Aktualisieren
+    // tabs and refresh
     let names = [
         lang.t("browser.internet"),
         lang.t("browser.lan"),
@@ -76,7 +76,7 @@ pub fn card(
     toolbar(ui, cx, Vec2::new(x, y), r.max.x, e);
     y += 34.0 * s;
 
-    // Liste bzw. Master-Adresse eintragen
+    // list or enter master address
     let list = Rect::new(x, y, r.w() - 32.0 * s, 210.0 * s);
     if e.browser.tab == Tab::Internet && e.master_url.trim().is_empty() {
         action = master_prompt(ui, cx, list, e).or(action);
@@ -85,11 +85,11 @@ pub fn card(
     }
     y += list.h() + 10.0 * s;
 
-    // Details
+    // details
     let details = Rect::new(x, y, list.w(), r.max.y - y - 60.0 * s);
     action = details_box(ui, cx, details, e).or(action);
 
-    // Direkt verbinden
+    // connect directly
     let y = r.max.y - 46.0 * s;
     ui.label(
         lang.t("browser.direct"),
@@ -111,7 +111,7 @@ pub fn card(
     action
 }
 
-/// Serverliste; Klick wählt aus, Doppelklick verbindet.
+/// Server list; click selects, double click connects.
 fn server_list(
     ui: &mut Ui<'_>,
     cx: &MenuCtx<'_>,
@@ -192,7 +192,7 @@ fn server_list(
     (hit.1 && connectable).then(|| MenuAction::Connect(addr.to_string()))
 }
 
-/// Details zum gewählten Server: Spielerliste, Verbinden, Favorit.
+/// Details of the selected server: player list, connect, favorite.
 fn details_box(
     ui: &mut Ui<'_>,
     cx: &MenuCtx<'_>,
@@ -278,7 +278,7 @@ fn details_box(
     action
 }
 
-/// Sortierung und Filter der Liste.
+/// Sorting and filters of the list.
 fn toolbar(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, origin: Vec2, right: f32, e: &mut BrowserEdit<'_>) {
     let s = cx.s;
     let lang = cx.lang;
@@ -315,7 +315,7 @@ fn toolbar(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, origin: Vec2, right: f32, e: &mut 
     );
 }
 
-/// Noch keine Master-Adresse: Feld zum Eintragen.
+/// No master address yet: field to enter it.
 fn master_prompt(
     ui: &mut Ui<'_>,
     cx: &MenuCtx<'_>,
@@ -346,13 +346,13 @@ fn master_prompt(
         && !e.master_input.trim().is_empty()
     {
         e.master_url.clone_from(&e.master_input.trim().to_owned());
-        *e.loaded = None; // neu laden
+        *e.loaded = None; // reload
         action = Some(MenuAction::SettingsChanged);
     }
     action
 }
 
-/// Spieler des gewählten Servers in Spalten, so viele wie Platz ist.
+/// Players of the selected server in columns, as many as there is room for.
 fn player_grid(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, r: Rect, players: &[elora_protocol::InfoPlayer]) {
     let s = cx.s;
     let lang = cx.lang;

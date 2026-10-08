@@ -1,9 +1,9 @@
-//! Abenteuer-Modus im Spiel (R2-M1, A1.6): Spielstände, Kartenwechsel, Speichern, Tod,
-//! Gespräche – über der Sandbox, die Welt, Interpolation und Szene liefert.
+//! Adventure mode in the game (R2-M1, A1.6): save slots, map changes, saving, death,
+//! conversations – on top of the sandbox, which provides world, interpolation and scene.
 //!
-//! Die Darstellung ist bis A1.7 schlicht (Textfeld, Hinweise im Meldungsbereich).
+//! The presentation is plain until A1.7 (text box, hints in the message area).
 
-// Layout-Code: `s` (Skalierung), `w`/`h`/`x`/`y` wie in menu.rs
+// Layout code: `s` (scale), `w`/`h`/`x`/`y` as in menu.rs
 #![allow(clippy::many_single_char_names)]
 
 use std::path::{Path, PathBuf};
@@ -23,26 +23,26 @@ use crate::lang::{Lang, Language};
 use crate::ui::{self, Rect, Ui};
 use crate::{App, Screen};
 
-/// Wie lange ein Zuruf über der Figur steht.
+/// How long a shout stays above the character.
 const BARK_SECS: f32 = 3.5;
-/// Vorausschau der Kamera in die zuletzt gelaufene Richtung (E-266, E-267): 3 Tiles, bleibt beim
-/// Stehenbleiben stehen und wechselt erst nach kurzem Laufen in die andere Richtung.
+/// Camera look-ahead in the last walked direction (E-266, E-267): 3 tiles, stays when
+/// standing still and only switches to the other direction after walking briefly.
 const LOOKAHEAD: f32 = 96.0;
-/// Gesprächstext: Zeichen je Sekunde (E-286).
+/// Conversation text: characters per second (E-286).
 const REVEAL_PER_SECOND: f32 = 48.0;
-/// Ein Plapperlaut je so viele Zeichen.
+/// One babble sound per this many characters.
 const SYLLABLE: usize = 3;
-/// Tonhöhe von Eloras Stimme.
+/// Pitch of Elora's voice.
 const ELORA_VOICE: f32 = 1.25;
-/// Ab diesem Tempo (Einheiten/Tick) zählt Laufen als Richtung.
+/// From this speed (units/tick) on, walking counts as a direction.
 const LOOKAHEAD_MIN_SPEED: f32 = 2.0;
-/// So lange (s) muss Elora in die andere Richtung laufen, bis die Kamera wechselt.
+/// Elora has to walk in the other direction this long (s) until the camera switches.
 const LOOKAHEAD_TURN_SECS: f32 = 0.4;
-/// Nachziehen je Sekunde (Vorausschau, Übergang in Kamera-Zonen).
+/// Catch-up per second (look-ahead, transition into camera zones).
 const LOOKAHEAD_RATE: f32 = 1.5;
 const ZONE_RATE: f32 = 3.0;
 
-/// Übersicht eines Platzes für das Menü.
+/// Overview of a slot for the menu.
 #[derive(Debug, Clone, PartialEq)]
 pub enum SlotView {
     Empty,
@@ -55,36 +55,36 @@ pub enum SlotView {
     Damaged(String),
 }
 
-/// Laufendes Abenteuer.
+/// Running adventure.
 #[derive(Debug)]
 pub struct AdventureMode {
     pub session: Session,
-    /// Spielstand-Platz; `None` beim Testspiel aus dem Editor (es wird nicht gespeichert, E-269).
+    /// Save slot; `None` for a test game from the editor (nothing is saved, E-269).
     pub slot: Option<usize>,
-    /// Testspiel aus dem Editor: diese Karte (ungespeichert) statt der Datei gleichen Namens.
+    /// Test game from the editor: this map (unsaved) instead of the file of the same name.
     editor_map: Option<(String, Map)>,
     pub conversation: Option<Conversation>,
-    /// Elora ist erschöpft (E-261): verlorene Glanztropfen.
+    /// Elora is exhausted (E-261): lost gleam drops.
     pub dead: Option<u32>,
-    /// Hüter beruhigt: Gewinn-Bildschirm für dieses Gebiet, seit diesem Zeitpunkt.
+    /// Guardian calmed: victory screen for this region, since this point in time.
     pub victory: Option<(String, Instant)>,
     barks: Vec<(String, String, Instant)>,
-    /// Aktionstaste gedrückt, wird im nächsten Tick ausgewertet.
+    /// Action key pressed, evaluated in the next tick.
     interact: bool,
-    /// Trainingskarte vor dem Abenteuer.
+    /// Training map before the adventure.
     previous: Option<Map>,
-    /// Vorausschau der Kamera (Einheiten) und Anteil der Kamera-Zone (0..1, weicher Übergang).
+    /// Camera look-ahead (units) and share of the camera zone (0..1, smooth transition).
     look: f32,
-    /// Richtung der Vorausschau (−1, 0, 1) und Zeit in der Gegenrichtung (E-267).
+    /// Direction of the look-ahead (−1, 0, 1) and time in the opposite direction (E-267).
     look_dir: i8,
     look_turn: f32,
     zone_mix: f32,
     zone_center: Vec2,
-    /// Abenteuer-Menü offen (Tab, Laden, Schmiede, E-263).
+    /// Adventure menu open (Tab, shop, smithy, E-263).
     pub menu: Option<crate::adventure_menu::MenuState>,
-    /// Auswahl im Menü bleibt zwischen dem Öffnen erhalten.
+    /// The selection in the menu is kept between openings.
     menu_memory: crate::adventure_menu::MenuState,
-    /// Gesprächstext erscheint nach und nach (E-286): angezeigte Zeichen, Gesamtlänge, Knoten.
+    /// Conversation text appears gradually (E-286): shown characters, total length, node.
     reveal: f32,
     reveal_total: usize,
     reveal_key: (String, String),
@@ -98,8 +98,8 @@ fn slots() -> Slots {
     Slots::new(saves_dir())
 }
 
-/// Abenteuer-Karte `name`: zuerst aus dem Benutzerordner `maps/abenteuer/` (E-271), sonst die
-/// mitgelieferte (E-262).
+/// Adventure map `name`: first from the user folder `maps/abenteuer/` (E-271), otherwise the
+/// bundled one (E-262).
 fn load_map(name: &str) -> anyhow::Result<Map> {
     let file = format!("{name}.emap");
     if let Some(own) = crate::settings::user_maps_dir().map(|d| d.join("abenteuer").join(&file))
@@ -110,7 +110,7 @@ fn load_map(name: &str) -> anyhow::Result<Map> {
     Map::load(&elora_server::paths::resolve(Path::new("maps/abenteuer")).join(file))
 }
 
-/// Übersicht aller Plätze.
+/// Overview of all slots.
 pub fn slot_views() -> Vec<SlotView> {
     slots()
         .list()
@@ -140,7 +140,7 @@ impl App {
         lang_code(self.settings.language)
     }
 
-    /// Abenteuer auf Platz `slot` beginnen (`new`) oder fortsetzen.
+    /// Start (`new`) or continue the adventure in slot `slot`.
     pub(crate) fn start_adventure(&mut self, slot: usize, new: bool) {
         let content = Content::builtin();
         let session = if new {
@@ -187,7 +187,7 @@ impl App {
         }
     }
 
-    /// Karte betreten; `false`, wenn sie fehlt.
+    /// Enter a map; `false` if it is missing.
     fn travel(&mut self, map: &str, spawn: &str) -> bool {
         let Some(a) = &mut self.adventure else {
             return false;
@@ -223,8 +223,8 @@ impl App {
         }
     }
 
-    /// Zurück ins Hauptmenü: Trainingskarte wiederherstellen. Fortschritt seit dem letzten
-    /// Speichern verfällt (E-260).
+    /// Back to the main menu: restore the training map. Progress since the last
+    /// save is lost (E-260).
     pub(crate) fn leave_adventure(&mut self) {
         let from_editor = self.adventure.as_ref().is_some_and(|a| a.slot.is_none());
         if let Some(a) = self.adventure.take()
@@ -242,7 +242,7 @@ impl App {
         self.set_cursor_grab(false);
     }
 
-    /// Testspiel aus dem Editor (E-269): Teststand, ungespeicherte Karte, kein Spielstand.
+    /// Test game from the editor (E-269): test state, unsaved map, no save slot.
     pub(crate) fn start_adventure_test(&mut self) {
         let Some(editor) = &self.editor else { return };
         let content = editor.content().cloned().unwrap_or_else(Content::builtin);
@@ -255,7 +255,7 @@ impl App {
         let spawn = if let Some(s) = &editor.adventure_test.start {
             s.clone()
         } else {
-            // an der Maus: vorübergehender Eingang
+            // at the mouse: temporary entrance
             let pos = editor.mouse_world.unwrap_or(Vec2::new(64.0, 64.0));
             map.adventure.objects.push(elora_map::Object {
                 id: "editor-maus".into(),
@@ -294,7 +294,7 @@ impl App {
         }
     }
 
-    /// Läuft ein Testspiel aus dem Editor?
+    /// Is a test game from the editor running?
     pub(crate) fn testing_adventure(&self) -> bool {
         self.adventure.as_ref().is_some_and(|a| a.slot.is_none())
     }
@@ -305,14 +305,14 @@ impl App {
         }
     }
 
-    /// Steht das Spiel still (Gespräch oder Erschöpfung)?
+    /// Is the game paused (conversation or exhaustion)?
     pub(crate) fn adventure_halted(&self) -> bool {
         self.adventure.as_ref().is_some_and(|a| {
             a.conversation.is_some() || a.dead.is_some() || a.menu.is_some() || a.victory.is_some()
         })
     }
 
-    /// Gewinn-Bildschirm schließen (nach [`crate::adventure_hud::VICTORY_READY`]).
+    /// Close the victory screen (after [`crate::adventure_hud::VICTORY_READY`]).
     fn close_victory(&mut self) {
         let Some(a) = &mut self.adventure else { return };
         let ready = a.victory.as_ref().is_some_and(|(_, at)| {
@@ -326,7 +326,7 @@ impl App {
         }
     }
 
-    /// Abenteuer-Menü öffnen (`panel`) oder schließen (`None`).
+    /// Open (`panel`) or close (`None`) the adventure menu.
     pub(crate) fn adventure_menu(&mut self, panel: Option<crate::adventure_menu::Panel>) {
         let Some(a) = &mut self.adventure else { return };
         if let Some(p) = panel {
@@ -344,7 +344,7 @@ impl App {
             if let Some(st) = a.menu.take() {
                 self.ui_cues
                     .push(elora_audio::Cue::global(elora_audio::Sound::UiClose));
-                // Laden und Schmiede merken sich nicht als letzte Seite
+                // shop and smithy are not remembered as the last page
                 if !matches!(
                     st.panel,
                     crate::adventure_menu::Panel::Shop(_) | crate::adventure_menu::Panel::Forge
@@ -356,7 +356,7 @@ impl App {
         }
     }
 
-    /// Tab: Abenteuer-Menü auf/zu (E-263).
+    /// Tab: toggle the adventure menu (E-263).
     pub(crate) fn toggle_adventure_menu(&mut self) {
         let Some(a) = &self.adventure else { return };
         if a.conversation.is_some() || a.dead.is_some() {
@@ -370,7 +370,7 @@ impl App {
         }
     }
 
-    /// Q: Heiltrank trinken (E-265).
+    /// Q: drink a healing potion (E-265).
     pub(crate) fn quick_heal(&mut self) {
         let Some(a) = &mut self.adventure else { return };
         if a.session.save.count("heiltrank") == 0 {
@@ -386,7 +386,7 @@ impl App {
         }
     }
 
-    /// Befehl aus dem Abenteuer-Menü ausführen.
+    /// Execute a command from the adventure menu.
     fn adventure_command(&mut self, cmd: crate::adventure_menu::Command) {
         use crate::adventure_menu::Command as C;
         let Some(a) = &mut self.adventure else { return };
@@ -412,21 +412,21 @@ impl App {
         if let Some(m) = &mut a.menu {
             m.refusal = result.err();
         }
-        // Werte aus Baum, Ausrüstung und Ausbau sofort in die Welt (Tuning, Leben, Rüstung)
+        // values from tree, equipment and upgrades into the world at once (tuning, health, armour)
         let base = elora_sim::Tuning::default();
         world.tuning = s.save.tuning(&c, &base);
         let max = s.save.max_health(&c);
         let armor = s.save.stats(&c).armor.max(0);
         if let Some(ch) = world.character_mut(s.player) {
             ch.health = ch.health.min(max);
-            // neue Rüstung füllt sich erst am Quellstein (P-23)
+            // new armour only fills up at the spring stone (P-23)
             ch.armor = ch.armor.min(armor);
         }
         s.save.health = s.save.health.min(max);
         s.sync_world(world);
     }
 
-    /// Aktionstaste im Spiel.
+    /// Action key in the game.
     pub(crate) fn adventure_interact(&mut self) {
         if let Some(a) = &mut self.adventure {
             if a.conversation.is_some() {
@@ -438,7 +438,7 @@ impl App {
         }
     }
 
-    /// Simulation und Sitzung weiterrechnen; Ereignisse auswerten.
+    /// Advance simulation and session; evaluate events.
     pub(crate) fn advance_adventure(&mut self, elapsed: Duration) {
         let Some(a) = &mut self.adventure else { return };
         if a.conversation.is_some() || a.dead.is_some() || a.victory.is_some() {
@@ -499,7 +499,7 @@ impl App {
     fn adventure_event(&mut self, e: SessionEvent) {
         match e {
             SessionEvent::Notice(n) => {
-                // Klang zu Funden und erledigten Aufgaben (R2-M2.1)
+                // sound for finds and completed quests (R2-M2.1)
                 use elora_adventure::data::ItemKind;
                 use elora_audio::{Cue, Sound};
                 let sound = match &n {
@@ -582,7 +582,7 @@ impl App {
                     Open::Forge => Panel::Forge,
                     Open::Skills => Panel::Skills,
                 };
-                // nach dem Gespräch öffnen
+                // open after the conversation
                 if let Some(a) = &mut self.adventure {
                     a.conversation = None;
                 }
@@ -591,7 +591,7 @@ impl App {
         }
     }
 
-    /// Nach der Erschöpfung am letzten Speicherpunkt weiter (E-220, E-261).
+    /// After exhaustion, continue at the last save point (E-220, E-261).
     pub(crate) fn adventure_respawn(&mut self) {
         let Some(a) = &mut self.adventure else { return };
         a.dead = None;
@@ -602,7 +602,7 @@ impl App {
         }
     }
 
-    // ------------------------------------------------------------ Gespräche
+    // ------------------------------------------------------------ Conversations
 
     fn start_dialog(&mut self, dialog: &str) {
         let Some(a) = &mut self.adventure else { return };
@@ -624,17 +624,17 @@ impl App {
         }
     }
 
-    /// Tasten während Gespräch oder Erschöpfung: Ziffern wählen, E/Leertaste/Enter weiter.
+    /// Keys during conversation or exhaustion: digits select, E/Space/Enter continue.
     pub(crate) fn adventure_key(&mut self, code: winit::keyboard::KeyCode) {
         use winit::keyboard::KeyCode as K;
-        // Gewinn-Bildschirm: E, Leertaste oder Enter führt weiter
+        // victory screen: E, Space or Enter continues
         if self.adventure.as_ref().is_some_and(|a| a.victory.is_some()) {
             if matches!(code, K::KeyE | K::Space | K::Enter | K::Escape) {
                 self.close_victory();
             }
             return;
         }
-        // Abenteuer-Menü, Laden, Schmiede: Tab (belegte Taste) oder Esc schließt
+        // adventure menu, shop, smithy: Tab (bound key) or Esc closes
         if self.adventure.as_ref().is_some_and(|a| a.menu.is_some()) {
             let tab = self
                 .settings
@@ -663,13 +663,13 @@ impl App {
         self.after_dialog();
     }
 
-    /// Nach dem Gespräch die Maus wieder fangen.
+    /// After the conversation, capture the mouse again.
     fn after_dialog(&mut self) {
-        // Gespräche schalten frei (Hook-Ruck, Waffen): sofort in die Welt
+        // conversations unlock things (hook jerk, weapons): into the world right away
         if let Some(a) = &mut self.adventure {
             a.session.sync_world(&mut self.sandbox.world);
         }
-        // Gespräche setzen Merker: Deko nachziehen (Quelle blüht, Festschmuck)
+        // conversations set flags: update decorations (spring blooms, festive decorations)
         if let Some(a) = &mut self.adventure
             && a.session.refresh_decor()
         {
@@ -681,7 +681,7 @@ impl App {
                 .map
                 .decor_front
                 .clone_from(&a.session.map.decor_front);
-            // Quelle befreit: das Gebiet klart auf (R2-W1)
+            // spring freed: the region clears up (R2-W1)
             self.sandbox.map.weather = a.session.map.weather;
         }
         if self
@@ -693,7 +693,7 @@ impl App {
         }
     }
 
-    /// Text noch nicht ganz da: auf einmal zeigen (`true`, dann nichts weiter tun).
+    /// Text not fully there yet: show it at once (`true`, then do nothing else).
     fn reveal_rest(&mut self) -> bool {
         let Some(a) = &mut self.adventure else {
             return false;
@@ -707,7 +707,7 @@ impl App {
         false
     }
 
-    /// Weiter ohne Auswahl (Knoten ohne Antworten).
+    /// Continue without a choice (node without answers).
     pub(crate) fn dialog_continue(&mut self) {
         if self.reveal_rest() {
             return;
@@ -729,7 +729,7 @@ impl App {
         }
     }
 
-    /// Antwort Nummer `n` (ab 0) der sichtbaren Antworten.
+    /// Answer number `n` (from 0) of the visible answers.
     pub(crate) fn dialog_choose(&mut self, n: usize) {
         if self.reveal_rest() {
             return;
@@ -751,10 +751,10 @@ impl App {
         }
     }
 
-    // ------------------------------------------------------------ Darstellung
+    // ------------------------------------------------------------ Rendering
 
-    /// Kameramitte im Abenteuer (E-224, E-259, E-266): `center` folgt Elora, dazu Vorausschau
-    /// in Laufrichtung; Kamera-Zonen setzen den Ausschnitt fest oder begrenzen ihn.
+    /// Camera centre in the adventure (E-224, E-259, E-266): `center` follows Elora, plus
+    /// look-ahead in the walking direction; camera zones fix or limit the view.
     pub(crate) fn adventure_camera(&mut self, center: Vec2, view: Vec2, dt: f32) -> Vec2 {
         use elora_map::adventure::CameraMode;
         let Some(a) = &mut self.adventure else {
@@ -780,7 +780,7 @@ impl App {
                     }
                 }
             }
-            // bei Nebel und Stürmen schaut die Kamera weniger weit voraus (R2-W1, E-330)
+            // in fog and storms the camera looks ahead less far (R2-W1, E-330)
             let w = a.session.map.weather;
             let sight = match w.kind {
                 elora_map::WeatherKind::Fog
@@ -809,7 +809,7 @@ impl App {
                     Some(match mode {
                         CameraMode::Fixed => o.pos + *size * 0.5,
                         CameraMode::Bounds => {
-                            // Ausschnitt bleibt im Bereich; ist er kleiner als die Sicht, mittig
+                            // view stays within the area; if smaller than the view range, centred
                             let clamp = |v: f32, min: f32, len: f32, half: f32| {
                                 if len <= half * 2.0 {
                                     min + len / 2.0
@@ -834,7 +834,7 @@ impl App {
         free.lerp(a.zone_center, a.zone_mix.clamp(0.0, 1.0))
     }
 
-    /// NPCs und Objekte in die Szene.
+    /// NPCs and objects into the scene.
     pub(crate) fn adventure_scene(&self, scene: &mut Scene) {
         let Some(a) = &self.adventure else { return };
         let s = &a.session;
@@ -865,9 +865,9 @@ impl App {
         }
     }
 
-    /// Hinweis zur Aktionstaste, Zurufe, Gesprächsfeld und Erschöpfung in den HUD-Batch.
-    /// Liefert `true`, wenn „Weiter am Quellstein“ bzw. `false` für „Hauptmenü“ gewählt wurde.
-    #[allow(clippy::too_many_lines)] // Zeichenreihenfolge an einem Ort, bis A1.7 aufteilt
+    /// Action key hint, shouts, conversation box and exhaustion into the HUD batch.
+    /// Returns `true` if “Continue at the spring stone” or `false` if “Main menu” was chosen.
+    #[allow(clippy::too_many_lines)] // drawing order in one place until A1.7 splits it up
     pub(crate) fn draw_adventure_hud(
         &mut self,
         camera: &Camera,
@@ -918,7 +918,7 @@ impl App {
                 crate::adventure_hud::cold_bar(&mut ui, session.cold, session.frozen, secs);
             }
         }
-        // Lebensleiste eines wachen Hüters (R2-M2.1)
+        // health bar of an awake guardian (R2-M2.1)
         if a.conversation.is_none()
             && a.menu.is_none()
             && let Some((c, k)) = world
@@ -932,7 +932,7 @@ impl App {
             let name = self.lang.t(&format!("creature.{}", k.name)).to_owned();
             crate::adventure_hud::boss_bar(&mut ui, &name, frac, screen);
         }
-        // Zurufe über den Figuren
+        // shouts above the characters
         let npcs = session.npcs(world);
         for (npc, text, _) in &a.barks {
             if let Some(n) = npcs.iter().find(|n| &n.id == npc) {
@@ -940,7 +940,7 @@ impl App {
                 crate::adventure_hud::bubble(&mut ui, text, p);
             }
         }
-        // Hinweis zur Aktionstaste
+        // action key hint
         if a.conversation.is_none()
             && a.dead.is_none()
             && let Some(ch) = world.character(session.player)
@@ -962,7 +962,7 @@ impl App {
                 .trigger(crate::bindings::GameAction::Interact)
                 .label(&self.lang);
             crate::adventure_hud::prompt(&mut ui, &label, self.lang.t(key), p);
-            // Name der Figur über dem Hinweis
+            // name of the character above the hint
             if let ObjectKind::Npc { character, .. } = &o.kind
                 && let Some(c) = content.characters.get(character)
             {
@@ -970,13 +970,13 @@ impl App {
                 crate::adventure_hud::name_tag(&mut ui, c.name.get(code), character, above);
             }
         }
-        // Gespräch (E-222)
+        // conversation (E-222)
         let mut chosen = None;
         if let Some(conv) = &a.conversation
             && let Some((d, node)) = conv.current(content)
         {
             let speaker = d.speaker_of(node);
-            // Text erscheint nach und nach, dazu Plapperlaute (E-286)
+            // text appears gradually, plus babble sounds (E-286)
             let key = (conv.dialog.clone(), conv.node.clone());
             if a.reveal_key != key {
                 a.reveal_key = key;
@@ -1039,7 +1039,7 @@ impl App {
                 &self.settings.bindings,
             );
         }
-        // Abenteuer-Menü
+        // adventure menu
         let mut menu_cmd = None;
         if let Some(st) = &mut a.menu {
             let tint = crate::skins::tint(
@@ -1060,7 +1060,7 @@ impl App {
             };
             menu_cmd = crate::adventure_menu::draw(&mut ui, &data, st);
         }
-        // Kapitel geschafft: Gewinn-Bildschirm
+        // chapter complete: victory screen
         let mut victory_done = false;
         if let Some((id, at)) = &a.victory
             && let Some(area) = session.content.areas.iter().find(|x| &x.id == id)
@@ -1070,7 +1070,7 @@ impl App {
                 .iter_mut()
                 .zip(session.content.areas.iter().filter(|x| x.id != "tauwinkel"))
             {
-                // die eben beruhigte Quelle singt schon
+                // the spring that was just calmed is already singing
                 if x.freed(&session.save) || &x.id == id {
                     *slot = Some(crate::adventure_menu::hex(&x.color));
                 }
@@ -1097,7 +1097,7 @@ impl App {
             };
             victory_done = crate::adventure_hud::victory(&mut ui, &self.lang, &view, screen);
         }
-        // Erschöpft (E-261)
+        // exhausted (E-261)
         let mut death = None;
         if let Some(lost) = a.dead {
             ui.batch
@@ -1168,7 +1168,7 @@ fn outcome_event(o: elora_adventure::Outcome) -> SessionEvent {
     }
 }
 
-/// Text zur Zeit `secs` (Menü).
+/// Text for the time `secs` (menu).
 pub fn play_time(lang: &Lang, secs: u64) -> String {
     lang.f(
         "adventure.time",

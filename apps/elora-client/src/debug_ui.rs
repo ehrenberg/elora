@@ -1,4 +1,4 @@
-//! Debug-Panel (M1.5, M2.8, M3.9): Tuning-Regler, Zustandsanzeige, Netzwerk.
+//! Debug panel (M1.5, M2.8, M3.9): tuning sliders, state display, network.
 
 use std::net::SocketAddr;
 use std::ops::RangeInclusive;
@@ -16,18 +16,18 @@ use crate::controls::Controls;
 use crate::hosting::{Hosting, available_maps};
 use crate::sandbox::Sandbox;
 
-/// Aktion, die das Panel ausgelöst hat.
+/// Action triggered by the panel.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Action {
     SetTeam(Team),
     Kill,
     CallVote(VoteKind),
     Vote(bool),
-    /// Spielmodus der Sandbox (E-075); `None` = ohne Regeln.
+    /// Game mode of the sandbox (E-075); `None` = without rules.
     SandboxMode(Option<RulesConfig>),
     Save,
     Load,
-    /// Andere Karte in der Sandbox laden.
+    /// Load another map in the sandbox.
     SwitchMap(std::path::PathBuf),
     Respawn,
     Connect,
@@ -38,7 +38,7 @@ pub enum Action {
     ApplyConditions,
 }
 
-/// Warnung bei geändertem Server-Schlüssel (E-062).
+/// Warning on a changed server key (E-062).
 #[derive(Debug, Clone)]
 pub struct KeyWarning {
     pub server: SocketAddr,
@@ -46,39 +46,39 @@ pub struct KeyWarning {
     pub got: String,
 }
 
-/// Ton im Panel: Einstellungen und ob ein Audiogerät gefunden wurde.
+/// Sound in the panel: settings and whether an audio device was found.
 #[derive(Debug)]
 pub struct AudioUi<'a> {
     pub settings: &'a mut elora_audio::AudioSettings,
     pub device: bool,
 }
 
-/// Netzwerk-Einstellungen im Panel.
+/// Network settings in the panel.
 #[derive(Debug)]
 pub struct NetUi {
     pub address: String,
     pub name: String,
-    /// Eigener Skin (M5.4).
+    /// Own skin (M5.4).
     pub skin: elora_protocol::Skin,
-    /// Simulator (ausgehende Pakete dieses Clients).
+    /// Simulator (outgoing packets of this client).
     pub latency_ms: f32,
     pub jitter_ms: f32,
     pub loss_pct: f32,
     pub show_host: bool,
     pub hosting: Hosting,
     pub key_warning: Option<KeyWarning>,
-    /// Abstimmung vorbereiten: 0 Karte, 1 Modus, 2 Kick, 3 Zuschauer.
+    /// Prepare a vote: 0 map, 1 mode, 2 kick, 3 spectator.
     pub vote_kind: u8,
     pub vote_map: String,
     pub vote_mode: Mode,
     pub vote_instagib: bool,
     pub vote_target: Option<usize>,
-    /// Modus der Sandbox (Auswahl im Panel).
+    /// Mode of the sandbox (selection in the panel).
     pub sandbox_mode: Option<Mode>,
     pub sandbox_instagib: bool,
-    /// Gewählte Gegnerart zum Setzen in der Sandbox (A1.2).
+    /// Selected enemy kind to place in the sandbox (A1.2).
     pub creature_kind: usize,
-    /// Gewählte Karte zum Wechseln in der Sandbox.
+    /// Selected map to switch to in the sandbox.
     pub map_choice: Option<std::path::PathBuf>,
 }
 
@@ -118,16 +118,16 @@ impl NetUi {
     }
 }
 
-/// Angaben zum Online-Spiel.
+/// Information about the online game.
 pub struct OnlineView<'a> {
     pub client: &'a OnlineClient,
     pub stats: Option<Stats>,
     pub server: SocketAddr,
 }
 
-/// Zustand, den das Panel anzeigen und ändern darf.
+/// State the panel may display and change.
 pub struct Context<'a> {
-    /// `None`, solange online gespielt wird.
+    /// `None` while playing online.
     pub sandbox: Option<&'a mut Sandbox>,
     pub online: Option<OnlineView<'a>>,
     pub net: &'a mut NetUi,
@@ -139,10 +139,10 @@ pub struct Context<'a> {
     pub frames: FrameStats,
     pub status: &'a str,
     pub cursor_grabbed: bool,
-    /// Namen und eigener Slot (für den Spiel-Abschnitt).
+    /// Names and own slot (for the game section).
     pub names: &'a BTreeMap<usize, String>,
     pub local: Option<usize>,
-    /// Modus mit Teams aktiv?
+    /// Team mode active?
     pub team_mode: bool,
     pub vote_running: bool,
 }
@@ -303,7 +303,7 @@ fn game_section(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
     action
 }
 
-/// Spielmodus der Sandbox (E-075).
+/// Game mode of the sandbox (E-075).
 fn sandbox_mode(ui: &mut egui::Ui, net: &mut NetUi) -> Option<Action> {
     let mut action = None;
     ui.horizontal(|ui| {
@@ -355,7 +355,7 @@ fn team_buttons(ui: &mut egui::Ui, team_mode: bool) -> Option<Action> {
     action
 }
 
-/// Abstimmung starten und abstimmen (E-077).
+/// Start a vote and vote (E-077).
 fn vote_ui(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
     let mut action = None;
     ui.label("Abstimmung (E-077):");
@@ -553,13 +553,13 @@ fn key_warning_window(ctx: &egui::Context, net: &mut NetUi, w: &KeyWarning) -> O
     action
 }
 
-/// Bildzeiten der letzten Frames (Verwischen eingrenzen, E-288).
+/// Frame times of the last frames (narrowing down blur, E-288).
 #[derive(Debug, Clone, Copy, Default)]
 pub struct FrameStats {
     pub min_ms: f32,
     pub avg_ms: f32,
     pub max_ms: f32,
-    /// Bildwiederholrate des Bildschirms, falls bekannt.
+    /// Refresh rate of the screen, if known.
     pub refresh_hz: Option<f32>,
     pub vsync: bool,
 }
@@ -707,7 +707,7 @@ fn buttons(ui: &mut egui::Ui, status: &str) -> Option<Action> {
     action
 }
 
-/// Fähigkeiten zum Ausprobieren (A1.1); im normalen Mehrspieler gibt es sie nicht (E-223).
+/// Abilities to try out (A1.1); in normal multiplayer they don't exist (E-223).
 fn abilities(ui: &mut egui::Ui, s: &mut Sandbox) {
     use elora_sim::{Abilities, Ability};
     egui::CollapsingHeader::new("Fähigkeiten (Abenteuer)")
@@ -752,7 +752,7 @@ fn abilities(ui: &mut egui::Ui, s: &mut Sandbox) {
         });
 }
 
-/// Karte wechseln: alle mitgelieferten und eigenen Karten (`hosting::available_maps`).
+/// Switch map: all bundled and own maps (`hosting::available_maps`).
 fn map_picker(
     ui: &mut egui::Ui,
     s: &Sandbox,
@@ -788,7 +788,7 @@ fn map_picker(
     action
 }
 
-/// Wetter der Karte zum Ausprobieren (R2-W1): Art, Stärke, Wind – wirkt sofort.
+/// Weather of the map to try out (R2-W1): kind, strength, wind – takes effect immediately.
 fn weather(ui: &mut egui::Ui, s: &mut Sandbox) {
     use elora_map::WeatherKind;
     egui::CollapsingHeader::new("Wetter")
@@ -810,7 +810,7 @@ fn weather(ui: &mut egui::Ui, s: &mut Sandbox) {
         });
 }
 
-/// Gegner zum Ausprobieren (A1.2): Abenteuer-Regeln, Gegner setzen und entfernen.
+/// Enemies to try out (A1.2): adventure rules, place and remove enemies.
 fn creatures(ui: &mut egui::Ui, s: &mut Sandbox, kind: &mut usize) {
     egui::CollapsingHeader::new("Gegner (Abenteuer)")
         .default_open(false)
@@ -840,7 +840,7 @@ fn creatures(ui: &mut egui::Ui, s: &mut Sandbox, kind: &mut usize) {
                 if ui.button("Setzen").clicked()
                     && let Some(c) = s.world.character(s.player)
                 {
-                    // vor Elora, in Blickrichtung
+                    // in front of Elora, in the facing direction
                     let a = c.core.angle as f32 / 256.0;
                     let side = if a.cos() < 0.0 { -1.0 } else { 1.0 };
                     let pos = c.core.pos + elora_sim::Vec2::new(side * 160.0, -40.0);
@@ -1366,7 +1366,7 @@ where
     });
 }
 
-/// Knopf „Standardwert“; nur aktiv, wenn der Wert abweicht.
+/// “Default” button; only active if the value differs.
 fn reset<T: PartialEq + Copy + std::fmt::Display>(ui: &mut egui::Ui, value: &mut T, default: T) {
     let changed = *value != default;
     if ui

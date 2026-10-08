@@ -1,4 +1,4 @@
-//! egui-Anbindung (E-031): Eingabe über egui-winit, Zeichnen über egui-wgpu.
+//! egui binding (E-031): input via egui-winit, drawing via egui-wgpu.
 
 use elora_render::{Frame, Renderer, wgpu};
 use winit::event::WindowEvent;
@@ -10,7 +10,7 @@ pub struct Gui {
     renderer: egui_wgpu::Renderer,
 }
 
-/// Eigene Schriften statt der egui-Standardschriften (E-047): Inter und `JetBrains Mono` (OFL-1.1).
+/// Custom fonts instead of the egui default fonts (E-047): Inter and `JetBrains Mono` (OFL-1.1).
 fn fonts() -> egui::FontDefinitions {
     use std::sync::Arc;
 
@@ -68,7 +68,7 @@ impl Gui {
         }
     }
 
-    /// Gibt `true` zurück, wenn egui das Ereignis verbraucht hat.
+    /// Returns `true` if egui consumed the event.
     pub fn on_window_event(&mut self, window: &Window, event: &WindowEvent) -> bool {
         self.state.on_window_event(window, event).consumed
     }
@@ -77,7 +77,7 @@ impl Gui {
         self.ctx.egui_wants_pointer_input()
     }
 
-    /// Baut die UI mit `ui` und zeichnet sie über den bestehenden Frame-Inhalt.
+    /// Builds the UI with `ui` and draws it over the existing frame content.
     pub fn draw(
         &mut self,
         window: &Window,

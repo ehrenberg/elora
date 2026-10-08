@@ -1,7 +1,7 @@
-//! Ingame-Menü (M7.9): Pause mit Team-Wahl, Abstimmungen, Einstellungen – ersetzt
-//! die Spiel-Teile des Debug-Panels (E-031: egui nur noch für Entwickler).
+//! In-game menu (M7.9): pause with team choice, votes, settings – replaces
+//! the game parts of the debug panel (E-031: egui only for developers now).
 
-// Layout-Code: `s` (Skalierung), `x`/`y`/`w`/`h` sind hier lesbarer als lange Namen
+// Layout code: `s` (scale), `x`/`y`/`w`/`h` are more readable here than long names
 #![allow(clippy::many_single_char_names)]
 
 use std::collections::BTreeMap;
@@ -14,27 +14,27 @@ use elora_sim::{Team, Vec2};
 use crate::menu::{MODES, MenuAction, MenuCtx};
 use crate::ui::{BLUE, GRAY, GREEN, ORANGE, Rect, SAND, TEXT, TEXT_DIM, Ui, VIOLET};
 
-/// Spielzustand, den das Pause-Menü anzeigt.
+/// Game state shown by the pause menu.
 pub struct PauseCtx<'a> {
     pub online: bool,
     pub team_mode: bool,
-    /// Eigenes Team.
+    /// Own team.
     pub team: Team,
     pub names: &'a BTreeMap<usize, String>,
     pub local: Option<usize>,
     pub vote: Option<&'a VoteInfo>,
-    /// „Karte · Modus“ zur Orientierung.
+    /// "Map · mode" for orientation.
     pub server_line: String,
-    /// Abenteuer läuft (A1.6): Hinweis zum Speichern statt Training.
+    /// Adventure running (A1.6): hint about saving instead of training.
     pub adventure: bool,
 }
 
-/// Zustand des Pause-Menüs zwischen Frames.
+/// State of the pause menu between frames.
 #[derive(Debug, Default)]
 pub struct PauseState {
-    /// Einstellungsseiten statt Pause-Inhalt.
+    /// Settings pages instead of pause content.
     pub settings_open: bool,
-    /// 0 Karte, 1 Modus, 2 Kick, 3 Zuschauer.
+    /// 0 map, 1 mode, 2 kick, 3 spectator.
     vote_kind: usize,
     vote_map: String,
     vote_mode: Option<Mode>,
@@ -42,7 +42,7 @@ pub struct PauseState {
     vote_target: Option<usize>,
 }
 
-/// Inhalt der Pause-Karte `card`.
+/// Content of the pause card `card`.
 pub fn content(
     ui: &mut Ui<'_>,
     cx: &MenuCtx<'_>,
@@ -68,7 +68,7 @@ pub fn content(
         Align::Left,
     );
 
-    // links: Fortsetzen, Einstellungen, Hauptmenü, Beenden
+    // left: continue, settings, main menu, quit
     let items = [
         ("menu.resume", GREEN, Some(MenuAction::Resume)),
         ("menu.settings", ORANGE, None),
@@ -91,7 +91,7 @@ pub fn content(
         }
     }
 
-    // rechts: Spiel
+    // right: game
     let right = Rect::new(
         card.min.x + 250.0 * s,
         card.min.y + 78.0 * s,
@@ -139,7 +139,7 @@ pub fn content(
     action
 }
 
-/// Team wählen bzw. mitspielen/zuschauen, Selbstmord.
+/// Choose a team or play/spectate, suicide.
 fn team_row(
     ui: &mut Ui<'_>,
     cx: &MenuCtx<'_>,
@@ -191,7 +191,7 @@ fn team_row(
     action
 }
 
-/// Laufende Abstimmung (Ja/Nein) oder neue starten.
+/// Running vote (yes/no) or start a new one.
 fn vote_box(
     ui: &mut Ui<'_>,
     cx: &MenuCtx<'_>,
@@ -258,8 +258,8 @@ fn vote_box(
     None
 }
 
-/// Auswahl je Abstimmungsart ab `origin`; liefert die Abstimmung (falls vollständig)
-/// und die y-Position darunter.
+/// Choice per vote kind from `origin`; returns the vote (if complete)
+/// and the y position below it.
 fn vote_choice(
     ui: &mut Ui<'_>,
     cx: &MenuCtx<'_>,

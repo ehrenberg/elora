@@ -1,20 +1,20 @@
-//! Karten für den Online-Client (M6.5, E-136): erst im Zwischenspeicher und in `maps/`
-//! suchen, sonst vom Server laden und ablegen.
+//! Maps for the online client (M6.5, E-136): first look in the cache and in `maps/`,
+//! otherwise download from the server and store.
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 
 use elora_protocol::MapChecksum;
 
-/// Woher der Client Karten nimmt und wohin er heruntergeladene legt.
+/// Where the client takes maps from and where it puts downloaded ones.
 pub trait MapStore: std::fmt::Debug + Send {
-    /// Kartendatei mit genau dieser Prüfsumme, falls vorhanden.
+    /// Map file with exactly this checksum, if present.
     fn find(&mut self, name: &str, checksum: &MapChecksum) -> Option<Vec<u8>>;
-    /// Heruntergeladene (bereits geprüfte) Karte ablegen.
+    /// Store a downloaded (already verified) map.
     fn store(&mut self, name: &str, checksum: &MapChecksum, data: &[u8]);
 }
 
-/// Nur im Speicher (Tests, oder wenn kein Benutzerverzeichnis bekannt ist).
+/// Memory only (tests, or when no user directory is known).
 #[derive(Debug, Default)]
 pub struct MemoryStore {
     pub maps: HashMap<MapChecksum, Vec<u8>>,
@@ -30,15 +30,15 @@ impl MapStore for MemoryStore {
     }
 }
 
-/// Auf der Platte: Karten aus `maps_dirs` (mitgelieferte und eigene, E-152) und heruntergeladene
-/// in `download_dir` (Dateiname `<name>-<prüfsumme>.emap`, so liegen verschiedene Stände nebeneinander).
+/// On disk: maps from `maps_dirs` (bundled and own, E-152) and downloaded ones in
+/// `download_dir` (file name `<name>-<prüfsumme>.emap`, so different versions sit side by side).
 #[derive(Debug, Clone)]
 pub struct DiskStore {
     pub maps_dirs: Vec<PathBuf>,
     pub download_dir: PathBuf,
 }
 
-/// Kartenname vom Server als sicherer Dateiname (keine Pfade, keine Sonderzeichen).
+/// Map name from the server as a safe file name (no paths, no special characters).
 pub fn safe_name(name: &str) -> String {
     let s: String = name
         .chars()
@@ -123,7 +123,7 @@ mod tests {
         assert!(store.find("arena", &sum).is_none());
         store.store("arena", &sum, &data);
         assert_eq!(store.find("arena", &sum), Some(data.clone()));
-        // eigene Karte in maps/ mit gleichem Inhalt wird ebenfalls gefunden, andere nicht
+        // an own map in maps/ with the same content is found as well, others are not
         std::fs::create_dir_all(&store.maps_dirs[0]).unwrap();
         std::fs::write(store.maps_dirs[0].join("eigen.emap"), &data).unwrap();
         assert!(store.find("eigen", &sum).is_some());

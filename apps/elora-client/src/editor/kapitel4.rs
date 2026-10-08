@@ -1,10 +1,10 @@
-//! Karten von Kapitel 4 (R2-M2.4): `frost-1` (Gletscherfuß), `frost-2` (verlassenes Bergdorf
-//! mit Flockes Hütte, dem vereisten Keller und dem Kletterkamin), `frost-3` (Gipfelgrat im
-//! Schneesturm) und `frost-arena` (Eishalle der Frostquelle mit Kristella). Der Bergsteig
-//! beginnt oben im Oberdorf von Tauwinkel unter einem Eisdeckel (D-M24-01); die Karten
-//! werden von links nach rechts gebaut.
+//! Maps of chapter 4 (R2-M2.4): `frost-1` (glacier foot), `frost-2` (abandoned mountain village
+//! with Flocke's hut, the frozen cellar and the climbing chimney), `frost-3` (summit ridge in
+//! the blizzard) and `frost-arena` (ice hall of the frost spring with Kristella). The mountain
+//! trail starts at the top of Tauwinkel's upper village under an ice lid (D-M24-01); the maps
+//! are built from left to right.
 //!
-//! `cargo test -p elora-client --bin elora write_kapitel4_maps -- --ignored` schreibt
+//! `cargo test -p elora-client --bin elora write_kapitel4_maps -- --ignored` writes
 //! `maps/abenteuer/*.emap`.
 
 #![allow(
@@ -23,7 +23,7 @@ use super::prolog::{
 };
 use super::release::{self, Theme};
 
-/// Berge: Thema „Winter“ der Release-Karten, verschneite Tannen hinten.
+/// Mountains: theme „Winter“ of the release maps, snowy firs in the back.
 const WINTER: Theme = Theme {
     back: &[("tanne-schnee", 6), ("rock-2", 1)],
     front: &["rock-1"],
@@ -35,14 +35,14 @@ const WINTER: Theme = Theme {
 fn winter(m: Map) -> Map {
     let mut map = finish(m, &WINTER);
     release::apply_look(&WINTER, &mut map);
-    // im Gebirge nur Wolken und ferne Gipfel – kein grüner Wald, keine Wiesenhügel
+    // in the mountains only clouds and distant peaks – no green forest, no meadow hills
     map.backgrounds
         .retain(|b| b.name == "Wolken" || b.name == "Berge");
     animate(&mut map, &[]);
     map
 }
 
-/// Klarkristall (Sammelstück für Klonk, D-M24-09) auf dem Boden von Zeile `ty`.
+/// Clear crystal (collectible for Klonk, D-M24-09) on the ground of row `ty`.
 fn crystal(id: &str, tx: usize, ty: usize) -> Object {
     o(
         id,
@@ -53,7 +53,7 @@ fn crystal(id: &str, tx: usize, ty: usize) -> Object {
     )
 }
 
-/// Feuerstelle (Deko) mit Wärmezone `feuer…` (E-342) auf dem Boden von Zeile `ty`.
+/// Fireplace (decoration) with warmth zone `feuer…` (E-342) on the ground of row `ty`.
 fn fire(m: &mut Map, id: &str, tx: usize, ty: usize) {
     m.adventure
         .objects
@@ -61,7 +61,7 @@ fn fire(m: &mut Map, id: &str, tx: usize, ty: usize) {
     m.decor_back.push(big("feuerstelle", tx as f32, ty, 0.8));
 }
 
-/// Etwas, das unter der Decke hängt (Unterkante der Decke = Oberkante von Zeile `ty`).
+/// Something hanging under the ceiling (bottom edge of the ceiling = top edge of row `ty`).
 fn hanging(id: &str, kind: &str, tx: usize, ty: usize, h: f32) -> Object {
     o(
         id,
@@ -85,30 +85,30 @@ fn seal(id: &str, tx: usize, ty: usize) -> Object {
     creature(id, "schneeballrobbe", tx, ty, 28.0)
 }
 
-/// Frostgeist `rows` Tiles über dem Boden.
+/// Frost spirit `rows` tiles above the ground.
 fn ghost(id: &str, tx: usize, ty: usize, rows: usize) -> Object {
     creature(id, "frostgeist", tx, ty - rows, 52.0)
 }
 
-/// Graue Stellen im Eis: Spuren des Dürren (Kapitel 4).
+/// Gray spots in the ice: traces of the Withering (chapter 4).
 fn traces(m: &mut Map, spots: &[(f32, usize)]) {
     for &(tx, ty) in spots {
         m.decor_front.push(big("grauspur-eis", tx, ty, 0.7));
     }
 }
 
-/// Kletterkamin wie auf der Fähigkeiten-Testkarte: zwei Kletterwände in den Spalten `x0` und
-/// `x0 + 4` (drei Tiles Luft dazwischen) von Zeile `top` bis `bottom`.
+/// Climbing chimney as on the abilities test map: two climbing walls in the columns `x0` and
+/// `x0 + 4` (three tiles of air between them) from row `top` to `bottom`.
 fn chimney(g: &mut Grid, x0: usize, top: usize, bottom: usize) {
     g.fill((x0, x0), (top, bottom), '|');
     g.fill((x0 + 1, x0 + 3), (top, bottom), '.');
     g.fill((x0 + 4, x0 + 4), (top, bottom), '|');
 }
 
-/// Gletscherfuß, 240 × 60: aus dem Gang unter dem Bergsteig auf die ersten Hänge, Feuerstelle
-/// am Eingang, Eisflächen, Felsgang mit Eiszapfen, dünne Eisbrücke über Eiswasser (darunter
-/// ein Kristall auf trockenem Fels), Bolles Nische (nur mit Eisgriff) und ein Lawinenhang
-/// hinauf zum Bergdorf.
+/// Glacier foot, 240 × 60: from the passage under the mountain trail onto the first slopes,
+/// fireplace at the entrance, ice surfaces, rock passage with icicles, thin ice bridge over ice
+/// water (below it a crystal on dry rock), Bolle's niche (only with the ice grip) and an
+/// avalanche slope up to the mountain village.
 pub fn frost_1() -> Map {
     let (w, h) = (240, 60);
     let mut g = Grid::new(w, h, 50);
@@ -118,11 +118,11 @@ pub fn frost_1() -> Map {
     g.ground(35, 50, 34);
     g.fill((38, 48), (34, 34), '~');
     g.ground(51, 60, 36);
-    // Felsgang mit Eiszapfen
+    // rock passage with icicles
     g.ground(61, 90, 38);
     g.fill((61, 90), (30, 33), '#');
     g.ground(91, 100, 38);
-    // dünne Eisbrücke: links Eiswasser, rechts trockener Fels mit einem Kristall
+    // thin ice bridge: ice water on the left, dry rock with a crystal on the right
     g.fill((101, 116), (38, 44), '.');
     g.fill((101, 116), (38, 38), '-');
     g.fill((101, 110), (41, 44), '+');
@@ -131,13 +131,13 @@ pub fn frost_1() -> Map {
     g.ground(117, 125, 41);
     g.ground(126, 140, 39);
     g.ground(141, 170, 39);
-    // Bolles Nische: Kletterschacht an einer unhookbaren Felswand
+    // Bolle's niche: climbing shaft on an unhookable rock wall
     g.fill((161, 167), (22, 38), '%');
     chimney(&mut g, 156, 22, 38);
     g.fill((157, 159), (39, 39), '#');
     g.fill((141, 145), (29, 29), '#');
     g.ground(171, 200, 37);
-    // Lawinenhang hinauf (die Brocken rollen nach Westen herunter)
+    // avalanche slope up (the boulders roll down to the west)
     g.ground(201, 205, 36);
     g.ground(206, 210, 34);
     g.ground(211, 215, 32);
@@ -192,29 +192,29 @@ pub fn frost_1() -> Map {
     winter(m)
 }
 
-/// Verlassenes Bergdorf, 260 × 60: Käserei mit vereistem Keller (dünnes Eis über Eiswasser,
-/// Fledermäuse, Flockes Seil in der Truhe), Flockes Hütte mit Feuer, dahinter der Kletterkamin
-/// auf die Hochebene; dort Kiesels Gletscherspalte und der Weg zum Gipfelgrat.
+/// Abandoned mountain village, 260 × 60: cheese dairy with a frozen cellar (thin ice over ice
+/// water, bats, Flocke's rope in the chest), Flocke's hut with a fire, behind it the climbing
+/// chimney onto the plateau; there Kiesel's glacier crevasse and the path to the summit ridge.
 pub fn frost_2() -> Map {
     let (w, h) = (260, 60);
     let mut g = Grid::new(w, h, 50);
     g.ground(0, 116, 38);
-    // Keller unter der Käserei: Einstieg Spalten 47–49, Boden aus dünnem Eis über Eiswasser
+    // cellar under the cheese dairy: entry columns 47–49, floor of thin ice over ice water
     g.fill((46, 74), (39, 43), '.');
     g.fill((47, 49), (38, 38), '.');
     g.fill((50, 69), (44, 44), '-');
     g.fill((50, 69), (45, 47), '+');
-    // Dach der Käserei und von Flockes Hütte
+    // roof of the cheese dairy and of Flocke's hut
     g.fill((42, 66), (31, 31), '=');
     g.fill((90, 104), (32, 32), '=');
-    // Kletterkamin hinter der Hütte, rechts die Felswand bis zur Hochebene
+    // climbing chimney behind the hut, on the right the rock wall up to the plateau
     chimney(&mut g, 112, 12, 37);
     g.fill((117, w - 1), (11, h - 1), '%');
     g.fill((117, w - 1), (11, 11), '#');
-    // Kiesels Gletscherspalte in der Hochebene
+    // Kiesel's glacier crevasse on the plateau
     chimney(&mut g, 162, 12, 29);
     g.fill((163, 165), (11, 11), '.');
-    // Turm mit Kristall
+    // tower with a crystal
     g.fill((238, 240), (4, 10), '#');
     let mut m = g.map("Verlassenes Bergdorf");
     m.adventure.objects = vec![
@@ -263,19 +263,19 @@ pub fn frost_2() -> Map {
     winter(m)
 }
 
-/// Gipfelgrat, 280 × 60, immer im Schneesturm: zwei Lawinenhänge, ein Tal mit Wickes Sims
-/// über einem Kletterkamin, Fledermäuse unter einem Felsdach, die graue Stelle, Feuerstellen
-/// gegen die Kälte und der Quellstein vor der Eishalle.
+/// Summit ridge, 280 × 60, always in a blizzard: two avalanche slopes, a valley with Wicke's
+/// ledge above a climbing chimney, bats under a rock roof, the gray spot, fireplaces
+/// against the cold and the spring stone before the ice hall.
 pub fn frost_3() -> Map {
     let (w, h) = (280, 60);
     let mut g = Grid::new(w, h, 50);
     g.ground(0, 20, 20);
-    // Lawinenhang 1 hinauf
+    // avalanche slope 1 up
     g.ground(21, 30, 18);
     g.ground(31, 40, 16);
     g.ground(41, 50, 14);
     g.ground(51, 70, 12);
-    // Tal mit Wickes Sims und Felsdach
+    // valley with Wicke's ledge and rock roof
     g.ground(71, 110, 26);
     chimney(&mut g, 78, 11, 25);
     g.fill((83, 88), (10, 10), '#');
@@ -284,7 +284,7 @@ pub fn frost_3() -> Map {
     g.ground(116, 120, 20);
     g.ground(121, 125, 17);
     g.ground(126, 160, 14);
-    // Lawinenhang 2 hinauf
+    // avalanche slope 2 up
     g.ground(161, 170, 12);
     g.ground(171, 180, 10);
     g.ground(181, 190, 8);
@@ -342,9 +342,9 @@ pub fn frost_3() -> Map {
     winter(m)
 }
 
-/// Eishalle der Frostquelle, 100 × 50: vom Sims hinab in die Halle; Eisboden genau so breit
-/// wie Kristellas Frostwellen (35 Tiles), Kletterwände an beiden Seiten und zwei
-/// Kletterpfeiler, darüber die Decke für die Eiszapfen. Tor nach dem Sieg, Weg zurück nach
+/// Ice hall of the frost spring, 100 × 50: from the ledge down into the hall; ice floor exactly as
+/// wide as Kristella's frost waves (35 tiles), climbing walls on both sides and two
+/// climbing pillars, above them the ceiling for the icicles. Gate after the victory, path back to
 /// Tauwinkel.
 pub fn frost_arena() -> Map {
     let (w, h) = (100, 50);
@@ -352,7 +352,7 @@ pub fn frost_arena() -> Map {
     g.ground(0, 24, 28);
     g.fill((25, 25), (29, 43), '|');
     g.fill((26, 60), (44, 44), '~');
-    // Halle unter dem Fels: Decke für die Eiszapfen, darüber geschlossen
+    // hall under the rock: ceiling for the icicles, closed above
     g.fill((25, 61), (0, 18), '%');
     g.fill((25, 61), (17, 18), '#');
     g.fill((35, 35), (34, 43), '|');
@@ -411,7 +411,7 @@ pub fn frost_arena() -> Map {
     winter(m)
 }
 
-/// Karten von Kapitel 4 mit ihren Namen.
+/// Maps of chapter 4 with their names.
 pub fn maps() -> Vec<(&'static str, Map)> {
     vec![
         ("frost-1", frost_1()),
@@ -421,7 +421,7 @@ pub fn maps() -> Vec<(&'static str, Map)> {
     ]
 }
 
-/// Mitte der Halle in Welteinheiten (Kristellas Startpunkt), für Tests.
+/// Center of the hall in world units (Kristella's starting point), for tests.
 #[cfg(test)]
 const HALL_MID: f32 = 43.5 * TILE_SIZE as f32;
 
@@ -455,7 +455,7 @@ mod tests {
         let refs: Vec<(&str, &Map)> = all.iter().map(|(n, m)| (*n, m)).collect();
         let errors = map_links(&refs);
         assert!(errors.is_empty(), "{errors:?}");
-        // Inhalte der Aufgaben stehen auf den Karten
+        // the quests' contents are on the maps
         let mountains = maps();
         let objects: Vec<&Object> = mountains
             .iter()
@@ -490,7 +490,7 @@ mod tests {
         );
     }
 
-    /// Dünnes Eis liegt über Eiswasser oder Luft, Eiswasser hat einen Boden.
+    /// Thin ice lies over ice water or air, ice water has a floor.
     #[test]
     fn thin_ice_and_ice_water_are_built_sensibly() {
         for (name, m) in maps() {
@@ -512,7 +512,7 @@ mod tests {
         }
     }
 
-    /// Die Halle ist so breit wie Kristellas Frostwellen, der Startpunkt liegt in der Mitte.
+    /// The hall is as wide as Kristella's frost waves, the starting point lies in the middle.
     #[test]
     #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
     fn ice_hall_fits_the_frost_waves() {
@@ -563,7 +563,7 @@ mod tests {
         }
     }
 
-    /// Übersicht: `… kapitel4_sheets -- --ignored` → `target/kapitel4-<karte>.svg`.
+    /// Overview: `… kapitel4_sheets -- --ignored` → `target/kapitel4-<karte>.svg`.
     #[test]
     #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
     fn kapitel4_sheets() {

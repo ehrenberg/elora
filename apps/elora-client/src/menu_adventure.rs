@@ -1,6 +1,6 @@
-//! Hauptmenü-Seite „Abenteuer“ (A1.6, E-219): drei Spielstand-Plätze.
+//! Main menu page "Adventure" (A1.6, E-219): three save slots.
 
-// Layout-Code: `s` (Skalierung), `w`/`h`/`x`/`y` wie in menu.rs
+// Layout code: `s` (scale), `w`/`h`/`x`/`y` as in menu.rs
 #![allow(clippy::many_single_char_names)]
 
 use elora_render::Align;
@@ -10,8 +10,8 @@ use crate::app_adventure::{SlotView, play_time};
 use crate::menu::{MenuAction, MenuCtx};
 use crate::ui::{GRAY, GREEN, LOGO, Rect, TEXT, TEXT_DIM, Ui};
 
-/// Plätze nebeneinander; Löschen mit Rückfrage.
-#[allow(clippy::too_many_lines)] // Layout der drei Plätze
+/// Slots side by side; deleting asks for confirmation.
+#[allow(clippy::too_many_lines)] // layout of the three slots
 pub fn page(
     ui: &mut Ui<'_>,
     cx: &MenuCtx<'_>,

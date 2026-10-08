@@ -1,10 +1,10 @@
-//! `settings.toml` im Benutzerverzeichnis (M7.2, E-116): alles, was ein Spieler
-//! einstellt – Sprache, Name und Skin, Grafik, Ton, Effekte, Maus, Favoriten.
-//! Das Entwickler-Tuning der Sandbox bleibt in `tuning.toml` ([`crate::tuning_file`]).
+//! `settings.toml` in the user directory (M7.2, E-116): everything a player
+//! sets – language, name and skin, graphics, sound, effects, mouse, favourites.
+//! The developer tuning of the sandbox stays in `tuning.toml` ([`crate::tuning_file`]).
 //!
-//! Ort: Linux `$XDG_CONFIG_HOME/elora` bzw. `~/.config/elora`, Windows `%APPDATA%\Elora`,
-//! macOS `~/Library/Application Support/Elora`. Fehlende Einträge behalten ihren
-//! Standardwert, unbekannte werden ignoriert.
+//! Location: Linux `$XDG_CONFIG_HOME/elora` or `~/.config/elora`, Windows `%APPDATA%\Elora`,
+//! macOS `~/Library/Application Support/Elora`. Missing entries keep their
+//! default value, unknown ones are ignored.
 
 use std::path::{Path, PathBuf};
 
@@ -17,7 +17,7 @@ use crate::lang::Language;
 
 pub const SETTINGS_FILE: &str = "settings.toml";
 
-/// Verzeichnis für Einstellungen des Benutzers; `None`, wenn keins bestimmbar ist.
+/// Directory for the user's settings; `None` if none can be determined.
 pub fn config_dir() -> Option<PathBuf> {
     let env = |k: &str| {
         std::env::var_os(k)
@@ -35,8 +35,8 @@ pub fn config_dir() -> Option<PathBuf> {
     }
 }
 
-/// Benutzerverzeichnis für Daten wie heruntergeladene Karten (M6.5); unter Linux nach XDG
-/// `~/.local/share/elora`, sonst wie [`config_dir`].
+/// User directory for data such as downloaded maps (M6.5); on Linux per XDG
+/// `~/.local/share/elora`, otherwise like [`config_dir`].
 pub fn data_dir() -> Option<PathBuf> {
     if cfg!(any(target_os = "windows", target_os = "macos")) {
         return config_dir();
@@ -48,17 +48,17 @@ pub fn data_dir() -> Option<PathBuf> {
         .map(|p| p.join("elora"))
 }
 
-/// Datei im Einstellungsordner (Rückfall: Arbeitsverzeichnis), z. B. `known_servers.toml`.
+/// File in the settings folder (fallback: working directory), e.g. `known_servers.toml`.
 pub fn config_file(name: &str) -> PathBuf {
     config_dir().map_or_else(|| PathBuf::from(name), |d| d.join(name))
 }
 
-/// Eigene Karten aus dem Editor (E-152).
+/// Own maps from the editor (E-152).
 pub fn user_maps_dir() -> Option<PathBuf> {
     data_dir().map(|d| d.join("maps"))
 }
 
-/// Pfad der Einstellungsdatei (Rückfall: Arbeitsverzeichnis).
+/// Path of the settings file (fallback: working directory).
 pub fn settings_path() -> PathBuf {
     config_dir().map_or_else(|| PathBuf::from(SETTINGS_FILE), |d| d.join(SETTINGS_FILE))
 }
@@ -72,13 +72,13 @@ pub struct Settings {
     pub audio: elora_audio::AudioSettings,
     pub effects: EffectSettings,
     pub input: InputSettings,
-    /// Tastenbelegung (E-117).
+    /// Key bindings (E-117).
     pub bindings: crate::bindings::Bindings,
-    /// Gespeicherte Server (Adresse:Port).
+    /// Saved servers (address:port).
     pub favorites: Vec<String>,
-    /// Zuletzt verbundener Server („Schnell spielen“).
+    /// Last connected server (“Quick play”).
     pub last_server: Option<String>,
-    /// Master-Server für die Internet-Liste (HTTPS, E-112/E-127); leer = keiner (O-47).
+    /// Master server for the internet list (HTTPS, E-112/E-127); empty = none (O-47).
     pub master_url: String,
 }
 
@@ -103,7 +103,7 @@ impl Default for Settings {
 #[serde(default)]
 pub struct PlayerSettings {
     pub name: String,
-    /// Palettennummern (E-095/E-096).
+    /// Palette numbers (E-095/E-096).
     pub body: u8,
     pub feet: u8,
     pub eyes: u8,
@@ -121,7 +121,7 @@ impl Default for PlayerSettings {
 }
 
 impl PlayerSettings {
-    /// Skin; ungültige Nummern aus der Datei fallen auf den Standard zurück.
+    /// Skin; invalid numbers from the file fall back to the default.
     pub fn skin(&self) -> Skin {
         let skin = Skin {
             body: self.body,
@@ -142,27 +142,27 @@ impl PlayerSettings {
     }
 }
 
-/// Grafik (E-120).
+/// Graphics (E-120).
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct GraphicsSettings {
     pub fullscreen: bool,
     pub vsync: bool,
-    /// Kantenglättung (4× MSAA, falls die Grafikkarte es kann).
+    /// Anti-aliasing (4× MSAA, if the graphics card supports it).
     pub msaa: bool,
-    /// Faktor auf die automatische Größe von Menü und HUD (1 = nach Fensterhöhe).
+    /// Factor on the automatic size of menu and HUD (1 = by window height).
     pub ui_scale: f32,
-    /// Wetter: voll, sanft oder aus (E-335).
+    /// Weather: full, gentle or off (E-335).
     pub weather: WeatherQuality,
 }
 
-/// Wie viel Wetter zu sehen ist (E-335); die Wirkung im Abenteuer bleibt gleich.
+/// How much weather is visible (E-335); the effect in the adventure stays the same.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum WeatherQuality {
     #[default]
     Full,
-    /// Weniger Partikel, kein Aufblitzen, dünnerer Schleier.
+    /// Fewer particles, no flashes, thinner veil.
     Gentle,
     Off,
 }
@@ -192,7 +192,7 @@ impl Default for GraphicsSettings {
 }
 
 impl GraphicsSettings {
-    /// UI-Skalierung, begrenzt auf einen sinnvollen Bereich.
+    /// UI scaling, clamped to a sensible range.
     pub fn ui_scale(self) -> f32 {
         self.ui_scale.clamp(0.5, 2.0)
     }
@@ -201,9 +201,9 @@ impl GraphicsSettings {
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct InputSettings {
-    /// Maus-Empfindlichkeit in Prozent.
+    /// Mouse sensitivity in percent.
     pub mouse_sensitivity: f32,
-    /// Zur aufgenommenen Waffe wechseln (E-287).
+    /// Switch to the picked-up weapon (E-287).
     pub auto_switch: AutoSwitch,
 }
 
@@ -216,22 +216,22 @@ impl Default for InputSettings {
     }
 }
 
-/// Wechsel zur aufgenommenen Waffe (E-287).
+/// Switching to the picked-up weapon (E-287).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum AutoSwitch {
     Off,
-    /// Nur, wenn man die Waffe noch nicht hatte (wie im Original).
+    /// Only if one did not have the weapon yet (as in the original).
     #[default]
     New,
-    /// Auch bei Munition für eine vorhandene Waffe.
+    /// Also on ammo for a weapon one already has.
     Always,
 }
 
 impl AutoSwitch {
     pub const ALL: [Self; 3] = [Self::Off, Self::New, Self::Always];
 
-    /// Wechseln, wenn `w` aufgenommen wurde und vorher `had` galt?
+    /// Switch if `w` was picked up and `had` applied before?
     pub fn wants(self, had: bool) -> bool {
         match self {
             Self::Off => false,
@@ -250,7 +250,7 @@ impl AutoSwitch {
 }
 
 impl Settings {
-    /// Lädt die Datei; existiert sie nicht, gelten die Standardwerte.
+    /// Loads the file; if it does not exist, the default values apply.
     pub fn load(path: &Path) -> anyhow::Result<Self> {
         match std::fs::read_to_string(path) {
             Ok(src) => {
@@ -261,7 +261,7 @@ impl Settings {
         }
     }
 
-    /// Speichert über eine Zwischendatei (kein halb geschriebenes `settings.toml`).
+    /// Saves via a temporary file (no half-written `settings.toml`).
     pub fn save(&self, path: &Path) -> anyhow::Result<()> {
         if let Some(dir) = path.parent().filter(|d| !d.as_os_str().is_empty()) {
             std::fs::create_dir_all(dir)
@@ -275,8 +275,8 @@ impl Settings {
         std::fs::rename(&tmp, path).with_context(|| format!("{} nicht schreibbar", path.display()))
     }
 
-    /// Favorit hinzufügen (ohne Doppelte) bzw. entfernen.
-    #[allow(dead_code)] // Server-Browser (M7.7)
+    /// Add a favourite (without duplicates) or remove it.
+    #[allow(dead_code)] // Server browser (M7.7)
     pub fn toggle_favorite(&mut self, address: &str) {
         if let Some(i) = self.favorites.iter().position(|a| a == address) {
             self.favorites.remove(i);
@@ -344,7 +344,7 @@ mod tests {
     #[test]
     fn config_dir_follows_xdg() {
         if cfg!(target_os = "linux") {
-            // nur prüfen, dass ein Pfad mit „elora“ entsteht (Umgebung nicht verändern)
+            // only check that a path with “elora” results (don't change the environment)
             let dir = config_dir().expect("HOME gesetzt");
             assert!(dir.ends_with("elora"));
         }

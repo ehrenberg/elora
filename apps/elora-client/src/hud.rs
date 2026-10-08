@@ -1,11 +1,11 @@
-//! HUD (M5.8, E-102 Entwurf B) als eigene Spiel-UI (E-031), gezeichnet mit dem
-//! Vektor-Renderer in Bildschirm-Pixeln:
+//! HUD (M5.8, E-102 design B) as a custom game UI (E-031), drawn with the
+//! vector renderer in screen pixels:
 //!
-//! - **unten mittig** eine Leiste mit Leben- und Rüstungsbalken und der Waffenwahl
-//!   (Munition unter der aktiven Waffe),
-//! - **oben mittig** Modus, Phase/Timer und Punkte.
+//! - **bottom center** a bar with health and armor bars and the weapon selection
+//!   (ammo below the active weapon),
+//! - **top center** mode, phase/timer and score.
 //!
-//! Alle Maße gelten für 720 Pixel Fensterhöhe und werden mit der Höhe skaliert.
+//! All sizes apply to a 720 pixel window height and are scaled with the height.
 
 use elora_game::{Mode, Phase};
 use elora_protocol::GameView;
@@ -24,17 +24,17 @@ const HEALTH: Color = Color::hex(0xe05a7a);
 const ARMOR: Color = Color::hex(0xe0b85a);
 const SUDDEN_DEATH: Color = Color::hex(0xff7850);
 
-/// Was das HUD anzeigen soll.
+/// What the HUD should display.
 #[derive(Debug, Clone, Copy)]
 pub struct HudInfo<'a> {
-    /// Eigene Figur, `None` = tot oder Zuschauer.
+    /// Own figure, `None` = dead or spectator.
     pub character: Option<&'a Character>,
     pub max_health: i32,
     pub view: Option<&'a GameView>,
     pub tick: u64,
     pub local: Option<usize>,
     pub lang: &'a Lang,
-    /// UI-Skalierung aus den Einstellungen (E-120).
+    /// UI scale from the settings (E-120).
     pub ui_scale: f32,
 }
 
@@ -45,7 +45,7 @@ pub struct Hud {
 
 impl Hud {
     /// # Panics
-    /// Wenn die eingebettete Schrift fehlerhaft ist (wird von Tests abgedeckt).
+    /// If the embedded font is faulty (covered by tests).
     pub fn new() -> Self {
         Self {
             font: Font::new(include_bytes!("../../../assets/fonts/Inter-Regular.ttf"))
@@ -53,12 +53,12 @@ impl Hud {
         }
     }
 
-    /// Schrift der Spiel-UI (auch für die Spielanzeigen).
+    /// Font of the game UI (also for the game displays).
     pub fn font(&self) -> &Font {
         &self.font
     }
 
-    /// Zeichnet das HUD für eine Fläche von `screen` Pixeln.
+    /// Draws the HUD for an area of `screen` pixels.
     pub fn draw(&self, batch: &mut ShapeBatch, items: &ItemArt, screen: Vec2, info: &HudInfo<'_>) {
         let s = scale(screen, info.ui_scale);
         if let Some(ch) = info.character {
@@ -81,7 +81,7 @@ impl Hud {
         }
     }
 
-    /// Leiste unten mittig: Balken links, Waffen rechts.
+    /// Bar at the bottom center: bars on the left, weapons on the right.
     fn bar(
         &self,
         batch: &mut ShapeBatch,
@@ -102,7 +102,7 @@ impl Hud {
             let full = Vec2::new(124.0 * s, h * s);
             batch.fill_rounded_rect(a, a + full, h * s / 2.0, EMPTY);
             if value > 0 {
-                // mindestens so breit wie hoch, damit die runden Enden passen
+                // at least as wide as high so that the round ends fit
                 let part = Vec2::new((full.x * frac(value)).max(full.y), full.y);
                 batch.fill_rounded_rect(a, a + part, h * s / 2.0, color);
             }
@@ -139,7 +139,7 @@ impl Hud {
         }
     }
 
-    /// Oben mittig: „DM · 3:24“, darunter Punkte bzw. Teamstand.
+    /// Top center: "DM · 3:24", below it the score or team standing.
     fn status(
         &self,
         batch: &mut ShapeBatch,
@@ -152,7 +152,7 @@ impl Hud {
         let title = format!("{} · {}", view.title(), phase_text(view, info.tick, lang));
         let mut lines: Vec<(String, f32, Color)> = vec![(title, 16.0, TEXT)];
         if view.mode.teams() {
-            // Teamstand als eigene Zeile, farbig gezeichnet unten
+            // team standing as a separate line, drawn in color below
             lines.push((String::new(), 20.0, TEXT));
         } else if let Some(me) = info.local {
             let mine = view.stats.get(&me).map_or(0, |st| st.score);
@@ -204,7 +204,7 @@ impl Hud {
             let h = size * 1.45 * s;
             let mid = Vec2::new(cx, y + h / 2.0);
             if text.is_empty() {
-                // Teamstand: „Rot 3 : 1 Blau“ in Teamfarben
+                // team standing: "Red 3 : 1 Blue" in team colors
                 let colon = self.font.width(" : ", size * s);
                 self.font
                     .draw_centered(batch, ":", mid, size * s, TEXT, Align::Center);
@@ -233,7 +233,7 @@ impl Hud {
     }
 }
 
-/// Skalierung der Spiel-UI: 1 bei 720 Pixeln Fensterhöhe, mal UI-Skalierung (E-120).
+/// Scale of the game UI: 1 at a 720 pixel window height, times UI scale (E-120).
 pub fn scale(screen: Vec2, ui_scale: f32) -> f32 {
     (screen.y / 720.0).clamp(0.6, 3.0) * ui_scale
 }
@@ -248,7 +248,7 @@ pub fn clock(secs: u64) -> String {
     format!("{}:{:02}", secs / 60, secs % 60)
 }
 
-/// Phase bzw. Timer als Text.
+/// Phase or timer as text.
 fn phase_text(view: &GameView, tick: u64, lang: &Lang) -> String {
     match view.phase {
         Phase::Warmup { until: Some(t) } => lang.f("hud.warmup", &[("s", &secs_left(t, tick))]),
@@ -267,7 +267,7 @@ fn phase_text(view: &GameView, tick: u64, lang: &Lang) -> String {
     }
 }
 
-/// Farbe des Fadenkreuzes nach dem Leben (E-102): Weiß → Gelb → Rot, fließend.
+/// Crosshair color by health (E-102): white → yellow → red, smoothly.
 pub fn crosshair_color(health: i32, max: i32) -> Color {
     const WHITE: Color = Color::rgb(1.0, 1.0, 1.0);
     const YELLOW: Color = Color::hex(0xffd24a);
@@ -291,13 +291,13 @@ mod tests {
         assert!(close(crosshair_color(10, 10), Color::rgb(1.0, 1.0, 1.0)));
         assert!(close(crosshair_color(5, 10), Color::hex(0xffd24a)));
         assert!(close(crosshair_color(0, 10), Color::hex(0xff4a4a)));
-        // dazwischen fließend
+        // smooth in between
         let mid = crosshair_color(7, 10);
         assert!(mid.0[2] > 0.29 && mid.0[2] < 1.0);
     }
 
-    /// Sichtprüfung: `cargo test -p elora-client --bin elora hud_sheet -- --ignored`,
-    /// danach `cargo xtask svg-preview target/hud-dm.svg target/hud-dm.png 1280` (ebenso `hud-ctf`).
+    /// Visual inspection: `cargo test -p elora-client --bin elora hud_sheet -- --ignored`,
+    /// then `cargo xtask svg-preview target/hud-dm.svg target/hud-dm.png 1280` (likewise `hud-ctf`).
     #[test]
     #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
     fn hud_sheet() {

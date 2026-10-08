@@ -1,9 +1,9 @@
-//! Karten von Kapitel 3 (R2-M2.3): `wueste-1` (Dünenrand), `wueste-2` (Karawanenlager und
-//! Oase), `wueste-3` (Ruinen des Glutvolks mit der verschütteten Kammer) und `wueste-arena`
-//! (Glutquelle im Sandkessel mit der Sandschlange). Die Wüste liegt südlich von Tauwinkel:
-//! Der Hohlweg am Ostpfad führt hinab, die Karten werden von links nach rechts gebaut.
+//! Maps of chapter 3 (R2-M2.3): `wueste-1` (dune edge), `wueste-2` (caravan camp and
+//! oasis), `wueste-3` (ruins of the ember folk with the buried chamber) and `wueste-arena`
+//! (ember spring in the sand basin with the sand snake). The desert lies south of Tauwinkel:
+//! the sunken path at the east path leads down, the maps are built from left to right.
 //!
-//! `cargo test -p elora-client --bin elora write_kapitel3_maps -- --ignored` schreibt
+//! `cargo test -p elora-client --bin elora write_kapitel3_maps -- --ignored` writes
 //! `maps/abenteuer/*.emap`.
 
 #![allow(
@@ -22,7 +22,7 @@ use super::prolog::{
 };
 use super::release::{self, Theme};
 
-/// Wüste: Thema „Wüste“ der Release-Karten, große Deko passend zum Gebiet.
+/// Desert: theme „Wüste“ of the release maps, large decoration matching the region.
 const DESERT: Theme = Theme {
     back: &[("kaktus", 5), ("rock-2", 1), ("rock-1", 1)],
     front: &["rock-1", "grass-2"],
@@ -31,7 +31,7 @@ const DESERT: Theme = Theme {
     ..release::THEMES[1]
 };
 
-/// Übergang über die ganze Kartenhöhe am Rand (E-279).
+/// Transition over the full map height at the edge (E-279).
 pub(super) fn edge_exit(id: &str, x: usize, h: usize, map: &str, spawn: &str) -> Object {
     o(
         id,
@@ -69,24 +69,24 @@ fn worm(id: &str, tx: usize, ty: usize) -> Object {
     creature(id, "duenenwurm", tx, ty, 36.0)
 }
 
-/// Funkenmotte `rows` Tiles über dem Boden.
+/// Spark moth `rows` tiles above the ground.
 fn moth(id: &str, tx: usize, ty: usize, rows: usize) -> Object {
     creature(id, "funkenmotte", tx, ty - rows, 32.0)
 }
 
-/// Treibsand statt Boden in den Spalten `x0..=x1` (eine Reihe, fester Grund darunter, E-318).
+/// Quicksand instead of ground in the columns `x0..=x1` (one row, solid ground below, E-318).
 fn quicksand(g: &mut Grid, x0: usize, x1: usize, top: usize) {
     g.fill((x0, x1), (top, top), '&');
 }
 
-/// Graue Fußspuren des Wanderers (E-325).
+/// Gray footprints of the wanderer (E-325).
 fn tracks(m: &mut Map, spots: &[(f32, usize)]) {
     for &(tx, ty) in spots {
         m.decor_front.push(big("grauspur", tx, ty, 2.2));
     }
 }
 
-/// Wüsten-Look: Thema „Wüste“, große eigene Deko bleibt hinten.
+/// Desert look: theme „Wüste“, large custom decoration stays in the back.
 fn desert(m: Map) -> Map {
     let mut map = finish(m, &DESERT);
     release::apply_look(&DESERT, &mut map);
@@ -94,18 +94,18 @@ fn desert(m: Map) -> Map {
     map
 }
 
-/// Glutsandwüste 1, 240 × 60: vom Hohlweg hinab auf den Dünenrand, ein Felsdach als
-/// Schatten, erste Treibsandgruben, Sandkrabben und Dünenwürmer.
+/// Glutsandwüste 1, 240 × 60: from the sunken path down onto the dune edge, a rock roof as
+/// shade, first quicksand pits, sand crabs and dune worms.
 pub fn wueste_1() -> Map {
     let (w, h) = (240, 60);
     let mut g = Grid::new(w, h, 50);
-    // hinab vom Hohlweg
+    // down from the sunken path
     g.ground(0, 14, 24);
     g.ground(15, 20, 28);
     g.ground(21, 26, 32);
     g.ground(27, 34, 36);
     g.ground(35, 60, 40);
-    // Felsdach als Schatten (E-320)
+    // rock roof as shade (E-320)
     g.fill((41, 53), (30, 31), '#');
     g.ground(61, 64, 42);
     g.ground(65, 90, 44);
@@ -116,7 +116,7 @@ pub fn wueste_1() -> Map {
     g.ground(141, 170, 44);
     quicksand(&mut g, 148, 153, 44);
     quicksand(&mut g, 160, 165, 44);
-    // zweites Felsdach
+    // second rock roof
     g.fill((175, 186), (34, 35), '#');
     g.ground(171, 200, 42);
     g.ground(201, 215, 40);
@@ -177,21 +177,21 @@ pub fn wueste_1() -> Map {
     desert(m)
 }
 
-/// Glutsandwüste 2, 220 × 50: Karawanenlager mit Sirup (Zeltdächer spenden Schatten) und
-/// Palmas Oase in einer Senke mit drei verdorrten Stellen (E-319).
+/// Glutsandwüste 2, 220 × 50: caravan camp with Sirup (tent roofs give shade) and
+/// Palma's oasis in a hollow with three withered spots (E-319).
 pub fn wueste_2() -> Map {
     let (w, h) = (220, 50);
     let mut g = Grid::new(w, h, 44);
     g.ground(0, 80, 40);
-    // Zeltdächer
+    // tent roofs
     g.fill((36, 44), (34, 34), '=');
     g.fill((58, 66), (34, 34), '=');
     g.ground(81, 95, 42);
-    // Oase in der Senke
+    // oasis in the hollow
     g.ground(96, 140, 45);
     g.ground(141, 150, 42);
     g.ground(151, w - 1, 40);
-    // Kletterstelle für die Rückkehr mit dem Eisgriff (M2.4.7)
+    // climbing spot for the return with the ice grip (M2.4.7)
     let kletter = climb_vault(
         &mut g,
         "wueste2-kletter",
@@ -273,27 +273,27 @@ pub fn wueste_2() -> Map {
     desert(m)
 }
 
-/// Glutsandwüste 3, 240 × 70: Ruinen des Glutvolks – Tafeln, Stachelgrube, Treibsand, der
-/// Hof mit der Ruinenquelle unter einem Steindach, Zugtruhe, Ruck-Stelle und die
-/// verschüttete Kammer unter Bröckelboden (nur mit Stampfen, E-323).
+/// Glutsandwüste 3, 240 × 70: ruins of the ember folk – tablets, spike pit, quicksand, the
+/// courtyard with the ruin spring under a stone roof, pull chest, hook jerk spot and the
+/// buried chamber under crumbling floor (only with stomp, E-323).
 pub fn wueste_3() -> Map {
     let (w, h) = (240, 70);
     let mut g = Grid::new(w, h, 50);
     g.ground(0, 100, 46);
-    // erhöhte Ruinenböden
+    // raised ruin floors
     g.fill((30, 35), (43, 45), '#');
     g.fill((44, 50), (40, 45), '#');
-    // Stachelgrube mit Hook-Blüte darüber
+    // spike pit with a hook flower above
     g.fill((61, 66), (46, 46), '^');
     g.fill((63, 63), (36, 36), '*');
     quicksand(&mut g, 92, 97, 46);
-    // Hof mit der Ruinenquelle, Steindach als Schatten
+    // courtyard with the ruin spring, stone roof as shade
     g.ground(101, 130, 49);
     g.fill((101, 103), (46, 48), '#');
     g.fill((128, 130), (46, 48), '#');
     g.fill((101, 130), (38, 39), '%');
     g.ground(131, 239, 46);
-    // Zugtruhe (Heranhooken) und Ruck-Stelle (Hook-Ruck)
+    // pull chest (pull hook) and hook jerk spot (hook jerk)
     let vault = pull_vault(
         &mut g,
         "ruine",
@@ -303,12 +303,12 @@ pub fn wueste_3() -> Map {
         &[("glanztropfen", 45), ("glutstein", 2)],
     );
     let ruck_top = ruck_gate(&mut g, 148, 46);
-    // verschüttete Kammer: Bröckelboden (zwei Reihen), darunter ein Raum mit Steg
+    // buried chamber: crumbling floor (two rows), below it a room with a ledge
     g.fill((171, 185), (46, 56), '#');
     g.fill((172, 184), (48, 55), '.');
     g.fill((175, 179), (46, 47), ':');
     g.fill((180, 184), (52, 52), '=');
-    // Stachelgrube vor dem Ausgang
+    // spike pit before the exit
     g.fill((205, 209), (46, 46), '^');
     let mut m = g.map("Ruinen des Glutvolks");
     m.adventure.objects = vec![
@@ -383,9 +383,9 @@ pub fn wueste_3() -> Map {
     desert(m)
 }
 
-/// Glutquelle, 110 × 50: vom Sims hinab in den Sandkessel; der Kessel liegt im Schatten der
-/// Felswände (keine Hitze im Kampf). Boden drei Tiles dick (Treibsand der wütenden
-/// Sandschlange), zwei Stege zum Ausweichen; Tor nach dem Sieg, Weg zurück nach Tauwinkel.
+/// Ember spring, 110 × 50: from the ledge down into the sand basin; the basin lies in the shade
+/// of the rock walls (no heat in the fight). Ground three tiles thick (quicksand of the angry
+/// sand snake), two ledges to dodge; gate after the victory, path back to Tauwinkel.
 pub fn wueste_arena() -> Map {
     let (w, h) = (110, 50);
     let mut g = Grid::new(w, h, 44);
@@ -447,7 +447,7 @@ pub fn wueste_arena() -> Map {
     desert(m)
 }
 
-/// Karten von Kapitel 3 mit ihren Namen.
+/// Maps of chapter 3 with their names.
 pub fn maps() -> Vec<(&'static str, Map)> {
     vec![
         ("wueste-1", wueste_1()),
@@ -486,7 +486,7 @@ mod tests {
         let refs: Vec<(&str, &Map)> = all.iter().map(|(n, m)| (*n, m)).collect();
         let errors = map_links(&refs);
         assert!(errors.is_empty(), "{errors:?}");
-        // Inhalte der Aufgaben stehen auf den Karten
+        // the quests' contents are on the maps
         let desert = maps();
         let objects: Vec<&Object> = desert
             .iter()
@@ -508,7 +508,7 @@ mod tests {
         }
     }
 
-    /// Treibsand liegt immer auf festem Grund, und der Kessel hat drei Reihen Boden.
+    /// Quicksand always lies on solid ground, and the basin has three rows of ground.
     #[test]
     fn quicksand_rests_on_solid_ground() {
         for (name, m) in maps() {
@@ -549,7 +549,7 @@ mod tests {
         }
     }
 
-    /// Übersicht: `… kapitel3_sheets -- --ignored` → `target/kapitel3-<karte>.svg`.
+    /// Overview: `… kapitel3_sheets -- --ignored` → `target/kapitel3-<karte>.svg`.
     #[test]
     #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
     fn kapitel3_sheets() {

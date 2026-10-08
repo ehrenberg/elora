@@ -1,8 +1,8 @@
-//! Emotes (M5.9, E-091, E-103): Sprechblase über dem Kopf und Emote-Rad.
+//! Emotes (M5.9, E-091, E-103): speech bubble above the head and emote wheel.
 //!
-//! Rad: Taste E halten, mit der Maus in eine Richtung zeigen, loslassen. Die
-//! Richtung ist die Zielrichtung (Maus relativ zur Figur); Herz liegt oben,
-//! weiter im Uhrzeigersinn.
+//! Wheel: hold key E, point the mouse in a direction, release. The
+//! direction is the aim direction (mouse relative to the figure); heart is at the top,
+//! continuing clockwise.
 
 use std::collections::HashMap;
 
@@ -11,13 +11,13 @@ use elora_protocol::msg::EMOTES;
 use elora_render::{Affine, Color, Mesh, ShapeBatch, SvgAsset, Tint};
 use elora_sim::{PHYS_SIZE, Vec2};
 
-/// Anzeigedauer über dem Kopf (E-103).
+/// Display duration above the head (E-103).
 const DURATION: f32 = 2.0;
 const POP_IN: f32 = 0.15;
 const FADE_OUT: f32 = 0.3;
-/// Spitze der Blase über der Hitbox-Mitte: Figur ≈ 47 hoch, Boden bei +14.
+/// Tip of the bubble above the hitbox center: figure ≈ 47 high, ground at +14.
 const ABOVE_HEAD: f32 = PHYS_SIZE / 2.0 - 47.0 - 6.0;
-/// Unterhalb dieser Mausentfernung (Welteinheiten) wählt das Rad nichts.
+/// Below this mouse distance (world units) the wheel selects nothing.
 const DEAD_ZONE: f32 = 40.0;
 
 fn load(data: &[u8], name: &str) -> Mesh {
@@ -34,17 +34,17 @@ fn load(data: &[u8], name: &str) -> Mesh {
 pub struct Emotes {
     bubble: Mesh,
     symbols: Vec<Mesh>,
-    /// Slot → (Emote, Alter in s).
+    /// Slot → (emote, age in s).
     active: HashMap<usize, (u8, f32)>,
-    /// Emote-Rad offen (Taste E gehalten).
+    /// Emote wheel open (key E held).
     pub wheel_open: bool,
-    /// Seit dem letzten [`Emotes::take_new`] gezeigte Emotes (Slots, für den Sound).
+    /// Emotes shown since the last [`Emotes::take_new`] (slots, for the sound).
     new: Vec<usize>,
 }
 
 impl Emotes {
     /// # Panics
-    /// Wenn ein eingebettetes Asset fehlerhaft ist (wird von Tests abgedeckt).
+    /// If an embedded asset is faulty (covered by tests).
     pub fn new() -> Self {
         macro_rules! symbol {
             ($f:literal) => {
@@ -69,7 +69,7 @@ impl Emotes {
         }
     }
 
-    /// Emote über `slot` anzeigen (ersetzt ein laufendes).
+    /// Show an emote above `slot` (replaces a running one).
     pub fn show(&mut self, slot: usize, emote: u8) {
         if emote < EMOTES {
             self.active.insert(slot, (emote, 0.0));
@@ -77,7 +77,7 @@ impl Emotes {
         }
     }
 
-    /// Slots, die seit dem letzten Aufruf ein Emote bekommen haben.
+    /// Slots that have received an emote since the last call.
     pub fn take_new(&mut self) -> Vec<usize> {
         std::mem::take(&mut self.new)
     }
@@ -89,7 +89,7 @@ impl Emotes {
         self.active.retain(|_, (_, age)| *age < DURATION);
     }
 
-    /// Blase mit Symbol; `scale` 1 = Weltgröße, `alpha` für Ein-/Ausblenden.
+    /// Bubble with icon; `scale` 1 = world size, `alpha` for fading in/out.
     fn draw_bubble(&self, batch: &mut ShapeBatch, tip: Vec2, emote: u8, scale: f32, alpha: f32) {
         let t = Affine::translate(tip).then(Affine::scale(scale, scale));
         let tint = Tint {
@@ -102,13 +102,13 @@ impl Emotes {
         }
     }
 
-    /// Laufende Emotes über den Figuren der Szene.
+    /// Running emotes above the figures of the scene.
     pub fn draw(&self, batch: &mut ShapeBatch, scene: &Scene) {
         for c in &scene.chars {
             let Some(&(emote, age)) = self.active.get(&c.slot) else {
                 continue;
             };
-            // Aufpoppen mit leichtem Überschwingen, am Ende ausblenden
+            // pop up with a slight overshoot, fade out at the end
             let scale = if age < POP_IN {
                 let x = age / POP_IN;
                 x * (1.0 + 0.3 * (1.0 - x))
@@ -121,7 +121,7 @@ impl Emotes {
         }
     }
 
-    /// Emote-Rad in Bildschirm-Pixeln, `s` = HUD-Skalierung.
+    /// Emote wheel in screen pixels, `s` = HUD scale.
     pub fn draw_wheel(&self, batch: &mut ShapeBatch, screen: Vec2, s: f32, selected: Option<u8>) {
         let center = screen * 0.5;
         let radius = 130.0 * s;
@@ -136,7 +136,7 @@ impl Emotes {
             let dir = Vec2::new(a.cos(), a.sin());
             let sel = selected == Some(e);
             if sel {
-                // hervorgehobener Sektor als Fächer
+                // highlighted sector as a fan
                 let half = std::f32::consts::PI / 8.0;
                 let steps = 12;
                 let mut points = vec![center + dir * (40.0 * s)];
@@ -148,19 +148,19 @@ impl Emotes {
                 batch.fill_polygon(&points, Color::rgba(1.0, 1.0, 1.0, 0.3));
             }
             let scale = if sel { 2.4 } else { 2.0 } * s;
-            // Blase so verschieben, dass ihre Mitte (y = −17) auf dem Kreis liegt
+            // move the bubble so that its center (y = −17) lies on the circle
             let tip = center + dir * radius + Vec2::new(0.0, 17.0 * scale);
             self.draw_bubble(batch, tip, e, scale, 1.0);
         }
     }
 }
 
-/// Richtung des Sektors `e` (rad): 0 oben, im Uhrzeigersinn je 45°.
+/// Direction of sector `e` (rad): 0 at the top, clockwise in steps of 45°.
 fn sector_angle(e: u8) -> f32 {
     (-90.0 + f32::from(e) * 45.0).to_radians()
 }
 
-/// Gewähltes Emote für die Mausrichtung `aim` (relativ zur Figur), `None` in der Mitte.
+/// Chosen emote for the mouse direction `aim` (relative to the figure), `None` in the middle.
 pub fn selection(aim: Vec2) -> Option<u8> {
     if aim.length() < DEAD_ZONE {
         return None;
@@ -186,8 +186,8 @@ mod tests {
         assert_eq!(selection(Vec2::new(10.0, 5.0)), None, "Mitte");
     }
 
-    /// Sichtprüfung: `cargo test -p elora-client --bin elora emote_sheet -- --ignored`,
-    /// danach `cargo xtask svg-preview target/emotes.svg target/emotes.png 1000`.
+    /// Visual inspection: `cargo test -p elora-client --bin elora emote_sheet -- --ignored`,
+    /// then `cargo xtask svg-preview target/emotes.svg target/emotes.png 1000`.
     #[test]
     #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
     fn emote_sheet() {
@@ -217,7 +217,7 @@ mod tests {
     fn emotes_expire() {
         let mut e = Emotes::new();
         e.show(3, 5);
-        e.show(4, EMOTES); // ungültig
+        e.show(4, EMOTES); // invalid
         assert_eq!(e.active.len(), 1);
         e.update(DURATION - 0.1);
         assert_eq!(e.active.len(), 1);

@@ -1,6 +1,6 @@
-//! Layouts der Release-Karten (M6.10, E-134, E-155 bis E-158), erzeugt mit dem Baukasten
-//! `tools/design/release_maps/` und dort geprüft (Erreichbarkeit, Spawns, Spiegelung).
-//! Zeichen wie in den Aufzeichnungen; Entities `S R B r b h a L G`.
+//! Layouts of the release maps (M6.10, E-134, E-155 to E-158), generated with the toolkit
+//! `tools/design/release_maps/` and checked there (reachability, spawns, mirroring).
+//! Characters as in the notes; entities `S R B r b h a L G`.
 
 pub const WIESE: &[&str] = &[
     r"################################################################",

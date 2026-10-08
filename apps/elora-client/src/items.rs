@@ -1,14 +1,14 @@
-//! Pickups, Waffen und Flaggen (M5.5, E-101 Stil A) aus `assets/items/*.svg`.
+//! Pickups, weapons and flags (M5.5, E-101 style A) from `assets/items/*.svg`.
 //!
-//! Die Assets sind in Welteinheiten gezeichnet. Waffen haben den Ursprung am Griff
-//! und zeigen nach +x; Pickups und Flaggen den Ursprung in der Mitte.
+//! The assets are drawn in world units. Weapons have their origin at the grip
+//! and point towards +x; pickups and flags have their origin in the center.
 
 use elora_render::{Affine, Color, Mesh, ShapeBatch, SvgAsset, Tint};
 use elora_sim::{PickupKind, Vec2, Weapon};
 
-/// Abstand des Griffs von der Figurenmitte in Zielrichtung.
+/// Distance of the grip from the figure center in aim direction.
 const GRIP: f32 = 4.0;
-/// Schweben der Pickups: Höhe (Einheiten) und Frequenz (Hz).
+/// Hovering of the pickups: height (units) and frequency (Hz).
 const BOB_HEIGHT: f32 = 2.5;
 const BOB_HZ: f32 = 0.6;
 
@@ -36,7 +36,7 @@ pub struct ItemArt {
 
 impl ItemArt {
     /// # Panics
-    /// Wenn ein eingebettetes Asset fehlerhaft ist (wird von Tests abgedeckt).
+    /// If an embedded asset is faulty (covered by tests).
     pub fn load() -> Self {
         let flag = load(include_bytes!("../../../assets/items/flag.svg"), "flag");
         let part = |n: &str| {
@@ -66,9 +66,9 @@ impl ItemArt {
         }
     }
 
-    /// Waffe in der Hand: zeigt in Zielrichtung; nach links gespiegelt, damit
-    /// Glanzlichter oben bleiben.
-    /// `swing`: zusätzliche Drehung (rad) für den Hammer-Schwung.
+    /// Weapon in hand: points in aim direction; mirrored to the left so that
+    /// highlights stay on top.
+    /// `swing`: additional rotation (rad) for the hammer swing.
     pub fn draw_weapon(&self, batch: &mut ShapeBatch, pos: Vec2, aim: Vec2, swing: f32, w: Weapon) {
         let flip = if aim.x < 0.0 { -1.0 } else { 1.0 };
         let angle = aim.y.atan2(aim.x) + swing;
@@ -79,7 +79,7 @@ impl ItemArt {
         batch.draw_mesh(self.weapon_mesh(w), &t, &Tint::default());
     }
 
-    /// Waffe als Symbol, mittig um `center` (HUD); `alpha` < 1 für nicht vorhandene Waffen.
+    /// Weapon as an icon, centered around `center` (HUD); `alpha` < 1 for weapons not owned.
     pub fn draw_icon(
         &self,
         batch: &mut ShapeBatch,
@@ -103,9 +103,9 @@ impl ItemArt {
         batch.draw_mesh(mesh, &t, &tint);
     }
 
-    /// Pickup, schwebend; `time` in Sekunden.
+    /// Pickup, hovering; `time` in seconds.
     pub fn draw_pickup(&self, batch: &mut ShapeBatch, pos: Vec2, kind: PickupKind, time: f32) {
-        // Phase nach Position, damit nicht alle Pickups im Gleichtakt schweben
+        // phase by position so that not all pickups hover in sync
         let phase = time * BOB_HZ * std::f32::consts::TAU + pos.x * 0.05;
         let p = pos + Vec2::new(0.0, phase.sin() * BOB_HEIGHT);
         match kind {
@@ -116,7 +116,7 @@ impl ItemArt {
                 batch.draw_mesh(&self.armor, &Affine::translate(p), &Tint::default());
             }
             PickupKind::Weapon(w) => {
-                // Waffe mittig über dem Pickup-Punkt
+                // weapon centered above the pickup point
                 let len = match w {
                     Weapon::Hammer => 34.0,
                     Weapon::Grenade => 38.0,
@@ -128,10 +128,10 @@ impl ItemArt {
         }
     }
 
-    /// Flagge mit wehendem Tuch; `time` in Sekunden.
+    /// Flag with waving cloth; `time` in seconds.
     pub fn draw_flag(&self, batch: &mut ShapeBatch, pos: Vec2, color: Color, time: f32) {
         batch.draw_mesh(&self.flag_pole, &Affine::translate(pos), &Tint::default());
-        // Tuch um die Befestigung (1.5, -26) strecken und scheren
+        // stretch and shear the cloth around the attachment (1.5, -26)
         let hinge = Vec2::new(1.5, -26.0);
         let wave = (time * 2.2 * std::f32::consts::TAU).sin();
         let cloth = Affine::translate(pos + hinge)
@@ -163,7 +163,7 @@ mod tests {
         ] {
             assert!(!m.is_empty());
         }
-        // Waffen beginnen am Griff
+        // weapons start at the grip
         let (min, max) = art.laser.bounds().unwrap();
         assert!(min.x > -2.0 && max.x > 38.0);
     }

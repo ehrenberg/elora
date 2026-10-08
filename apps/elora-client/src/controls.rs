@@ -1,14 +1,14 @@
-//! Eingabe: belegte Aktionen und Maus → [`PlayerInput`] (Belegung siehe [`crate::bindings`]).
+//! Input: bound actions and mouse → [`PlayerInput`] (bindings see [`crate::bindings`]).
 
 use elora_sim::input::INPUT_STATE_MASK;
 use elora_sim::{PlayerInput, Vec2};
 
 use crate::bindings::GameAction;
 
-/// Maximale Entfernung des Fadenkreuzes bei statischer Kamera (Original: 400).
+/// Maximum distance of the crosshair with a static camera (original: 400).
 pub const MOUSE_MAX_DISTANCE: f32 = 400.0;
 
-/// Tastenzustand; die einzelnen `bool`s bilden gedrückte Tasten ab.
+/// Key state; the individual `bool`s represent pressed keys.
 #[derive(Debug, Clone)]
 #[allow(clippy::struct_excessive_bools)]
 pub struct Controls {
@@ -18,17 +18,17 @@ pub struct Controls {
     down: bool,
     hook: bool,
     ability: bool,
-    /// Zähler wie im Original: jede Zustandsänderung +1, ungerade = gedrückt.
+    /// Counter as in the original: every state change +1, odd = pressed.
     fire: u8,
     next_weapon: u8,
     prev_weapon: u8,
-    /// Per Zahlentaste gewählte Waffe, wird mit der nächsten Eingabe gesendet.
+    /// Weapon chosen via number key, sent with the next input.
     wanted_weapon: u8,
-    /// Fadenkreuz relativ zur Figur (Welteinheiten).
+    /// Crosshair relative to the figure (world units).
     pub mouse_pos: Vec2,
-    /// Maus-Empfindlichkeit in Prozent (Original: `inp_mousesens`, 100).
+    /// Mouse sensitivity in percent (original: `inp_mousesens`, 100).
     pub sensitivity: f32,
-    /// Zur aufgenommenen Waffe wechseln (E-287).
+    /// Switch to the picked-up weapon (E-287).
     pub auto_switch: crate::settings::AutoSwitch,
 }
 
@@ -52,14 +52,14 @@ impl Default for Controls {
     }
 }
 
-/// Erhöht einen Zähler (mit Maske).
+/// Increments a counter (with mask).
 fn bump(counter: &mut u8) {
     *counter = counter.wrapping_add(1) & INPUT_STATE_MASK;
 }
 
 impl Controls {
-    /// Spielsteuerung für eine belegte Aktion (M7.5). Liefert `true`, wenn sie zur
-    /// Figur gehört (Bewegung, Hook, Waffen); Chat, Emotes usw. behandelt die App.
+    /// Game control for a bound action (M7.5). Returns `true` if it belongs to the
+    /// figure (movement, hook, weapons); chat, emotes etc. are handled by the app.
     pub fn action(&mut self, action: GameAction, down: bool) -> bool {
         match action {
             GameAction::Left => self.left = down,
@@ -73,12 +73,12 @@ impl Controls {
                     bump(&mut self.fire);
                 }
             }
-            // E-051: 1 Hammer, 2 Granate, 3 Laser
+            // E-051: 1 hammer, 2 grenade, 3 laser
             GameAction::Hammer if down => self.wanted_weapon = 1,
             GameAction::Grenade if down => self.wanted_weapon = 2,
             GameAction::Laser if down => self.wanted_weapon = 3,
             GameAction::Hammer | GameAction::Grenade | GameAction::Laser => {}
-            // Zähler wie im Original: jede Zustandsänderung +1
+            // counter as in the original: every state change +1
             GameAction::NextWeapon => bump(&mut self.next_weapon),
             GameAction::PrevWeapon => bump(&mut self.prev_weapon),
             _ => return false,
@@ -86,8 +86,8 @@ impl Controls {
         true
     }
 
-    /// Rohe Maus-Bewegung: wird direkt in Welteinheiten addiert (wie im Original).
-    /// Waffe wählen wie mit der Waffentaste (Wechsel beim Aufheben, E-287).
+    /// Raw mouse movement: added directly in world units (as in the original).
+    /// Choose a weapon as with the weapon key (switch on pickup, E-287).
     pub fn want_weapon(&mut self, w: elora_sim::Weapon) {
         self.wanted_weapon = u8::try_from(w.index() + 1).unwrap_or(0);
     }
@@ -104,7 +104,7 @@ impl Controls {
         self.fire & 1 == 1
     }
 
-    /// Alle Tasten loslassen (z. B. bei Fokusverlust). Zähler laufen weiter.
+    /// Release all keys (e.g. on focus loss). Counters keep running.
     pub fn release_all(&mut self) {
         self.left = false;
         self.right = false;
@@ -117,11 +117,11 @@ impl Controls {
         }
     }
 
-    /// Eingabe für den nächsten Tick. Eine Zahlentasten-Wahl wird genau einmal gesendet.
+    /// Input for the next tick. A number key choice is sent exactly once.
     pub fn player_input(&mut self) -> PlayerInput {
         let mut target_x = self.mouse_pos.x as i32;
         let target_y = self.mouse_pos.y as i32;
-        // Zielvektor darf nie (0, 0) sein
+        // the aim vector must never be (0, 0)
         if target_x == 0 && target_y == 0 {
             target_x = 1;
         }

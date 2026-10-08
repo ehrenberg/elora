@@ -1,5 +1,5 @@
-//! Netzwerk-Thread des Clients: besitzt Socket und Verbindung, stempelt empfangene
-//! Pakete mit ihrer Ankunftszeit und sendet ohne Rücksicht auf die Bildrate.
+//! Network thread of the client: owns socket and connection, stamps received
+//! packets with their arrival time and sends regardless of the frame rate.
 
 use std::collections::HashMap;
 use std::net::{SocketAddr, ToSocketAddrs};
@@ -17,7 +17,7 @@ enum Command {
     Disconnect,
 }
 
-/// Verbindung zu einem Server, betrieben in einem eigenen Thread.
+/// Connection to a server, run in its own thread.
 #[derive(Debug)]
 pub struct Connection {
     pub server: SocketAddr,
@@ -27,10 +27,10 @@ pub struct Connection {
 }
 
 impl Connection {
-    /// Löst `address` auf und startet den Verbindungsaufbau.
+    /// Resolves `address` and starts the connection setup.
     ///
     /// # Errors
-    /// Bei ungültiger Adresse oder nicht verfügbarem Socket.
+    /// On an invalid address or unavailable socket.
     pub fn open(
         address: &str,
         expected_key: Option<Vec<u8>>,
@@ -101,7 +101,7 @@ impl Connection {
         let _ = self.commands.send(Command::Conditions(c));
     }
 
-    /// Empfangene Ereignisse mit Ankunftszeit.
+    /// Received events with arrival time.
     pub fn events(&self) -> Vec<(ClientEvent, Instant)> {
         self.events.try_iter().collect()
     }
@@ -117,7 +117,7 @@ impl Drop for Connection {
     }
 }
 
-/// Bekannte Server-Schlüssel (TOFU, E-062): `adresse = "hex"`.
+/// Known server keys (TOFU, E-062): `adresse = "hex"`.
 #[derive(Debug, Default)]
 pub struct KnownServers {
     keys: HashMap<String, String>,
@@ -145,10 +145,10 @@ impl KnownServers {
             .collect()
     }
 
-    /// Speichert (oder ersetzt) den Schlüssel eines Servers.
+    /// Saves (or replaces) the key of a server.
     ///
     /// # Errors
-    /// Wenn die Datei nicht geschrieben werden kann.
+    /// If the file cannot be written.
     pub fn trust(&mut self, path: &Path, server: SocketAddr, key: &[u8]) -> anyhow::Result<()> {
         self.keys.insert(server.to_string(), elora_net::hex(key));
         let text = format!(

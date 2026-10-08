@@ -1,13 +1,13 @@
-//! UI-Toolkit der Spiel-UI (M7.1, E-031) im Stil „hell & weich“ (E-125).
+//! UI toolkit of the game UI (M7.1, E-031) in the "light & soft" style (E-125).
 //!
-//! Sofortmodus: Jede Seite ruft pro Frame die Widgets auf; sie zeichnen sich in
-//! einen [`ShapeBatch`] (Bildschirm-Pixel) und melden Klicks und Änderungen direkt
-//! zurück. Der Zustand zwischen Frames (Fokus, gedrücktes Widget, Scroll-Positionen)
-//! liegt in [`UiState`]; Widgets werden über eine Kennung (`id`) wiedererkannt.
+//! Immediate mode: every page calls the widgets each frame; they draw themselves into
+//! a [`ShapeBatch`] (screen pixels) and report clicks and changes directly
+//! back. The state between frames (focus, pressed widget, scroll positions)
+//! lives in [`UiState`]; widgets are recognized by an identifier (`id`).
 //!
-//! Maße gelten für 720 px Fensterhöhe und werden mit [`Ui::s`] skaliert.
+//! Sizes apply to a 720 px window height and are scaled with [`Ui::s`].
 
-// Wird mit dem Hauptmenü (M7.3) eingebunden; bis dahin nur von Tests benutzt.
+// Included with the main menu (M7.3); until then only used by tests.
 #![allow(dead_code)]
 
 use std::collections::HashMap;
@@ -15,7 +15,7 @@ use std::collections::HashMap;
 use elora_render::{Align, Color, Font, ShapeBatch, lerp_color, shade};
 use elora_sim::Vec2;
 
-// ── Thema (E-125) ────────────────────────────────────────────────────────
+// ── Theme (E-125) ────────────────────────────────────────────────────────
 
 pub const CARD: Color = Color::hex(0xfffaf0);
 pub const CARD_EDGE: Color = Color::hex(0xe7dcc8);
@@ -34,14 +34,14 @@ pub const SAND: Color = Color::hex(0xe0c89a);
 pub const LOGO: Color = Color::hex(0xe8a53a);
 const WHITE: Color = Color::rgb(1.0, 1.0, 1.0);
 
-/// Lesbare Schriftfarbe auf `bg`: dunkel auf hellen Farben (z. B. Sand), sonst weiß.
+/// Readable text color on `bg`: dark on light colors (e.g. sand), otherwise white.
 pub fn on_color(bg: Color) -> Color {
     let [r, g, b, _] = bg.0;
     let luminance = 0.299 * r + 0.587 * g + 0.114 * b;
     if luminance > 0.7 { TEXT } else { WHITE }
 }
 
-/// Achsenparalleles Rechteck in Bildschirm-Pixeln.
+/// Axis-aligned rectangle in screen pixels.
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct Rect {
     pub min: Vec2,
@@ -72,7 +72,7 @@ impl Rect {
         p.x >= self.min.x && p.x < self.max.x && p.y >= self.min.y && p.y < self.max.y
     }
 
-    /// Nach innen verkleinert (negativ = vergrößert).
+    /// Shrunk inwards (negative = enlarged).
     #[must_use]
     pub fn shrink(&self, d: f32) -> Self {
         Self {
@@ -90,7 +90,7 @@ impl Rect {
     }
 }
 
-/// Tasten, die Widgets auswerten.
+/// Keys that widgets evaluate.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum UiKey {
     Enter,
@@ -104,26 +104,26 @@ pub enum UiKey {
     Tab,
 }
 
-/// Eingaben eines Frames (vom Client aus den Fenster-Ereignissen gesammelt).
+/// Input of one frame (collected by the client from the window events).
 #[derive(Debug, Clone, Default)]
-#[allow(clippy::struct_excessive_bools)] // Zustände der linken Maustaste, wie vom Fenster gemeldet
+#[allow(clippy::struct_excessive_bools)] // left mouse button states as reported by the window
 pub struct UiInput {
     pub mouse: Vec2,
-    /// Linke Maustaste gehalten / in diesem Frame gedrückt / losgelassen.
+    /// Left mouse button held / pressed in this frame / released.
     pub down: bool,
     pub pressed: bool,
     pub released: bool,
-    /// Zweiter Klick kurz nach dem ersten an fast gleicher Stelle.
+    /// Second click shortly after the first at almost the same spot.
     pub double_click: bool,
-    /// Mausrad in Rasten (positiv = nach oben).
+    /// Mouse wheel in notches (positive = up).
     pub scroll: f32,
-    /// Getippte Zeichen.
+    /// Typed characters.
     pub text: String,
     pub keys: Vec<UiKey>,
 }
 
 impl UiInput {
-    /// Zustand für den nächsten Frame: Einmal-Ereignisse löschen, Halten behalten.
+    /// State for the next frame: clear one-shot events, keep held ones.
     pub fn next_frame(&mut self) {
         self.pressed = false;
         self.released = false;
@@ -138,52 +138,52 @@ impl UiInput {
     }
 }
 
-/// Zustand zwischen Frames.
+/// State between frames.
 #[derive(Debug, Default)]
 pub struct UiState {
-    /// Widget mit Tastaturfokus (Textfeld).
+    /// Widget with keyboard focus (text field).
     pub focus: Option<String>,
-    /// Widget, auf dem die Maus gedrückt wurde.
+    /// Widget on which the mouse was pressed.
     active: Option<String>,
-    /// Cursor im fokussierten Textfeld (Zeichen).
+    /// Cursor in the focused text field (characters).
     cursor: usize,
-    /// Scroll-Position je Liste (Zeilen).
+    /// Scroll position per list (rows).
     scroll: HashMap<String, f32>,
-    /// Hat in diesem Frame ein Widget den Mausdruck angenommen?
+    /// Has a widget accepted the mouse press in this frame?
     claimed: bool,
-    /// Laufzeit (blinkender Cursor).
+    /// Running time (blinking cursor).
     pub time: f32,
-    /// Klänge der Oberfläche seit dem letzten Abholen (E-285).
+    /// UI sounds since the last fetch (E-285).
     pub sounds: Vec<elora_audio::Sound>,
 }
 
-/// Zeichen- und Eingabekontext eines Frames.
+/// Drawing and input context of one frame.
 pub struct Ui<'a> {
     pub batch: &'a mut ShapeBatch,
     pub font: &'a Font,
     pub input: &'a UiInput,
     pub state: &'a mut UiState,
-    /// Skalierung (1 = 720 px Höhe).
+    /// Scaling (1 = 720 px height).
     pub s: f32,
 }
 
-/// Rückmeldung eines Textfelds.
+/// Feedback of a text field.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum FieldEvent {
     None,
     Changed,
-    /// Enter gedrückt.
+    /// Enter pressed.
     Submitted,
 }
 
 impl Ui<'_> {
-    /// Zu Beginn jeder Seite aufrufen.
+    /// Call at the start of every page.
     pub fn begin(&mut self, dt: f32) {
         self.state.claimed = false;
         self.state.time += dt;
     }
 
-    /// Am Ende jeder Seite: Klick ins Leere nimmt den Fokus weg.
+    /// At the end of every page: a click into empty space removes the focus.
     pub fn end(&mut self) {
         if self.input.pressed && !self.state.claimed {
             self.state.focus = None;
@@ -197,7 +197,7 @@ impl Ui<'_> {
         r.contains(self.input.mouse)
     }
 
-    /// Gemeinsame Klick-Logik: `true`, wenn auf `r` gedrückt und dort losgelassen wurde.
+    /// Shared click logic: `true` if pressed on `r` and released there.
     pub fn click(&mut self, id: &str, r: Rect) -> bool {
         let hot = self.hovered(r);
         if hot && self.input.pressed {
@@ -216,9 +216,9 @@ impl Ui<'_> {
         self.input.down && self.state.active.as_deref() == Some(id)
     }
 
-    // ── Zeichnen ────────────────────────────────────────────────────────
+    // ── Drawing ─────────────────────────────────────────────────────────
 
-    /// Karte: cremefarbene Fläche mit Kante und weichem Schatten.
+    /// Card: cream-colored surface with edge and soft shadow.
     pub fn card(&mut self, r: Rect) {
         let s = self.s;
         self.batch.fill_rounded_rect(
@@ -236,7 +236,7 @@ impl Ui<'_> {
         self.batch.fill_rounded_rect(r.min, r.max, 18.0 * s, CARD);
     }
 
-    /// Text; `pos.y` ist die Mitte der Zeile.
+    /// Text; `pos.y` is the middle of the line.
     pub fn label(&mut self, text: &str, pos: Vec2, size: f32, color: Color, align: Align) {
         self.font
             .draw_centered(self.batch, text, pos, size * self.s, color, align);
@@ -246,7 +246,7 @@ impl Ui<'_> {
         self.font.width(text, size * self.s)
     }
 
-    /// Pille: Schatten, Umriss, Füllung; gedrückt rutscht sie auf den Schatten.
+    /// Pill: shadow, outline, fill; when pressed it slides onto the shadow.
     fn pill(&mut self, r: Rect, color: Color, pressed: bool) {
         let s = self.s;
         let radius = r.h() / 2.0;
@@ -265,7 +265,7 @@ impl Ui<'_> {
             .fill_rounded_rect(body.min, body.max, radius, color);
     }
 
-    /// Pillen-Knopf; `true` bei Klick.
+    /// Pill button; `true` on click.
     pub fn button(&mut self, id: &str, r: Rect, label: &str, color: Color) -> bool {
         let clicked = self.click(id, r);
         let hot = self.hovered(r);
@@ -284,8 +284,8 @@ impl Ui<'_> {
         clicked
     }
 
-    /// Auswahl als Chips, die in Zeilen umbrechen (`max_w`): der gewählte als farbige Pille,
-    /// die anderen umrandet. Liefert den angeklickten Index und die belegte Höhe.
+    /// Choice as chips that wrap into rows (`max_w`): the selected one as a colored pill,
+    /// the others outlined. Returns the clicked index and the occupied height.
     #[allow(clippy::too_many_arguments)]
     pub fn chips(
         &mut self,
@@ -310,7 +310,7 @@ impl Ui<'_> {
                 self.label(item, r.center(), size, WHITE, Align::Center);
                 let _ = self.click(&chip_id, *r);
             } else {
-                // Umrandung, innen Kartenfarbe (hell beim Darüberfahren)
+                // outline, card color inside (light on hover)
                 self.batch
                     .fill_rounded_rect(r.min, r.max, radius, Color::hex(0xcdb894));
                 let inner = r.shrink(1.5 * s);
@@ -327,7 +327,7 @@ impl Ui<'_> {
         (hit, bottom - origin.y + gap)
     }
 
-    /// Lage der Chips von [`Self::chips`] (für die Höhe vor dem Zeichnen).
+    /// Layout of the chips of [`Self::chips`] (for the height before drawing).
     #[allow(clippy::many_single_char_names)]
     pub fn chip_layout(&self, origin: Vec2, max_w: f32, height: f32, items: &[&str]) -> Vec<Rect> {
         let s = self.s;
@@ -349,8 +349,8 @@ impl Ui<'_> {
             .collect()
     }
 
-    /// Reiter als Knopf-Reihe: der gewählte als farbige Pille, die anderen als Text.
-    /// Liefert den angeklickten Index. `colors` wird zyklisch verwendet.
+    /// Tabs as a button row: the selected one as a colored pill, the others as text.
+    /// Returns the clicked index. `colors` is used cyclically.
     pub fn tabs(
         &mut self,
         id: &str,
@@ -391,7 +391,7 @@ impl Ui<'_> {
         hit
     }
 
-    /// Senkrechte Reiter (Seitenleiste der Einstellungen).
+    /// Vertical tabs (sidebar of the settings).
     pub fn side_tabs(
         &mut self,
         id: &str,
@@ -425,7 +425,7 @@ impl Ui<'_> {
         hit
     }
 
-    /// Schalter mit Beschriftung rechts; `true` bei Änderung.
+    /// Toggle with label on the right; `true` on change.
     pub fn toggle(&mut self, id: &str, pos: Vec2, label: &str, value: &mut bool) -> bool {
         let s = self.s;
         let track = Rect::new(pos.x, pos.y, 38.0 * s, 20.0 * s);
@@ -454,7 +454,7 @@ impl Ui<'_> {
         changed
     }
 
-    /// Schieberegler; `true` bei Änderung.
+    /// Slider; `true` on change.
     pub fn slider(&mut self, id: &str, r: Rect, value: &mut f32, min: f32, max: f32) -> bool {
         let s = self.s;
         let _ = self.click(id, r);
@@ -481,8 +481,8 @@ impl Ui<'_> {
         changed
     }
 
-    /// Einzeiliges Textfeld. Klick setzt den Fokus; Tippen, Rücktaste, Entf,
-    /// Pfeile, Pos1/Ende bearbeiten; Enter meldet [`FieldEvent::Submitted`].
+    /// Single-line text field. Click sets the focus; typing, backspace, delete,
+    /// arrows, Home/End edit; Enter reports [`FieldEvent::Submitted`].
     pub fn text_field(
         &mut self,
         id: &str,
@@ -569,7 +569,7 @@ impl Ui<'_> {
         event
     }
 
-    /// Reihe von Farbfeldern (Palette); `true` bei Änderung.
+    /// Row of color swatches (palette); `true` on change.
     pub fn swatches(&mut self, id: &str, pos: Vec2, colors: &[Color], selected: &mut u8) -> bool {
         let s = self.s;
         let size = 16.0 * s;
@@ -595,8 +595,8 @@ impl Ui<'_> {
         changed
     }
 
-    /// Liste mit Spalten; Zeilen anklickbar, Mausrad scrollt. Liefert `(Index, Doppelklick)`.
-    /// `columns`: (x-Versatz in px bei Skalierung 1, Überschrift); `rows`: Zellen je Zeile.
+    /// List with columns; rows clickable, mouse wheel scrolls. Returns `(index, double click)`.
+    /// `columns`: (x offset in px at scale 1, heading); `rows`: cells per row.
     pub fn list(
         &mut self,
         id: &str,
@@ -668,7 +668,7 @@ impl Ui<'_> {
             }
         }
         if rows.len() > visible {
-            // Laufleiste rechts
+            // scrollbar on the right
             #[allow(clippy::cast_precision_loss)]
             let frac = visible as f32 / rows.len() as f32;
             #[allow(clippy::cast_precision_loss)]
@@ -714,7 +714,7 @@ mod tests {
             }
         }
 
-        /// Ein Frame mit den aktuellen Eingaben.
+        /// One frame with the current input.
         fn frame<R>(&mut self, f: impl FnOnce(&mut Ui<'_>) -> R) -> R {
             self.batch.clear();
             let mut ui = Ui {
@@ -758,7 +758,7 @@ mod tests {
         );
         h.release();
         assert!(h.frame(|ui| ui.button("b", BTN, "Los", GREEN)));
-        // Drücken innen, Loslassen außen: kein Klick
+        // press inside, release outside: no click
         h.press(Vec2::new(50.0, 20.0));
         h.frame(|ui| ui.button("b", BTN, "Los", GREEN));
         h.input.mouse = Vec2::new(300.0, 300.0);
@@ -779,7 +779,7 @@ mod tests {
         let items = ["Spielen", "Training", "Beenden"];
         let mut hit = None;
         for _ in 0..2 {
-            // Mitte des zweiten Reiters liegt sicher hinter dem ersten
+            // the middle of the second tab is safely behind the first
             let x = 10.0 + h.font.width("Spielen", 11.5) + 24.0 + 6.0 + 20.0;
             h.press(Vec2::new(x, 20.0));
             h.frame(|ui| ui.tabs("tabs", Vec2::new(10.0, 10.0), 26.0, &items, 0, &[GREEN]));
@@ -797,7 +797,7 @@ mod tests {
         h.press(Vec2::new(50.0, 10.0));
         assert!(h.frame(|ui| ui.slider("s", r, &mut v, 0.0, 1.0)));
         assert!((v - 0.25).abs() < 1e-3);
-        h.input.mouse = Vec2::new(500.0, 10.0); // über das Ende hinaus
+        h.input.mouse = Vec2::new(500.0, 10.0); // past the end
         h.frame(|ui| ui.slider("s", r, &mut v, 0.0, 1.0));
         assert!((v - 1.0).abs() < 1e-6);
         h.release();
@@ -835,14 +835,14 @@ mod tests {
             h.frame(|ui| ui.text_field("n", r, &mut name, 16, "")),
             FieldEvent::Submitted
         );
-        // Klick daneben nimmt den Fokus
+        // a click beside it removes the focus
         h.press(Vec2::new(500.0, 500.0));
         h.frame(|ui| ui.text_field("n", r, &mut name, 16, ""));
         h.release();
         h.input.text.push('x');
         h.frame(|ui| ui.text_field("n", r, &mut name, 16, ""));
         assert_eq!(name, "Ülora");
-        // Höchstlänge
+        // maximum length
         let mut short = String::new();
         h.press(Vec2::new(20.0, 10.0));
         h.frame(|ui| ui.text_field("k", r, &mut short, 3, ""));
@@ -858,7 +858,7 @@ mod tests {
         let r = Rect::new(0.0, 0.0, 300.0, 22.0 + 24.0 * 3.0);
         let rows: Vec<Vec<String>> = (0..10).map(|i| vec![format!("Server {i}")]).collect();
         let cols = [(8.0, "Name")];
-        // Zeile 1 anklicken (Kopf 22 px, Zeilen 24 px)
+        // click row 1 (header 22 px, rows 24 px)
         h.press(Vec2::new(50.0, 22.0 + 24.0 + 10.0));
         h.frame(|ui| ui.list("l", r, &cols, &rows, None));
         h.release();
@@ -866,7 +866,7 @@ mod tests {
             h.frame(|ui| ui.list("l", r, &cols, &rows, None)),
             Some((1, false))
         );
-        // zweimal nach unten scrollen → erste sichtbare Zeile 2
+        // scroll down twice → first visible row 2
         h.input.mouse = Vec2::new(50.0, 22.0 + 10.0);
         h.input.scroll = -2.0;
         h.frame(|ui| ui.list("l", r, &cols, &rows, None));
@@ -875,20 +875,20 @@ mod tests {
             h.frame(|ui| ui.list("l", r, &cols, &rows, None)),
             Some((2, true))
         );
-        // Scrollen über das Ende hinaus wird begrenzt
+        // scrolling past the end is clamped
         h.input.scroll = -50.0;
         h.frame(|ui| ui.list("l", r, &cols, &rows, None));
         assert!((h.state.scroll["l"] - 7.0).abs() < 1e-6);
     }
 
-    /// Galerie zur Sichtprüfung: `cargo test -p elora-client --bin elora ui_gallery -- --ignored`,
-    /// danach `cargo xtask svg-preview target/ui-gallery.svg target/ui-gallery.png 1280`.
+    /// Gallery for visual inspection: `cargo test -p elora-client --bin elora ui_gallery -- --ignored`,
+    /// then `cargo xtask svg-preview target/ui-gallery.svg target/ui-gallery.png 1280`.
     #[test]
     #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
-    #[allow(clippy::too_many_lines)] // Beispielseite
+    #[allow(clippy::too_many_lines)] // example page
     fn ui_gallery() {
         let mut h = Harness::new();
-        h.input.mouse = Vec2::new(222.0, 172.0); // über „Training“ (Hover)
+        h.input.mouse = Vec2::new(222.0, 172.0); // over "Training" (hover)
         let mut name = String::from("Elora");
         let mut on = true;
         let mut off = false;

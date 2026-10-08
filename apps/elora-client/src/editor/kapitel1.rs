@@ -1,8 +1,8 @@
-//! Karten von Kapitel 1 (R2-M2.1, E-297): `wiese-2` (Imkerei, Riesenblumen, Bach, erste
-//! schwere Hook-Strecke), `wiese-3` (Höhlen unter den Wurzeln) und `wiese-arena`
-//! (Blütenquelle mit der Brummbär-Hummel).
+//! Maps of chapter 1 (R2-M2.1, E-297): `wiese-2` (apiary, giant flowers, brook, first
+//! hard hook route), `wiese-3` (caves under the roots) and `wiese-arena`
+//! (flower spring with the Brummbär bumblebee).
 //!
-//! `cargo test -p elora-client --bin elora write_kapitel1_maps -- --ignored` schreibt
+//! `cargo test -p elora-client --bin elora write_kapitel1_maps -- --ignored` writes
 //! `maps/abenteuer/*.emap`.
 
 #![allow(
@@ -21,7 +21,7 @@ use super::prolog::{
 };
 use super::release;
 
-/// Übergang über die ganze Kartenhöhe am Rand (E-279).
+/// Transition over the full map height at the edge (E-279).
 fn edge_exit(id: &str, x: usize, h: usize, map: &str, spawn: &str) -> elora_map::Object {
     o(
         id,
@@ -35,7 +35,7 @@ fn edge_exit(id: &str, x: usize, h: usize, map: &str, spawn: &str) -> elora_map:
     )
 }
 
-/// Deko in anderer Größe (Riesenblumen, Quelle).
+/// Decoration in a different size (giant flowers, spring).
 fn big(name: &str, tx: f32, ty: usize, scale: f32) -> elora_map::Decor {
     let mut d = decor(name, tx, ty);
     d.scale = scale;
@@ -52,7 +52,7 @@ fn bee(id: &str, tx: usize, ty: usize) -> elora_map::Object {
     )
 }
 
-/// Dornenranken über einer Dornenreihe (Zeile `y` = Oberkante der Dornen).
+/// Thorn vines above a row of thorns (row `y` = top edge of the thorns).
 fn thorn_decor(m: &mut Map, y: usize, x0: usize, x1: usize) {
     let mut x = x0;
     while x < x1 {
@@ -61,14 +61,14 @@ fn thorn_decor(m: &mut Map, y: usize, x0: usize, x1: usize) {
     }
 }
 
-/// Blütenwiesen 2, 300 × 60: Imkerei mit Wabe, Riesenblumen-Wald mit Blatt-Stegen,
-/// Bach mit Trittsteinen, erste schwere Hook-Strecke über einer Dornensenke.
+/// Blütenwiesen 2, 300 × 60: apiary with honeycomb, giant flower forest with leaf ledges,
+/// brook with stepping stones, first hard hook route over a thorn hollow.
 pub fn wiese_2() -> Map {
     let (w, h) = (300, 60);
     let mut g = Grid::new(w, h, 44);
-    // Imkerei auf einer kleinen Anhöhe
+    // apiary on a small hill
     g.ground(18, 46, 42);
-    // Riesenblumen-Wald: Blätter als Stege, oben eine Blütenkrone (Biene 1)
+    // giant flower forest: leaves as ledges, a flower crown at the top (bee 1)
     for (x, y) in [
         (52, 38),
         (58, 33),
@@ -82,14 +82,14 @@ pub fn wiese_2() -> Map {
         g.fill((x, x + 4), (y, y), '=');
     }
     g.fill((82, 88), (16, 17), '#');
-    // Bach in einer Senke mit Trittsteinen (Plattformen)
+    // brook in a hollow with stepping stones (platforms)
     g.ground(110, 148, 49);
     g.fill((118, 140), (49, 50), '.');
     g.fill((118, 140), (51, 51), '#');
     for x in [120, 126, 132, 138] {
         g.fill((x, x + 1), (49, 49), '=');
     }
-    // erste schwere Hook-Strecke: Dornensenke unter Erdbrocken und Hook-Blüten
+    // first hard hook route: thorn hollow under earth chunks and hook flowers
     g.ground(158, 214, 56);
     g.fill((158, 214), (55, 55), '^');
     for (x, y) in [(162, 35), (174, 33), (186, 36), (198, 33), (209, 35)] {
@@ -99,9 +99,9 @@ pub fn wiese_2() -> Map {
         g.fill((x, x), (39, 39), '*');
     }
     g.ground(215, 230, 44);
-    // alter Steinturm am Ende: Ruck-Stelle mit Biene 4 (M2.1.5)
+    // old stone tower at the end: hook jerk spot with bee 4 (M2.1.5)
     let ruck_top = ruck_gate(&mut g, 276, 42);
-    // Zugtruhe für die Rückkehr mit Heranhooken (M2.2.6)
+    // pull chest for the return with the pull hook (M2.2.6)
     let zug = pull_vault(
         &mut g,
         "wiese2",
@@ -110,7 +110,7 @@ pub fn wiese_2() -> Map {
         "wiese2.zug",
         &[("glanztropfen", 50), ("heiltrank", 2)],
     );
-    // Stampfkammer für die Rückkehr mit Stampfen (M2.3.6)
+    // stomp chamber for the return with stomp (M2.3.6)
     let stampf = stomp_vault(
         &mut g,
         "wiese2-stampf",
@@ -118,10 +118,10 @@ pub fn wiese_2() -> Map {
         44,
         &[("glanztropfen", 60), ("bernstein", 2)],
     );
-    // Hügel, Quellstein und Weg nach wiese-3
+    // hills, spring stone and path to wiese-3
     g.ground(231, 250, 40);
     g.ground(251, w - 1, 42);
-    // Kletterstelle für die Rückkehr mit dem Eisgriff (M2.4.7)
+    // climbing spot for the return with the ice grip (M2.4.7)
     let kletter = climb_vault(
         &mut g,
         "wiese2-kletter",
@@ -205,16 +205,16 @@ pub fn wiese_2() -> Map {
     map
 }
 
-/// Blütenwiesen 3, 220 × 70: hinunter in die Höhlen unter den Wurzeln, Dornen und
-/// Bröckelboden, versteckte Nische (Biene 2), Aufstieg an Wurzeldecken zur Blütenquelle.
+/// Blütenwiesen 3, 220 × 70: down into the caves under the roots, thorns and
+/// crumbling floor, hidden niche (bee 2), ascent along root ceilings to the flower spring.
 pub fn wiese_3() -> Map {
     let (w, h) = (220, 70);
     let mut g = Grid::new(w, h, 30);
-    // Höhle unter den Wurzeln: 10 Tiles Erde darüber, Gang von Zeile 41 bis 60
+    // cave under the roots: 10 tiles of earth above, passage from row 41 to 60
     g.fill((31, 175), (41, 60), '.');
-    // Einstieg: Schacht hinunter
+    // entry: shaft going down
     g.fill((27, 30), (30, 60), '.');
-    // Höhlenboden mit Stufen, Dornengruben und Bröckelboden
+    // cave floor with steps, thorn pits and crumbling floor
     g.fill((31, 60), (57, 60), '#');
     g.fill((61, 72), (60, 60), '^');
     g.fill((73, 100), (55, 60), '#');
@@ -224,19 +224,19 @@ pub fn wiese_3() -> Map {
     g.fill((109, 140), (57, 60), '#');
     g.fill((141, 156), (60, 60), '^');
     g.fill((157, 175), (52, 60), '#');
-    // hängende Wurzeln (Hook-Punkte an der Decke über den Gruben)
+    // hanging roots (hook points on the ceiling above the pits)
     for x in [64, 69, 144, 149, 154] {
         g.fill((x, x), (41, 43), '#');
     }
-    // versteckte Nische in der Decke (Biene 2): nur über eine Wurzel zu erreichen
+    // hidden niche in the ceiling (bee 2): only reachable via a root
     g.fill((118, 126), (37, 40), '.');
     g.fill((121, 121), (41, 42), '#');
-    // Aufstieg: Kammer nach oben mit Stegen und einer Wurzel
+    // ascent: chamber going up with ledges and a root
     g.fill((168, 175), (24, 51), '.');
     for (x, y) in [(168, 46), (172, 40), (168, 34), (172, 29)] {
         g.fill((x, x + 3), (y, y), '=');
     }
-    // oben hinaus zur Arena
+    // out at the top to the arena
     g.ground(176, 199, 26);
     g.ground(200, w - 1, 24);
     let mut m = g.map("Blütenwiesen 3");
@@ -292,24 +292,24 @@ pub fn wiese_3() -> Map {
     map
 }
 
-/// Die Blütenquelle, 90 × 50: vom Sims mit dem Quellstein hinunter in die Arena,
-/// Hook-Blüten über dem Boden, Ausgang öffnet sich nach dem Sieg (E-254).
+/// The flower spring, 90 × 50: from the ledge with the spring stone down into the arena,
+/// hook flowers above the ground, the exit opens after the victory (E-254).
 pub fn wiese_arena() -> Map {
     let (w, h) = (90, 50);
     let mut g = Grid::new(w, h, 44);
-    // Einstiegs-Sims links (zu hoch, um zurückzuspringen)
+    // entry ledge on the left (too high to jump back)
     g.ground(0, 17, 26);
     g.fill((18, 19), (26, 43), '%');
-    // rechte Wand aus Stein (nicht hookbar), unten das Tor
+    // right wall of stone (not hookable), the gate at the bottom
     g.fill((70, 71), (12, 35), '%');
-    // Hook-Blüten in zwei Reihen (11 und 17 Tiles über dem Boden)
+    // hook flowers in two rows (11 and 17 tiles above the ground)
     for x in (24..68).step_by(5) {
         g.fill((x, x), (33, 33), '*');
     }
     for x in (27..66).step_by(10) {
         g.fill((x, x), (27, 27), '*');
     }
-    // dahinter der Wurzelpfad zurück
+    // behind it the root path back
     g.ground(72, w - 1, 44);
     let mut m = g.map("Blütenquelle");
     m.adventure.objects = vec![
@@ -357,7 +357,7 @@ pub fn wiese_arena() -> Map {
     map
 }
 
-/// Alle Abenteuer-Karten (Prolog und Kapitel 1) mit ihren Namen.
+/// All adventure maps (prologue and chapter 1) with their names.
 pub fn all_maps() -> Vec<(&'static str, Map)> {
     vec![
         ("tauwinkel", super::prolog::tauwinkel()),
@@ -391,7 +391,7 @@ mod tests {
             let errors = map_objects(&c, &back);
             assert!(errors.is_empty(), "{name}: {errors:?}");
         }
-        // Übergänge über alle Abenteuer-Karten (auch Kapitel 2)
+        // transitions across all adventure maps (including chapter 2)
         let mut linked = all_maps();
         linked.extend(super::super::kapitel2::maps());
         linked.extend(super::super::kapitel3::maps());
@@ -399,7 +399,7 @@ mod tests {
         let refs: Vec<(&str, &Map)> = linked.iter().map(|(n, m)| (*n, m)).collect();
         let errors = map_links(&refs);
         assert!(errors.is_empty(), "{errors:?}");
-        // fünf Bienen, davon vier in Kapitel 1 und eine für die Rückkehr (M2.1.5)
+        // five bees, four of them in chapter 1 and one for the return (M2.1.5)
         let bees: usize = maps
             .iter()
             .map(|(_, m)| {
@@ -439,7 +439,7 @@ mod tests {
         }
     }
 
-    /// Übersicht: `… kapitel1_sheets -- --ignored` → `target/kapitel1-<karte>.svg`.
+    /// Overview: `… kapitel1_sheets -- --ignored` → `target/kapitel1-<karte>.svg`.
     #[test]
     #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
     fn kapitel1_sheets() {

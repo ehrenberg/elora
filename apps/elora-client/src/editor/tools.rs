@@ -1,7 +1,7 @@
-//! Werkzeuge des Editors (M6.7): Pinsel, Rechteck, Füllen, Radierer, Auswahl mit Kopieren und
-//! Einfügen, Entities, Material. Reine Logik auf [`Editor`]; jede Aktion ist rückgängig machbar.
+//! Editor tools (M6.7): brush, rectangle, fill, eraser, selection with copy and paste,
+//! entities, material. Pure logic on [`Editor`]; every action can be undone.
 
-// Raster-Code: `x`/`y`/`w`/`h`/`i` sind hier lesbarer als lange Namen
+// Grid code: `x`/`y`/`w`/`h`/`i` are more readable here than long names
 #![allow(clippy::many_single_char_names)]
 
 use std::time::Instant;
@@ -11,7 +11,7 @@ use elora_sim::{DummyPattern, Tile};
 
 use super::Editor;
 
-/// Gewähltes Werkzeug (Tasten 1–7).
+/// Selected tool (keys 1–7).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Tool {
     #[default]
@@ -22,9 +22,9 @@ pub enum Tool {
     Select,
     Entity,
     Material,
-    /// Deko platzieren und bearbeiten (M6.8).
+    /// Place and edit decoration (M6.8).
     Decor,
-    /// Abenteuer-Objekte (A1.8, E-268).
+    /// Adventure objects (A1.8, E-268).
     Adventure,
 }
 
@@ -41,7 +41,7 @@ impl Tool {
         Self::Adventure,
     ];
 
-    /// Sprachschlüssel.
+    /// Language key.
     pub fn key(self) -> &'static str {
         match self {
             Self::Brush => "editor.tool_brush",
@@ -57,7 +57,7 @@ impl Tool {
     }
 }
 
-/// Setzbare Entities mit Sprachschlüssel.
+/// Placeable entities with language key.
 pub const ENTITIES: [(EntityKind, &str); 13] = [
     (EntityKind::Spawn, "editor.ent_spawn"),
     (EntityKind::SpawnRed, "editor.ent_spawn_red"),
@@ -83,7 +83,7 @@ pub const ENTITIES: [(EntityKind, &str); 13] = [
     ),
 ];
 
-/// Rechteck in Tiles (einschließlich).
+/// Rectangle in tiles (inclusive).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Cells {
     pub x0: usize,
@@ -93,7 +93,7 @@ pub struct Cells {
 }
 
 impl Cells {
-    /// Aus zwei beliebigen Ecken.
+    /// From any two corners.
     pub fn span(a: (usize, usize), b: (usize, usize)) -> Self {
         Self {
             x0: a.0.min(b.0),
@@ -116,7 +116,7 @@ impl Cells {
     }
 }
 
-/// Kopierter Ausschnitt: Tiles, Material (Name, `None` = Standard) und Entities relativ zur Ecke.
+/// Copied clip: tiles, material (name, `None` = default) and entities relative to the corner.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Clip {
     pub width: usize,
@@ -127,7 +127,7 @@ pub struct Clip {
 }
 
 impl Editor {
-    /// Materialname eines Tiles (`None` = Standard der Tile-Art).
+    /// Material name of a tile (`None` = default of the tile kind).
     fn material_name(&self, i: usize) -> Option<String> {
         let m = *self.map.material_map.get(i)?;
         self.map
@@ -136,7 +136,7 @@ impl Editor {
             .cloned()
     }
 
-    /// Material-Index für `name` (legt den Namen in der Karte an); Standard → 0.
+    /// Material index for `name` (adds the name to the map); default → 0.
     fn material_code(&mut self, name: Option<&str>) -> u8 {
         let Some(name) = name.filter(|n| self.solid_materials.first().is_none_or(|d| d != n))
         else {
@@ -154,8 +154,8 @@ impl Editor {
         u8::try_from(i + 1).unwrap_or(0)
     }
 
-    /// Ein Feld setzen, ohne Verlauf. Material gilt nur für feste Tiles (Stein und Eis sind fest
-    /// zugeordnet, E-148). Liefert, ob sich etwas geändert hat.
+    /// Set a cell without history. Material only applies to solid tiles (stone and ice have a
+    /// fixed material, E-148). Returns whether something changed.
     fn set_cell(&mut self, x: usize, y: usize, tile: Tile, material: Option<&str>) -> bool {
         let i = y * self.map.width + x;
         let code = if tile == Tile::Solid {
@@ -177,12 +177,12 @@ impl Editor {
         true
     }
 
-    /// Material für neu gemalte feste Tiles.
+    /// Material for newly painted solid tiles.
     fn brush_material(&self) -> String {
         self.solid_material.clone()
     }
 
-    /// Felder eines quadratischen Pinsels um (x, y), auf die Karte begrenzt.
+    /// Cells of a square brush around (x, y), clamped to the map.
     pub fn brush_cells(&self, x: usize, y: usize, size: usize) -> Cells {
         let r = size.max(1) - 1;
         let (lo, hi) = (r / 2, r - r / 2);
@@ -194,7 +194,7 @@ impl Editor {
         }
     }
 
-    /// Bereich mit einer Tile-Art füllen (ein Rückgängig-Schritt je `kind`).
+    /// Fill an area with a tile kind (one undo step per `kind`).
     pub fn fill_cells(&mut self, cells: Cells, tile: Tile, kind: &str, now: Instant) {
         let material = self.brush_material();
         let mut changed = false;
@@ -209,14 +209,15 @@ impl Editor {
         }
     }
 
-    /// Stand vor einer Änderung in den Verlauf übernehmen (wie [`Editor::begin_edit`], nur nachträglich).
+    /// Push the state before a change into the history (like [`Editor::begin_edit`], only
+    /// afterwards).
     fn record(&mut self, before: elora_map::Map, kind: &str, now: Instant) {
         let after = std::mem::replace(&mut self.map, before);
         self.begin_edit(kind, now);
         self.map = after;
     }
 
-    /// Zusammenhängende Fläche gleicher Tile-Art (und gleichen Materials) ab (x, y) füllen.
+    /// Fill the connected area of the same tile kind (and same material) starting at (x, y).
     pub fn flood_fill(&mut self, x: usize, y: usize, tile: Tile, now: Instant) {
         let (w, h) = (self.map.width, self.map.height);
         let start = y * w + x;
@@ -261,7 +262,7 @@ impl Editor {
         self.end_edit();
     }
 
-    /// Material auf vorhandene feste Tiles malen (andere Tiles bleiben unberührt).
+    /// Paint material onto existing solid tiles (other tiles stay untouched).
     pub fn paint_material(&mut self, cells: Cells, name: &str, kind: &str, now: Instant) {
         let before = self.map.clone();
         let mut changed = false;
@@ -277,8 +278,8 @@ impl Editor {
         }
     }
 
-    /// Entity setzen (ersetzt eines auf demselben Feld). Flaggen gibt es je Team nur einmal:
-    /// eine neue verschiebt die alte.
+    /// Set an entity (replaces one on the same cell). Flags exist only once per team:
+    /// a new one moves the old one.
     pub fn place_entity(&mut self, x: usize, y: usize, kind: EntityKind, now: Instant) {
         if self
             .map
@@ -301,7 +302,7 @@ impl Editor {
         self.map.entities.push(Entity { kind, tx: x, ty: y });
     }
 
-    /// Entity auf einem Feld entfernen.
+    /// Remove the entity on a cell.
     pub fn remove_entity(&mut self, x: usize, y: usize, now: Instant) {
         if self.map.entities.iter().any(|e| e.tx == x && e.ty == y) {
             self.begin_edit("entity", now);
@@ -310,7 +311,7 @@ impl Editor {
         }
     }
 
-    /// Ausschnitt kopieren.
+    /// Copy a clip.
     pub fn copy(&self, cells: Cells) -> Clip {
         let w = self.map.width;
         let mut clip = Clip {
@@ -336,21 +337,21 @@ impl Editor {
         clip
     }
 
-    /// Auswahl in die Zwischenablage.
+    /// Selection to the clipboard.
     pub fn copy_selection(&mut self) {
         if let Some(sel) = self.selection {
             self.clipboard = Some(self.copy(sel));
         }
     }
 
-    /// Auswahl leeren.
+    /// Clear the selection.
     pub fn delete_selection(&mut self, now: Instant) {
         if let Some(sel) = self.selection {
             self.clear_cells(sel, now);
         }
     }
 
-    /// Ausschnitt leeren (Luft, keine Entities).
+    /// Clear a clip (air, no entities).
     pub fn clear_cells(&mut self, cells: Cells, now: Instant) {
         let before = self.map.clone();
         for y in cells.y0..=cells.y1 {
@@ -366,7 +367,8 @@ impl Editor {
         }
     }
 
-    /// Ausschnitt mit der linken oberen Ecke bei (x, y) einfügen; was über den Rand ragt, fällt weg.
+    /// Paste a clip with its top-left corner at (x, y); whatever sticks out over the edge is
+    /// dropped.
     pub fn paste(&mut self, clip: &Clip, x: usize, y: usize, now: Instant) {
         let before = self.map.clone();
         let (w, h) = (self.map.width, self.map.height);
@@ -446,7 +448,7 @@ mod tests {
     fn flood_fill_stays_inside_walls() {
         let mut e = editor();
         let t = Instant::now();
-        // Kasten aus Wänden 0..=4, innen frei
+        // box of walls 0..=4, free inside
         e.fill_cells(Cells::span((0, 0), (4, 4)), Tile::Solid, "a", t);
         e.end_edit();
         e.fill_cells(Cells::span((1, 1), (3, 3)), Tile::Air, "b", t);
@@ -458,7 +460,7 @@ mod tests {
         assert_eq!(at(&e, 6, 6), Tile::Air, "außen unberührt");
         e.undo();
         assert_eq!(at(&e, 2, 2), Tile::Air, "Füllen ist ein Schritt");
-        // gleiche Füllung: nichts zu tun
+        // same fill: nothing to do
         let steps = e.undo_len();
         e.flood_fill(10, 10, Tile::Air, t);
         assert_eq!(e.undo_len(), steps);
@@ -479,7 +481,7 @@ mod tests {
             &[0, 0, 0],
             "Standard = 0, Stein bleibt"
         );
-        // Karte bleibt gültig
+        // map stays valid
         let data = elora_map::encode(&e.map);
         assert!(elora_map::decode_draft(&data).is_ok());
     }
@@ -525,7 +527,7 @@ mod tests {
             Some("snow")
         );
         assert!(e.map.entities.iter().any(|x| (x.tx, x.ty) == (20, 10)));
-        // am Rand: was übersteht, fällt weg
+        // at the edge: whatever sticks out is dropped
         let w = e.map.width;
         e.paste(&clip, w - 1, 0, t);
         assert_eq!(at(&e, w - 1, 1), Tile::Solid);

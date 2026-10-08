@@ -1,5 +1,5 @@
-//! Client-Bibliothek von Elora: Online-Logik und Szenen-Aufbau (ohne Fenster und
-//! Grafik, daher testbar). Das Programm `elora` in `main.rs` nutzt sie.
+//! Client library of Elora: online logic and scene building (without window and
+//! graphics, hence testable). The `elora` program in `main.rs` uses it.
 
 pub mod map_store;
 pub mod online;

@@ -1,8 +1,8 @@
-//! Wetter in der Darstellung (R2-W1, W1.2, E-329 bis E-336): Partikel hinter und vor den
-//! Figuren, Spritzer auf Oberflächen, Blitze und die Farbstimmung für den Post-Shader.
+//! Weather in the presentation (R2-W1, W1.2, E-329 to E-336): particles behind and in front of the
+//! figures, splashes on surfaces, lightning and the color mood for the post shader.
 //!
-//! Reine Darstellung: Partikel leben in Weltkoordinaten um den Kameraausschnitt und werden
-//! dort wiederverwendet; nichts davon wirkt auf die Simulation.
+//! Pure presentation: particles live in world coordinates around the camera view and are
+//! reused there; none of it affects the simulation.
 
 #![allow(
     clippy::cast_precision_loss,
@@ -16,14 +16,14 @@ use elora_sim::{TILE_SIZE, Tile, Vec2};
 
 use crate::settings::WeatherQuality;
 
-/// Rand um den Ausschnitt, in dem Partikel weiterleben (Einheiten).
+/// Margin around the view in which particles keep living (units).
 const MARGIN: f32 = 120.0;
-/// Höchstens so viele neue Partikel je Frame (beim Betreten füllt sich das Bild sofort).
+/// At most this many new particles per frame (on entering, the picture fills immediately).
 const SPAWN_PER_FRAME: usize = 600;
-/// So lange ist ein Blitz zu sehen (s) und ein Spritzer (s).
+/// This long a lightning flash is visible (s) and a splash (s).
 const BOLT_TIME: f32 = 0.22;
 const SPLASH_TIME: f32 = 0.25;
-/// So lange glimmt der Boden vor einem Einschlag (s, wie A-32).
+/// This long the ground glows before a strike (s, like A-32).
 const WARN_TIME: f32 = 0.9;
 
 #[derive(Debug, Clone, Copy)]
@@ -31,15 +31,15 @@ struct Particle {
     kind: WeatherKind,
     pos: Vec2,
     vel: Vec2,
-    /// vor den Figuren (größer, kräftiger) oder dahinter
+    /// in front of the figures (larger, stronger) or behind them
     front: bool,
     size: f32,
-    /// Drehung (Blätter) und Schaukeln (Flocken)
+    /// rotation (leaves) and swaying (flakes)
     angle: f32,
     spin: f32,
     seed: f32,
     color: Color,
-    /// im Boden oder unter einem Dach: nicht zeichnen (Höhlen, Häuser, Felsdächer)
+    /// in the ground or under a roof: do not draw (caves, houses, rock roofs)
     hidden: bool,
 }
 
@@ -51,7 +51,7 @@ struct Bolt {
     seed: u32,
 }
 
-/// Wetter der Darstellung.
+/// Weather of the presentation.
 #[derive(Debug, Default)]
 pub struct WeatherView {
     particles: Vec<Particle>,
@@ -63,20 +63,20 @@ pub struct WeatherView {
     splash_carry: f32,
     flash: f32,
     grade: Option<Grade>,
-    /// Donner für den Klang (W1.5): Ort und Verzögerung (s).
+    /// Thunder for the sound (W1.5): place and delay (s).
     thunder: Vec<(Vec2, f32)>,
-    /// Wind, mit dem die Deko gerade wiegt (geglättet).
+    /// Wind with which the decoration currently sways (smoothed).
     wind: f32,
-    /// Angekündigte Einschläge aus der Simulation (Abenteuer): Ort, Alter (s).
+    /// Announced strikes from the simulation (adventure): place, age (s).
     warnings: Vec<(Vec2, f32)>,
-    /// Oberkante des Ausschnitts (für Blitze aus der Simulation).
+    /// Top edge of the view (for lightning from the simulation).
     sky_top: f32,
     quality: WeatherQuality,
-    /// Wie sehr die Kamera unter Dach oder im Fels steckt (geglättet, 0..1) – dämpft die Klänge.
+    /// How much the camera is under a roof or inside rock (smoothed, 0..1) – muffles the sounds.
     shelter: f32,
 }
 
-/// Oberkante des ersten Bodens (fest, Plattform, Treibsand) unter `from`, höchstens `reach` tief.
+/// Top edge of the first ground (solid, platform, quicksand) below `from`, at most `reach` deep.
 #[allow(
     clippy::cast_possible_truncation,
     clippy::cast_possible_wrap,
@@ -98,7 +98,7 @@ pub fn surface_below(map: &Map, from: Vec2, reach: f32) -> Option<f32> {
         .map(|y| y as f32 * ts)
 }
 
-/// Steckt `pos` im Boden – oder (fallendes Wetter) unter einem Dach bis 8 Tiles darüber?
+/// Is `pos` inside the ground – or (falling weather) under a roof up to 8 tiles above?
 #[allow(clippy::cast_possible_wrap)]
 fn sheltered(map: &Map, pos: Vec2, kind: WeatherKind) -> bool {
     let ts = TILE_SIZE as f32;
@@ -120,7 +120,7 @@ fn sheltered(map: &Map, pos: Vec2, kind: WeatherKind) -> bool {
     falls && (1..=8).any(|k| blocks(ty - k))
 }
 
-/// Grundmenge der Partikel bei voller Stärke und Einstellung „voll“.
+/// Base number of particles at full strength and setting "full".
 fn base_count(kind: WeatherKind) -> f32 {
     match kind {
         WeatherKind::Clear => 0.0,
@@ -135,7 +135,7 @@ fn base_count(kind: WeatherKind) -> f32 {
     }
 }
 
-/// Farbstimmung je Wetter bei voller Stärke.
+/// Color mood per weather at full strength.
 fn base_grade(kind: WeatherKind) -> Grade {
     let g = |tint: [f32; 3], tint_amount, darken, fog: [f32; 3], fog_density| Grade {
         tint,
@@ -188,7 +188,7 @@ impl WeatherView {
         a + (b - a) * self.rand()
     }
 
-    /// Wind des Wetters mit Böen (−1..1; Sandsturm und Schneesturm wehen immer).
+    /// Weather wind with gusts (−1..1; sandstorm and snowstorm always blow).
     fn gusty_wind(&self, w: Weather) -> f32 {
         let base = match w.kind {
             WeatherKind::Sandstorm | WeatherKind::Blizzard if w.wind.abs() < 0.2 => 0.7,
@@ -202,7 +202,7 @@ impl WeatherView {
         base + (self.time * 0.7).sin() * gust * base.abs().max(0.3)
     }
 
-    /// Geschwindigkeit eines neuen Partikels (Einheiten/s).
+    /// Velocity of a new particle (units/s).
     fn velocity(&mut self, kind: WeatherKind, wind: f32) -> Vec2 {
         match kind {
             WeatherKind::Rain => Vec2::new(wind * 350.0, self.range(820.0, 980.0)),
@@ -249,7 +249,7 @@ impl WeatherView {
         }
     }
 
-    /// Ein Frame: Wetter `w` (bei „aus“ verschwindet alles), Ausschnitt `camera`.
+    /// One frame: weather `w` (with "off" everything disappears), view `camera`.
     #[allow(clippy::too_many_lines, clippy::many_single_char_names)]
     pub fn update(
         &mut self,
@@ -286,7 +286,7 @@ impl WeatherView {
         let br = camera.top_left() + camera.size + Vec2::new(MARGIN, MARGIN);
         let inside = |p: Vec2| p.x >= tl.x && p.x <= br.x && p.y >= tl.y && p.y <= br.y;
 
-        // bewegen; was den Ausschnitt verlässt, kommt oben bzw. auf der Windseite wieder herein
+        // move; whatever leaves the view comes back in at the top or on the windward side
         #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
         let target = (base_count(w.kind) * strength * q) as usize;
         let mut alive = 0;
@@ -311,9 +311,9 @@ impl WeatherView {
                 continue;
             }
             if current && alive <= target {
-                // um den Ausschnitt herum weiterführen: wer unten hinausfällt, kommt oben
-                // wieder, wer beim Laufen links zurückbleibt, kommt rechts – so bleibt die
-                // Dichte gleich, egal wie die Kamera sich bewegt (Playtest: Blätter in Schüben)
+                // continue around the view: whoever falls out at the bottom comes back at the top,
+                // whoever stays behind on the left while running comes in on the right – so the density
+                // stays the same no matter how the camera moves (playtest: leaves in bursts)
                 let size = br - tl;
                 p.pos = Vec2::new(
                     tl.x + (p.pos.x - tl.x).rem_euclid(size.x),
@@ -324,7 +324,7 @@ impl WeatherView {
                 self.particles.swap_remove(i);
             }
         }
-        // auffüllen: beim Betreten über den ganzen Ausschnitt verteilt
+        // fill up: on entering, spread over the whole view
         let missing = target.saturating_sub(alive).min(SPAWN_PER_FRAME);
         for _ in 0..missing {
             let at = Vec2::new(self.range(tl.x, br.x), self.range(tl.y, br.y));
@@ -332,7 +332,7 @@ impl WeatherView {
             self.particles.push(p);
         }
 
-        // Spritzer auf Oberflächen
+        // splashes on surfaces
         self.splashes.retain_mut(|s| {
             s.1 += dt;
             s.1 < SPLASH_TIME
@@ -351,7 +351,7 @@ impl WeatherView {
             }
         }
 
-        // Blitze (Gewitter); „sanft“ ohne Aufblitzen
+        // lightning (thunderstorm); "gentle" without flashes
         self.bolts.retain_mut(|b| {
             b.age += dt;
             b.age < BOLT_TIME
@@ -371,7 +371,7 @@ impl WeatherView {
             }
         }
 
-        // Farbstimmung gleitet zum Ziel (etwa 2 s)
+        // the color mood glides towards the target (about 2 s)
         let target = mix_grade(Grade::NONE, base_grade(w.kind), strength * q_grade);
         let current = self.grade.unwrap_or(target);
         let mut g = mix_grade(current, target, (dt * 0.8).min(1.0));
@@ -379,7 +379,7 @@ impl WeatherView {
         self.grade = Some(g);
     }
 
-    /// Blitz bei `ground` (Oberkante des Bodens) aus Höhe `top`.
+    /// Lightning at `ground` (top edge of the ground) from height `top`.
     fn strike(&mut self, ground: Vec2, top: f32, seed: u32, quality: WeatherQuality) {
         self.bolts.push(Bolt {
             top: Vec2::new(ground.x + (seed % 120) as f32 - 60.0, top),
@@ -391,53 +391,53 @@ impl WeatherView {
             self.flash = 1.0;
         }
         let delay = 0.25 + (seed % 900) as f32 / 1000.0;
-        // ohne Abholer (noch kein Klang) nicht unbegrenzt sammeln
+        // without a consumer (no sound yet) do not collect without limit
         if self.thunder.len() >= 8 {
             let _ = self.thunder.remove(0);
         }
         self.thunder.push((ground, delay));
     }
 
-    /// Simulation (Abenteuer): hier schlägt gleich ein Blitz ein – der Boden glimmt.
+    /// Simulation (adventure): lightning is about to strike here – the ground glows.
     pub fn sim_warn(&mut self, pos: Vec2) {
         self.warnings.push((pos, 0.0));
     }
 
-    /// Simulation (Abenteuer): Einschlag bei `pos`.
+    /// Simulation (adventure): strike at `pos`.
     pub fn sim_strike(&mut self, pos: Vec2) {
         self.warnings.retain(|w| w.0.distance(pos) > 1.0);
         #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
         let seed = (pos.x.abs() * 13.0 + self.time * 977.0) as u32;
         self.strike(pos, self.sky_top, seed, self.quality);
-        // ganz nah: der Donner kracht sofort
+        // very close: the thunder cracks immediately
         if let Some(t) = self.thunder.last_mut() {
             t.1 = 0.0;
         }
     }
 
-    /// Farbstimmung für den Post-Shader.
+    /// Color mood for the post shader.
     pub fn grade(&self) -> Grade {
         self.grade.unwrap_or(Grade::NONE)
     }
 
-    /// Wie sehr die Kamera unter Dach oder in einer Höhle steckt (0..1, geglättet).
+    /// How much the camera is under a roof or in a cave (0..1, smoothed).
     pub fn shelter(&self) -> f32 {
         self.shelter
     }
 
-    /// Wind, mit dem die Deko gerade wiegt.
+    /// Wind with which the decoration currently sways.
     pub fn wind(&self) -> f32 {
         self.wind
     }
 
-    /// Donner seit dem letzten Abholen (für die Klänge, W1.5): Ort und Verzögerung (s).
+    /// Thunder since the last fetch (for the sounds, W1.5): place and delay (s).
     pub fn take_thunder(&mut self) -> Vec<(Vec2, f32)> {
         std::mem::take(&mut self.thunder)
     }
 
-    /// Partikel hinter den Figuren und Spritzer.
+    /// Particles behind the figures and splashes.
     pub fn draw_back(&self, batch: &mut ShapeBatch) {
-        // Warnung vor dem Einschlag: der Boden glimmt immer heller, Funken steigen (E-336)
+        // warning before the strike: the ground glows ever brighter, sparks rise (E-336)
         for (pos, age) in &self.warnings {
             let k = (age / WARN_TIME).min(1.0);
             let pulse = 0.75 + 0.25 * (age * 22.0).sin();
@@ -472,7 +472,7 @@ impl WeatherView {
         }
     }
 
-    /// Partikel vor den Figuren und Blitze.
+    /// Particles in front of the figures and lightning.
     pub fn draw_front(&self, batch: &mut ShapeBatch) {
         for p in self.particles.iter().filter(|p| p.front && !p.hidden) {
             draw_particle(batch, p, 1.0);
@@ -491,7 +491,7 @@ impl WeatherView {
     }
 }
 
-/// Zickzack eines Blitzes von oben bis zum Boden.
+/// Zigzag of a lightning bolt from the top down to the ground.
 fn bolt_points(b: &Bolt) -> Vec<Vec2> {
     let mut pts = vec![b.top];
     let steps = 9;
@@ -558,7 +558,7 @@ fn draw_particle(batch: &mut ShapeBatch, p: &Particle, alpha: f32) {
             batch.fill_polygon(&inner, col);
         }
         WeatherKind::Fog => {
-            // weiche Schwade: Ringe nach innen dichter, ohne harte Kante
+            // soft swath: rings denser towards the inside, without a hard edge
             for k in 1..=5 {
                 let r = p.size * (1.0 - k as f32 * 0.17);
                 batch.fill_circle(p.pos, r, Color::rgba(0.95, 0.96, 0.97, 0.025 * alpha));
@@ -616,7 +616,7 @@ mod tests {
             v.particles.is_empty() && v.grade().fog_density == 0.0,
             "aus"
         );
-        // Wetterwechsel: alte Partikel verschwinden nach und nach, neue kommen
+        // weather change: old particles disappear gradually, new ones arrive
         let mut v = WeatherView::default();
         v.update(
             0.016,
@@ -626,7 +626,7 @@ mod tests {
             None,
             true,
         );
-        // etwa 8 s
+        // about 8 s
         for _ in 0..500 {
             v.update(
                 0.016,
@@ -663,7 +663,7 @@ mod tests {
 
     #[test]
     fn rain_stays_out_of_caves_and_houses() {
-        // Decke in Zeile 2: darunter (Zeile 3) regnet es nicht, daneben schon
+        // ceiling in row 2: below it (row 3) it does not rain, next to it it does
         let map = Map::from_rows(
             "s",
             &[
@@ -711,8 +711,8 @@ mod tests {
         assert!(v.splashes.iter().all(|(p, _)| (p.y - 64.0).abs() < 0.1));
     }
 
-    /// Playtest: Blätter kamen in Schüben, je nachdem, wie die Kamera sich bewegte. Beim Laufen
-    /// und Springen bleibt ihre Zahl im Bild jetzt etwa gleich.
+    /// Playtest: leaves came in bursts depending on how the camera moved. While running
+    /// and jumping, their number in the picture now stays about the same.
     #[test]
     fn leaves_stay_even_while_the_camera_moves() {
         let mut v = WeatherView::default();
@@ -736,7 +736,7 @@ mod tests {
         };
         let base = visible(&v, &cam);
         assert!(base > 20, "Blätter im Bild: {base}");
-        // laufen, springen, fallen
+        // run, jump, fall
         for k in 0..240 {
             let t = k as f32 * 0.05;
             cam.center += Vec2::new(9.0, (t * 2.0).sin() * 14.0);

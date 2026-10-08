@@ -1,10 +1,10 @@
-//! Abenteuer-Menü (A1.7, E-225, E-263, E-264): Inventar, Fähigkeiten, Aufgaben, Weltkarte –
-//! sowie Lottes Laden und Klonks Schmiede, die Gespräche öffnen. Das Spiel steht solange.
+//! Adventure menu (A1.7, E-225, E-263, E-264): inventory, abilities, quests, world map –
+//! as well as Lotte's shop and Klonk's smithy, which open conversations. The game pauses meanwhile.
 //!
-//! Zeichnet in Bildschirm-Pixeln über [`crate::ui`] und meldet [`Command`]s; ausgeführt
-//! werden sie in `app_adventure.rs` auf dem Spielstand.
+//! Draws in screen pixels via [`crate::ui`] and reports [`Command`]s; they are
+//! executed in `app_adventure.rs` on the game state.
 
-// Layout-Code: `s` (Skalierung), `w`/`h`/`x`/`y` wie in menu.rs
+// Layout code: `s` (scale), `w`/`h`/`x`/`y` as in menu.rs
 #![allow(clippy::many_single_char_names, clippy::too_many_lines)]
 
 use elora_adventure::data::{Bonus, Branch, ItemKind, Rarity, Slot};
@@ -19,7 +19,7 @@ use crate::figure::FigureArt;
 use crate::lang::Lang;
 use crate::ui::{self, Rect, Ui};
 
-/// Was das Menü zeigt.
+/// What the menu shows.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub enum Panel {
     #[default]
@@ -27,23 +27,23 @@ pub enum Panel {
     Skills,
     Quests,
     Map,
-    /// Laden einer Figur (Id aus `shops.toml`).
+    /// Shop of a character (id from `shops.toml`).
     Shop(String),
     Forge,
 }
 
-/// Auswahl innerhalb der Seiten (bleibt beim Wechseln erhalten).
+/// Selection within the pages (kept when switching).
 #[derive(Debug, Clone, Default)]
 pub struct MenuState {
     pub panel: Panel,
     pub item: Option<String>,
     pub quest: Option<String>,
     pub selling: bool,
-    /// Letzte Ablehnung zum Anzeigen.
+    /// Last rejection to display.
     pub refusal: Option<Refusal>,
 }
 
-/// Was die App ausführen soll.
+/// What the app should execute.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Command {
     Close,
@@ -56,7 +56,7 @@ pub enum Command {
     Upgrade(Weapon),
 }
 
-/// Daten für einen Frame.
+/// Data for one frame.
 pub struct MenuData<'a> {
     pub lang: &'a Lang,
     pub code: &'a str,
@@ -89,7 +89,7 @@ pub fn refusal_key(r: Refusal) -> &'static str {
     }
 }
 
-/// Text eines Bonus („+1 Leben“).
+/// Text of a bonus (“+1 health”).
 pub fn bonus_text(lang: &Lang, b: Bonus) -> String {
     let (key, n): (&str, String) = match b {
         Bonus::MaxHealth(v) => ("bonus.max_health", format!("{v:+}")),
@@ -124,8 +124,8 @@ pub fn bonus_text(lang: &Lang, b: Bonus) -> String {
     lang.f(key, &[("n", &n)])
 }
 
-/// Symbol eines Gegenstands nach Art (Entwurf `abenteuer-ui.png`): Trank, Hut, Umhang,
-/// Stiefel, Anhänger, Material-Brocken; Glanztropfen und Sammelstücke aus den Grafiken.
+/// Icon of an item by kind (draft `abenteuer-ui.png`): potion, hat, cape,
+/// boots, pendant, material chunk; gleam drops and collectibles from the graphics.
 pub fn item_icon(
     batch: &mut elora_render::ShapeBatch,
     d: &MenuData<'_>,
@@ -295,7 +295,7 @@ fn slot_key(s: Slot) -> &'static str {
     }
 }
 
-/// Glanztropfen und Stufe oben rechts im Menü.
+/// Gleam drops and level at the top right of the menu.
 fn purse(ui: &mut Ui<'_>, d: &MenuData<'_>, card: Rect) {
     let s = ui.s;
     let p = Vec2::new(card.max.x - 160.0 * s, card.min.y + 30.0 * s);
@@ -313,7 +313,7 @@ fn purse(ui: &mut Ui<'_>, d: &MenuData<'_>, card: Rect) {
     ui.label(&d.save.level.to_string(), c, 12.0, ui::TEXT, Align::Center);
 }
 
-/// Menü zeichnen; liefert einen Befehl.
+/// Draw the menu; returns a command.
 pub fn draw(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState) -> Option<Command> {
     let s = ui.s;
     ui.batch
@@ -403,7 +403,7 @@ pub fn draw(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState) -> Option<Com
     cmd
 }
 
-/// Gegenstände im Rucksack (ohne Währung), sortiert nach Art und Name.
+/// Items in the backpack (without currency), sorted by kind and name.
 fn backpack<'a>(d: &MenuData<'a>) -> Vec<(&'a str, u32)> {
     let mut v: Vec<(&str, u32)> = d
         .save
@@ -443,7 +443,7 @@ fn inventory(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState, area: Rect) 
     let s = ui.s;
     let lang = d.lang;
     let mut cmd = None;
-    // Elora mit Ausrüstung
+    // Elora with equipment
     let center = Vec2::new(area.min.x + 120.0 * s, area.min.y + 170.0 * s);
     ui.batch
         .fill_circle(center, 90.0 * s, Color::rgba(0.95, 0.76, 0.31, 0.15));
@@ -484,7 +484,7 @@ fn inventory(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState, area: Rect) 
         );
     }
 
-    // Rucksack
+    // Backpack
     let x0 = area.min.x + 290.0 * s;
     ui.label(
         lang.t("adventure.backpack"),
@@ -520,7 +520,7 @@ fn inventory(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState, area: Rect) 
         }
     }
 
-    // Beschreibung
+    // Description
     let Some(id) = st.item.clone() else {
         return cmd;
     };
@@ -823,7 +823,7 @@ fn quests(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState, area: Rect) -> 
         y += 16.0 * s;
     }
     y += 12.0 * s;
-    // erledigte Schritte und der aktuelle, weitere als „?“ (E-251)
+    // completed steps and the current one, further ones as “?” (E-251)
     for (i, step) in q.step.iter().enumerate() {
         let done = i < qs.step;
         if i > qs.step || (qs.status != QuestStatus::Active && !done) {
@@ -884,7 +884,7 @@ pub(crate) fn hex(c: &str) -> Color {
     u32::from_str_radix(c.trim_start_matches('#'), 16).map_or(ui::GRAY, Color::hex)
 }
 
-/// Weltkarte des Taulands (E-264).
+/// World map of the Tauland (E-264).
 fn world_map(ui: &mut Ui<'_>, d: &MenuData<'_>, area: Rect) {
     let s = ui.s;
     let lang = d.lang;
@@ -904,7 +904,7 @@ fn world_map(ui: &mut Ui<'_>, d: &MenuData<'_>, area: Rect) {
         .area_of(&d.save.location.map)
         .map(|a| a.id.clone());
     let hub = d.content.areas.first().map(|a| at(a.pos));
-    // Wege von Tauwinkel zu den Gebieten
+    // paths from Tauwinkel to the regions
     if let Some(hub) = hub {
         for a in d.content.areas.iter().skip(1) {
             let to = at(a.pos);
@@ -943,7 +943,7 @@ fn world_map(ui: &mut Ui<'_>, d: &MenuData<'_>, area: Rect) {
             ui::TEXT,
             Align::Center,
         );
-        // befreite Quelle: Lichtkranz und Hinweis
+        // freed spring: halo and hint
         let freed = a.freed(d.save);
         if freed {
             for k in 0..8 {
@@ -995,7 +995,7 @@ fn shop(
     let lang = d.lang;
     let mut cmd = None;
     let sh = d.content.shops.get(id)?;
-    // Ladenbesitzerin links
+    // shopkeeper on the left
     let owner = sh.owner.as_deref().unwrap_or("lotte");
     let c = Vec2::new(area.min.x + 90.0 * s, area.min.y + 140.0 * s);
     ui.batch
@@ -1195,7 +1195,7 @@ fn forge(ui: &mut Ui<'_>, d: &MenuData<'_>, area: Rect) -> Option<Command> {
             ui::TEXT,
             Align::Left,
         );
-        // Kosten: Glanztropfen und Material mit Bestand
+        // costs: gleam drops and material with stock
         let mut cx = x;
         let y = r.min.y + 72.0 * s;
         let enough = d.save.glanztropfen >= u.glanztropfen;
@@ -1245,8 +1245,8 @@ mod tests {
     use elora_adventure::Location;
     use elora_render::{Font, ShapeBatch};
 
-    /// Sichtprüfung: `cargo test -p elora-client --bin elora adventure_menu_sheet -- --ignored`,
-    /// dann je Seite `cargo xtask svg-preview target/abenteuer-menu-<seite>.svg … 1280`.
+    /// Visual check: `cargo test -p elora-client --bin elora adventure_menu_sheet -- --ignored`,
+    /// then per page `cargo xtask svg-preview target/abenteuer-menu-<seite>.svg … 1280`.
     #[test]
     #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
     fn adventure_menu_sheet() {

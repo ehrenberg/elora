@@ -1,8 +1,8 @@
-//! `tuning.toml`: gespeicherte Tuning-Werte der Sandbox (E-046) – Entwicklerwerkzeug.
-//! Spieler-Einstellungen stehen in `settings.toml` ([`crate::settings`], E-116).
+//! `tuning.toml`: saved tuning values of the sandbox (E-046) – developer tool.
+//! Player settings live in `settings.toml` ([`crate::settings`], E-116).
 //!
-//! Die Standardwerte stehen im Code (`Tuning::default`, `ViewSettings::default`);
-//! die Datei überschreibt sie nur. Fehlende Einträge behalten ihren Standardwert.
+//! The default values live in the code (`Tuning::default`, `ViewSettings::default`);
+//! the file only overrides them. Missing entries keep their default value.
 
 use std::path::Path;
 
@@ -20,7 +20,7 @@ pub struct TuningFile {
     pub view: ViewFile,
 }
 
-/// Sichtbereich (E-045).
+/// View range (E-045).
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(default)]
 pub struct ViewFile {
@@ -56,7 +56,7 @@ impl From<ViewFile> for ViewSettings {
 }
 
 impl TuningFile {
-    /// Lädt die Datei; existiert sie nicht, gelten die Standardwerte.
+    /// Loads the file; if it does not exist, the default values apply.
     pub fn load(path: &Path) -> anyhow::Result<Self> {
         match std::fs::read_to_string(path) {
             Ok(src) => {

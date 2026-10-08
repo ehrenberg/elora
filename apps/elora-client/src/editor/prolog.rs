@@ -1,7 +1,7 @@
-//! Karten des Prologs (A1.9, `docs/release-2/prolog.md`): Tauwinkel und Blütenwiesen 1 –
-//! Gelände, Objekte des Abenteuers und Deko (Gebäude E-278, verblasste Blumen E-277).
+//! Maps of the prologue (A1.9, `docs/release-2/prolog.md`): Tauwinkel and Blütenwiesen 1 –
+//! terrain, adventure objects and decoration (buildings E-278, faded flowers E-277).
 //!
-//! `cargo test -p elora-client --bin elora write_prolog_maps -- --ignored` schreibt
+//! `cargo test -p elora-client --bin elora write_prolog_maps -- --ignored` writes
 //! `maps/abenteuer/*.emap`.
 
 #![allow(
@@ -22,7 +22,7 @@ use super::release::{self, Theme};
 
 pub(super) const T: f32 = TILE_SIZE as f32;
 
-/// Zeichenraster der Karte; unten ab `floor` Boden, an den Seiten offen (E-279).
+/// Character grid of the map; ground from `floor` downwards, open at the sides (E-279).
 pub(super) struct Grid(pub(super) Vec<Vec<char>>);
 
 impl Grid {
@@ -38,7 +38,7 @@ impl Grid {
         Self(g)
     }
 
-    /// Rechteck (Spalten `x`, Zeilen `y`, jeweils einschließlich) füllen.
+    /// Fill a rectangle (columns `x`, rows `y`, each inclusive).
     pub(super) fn fill(&mut self, x: (usize, usize), y: (usize, usize), c: char) {
         for row in &mut self.0[y.0..=y.1] {
             for cell in &mut row[x.0..=x.1] {
@@ -47,7 +47,7 @@ impl Grid {
         }
     }
 
-    /// Boden der Spalten `x0..=x1` auf Zeile `top` setzen (darüber Luft).
+    /// Set the ground of columns `x0..=x1` at row `top` (air above).
     pub(super) fn ground(&mut self, x0: usize, x1: usize, top: usize) {
         for (y, row) in self.0.iter_mut().enumerate() {
             for cell in &mut row[x0..=x1] {
@@ -56,7 +56,7 @@ impl Grid {
         }
     }
 
-    /// Karte aus dem Raster; das `S` braucht nur das Textformat, die Karte nutzt Eingänge.
+    /// Map from the grid; the `S` is only needed by the text format, the map uses entrances.
     pub(super) fn map(&self, name: &str) -> Map {
         let mut g = self.0.clone();
         g[0][1] = 'S';
@@ -68,12 +68,12 @@ impl Grid {
     }
 }
 
-/// Ruck-Stelle (M2.1.5): Steinwand links, Schacht 5 Tiles breit,
-/// Hook-Blüte 12 Tiles über dem Boden an der rechten Seite, rechts ein Steinturm 7 Tiles breit,
-/// dessen Oberkante 9 Tiles über der Blüte liegt – nur mit Hook-Ruck erreichbar. Geprüft in
-/// `crates/elora-sim/tests/abilities.rs` (`ruck_gate_needs_the_hook_ruck`). Unten führt ein
-/// Durchgang (3 Tiles hoch) durch Wand und Turm, damit der Weg frei bleibt. Liefert die Zeile
-/// der Turm-Oberkante.
+/// Hook jerk spot (M2.1.5): stone wall on the left, shaft 5 tiles wide,
+/// hook flower 12 tiles above the ground on the right side, on the right a stone tower 7 tiles wide
+/// whose top edge lies 9 tiles above the flower – only reachable with the hook jerk. Checked in
+/// `crates/elora-sim/tests/abilities.rs` (`ruck_gate_needs_the_hook_ruck`). At the bottom a
+/// passage (3 tiles high) leads through wall and tower so the path stays free. Returns the row
+/// of the tower's top edge.
 pub(super) fn ruck_gate(g: &mut Grid, x0: usize, floor: usize) -> usize {
     let top = floor - 21;
     g.fill((x0, x0), (top, floor - 4), '%');
@@ -83,9 +83,9 @@ pub(super) fn ruck_gate(g: &mut Grid, x0: usize, floor: usize) -> usize {
     top
 }
 
-/// Zugtruhe (R2-M2.2, M2.2.6): kleine Steinhütte (Spalten `x0..x0+4`) mit Tor links und Truhe
-/// innen; 10 Tiles über dem Boden hängt eine Wurzel mit einem Zugschalter (`merker <flag>`).
-/// Nur mit Heranhooken zu öffnen. Liefert Schalter, Tor und Truhe.
+/// Pull chest (R2-M2.2, M2.2.6): small stone hut (columns `x0..x0+4`) with a gate on the left and
+/// a chest inside; 10 tiles above the ground hangs a root with a pull switch (`merker <flag>`).
+/// Can only be opened with the pull hook. Returns switch, gate and chest.
 pub(super) fn pull_vault(
     g: &mut Grid,
     id: &str,
@@ -120,10 +120,10 @@ pub(super) fn pull_vault(
     ]
 }
 
-/// Stampfkammer (R2-M2.3, M2.3.6): Bröckelboden (drei Tiles breit, zwei Reihen) über einer
-/// kleinen Kammer (fünf Tiles breit, drei hoch) mit Truhe – nur mit Stampfen zu öffnen. Vom
-/// Kammerboden bis zur Oberfläche sind es fünf Reihen, ein Sprung führt wieder hinaus.
-/// `x0` ist die linke Wand, `floor` die Oberkante des Bodens. Liefert die Truhe `<id>-truhe`.
+/// Stomp chamber (R2-M2.3, M2.3.6): crumbling floor (three tiles wide, two rows) above a
+/// small chamber (five tiles wide, three high) with a chest – can only be opened with stomp. From
+/// the chamber floor to the surface there are five rows, a jump leads out again.
+/// `x0` is the left wall, `floor` the top edge of the ground. Returns the chest `<id>-truhe`.
 pub(super) fn stomp_vault(
     g: &mut Grid,
     id: &str,
@@ -137,11 +137,11 @@ pub(super) fn stomp_vault(
     chest(&format!("{id}-truhe"), x0 + 5, floor + 5, contents)
 }
 
-/// Kletterstelle (R2-M2.4, M2.4.7): ein hängender Kamin aus zwei Kletterwänden (Spalten `x0`
-/// und `x0 + 4`, drei Tiles Luft dazwischen), die vier Reihen über dem Boden enden – darunter
-/// läuft man hindurch, mit einem Sprung erreicht man die Wände. Oben rechts ein unhookbarer
-/// Sims 19 Reihen über dem Boden mit einer Truhe: nur mit dem Eisgriff zu erreichen.
-/// `floor` ist die Oberkante des Bodens. Liefert die Truhe `<id>-truhe`.
+/// Climbing spot (R2-M2.4, M2.4.7): a hanging chimney of two climbing walls (columns `x0`
+/// and `x0 + 4`, three tiles of air between them) that end four rows above the ground – you walk
+/// through underneath, a jump reaches the walls. At the top right an unhookable
+/// ledge 19 rows above the ground with a chest: only reachable with the ice grip.
+/// `floor` is the top edge of the ground. Returns the chest `<id>-truhe`.
 pub(super) fn climb_vault(
     g: &mut Grid,
     id: &str,
@@ -155,7 +155,7 @@ pub(super) fn climb_vault(
     chest(&format!("{id}-truhe"), x0 + 7, floor - 19, contents)
 }
 
-/// Mitte über dem Boden (Oberkante von Zeile `ty`) in Spalte `tx` für ein Objekt der Höhe `h`.
+/// Center above the ground (top edge of row `ty`) in column `tx` for an object of height `h`.
 pub(super) fn at(tx: usize, ty: usize, h: f32) -> Vec2 {
     Vec2::new(tx as f32 * T + T / 2.0, ty as f32 * T - h / 2.0 - 1.0)
 }
@@ -185,7 +185,7 @@ pub(super) fn npc(id: &str, tx: usize, ty: usize, facing: i8, walk: f32) -> Obje
     )
 }
 
-/// Wegweiser-Schild mit Hinweis (E-273).
+/// Signpost with a hint (E-273).
 pub(super) fn sign(dialog: &str, tx: usize, ty: usize) -> Object {
     o(
         dialog,
@@ -225,7 +225,7 @@ pub(super) fn plant(id: &str, tx: usize, ty: usize) -> Object {
     o(id, at(tx, ty, 16.0), ObjectKind::HealPlant { heal: 2 })
 }
 
-/// Deko auf dem Boden (Oberkante von Zeile `ty`), Mitte in Spalte `tx` (halbe Tiles erlaubt).
+/// Decoration on the ground (top edge of row `ty`), centered in column `tx` (half tiles allowed).
 pub(super) fn decor(name: &str, tx: f32, ty: usize) -> Decor {
     Decor::new(
         Art::Builtin(name.into()),
@@ -233,12 +233,12 @@ pub(super) fn decor(name: &str, tx: f32, ty: usize) -> Decor {
     )
 }
 
-/// Deko an einer Weltposition (Pixel), z. B. auf Dächern und Bänken.
+/// Decoration at a world position (pixels), e.g. on roofs and benches.
 pub(super) fn decor_px(name: &str, x: f32, y: f32) -> Decor {
     Decor::new(Art::Builtin(name.into()), Vec2::new(x, y))
 }
 
-/// Animation anhängen; liefert ihren Index.
+/// Append an animation; returns its index.
 fn envelope(map: &mut Map, name: &str, kind: EnvKind, points: &[(u32, [f32; 4], Curve)]) -> u16 {
     map.envelopes.push(Envelope {
         name: name.into(),
@@ -256,7 +256,7 @@ fn envelope(map: &mut Map, name: &str, kind: EnvKind, points: &[(u32, [f32; 4], 
     u16::try_from(map.envelopes.len() - 1).expect("wenige Animationen")
 }
 
-/// Kleine Bewegungen (Detail): Schmetterlinge flattern, Rauch steigt, Fahnen wehen.
+/// Small movements (detail): butterflies flutter, smoke rises, flags wave.
 pub(super) fn animate(map: &mut Map, smoke: &[Vec2]) {
     use Curve::{Linear, Smooth};
     let flutter = envelope(
@@ -300,7 +300,7 @@ pub(super) fn animate(map: &mut Map, smoke: &[Vec2]) {
             (3000, [1.0, 1.0, 1.0, 0.0], Linear),
         ],
     );
-    // Leuchtpilze pulsieren (R2-M2.2)
+    // glowing mushrooms pulse (R2-M2.2)
     let pulse = envelope(
         map,
         "Leuchten der Pilze",
@@ -357,7 +357,7 @@ pub(super) fn animate(map: &mut Map, smoke: &[Vec2]) {
     }
 }
 
-/// Gras vor der Spielfläche (Tauwinkel: keine bunten Blumen, E-210).
+/// Grass in front of the playfield (Tauwinkel: no colorful flowers, E-210).
 const GRASS: Theme = Theme {
     file: "",
     name: "",
@@ -383,7 +383,7 @@ pub(super) fn finish(map: Map, theme: &Theme) -> Map {
     editor.map.decor_front.clear();
     editor.apply_preset(Preset::Day, Instant::now());
     release::place(theme, &mut editor.map);
-    // große Deko nur auf durchgehendem Boden (nicht auf Hook-Felsen und Simsen)
+    // large decoration only on continuous ground (not on hook rocks and ledges)
     let auto = std::mem::take(&mut editor.map.decor_back);
     let map = &editor.map;
     let grounded = |d: &Decor| {
@@ -396,39 +396,39 @@ pub(super) fn finish(map: Map, theme: &Theme) -> Map {
         .chain(auto.into_iter().filter(|d| grounded(d)))
         .collect();
     editor.map.decor_back = back;
-    // eigene Deko zuerst (hinter der automatischen)
+    // custom decoration first (behind the automatic one)
     editor.map.decor_front.splice(0..0, front);
     editor.map
 }
 
-/// Tauwinkel, 450 × 50 (E-280): Steilhang im Westen, Eloras Garten mit Baumhaus, Hecke,
-/// Steg, Brunnenplatz, Werkstatt und Tüftels Hof (E-281), Aufstieg ins Oberdorf mit Schmiede,
-/// Strohpuppen und Laden, Ostpfad hinunter zum offenen Übergang (E-279).
+/// Tauwinkel, 450 × 50 (E-280): steep slope in the west, Elora's garden with tree house, hedge,
+/// ledge, well square, workshop and Tüftel's yard (E-281), climb to the upper village with smithy,
+/// straw dummies and shop, east path down to the open transition (E-279).
 pub fn tauwinkel() -> Map {
     let (w, h) = (450, 50);
     let mut g = Grid::new(w, h, 40);
-    // Westen: Hang aus Erde und Wurzeln hinauf in den Murmelwald (E-306), oben der Übergang
+    // west: slope of earth and roots up into the Murmelwald (E-306), the transition at the top
     g.fill((0, 3), (13, h - 1), '#');
     g.fill((4, 6), (21, h - 1), '#');
     g.fill((7, 8), (29, h - 1), '#');
     g.fill((9, 10), (35, h - 1), '#');
-    // Wurzeln zum Festhalten
+    // roots to hold on to
     g.fill((12, 12), (24, 24), '*');
     g.fill((8, 8), (16, 16), '*');
-    // Baumhaus: Plattform 5 Tiles über dem Boden
+    // tree house: platform 5 tiles above the ground
     g.fill((40, 44), (35, 35), '=');
-    // Hecke: nur mit Doppelsprung
+    // hedge: only with a double jump
     g.fill((54, 56), (33, 39), '#');
-    // Wiesenweg zwei Tiles höher, Mulde mit Steg (Runter zum Durchfallen)
+    // meadow path two tiles higher, hollow with a ledge (down to drop through)
     g.ground(67, 180, 38);
     g.fill((75, 85), (38, 40), '.');
     g.fill((75, 85), (38, 38), '=');
-    // Tüftels Hof: Grube unter einer Decke, Felsbogen mit Stein- und Erd-Überhang,
-    // Bröckelbrücke, Block und hoher Sitz unter einem Überhang
+    // Tüftel's yard: pit under a ceiling, rock arch with stone and earth overhang,
+    // crumbling bridge, block and high seat under an overhang
     g.ground(181, 252, 38);
-    // Ruck-Strecke hinter der Werkstatt: Tor öffnet sich, wenn Tüftel den Hook-Ruck gebaut hat
+    // hook jerk route behind the workshop: the gate opens once Tüftel has built the hook jerk
     let ruck_top = ruck_gate(&mut g, 170, 38);
-    // Tüftels Zugtruhe: Übung für Heranhooken (M2.2.6)
+    // Tüftel's pull chest: practice for the pull hook (M2.2.6)
     let zug = pull_vault(
         &mut g,
         "hof",
@@ -437,7 +437,7 @@ pub fn tauwinkel() -> Map {
         "hof.zugtor",
         &[("glanztropfen", 50), ("tautrank", 1)],
     );
-    // Stampfplatte (M2.3.6): Übung für Stampfen, Tüftel baut es nach Kapitel 3
+    // stomp plate (M2.3.6): practice for stomp, Tüftel builds it after chapter 3
     let stampf = stomp_vault(
         &mut g,
         "stampf",
@@ -454,7 +454,7 @@ pub fn tauwinkel() -> Map {
     g.fill((230, 236), (26, 27), '#');
     g.fill((241, 247), (15, 15), '#');
     g.fill((236, 251), (5, 6), '#');
-    // Aufstieg ins Oberdorf und Ostpfad hinunter
+    // climb to the upper village and east path down
     g.ground(253, 256, 36);
     g.ground(257, 260, 34);
     g.ground(261, 350, 32);
@@ -462,12 +462,13 @@ pub fn tauwinkel() -> Map {
     g.ground(357, 362, 36);
     g.ground(363, w - 1, 38);
     g.ground(404, 417, 36);
-    // Bergsteig in die Frostspitzen (D-M24-01): ein Eisdeckel aus Bröckelboden über einem Gang,
-    // nur mit Stampfen zu öffnen; der Gang führt unter dem Oberdorf zum Übergang
+    // mountain trail into the Frostspitzen (D-M24-01): an ice lid of crumbling floor over a
+    // passage, can only be opened with stomp; the passage leads under the upper village to the
+    // transition
     g.fill((342, 350), (34, 37), '.');
     g.fill((343, 345), (32, 33), ':');
-    // Hohlweg am Ostpfad hinab in die Glutsandwüste (E-315): Stufen, unten der Übergang;
-    // oben ein Felsdeckel, bis Kapitel 3 beginnt
+    // sunken path at the east path down into the Glutsandwüste (E-315): steps, the transition at
+    // the bottom; at the top a rock lid until chapter 3 begins
     g.fill((388, 394), (38, 47), '.');
     g.fill((388, 388), (41, 47), '#');
     g.fill((389, 389), (44, 47), '#');
@@ -632,7 +633,7 @@ pub fn tauwinkel() -> Map {
         decor("bush-1", 430.0, 38),
         decor("rock-2", 440.0, 38),
     ];
-    // Hecke aus Büschen vor dem Block
+    // hedge of bushes in front of the block
     for k in 0..6 {
         let y = 40.0 * T - k as f32 * 38.0;
         let x = 55.0 * T + T / 2.0 + if k % 2 == 0 { -12.0 } else { 12.0 };
@@ -672,12 +673,12 @@ pub fn tauwinkel() -> Map {
         decor("schmetterling", 420.0, 35),
         decor("loewenzahn", 433.0, 38),
     ]);
-    // Festschmuck nach Kapitel 1 (E-301): nur mit Merker `fest` zu sehen
+    // festive decorations after chapter 1 (E-301): only visible with flag `fest`
     for tx in [104.0, 119.0, 141.0, 286.0, 312.0] {
         m.decor_back
             .push(decor("girlande-fest", tx, if tx > 250.0 { 32 } else { 38 }));
     }
-    // Laternen hängen an den Girlanden (Schnur bei −120, Leine dort bei etwa −133)
+    // lanterns hang on the garlands (string at −120, line there at about −133)
     for (k, tx) in [104.0, 119.0, 141.0, 286.0, 312.0].into_iter().enumerate() {
         let g = ground(tx, if tx > 250.0 { 32 } else { 38 });
         for (side, name) in [(-40.0, "festlaterne-fest"), (40.0, "festlaterne-gelb-fest")] {
@@ -685,7 +686,7 @@ pub fn tauwinkel() -> Map {
             m.decor_back.push(decor_px(name, g.x + flip, g.y - 13.0));
         }
     }
-    // Vögel auf den Dächern
+    // birds on the roofs
     for (tx, ty, dy) in [(18.0, 40, 246.0), (115.0, 38, 178.0)] {
         let p = ground(tx, ty);
         m.decor_back.push(decor_px("vogel", p.x - 10.0, p.y - dy));
@@ -695,24 +696,24 @@ pub fn tauwinkel() -> Map {
         ground(166.0, 38) + Vec2::new(-42.0, -258.0),
         ground(328.0, 32) + Vec2::new(-40.0, -246.0),
     ];
-    // Eisblock über dem Bergsteig (verschwindet nicht von selbst: der Deckel sind Tiles)
+    // ice block above the mountain trail (does not disappear by itself: the lid is tiles)
     m.decor_front.push(decor("eisblock", 344.0, 34));
     let mut map = finish(m, &GRASS);
     animate(&mut map, &chimneys);
     map
 }
 
-/// Blütenwiesen 1, 300 × 60 (E-282): Hügel, Tal mit Dornengrube und Hook-Decke darüber,
-/// Brücke über einer Dornenschlucht (Stachelkäfer), Hügelkamm mit Pollenbläser,
-/// Bröckelboden, Hook-Felsen zum hohen Plateau mit dem Glitzerstein, Quellstein am Wiesenrand.
+/// Blütenwiesen 1, 300 × 60 (E-282): hills, valley with a thorn pit and a hook ceiling above,
+/// bridge over a thorn gorge (spike beetles), hill ridge with pollen blower, crumbling floor,
+/// hook rocks to the high plateau with the glitter stone, spring stone at the meadow edge.
 pub fn wiese() -> Map {
     let (w, h) = (300, 60);
     let mut g = Grid::new(w, h, 44);
-    // Hügel
+    // hills
     g.ground(22, 29, 42);
     g.ground(30, 38, 39);
     g.ground(39, 47, 41);
-    // Tal mit Dornengrube; oben eine Decke zum Hooken und ein Sims mit Truhe
+    // valley with a thorn pit; above a ceiling for hooking and a ledge with a chest
     g.ground(60, 95, 50);
     g.fill((72, 78), (50, 52), '.');
     g.fill((72, 78), (53, 53), '^');
@@ -720,11 +721,11 @@ pub fn wiese() -> Map {
     g.fill((62, 69), (32, 33), '#');
     g.fill((72, 80), (32, 33), '#');
     g.fill((84, 92), (38, 39), '#');
-    // Dornenschlucht mit Brücke
+    // thorn gorge with a bridge
     g.ground(112, 134, 55);
     g.fill((113, 133), (54, 54), '^');
     g.fill((112, 134), (44, 44), '=');
-    // Hügelkamm, dahinter ein Tal mit Bröckelboden über Dornen
+    // hill ridge, behind it a valley with crumbling floor over thorns
     g.ground(150, 160, 40);
     g.ground(161, 170, 36);
     g.ground(171, 186, 32);
@@ -732,17 +733,17 @@ pub fn wiese() -> Map {
     g.fill((196, 203), (46, 46), ':');
     g.fill((196, 203), (47, 49), '.');
     g.fill((196, 203), (50, 50), '^');
-    // Hook-Felsen hinüber zum hohen Plateau (mit Durchgang darunter)
+    // hook rocks over to the high plateau (with a passage underneath)
     g.fill((189, 192), (22, 23), '#');
     g.fill((197, 200), (22, 23), '#');
     g.fill((205, 208), (22, 23), '#');
     g.fill((215, 230), (30, 40), '#');
-    // Anstieg zum Wiesenrand, im Osten dichter Wald am Hang
+    // ascent to the meadow edge, dense forest on the slope in the east
     g.ground(241, 250, 43);
     g.ground(251, w - 1, 40);
-    // Ruck-Stelle mit Biene 5 (Rückkehr nach Kapitel 1)
+    // hook jerk spot with bee 5 (return after chapter 1)
     let ruck_top = ruck_gate(&mut g, 252, 40);
-    // Zugtruhe für die Rückkehr mit Heranhooken (M2.2.6)
+    // pull chest for the return with the pull hook (M2.2.6)
     let zug = pull_vault(
         &mut g,
         "wiese1",
@@ -814,7 +815,7 @@ pub fn wiese() -> Map {
             },
         ),
         o("quellstein", at(280, 40, 40.0), ObjectKind::SavePoint),
-        // weiter in die Blütenwiesen (Kapitel 1)
+        // on into the Blütenwiesen (chapter 1)
         o("ost", at(292, 40, 28.0), ObjectKind::Spawn),
         o(
             "biene-5",
@@ -923,10 +924,10 @@ mod tests {
             assert!(errors.is_empty(), "{}: {errors:?}", m.name);
             assert!(!back.decor_back.is_empty() && !back.backgrounds.is_empty());
         }
-        // Übergänge prüft kapitel1::tests über alle Abenteuer-Karten
+        // transitions are checked by kapitel1::tests across all adventure maps
         let _ = map_links;
         assert!(a.adventure.object(&c.progression.start_spawn).is_some());
-        // Zonen und Gegner der Hauptaufgabe
+        // zones and enemies of the main quest
         assert!(b.adventure.object("wiesenrand").is_some());
         let kaefer = b
             .adventure
@@ -959,7 +960,7 @@ mod tests {
         }
     }
 
-    /// Übersicht: `… prolog_sheets -- --ignored` → `target/prolog-<karte>.svg`.
+    /// Overview: `… prolog_sheets -- --ignored` → `target/prolog-<karte>.svg`.
     #[test]
     #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
     fn prolog_sheets() {

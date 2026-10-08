@@ -1,6 +1,6 @@
-//! Editor-Ansicht: Karte (wie im Spiel), Raster, Kartenrand, Entities und Pinsel-Vorschau.
+//! Editor view: map (as in the game), grid, map border, entities and brush preview.
 
-// Zeichen-Code: kurze Namen für Ecken und Koordinaten
+// Drawing code: short names for corners and coordinates
 #![allow(clippy::many_single_char_names)]
 
 use elora_map::EntityKind;
@@ -21,10 +21,10 @@ const SELECTION: Color = Color::hex(0x5aaee8);
 const SELECTION_FILL: Color = Color::rgba(0.35, 0.68, 0.91, 0.15);
 const SPAWN: Color = Color::rgb(1.0, 1.0, 1.0);
 const DUMMY: Color = Color::hex(0x9aa6b2);
-/// Hintergrund außerhalb der Karte (dunkel, passend zu egui dunkel).
+/// Background outside the map (dark, matching egui dark).
 pub const OUTSIDE: Color = Color::hex(0x1b1d22);
 
-/// Kamera so, dass `editor.center` in der Mitte der Kartenfläche `area` (Pixel) liegt.
+/// Camera such that `editor.center` lies in the middle of the map area `area` (pixels).
 pub fn camera(editor: &Editor, window: Vec2, area_center: Vec2) -> Camera {
     Camera {
         center: editor.center + (window * 0.5 - area_center) * editor.zoom,
@@ -32,7 +32,7 @@ pub fn camera(editor: &Editor, window: Vec2, area_center: Vec2) -> Camera {
     }
 }
 
-/// Weltpunkt unter einem Bildschirmpunkt (Pixel).
+/// World point under a screen point (pixels).
 pub fn to_world(camera: &Camera, window: Vec2, pixel: Vec2) -> Vec2 {
     camera.screen_to_world(pixel, window)
 }
@@ -41,7 +41,7 @@ fn team_color(team: Team) -> Color {
     crate::draw::team_color(team)
 }
 
-/// Alles zeichnen; `preview` = was das Werkzeug unter der Maus zeigt.
+/// Draw everything; `preview` = what the tool shows under the mouse.
 pub fn draw(
     batch: &mut ShapeBatch,
     editor: &Editor,
@@ -64,7 +64,7 @@ pub fn draw(
         hook_wilt: None,
         wind: 0.0,
     };
-    // Himmel nur innerhalb der Karte; draußen bleibt es dunkel
+    // sky only inside the map; outside it stays dark
     batch.fill_rect_vgradient(
         Vec2::ZERO,
         size,
@@ -78,7 +78,7 @@ pub fn draw(
         ..shown
     };
     map_view.draw_back_layers(batch, map, camera, look_time, behind);
-    // Hintergründe reichen über die Karte hinaus: außen wieder abdecken
+    // backgrounds reach beyond the map: cover the outside again
     let (a, b) = (
         tl - Vec2::new(1.0, 1.0),
         tl + camera.size + Vec2::new(1.0, 1.0),
@@ -120,7 +120,7 @@ pub fn draw(
     if editor.visible.grid {
         grid(batch, camera, size, editor.zoom);
     }
-    // Kartenrand
+    // map border
     let w = 2.0 * editor.zoom;
     batch.stroke_polyline(
         &[
@@ -154,7 +154,7 @@ pub fn draw(
     }
 }
 
-/// Weltrechteck eines Tile-Bereichs.
+/// World rectangle of a tile area.
 fn cell_rect(c: Cells) -> (Vec2, Vec2) {
     let ts = TILE_SIZE as f32;
     #[allow(clippy::cast_precision_loss)]
@@ -178,7 +178,7 @@ fn outline(batch: &mut ShapeBatch, min: Vec2, max: Vec2, width: f32, color: Colo
     );
 }
 
-/// Vorschau beim Einfügen: Tiles halbdurchsichtig in ihrer Pinselfarbe.
+/// Preview while pasting: tiles semi-transparent in their brush color.
 fn stamp(batch: &mut ShapeBatch, clip: &super::tools::Clip, x: usize, y: usize, zoom: f32) {
     let ts = TILE_SIZE as f32;
     for cy in 0..clip.height {
@@ -246,7 +246,7 @@ fn entities(batch: &mut ShapeBatch, editor: &Editor, items: &ItemArt, time: f32)
     }
 }
 
-/// Spawnpunkt: Ring mit Pfeil nach unten (dort steht die Figur).
+/// Spawn point: ring with an arrow pointing down (the character stands there).
 fn spawn(batch: &mut ShapeBatch, p: Vec2, color: Color) {
     batch.stroke_circle(p, 12.0, 3.0, color);
     batch.fill_polygon(
@@ -259,7 +259,7 @@ fn spawn(batch: &mut ShapeBatch, p: Vec2, color: Color) {
     );
 }
 
-/// Raster je Tile, alle 8 Tiles kräftiger; bei starkem Herauszoomen nur das grobe Raster.
+/// Grid per tile, every 8 tiles stronger; when zoomed far out only the coarse grid.
 fn grid(batch: &mut ShapeBatch, camera: &Camera, size: Vec2, zoom: f32) {
     let ts = TILE_SIZE as f32;
     let a = camera.top_left();
@@ -308,7 +308,7 @@ fn grid(batch: &mut ShapeBatch, camera: &Camera, size: Vec2, zoom: f32) {
 mod tests {
     use super::*;
 
-    /// Vorlage „Tag“ auf einer neuen Karte mit Boden: `… preset_sheet -- --ignored` → `target/preset.svg`.
+    /// Preset „Tag“ on a new map with ground: `… preset_sheet -- --ignored` → `target/preset.svg`.
     #[test]
     #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
     fn preset_sheet() {
@@ -323,7 +323,7 @@ mod tests {
         );
         editor.apply_preset(super::super::look::Preset::Day, t);
         editor.zoom = 0.75;
-        // tiefste Kamera (Karte 30 Tiles hoch): früher klaffte hier eine Lücke über dem Boden
+        // lowest camera (map 30 tiles high): there used to be a gap above the ground here
         editor.center.y = 960.0 - 337.0;
         let window = Vec2::new(1600.0, 900.0);
         let cam = camera(&editor, window, window * 0.5);
@@ -346,8 +346,8 @@ mod tests {
         .unwrap();
     }
 
-    /// Editor-Ansicht ohne Oberfläche: `cargo test -p elora-client --bin elora editor_sheet -- --ignored`,
-    /// danach `cargo xtask svg-preview target/editor.svg target/editor.png 1400`.
+    /// Editor view without UI: `cargo test -p elora-client --bin elora editor_sheet -- --ignored`,
+    /// then `cargo xtask svg-preview target/editor.svg target/editor.png 1400`.
     #[test]
     #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
     fn editor_sheet() {

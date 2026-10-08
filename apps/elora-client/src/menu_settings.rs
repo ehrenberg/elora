@@ -1,7 +1,7 @@
-//! Einstellungsseiten im Hauptmenü (M7.4): Spieler & Skin, Steuerung, Grafik, Ton,
-//! Sprache. Änderungen wirken sofort; die App speichert sie (E-116).
+//! Settings pages in the main menu (M7.4): player & skin, controls, graphics, sound,
+//! language. Changes take effect immediately; the app saves them (E-116).
 
-// Layout-Code: `s` (Skalierung), `x`/`y` sind hier lesbarer als lange Namen
+// Layout code: `s` (scale), `x`/`y` are more readable here than long names
 #![allow(clippy::many_single_char_names)]
 
 use elora_audio::AudioSettings;
@@ -17,27 +17,27 @@ use crate::settings::GraphicsSettings;
 use crate::skins::{BODY, EYES};
 use crate::ui::{BLUE, ORANGE, Rect, SAND, TEXT, TEXT_DIM, Ui};
 
-/// Rot für doppelt belegte Tasten.
+/// Red for keys bound twice.
 const CONFLICT: Color = Color::hex(0xd94a4a);
 
-/// Was die Einstellungsseiten bearbeiten (Verweise in die App).
+/// What the settings pages edit (references into the app).
 pub struct SettingsEdit<'a> {
     pub name: &'a mut String,
     pub skin: &'a mut Skin,
     pub graphics: &'a mut GraphicsSettings,
     pub audio: &'a mut AudioSettings,
     pub effects: &'a mut EffectSettings,
-    /// Maus-Empfindlichkeit in Prozent.
+    /// Mouse sensitivity in percent.
     pub sensitivity: &'a mut f32,
-    /// Wechsel zur aufgenommenen Waffe (E-287).
+    /// Switch to the picked-up weapon (E-287).
     pub auto_switch: &'a mut crate::settings::AutoSwitch,
     pub language: &'a mut Language,
     pub bindings: &'a mut Bindings,
-    /// Aktion, die gerade auf eine neue Taste wartet.
+    /// Action currently waiting for a new key.
     pub capture: &'a mut Option<GameAction>,
-    /// Master-Server für die Internet-Liste (im Browser eingetragen).
+    /// Master server for the internet list (entered in the browser).
     pub master_url: &'a mut String,
-    /// Audiogerät vorhanden?
+    /// Audio device available?
     pub audio_device: bool,
 }
 
@@ -46,7 +46,7 @@ fn percent(v: f32) -> u32 {
     (v * 100.0).round() as u32
 }
 
-/// Zeichnet die Seite `tab` in `page`; `true`, wenn sich etwas geändert hat.
+/// Draws the page `tab` into `page`; `true` if something has changed.
 pub fn page(
     ui: &mut Ui<'_>,
     cx: &MenuCtx<'_>,
@@ -67,7 +67,7 @@ pub fn page(
     }
 }
 
-/// „Über Elora“ (M8.5, E-208, E-209): Version, Mitwirkende, Lizenzen, Quellen.
+/// "About Elora" (M8.5, E-208, E-209): version, contributors, licenses, sources.
 fn about(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, page: Rect) {
     let s = cx.s;
     let lang = cx.lang;
@@ -165,7 +165,7 @@ fn player(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, page: Rect, edit: &mut SettingsEdit
         TEXT_DIM,
         Align::Left,
     );
-    // Vorschau
+    // preview
     let center = Vec2::new(page.max.x - 100.0 * s, page.min.y + 190.0 * s);
     ui.batch
         .fill_circle(center, 78.0 * s, Color::rgba(0.949, 0.757, 0.306, 0.2));
@@ -201,7 +201,7 @@ fn controls(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, page: Rect, edit: &mut SettingsEd
         10.0,
         400.0,
     );
-    // Wechsel zur aufgenommenen Waffe (E-287)
+    // switch to the picked-up weapon (E-287)
     let ax = x + 340.0 * s;
     ui.label(
         lang.t("settings.auto_switch"),
@@ -237,7 +237,7 @@ fn controls(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, page: Rect, edit: &mut SettingsEd
     changed
 }
 
-/// Belegung in zwei Spalten; Klick auf eine Taste wartet auf die neue.
+/// Bindings in two columns; clicking a key waits for the new one.
 fn binding_list(
     ui: &mut Ui<'_>,
     cx: &MenuCtx<'_>,
@@ -333,7 +333,7 @@ fn graphics(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, page: Rect, edit: &mut SettingsEd
         TEXT_DIM,
         Align::Left,
     );
-    // Regler in 5-%-Schritten, damit die Größe nicht bei jedem Pixel springt
+    // slider in 5 % steps so that the size does not jump with every pixel
     let mut scale = g.ui_scale;
     if ui.slider(
         "ui_scale",
@@ -362,7 +362,7 @@ fn graphics(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, page: Rect, edit: &mut SettingsEd
         lang.t("settings.hit_marker"),
         &mut e.hit_marker,
     );
-    // Wetter: voll, sanft, aus (E-335)
+    // weather: full, gentle, off (E-335)
     let wy = y + 80.0 * s;
     ui.label(
         lang.t("settings.weather"),

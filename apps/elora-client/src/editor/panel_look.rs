@@ -1,6 +1,6 @@
-//! Editor-Oberfläche für das Aussehen (M6.8): Deko-Werkzeug, Hintergrund-Ebenen, Animationen.
+//! Editor UI for the look (M6.8): decoration tool, background layers, animations.
 
-// UI-Code: kurze Namen für Objekt, Kopie und Farbe
+// UI code: short names for object, copy and color
 #![allow(clippy::many_single_char_names)]
 
 use std::time::Instant;
@@ -49,7 +49,7 @@ fn art_name(editor: &Editor, art: &Art, lang: &Lang) -> String {
     }
 }
 
-/// Seitenleiste für das Deko-Werkzeug: Ziel-Ebene, Grafik, gewähltes Objekt, eigene SVGs.
+/// Sidebar for the decoration tool: target layer, graphic, selected object, custom SVGs.
 pub fn decor_tool(ui: &mut egui::Ui, editor: &mut Editor, lang: &Lang, now: Instant) {
     let mut layers = vec![DecorLayer::Back, DecorLayer::Front];
     layers.extend((0..editor.map.backgrounds.len()).map(DecorLayer::Background));
@@ -229,7 +229,7 @@ fn images(ui: &mut egui::Ui, editor: &mut Editor, lang: &Lang, now: Instant) {
     });
 }
 
-/// Hintergrund-Ebenen: Vorlagen, Liste mit Reihenfolge, Eigenschaften der gewählten Ebene.
+/// Background layers: presets, list with order, properties of the selected layer.
 pub fn backgrounds(ui: &mut egui::Ui, editor: &mut Editor, lang: &Lang, now: Instant) {
     egui::CollapsingHeader::new(lang.t("editor.backgrounds"))
         .default_open(false)
@@ -323,7 +323,7 @@ fn background_props(ui: &mut egui::Ui, editor: &mut Editor, i: usize, lang: &Lan
     });
 }
 
-/// Animationen: Liste, Punkte als Tabelle, Kurvenbild mit Zeitmarke.
+/// Animations: list, points as a table, curve plot with time marker.
 pub fn envelopes(ui: &mut egui::Ui, editor: &mut Editor, lang: &Lang, time_ms: i64, now: Instant) {
     egui::CollapsingHeader::new(lang.t("editor.animations"))
         .default_open(false)
@@ -444,7 +444,7 @@ fn envelope_props(
     }
 }
 
-/// Kurvenbild: alle Kanäle über eine Schleife, auf den gemeinsamen Wertebereich skaliert.
+/// Curve plot: all channels over one loop, scaled to the common value range.
 fn plot(ui: &mut egui::Ui, e: &elora_map::Envelope, time_ms: i64) {
     let (rect, _) =
         ui.allocate_exact_size(egui::vec2(ui.available_width(), 90.0), egui::Sense::hover());
@@ -496,8 +496,8 @@ fn plot(ui: &mut egui::Ui, e: &elora_map::Envelope, time_ms: i64) {
     );
 }
 
-/// Deko-Werkzeug auf der Kartenfläche: Klick auf ein Objekt wählt es (Ziehen verschiebt),
-/// Klick daneben setzt die gewählte Grafik, Rechtsklick entfernt.
+/// Decoration tool on the map area: clicking an object selects it (dragging moves it),
+/// clicking next to it places the selected graphic, right-click removes.
 #[allow(clippy::fn_params_excessive_bools)]
 pub fn decor_interact(
     editor: &mut Editor,
@@ -539,7 +539,7 @@ pub fn decor_interact(
     }
 }
 
-/// Oberstes sichtbares Objekt unter `world`: vorn, hinten, dann Hintergründe von vorn nach hinten.
+/// Topmost visible object under `world`: front, back, then backgrounds from front to back.
 fn pick(editor: &Editor, map_view: &mut MapView, world: Vec2, camera: Vec2) -> Option<DecorRef> {
     let v = editor.visible.layers;
     let mut order = Vec::new();

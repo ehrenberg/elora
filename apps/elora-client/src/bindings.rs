@@ -1,9 +1,9 @@
-//! Tastenbelegung (M7.5, E-117): eine Taste, Maustaste oder Mausrad-Richtung je Aktion.
+//! Key bindings (M7.5, E-117): one key, mouse button or mouse wheel direction per action.
 //!
-//! Gespeichert in `settings.toml` unter `[bindings]` als lesbare Namen, z. B.
-//! `jump = "space"`, `fire = "mouse_left"`, `next_weapon = "wheel_down"`. Unbekannte
-//! oder ungültige Einträge behalten die Standardbelegung. Fest belegt bleiben Esc
-//! (Pause), F1 (Debug-Panel) und in der Sandbox R (Respawn) und F5 (Aufzeichnung).
+//! Stored in `settings.toml` under `[bindings]` as readable names, e.g.
+//! `jump = "space"`, `fire = "mouse_left"`, `next_weapon = "wheel_down"`. Unknown
+//! or invalid entries keep the default binding. Permanently bound remain Esc
+//! (pause), F1 (debug panel) and in the sandbox R (respawn) and F5 (recording).
 
 use std::collections::BTreeMap;
 
@@ -13,7 +13,7 @@ use winit::keyboard::KeyCode;
 
 use crate::lang::Lang;
 
-/// Auslöser einer Aktion.
+/// Trigger of an action.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum Trigger {
     Key(KeyCode),
@@ -22,7 +22,7 @@ pub enum Trigger {
     WheelDown,
 }
 
-/// Belegbare Aktionen im Spiel.
+/// Bindable actions in the game.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum GameAction {
@@ -31,7 +31,7 @@ pub enum GameAction {
     Jump,
     Down,
     Hook,
-    /// Fähigkeit (Hook-Ruck, E-226) – nur im Abenteuer und im Quellenkampf.
+    /// Ability (hook jerk, E-226) – only in the adventure and in the Spring Battle.
     Ability,
     Fire,
     Hammer,
@@ -43,9 +43,9 @@ pub enum GameAction {
     TeamChat,
     Scoreboard,
     Emote,
-    /// Aktionstaste: Sprechen, Öffnen, Benutzen (E-253).
+    /// Action key: talk, open, use (E-253).
     Interact,
-    /// Heiltrank trinken (E-265).
+    /// Drink a healing potion (E-265).
     QuickHeal,
     Kill,
     VoteYes,
@@ -77,7 +77,7 @@ impl GameAction {
         Self::VoteNo,
     ];
 
-    /// Schlüssel in `settings.toml` und für die Übersetzung (`bind.<name>`).
+    /// Key in `settings.toml` and for the translation (`bind.<name>`).
     pub fn name(self) -> &'static str {
         match self {
             Self::Left => "left",
@@ -108,7 +108,7 @@ impl GameAction {
         Self::ALL.into_iter().find(|a| a.name() == name)
     }
 
-    /// Standardbelegung (E-043, E-051, E-078, E-091, E-141, E-226, E-253, E-265).
+    /// Default binding (E-043, E-051, E-078, E-091, E-141, E-226, E-253, E-265).
     fn default_trigger(self) -> Trigger {
         use KeyCode as K;
         match self {
@@ -137,12 +137,12 @@ impl GameAction {
     }
 }
 
-/// Tasten, die nicht belegt werden können (fest vergeben).
+/// Keys that cannot be bound (permanently assigned).
 pub fn reserved(t: Trigger) -> bool {
     matches!(t, Trigger::Key(KeyCode::Escape | KeyCode::F1))
 }
 
-/// Belegbare Tasten mit Namen (Datei) und Anzeige.
+/// Bindable keys with name (file) and display.
 const KEYS: &[(KeyCode, &str, &str)] = {
     use KeyCode as K;
     &[
@@ -239,7 +239,7 @@ const KEYS: &[(KeyCode, &str, &str)] = {
 };
 
 impl Trigger {
-    /// Name in `settings.toml`; `None` für nicht belegbare Tasten.
+    /// Name in `settings.toml`; `None` for keys that cannot be bound.
     pub fn name(self) -> Option<&'static str> {
         match self {
             Self::Key(k) => KEYS.iter().find(|(c, _, _)| *c == k).map(|(_, n, _)| *n),
@@ -268,7 +268,7 @@ impl Trigger {
         Some(t)
     }
 
-    /// Anzeige in der Oberfläche (Maus, Mausrad und einige Tasten übersetzt).
+    /// Display in the UI (mouse, mouse wheel and some keys translated).
     pub fn label(self, lang: &Lang) -> String {
         let key = match self {
             Self::Key(k) => KEYS
@@ -288,7 +288,7 @@ impl Trigger {
     }
 }
 
-/// Belegung aller Aktionen.
+/// Bindings of all actions.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(from = "BTreeMap<String, String>", into = "BTreeMap<String, String>")]
 pub struct Bindings {
@@ -309,7 +309,7 @@ impl Default for Bindings {
 impl From<BTreeMap<String, String>> for Bindings {
     fn from(raw: BTreeMap<String, String>) -> Self {
         let mut b = Self::default();
-        // Ältere Einstellungen ohne Aktionstaste: Emote-Rad von E auf Strg (E-253)
+        // older settings without an action key: emote wheel from E to Ctrl (E-253)
         let old = !raw.contains_key("interact");
         for (action, trigger) in raw {
             if let (Some(a), Some(t)) =
@@ -343,7 +343,7 @@ impl Bindings {
             .unwrap_or_else(|| a.default_trigger())
     }
 
-    /// Aktionen, die `t` auslöst (bei doppelter Belegung mehrere).
+    /// Actions that `t` triggers (several if bound twice).
     pub fn actions(&self, t: Trigger) -> Vec<GameAction> {
         self.map
             .iter()
@@ -352,7 +352,7 @@ impl Bindings {
             .collect()
     }
 
-    /// Neu belegen; `false` bei fest vergebenen oder nicht speicherbaren Tasten.
+    /// Rebind; `false` for permanently assigned keys or keys that cannot be saved.
     pub fn set(&mut self, a: GameAction, t: Trigger) -> bool {
         if reserved(t) || t.name().is_none() {
             return false;
@@ -361,7 +361,7 @@ impl Bindings {
         true
     }
 
-    /// Ist die Taste von `a` noch einer anderen Aktion zugeordnet?
+    /// Is the key of `a` still assigned to another action?
     pub fn conflict(&self, a: GameAction) -> bool {
         let t = self.trigger(a);
         self.map.iter().any(|(other, tt)| *other != a && *tt == t)
@@ -382,7 +382,7 @@ mod tests {
         );
         assert_eq!(b.trigger(GameAction::Interact), Trigger::Key(KeyCode::KeyE));
         assert!(!b.conflict(GameAction::Interact));
-        // neue Einstellungen behalten eine bewusste Wahl
+        // new settings keep a deliberate choice
         let raw = BTreeMap::from([
             ("emote".to_owned(), "e".to_owned()),
             ("interact".to_owned(), "f".to_owned()),

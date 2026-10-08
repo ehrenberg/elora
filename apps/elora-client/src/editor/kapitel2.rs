@@ -1,9 +1,9 @@
-//! Karten von Kapitel 2 (R2-M2.2): `wald-1` (Waldrand mit Pilzring), `wald-2` (Baumhaus-
-//! Siedlung in den Kronen), `wald-3` (Wurzelhöhlen) und `wald-arena` (Waldquelle mit dem
-//! Wurzelwächter). Der Wald liegt westlich von Tauwinkel: die Karten werden von links (Dorf)
-//! nach rechts (tiefer im Wald) gebaut und dann gespiegelt.
+//! Maps of chapter 2 (R2-M2.2): `wald-1` (forest edge with mushroom ring), `wald-2` (tree house
+//! settlement in the crowns), `wald-3` (root caves) and `wald-arena` (forest spring with the
+//! root guardian). The forest lies west of Tauwinkel: the maps are built from left (village)
+//! to right (deeper in the forest) and then mirrored.
 //!
-//! `cargo test -p elora-client --bin elora write_kapitel2_maps -- --ignored` schreibt
+//! `cargo test -p elora-client --bin elora write_kapitel2_maps -- --ignored` writes
 //! `maps/abenteuer/*.emap`.
 
 #![allow(
@@ -22,7 +22,7 @@ use super::prolog::{
 };
 use super::release;
 
-/// Übergang über die ganze Kartenhöhe am Rand (E-279).
+/// Transition over the full map height at the edge (E-279).
 fn edge_exit(id: &str, x: usize, h: usize, map: &str, spawn: &str) -> Object {
     o(
         id,
@@ -60,7 +60,7 @@ fn thorn_decor(m: &mut Map, y: usize, x0: usize, x1: usize) {
     }
 }
 
-/// Waagerecht spiegeln: Tiles, Objekte (Bereiche an ihrer linken Kante) und Deko.
+/// Mirror horizontally: tiles, objects (areas at their left edge) and decoration.
 fn mirror(m: &mut Map) {
     let (w, h) = (m.width, m.height);
     for y in 0..h {
@@ -80,7 +80,7 @@ fn mirror(m: &mut Map) {
     }
 }
 
-/// Wald-Look: Thema „Wald“ der Release-Karten, etwas schattigerer Himmel.
+/// Forest look: theme „Wald“ of the release maps, a somewhat shadier sky.
 fn forest(mut m: Map) -> Map {
     mirror(&mut m);
     let mut map = finish(m, &release::THEMES[3]);
@@ -92,9 +92,9 @@ fn forest(mut m: Map) -> Map {
     map
 }
 
-/// Murmelwald 1, 220 × 60: Waldrand mit dem Pilzring nahe Tauwinkel, sanfte Hügel (der Weg
-/// am Boden hat keine Lücken – das Pilzkind kommt mit), Kronen-Stege als oberer Weg,
-/// Steinsäule mit einer Rune (erst mit Heranhooken).
+/// Murmelwald 1, 220 × 60: forest edge with the mushroom ring near Tauwinkel, gentle hills (the
+/// path on the ground has no gaps – the mushroom child comes along), crown ledges as the upper
+/// path, stone pillar with a rune (only with the pull hook).
 pub fn wald_1() -> Map {
     let (w, h, f) = (220, 60, 44);
     let mut g = Grid::new(w, h, f);
@@ -108,15 +108,16 @@ pub fn wald_1() -> Map {
     g.ground(151, 175, 40);
     g.ground(176, 200, 38);
     g.ground(201, w - 1, 40);
-    // oberer Weg durch die Kronen
+    // upper path through the crowns
     g.fill((66, 74), (32, 32), '=');
     g.fill((78, 86), (27, 27), '=');
     g.fill((88, 92), (20, 21), '#');
     g.fill((100, 108), (34, 34), '=');
     g.fill((110, 116), (36, 36), '=');
-    // schwebende Steinsäule: Rune oben, nur mit Heranhooken (M2.2.2); unten frei für den Weg
+    // floating stone pillar: rune at the top, only with the pull hook (M2.2.2); free below for
+    // the path
     g.fill((186, 188), (20, 30), '%');
-    // Kletterstelle für die Rückkehr mit dem Eisgriff (M2.4.7)
+    // climbing spot for the return with the ice grip (M2.4.7)
     let kletter = climb_vault(
         &mut g,
         "wald1-kletter",
@@ -124,7 +125,7 @@ pub fn wald_1() -> Map {
         40,
         &[("glanztropfen", 60), ("harz", 2)],
     );
-    // Stampfkammer für die Rückkehr mit Stampfen (M2.3.6)
+    // stomp chamber for the return with stomp (M2.3.6)
     let stampf = stomp_vault(
         &mut g,
         "wald1-stampf",
@@ -195,25 +196,25 @@ pub fn wald_1() -> Map {
     forest(m)
 }
 
-/// Murmelwald 2, 200 × 90: hohe Bäume, Stege und Hängebrücken in den Kronen, Baumhäuser,
-/// Plumm ganz oben; das Pilzkind am Boden bei den Leuchtpilzen.
+/// Murmelwald 2, 200 × 90: tall trees, ledges and suspension bridges in the crowns, tree houses,
+/// Plumm at the very top; the mushroom child on the ground by the glowing mushrooms.
 pub fn wald_2() -> Map {
     let (w, h, f) = (200, 90, 80);
     let mut g = Grid::new(w, h, f);
     g.ground(30, 59, 78);
     g.ground(60, 140, 76);
     g.ground(141, 170, 78);
-    // Aufstieg: Stege im Zickzack (je 4 Tiles höher)
+    // ascent: ledges in a zigzag (each 4 tiles higher)
     for (k, y) in (40..=72).rev().step_by(4).enumerate() {
         let x = if k % 2 == 0 { 62 } else { 69 };
         g.fill((x, x + 5), (y, y), '=');
     }
-    // Hängebrücke und Plattformen in den Kronen
+    // suspension bridge and platforms in the crowns
     g.fill((76, 118), (44, 44), '=');
     g.fill((120, 132), (40, 40), '=');
     g.fill((134, 146), (36, 36), '=');
     g.fill((150, 156), (28, 29), '#');
-    // zweiter Abstieg auf der anderen Seite
+    // second descent on the other side
     for (k, y) in (40..=72).step_by(4).enumerate() {
         let x = if k % 2 == 0 { 160 } else { 167 };
         g.fill((x, x + 5), (y, y), '=');
@@ -266,13 +267,13 @@ pub fn wald_2() -> Map {
     forest(m)
 }
 
-/// Murmelwald 3, 200 × 70: hinunter in die Wurzelhöhlen, Dornen, Bröckelboden, hängende
-/// Wurzeln; Zugschalter-Kammer mit einer Rune (erst mit Heranhooken), Ruck-Stelle mit Rune,
-/// am Ende hinauf zur Waldquelle.
+/// Murmelwald 3, 200 × 70: down into the root caves, thorns, crumbling floor, hanging
+/// roots; pull switch chamber with a rune (only with the pull hook), hook jerk spot with a rune,
+/// at the end up to the forest spring.
 pub fn wald_3() -> Map {
     let (w, h) = (200, 70);
     let mut g = Grid::new(w, h, 30);
-    // Höhle unter den Wurzeln: Gang von Zeile 40 bis 60
+    // cave under the roots: passage from row 40 to 60
     g.fill((24, 160), (40, 60), '.');
     g.fill((20, 23), (30, 60), '.');
     g.fill((24, 50), (57, 60), '#');
@@ -287,21 +288,21 @@ pub fn wald_3() -> Map {
     for x in [54, 59, 134, 139, 143] {
         g.fill((x, x), (40, 42), '#');
     }
-    // Wurzel mit dem Zugschalter (vom Höhlenboden mit dem Hook erreichbar)
+    // root with the pull switch (reachable with the hook from the cave floor)
     g.fill((122, 123), (40, 46), '#');
-    // Zugschalter-Kammer in der Decke: Steg als Boden, Tor darunter (`merker zug.wald3`)
+    // pull switch chamber in the ceiling: ledge as the floor, gate below (`merker zug.wald3`)
     g.fill((106, 116), (34, 37), '.');
     g.fill((106, 116), (38, 38), '=');
     g.fill((106, 116), (39, 39), '.');
-    // Aufstieg am Ende
+    // ascent at the end
     g.fill((154, 160), (24, 51), '.');
     for (x, y) in [(154, 46), (157, 40), (154, 34), (157, 28)] {
         g.fill((x, x + 3), (y, y), '=');
     }
     g.ground(161, w - 1, 26);
-    // Ruck-Stelle oben mit Rune 4
+    // hook jerk spot at the top with rune 4
     let ruck_top = ruck_gate(&mut g, 170, 26);
-    // Stampfkammer im Höhlenboden (M2.3.6)
+    // stomp chamber in the cave floor (M2.3.6)
     let stampf = stomp_vault(
         &mut g,
         "wald3-stampf",
@@ -376,8 +377,8 @@ pub fn wald_3() -> Map {
     forest(m)
 }
 
-/// Waldquelle, 100 × 50: vom Sims hinunter in die Arena, Hook-Blüten zum Ausweichen vor
-/// den Wurzelwänden, Tor nach dem Sieg, Wurzelpfad zurück nach Tauwinkel.
+/// Forest spring, 100 × 50: from the ledge down into the arena, hook flowers to dodge
+/// the root walls, gate after the victory, root path back to Tauwinkel.
 pub fn wald_arena() -> Map {
     let (w, h) = (100, 50);
     let mut g = Grid::new(w, h, 44);
@@ -436,7 +437,7 @@ pub fn wald_arena() -> Map {
     forest(m)
 }
 
-/// Karten von Kapitel 2 mit ihren Namen.
+/// Maps of chapter 2 with their names.
 pub fn maps() -> Vec<(&'static str, Map)> {
     vec![
         ("wald-1", wald_1()),
@@ -510,7 +511,7 @@ mod tests {
         }
     }
 
-    /// Übersicht: `… kapitel2_sheets -- --ignored` → `target/kapitel2-<karte>.svg`.
+    /// Overview: `… kapitel2_sheets -- --ignored` → `target/kapitel2-<karte>.svg`.
     #[test]
     #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
     fn kapitel2_sheets() {

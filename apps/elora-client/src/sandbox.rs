@@ -1,5 +1,5 @@
-//! Sandbox (M1/M2): Elora, Dummies und Pickups auf einer Textkarte, fester Tick,
-//! Interpolation, Hot-Reload und Aufzeichnung.
+//! Sandbox (M1/M2): Elora, dummies and pickups on a text map, fixed tick,
+//! interpolation, hot reload and recording.
 
 use std::path::{Path, PathBuf};
 use std::sync::mpsc;
@@ -20,10 +20,10 @@ use elora_sim::{
 use crate::controls::Controls;
 
 pub const TICK: Duration = Duration::from_micros(1_000_000 / TICKS_PER_SECOND as u64);
-/// Schutz gegen Aufholspiralen nach Hängern.
+/// Protection against catch-up spirals after hangs.
 const MAX_TICKS_PER_FRAME: u32 = 10;
 
-/// Ablage der Aufzeichnungen: jede wird dort zum Golden-Test von `elora-sim`.
+/// Storage of the recordings: each one becomes a golden test of `elora-sim` there.
 pub const RECORDINGS_DIR: &str = concat!(
     env!("CARGO_MANIFEST_DIR"),
     "/../../crates/elora-sim/tests/recordings"
@@ -34,39 +34,39 @@ pub struct Sandbox {
     pub map_path: PathBuf,
     pub map: Map,
     pub world: World,
-    /// Slot des menschlichen Spielers.
+    /// Slot of the human player.
     pub player: usize,
-    /// Figuren vor dem letzten Tick (für Interpolation), Index = Slot.
+    /// Characters before the last tick (for interpolation), index = slot.
     pub prev: Vec<Option<CharacterCore>>,
-    /// Letzte bekannte Position von Elora (Kamera bleibt dort, solange sie tot ist).
+    /// Last known position of Elora (the camera stays there while she is dead).
     last_pos: Vec2,
     accumulator: Duration,
     watcher: Option<MapWatcher>,
-    /// Ergebnis des letzten Hot-Reloads (Fehlertext bei ungültiger Karte).
+    /// Result of the last hot reload (error text for an invalid map).
     pub reload_error: Option<String>,
-    /// Laufende Eingabe-Aufzeichnung (M1.6).
+    /// Running input recording (M1.6).
     pub recording: Option<Recording>,
-    /// Ereignisse seit dem letzten Abholen (für Effekte).
+    /// Events since the last fetch (for effects).
     pending_events: Vec<Event>,
-    /// Positionen von Gegnern und Beute vor dem letzten Tick (Interpolation), Id → Position.
+    /// Positions of enemies and loot before the last tick (interpolation), id → position.
     prev_creatures: std::collections::HashMap<u32, Vec2>,
-    /// Spielmodus in der Sandbox (E-075); `None` = freies Spiel ohne Regeln.
+    /// Game mode in the sandbox (E-075); `None` = free play without rules.
     pub rules: Option<Rules>,
-    /// Hinweise der Regeln (Rundenende usw.).
+    /// Notices of the rules (end of round etc.).
     pub notices: std::collections::VecDeque<ChatLine>,
-    /// Gegner aus der Karte (Training, E-293): lebende Id oder Tick der Rückkehr.
+    /// Enemies from the map (training, E-293): living id or tick of return.
     trainees: Vec<(Option<u32>, u64)>,
     trainee_tick: u64,
 }
 
-/// Besiegte Gegner im Training kehren nach so vielen Ticks zurück (5 s).
+/// Defeated enemies in training return after this many ticks (5 s).
 const TRAINEE_RESPAWN: u64 = 5 * TICKS_PER_SECOND as u64;
 
 impl Sandbox {
     pub fn load(map_path: &Path, tuning: Tuning) -> anyhow::Result<Self> {
         let map = load_map(map_path)?;
         let (mut world, player) = fresh_world(&map, tuning);
-        // Training: alle Fähigkeiten an (E-293), im Panel abschaltbar
+        // training: all abilities on (E-293), can be switched off in the panel
         world.set_abilities(player, elora_sim::Abilities::ALL);
         let watcher = MapWatcher::new(map_path)
             .inspect_err(|e| tracing::warn!("Hot-Reload nicht verfügbar: {e:#}"))
@@ -93,8 +93,8 @@ impl Sandbox {
         Ok(s)
     }
 
-    /// Gegner-Objekte der Karte setzen und besiegte nach [`TRAINEE_RESPAWN`] zurückholen
-    /// (nur im freien Spiel; das Abenteuer verwaltet seine Gegner selbst).
+    /// Place the enemy objects of the map and bring back defeated ones after [`TRAINEE_RESPAWN`]
+    /// (only in free play; the adventure manages its enemies itself).
     fn tick_trainees(&mut self) {
         if self.world.adventure {
             return;
@@ -112,7 +112,7 @@ impl Sandbox {
             })
             .collect();
         let tick = self.world.tick;
-        // neue Welt (Karte, Modus, Neustart): von vorn
+        // new world (map, mode, restart): from the start
         if tick < self.trainee_tick || self.trainees.len() != objects.len() {
             self.trainees = vec![(None, tick); objects.len()];
         }
@@ -130,7 +130,7 @@ impl Sandbox {
         }
     }
 
-    /// Elora, falls sie lebt.
+    /// Elora, if she is alive.
     pub fn character(&self) -> Option<&elora_sim::Character> {
         self.world.character(self.player)
     }
@@ -158,8 +158,8 @@ impl Sandbox {
         }
     }
 
-    /// Lädt die Karte neu, wenn sich die Datei geändert hat. Elora behält ihren
-    /// Zustand; Pickups und Dummies kommen aus der neuen Karte.
+    /// Reloads the map when the file has changed. Elora keeps her
+    /// state; pickups and dummies come from the new map.
     pub fn poll_reload(&mut self) {
         if !self.watcher.as_ref().is_some_and(MapWatcher::changed) {
             return;
@@ -191,11 +191,11 @@ impl Sandbox {
         }
     }
 
-    /// Andere Karte aus einer Datei laden (Debug-Panel); Tuning, Fähigkeiten und Spielmodus
-    /// bleiben, Hot-Reload beobachtet die neue Datei.
+    /// Load another map from a file (debug panel); tuning, abilities and game mode
+    /// stay, hot reload watches the new file.
     ///
     /// # Errors
-    /// Wenn die Karte nicht lesbar oder ungültig ist.
+    /// If the map is unreadable or invalid.
     pub fn switch_map(&mut self, path: &Path) -> anyhow::Result<()> {
         let map = load_map(path)?;
         self.stop_recording("Karte gewechselt");
@@ -221,8 +221,8 @@ impl Sandbox {
         Ok(())
     }
 
-    /// Fertig aufgebaute Welt spielen (Abenteuer, A1.6); ohne Hot-Reload, Regeln und
-    /// Aufzeichnung. Liefert die bisherige Karte zum Wiederherstellen.
+    /// Play a fully built world (adventure, A1.6); without hot reload, rules and
+    /// recording. Returns the previous map for restoring.
     pub fn play_world(&mut self, map: Map, world: World, player: usize) -> Map {
         self.stop_recording("Abenteuer");
         self.world = world;
@@ -236,15 +236,15 @@ impl Sandbox {
         std::mem::replace(&mut self.map, map)
     }
 
-    /// Hot-Reload der aktuellen Kartendatei wieder einschalten (nach dem Abenteuer).
+    /// Switch hot reload of the current map file back on (after the adventure).
     pub fn watch_again(&mut self) {
         self.watcher = MapWatcher::new(&self.map_path)
             .inspect_err(|e| tracing::warn!("Hot-Reload nicht verfügbar: {e:#}"))
             .ok();
     }
 
-    /// Karte aus dem Speicher spielen (Testspielen aus dem Editor, M6.9): frische Welt im
-    /// freien Spiel. Liefert die bisherige Karte zum Wiederherstellen.
+    /// Play a map from memory (test play from the editor, M6.9): fresh world in
+    /// free play. Returns the previous map for restoring.
     pub fn play_map(&mut self, map: Map) -> Map {
         self.stop_recording("Testspiel");
         let abilities = self.abilities();
@@ -260,7 +260,7 @@ impl Sandbox {
         std::mem::replace(&mut self.map, map)
     }
 
-    /// Spielmodus setzen oder abschalten (E-075). Startet ein neues Match mit Countdown.
+    /// Set or switch off the game mode (E-075). Starts a new match with a countdown.
     pub fn set_mode(&mut self, cfg: Option<RulesConfig>) {
         self.stop_recording("Modus");
         let tuning = self
@@ -276,14 +276,14 @@ impl Sandbox {
         self.sync_prev();
     }
 
-    /// Fähigkeiten von Elora (Panel, A1.1) – bleiben beim Neuladen der Karte erhalten.
+    /// Abilities of Elora (panel, A1.1) – kept when the map is reloaded.
     fn abilities(&self) -> elora_sim::Abilities {
         self.world
             .player(self.player)
             .map_or(elora_sim::Abilities::NONE, |p| p.abilities)
     }
 
-    /// Tuning ohne Instagib-Anpassungen (Regler im Panel).
+    /// Tuning without instagib adjustments (sliders in the panel).
     fn base_tuning(&self) -> Tuning {
         let mut t = self.world.tuning.clone();
         if self.rules.as_ref().is_some_and(|r| r.cfg.instagib) {
@@ -292,7 +292,7 @@ impl Sandbox {
         t
     }
 
-    /// Namen der Slots (Sandbox: Elora und Dummies).
+    /// Names of the slots (sandbox: Elora and dummies).
     pub fn names(&self) -> std::collections::BTreeMap<usize, String> {
         self.world
             .players
@@ -312,7 +312,7 @@ impl Sandbox {
             .collect()
     }
 
-    /// Spielzustand für die Anzeige.
+    /// Game state for the display.
     pub fn game(&self) -> Option<GameView> {
         let r = self.rules.as_ref()?;
         elora_protocol::Snapshot::from_world(&self.world)
@@ -320,7 +320,7 @@ impl Sandbox {
             .game_view()
     }
 
-    /// `kill` (Taste K, E-078).
+    /// `kill` (key K, E-078).
     pub fn kill(&mut self) {
         match &self.rules {
             Some(r) => r.kill(&mut self.world, self.player),
@@ -328,14 +328,14 @@ impl Sandbox {
         }
     }
 
-    /// Team wechseln.
+    /// Switch team.
     pub fn set_team(&mut self, team: elora_sim::Team) {
         if let Some(r) = &mut self.rules {
             r.set_team(&mut self.world, self.player, team);
         }
     }
 
-    /// Hinweis im Chat-Verlauf (übersetzbar wie die Meldungen eines Servers).
+    /// Notice in the chat history (translatable like the messages of a server).
     pub fn notice(&mut self, message: Message) {
         self.notices
             .push_back(ChatLine::notice(message, std::time::Instant::now()));
@@ -372,8 +372,8 @@ impl Sandbox {
         }
     }
 
-    /// Startet eine Aufzeichnung mit frischer Welt aus der Karte (Dummies und
-    /// Pickups im Ausgangszustand).
+    /// Starts a recording with a fresh world from the map (dummies and
+    /// pickups in their initial state).
     pub fn start_recording(&mut self) {
         let (world, player) = fresh_world(&self.map, self.world.tuning.clone());
         self.world = world;
@@ -382,7 +382,7 @@ impl Sandbox {
         self.recording = Some(Recording::new(&self.world));
     }
 
-    /// Beendet die Aufzeichnung und speichert sie. Liefert eine Statusmeldung.
+    /// Ends the recording and saves it. Returns a status message.
     pub fn stop_recording(&mut self, reason: &str) -> Option<String> {
         let rec = self.recording.take()?;
         if rec.is_empty() {
@@ -406,19 +406,19 @@ impl Sandbox {
         })
     }
 
-    /// Setzt Elora sofort an den besten Spawnpunkt (Taste R).
+    /// Puts Elora at the best spawn point right away (key R).
     pub fn spawn_now(&mut self) {
         let pos = self.world.best_spawn().unwrap_or(self.last_pos);
         self.world.spawn_character(self.player, pos);
         self.sync_prev();
     }
 
-    /// Lässt die Simulation um die vergangene Echtzeit laufen.
+    /// Runs the simulation for the elapsed real time.
     pub fn advance(&mut self, elapsed: Duration, controls: &mut Controls) {
         self.advance_with(elapsed, controls, |_| {});
     }
 
-    /// Wie [`Self::advance`]; `after` läuft nach jedem Tick (Abenteuer-Sitzung, A1.6).
+    /// Like [`Self::advance`]; `after` runs after every tick (adventure session, A1.6).
     pub fn advance_with(
         &mut self,
         elapsed: Duration,
@@ -448,11 +448,11 @@ impl Sandbox {
                 r.update(&mut self.world);
             }
             self.rule_events();
-            // zerbrochene Tiles auch in der Karte (Grafik), E-230
+            // broken tiles also in the map (graphics), E-230
             for e in &self.world.events {
                 let (tx, ty, tile) = match *e {
                     Event::TileBroken { tx, ty } => (tx, ty, elora_sim::Tile::Air),
-                    // Wurzelwände kommen und gehen (R2-M2.2)
+                    // root walls come and go (R2-M2.2)
                     Event::TileSet { tx, ty, tile } => (tx, ty, tile),
                     _ => continue,
                 };
@@ -471,24 +471,24 @@ impl Sandbox {
         }
     }
 
-    /// Ereignisse seit dem letzten Aufruf.
+    /// Events since the last call.
     pub fn take_events(&mut self) -> Vec<Event> {
         std::mem::take(&mut self.pending_events)
     }
 
-    /// Anteil des aktuellen Ticks (0..1) für die Interpolation.
+    /// Fraction of the current tick (0..1) for interpolation.
     pub fn alpha(&self) -> f32 {
         self.accumulator.as_secs_f32() / TICK.as_secs_f32()
     }
 
-    /// Kern der Figur in Slot `i`: (aktuell, vor dem letzten Tick).
+    /// Core of the character in slot `i`: (current, before the last tick).
     pub fn cores(&self, i: usize) -> Option<(&CharacterCore, &CharacterCore)> {
         let cur = &self.world.character(i)?.core;
         let prev = self.prev.get(i).and_then(Option::as_ref).unwrap_or(cur);
         Some((cur, prev))
     }
 
-    /// Was jetzt zu zeichnen ist.
+    /// What to draw now.
     pub fn scene(&self) -> Scene {
         let alpha = self.alpha();
         let mut scene = Scene {
@@ -521,7 +521,7 @@ impl Sandbox {
         scene
     }
 
-    /// Kamera-Position: interpolierte Position von Elora, sonst die letzte bekannte.
+    /// Camera position: interpolated position of Elora, otherwise the last known one.
     pub fn render_pos(&self) -> Vec2 {
         self.cores(self.player)
             .map_or(self.last_pos, |(cur, prev)| {
@@ -530,8 +530,8 @@ impl Sandbox {
     }
 }
 
-/// Welt aus der Karte plus menschlicher Spieler am besten Spawnpunkt.
-/// Gegnerarten des Abenteuers (A1.2).
+/// World from the map plus a human player at the best spawn point.
+/// Enemy kinds of the adventure (A1.2).
 const CREATURES_TOML: &str = include_str!("../../../assets/adventure/creatures.toml");
 
 pub fn creature_kinds() -> Vec<elora_sim::CreatureKind> {
@@ -556,8 +556,8 @@ pub fn load_map(path: &Path) -> anyhow::Result<Map> {
     elora_map::decode(&data).with_context(|| format!("Karte {}", path.display()))
 }
 
-/// Beobachtet die Kartendatei. Beobachtet wird das Verzeichnis, weil viele Editoren
-/// beim Speichern die Datei ersetzen statt sie zu beschreiben.
+/// Watches the map file. The directory is watched because many editors
+/// replace the file on saving instead of writing to it.
 struct MapWatcher {
     _watcher: notify::RecommendedWatcher,
     events: mpsc::Receiver<()>,
@@ -594,7 +594,7 @@ impl MapWatcher {
         })
     }
 
-    /// Wurde die Datei seit dem letzten Aufruf geändert?
+    /// Was the file changed since the last call?
     fn changed(&self) -> bool {
         self.events.try_iter().count() > 0
     }

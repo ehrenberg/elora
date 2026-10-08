@@ -1,10 +1,10 @@
-//! Anzeigen des Abenteuers (A1.7, E-222, E-225): Stufe mit Erfahrungsring, Glanztropfen,
-//! aktuelle Aufgabe, Gesprächsfeld mit Bild und Auswahl, Sprechblasen, Hinweise.
+//! Adventure displays (A1.7, E-222, E-225): level with experience ring, gleam drops,
+//! current quest, conversation box with portrait and choices, speech bubbles, hints.
 //!
-//! Alles in Bildschirm-Pixeln über [`crate::ui`]; Stil wie die Entwürfe
+//! Everything in screen pixels via [`crate::ui`]; style like the drafts
 //! (`docs/release-2/design/abenteuer-ui.png`).
 
-// Layout-Code: `s` (Skalierung), `w`/`h`/`x`/`y` wie in menu.rs
+// Layout code: `s` (scale), `w`/`h`/`x`/`y` as in menu.rs
 #![allow(clippy::many_single_char_names)]
 
 use elora_adventure::data::Text;
@@ -18,24 +18,24 @@ use crate::creatures::CreatureArt;
 use crate::lang::Lang;
 use crate::ui::{self, Rect, Ui};
 
-/// Dunkle HUD-Fläche wie die Leiste unten (hud.rs).
+/// Dark HUD surface like the bar at the bottom (hud.rs).
 const PANEL: Color = Color::rgba(0.118, 0.165, 0.212, 0.6);
 const WHITE: Color = Color::rgb(1.0, 1.0, 1.0);
 const WHITE_DIM: Color = Color::rgba(1.0, 1.0, 1.0, 0.75);
 const GOLD: Color = Color::hex(0xf2c14e);
 const XP: Color = Color::hex(0x7fd99a);
-/// Lebensleiste eines Hüters.
+/// Health bar of a guardian.
 const BOSS: Color = Color::hex(0xe8685a);
 const TONE_FRIENDLY: Color = Color::hex(0xf2c14e);
 const TONE_CURIOUS: Color = Color::hex(0x5aaee8);
 const TONE_CHEEKY: Color = Color::hex(0xe8685a);
 
-/// Breite der Leiste unten (hud.rs), für das Stufen-Abzeichen links daneben.
+/// Width of the bar at the bottom (hud.rs), for the level badge to the left of it.
 const BAR_WIDTH: f32 = 300.0;
 const BAR_HEIGHT: f32 = 54.0;
 const BAR_MARGIN: f32 = 14.0;
 
-/// Kreisbogen als Linienzug (Winkel im Bogenmaß, 0 = rechts, im Uhrzeigersinn).
+/// Circular arc as a polyline (angle in radians, 0 = right, clockwise).
 fn arc(center: Vec2, r: f32, from: f32, to: f32) -> Vec<Vec2> {
     let n = 32;
     (0..=n)
@@ -47,8 +47,8 @@ fn arc(center: Vec2, r: f32, from: f32, to: f32) -> Vec<Vec2> {
         .collect()
 }
 
-/// Stufe mit Erfahrungsring links an der Leiste, Glanztropfen oben links, Aufgabe oben rechts.
-#[allow(clippy::too_many_lines)] // drei kleine Anzeigen an einem Ort
+/// Level with experience ring left of the bar, gleam drops top left, quest top right.
+#[allow(clippy::too_many_lines)] // three small displays in one place
 pub fn status(
     ui: &mut Ui<'_>,
     art: &CreatureArt,
@@ -59,7 +59,7 @@ pub fn status(
     screen: Vec2,
 ) {
     let s = ui.s;
-    // Stufe
+    // Level
     let center = Vec2::new(
         (screen.x - BAR_WIDTH * s) / 2.0 - 34.0 * s,
         screen.y - (BAR_MARGIN + BAR_HEIGHT / 2.0) * s,
@@ -94,7 +94,7 @@ pub fn status(
         Align::Center,
     );
 
-    // Glanztropfen
+    // Gleam drops
     let pill = Rect::new(14.0 * s, 14.0 * s, 104.0 * s, 32.0 * s);
     ui.batch
         .fill_rounded_rect(pill.min, pill.max, 16.0 * s, PANEL);
@@ -112,7 +112,7 @@ pub fn status(
         Align::Left,
     );
 
-    // Aufgabe: Hauptaufgabe zuerst, sonst die erste aktive
+    // Quest: main quest first, otherwise the first active one
     let active = c
         .quests
         .iter()
@@ -173,13 +173,13 @@ pub fn status(
     }
 }
 
-/// Hitze-Leiste unter den Glanztropfen (E-320): Sonne und Füllstand von Gelb nach Rot;
-/// voll (Elora ist langsamer) pulsiert sie, bis sie wieder unter die Hälfte fällt.
+/// Heat bar below the gleam drops (E-320): sun and fill level from yellow to red;
+/// when full (Elora is slower) it pulses until it drops below half again.
 pub fn heat_bar(ui: &mut Ui<'_>, heat: f32, overheated: bool, time: f32) {
     temperature_bar(ui, heat, overheated, time, false);
 }
 
-/// Kälte-Leiste (E-342): Schneeflocke und Füllstand von Hellblau nach Tiefblau; voll pulsiert sie.
+/// Cold bar (E-342): snowflake and fill level from light blue to deep blue; pulses when full.
 pub fn cold_bar(ui: &mut Ui<'_>, cold: f32, frozen: bool, time: f32) {
     temperature_bar(ui, cold, frozen, time, true);
 }
@@ -191,7 +191,7 @@ fn temperature_bar(ui: &mut Ui<'_>, value: f32, full: bool, time: f32, cold: boo
         .fill_rounded_rect(pill.min, pill.max, 12.0 * s, PANEL);
     let icon = pill.min + Vec2::new(15.0 * s, 12.0 * s);
     if cold {
-        // Schneeflocke, dreht sich langsam
+        // snowflake, rotates slowly
         let c = Color::hex(0xbfe6f5);
         for k in 0..6 {
             #[allow(clippy::cast_precision_loss)]
@@ -204,7 +204,7 @@ fn temperature_bar(ui: &mut Ui<'_>, value: f32, full: bool, time: f32, cold: boo
             ui.batch.stroke_line(b, b + (d - n) * (2.4 * s), 1.4 * s, c);
         }
     } else {
-        // Sonne
+        // sun
         for k in 0..8 {
             #[allow(clippy::cast_precision_loss)]
             let a = k as f32 * std::f32::consts::TAU / 8.0 + time * 0.6;
@@ -214,7 +214,7 @@ fn temperature_bar(ui: &mut Ui<'_>, value: f32, full: bool, time: f32, cold: boo
         }
         ui.batch.fill_circle(icon, 5.5 * s, GOLD);
     }
-    // Füllstand
+    // fill level
     let (x0, x1) = (pill.min.x + 30.0 * s, pill.max.x - 10.0 * s);
     let (y0, y1) = (pill.min.y + 8.0 * s, pill.max.y - 8.0 * s);
     let r = (y1 - y0) / 2.0;
@@ -249,21 +249,21 @@ fn temperature_bar(ui: &mut Ui<'_>, value: f32, full: bool, time: f32, cold: boo
     }
 }
 
-/// Inhalt des Gewinn-Bildschirms nach einem Hüter.
+/// Content of the victory screen after a guardian.
 pub struct VictoryView<'a> {
     pub chapter: u32,
     pub area: &'a str,
     pub line: &'a str,
     pub honor: &'a str,
     pub color: Color,
-    /// Farben der fünf Quellen, `None` = noch stumm.
+    /// Colours of the five springs, `None` = still silent.
     pub springs: [Option<Color>; 5],
     pub stats: &'a str,
-    /// Sekunden seit dem Erscheinen.
+    /// Seconds since appearing.
     pub time: f32,
 }
 
-/// Ab dann lässt sich der Gewinn-Bildschirm schließen (Sekunden).
+/// From then on the victory screen can be closed (seconds).
 pub const VICTORY_READY: f32 = 1.2;
 
 fn ease_out_back(x: f32) -> f32 {
@@ -272,9 +272,9 @@ fn ease_out_back(x: f32) -> f32 {
     1.0 + c3 * (x - 1.0).powi(3) + c1 * (x - 1.0).powi(2)
 }
 
-/// Gewinn-Bildschirm „Kapitel X geschafft!“: drehende Sonnenstrahlen in der Farbe des Gebiets,
-/// Konfetti, die fünf Quellen als Tropfen, Ehrentitel. Liefert `true`, wenn „Weiter“ gedrückt.
-#[allow(clippy::too_many_lines)] // eine Szene am Stück
+/// Victory screen “Chapter X complete!”: rotating sun rays in the colour of the region,
+/// confetti, the five springs as drops, honorary title. Returns `true` when “Continue” is pressed.
+#[allow(clippy::too_many_lines)] // one scene in one piece
 pub fn victory(ui: &mut Ui<'_>, lang: &Lang, v: &VictoryView<'_>, screen: Vec2) -> bool {
     use std::f32::consts::TAU;
     let s = ui.s;
@@ -286,7 +286,7 @@ pub fn victory(ui: &mut Ui<'_>, lang: &Lang, v: &VictoryView<'_>, screen: Vec2) 
         Color::rgba(0.07, 0.09, 0.13, 0.62 * fade),
     );
     let center = Vec2::new(screen.x / 2.0, screen.y * 0.44);
-    // Sonnenstrahlen
+    // sun rays
     let reach = screen.length();
     let rays = 18;
     for k in 0..rays {
@@ -302,7 +302,7 @@ pub fn victory(ui: &mut Ui<'_>, lang: &Lang, v: &VictoryView<'_>, screen: Vec2) 
     let mut glow = v.color;
     glow.0[3] = 0.25 * fade;
     ui.batch.fill_circle(center, 230.0 * s, glow);
-    // Konfetti
+    // confetti
     let palette = [
         v.color,
         GOLD,
@@ -312,7 +312,7 @@ pub fn victory(ui: &mut Ui<'_>, lang: &Lang, v: &VictoryView<'_>, screen: Vec2) 
     ];
     for i in 0..70u32 {
         let h = i.wrapping_mul(2_654_435_761).rotate_left(i % 13);
-        // eigene Zufallszahl 0..1 je Größe (vorher reichten die Bits für x nur bis zur Mitte)
+        // own random number 0..1 per size (previously the bits for x only reached the middle)
         let r = |k: u32| {
             let mut z = h ^ k.wrapping_mul(0x9e37_79b9);
             z = (z ^ (z >> 16)).wrapping_mul(0x85eb_ca6b);
@@ -336,7 +336,7 @@ pub fn victory(ui: &mut Ui<'_>, lang: &Lang, v: &VictoryView<'_>, screen: Vec2) 
         ui.batch
             .fill_polygon(&[p - dx - dy, p + dx - dy, p + dx + dy, p - dx + dy], c);
     }
-    // Karte
+    // card
     let (w, h) = (560.0 * s, 400.0 * s);
     let card = Rect::new(center.x - w / 2.0, center.y - h / 2.0, w, h);
     ui.card(card);
@@ -361,7 +361,7 @@ pub fn victory(ui: &mut Ui<'_>, lang: &Lang, v: &VictoryView<'_>, screen: Vec2) 
         ui.label(&line, Vec2::new(x, y), 13.0, ui::TEXT_DIM, Align::Center);
         y += 20.0 * s;
     }
-    // die fünf Quellen
+    // the five springs
     let dy = card.min.y + 210.0 * s;
     for (k, spring) in v.springs.iter().enumerate() {
         #[allow(clippy::cast_precision_loss)]
@@ -407,7 +407,7 @@ pub fn victory(ui: &mut Ui<'_>, lang: &Lang, v: &VictoryView<'_>, screen: Vec2) 
         ui::TEXT_DIM,
         Align::Center,
     );
-    // Ehrentitel
+    // honorary title
     let badge_text = format!("{}: {}", lang.t("victory.honor"), v.honor);
     let bw = ui.text_width(&badge_text, 13.0) + 36.0 * s;
     let badge = Rect::new(x - bw / 2.0, dy + 54.0 * s, bw, 30.0 * s);
@@ -434,7 +434,7 @@ pub fn victory(ui: &mut Ui<'_>, lang: &Lang, v: &VictoryView<'_>, screen: Vec2) 
         ui::TEXT_DIM,
         Align::Center,
     );
-    // Weiter (nach einem Moment, damit niemand den Bildschirm wegklickt)
+    // Continue (after a moment, so nobody clicks the screen away)
     if t >= VICTORY_READY {
         let b = Rect::new(x - 90.0 * s, card.max.y - 46.0 * s, 180.0 * s, 32.0 * s);
         return ui.button("victory_continue", b, lang.t("victory.continue"), ui::GREEN);
@@ -442,9 +442,9 @@ pub fn victory(ui: &mut Ui<'_>, lang: &Lang, v: &VictoryView<'_>, screen: Vec2) 
     false
 }
 
-/// Platzhalter `{taste:<aktion>}` durch die belegte Taste ersetzen (Schilder, E-273),
-/// z. B. `{taste:jump}` → „Leertaste“.
-/// Lebensleiste eines Hüters oben in der Mitte mit Namen (R2-M2.1); `frac` 0..1.
+/// Replace the placeholder `{taste:<aktion>}` with the bound key (signs, E-273),
+/// e.g. `{taste:jump}` → “Space”.
+/// Health bar of a guardian at the top centre with name (R2-M2.1); `frac` 0..1.
 pub fn boss_bar(ui: &mut Ui<'_>, name: &str, frac: f32, screen: Vec2) {
     let s = ui.s;
     let w = (screen.x * 0.5).min(520.0 * s);
@@ -492,7 +492,7 @@ pub fn with_keys(text: &str, keys: &crate::bindings::Bindings, lang: &Lang) -> S
     out
 }
 
-/// Zeilen zeichnen, von denen erst `shown` Zeichen zu sehen sind; liefert die Höhe darunter.
+/// Draw lines of which only `shown` characters are visible; returns the height below.
 fn revealed_lines(ui: &mut Ui<'_>, lines: &[String], shown: usize, at: Vec2) -> f32 {
     let mut y = at.y;
     let mut left = shown;
@@ -504,14 +504,14 @@ fn revealed_lines(ui: &mut Ui<'_>, lines: &[String], shown: usize, at: Vec2) -> 
             let part: String = line.chars().take(left).collect();
             ui.label(&part, Vec2::new(at.x, y), 13.0, ui::TEXT, Align::Left);
         }
-        // Umbruch verschluckt das Leerzeichen zwischen den Zeilen
+        // wrapping swallows the space between the lines
         left = left.saturating_sub(n + 1);
         y += 19.0 * ui.s;
     }
     y
 }
 
-/// Zeilenumbruch an Wortgrenzen für die Breite `max` (Pixel).
+/// Line wrapping at word boundaries for the width `max` (pixels).
 pub fn wrap(ui: &Ui<'_>, text: &str, size: f32, max: f32) -> Vec<String> {
     let mut lines = Vec::new();
     let mut line = String::new();
@@ -533,15 +533,15 @@ pub fn wrap(ui: &Ui<'_>, text: &str, size: f32, max: f32) -> Vec<String> {
     lines
 }
 
-/// Was das Gesprächsfeld zeigt.
+/// What the conversation box shows.
 pub struct DialogView<'a> {
-    /// Figur (Grafik und Farbe des Namensschilds); `elora` für Elora.
+    /// Character (graphics and colour of the name tag); `elora` for Elora.
     pub speaker: &'a str,
     pub name: &'a str,
     pub text: &'a Text,
-    /// Sichtbare Antworten (Index im Knoten, Antwort).
+    /// Visible answers (index in the node, answer).
     pub choices: Vec<(usize, &'a Choice)>,
-    /// So viele Zeichen des Texts sind schon zu sehen; Antworten erst, wenn alles da ist.
+    /// This many characters of the text are already visible; answers only once everything is there.
     pub shown: usize,
 }
 
@@ -554,7 +554,7 @@ fn tone_color(t: Option<Tone>) -> Color {
     }
 }
 
-/// Farbe des Namensschilds je Figur (aus den Entwürfen).
+/// Colour of the name tag per character (from the drafts).
 pub fn name_color(speaker: &str) -> Color {
     match speaker {
         "oma" => Color::hex(0xa77be0),
@@ -566,8 +566,8 @@ pub fn name_color(speaker: &str) -> Color {
     }
 }
 
-/// Gesprächsfeld unten (E-222): Bild, Name, Text, Antworten mit Ton. Liefert die Nummer
-/// der angeklickten Antwort (Reihenfolge in `choices`).
+/// Conversation box at the bottom (E-222): portrait, name, text, answers with tone. Returns
+/// the number of the clicked answer (order in `choices`).
 pub fn dialog(
     ui: &mut Ui<'_>,
     art: &CreatureArt,
@@ -587,7 +587,7 @@ pub fn dialog(
     let card = Rect::new((screen.x - w) / 2.0, screen.y - h - 20.0 * s, w, h);
     ui.card(card);
 
-    // Bild der Figur im Kreis, darunter das Namensschild
+    // portrait of the character in a circle, the name tag below it
     let pc = Vec2::new(card.min.x + 76.0 * s, card.min.y + 70.0 * s);
     ui.batch.fill_circle(pc, 52.0 * s, ui::CARD_EDGE);
     ui.batch
@@ -614,12 +614,12 @@ pub fn dialog(
         Align::Center,
     );
 
-    // Text
+    // text
     let x = card.min.x + 150.0 * s;
     let mut y = revealed_lines(ui, &lines, v.shown, Vec2::new(x, card.min.y + 34.0 * s));
     let complete = v.shown >= with_keys(v.text.get(code), keys, lang).chars().count();
 
-    // Antworten
+    // answers
     let mut chosen = None;
     y += 8.0 * s;
     let visible = if complete { v.choices.len() } else { 0 };
@@ -680,7 +680,7 @@ pub fn dialog(
     chosen
 }
 
-/// Sprechblase mit Zipfel, unten mittig an `p` (Zurufe, Hinweise).
+/// Speech bubble with tail, bottom centre at `p` (shouts, hints).
 pub fn bubble(ui: &mut Ui<'_>, text: &str, p: Vec2) {
     let s = ui.s;
     let w = ui.text_width(text, 12.0) + 22.0 * s;
@@ -692,7 +692,7 @@ pub fn bubble(ui: &mut Ui<'_>, text: &str, p: Vec2) {
         12.0 * s + edge,
         ui::OUTLINE,
     );
-    // Zipfel
+    // tail
     let tip = [
         Vec2::new(p.x - 6.0 * s, r.max.y - 1.0 * s),
         Vec2::new(p.x, p.y - 1.0 * s),
@@ -705,7 +705,7 @@ pub fn bubble(ui: &mut Ui<'_>, text: &str, p: Vec2) {
     ui.label(text, r.center(), 12.0, ui::TEXT, Align::Center);
 }
 
-/// Hinweis zur Aktionstaste: Tastenkästchen „E“ und Text auf dunkler Fläche.
+/// Hint for the action key: key box “E” and text on a dark surface.
 pub fn prompt(ui: &mut Ui<'_>, key: &str, text: &str, p: Vec2) {
     let s = ui.s;
     let w = ui.text_width(text, 12.0) + 44.0 * s;
@@ -723,7 +723,7 @@ pub fn prompt(ui: &mut Ui<'_>, key: &str, text: &str, p: Vec2) {
     );
 }
 
-/// Namensschild über einer Figur (beim Herantreten, zusätzlich zum Hinweis).
+/// Name tag above a character (when stepping close, in addition to the hint).
 pub fn name_tag(ui: &mut Ui<'_>, name: &str, speaker: &str, p: Vec2) {
     let s = ui.s;
     let w = ui.text_width(name, 11.0) + 22.0 * s;
@@ -771,8 +771,8 @@ mod tests {
         assert_eq!(with_keys("offen {taste:", &keys, &lang), "offen {taste:");
     }
 
-    /// Sichtprüfung: `cargo test -p elora-client --bin elora adventure_hud_sheet -- --ignored`,
-    /// dann `cargo xtask svg-preview target/abenteuer-hud.svg target/abenteuer-hud.png 1280`.
+    /// Visual check: `cargo test -p elora-client --bin elora adventure_hud_sheet -- --ignored`,
+    /// then `cargo xtask svg-preview target/abenteuer-hud.svg target/abenteuer-hud.png 1280`.
     #[test]
     #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
     fn victory_sheet() {
@@ -854,7 +854,7 @@ mod tests {
             s: 1.0,
         };
         ui.begin(0.016);
-        // Gespräch beginnen, eine Antwort wählen: Aufgabe läuft (Anzeige oben rechts)
+        // start a conversation, pick an answer: quest is running (display top right)
         let choices: Vec<_> = conv.choices(&c, &save);
         let (d, node) = conv.current(&c).unwrap();
         let view = DialogView {

@@ -1,8 +1,8 @@
-//! Übersetzungen der Oberfläche (M7.2, E-114): Deutsch und Englisch, umschaltbar.
+//! UI translations (M7.2, E-114): German and English, switchable.
 //!
-//! Texte stehen in `assets/lang/<code>.toml`, gegliedert in Abschnitte
-//! (`[hud] dead = "…"` → Schlüssel `hud.dead`). Platzhalter heißen `{name}` und
-//! werden mit [`Lang::f`] ersetzt. Fehlt ein Text, gilt der deutsche, sonst der Schlüssel.
+//! Texts live in `assets/lang/<code>.toml`, organized in sections
+//! (`[hud] dead = "…"` → key `hud.dead`). Placeholders are called `{name}` and
+//! are replaced with [`Lang::f`]. If a text is missing, the German one applies, otherwise the key.
 
 use std::collections::HashMap;
 use std::fmt::Display;
@@ -22,7 +22,7 @@ pub enum Language {
 impl Language {
     pub const ALL: [Self; 2] = [Self::De, Self::En];
 
-    /// Name in der eigenen Sprache (für die Auswahl).
+    /// Name in its own language (for the selection).
     pub fn name(self) -> &'static str {
         match self {
             Self::De => "Deutsch",
@@ -37,7 +37,7 @@ impl Language {
         }
     }
 
-    /// Startwert ohne Einstellungsdatei: Deutsch, wenn die Systemsprache Deutsch ist.
+    /// Initial value without a settings file: German if the system language is German.
     pub fn from_env() -> Self {
         let lang = ["LC_ALL", "LC_MESSAGES", "LANG"]
             .iter()
@@ -78,7 +78,7 @@ fn parse(src: &str) -> HashMap<String, String> {
 
 #[derive(Debug)]
 pub struct Lang {
-    #[allow(dead_code)] // Sprachauswahl in den Einstellungen (M7.4)
+    #[allow(dead_code)] // language selection in the settings (M7.4)
     pub language: Language,
     texts: HashMap<String, String>,
     fallback: HashMap<String, String>,
@@ -93,7 +93,7 @@ impl Lang {
         }
     }
 
-    /// Text zu `key`.
+    /// Text for `key`.
     pub fn t<'a>(&'a self, key: &'a str) -> &'a str {
         self.texts
             .get(key)
@@ -101,7 +101,7 @@ impl Lang {
             .map_or(key, String::as_str)
     }
 
-    /// Text mit ersetzten Platzhaltern, z. B. `f("hud.red", &[("n", &3)])`.
+    /// Text with replaced placeholders, e.g. `f("hud.red", &[("n", &3)])`.
     pub fn f(&self, key: &str, args: &[(&str, &dyn Display)]) -> String {
         let mut s = self.t(key).to_owned();
         for (name, value) in args {
@@ -111,7 +111,7 @@ impl Lang {
     }
 }
 
-/// Server-Meldungen übersetzen (M8.1, E-164).
+/// Translate server messages (M8.1, E-164).
 impl Lang {
     fn team(&self, t: Team) -> &str {
         self.t(match t {
@@ -131,7 +131,7 @@ impl Lang {
         }
     }
 
-    /// Gegenstand einer Abstimmung.
+    /// Subject of a vote.
     pub fn vote_subject(&self, s: &VoteSubject) -> String {
         match s {
             VoteSubject::Map(m) => self.f("vote.map", &[("map", m)]),
@@ -144,7 +144,7 @@ impl Lang {
         }
     }
 
-    /// Meldung des Servers in dieser Sprache.
+    /// Server message in this language.
     pub fn message(&self, m: &Message) -> String {
         match m {
             Message::Text(t) => t.clone(),
@@ -184,7 +184,7 @@ impl Lang {
         }
     }
 
-    /// Trenngrund: Code übersetzen, freien Text unverändert lassen.
+    /// Disconnect reason: translate the code, leave free text unchanged.
     pub fn reason(&self, text: &str) -> String {
         elora_protocol::reason::key(text).map_or_else(|| text.to_owned(), |k| self.t(&k).to_owned())
     }

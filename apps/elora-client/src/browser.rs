@@ -1,7 +1,7 @@
-//! Server-Browser (M7.7): Internet (Master, E-112), LAN (Broadcast) und Favoriten.
+//! Server browser (M7.7): internet (master, E-112), LAN (broadcast) and favorites.
 //!
-//! Adressen kommen vom Master, aus der LAN-Suche oder den Favoriten; jeder Server
-//! wird dann selbst per UDP gefragt (Name, Karte, Modus, Spieler, Ping – M7.6).
+//! Addresses come from the master, the LAN search or the favorites; each server
+//! is then queried itself via UDP (name, map, mode, players, ping – M7.6).
 
 use std::collections::HashMap;
 use std::net::SocketAddr;
@@ -11,7 +11,7 @@ use std::time::{Duration, Instant};
 use elora_net::{InfoProbe, Socket, UdpSocket};
 use elora_protocol::ServerInfo;
 
-/// Ports, die die LAN-Suche abfragt (wie das Original: 8303–8310).
+/// Ports that the LAN search queries (like the original: 8303–8310).
 pub const LAN_PORTS: std::ops::RangeInclusive<u16> = 8303..=8310;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
@@ -52,14 +52,14 @@ impl Entry {
     }
 }
 
-/// Filter der Liste.
+/// Filters of the list.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct Filter {
     pub hide_empty: bool,
     pub hide_full: bool,
 }
 
-/// Browser-Zustand; die Abfragen laufen über einen eigenen UDP-Socket.
+/// Browser state; the queries run over a separate UDP socket.
 pub struct Browser<S: Socket = UdpSocket> {
     pub tab: Tab,
     pub sort: SortBy,
@@ -67,9 +67,9 @@ pub struct Browser<S: Socket = UdpSocket> {
     pub selected: Option<SocketAddr>,
     entries: HashMap<SocketAddr, Entry>,
     probe: Option<InfoProbe<S>>,
-    /// Laufende Abfrage der Master-Liste (eigener Thread).
+    /// Running query of the master list (separate thread).
     master: Option<Receiver<anyhow::Result<Vec<SocketAddr>>>>,
-    /// Hinweis für die Oberfläche (Fehler vom Master, fehlende Adresse …).
+    /// Hint for the UI (errors from the master, missing address …).
     pub status: String,
 }
 
@@ -102,7 +102,7 @@ impl<S: Socket> Browser<S> {
         }
     }
 
-    /// Adressen abfragen (neue Einträge „läuft …“).
+    /// Query addresses (new entries "running …").
     pub fn query(&mut self, addrs: &[SocketAddr], now: Instant) {
         let Some(probe) = &mut self.probe else { return };
         for a in addrs {
@@ -117,25 +117,25 @@ impl<S: Socket> Browser<S> {
         }
     }
 
-    /// LAN-Suche an `targets` (Broadcast-Adressen und der eigene Rechner).
+    /// LAN search at `targets` (broadcast addresses and the local machine).
     pub fn discover(&mut self, targets: &[SocketAddr], now: Instant) {
         if let Some(probe) = &mut self.probe {
             probe.discover(targets, now);
         }
     }
 
-    /// Liste leeren (vor dem Aktualisieren).
+    /// Clear the list (before refreshing).
     pub fn clear(&mut self) {
         self.entries.clear();
         self.selected = None;
     }
 
-    /// Wartet der Browser noch auf Antworten?
+    /// Is the browser still waiting for answers?
     pub fn busy(&self) -> bool {
         self.master.is_some() || self.probe.as_ref().is_some_and(InfoProbe::busy)
     }
 
-    /// Antworten einsammeln; jedes Frame aufrufen.
+    /// Collect answers; call every frame.
     pub fn poll(&mut self, now: Instant) {
         if let Some(rx) = &self.master {
             match rx.try_recv() {
@@ -174,7 +174,7 @@ impl<S: Socket> Browser<S> {
         }
     }
 
-    /// Sichtbare Einträge nach Filter und Sortierung.
+    /// Visible entries after filter and sorting.
     pub fn visible(&self) -> Vec<&Entry> {
         let f = self.filter;
         let mut v: Vec<&Entry> = self
@@ -193,7 +193,7 @@ impl<S: Socket> Browser<S> {
             State::Querying => Duration::from_secs(10),
             State::Unreachable => Duration::from_secs(20),
         };
-        // derselbe Server über IPv4 und IPv6 gelistet: nur den schnelleren Weg zeigen
+        // the same server listed via IPv4 and IPv6: only show the faster route
         let same = |a: &Entry, b: &Entry| match (&a.state, &b.state) {
             (State::Online { info: x, .. }, State::Online { info: y, .. }) => {
                 a.addr.port() == b.addr.port()
@@ -224,7 +224,7 @@ impl<S: Socket> Browser<S> {
         self.entries.get(&addr)
     }
 
-    /// Eintrag direkt setzen (Tests und Vorschaubilder).
+    /// Set an entry directly (tests and preview images).
     #[cfg(test)]
     pub fn insert(&mut self, entry: Entry) {
         self.entries.insert(entry.addr, entry);
@@ -232,12 +232,12 @@ impl<S: Socket> Browser<S> {
 }
 
 impl Browser<UdpSocket> {
-    /// Socket bei Bedarf öffnen (Broadcast erlaubt).
+    /// Open the socket if needed (broadcast allowed).
     fn ensure_probe(&mut self) {
         if self.probe.is_some() {
             return;
         }
-        // IPv4 und IPv6: Server hinter DS-Lite sind oft nur über IPv6 erreichbar
+        // IPv4 and IPv6: servers behind DS-Lite are often only reachable via IPv6
         match UdpSocket::bind_dual(0) {
             Ok(socket) => {
                 if let Err(e) = socket.set_broadcast(true) {
@@ -251,7 +251,7 @@ impl Browser<UdpSocket> {
         }
     }
 
-    /// Aktuellen Reiter neu laden.
+    /// Reload the current tab.
     pub fn refresh(&mut self, master_url: &str, favorites: &[String], now: Instant) {
         self.ensure_probe();
         self.clear();
@@ -277,7 +277,7 @@ impl Browser<UdpSocket> {
                 let mut targets: Vec<SocketAddr> = LAN_PORTS
                     .map(|p| SocketAddr::from(([255, 255, 255, 255], p)))
                     .collect();
-                // der eigene Rechner antwortet auf Broadcasts nicht immer
+                // the local machine does not always answer broadcasts
                 targets.extend(LAN_PORTS.map(|p| SocketAddr::from(([127, 0, 0, 1], p))));
                 self.discover(&targets, now);
             }
@@ -289,7 +289,7 @@ impl Browser<UdpSocket> {
     }
 }
 
-/// Adressen auflösen (auch Namen wie `server.example.org:8303`).
+/// Resolve addresses (also names like `server.example.org:8303`).
 pub fn resolve(addresses: &[String]) -> Vec<SocketAddr> {
     addresses
         .iter()

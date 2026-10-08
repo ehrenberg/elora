@@ -1,7 +1,7 @@
-//! Werkzeug „Abenteuer“ (A1.8, E-268): Gegner, NPCs, Objekte, Zonen und Übergänge setzen,
-//! wählen, verschieben und löschen – Zustand und Logik ohne egui (testbar).
+//! Tool „Abenteuer“ (A1.8, E-268): place enemies, NPCs, objects, zones and transitions,
+//! select, move and delete them – state and logic without egui (testable).
 
-// Raster-Code: `x`/`y` (Tile), `c` (Mitte), `h` (Höhe) wie in tools.rs
+// Grid code: `x`/`y` (tile), `c` (center), `h` (height) as in tools.rs
 #![allow(clippy::many_single_char_names)]
 
 use std::time::Instant;
@@ -12,7 +12,7 @@ use elora_sim::{TILE_SIZE, Vec2};
 
 use super::Editor;
 
-/// Arten in der Auswahl der Seitenleiste.
+/// Kinds in the sidebar selection.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Kind {
     #[default]
@@ -46,7 +46,7 @@ impl Kind {
         Self::Camera,
     ];
 
-    /// Sprachschlüssel (`editor.adv_<…>`), gleich dem Namen in der Karte.
+    /// Language key (`editor.adv_<…>`), equal to the name in the map.
     pub fn key(self) -> &'static str {
         match self {
             Self::Creature => "editor.adv_gegner",
@@ -64,7 +64,7 @@ impl Kind {
         }
     }
 
-    /// Bereiche werden aufgezogen, alles andere per Klick gesetzt.
+    /// Areas are dragged out, everything else is placed by click.
     pub fn is_area(self) -> bool {
         matches!(self, Self::Door | Self::Exit | Self::Zone | Self::Camera)
     }
@@ -87,7 +87,7 @@ impl Kind {
     }
 }
 
-/// Höhe eines Punkt-Objekts (Mitte über dem Boden, wie im Spiel gezeichnet).
+/// Height of a point object (center above the ground, as drawn in the game).
 pub fn height(k: &ObjectKind, creature_height: impl Fn(&str) -> Option<f32>) -> Option<f32> {
     Some(match k {
         ObjectKind::Creature { kind, .. } => creature_height(kind).unwrap_or(28.0),
@@ -96,12 +96,12 @@ pub fn height(k: &ObjectKind, creature_height: impl Fn(&str) -> Option<f32>) -> 
         ObjectKind::Switch { .. } => 30.0,
         ObjectKind::SavePoint => 40.0,
         ObjectKind::HealPlant { .. } => 16.0,
-        // Sammelstücke schweben in der Tile-Mitte, Bereiche haben keine Höhe
+        // collectibles float in the tile center, areas have no height
         _ => return None,
     })
 }
 
-/// Vorgaben für ein neues Objekt; Listen kommen aus den Inhalten (erste Gegnerart usw.).
+/// Defaults for a new object; lists come from the contents (first enemy kind etc.).
 #[derive(Debug, Clone, Default)]
 pub struct Defaults {
     pub creature: String,
@@ -159,14 +159,14 @@ pub fn new_kind(kind: Kind, d: &Defaults, size: Vec2) -> ObjectKind {
     }
 }
 
-/// Zustand des Werkzeugs.
+/// State of the tool.
 #[derive(Debug, Clone, Default)]
 pub struct AdventureTool {
     pub kind: Kind,
     pub selected: Option<String>,
-    /// Ziehen: Weltpunkt beim Drücken und Lage des Objekts davor.
+    /// Dragging: world point on press and position of the object before.
     pub drag: Option<(Vec2, Vec2)>,
-    /// Bereich aufziehen: Start-Tile.
+    /// Dragging out an area: start tile.
     pub area_start: Option<(usize, usize)>,
     pub defaults: Defaults,
 }
@@ -178,7 +178,7 @@ fn tile_center(x: usize, y: usize) -> Vec2 {
 }
 
 impl Editor {
-    /// Neue eindeutige Id wie `truhe-3`.
+    /// New unique id like `truhe-3`.
     pub fn new_object_id(&self, kind: &ObjectKind) -> String {
         let base = kind.name();
         let n = self.map.adventure.objects.len() + 1;
@@ -188,7 +188,7 @@ impl Editor {
             .unwrap_or_else(|| format!("{base}-{}", n + 1))
     }
 
-    /// Lage eines Punkt-Objekts auf Tile (x, y): auf dem ersten festen Boden darunter.
+    /// Position of a point object on tile (x, y): on the first solid ground below.
     pub fn snap_point(&self, x: usize, y: usize, height: Option<f32>) -> Vec2 {
         let c = tile_center(x, y);
         let Some(h) = height else { return c };
@@ -204,7 +204,7 @@ impl Editor {
         Vec2::new(c.x, top - h / 2.0 - 1.0)
     }
 
-    /// Punkt-Objekt der gewählten Art auf Tile (x, y) setzen und wählen.
+    /// Place a point object of the selected kind on tile (x, y) and select it.
     pub fn place_object(
         &mut self,
         x: usize,
@@ -217,7 +217,7 @@ impl Editor {
         self.add_object(pos, kind, now);
     }
 
-    /// Bereich über die Tiles `a`–`b` (einschließlich) setzen.
+    /// Place an area over the tiles `a`–`b` (inclusive).
     pub fn place_area(&mut self, a: (usize, usize), b: (usize, usize), now: Instant) {
         let ts = TILE_SIZE as f32;
         let (x0, x1) = (a.0.min(b.0), a.0.max(b.0));
@@ -242,7 +242,7 @@ impl Editor {
         self.adventure.selected = Some(id);
     }
 
-    /// Objekt unter dem Weltpunkt (Punkte vor Bereichen, kleinere Bereiche zuerst).
+    /// Object under the world point (points before areas, smaller areas first).
     pub fn object_at(&self, p: Vec2) -> Option<String> {
         let objects = &self.map.adventure.objects;
         let point = objects
@@ -270,7 +270,7 @@ impl Editor {
             .object(self.adventure.selected.as_deref()?)
     }
 
-    /// Gewähltes Objekt zum Bearbeiten (ein Rückgängig-Schritt je Feld und kurzer Zeit).
+    /// Selected object for editing (one undo step per field and short time).
     pub fn edit_object(&mut self, what: &str, now: Instant) -> Option<&mut Object> {
         let id = self.adventure.selected.clone()?;
         self.map.adventure.object(&id)?;
@@ -278,8 +278,8 @@ impl Editor {
         self.map.adventure.objects.iter_mut().find(|o| o.id == id)
     }
 
-    /// Gewähltes Objekt um `delta` verschieben, auf ganze Tiles gerastert; Türen bleiben auf
-    /// dem Raster (E-254).
+    /// Move the selected object by `delta`, snapped to whole tiles; doors stay on
+    /// the grid (E-254).
     pub fn move_object(&mut self, start: Vec2, delta: Vec2, now: Instant) {
         let ts = TILE_SIZE as f32;
         let snapped = Vec2::new((delta.x / ts).round() * ts, (delta.y / ts).round() * ts);
@@ -295,7 +295,7 @@ impl Editor {
         );
     }
 
-    /// Gewähltes Objekt umbenennen; `false`, wenn die Id leer, ungültig oder vergeben ist.
+    /// Rename the selected object; `false` if the id is empty, invalid or taken.
     pub fn rename_object(&mut self, new_id: &str, now: Instant) -> bool {
         let valid = !new_id.is_empty() && !new_id.contains(':') && new_id.len() <= 128;
         if !valid || self.map.adventure.object(new_id).is_some() {
@@ -320,7 +320,7 @@ impl Editor {
         }
     }
 
-    /// Ist die Karte eine Abenteuer-Karte (hat Objekte)?
+    /// Is the map an adventure map (has objects)?
     pub fn is_adventure_map(&self) -> bool {
         !self.map.adventure.objects.is_empty()
     }
@@ -363,7 +363,7 @@ mod tests {
         assert_eq!(objs.len(), 2);
         assert_eq!(objs[0].id, "truhe-1");
         assert_eq!(objs[1].id, "truhe-2");
-        // Boden in Zeile 4: Oberkante 128, Truhe 26 hoch
+        // ground in row 4: top edge 128, chest 26 high
         assert!((objs[0].pos.y - (128.0 - 13.0 - 1.0)).abs() < 0.01);
         assert_eq!(e.adventure.selected.as_deref(), Some("truhe-2"));
         e.undo();
@@ -398,7 +398,7 @@ mod tests {
         assert!(!e.rename_object("a:b", now));
         e.remove_object("tor", now);
         assert!(e.map.adventure.objects.is_empty() && e.adventure.selected.is_none());
-        // Karte bleibt gültig speicherbar
+        // map stays valid for saving
         e.adventure.kind = Kind::Spawn;
         e.place_object(2, 1, |_| None, now);
         assert!(elora_map::decode(&elora_map::encode(&e.map)).is_ok());

@@ -1,12 +1,12 @@
-//! Kartengrafik im Stil A (M6.3, E-139): Materialien mit automatischen Kanten, Spezial-Tiles,
-//! Deko und Hintergründe aus `assets/map/`.
+//! Map graphics in style A (M6.3, E-139): materials with automatic edges, special tiles,
+//! decoration and backgrounds from `assets/map/`.
 //!
-//! Regeln für die Spielfläche (Auto-Kanten):
-//! - **Form:** Feste Tiles (fest, nicht hookbar, Eis) bilden zusammen mit Sprungfeldern und
-//!   Beschleunigern eine Fläche. Außenecken, an denen beide Nachbarn frei sind, werden gerundet.
-//! - **Kontur** nur an freien Kanten; zwischen Materialien keine Kontur.
-//! - **Kappe** (Gras, Schnee …) an jeder freien Oberkante; an freien Seiten das passende Endstück.
-//! - **Details** verstreut im Inneren, fest je Tile (gleiche Karte → gleiches Bild).
+//! Rules for the playfield (auto edges):
+//! - **Shape:** solid tiles (solid, unhookable, ice) form one surface together with jump pads and
+//!   boosters. Outer corners where both neighbors are free are rounded.
+//! - **Outline** only on free edges; no outline between materials.
+//! - **Cap** (grass, snow …) on every free top edge; the matching end piece on free sides.
+//! - **Details** scattered in the interior, fixed per tile (same map → same picture).
 
 use std::collections::BTreeMap;
 
@@ -16,12 +16,12 @@ use elora_sim::{BeltDir, Collision, JumpDir, TILE_SIZE, Tile, Vec2};
 use lyon::math::point;
 use serde::Deserialize;
 
-/// Kontur der Spielfläche (wie Figur und Items).
+/// Outline of the playfield (like figure and items).
 const OUTLINE: Color = Color::hex(0x2b2b2b);
 const OUTLINE_WIDTH: f32 = 2.5;
-/// Überlappung der Körper benachbarter Tiles gegen Haarlinien.
+/// Overlap of the bodies of neighboring tiles against hairlines.
 const SEAM: f32 = 0.4;
-/// Feinheit der Tessellierung für Kartengrafik.
+/// Tessellation fineness for map graphics.
 const TOLERANCE: f32 = 0.1;
 
 macro_rules! assets {
@@ -34,43 +34,43 @@ const MATERIAL_FILES: &[(&str, &[u8])] =
     assets!("materials": "earth", "sand", "snow", "stone", "ice", "climb", "crumble");
 const MATERIALS_TOML: &str = include_str!("../../../assets/map/materials.toml");
 
-/// Eingebaute Deko (Namen für [`Art::Builtin`]).
+/// Built-in decoration (names for [`Art::Builtin`]).
 pub const DECOR_FILES: &[(&str, &[u8])] = assets!("decor":
     "bush-1", "bush-2", "flower-pink", "flower-yellow", "flower-blue", "grass-1", "grass-2",
     "rock-1", "rock-2", "mushroom-red", "mushroom-brown", "tree-round", "tree-pine", "fence",
     "sign-arrow", "sign-board",
-    // Tauwinkel (A1.9, E-278); Blumen, Beete, Fahnen verblasst und farbig (E-277)
+    // thaw angle (A1.9, E-278); flowers, beds, flags faded and colored (E-277)
     "haus-elora", "haus-oma", "brunnen", "werkstatt", "schmiede", "laden", "baumhaus",
     "anschlagbrett", "wegweiser", "blumenkasten-blass", "blumenkasten-bunt", "beet-blass",
     "beet-bunt", "kraeuterbeet-blass", "kraeuterbeet-bunt", "fahne-blass", "fahne-bunt",
-    // Requisiten und Dornen (Playtest A1.9, E-283)
+    // props and thorns (playtest A1.9, E-283)
     "dornen", "bank", "laterne", "faesser", "holzstapel", "karren", "waescheleine", "heuballen",
     "mauer", "giesskanne", "vogelhaus", "briefkasten", "korb", "kuerbisse", "katze", "vogel",
     "schmetterling", "rauch", "baumstumpf", "farn", "beerenbusch", "loewenzahn", "trittsteine",
     "blumentopf-blass", "blumentopf-bunt",
-    // Kapitel 1 (R2-M2.1)
+    // chapter 1 (R2-M2.1)
     "bienenstock", "beutenstapel", "honigstand", "riesenblume-rosa", "riesenblume-gelb",
     "riesenblume-lila", "girlande-fest", "festlaterne-fest", "festlaterne-gelb-fest",
     "bluetenquelle-verdorrt", "bluetenquelle-befreit",
-    // Kapitel 2 (R2-M2.2)
+    // chapter 2 (R2-M2.2)
     "waldbaum", "waldhaus", "haengebruecke", "leuchtpilze", "wurzelbogen", "pilzring",
     "waldquelle-verdorrt", "waldquelle-befreit",
-    // Kapitel 3 (R2-M2.3)
+    // chapter 3 (R2-M2.3)
     "duene", "felsbogen", "saeule", "saeule-bruch", "ruinentor", "kaktus", "palme", "oase", "zelt",
     "kamel", "glutquelle-verdorrt", "glutquelle-befreit", "grauspur",
-    // Kapitel 4 (R2-M2.4)
+    // chapter 4 (R2-M2.4)
     "gipfel", "tanne-schnee", "berghuette", "seilbruecke", "schneewehe", "gletscher", "feuerstelle",
     "eisblock", "frostquelle-verdorrt", "frostquelle-befreit", "grauspur-eis",
 );
 
-/// Eingebaute Hintergrund-Grafik (ebenfalls über [`Art::Builtin`] benutzt).
+/// Built-in background graphic (also used via [`Art::Builtin`]).
 pub const BACKGROUND_FILES: &[(&str, &[u8])] = assets!("backgrounds":
     "cloud-1", "cloud-2", "cloud-3", "hills-far", "hills-near", "mountains", "forest", "stars",
     "moon",
 );
 
-/// Breite der wiederholbaren Hintergrund-Streifen.
-#[allow(dead_code)] // für Tests und den Editor (M6.8)
+/// Width of the repeatable background strips.
+#[allow(dead_code)] // for tests and the editor (M6.8)
 pub const STRIP_WIDTH: f32 = 1024.0;
 
 #[derive(Debug, Deserialize)]
@@ -88,35 +88,35 @@ fn parse_hex(s: &str) -> Option<Color> {
     (s.len() == 7).then(|| Color::hex(v))
 }
 
-/// Ein Material der Spielfläche.
+/// A playfield material.
 #[derive(Debug)]
 pub struct Material {
     pub name: String,
     body: Color,
     radius: f32,
     detail_chance: f32,
-    /// Tile-Arten, für die es wählbar ist.
+    /// Tile kinds for which it can be chosen.
     pub tiles: Vec<Tile>,
-    /// Mitte, links frei, rechts frei, beide frei.
+    /// Middle, left free, right free, both free.
     caps: Option<[Mesh; 4]>,
     details: Vec<Mesh>,
 }
 
-/// Spezial-Tiles.
+/// Special tiles.
 #[derive(Debug)]
 struct Specials {
     spikes: Mesh,
-    /// Mitte, links, rechts, einzeln.
+    /// Middle, left, right, single.
     planks: [Mesh; 4],
     jump_up: Mesh,
     jump_diag: Mesh,
     belt: Mesh,
     belt_arrow: Mesh,
-    /// Hook-Blüte frisch und welk (R2-M2.1).
+    /// Hook flower fresh and wilted (R2-M2.1).
     hook_point: [Mesh; 2],
 }
 
-/// Alle eingebauten Kartengrafiken.
+/// All built-in map graphics.
 #[derive(Debug)]
 pub struct MapArt {
     pub materials: Vec<Material>,
@@ -148,7 +148,7 @@ fn tile_kind(name: &str) -> Option<Tile> {
 
 impl MapArt {
     /// # Panics
-    /// Wenn ein eingebettetes Asset fehlerhaft ist (wird von Tests abgedeckt).
+    /// If an embedded asset is faulty (covered by tests).
     pub fn load() -> Self {
         let defs: BTreeMap<String, MaterialDef> =
             toml::from_str(MATERIALS_TOML).expect("assets/map/materials.toml");
@@ -227,12 +227,12 @@ impl MapArt {
         }
     }
 
-    /// Standard-Material einer Tile-Art.
+    /// Default material of a tile kind.
     pub fn default_material(&self, tile: Tile) -> Option<usize> {
         self.materials.iter().position(|m| m.tiles.contains(&tile))
     }
 
-    /// Material nach Name, wenn es für die Tile-Art wählbar ist; sonst der Standard.
+    /// Material by name if it can be chosen for the tile kind; otherwise the default.
     pub fn material(&self, tile: Tile, name: Option<&str>) -> Option<usize> {
         name.and_then(|n| {
             self.materials
@@ -242,7 +242,7 @@ impl MapArt {
         .or_else(|| self.default_material(tile))
     }
 
-    /// Für feste Tiles wählbare Materialien, Standard zuerst (E-148).
+    /// Materials selectable for solid tiles, default first (E-148).
     pub fn solid_material_names(&self) -> Vec<String> {
         self.materials
             .iter()
@@ -256,7 +256,7 @@ impl MapArt {
     }
 }
 
-/// Tiles, die zur Fläche gehören (Form und Kontur).
+/// Tiles that belong to the surface (shape and outline).
 fn ground(t: Tile) -> bool {
     matches!(
         t,
@@ -270,7 +270,7 @@ fn ground(t: Tile) -> bool {
     )
 }
 
-/// Tiles, die mit einem Material gezeichnet werden.
+/// Tiles that are drawn with a material.
 fn has_material(t: Tile) -> bool {
     matches!(
         t,
@@ -278,7 +278,7 @@ fn has_material(t: Tile) -> bool {
     )
 }
 
-/// Fester Pseudo-Zufall je Tile (gleiches Bild bei jedem Laden).
+/// Fixed pseudo-random value per tile (same picture on every load).
 fn hash(x: i32, y: i32) -> u32 {
     #[allow(clippy::cast_sign_loss)]
     let mut h = (x as u32).wrapping_mul(0x9E37_79B1) ^ (y as u32).wrapping_mul(0x85EB_CA77);
@@ -287,7 +287,7 @@ fn hash(x: i32, y: i32) -> u32 {
     h ^ (h >> 13)
 }
 
-/// Freie Seiten eines Tiles.
+/// Free sides of a tile.
 #[derive(Debug, Clone, Copy)]
 #[allow(clippy::struct_excessive_bools)]
 struct Open {
@@ -308,7 +308,7 @@ impl Open {
         }
     }
 
-    /// Gerundete Ecken: oben links, oben rechts, unten rechts, unten links.
+    /// Rounded corners: top left, top right, bottom right, bottom left.
     fn corners(self) -> [bool; 4] {
         [
             self.up && self.left,
@@ -319,8 +319,8 @@ impl Open {
     }
 }
 
-/// Körper eines Tiles: Rechteck mit gerundeten Außenecken, an geschlossenen Seiten leicht
-/// vergrößert (keine Haarlinien zwischen Tiles).
+/// Body of a tile: rectangle with rounded outer corners, slightly enlarged on closed sides
+/// (no hairlines between tiles).
 fn body_path(min: Vec2, open: Open, r: f32) -> Path {
     let ts = TILE_SIZE as f32;
     let grow = |o: bool| if o { 0.0 } else { SEAM };
@@ -341,7 +341,7 @@ fn body_path(min: Vec2, open: Open, r: f32) -> Path {
     b.build()
 }
 
-/// Punkte einer Viertelrundung (quadratische Kurve von `a` über Ecke `c` nach `b`).
+/// Points of a quarter rounding (quadratic curve from `a` via corner `c` to `b`).
 fn arc(a: Vec2, c: Vec2, b: Vec2) -> impl Iterator<Item = Vec2> {
     (0..=6).map(move |i| {
         let t = i as f32 / 6.0;
@@ -349,13 +349,13 @@ fn arc(a: Vec2, c: Vec2, b: Vec2) -> impl Iterator<Item = Vec2> {
     })
 }
 
-/// Kontur an den freien Seiten eines Tiles, als zusammenhängende Linienzüge.
+/// Outline on the free sides of a tile, as connected polylines.
 fn outline(batch: &mut ShapeBatch, min: Vec2, open: Open, r: f32) {
     let ts = TILE_SIZE as f32;
     let max = min + Vec2::new(ts, ts);
     let [tl, tr, br, bl] = open.corners();
     let rad = |c: bool| if c { r } else { 0.0 };
-    // Umlauf im Uhrzeigersinn ab oben links: (Seite frei?, Punkte)
+    // clockwise loop starting top left: (side free?, points)
     let corner = |round: bool, a: Vec2, c: Vec2, b: Vec2| -> (bool, Vec<Vec2>) {
         if round {
             (true, arc(a, c, b).collect())
@@ -417,9 +417,9 @@ fn outline(batch: &mut ShapeBatch, min: Vec2, open: Open, r: f32) {
             ],
         ),
     ];
-    // Beginn an einer geschlossenen Stelle, damit Linienzüge nicht am Anfang zerschnitten werden
+    // start at a closed spot so that polylines are not cut at the beginning
     let Some(start) = pieces.iter().position(|(o, _)| !o) else {
-        // ringsum frei: geschlossener Umlauf
+        // free all around: closed loop
         let mut all: Vec<Vec2> = pieces.iter().flat_map(|(_, p)| p.clone()).collect();
         all.push(all[0]);
         batch.stroke_polyline(&all, OUTLINE_WIDTH, OUTLINE);
@@ -439,7 +439,7 @@ fn outline(batch: &mut ShapeBatch, min: Vec2, open: Open, r: f32) {
     }
 }
 
-/// Mesh im Tile `min` zeichnen, um die Tile-Mitte gedreht (`angle`) und/oder gespiegelt.
+/// Draw a mesh in tile `min`, rotated around the tile center (`angle`) and/or mirrored.
 fn tile_mesh(batch: &mut ShapeBatch, mesh: &Mesh, min: Vec2, angle: f32, flip: bool) {
     let half = TILE_SIZE as f32 / 2.0;
     let t = Affine::translate(min + Vec2::new(half, half))
@@ -449,7 +449,7 @@ fn tile_mesh(batch: &mut ShapeBatch, mesh: &Mesh, min: Vec2, angle: f32, flip: b
     batch.draw_mesh(mesh, &t, &Tint::default());
 }
 
-/// Ausschnitt in Tiles (einschließlich).
+/// Section in tiles (inclusive).
 #[derive(Debug, Clone, Copy)]
 pub struct TileRange {
     pub x0: i32,
@@ -464,7 +464,7 @@ impl TileRange {
     }
 }
 
-/// Spielfläche zeichnen. `material(x, y)` liefert den Index in [`MapArt::materials`].
+/// Draw the playfield. `material(x, y)` returns the index into [`MapArt::materials`].
 pub fn draw_terrain(
     batch: &mut ShapeBatch,
     art: &MapArt,
@@ -517,7 +517,7 @@ fn draw_specials(batch: &mut ShapeBatch, art: &MapArt, col: &Collision, range: T
         let min = Vec2::new(x as f32 * ts, y as f32 * ts);
         match col.tile(x, y) {
             Tile::Death => {
-                // Stacheln zeigen vom festen Untergrund weg
+                // spikes point away from the solid ground
                 let free = |dx, dy| {
                     let t = col.tile(x + dx, y + dy);
                     !ground(t) && t != Tile::Death
@@ -544,14 +544,14 @@ fn draw_specials(batch: &mut ShapeBatch, art: &MapArt, col: &Collision, range: T
             Tile::JumpPad(JumpDir::Up) => tile_mesh(batch, &s.jump_up, min, 0.0, false),
             Tile::JumpPad(JumpDir::UpRight) => tile_mesh(batch, &s.jump_diag, min, 0.0, false),
             Tile::JumpPad(JumpDir::UpLeft) => tile_mesh(batch, &s.jump_diag, min, 0.0, true),
-            // Pfeil läuft mit und wird je Frame gezeichnet (draw_belt_arrow)
+            // the arrow moves along and is drawn every frame (draw_belt_arrow)
             Tile::Conveyor(_) => tile_mesh(batch, &s.belt, min, 0.0, false),
             _ => {}
         }
     }
 }
 
-/// Laufender Pfeil eines Beschleunigers; `phase` 0..1 wandert in Laufrichtung und blendet an den Enden aus.
+/// Running arrow of a booster; `phase` 0..1 travels in running direction and fades out at the ends.
 pub fn draw_belt_arrow(batch: &mut ShapeBatch, art: &MapArt, min: Vec2, dir: BeltDir, phase: f32) {
     let half = TILE_SIZE as f32 / 2.0;
     let shift = (phase - 0.5) * 8.0 * dir.sign();
@@ -569,7 +569,7 @@ const SAND: Color = Color::hex(0xe2bf7c);
 const SAND_DARK: Color = Color::hex(0xc49a58);
 const SAND_LIGHT: Color = Color::hex(0xf3dcaa);
 
-/// Treibsand im Tile `min`; `top` = Oberfläche (wellt sich langsam), Körner wandern nach unten.
+/// Quicksand in tile `min`; `top` = surface (ripples slowly), grains move downwards.
 pub fn draw_quicksand(batch: &mut ShapeBatch, min: Vec2, top: bool, time: f32) {
     let ts = TILE_SIZE as f32;
     let y0 = if top { min.y + 6.0 } else { min.y - SEAM };
@@ -579,7 +579,7 @@ pub fn draw_quicksand(batch: &mut ShapeBatch, min: Vec2, top: bool, time: f32) {
         SAND,
     );
     if top {
-        // Wellen der Oberfläche
+        // ripples of the surface
         let wave = |x: f32| min.y + 5.0 + (time * 1.6 + x * 0.12).sin() * 1.6;
         let pts: Vec<Vec2> = (0..=8)
             .map(|i| {
@@ -596,7 +596,7 @@ pub fn draw_quicksand(batch: &mut ShapeBatch, min: Vec2, top: bool, time: f32) {
         let crest: Vec<Vec2> = pts.iter().map(|p| *p + Vec2::new(0.0, 3.0)).collect();
         batch.stroke_polyline(&crest, 1.2, SAND_LIGHT);
     }
-    // Körner sinken langsam (zeigt: hier zieht es nach unten)
+    // grains sink slowly (shows: this pulls downwards)
     #[allow(clippy::cast_possible_truncation)]
     let h = hash((min.x / ts).round() as i32, (min.y / ts).round() as i32);
     for k in 0..3u32 {
@@ -618,7 +618,7 @@ const ICE_EDGE: Color = Color::hex(0x5fa8d0);
 const WATER_DEEP: Color = Color::hex(0x2f6f9e);
 const WATER_TOP: Color = Color::hex(0x9fd8f0);
 
-/// Dünnes Eis (R2-M2.4): helle Platte im oberen Teil des Tiles, darunter ist es frei.
+/// Thin ice (R2-M2.4): light plate in the upper part of the tile, below it is free.
 pub fn draw_thin_ice(batch: &mut ShapeBatch, min: Vec2) {
     let ts = TILE_SIZE as f32;
     let h = ts * 0.45;
@@ -645,7 +645,7 @@ pub fn draw_thin_ice(batch: &mut ShapeBatch, min: Vec2) {
     );
 }
 
-/// Eiswasser (R2-M2.4): dunkles Blau, oben eine bewegte helle Oberfläche.
+/// Ice water (R2-M2.4): dark blue, a moving light surface on top.
 pub fn draw_ice_water(batch: &mut ShapeBatch, min: Vec2, top: bool, time: f32) {
     let ts = TILE_SIZE as f32;
     let y0 = if top { min.y + 6.0 } else { min.y - SEAM };
@@ -666,7 +666,7 @@ pub fn draw_ice_water(batch: &mut ShapeBatch, min: Vec2, top: bool, time: f32) {
     }
 }
 
-/// Hook-Blüte im Tile `min`; `active` = frisch (greift), sonst welk. Wiegt sich leicht.
+/// Hook flower in tile `min`; `active` = fresh (grips), otherwise wilted. Sways slightly.
 pub fn draw_hook_point(batch: &mut ShapeBatch, art: &MapArt, min: Vec2, active: bool, time: f32) {
     let half = TILE_SIZE as f32 / 2.0;
     let sway = (time * 1.3 + min.x * 0.01).sin() * 3.0;
@@ -677,13 +677,13 @@ pub fn draw_hook_point(batch: &mut ShapeBatch, art: &MapArt, min: Vec2, active: 
     batch.draw_mesh(mesh, &t, &Tint::default());
 }
 
-/// Wirkung der Animationen auf ein Deko-Objekt.
+/// Effect of the animations on a decoration object.
 #[derive(Debug, Clone, Copy)]
 pub struct Anim {
     pub offset: Vec2,
-    /// Grad
+    /// Degrees
     pub rotation: f32,
-    /// Farbe (multipliziert)
+    /// Color (multiplied)
     pub color: [f32; 4],
 }
 
@@ -701,7 +701,7 @@ pub fn rgba(c: Rgba) -> Color {
     Color(c.0.map(|v| f32::from(v) / 255.0))
 }
 
-/// Grafik eines Deko-Objekts; eingebettete Bilder (`images`) sind vorab geladene Meshes der Karte.
+/// Graphic of a decoration object; embedded images (`images`) are preloaded meshes of the map.
 pub fn decor_mesh<'a>(art: &'a MapArt, images: &'a [Mesh], d: &Decor) -> Option<&'a Mesh> {
     match &d.art {
         Art::Builtin(name) => art.builtin(name),
@@ -709,7 +709,7 @@ pub fn decor_mesh<'a>(art: &'a MapArt, images: &'a [Mesh], d: &Decor) -> Option<
     }
 }
 
-/// Ein Deko-Objekt an `at` (Position samt Lage der Ebene) zeichnen.
+/// Draw a decoration object at `at` (position including the layer placement).
 pub fn draw_decor(batch: &mut ShapeBatch, mesh: &Mesh, d: &Decor, at: Vec2, anim: &Anim) {
     let flip = if d.flip_x { -1.0 } else { 1.0 };
     let t = Affine::translate(at + anim.offset)
@@ -755,7 +755,7 @@ mod tests {
             art.materials[art.material(Tile::Solid, Some("snow")).unwrap()].name,
             "snow"
         );
-        // Stein ist für hookbare Wände nicht wählbar (Lesbarkeit hookbar/nicht hookbar)
+        // stone cannot be chosen for hookable walls (readability hookable/unhookable)
         assert_eq!(
             art.materials[art.material(Tile::Solid, Some("stone")).unwrap()].name,
             "earth"
@@ -768,8 +768,8 @@ mod tests {
         }
     }
 
-    /// Zeichnet ein Raster aus Zeichen; Kleinbuchstaben wählen das Material fester Tiles
-    /// (`e` Erde, `s` Sand, `n` Schnee), sonst wie die Aufzeichnungen.
+    /// Draws a grid of characters; lowercase letters choose the material of solid tiles
+    /// (`e` earth, `s` sand, `n` snow), otherwise like the recordings.
     fn grid(batch: &mut ShapeBatch, art: &MapArt, rows: &[&str], w: usize, h: usize) {
         let mut tiles = vec![Tile::Air; w * h];
         let mut mats = vec![None; w * h];
@@ -819,7 +819,7 @@ mod tests {
         }
     }
 
-    /// Hintergrund-Szene: Himmel, Berge, Hügel, Wald, Wolken bzw. Sterne und Mond.
+    /// Background scene: sky, mountains, hills, forest, clouds or stars and moon.
     fn scene(batch: &mut ShapeBatch, art: &MapArt, top: f32, w: f32, night: bool) {
         let h = 420.0;
         let sky = if night {
@@ -861,8 +861,8 @@ mod tests {
         strip(batch, art, "hills-near", base, -600.0, w, dim(0x46557a));
     }
 
-    /// Übersichtsblatt zur Sichtprüfung: `cargo test -p elora-client --bin elora map_art_sheet -- --ignored`,
-    /// danach `cargo xtask svg-preview target/map-art.svg docs/archive/release-1/design/elora-kartenteile.png 1400`.
+    /// Overview sheet for visual inspection: `cargo test -p elora-client --bin elora map_art_sheet -- --ignored`,
+    /// then `cargo xtask svg-preview target/map-art.svg docs/archive/release-1/design/elora-kartenteile.png 1400`.
     #[test]
     #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
     #[allow(clippy::too_many_lines)]
@@ -879,7 +879,7 @@ mod tests {
             ));
         };
 
-        // 1) Materialien und Spezial-Tiles (Tiles ab Zeile 2)
+        // 1) materials and special tiles (tiles from row 2)
         batch.fill_rect(
             Vec2::ZERO,
             Vec2::new(width, h as f32 * 32.0),
@@ -942,7 +942,7 @@ mod tests {
         label(26.0 * 32.0, 8.0 * 32.0 - 6.0, "Kletterwand", 15);
         label(36.0 * 32.0, 8.0 * 32.0 - 6.0, "Bröckelboden", 15);
 
-        // 2) Deko auf dem Boden (Zeile 23)
+        // 2) decoration on the ground (row 23)
         let ground_y = 23.0 * 32.0;
         let names: Vec<&str> = DECOR_FILES.iter().map(|(n, _)| *n).collect();
         let step = (width - 160.0) / names.len() as f32;
@@ -954,7 +954,7 @@ mod tests {
         }
         label(16.0, 16.0 * 32.0, "Deko", 18);
 
-        // 3) Hintergründe Tag und Nacht
+        // 3) backgrounds day and night
         let day_top = h as f32 * 32.0 + 40.0;
         scene(&mut batch, &art, day_top, width, false);
         let night_top = day_top + 460.0;

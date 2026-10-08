@@ -1,5 +1,5 @@
-//! Aussehen im Editor (M6.8, E-133): Deko platzieren, verschieben, drehen, skalieren;
-//! Hintergrund-Ebenen mit Parallax; Animationen (Envelopes); eingebettete SVGs (E-144).
+//! Look in the editor (M6.8, E-133): place, move, rotate, scale decoration;
+//! background layers with parallax; animations (envelopes); embedded SVGs (E-144).
 
 use std::time::Instant;
 
@@ -9,7 +9,7 @@ use elora_sim::{TILE_SIZE, Vec2};
 
 use super::Editor;
 
-/// Wohin Deko gehört.
+/// Where decoration belongs.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum DecorLayer {
     Back,
@@ -18,36 +18,36 @@ pub enum DecorLayer {
     Background(usize),
 }
 
-/// Ein Deko-Objekt in einer Ebene.
+/// A decoration object in a layer.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct DecorRef {
     pub layer: DecorLayer,
     pub index: usize,
 }
 
-/// Vorlagen für Himmel und Hintergrund-Ebenen.
+/// Presets for sky and background layers.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Preset {
     Day,
     Night,
 }
 
-/// Kamera-Mitte (y) ganz oben in einer Karte: etwa eine halbe Sichthöhe (675) unter der Oberkante.
+/// Camera center (y) at the very top of a map: about half a view height (675) below the top edge.
 const HIGHEST_CAMERA: f32 = 340.0;
-/// Kamera ganz unten: so hoch über dem Boden steht ihre Mitte etwa.
+/// Camera at the very bottom: its center is about this high above the ground.
 const LOWEST_CAMERA_ABOVE_GROUND: f32 = 300.0;
-/// Hohe Karten: so weit wandern die Ebenen im Bild, wenn die Kamera vom Boden nach oben fährt …
+/// Tall maps: the layers move this far in the image when the camera goes up from the ground …
 const TALL_LAYER_TRAVEL: f32 = 150.0;
-/// … und so weit unter der Bildmitte liegt ihr Fuß bei Kamera am Boden.
+/// … and their foot lies this far below the image center with the camera at the ground.
 const TALL_LAYER_BELOW: f32 = 170.0;
 
-/// Höchstwerte wie im Kartenformat.
+/// Maximum values as in the map format.
 const MAX_BACKGROUNDS: usize = 16;
 const MAX_ENVELOPES: usize = 256;
 const MAX_IMAGES: usize = 64;
 const MAX_IMAGE_BYTES: usize = 512 << 10;
 
-/// Ist `p` (Welt) innerhalb des gedrehten, skalierten Rechtecks `bounds` eines Objekts an `at`?
+/// Is `p` (world) inside the rotated, scaled rectangle `bounds` of an object at `at`?
 pub fn hit(d: &Decor, at: Vec2, bounds: (Vec2, Vec2), point: Vec2) -> bool {
     let rel = point - at;
     let (sin, cos) = (-d.rotation.to_radians()).sin_cos();
@@ -60,7 +60,7 @@ pub fn hit(d: &Decor, at: Vec2, bounds: (Vec2, Vec2), point: Vec2) -> bool {
         local.x = -local.x;
     }
     let (lo, hi) = bounds;
-    // etwas Spielraum für schmale Objekte
+    // some leeway for narrow objects
     let margin = 4.0 / scale;
     local.x >= lo.x - margin
         && local.x <= hi.x + margin
@@ -68,7 +68,7 @@ pub fn hit(d: &Decor, at: Vec2, bounds: (Vec2, Vec2), point: Vec2) -> bool {
         && local.y <= hi.y + margin
 }
 
-/// Ecken des gedrehten Rechtecks (für die Markierung der Auswahl).
+/// Corners of the rotated rectangle (for marking the selection).
 pub fn corners(d: &Decor, at: Vec2, bounds: (Vec2, Vec2)) -> [Vec2; 4] {
     let (lo, hi) = bounds;
     let (s, c) = d.rotation.to_radians().sin_cos();
@@ -106,14 +106,14 @@ impl Editor {
         self.layer_items(r.layer)?.get(r.index)
     }
 
-    /// Deko zum Ändern holen; `kind` fasst schnelle Änderungen zu einem Schritt zusammen.
+    /// Get decoration for editing; `kind` merges quick changes into one step.
     pub fn edit_decor(&mut self, r: DecorRef, kind: &str, now: Instant) -> Option<&mut Decor> {
         self.decor(r)?;
         self.begin_edit(kind, now);
         self.layer_items_mut(r.layer)?.get_mut(r.index)
     }
 
-    /// Versatz einer Ebene in der Welt bei Kamera-Mitte `camera` (Parallax).
+    /// Offset of a layer in the world at camera center `camera` (parallax).
     pub fn layer_shift(&self, layer: DecorLayer, camera: Vec2) -> Vec2 {
         match layer {
             DecorLayer::Background(i) => self.map.backgrounds.get(i).map_or(Vec2::ZERO, |b| {
@@ -127,7 +127,7 @@ impl Editor {
         }
     }
 
-    /// Lage eines Objekts in der Welt; bei wiederholten Ebenen die Kopie nahe `near`.
+    /// Position of an object in the world; for repeated layers the copy near `near`.
     pub fn decor_world_pos(&self, r: DecorRef, camera: Vec2, near: Vec2) -> Option<Vec2> {
         let d = self.decor(r)?;
         let mut at = d.pos + self.layer_shift(r.layer, camera);
@@ -139,7 +139,7 @@ impl Editor {
         Some(at)
     }
 
-    /// Neues Objekt an einem Weltpunkt in die Ziel-Ebene setzen und auswählen.
+    /// Place a new object at a world point in the target layer and select it.
     pub fn add_decor(
         &mut self,
         layer: DecorLayer,
@@ -180,7 +180,7 @@ impl Editor {
         self.selected_decor = None;
     }
 
-    /// Neue, leere Hintergrund-Ebene (ganz vorn).
+    /// New, empty background layer (frontmost).
     pub fn add_background(&mut self, now: Instant) {
         if self.map.backgrounds.len() >= MAX_BACKGROUNDS {
             return;
@@ -214,7 +214,7 @@ impl Editor {
         }
     }
 
-    /// Ebene eine Stufe nach vorn (`forward`) oder hinten schieben.
+    /// Move a layer one step forward (`forward`) or back.
     pub fn move_background(&mut self, i: usize, forward: bool, now: Instant) {
         let j = if forward { i + 1 } else { i.wrapping_sub(1) };
         if i >= self.map.backgrounds.len() || j >= self.map.backgrounds.len() {
@@ -227,24 +227,25 @@ impl Editor {
         self.selected_decor = None;
     }
 
-    /// Himmel und Hintergrund-Ebenen aus einer Vorlage (ersetzt die vorhandenen Ebenen).
+    /// Sky and background layers from a preset (replaces the existing layers).
     pub fn apply_preset(&mut self, preset: Preset, now: Instant) {
         self.begin_edit("preset", now);
         self.end_edit();
         let ts = TILE_SIZE as f32;
         #[allow(clippy::cast_precision_loss)]
         let ground = (self.map.height as f32 - 2.0).max(1.0) * ts;
-        // Ebenen wachsen nur nach oben: für die höchste Kamera (etwa eine halbe Sichthöhe unter
-        // der Oberkante) enden sie am Boden, tiefer verschwindet ihr Rand hinter der Spielfläche
+        // Layers only grow upwards: for the highest camera (about half a view height below
+        // the top edge) they end at the ground; lower down their edge disappears behind the
+        // playfield
         let cam_y = HIGHEST_CAMERA.min(ground);
         let deco = |name: &str, x: f32, y: f32, tint: Rgba| {
             let mut d = Decor::new(Art::Builtin(name.into()), Vec2::new(x, y));
             d.tint = tint;
             d
         };
-        // Hohe Karten (Abenteuer): Die Kamera wandert weit nach oben. Damit die Ebenen dann
-        // nicht unter dem Bild verschwinden, folgen sie der Kamera senkrecht stärker (kleinere
-        // Parallaxe in y) und liegen bei Kamera am Boden etwas unter der Bildmitte.
+        // Tall maps (adventure): the camera moves far up. So that the layers do not then
+        // disappear below the image, they follow the camera more strongly vertically (smaller
+        // parallax in y) and lie somewhat below the image center with the camera at the ground.
         let cam_low = ground - LOWEST_CAMERA_ABOVE_GROUND;
         let span = (cam_low - cam_y).max(1.0);
         let layer = |name: &str, p: f32, items: Vec<Decor>| {
@@ -329,7 +330,7 @@ impl Editor {
         self.decor_layer = DecorLayer::Front;
     }
 
-    /// Animation „Wolkenzug“ (an Server-Zeit gebunden, 1024 Einheiten in 90 s) – vorhanden oder neu.
+    /// Animation „Wolkenzug“ (bound to server time, 1024 units in 90 s) – existing or new.
     fn ensure_cloud_drift(&mut self) -> u16 {
         const NAME: &str = "Wolkenzug";
         if let Some(i) = self.map.envelopes.iter().position(|e| e.name == NAME) {
@@ -355,7 +356,7 @@ impl Editor {
         u16::try_from(self.map.envelopes.len() - 1).unwrap_or(0)
     }
 
-    /// Neue Animation mit zwei Punkten (1 s), ausgewählt.
+    /// New animation with two points (1 s), selected.
     pub fn add_envelope(&mut self, kind: EnvKind, now: Instant) {
         if self.map.envelopes.len() >= MAX_ENVELOPES {
             return;
@@ -384,7 +385,7 @@ impl Editor {
         self.selected_env = Some(self.map.envelopes.len() - 1);
     }
 
-    /// Animation löschen; Verweise darauf entfallen, spätere rücken nach.
+    /// Delete an animation; references to it are dropped, later ones move up.
     pub fn remove_envelope(&mut self, i: usize, now: Instant) {
         if i >= self.map.envelopes.len() {
             return;
@@ -416,8 +417,8 @@ impl Editor {
             .chain(m.backgrounds.iter_mut().flat_map(|b| b.items.iter_mut()))
     }
 
-    /// Punkte nach Zeit sortieren und gleiche Zeiten auseinanderziehen (das Format verlangt
-    /// streng steigende Zeiten).
+    /// Sort points by time and pull equal times apart (the format requires
+    /// strictly increasing times).
     pub fn normalize_envelope(&mut self, i: usize) {
         let Some(e) = self.map.envelopes.get_mut(i) else {
             return;
@@ -430,10 +431,10 @@ impl Editor {
         }
     }
 
-    /// SVG einbetten (E-144): geprüft wie beim Laden einer fremden Karte.
+    /// Embed an SVG (E-144): checked as when loading a foreign map.
     ///
     /// # Errors
-    /// Bei zu vielen oder zu großen Bildern oder einem ungültigen SVG.
+    /// With too many or too large images or an invalid SVG.
     pub fn embed_image(&mut self, name: &str, data: Vec<u8>, now: Instant) -> Result<u16, String> {
         if self.map.images.len() >= MAX_IMAGES {
             return Err(format!("höchstens {MAX_IMAGES} Bilder"));
@@ -451,7 +452,7 @@ impl Editor {
         Ok(u16::try_from(self.map.images.len() - 1).unwrap_or(0))
     }
 
-    /// Bild entfernen samt aller Deko, die es benutzt; spätere Bilder rücken nach.
+    /// Remove an image along with all decoration using it; later images move up.
     pub fn remove_image(&mut self, i: usize, now: Instant) {
         if i >= self.map.images.len() {
             return;
@@ -541,7 +542,7 @@ mod tests {
                 t,
             )
             .unwrap();
-        // Ebene verschiebt sich um Kamera × (1 − 0,5)
+        // layer moves by camera × (1 − 0.5)
         assert_eq!(e.decor(r).unwrap().pos, Vec2::new(300.0, 0.0));
         assert_eq!(
             e.decor_world_pos(r, cam, Vec2::new(500.0, 100.0)),
@@ -555,7 +556,7 @@ mod tests {
         );
     }
 
-    /// Hohe Karten (R2-M2.2): Die Ebenen bleiben im Bild, egal wie hoch die Kamera steht.
+    /// Tall maps (R2-M2.2): the layers stay in the image, no matter how high the camera is.
     #[test]
     fn layers_stay_in_view_on_tall_maps() {
         let mut e = editor();
@@ -563,7 +564,7 @@ mod tests {
         e.apply_preset(Preset::Day, Instant::now());
         let ground = 88.0 * TILE_SIZE as f32;
         for bg in e.map.backgrounds.iter().filter(|b| b.name != "Wolken") {
-            // Fuß der Ebene relativ zur Kameramitte, Kamera ganz unten und ganz oben
+            // foot of the layer relative to the camera center, camera at the very bottom and top
             for cam in [ground - LOWEST_CAMERA_ABOVE_GROUND, HIGHEST_CAMERA] {
                 let foot = bg.offset.y + cam * (1.0 - bg.parallax.y) - cam;
                 assert!(
@@ -676,7 +677,7 @@ mod tests {
         assert!(hit(&d, Vec2::ZERO, bounds, Vec2::new(0.0, -10.0)));
         assert!(!hit(&d, Vec2::ZERO, bounds, Vec2::new(30.0, -10.0)));
         d.rotation = 90.0;
-        // um 90° gedreht zeigt das Objekt nach rechts statt nach oben
+        // rotated by 90° the object points right instead of up
         assert!(hit(&d, Vec2::ZERO, bounds, Vec2::new(10.0, 0.0)));
         d.rotation = 0.0;
         d.scale = 3.0;

@@ -1,5 +1,5 @@
-//! Seitenleiste und Kartenfläche des Werkzeugs „Abenteuer“ (A1.8, E-268 bis E-271):
-//! Art wählen, Eigenschaften bearbeiten, Gespräche ansehen und testen, Fehler, Teststand.
+//! Sidebar and map area of the „Abenteuer“ tool (A1.8, E-268 to E-271):
+//! choose a kind, edit properties, view and test dialogues, errors, test state.
 
 use std::time::Instant;
 
@@ -15,16 +15,16 @@ use super::panel::{AreaInfo, Preview};
 use super::tools::Cells;
 use crate::lang::Lang;
 
-/// Teststand für F5 (E-269).
+/// Test state for F5 (E-269).
 #[derive(Debug, Clone)]
 pub struct TestSetup {
     pub level: u32,
     pub abilities: elora_sim::Abilities,
     pub grenade: bool,
     pub laser: bool,
-    /// Merker wie `tor.dorf=1, oma.frech`.
+    /// Flags like `tor.dorf=1, oma.frech`.
     pub flags: String,
-    /// Start an diesem Objekt; `None` = an der Maus.
+    /// Start at this object; `None` = at the mouse.
     pub start: Option<String>,
 }
 
@@ -42,7 +42,7 @@ impl Default for TestSetup {
 }
 
 impl TestSetup {
-    /// Spielstand für das Testspiel und den Gesprächstest.
+    /// Save state for the playtest and the dialogue test.
     pub fn save(&self, c: &Content, map: &str, spawn: &str) -> SaveGame {
         let mut g = SaveGame::new(
             c,
@@ -76,7 +76,7 @@ impl TestSetup {
     }
 }
 
-/// Gespräch im Testfenster (E-270).
+/// Dialogue in the test window (E-270).
 #[derive(Debug, Clone)]
 pub struct DialogTest {
     pub dialog: String,
@@ -85,14 +85,14 @@ pub struct DialogTest {
     pub before: SaveGame,
 }
 
-/// Inhalte des Abenteuers aus `assets/adventure` (neu ladbar, E-270).
+/// Contents of the adventure from `assets/adventure` (reloadable, E-270).
 pub fn load_content() -> Result<Content, String> {
     let dir = elora_server::paths::resolve(std::path::Path::new("assets/adventure"));
     Content::from_dir(&dir).map_err(|e| e.to_string())
 }
 
 impl Editor {
-    /// Inhalte laden, falls noch nicht geschehen; setzt die Vorgaben für neue Objekte.
+    /// Load the contents if not done yet; sets the defaults for new objects.
     pub fn ensure_content(&mut self) {
         if self.adventure_content.is_none() {
             self.reload_content();
@@ -123,7 +123,7 @@ impl Editor {
         self.adventure_content.as_ref()?.as_ref().ok()
     }
 
-    /// Höhe eines Gegners aus `creatures.toml`.
+    /// Height of an enemy from `creatures.toml`.
     fn creature_height(&self, name: &str) -> Option<f32> {
         self.content()?
             .creatures
@@ -132,7 +132,7 @@ impl Editor {
             .map(|k| k.size[1])
     }
 
-    /// Eingänge und Speicherpunkte (Start im Testspiel).
+    /// Entrances and save points (start in the playtest).
     pub fn entrances(&self) -> Vec<String> {
         self.map
             .adventure
@@ -144,8 +144,8 @@ impl Editor {
     }
 }
 
-/// Abenteuer-Karten (eigene vor mitgelieferten) mit ihren Eingängen – für Übergänge und die
-/// Prüfung der Verbindungen.
+/// Adventure maps (custom before bundled) with their entrances – for transitions and
+/// checking the connections.
 fn adventure_maps(editor: &Editor) -> Vec<(String, Map)> {
     let mut out: Vec<(String, Map)> = Vec::new();
     let dirs = editor
@@ -177,7 +177,7 @@ fn adventure_maps(editor: &Editor) -> Vec<(String, Map)> {
     out
 }
 
-/// Kartenfläche: setzen, wählen, ziehen, aufziehen, löschen (rechts).
+/// Map area: place, select, drag, drag out areas, delete (right).
 pub fn interact(
     editor: &mut Editor,
     info: &mut AreaInfo,
@@ -275,7 +275,7 @@ fn ability_name(a: Ability) -> &'static str {
     }
 }
 
-/// Seitenleiste des Werkzeugs.
+/// Sidebar of the tool.
 pub fn tool(ui: &mut Ui, editor: &mut Editor, lang: &Lang, now: Instant) {
     editor.ensure_content();
     ui.horizontal_wrapped(|ui| {
@@ -326,7 +326,7 @@ pub fn tool(ui: &mut Ui, editor: &mut Editor, lang: &Lang, now: Instant) {
     test_setup(ui, editor, lang);
 }
 
-#[allow(clippy::too_many_lines)] // je Art ein kleines Formular
+#[allow(clippy::too_many_lines)] // a small form per kind
 fn properties(ui: &mut Ui, editor: &mut Editor, lang: &Lang, now: Instant) {
     let Some(obj) = editor.selected_object().cloned() else {
         ui.small(lang.t("editor.adv_none_selected"));
@@ -561,7 +561,7 @@ fn size_fields(ui: &mut Ui, lang: &Lang, size: &mut Vec2, changed: &mut bool) {
     });
 }
 
-/// Einstiege, Knoten und Antworten eines Gesprächs; „Gespräch testen“ (E-270).
+/// Entries, nodes and answers of a dialogue; „Gespräch testen“ (E-270).
 fn dialog_preview(ui: &mut Ui, editor: &mut Editor, lang: &Lang, c: &Content, dialog: &str) {
     let Some(d) = c.dialog(dialog) else {
         ui.colored_label(
@@ -610,7 +610,7 @@ fn dialog_preview(ui: &mut Ui, editor: &mut Editor, lang: &Lang, c: &Content, di
     }
 }
 
-/// Fehler der Objekte und Übergänge (Prüfung aus `elora-adventure`).
+/// Errors of the objects and transitions (check from `elora-adventure`).
 fn checks(ui: &mut Ui, editor: &Editor, lang: &Lang) {
     ui.strong(lang.t("editor.adv_checks"));
     let Some(c) = editor.content() else { return };
@@ -682,7 +682,7 @@ fn test_setup(ui: &mut Ui, editor: &mut Editor, lang: &Lang) {
     ui.small(lang.t("editor.adv_test_hint"));
 }
 
-/// Testfenster für Gespräche (E-270).
+/// Test window for dialogues (E-270).
 pub fn dialog_window(ctx: &egui::Context, editor: &mut Editor, lang: &Lang) {
     let Some(content) = editor.content().cloned() else {
         return;
@@ -748,7 +748,7 @@ pub fn dialog_window(ctx: &egui::Context, editor: &mut Editor, lang: &Lang) {
     }
 }
 
-/// Unterschiede zwischen zwei Spielständen (Merker, Zuneigung, Aufgaben, Gegenstände).
+/// Differences between two save states (flags, affection, quests, items).
 fn changes(a: &SaveGame, b: &SaveGame) -> Vec<String> {
     let mut out = Vec::new();
     for (k, v) in &b.flags {
@@ -787,7 +787,7 @@ fn changes(a: &SaveGame, b: &SaveGame) -> Vec<String> {
     out
 }
 
-/// Abenteuer-Objekte auf der Karte zeichnen (Grafiken wie im Spiel, Bereiche farbig).
+/// Draw adventure objects on the map (graphics as in the game, areas in color).
 pub fn draw(
     batch: &mut elora_render::ShapeBatch,
     editor: &Editor,
@@ -853,7 +853,7 @@ pub fn draw(
                     stunned: false,
                     airborne: false,
                     boss: *persistent,
-                    // ganz sichtbar (Wurzelschlange draußen)
+                    // fully visible (root snake outside)
                     mode: elora_sim::creature::burrow::OUT,
                     grow: 1.0,
                     vel: Vec2::ZERO,
@@ -890,7 +890,7 @@ pub fn draw(
     }
 }
 
-/// Namen (Ids) der Objekte als Beschriftung über der Kartenfläche.
+/// Names (ids) of the objects as labels over the map area.
 pub fn labels(ui: &Ui, editor: &Editor, camera: &elora_render::Camera, window: Vec2, ppp: f32) {
     if editor.zoom > 2.5 {
         return;
@@ -949,7 +949,7 @@ mod tests {
         assert_eq!(g.health, g.max_health(&c));
     }
 
-    /// Sichtprüfung: `cargo test -p elora-client --bin elora adventure_editor_sheet -- --ignored`.
+    /// Visual check: `cargo test -p elora-client --bin elora adventure_editor_sheet -- --ignored`.
     #[test]
     #[ignore = "erzeugt nur eine Datei zur Sichtprüfung"]
     fn adventure_editor_sheet() {

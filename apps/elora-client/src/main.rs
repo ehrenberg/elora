@@ -1,10 +1,10 @@
-// Windows: im Release kein Konsolenfenster neben dem Spiel
+// Windows: no console window next to the game in release builds
 #![cfg_attr(all(windows, not(debug_assertions)), windows_subsystem = "windows")]
 
-//! Elora-Client: lokale Sandbox (M1/M2) oder online mit einem Server (M3).
+//! Elora client: local sandbox (M1/M2) or online with a server (M3).
 //!
-//! Aufruf: `elora [karte.emap] [--mode dm|tdm|ctf|lms|lts] [--instagib] [--connect adresse:port]`
-//! (Standardkarte: `maps/training.emap`)
+//! Usage: `elora [karte.emap] [--mode dm|tdm|ctf|lms|lts] [--instagib] [--connect adresse:port]`
+//! (default map: `maps/training.emap`)
 
 mod adventure_hud;
 mod adventure_menu;
@@ -72,11 +72,11 @@ use sandbox::Sandbox;
 use settings::Settings;
 use tuning_file::{TUNING_FILE, TuningFile};
 
-/// Musik, solange ein Hüter wach ist (`assets/music/boss.ogg`).
+/// Music while a guardian is awake (`assets/music/boss.ogg`).
 const BOSS_MUSIC: &str = "boss";
 const DEFAULT_MAP: &str = "maps/training.emap";
 
-/// Tuning- und Server-Schlüssel-Dateien im Einstellungsordner (M8.2).
+/// Tuning and server key files in the settings folder (M8.2).
 fn tuning_path() -> PathBuf {
     settings::config_file(TUNING_FILE)
 }
@@ -85,7 +85,7 @@ fn known_servers_path() -> PathBuf {
     settings::config_file(KNOWN_SERVERS_FILE)
 }
 
-/// Kommandozeilen-Argument ist eine Kartendatei.
+/// Command line argument is a map file.
 fn is_map_path(arg: &str) -> bool {
     Path::new(arg)
         .extension()
@@ -149,7 +149,7 @@ fn run() -> anyhow::Result<()> {
 
     let event_loop = EventLoop::new().context("Event-Loop konnte nicht erstellt werden")?;
     event_loop.set_control_flow(ControlFlow::Poll);
-    // Karte, Modus oder Adresse auf der Kommandozeile: direkt ins Spiel (Entwicklung)
+    // map, mode or address on the command line: straight into the game (development)
     let direct = connect.is_some() || args.iter().any(|a| is_map_path(a) || a == "--mode");
     let mut app = App::new(sandbox, &file, settings);
     if direct {
@@ -159,7 +159,7 @@ fn run() -> anyhow::Result<()> {
         app.net.address = address;
         app.connect();
     }
-    // Entwicklung: direkt ins Abenteuer auf Platz 1–3 (fortsetzen oder neu)
+    // development: straight into the adventure in slot 1–3 (continue or new)
     if let Some(i) = args.iter().position(|a| a == "--abenteuer") {
         let slot: usize = args
             .get(i + 1)
@@ -176,31 +176,31 @@ fn run() -> anyhow::Result<()> {
     app.error.map_or(Ok(()), Err)
 }
 
-/// Fenster und Grafik existieren erst nach `resumed`.
+/// Window and graphics only exist after `resumed`.
 struct Gfx {
     window: Arc<Window>,
     renderer: Renderer,
     gui: Gui,
 }
 
-/// Laufendes Online-Spiel.
+/// Running online game.
 struct Online {
     client: OnlineClient,
     conn: Connection,
 }
 
-/// Was gerade zu sehen ist (M7.3).
+/// What is currently visible (M7.3).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Screen {
-    /// Hauptmenü (Startbildschirm, E-113).
+    /// Main menu (start screen, E-113).
     Menu,
-    /// Training (Sandbox) oder Online-Spiel; das Pause-Menü liegt darüber.
+    /// Training (sandbox) or online game; the pause menu lies on top.
     Game,
-    /// Karten-Editor (M6.6).
+    /// Map editor (M6.6).
     Editor,
 }
 
-/// Spielinformationen eines Frames für HUD, Anzeigen und Panel.
+/// Game information of a frame for HUD, displays and panel.
 struct FrameInfo {
     names: std::collections::BTreeMap<usize, String>,
     teams: std::collections::BTreeMap<usize, elora_sim::Team>,
@@ -209,14 +209,14 @@ struct FrameInfo {
     tick: u64,
     vote: Option<elora_protocol::VoteInfo>,
     chat: Vec<elora_client::online::ChatLine>,
-    /// Karte wird geladen: Name, empfangen, gesamt (M6.5).
+    /// Map is loading: name, received, total (M6.5).
     loading: Option<(String, usize, usize)>,
 }
 
-/// Sättigung der Abenteuerwelt je Zahl befreiter Quellen (E-328): erst blass, dann bunter.
+/// Saturation of the adventure world by number of freed springs (E-328): pale, then vivid.
 const SATURATION_BY_SPRINGS: [f32; 6] = [0.62, 0.74, 0.84, 0.92, 0.97, 1.0];
 
-#[allow(clippy::struct_excessive_bools)] // unabhängige Zustände der Anwendung
+#[allow(clippy::struct_excessive_bools)] // independent states of the application
 struct App {
     gfx: Option<Gfx>,
     sandbox: Sandbox,
@@ -226,22 +226,22 @@ struct App {
     controls: Controls,
     view: ViewSettings,
     batch: ShapeBatch,
-    /// HUD in Bildschirm-Pixeln (M5.8).
+    /// HUD in screen pixels (M5.8).
     hud_batch: ShapeBatch,
     hud: hud::Hud,
     emotes: emotes::Emotes,
     sounds: sound::Sounds,
-    /// Zeitpunkt der neuesten Chat-Zeile, für die schon ein Sound kam.
+    /// Time of the newest chat line for which a sound was already played.
     chat_heard: Option<Instant>,
-    /// Klänge aus dem Client selbst (Plapperlaute, Fenster), abgespielt im nächsten Frame.
+    /// Sounds from the client itself (babble sounds, windows), played in the next frame.
     ui_cues: Vec<elora_audio::Cue>,
-    /// Waffen der eigenen Figur im letzten Frame (Wechsel beim Aufheben, E-287).
+    /// Weapons of the own character in the last frame (switch on pickup, E-287).
     owned_weapons: [bool; 3],
-    /// Eigene Figur war im letzten Frame im bunten Rausch (Klang beim Beginn).
+    /// Own character was in the colourful rush in the last frame (sound at the start).
     was_dazed: bool,
-    /// Sättigung der Welt (E-328): folgt den befreiten Quellen, gleitet sanft nach.
+    /// Saturation of the world (E-328): follows the freed springs, glides smoothly after them.
     saturation: f32,
-    /// Wetter in der Darstellung (R2-W1).
+    /// Weather in the rendering (R2-W1).
     weather: weather::WeatherView,
     effects: effects::Effects,
     figures: figure::Figures,
@@ -249,11 +249,11 @@ struct App {
     item_art: items::ItemArt,
     creature_art: creatures::CreatureArt,
     map_view: map_view::MapView,
-    /// Leere Skin-Tabelle für die Sandbox.
+    /// Empty skin table for the sandbox.
     no_skins: std::collections::BTreeMap<usize, elora_protocol::Skin>,
     last_frame: Instant,
     fps: f32,
-    /// Letzte Bildzeiten in ms (Anzeige im Debug-Panel, E-288).
+    /// Last frame times in ms (display in the debug panel, E-288).
     frame_times: std::collections::VecDeque<f32>,
     cursor_grabbed: bool,
     show_panel: bool,
@@ -262,21 +262,21 @@ struct App {
     chat_input: game_ui::ChatInput,
     scoreboard: bool,
     killfeed: VecDeque<game_ui::KillEntry>,
-    /// Spieler-Einstellungen (`settings.toml`, E-116) und Sprache (E-114).
+    /// Player settings (`settings.toml`, E-116) and language (E-114).
     settings: Settings,
     lang: lang::Lang,
     screen: Screen,
     editor: Option<editor::Editor>,
-    /// Testspiel aus dem Editor: Trainingskarte davor (M6.9).
+    /// Test game from the editor: training map before it (M6.9).
     editor_test: Option<elora_map::Map>,
-    /// Kartenfläche des Editors aus dem letzten Frame.
+    /// Map area of the editor from the last frame.
     editor_area: editor::panel::AreaInfo,
     menu: menu::Menu,
-    /// Kartennamen für „Server erstellen“.
+    /// Map names for “Create server”.
     maps: Vec<String>,
-    /// Aktion, die gerade neu belegt wird (nächste Taste zählt).
+    /// Action currently being rebound (next key counts).
     bind_capture: Option<GameAction>,
-    /// Laufendes Abenteuer (A1.6).
+    /// Running adventure (A1.6).
     adventure: Option<app_adventure::AdventureMode>,
 }
 
@@ -341,7 +341,7 @@ impl App {
         }
     }
 
-    /// Aktuelle Werte aus Spiel und Panel in die Einstellungen übernehmen und speichern.
+    /// Take the current values from game and panel into the settings and save them.
     fn save_settings(&mut self) {
         let s = &mut self.settings;
         s.player.name.clone_from(&self.net.name);
@@ -500,7 +500,7 @@ impl App {
         self.cursor_grabbed = grab;
     }
 
-    /// Netzwerk-Ereignisse verarbeiten und Online-Client vorantreiben.
+    /// Process network events and advance the online client.
     fn update_online(&mut self, now: Instant) {
         let Some(o) = &mut self.online else { return };
         let mut ended = None;
@@ -552,7 +552,7 @@ impl App {
         }
     }
 
-    /// Simulation bzw. Online-Client vorantreiben; liefert, was zu zeichnen ist.
+    /// Advance the simulation or online client; returns what to draw.
     fn advance(
         &mut self,
         now: Instant,
@@ -607,7 +607,7 @@ impl App {
         })
     }
 
-    /// Namen, Teams, Spielzustand, eigener Slot, Tick, Abstimmung und Chat des Frames.
+    /// Names, teams, game state, own slot, tick, vote and chat of the frame.
     fn game_info(&self, now: Instant) -> FrameInfo {
         match &self.online {
             Some(o) => FrameInfo {
@@ -647,16 +647,16 @@ impl App {
         }
     }
 
-    /// Zeit seit dem letzten Frame; aktualisiert die FPS-Anzeige.
-    /// Nachbearbeitung der Welt für diesen Frame: Hitzeflimmern in der Wüste (E-320, in der
-    /// prallen Sonne und mit der Hitze stärker) und Farbe, die mit den Quellen zurückkehrt
-    /// (E-328, je befreiter Quelle bunter; der Wechsel gleitet über einige Sekunden).
+    /// Time since the last frame; updates the FPS display.
+    /// Post-processing of the world for this frame: heat shimmer in the desert (E-320, stronger in
+    /// the blazing sun and with the heat) and colour that returns with the springs
+    /// (E-328, more colourful per freed spring; the change glides over a few seconds).
     fn world_look(&mut self, dt: f32, tick: u64) {
         let session = self.adventure.as_ref().map(|a| &a.session);
         let haze = session
             .filter(|s| s.hot())
             .map_or(0.0, |s| (if s.in_sun { 0.6 } else { 0.3 }) + 0.4 * s.heat);
-        // Frostrand ab einem Drittel der Kälte-Leiste, voll pulsiert er leicht (E-342)
+        // frost edge from a third of the cold bar on, when full it pulses slightly (E-342)
         #[allow(clippy::cast_precision_loss)]
         let pulse = (tick as f32 * 0.12).sin() * 0.08;
         let frost = session.filter(|s| s.chilly()).map_or(0.0, |s| {
@@ -691,18 +691,18 @@ impl App {
         elapsed
     }
 
-    /// Wetter der Karte (online: vom Server mitgeschickt) – nur Darstellung (R2-W1).
+    /// Weather of the map (online: sent along by the server) – rendering only (R2-W1).
     fn update_weather(&mut self, dt: f32, camera: &Camera) {
         let map = match &self.online {
             Some(o) => o.client.map.as_ref(),
             None => Some(&self.sandbox.map),
         };
-        // im Abenteuer gilt das Wetter der Sitzung (Hüter können es ändern, R2-M2.4)
+        // in the adventure the weather of the session applies (guardians can change it, R2-M2.4)
         let weather = match &self.adventure {
             Some(a) => a.session.map.weather,
             None => map.map_or(elora_map::Weather::CLEAR, |m| m.weather),
         };
-        // im Abenteuer kommen die Blitze aus der Simulation (mit Warnung und Schaden, E-336)
+        // in the adventure the lightning comes from the simulation (with warning and damage, E-336)
         let random_bolts = self.adventure.is_none();
         self.weather.update(
             dt,
@@ -712,12 +712,12 @@ impl App {
             map,
             random_bolts,
         );
-        // Umgebungsspur: Regen, Wind, Sand, Donner (W1.5, E-338)
+        // ambient track: rain, wind, sand, thunder (W1.5, E-338)
         let thunder = self.weather.take_thunder();
         let shelter = self.weather.shelter();
         self.sounds
             .weather(dt, weather, shelter, thunder, camera.center);
-        // Feuerstellen knistern, je näher, desto lauter (Zonen `feuer…`, R2-M2.4)
+        // fireplaces crackle, the closer the louder (zones `feuer…`, R2-M2.4)
         let fire = self.adventure.as_ref().map_or(0.0, |a| {
             a.session
                 .map
@@ -737,11 +737,11 @@ impl App {
         self.sounds.fire(level);
     }
 
-    /// Effekte und Figuren-Animationen fortschreiben, eigenen Skin abgleichen.
+    /// Advance effects and character animations, sync the own skin.
     fn update_looks(&mut self, dt: f32, scene: &Scene, collision: &Collision, events: &[Event]) {
         self.figures.update(dt, scene, collision, events);
         self.emotes.update(dt);
-        // Blitze aus der Simulation (Abenteuer, R2-W1): Warnung und Einschlag zeichnen
+        // lightning from the simulation (adventure, R2-W1): draw warning and strike
         for e in events {
             match *e {
                 elora_sim::Event::LightningWarn { pos } => self.weather.sim_warn(pos),
@@ -768,7 +768,7 @@ impl App {
                 };
                 skins::tint(skin, c.team, c.dummy, draw::team_color).colors[figure::KEY_BODY]
             });
-        // Leuchtpilze in der Nähe der Kamera lassen Sternchen aufsteigen (R2-M2.2)
+        // glow mushrooms near the camera let little stars rise (R2-M2.2)
         if self.online.is_none() {
             let near: Vec<elora_sim::Vec2> = self
                 .sandbox
@@ -783,14 +783,14 @@ impl App {
             self.effects.glow_spores(dt, &near);
         }
         if let Some(o) = &mut self.online {
-            // schickt nur bei Änderung eine Nachricht
+            // only sends a message on change
             o.client.set_skin(self.net.skin);
         }
         self.auto_switch(scene, events);
         self.play_sounds(scene, events);
     }
 
-    /// Zur aufgenommenen Waffe wechseln (E-287); `owned_weapons` merkt den Stand vor dem Frame.
+    /// Switch to the picked-up weapon (E-287); `owned_weapons` keeps the state before the frame.
     fn auto_switch(&mut self, scene: &Scene, events: &[Event]) {
         let Some(me) = scene.local() else {
             self.owned_weapons = [false; 3];
@@ -814,12 +814,12 @@ impl App {
         self.owned_weapons = elora_sim::Weapon::ALL.map(|w| me.ch.arsenal.has(w));
     }
 
-    /// Sounds des Frames: Ereignisse, Figuren, Landungen, neue Emotes und Chat-Zeilen.
+    /// Sounds of the frame: events, characters, landings, new emotes and chat lines.
     fn play_sounds(&mut self, scene: &Scene, events: &[Event]) {
-        // Musik des Gebiets im Abenteuer (E-285), sonst still
+        // music of the region in the adventure (E-285), otherwise silent
         let track = self.adventure.as_ref().and_then(|a| {
             let s = &a.session;
-            // wacher Hüter: Kampfmusik (R2-M2.1)
+            // awake guardian: battle music (R2-M2.1)
             let world = &self.sandbox.world;
             let boss = world.creatures.iter().any(|c| {
                 world.creature_kinds.get(c.kind).is_some_and(|k| k.boss)
@@ -852,7 +852,7 @@ impl App {
             None => self.sandbox.notices.back().map(|c| c.at),
         };
         if newest_chat.is_some() && newest_chat != self.chat_heard {
-            // erste Zeile nach dem Start nicht vertonen (z. B. Begrüßung beim Verbinden)
+            // don't voice the first line after the start (e.g. greeting on connect)
             if self.chat_heard.is_some() {
                 extra.push(elora_audio::Cue::global(elora_audio::Sound::Chat));
             }
@@ -869,7 +869,7 @@ impl App {
             .update(scene, events, self.figures.landings(), &extra, scene.camera);
     }
 
-    /// Welt, Figuren und Effekte des Frames in `self.batch` sammeln.
+    /// Collect world, characters and effects of the frame in `self.batch`.
     fn build_batch(&mut self, scene: &Scene, tuning: &Tuning, camera: &Camera, tick: u64) {
         self.batch.clear();
         let map = match &self.online {
@@ -880,7 +880,7 @@ impl App {
         let look_time = map_view::LookTime {
             local_ms: (f64::from(self.figures.time()) * 1000.0) as i64,
             server_ms: (tick * 1000 / u64::from(elora_sim::TICKS_PER_SECOND)) as i64,
-            // nur im eigenen Spiel (Abenteuer, Training); online ohne Hüter
+            // only in the own game (adventure, training); online without guardians
             hook_wilt: self
                 .online
                 .is_none()
@@ -916,7 +916,7 @@ impl App {
         );
     }
 
-    /// HUD des Frames in `self.hud_batch` sammeln; liefert die Bildschirmgröße.
+    /// Collect the HUD of the frame in `self.hud_batch`; returns the screen size.
     fn build_hud(&mut self, scene: &Scene, tuning: &Tuning, info: &FrameInfo) -> Vec2 {
         let size = self.gfx.as_ref().map_or((1, 1), |g| g.renderer.size());
         #[allow(clippy::cast_precision_loss)]
@@ -969,7 +969,7 @@ impl App {
         screen
     }
 
-    /// Emote zeigen: online über den Server, in der Sandbox direkt.
+    /// Show an emote: online via the server, in the sandbox directly.
     fn send_emote(&mut self, emote: u8) {
         match &mut self.online {
             Some(o) => o.client.emote(emote),
@@ -991,7 +991,7 @@ impl App {
             return;
         }
 
-        // Szene aus Sandbox oder Online-Spiel
+        // scene from sandbox or online game
         let Some((scene, collision, tuning, events)) = self.advance(now, elapsed) else {
             return;
         };
@@ -1010,7 +1010,7 @@ impl App {
             return;
         };
         let center = self.adventure_camera(scene.camera, self.view.view_size(aspect), dt);
-        // bunter Rausch: die Welt wabert leicht (E-311)
+        // colourful rush: the world wobbles slightly (E-311)
         let wobble = scene
             .local()
             .filter(|c| c.ch.core.dazed > 0)
@@ -1025,7 +1025,7 @@ impl App {
             &self.view,
             aspect,
         );
-        // auf ganze Bildschirmpixel einrasten: feine Linien bleiben beim Scrollen ruhig (E-288)
+        // snap to whole screen pixels: fine lines stay calm while scrolling (E-288)
         if let Some(gfx) = &self.gfx {
             #[allow(clippy::cast_precision_loss)]
             let px = gfx.renderer.size().0 as f32 / camera.size.x;
@@ -1078,7 +1078,7 @@ impl App {
         }
     }
 
-    /// Debug-Panel (egui, E-031) über dem Frame; führt seine Aktion aus.
+    /// Debug panel (egui, E-031) above the frame; executes its action.
     pub(crate) fn draw_debug_panel(&mut self, frame: &mut elora_render::Frame, info: &FrameInfo) {
         let mut action = None;
         let show_panel = self.show_panel;
@@ -1128,7 +1128,7 @@ impl App {
                 action = action.take().or(debug_ui::panel(ui, &mut cx));
             }
         });
-        // Wetter im Debug-Panel umgeschaltet: im Abenteuer auch die Spielwirkung (W1.7)
+        // weather switched in the debug panel: in the adventure also the gameplay effect (W1.7)
         if self.sandbox.map.weather != weather_before
             && let Some(a) = &mut self.adventure
         {
@@ -1139,7 +1139,7 @@ impl App {
         }
     }
 
-    /// Tastatur bei offenem Chat: Enter sendet, Esc bricht ab, Rücktaste löscht.
+    /// Keyboard with open chat: Enter sends, Esc cancels, Backspace deletes.
     fn chat_key(&mut self, code: KeyCode, event: &KeyEvent) {
         if !event.state.is_pressed() {
             return;
@@ -1183,7 +1183,7 @@ impl App {
             return;
         }
         if self.screen == Screen::Editor {
-            return; // Tastatur gehört egui (Kürzel im Editor)
+            return; // keyboard belongs to egui (shortcuts in the editor)
         }
         if self.adventure_halted() && !self.menu.paused {
             if pressed && !event.repeat {
@@ -1200,7 +1200,7 @@ impl App {
             return;
         }
         if self.chat_input.open {
-            self.chat_key(code, event); // Tastatur gehört dem Chat-Feld
+            self.chat_key(code, event); // keyboard belongs to the chat field
             return;
         }
         let unbound = self
@@ -1215,7 +1215,7 @@ impl App {
                 KeyCode::Escape if self.testing_adventure() => return self.leave_adventure(),
                 KeyCode::Escape => return self.toggle_pause(),
                 KeyCode::F1 => {
-                    // Panel offen: Maus frei zum Bedienen; zu: zurück ins Spiel
+                    // panel open: mouse free for operating it; closed: back into the game
                     self.show_panel = !self.show_panel;
                     self.set_cursor_grab(!self.show_panel && !self.menu.paused);
                     return;
@@ -1242,30 +1242,30 @@ impl App {
         }
     }
 
-    /// Alle Aktionen, die `t` auslöst (Tastenbelegung, M7.5).
+    /// All actions that `t` triggers (key bindings, M7.5).
     fn trigger(&mut self, t: Trigger, down: bool) {
         for action in self.settings.bindings.actions(t) {
             self.game_action(action, down);
         }
     }
 
-    /// Eine belegte Aktion im Spiel.
+    /// A bound action in the game.
     fn game_action(&mut self, action: GameAction, down: bool) {
         if self.controls.action(action, down) {
             return;
         }
         let online = self.online.is_some();
         match action {
-            // im Abenteuer öffnet Tab das Abenteuer-Menü (E-263)
+            // in the adventure Tab opens the adventure menu (E-263)
             GameAction::Scoreboard if self.adventure.is_some() => {
                 if down {
                     self.toggle_adventure_menu();
                 }
             }
-            // Scoreboard solange gehalten (E-078)
+            // scoreboard while held (E-078)
             GameAction::Scoreboard => self.scoreboard = down,
             GameAction::QuickHeal if down => self.quick_heal(),
-            // Emote-Rad solange gehalten (E-091); beim Loslassen wählen
+            // emote wheel while held (E-091); select on release
             GameAction::Emote => {
                 if down {
                     self.emotes.wheel_open = true;
@@ -1291,7 +1291,7 @@ impl App {
         }
     }
 
-    /// Neu belegen: nächste Taste/Maustaste/Radrichtung übernehmen, Esc bricht ab.
+    /// Rebind: take the next key/mouse button/wheel direction, Esc cancels.
     fn capture_trigger(&mut self, t: Trigger, pressed: bool) {
         if !pressed {
             return;
@@ -1317,7 +1317,7 @@ impl ApplicationHandler for App {
         let attrs = Window::default_attributes()
             .with_title("Elora")
             .with_inner_size(LogicalSize::new(1280.0, 720.0))
-            // maximiert starten; die Größe oben gilt beim Verkleinern
+            // start maximized; the size above applies when restoring down
             .with_maximized(true)
             .with_fullscreen(
                 graphics
@@ -1352,8 +1352,8 @@ impl ApplicationHandler for App {
     }
 
     fn window_event(&mut self, event_loop: &ActiveEventLoop, _: WindowId, event: WindowEvent) {
-        // Solange die Maus frei ist und egui sichtbar (Debug-Panel, Editor, Fenster),
-        // bekommt egui die Eingaben zuerst – sonst schluckt es z. B. Tab und Klicks der Spiel-UI
+        // As long as the mouse is free and egui visible (debug panel, editor, windows),
+        // egui gets the input first – otherwise it swallows e.g. Tab and clicks of the game UI
         let egui_visible = self.show_panel
             || self.screen == Screen::Editor
             || self.net.show_host
@@ -1391,7 +1391,7 @@ impl ApplicationHandler for App {
                 if self.bind_capture.is_some() {
                     self.capture_trigger(Trigger::Mouse(button), state.is_pressed());
                 } else if self.screen == Screen::Editor {
-                    // Maus gehört egui
+                    // mouse belongs to egui
                 } else if self.menu_active() {
                     self.menu_mouse_button(button, state);
                 } else if self.cursor_grabbed {
@@ -1425,7 +1425,7 @@ impl ApplicationHandler for App {
                 } else {
                     Trigger::WheelDown
                 };
-                // je Raste Drücken + Loslassen
+                // per notch press + release
                 for _ in 0..notches.unsigned_abs().min(8) {
                     self.trigger(t, true);
                     self.trigger(t, false);
@@ -1456,7 +1456,7 @@ impl ApplicationHandler for App {
 
     fn exiting(&mut self, _: &ActiveEventLoop) {
         self.save_settings();
-        // Verbindung sauber beenden; Server stoppt je nach Einstellung (Hosting::drop)
+        // close the connection cleanly; the server stops depending on the setting (Hosting::drop)
         self.online = None;
         std::thread::sleep(Duration::from_millis(20));
     }
