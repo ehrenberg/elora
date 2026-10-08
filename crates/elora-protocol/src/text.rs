@@ -1,11 +1,11 @@
-//! Übersetzbare Meldungen des Servers (M8.1, O-48, E-164).
+//! Translatable server messages (M8.1, O-48, E-164).
 //!
-//! Der Server schickt Codes mit Werten; der Client zeigt sie in seiner Sprache. Die deutsche
-//! Darstellung ([`std::fmt::Display`]) ist die Sprache des Servers für Log und Konsole und
-//! der Rückfall für unbekannte Codes.
+//! The server sends codes with values; the client shows them in its language. The German
+//! representation ([`std::fmt::Display`]) is the server's language for log and console and
+//! the fallback for unknown codes.
 //!
-//! Trenngründe laufen als Text durch `elora-net`; dafür gibt es Codes ([`reason`]), die mit
-//! `#` beginnen. Andere Texte zeigt der Client unverändert.
+//! Disconnect reasons pass through `elora-net` as text; for them there are codes ([`reason`])
+//! that start with `#`. The client shows other texts unchanged.
 
 use std::fmt;
 
@@ -18,7 +18,7 @@ use crate::msg::{team_code, team_from};
 const MAX_TEXT: usize = 256;
 const MAX_NAME: usize = 128;
 
-/// Gewinner einer Runde oder eines Matches.
+/// Winner of a round or a match.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum WinnerName {
     Player(String),
@@ -26,7 +26,7 @@ pub enum WinnerName {
     Nobody,
 }
 
-/// Gegenstand einer Abstimmung, wie er angezeigt wird.
+/// Subject of a vote, as it is displayed.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum VoteSubject {
     Map(String),
@@ -35,10 +35,10 @@ pub enum VoteSubject {
     Spectate(String),
 }
 
-/// Eine Meldung des Servers.
+/// A message from the server.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Message {
-    /// Freier Text (z. B. Konsole); wird nicht übersetzt.
+    /// Free text (e.g. console); not translated.
     Text(String),
     Joined {
         name: String,
@@ -46,12 +46,12 @@ pub enum Message {
     Left {
         name: String,
     },
-    /// Spieler wechselt selbst das Team (auch zu den Zuschauern oder ins freie Spiel).
+    /// Player changes team on their own (also to the spectators or into free play).
     TeamJoined {
         name: String,
         team: Team,
     },
-    /// Ausgleich durch den Server.
+    /// Balancing by the server.
     TeamBalanced {
         name: String,
         team: Team,
@@ -87,7 +87,7 @@ pub enum Message {
     },
 }
 
-/// Trenngründe als Codes (laufen als Text durch `elora-net`).
+/// Disconnect reasons as codes (pass through `elora-net` as text).
 pub mod reason {
     pub const BANNED: &str = "#banned";
     pub const INVALID_MESSAGE: &str = "#invalid-message";
@@ -98,7 +98,7 @@ pub mod reason {
     pub const KICKED: &str = "#kicked";
     pub const SERVER_FULL: &str = "#server-full";
 
-    /// Alle Codes (für Tests der Übersetzungen).
+    /// All codes (for tests of the translations).
     pub const ALL: [&str; 8] = [
         BANNED,
         INVALID_MESSAGE,
@@ -110,13 +110,13 @@ pub mod reason {
         SERVER_FULL,
     ];
 
-    /// Sprachschlüssel eines Codes (`reason.<code>`), sonst `None` (freier Text).
+    /// Language key of a code (`reason.<code>`), otherwise `None` (free text).
     pub fn key(text: &str) -> Option<String> {
         let code = text.strip_prefix('#')?;
         ALL.contains(&text).then(|| format!("reason.{code}"))
     }
 
-    /// Deutscher Text für Log und alte Clients.
+    /// German text for log and old clients.
     pub fn german(text: &str) -> &str {
         match text {
             BANNED => "Du bist vorübergehend gesperrt",
@@ -199,7 +199,7 @@ impl VoteSubject {
         })
     }
 
-    /// Modus als Kurzname (z. B. `iCTF`).
+    /// Mode as a short name (e.g. `iCTF`).
     pub fn mode_label(mode: Mode, instagib: bool) -> String {
         format!("{}{}", if instagib { "i" } else { "" }, mode.name())
     }

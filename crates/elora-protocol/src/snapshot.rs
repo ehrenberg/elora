@@ -1,13 +1,13 @@
-//! Welt-Snapshots mit feldweisem Delta (E-063).
+//! World snapshots with field-wise delta (E-063).
 //!
-//! Jedes Objekt ist ein festes Array ganzer Zahlen. Das Delta gegen einen Basis-
-//! Snapshot schreibt pro Objekt eine Änderungsmaske (1 Bit je Feld) und nur die
-//! geänderten Felder als ZigZag-Differenz. Positionen und Geschwindigkeiten sind in
-//! der Simulation quantisiert (E-021) – der Rundlauf ist daher bit-genau, und die
-//! Client-Vorhersage startet exakt vom Server-Zustand.
+//! Every object is a fixed array of integers. The delta against a base
+//! snapshot writes one change mask per object (1 bit per field) and only the
+//! changed fields as a `ZigZag` difference. Positions and velocities are quantized in
+//! the simulation (E-021) – so the round trip is bit-exact, and the
+//! client prediction starts exactly from the server state.
 
-// Wire-Format: Umwandlungen zwischen den Feld-Ganzzahlen und den Simulationstypen.
-// Wertebereiche werden beim Dekodieren geprüft (`validate`, `Reader::int`).
+// Wire format: conversions between the field integers and the simulation types.
+// Value ranges are checked while decoding (`validate`, `Reader::int`).
 #![allow(
     clippy::cast_possible_wrap,
     clippy::cast_sign_loss,
@@ -26,23 +26,23 @@ use crate::msg::{team_code, team_from};
 
 use crate::codec::{DecodeError, DecodeResult, Reader, Writer};
 
-/// Objektarten in fester Reihenfolge.
+/// Object kinds in a fixed order.
 const KINDS: usize = 7;
 const PLAYER: usize = 0;
 const PROJECTILE: usize = 1;
 const LASER: usize = 2;
 const PICKUP: usize = 3;
 const FLAG: usize = 4;
-/// Spielzustand der Regeln (ein Objekt, Schlüssel 0).
+/// Game state of the rules (one object, key 0).
 const GAME: usize = 5;
-/// Punkte pro Spieler.
+/// Score per player.
 const STATS: usize = 6;
-/// Felder pro Objektart.
+/// Fields per object kind.
 const FIELDS: [usize; KINDS] = [28, 8, 12, 1, 12, 12, 3];
-/// Obergrenze für Objekte pro Art (Schutz gegen manipulierte Pakete).
+/// Upper limit for objects per kind (protection against manipulated packets).
 const MAX_OBJECTS: usize = 4096;
 
-/// Ein Snapshot: pro Objektart eine Tabelle Schlüssel → Felder.
+/// A snapshot: per object kind a table key → fields.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct Snapshot {
     pub tick: u64,
@@ -58,7 +58,7 @@ fn key_owner(key: u64) -> usize {
 }
 
 fn f(v: f32) -> i64 {
-    // quantisierte Werte sind ganzzahlig und exakt darstellbar
+    // quantized values are integers and exactly representable
     v as i64
 }
 
@@ -126,7 +126,7 @@ fn ammo_slot(c: i64) -> WeaponSlot {
 }
 
 impl Snapshot {
-    /// Momentaufnahme des Server-Zustands.
+    /// Snapshot of the server state.
     pub fn from_world(world: &World) -> Self {
         let mut s = Self {
             tick: world.tick,
@@ -190,7 +190,7 @@ impl Snapshot {
         s
     }
 
-    /// Ergänzt Spielzustand und Punkte der Regeln (M4.7).
+    /// Adds game state and scores of the rules (M4.7).
     #[must_use]
     pub fn with_rules(mut self, world: &World, rules: &Rules) -> Self {
         let (phase, until) = match rules.phase {
@@ -230,7 +230,7 @@ impl Snapshot {
         self
     }
 
-    /// Spielzustand für die Anzeige (Scoreboard, Timer), falls der Server Regeln hat.
+    /// Game state for the display (scoreboard, timer), if the server has rules.
     pub fn game_view(&self) -> Option<GameView> {
         let g = self.objects[GAME].get(&0)?;
         let phase = match g[2] {
@@ -274,8 +274,8 @@ impl Snapshot {
         })
     }
 
-    /// Überträgt den Snapshot in eine Client-Welt (Karte, Tuning und Pickup-Positionen
-    /// stammen aus der Karte). Alle Figuren werden `Remote`, außer `local` (Human).
+    /// Transfers the snapshot into a client world (map, tuning and pickup positions
+    /// come from the map). All characters become `Remote`, except `local` (Human).
     pub fn apply_to(&self, world: &mut World, local: Option<usize>) {
         world.tick = self.tick;
         let len = self.objects[PLAYER]
@@ -301,7 +301,7 @@ impl Snapshot {
                 start_tick: v[5] as u64,
                 lifespan: v[6] as i32,
                 damage: v[7] as i32,
-                // Wind gibt es nur im Abenteuer (R2-W1), nicht im Netz
+                // Wind only exists in the adventure (R2-W1), not over the network
                 wind: 0.0,
             })
             .collect();
@@ -340,7 +340,7 @@ impl Snapshot {
         world.events.clear();
     }
 
-    /// Prüfsumme über alle Felder (FNV-1a), um fehlerhafte Deltas zu erkennen.
+    /// Checksum over all fields (FNV-1a) to detect faulty deltas.
     pub fn checksum(&self) -> u32 {
         let mut h: u32 = 0x811c_9dc5;
         let mut eat = |v: i64| {
@@ -359,18 +359,18 @@ impl Snapshot {
         h
     }
 
-    /// Anzahl der Objekte (für Messungen).
+    /// Number of objects (for measurements).
     pub fn object_count(&self) -> usize {
         self.objects.iter().map(BTreeMap::len).sum()
     }
 
-    /// Kodiert den Snapshot als Delta gegen `base` (oder vollständig, wenn `None`).
+    /// Encodes the snapshot as a delta against `base` (or in full if `None`).
     pub fn encode_delta(&self, base: Option<&Self>, w: &mut Writer) {
         let empty = Self::default();
         let base = base.unwrap_or(&empty);
         for (kind, fields) in FIELDS.iter().copied().enumerate() {
             let (cur, old) = (&self.objects[kind], &base.objects[kind]);
-            // entfernte Objekte (Schlüssel aufsteigend, als Differenzen)
+            // removed objects (keys ascending, as differences)
             let removed: Vec<u64> = old
                 .keys()
                 .filter(|k| !cur.contains_key(k))
@@ -382,7 +382,7 @@ impl Snapshot {
                 w.uvar(k - last);
                 last = k;
             }
-            // neue oder geänderte Objekte
+            // new or changed objects
             let changed: Vec<(&u64, &Vec<i64>)> =
                 cur.iter().filter(|(k, v)| old.get(k) != Some(v)).collect();
             w.uvar(changed.len() as u64);
@@ -407,8 +407,8 @@ impl Snapshot {
         }
     }
 
-    /// Nur für Vergleichsmessungen (`cargo xtask net-stats`): Delta wie im Original –
-    /// bei geänderten Objekten jedes Feld als Differenz, ohne Änderungsmaske.
+    /// Only for comparison measurements (`cargo xtask net-stats`): delta as in the original –
+    /// for changed objects every field as a difference, without a change mask.
     #[doc(hidden)]
     pub fn encode_delta_like_original(&self, base: Option<&Self>, w: &mut Writer) {
         let empty = Self::default();
@@ -438,10 +438,10 @@ impl Snapshot {
         }
     }
 
-    /// Gegenstück zu [`Self::encode_delta`].
+    /// Counterpart to [`Self::encode_delta`].
     ///
     /// # Errors
-    /// Bei fehlerhaften oder manipulierten Daten.
+    /// On faulty or manipulated data.
     pub fn decode_delta(tick: u64, base: Option<&Self>, r: &mut Reader<'_>) -> DecodeResult<Self> {
         let mut s = base.cloned().unwrap_or_default();
         s.tick = tick;
@@ -484,7 +484,7 @@ impl Snapshot {
         Ok(s)
     }
 
-    /// Plausibilitätsprüfung, damit `apply_to` nie auf unsinnigen Werten arbeitet.
+    /// Plausibility check, so that `apply_to` never works on nonsensical values.
     fn validate(&self) -> DecodeResult<()> {
         let players = self.objects[PLAYER]
             .keys()
@@ -541,7 +541,7 @@ fn player_fields(p: &Player) -> Vec<i64> {
     v
 }
 
-/// Team und Respawn-Sperre (auch für tote Spieler).
+/// Team and respawn lock (also for dead players).
 fn player_meta(p: &Player, v: &mut [i64]) {
     v[25] = i64::from(team_code(p.team));
     v[26] = i64::from(p.respawn_disabled);
@@ -588,7 +588,7 @@ fn player_from(v: &[i64], controller: Controller) -> Player {
     p
 }
 
-/// Spielzustand aus dem Snapshot (Anzeige im Client).
+/// Game state from the snapshot (display in the client).
 #[derive(Debug, Clone, PartialEq)]
 pub struct GameView {
     pub mode: Mode,
@@ -613,7 +613,7 @@ impl GameView {
     }
 }
 
-/// Ist Slot `i` im Snapshot ein Dummy?
+/// Is slot `i` in the snapshot a dummy?
 pub fn is_dummy(snap: &Snapshot, i: usize) -> bool {
     snap.objects[PLAYER]
         .get(&(i as u64))
@@ -678,7 +678,7 @@ mod tests {
 
     #[test]
     fn applied_snapshot_reproduces_simulation() {
-        // Server-Welt und aus Snapshots rekonstruierte Welt laufen identisch weiter
+        // server world and world reconstructed from snapshots keep running identically
         let mut server = world();
         let input = PlayerInput {
             direction: 1,
@@ -693,7 +693,7 @@ mod tests {
         let snap = Snapshot::from_world(&server);
         let mut client = world();
         snap.apply_to(&mut client, Some(0));
-        // Dummy ist auf dem Client `Remote`, auf dem Server `Dummy` → nur Elora vergleichen
+        // dummy is `Remote` on the client, `Dummy` on the server → only compare Elora
         client.players[0].as_mut().unwrap().input = server.players[0].as_ref().unwrap().input;
         for _ in 0..20 {
             server.step(&[input]);
@@ -736,7 +736,7 @@ mod tests {
         let base = Snapshot::from_world(&world());
         let bad = [0u8, 1, 0, 0xff, 0xff, 0xff, 0x7f];
         assert!(Snapshot::decode_delta(1, Some(&base), &mut Reader::new(&bad)).is_err());
-        // Entfernen eines unbekannten Objekts
+        // removal of an unknown object
         let bad = [1u8, 99];
         assert!(Snapshot::decode_delta(1, Some(&base), &mut Reader::new(&bad)).is_err());
     }

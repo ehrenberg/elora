@@ -1,10 +1,10 @@
-//! Nachrichten zwischen Client und Server.
+//! Messages between client and server.
 //!
-//! Zuverlässig (über den zuverlässigen Kanal von `elora-net`): `Join`, `Welcome`,
-//! `Tuning`, `Kick`, `Leave`. Unzuverlässig: `Input`, `Snapshot`, `InputTiming`.
+//! Reliable (over the reliable channel of `elora-net`): `Join`, `Welcome`,
+//! `Tuning`, `Kick`, `Leave`. Unreliable: `Input`, `Snapshot`, `InputTiming`.
 
-// Wire-Format: Umwandlungen zwischen den Feld-Ganzzahlen und den Simulationstypen.
-// Wertebereiche werden beim Dekodieren geprüft (`validate`, `Reader::int`).
+// Wire format: conversions between the field integers and the simulation types.
+// Value ranges are checked while decoding (`validate`, `Reader::int`).
 #![allow(
     clippy::cast_possible_wrap,
     clippy::cast_sign_loss,
@@ -17,15 +17,15 @@ use crate::PROTOCOL_VERSION;
 use crate::codec::{DecodeError, DecodeResult, Reader, Writer};
 use crate::snapshot::Snapshot;
 
-/// Maximale Länge von Namen und Texten.
+/// Maximum length of names and texts.
 const MAX_NAME: usize = 32;
 const MAX_TEXT: usize = 256;
-/// Maximale Größe einer übertragenen Kartendatei (E-136).
+/// Maximum size of a transferred map file (E-136).
 pub const MAX_MAP: usize = 4 * 1024 * 1024;
-/// Größe eines Kartenteils beim Download (M6.5).
+/// Size of a map chunk during download (M6.5).
 pub const MAP_CHUNK: usize = 16 * 1024;
 
-/// Prüfsumme einer Kartendatei (BLAKE2s-256, siehe `elora_map::checksum`).
+/// Checksum of a map file (BLAKE2s-256, see `elora_map::checksum`).
 pub type MapChecksum = [u8; 32];
 
 fn put_checksum(w: &mut Writer, c: &MapChecksum) {
@@ -37,11 +37,11 @@ fn get_checksum(r: &mut Reader<'_>) -> DecodeResult<MapChecksum> {
         .try_into()
         .map_err(|_| DecodeError::Invalid("Prüfsumme"))
 }
-/// Eingaben pro Paket (Redundanz gegen Verlust).
+/// Inputs per packet (redundancy against loss).
 pub const MAX_INPUTS: usize = 8;
 const MAX_EVENTS: usize = 1024;
 
-/// Gegenstand einer Abstimmung (E-077).
+/// Subject of a vote (E-077).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum VoteKind {
     Map(String),
@@ -53,19 +53,19 @@ pub enum VoteKind {
     Spectate(u32),
 }
 
-/// Laufende Abstimmung.
+/// Running vote.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct VoteInfo {
     pub subject: crate::text::VoteSubject,
     pub yes: u32,
     pub no: u32,
     pub voters: u32,
-    /// Restzeit in Sekunden.
+    /// Remaining time in seconds.
     pub seconds_left: u32,
 }
 
-/// Aussehen eines Spielers (E-095, E-096): Palettennummern je Teil.
-/// Die Farben selbst kennt nur der Client.
+/// Look of a player (E-095, E-096): palette numbers per part.
+/// Only the client knows the colors themselves.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct Skin {
     pub body: u8,
@@ -74,9 +74,9 @@ pub struct Skin {
 }
 
 impl Skin {
-    /// Farben für Körper und Füße.
+    /// Colors for body and feet.
     pub const BODY_COLORS: u8 = 16;
-    /// Farben für die Augen.
+    /// Colors for the eyes.
     pub const EYE_COLORS: u8 = 8;
 
     pub fn is_valid(self) -> bool {
@@ -105,10 +105,10 @@ impl Skin {
     }
 }
 
-/// Anzahl der Emotes (E-091, E-103); Nummern `0..EMOTES`.
+/// Number of emotes (E-091, E-103); numbers `0..EMOTES`.
 pub const EMOTES: u8 = 8;
 
-/// Maximale Länge einer Chat-Nachricht (Zeichen).
+/// Maximum length of a chat message (characters).
 pub const MAX_CHAT: usize = 200;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -118,8 +118,8 @@ pub enum ClientMsg {
         name: String,
         skin: Skin,
     },
-    /// Eingaben mit ihrem Ziel-Tick, neueste zuletzt. `ack` = Tick des zuletzt
-    /// vollständig empfangenen Snapshots (Basis für das nächste Delta).
+    /// Inputs with their target tick, newest last. `ack` = tick of the last
+    /// completely received snapshot (base for the next delta).
     Input {
         ack: Option<u64>,
         inputs: Vec<(u64, PlayerInput)>,
@@ -133,15 +133,15 @@ pub enum ClientMsg {
     Kill,
     CallVote(VoteKind),
     Vote(bool),
-    /// Skin im laufenden Spiel ändern.
+    /// Change the skin during the game.
     SetSkin(Skin),
-    /// Emote zeigen (Nummer `0..EMOTES`).
+    /// Show an emote (number `0..EMOTES`).
     Emote(u8),
-    /// Teil `chunk` der Karte aus [`ServerMsg::MapInfo`] anfordern (M6.5).
+    /// Request chunk `chunk` of the map from [`ServerMsg::MapInfo`] (M6.5).
     MapRequest {
         chunk: u32,
     },
-    /// Karte liegt vor (Zwischenspeicher, `maps/` oder Download) – jetzt ins Spiel.
+    /// Map is available (cache, `maps/` or download) – now into the game.
     MapReady,
 }
 
@@ -151,12 +151,12 @@ pub enum ServerMsg {
         slot: u32,
         tick: u64,
         map_name: String,
-        /// Prüfsumme der Karte aus [`ServerMsg::MapInfo`].
+        /// Checksum of the map from [`ServerMsg::MapInfo`].
         map_checksum: MapChecksum,
         tuning: Tuning,
         high_bandwidth: bool,
     },
-    /// Snapshot als Delta gegen `base` (dessen Tick der Client bestätigt hat).
+    /// Snapshot as a delta against `base` (whose tick the client has acknowledged).
     Snapshot {
         tick: u64,
         base: Option<u64>,
@@ -164,7 +164,7 @@ pub enum ServerMsg {
         delta: Vec<u8>,
         events: Vec<Event>,
     },
-    /// Zeit (ms), die die Eingabe für `tick` vor ihrer Verarbeitung ankam (negativ = zu spät).
+    /// Time (ms) the input for `tick` arrived before it was processed (negative = too late).
     InputTiming {
         tick: u64,
         time_left_ms: i32,
@@ -173,36 +173,36 @@ pub enum ServerMsg {
     Kick {
         reason: String,
     },
-    /// Chat; `from = None`: Server.
+    /// Chat; `from = None`: server.
     Chat {
         from: Option<u32>,
         team: bool,
         text: String,
     },
-    /// Name und Skin eines Slots; `name = None`: Spieler hat verlassen.
+    /// Name and skin of a slot; `name = None`: player has left.
     PlayerInfo {
         slot: u32,
         name: Option<String>,
         skin: Skin,
     },
-    /// Stand der Abstimmung; `None` = keine.
+    /// State of the vote; `None` = none.
     Vote(Option<VoteInfo>),
-    /// Hinweis des Servers (Rundenende, Abstimmung angenommen, …).
-    /// Hinweis des Servers (übersetzbar, M8.1).
+    /// Notice from the server (round end, vote passed, …).
+    /// Notice from the server (translatable, M8.1).
     Notice(crate::text::Message),
-    /// Spieler in `slot` zeigt ein Emote.
+    /// Player in `slot` shows an emote.
     Emote {
         slot: u32,
         emote: u8,
     },
-    /// Karte der Runde (vor `Welcome`, auch bei Kartenwechsel): Der Client lädt sie aus dem
-    /// Zwischenspeicher oder fordert sie mit [`ClientMsg::MapRequest`] in Teilen an (E-136).
+    /// Map of the round (before `Welcome`, also on map change): the client loads it from the
+    /// cache or requests it in chunks with [`ClientMsg::MapRequest`] (E-136).
     MapInfo {
         name: String,
         checksum: MapChecksum,
         size: u32,
     },
-    /// Teil `index` der Kartendatei ([`MAP_CHUNK`] Bytes, der letzte ggf. kürzer).
+    /// Chunk `index` of the map file ([`MAP_CHUNK`] bytes, the last one possibly shorter).
     MapChunk {
         index: u32,
         data: Vec<u8>,
@@ -222,8 +222,8 @@ fn put_input(w: &mut Writer, i: &PlayerInput) {
     w.ivar(i64::from(i.direction));
     w.ivar(i64::from(i.target_x));
     w.ivar(i64::from(i.target_y));
-    // `ability` geht noch nicht über das Netz: Fähigkeiten gibt es online erst im
-    // Quellenkampf (E-223), dann mit neuer Protokollversion.
+    // `ability` does not go over the network yet: abilities only exist online in the
+    // source battle (E-223), then with a new protocol version.
     w.u8(u8::from(i.jump) | u8::from(i.hook) << 1 | u8::from(i.down) << 2);
     w.u8(i.fire);
     w.u8(i.wanted_weapon);
@@ -334,7 +334,8 @@ fn get_pickup(r: &mut Reader<'_>) -> DecodeResult<PickupKind> {
     })
 }
 
-/// Geht das Ereignis über das Netz? Fähigkeiten gibt es online erst im Quellenkampf (E-223).
+/// Does the event go over the network? Abilities only exist online in the source battle
+/// (E-223).
 fn networked(e: &Event) -> bool {
     !matches!(
         e,
@@ -352,7 +353,7 @@ fn networked(e: &Event) -> bool {
     )
 }
 
-/// Ereignisse (für Effekte) – Positionen gerundet auf ganze Einheiten.
+/// Events (for effects) – positions rounded to whole units.
 fn put_event(w: &mut Writer, e: &Event) {
     match *e {
         Event::Fire {
@@ -455,7 +456,7 @@ fn put_event(w: &mut Writer, e: &Event) {
     }
 }
 
-/// Flaggen-Ereignisse (CTF).
+/// Flag events (CTF).
 fn put_flag_event(w: &mut Writer, e: &Event) {
     match *e {
         Event::FlagGrab {
@@ -581,12 +582,12 @@ fn get_event(r: &mut Reader<'_>) -> DecodeResult<Event> {
     })
 }
 
-/// Obergrenze einer entpackten Nachricht.
+/// Upper limit of an unpacked message.
 const MAX_UNPACKED: usize = 8 * 1024 * 1024;
 const RAW: u8 = 0;
 const HUFFMAN: u8 = 1;
 
-/// Stufe 3 von E-063: Huffman, falls kleiner; 1 Byte Kennung vorneweg.
+/// Stage 3 of E-063: Huffman if smaller; 1 byte identifier in front.
 pub fn pack(raw: Vec<u8>) -> Vec<u8> {
     let packed = crate::huffman::game().encode(&raw);
     let (flag, body) = if packed.len() < raw.len() {
@@ -600,10 +601,10 @@ pub fn pack(raw: Vec<u8>) -> Vec<u8> {
     out
 }
 
-/// Gegenstück zu [`pack`].
+/// Counterpart to [`pack`].
 ///
 /// # Errors
-/// Bei unbekannter Kennung oder ungültigen Huffman-Daten.
+/// On an unknown identifier or invalid Huffman data.
 pub fn unpack(data: &[u8]) -> DecodeResult<std::borrow::Cow<'_, [u8]>> {
     match data.split_first() {
         Some((&RAW, body)) => Ok(std::borrow::Cow::Borrowed(body)),
@@ -615,18 +616,18 @@ pub fn unpack(data: &[u8]) -> DecodeResult<std::borrow::Cow<'_, [u8]>> {
 }
 
 impl ClientMsg {
-    /// Kodiert und komprimiert die Nachricht.
+    /// Encodes and compresses the message.
     pub fn encode(&self) -> Vec<u8> {
         pack(self.encode_raw())
     }
 
     /// # Errors
-    /// Bei fehlerhaften Daten.
+    /// On faulty data.
     pub fn decode(data: &[u8]) -> DecodeResult<Self> {
         Self::decode_raw(&unpack(data)?)
     }
 
-    /// Kodiert ohne Kompression (für Messungen und Training).
+    /// Encodes without compression (for measurements and training).
     pub fn encode_raw(&self) -> Vec<u8> {
         let mut w = Writer::new();
         match self {
@@ -647,7 +648,7 @@ impl ClientMsg {
                 let first = inputs.first().map_or(0, |i| i.0);
                 w.uvar(first);
                 for (k, (tick, input)) in inputs.iter().enumerate() {
-                    // Ticks aufeinanderfolgend: nur Abweichung vom erwarteten Tick
+                    // consecutive ticks: only the deviation from the expected tick
                     w.ivar(*tick as i64 - (first + k as u64) as i64);
                     put_input(&mut w, input);
                 }
@@ -769,7 +770,7 @@ impl ClientMsg {
 }
 
 impl ServerMsg {
-    /// Snapshot-Nachricht aus zwei Snapshots.
+    /// Snapshot message from two snapshots.
     pub fn snapshot(cur: &Snapshot, base: Option<&Snapshot>, events: Vec<Event>) -> Self {
         let mut w = Writer::new();
         cur.encode_delta(base, &mut w);
@@ -782,18 +783,18 @@ impl ServerMsg {
         }
     }
 
-    /// Kodiert und komprimiert die Nachricht.
+    /// Encodes and compresses the message.
     pub fn encode(&self) -> Vec<u8> {
         pack(self.encode_raw())
     }
 
     /// # Errors
-    /// Bei fehlerhaften Daten oder falscher Protokollversion.
+    /// On faulty data or a wrong protocol version.
     pub fn decode(data: &[u8]) -> DecodeResult<Self> {
         Self::decode_raw(&unpack(data)?)
     }
 
-    /// Karten-Nachrichten (M6.5).
+    /// Map messages (M6.5).
     fn put_map(&self, w: &mut Writer) {
         match self {
             Self::MapInfo {
@@ -815,7 +816,7 @@ impl ServerMsg {
         }
     }
 
-    /// Kodiert ohne Kompression (für Messungen und Training).
+    /// Encodes without compression (for measurements and training).
     pub fn encode_raw(&self) -> Vec<u8> {
         let mut w = Writer::new();
         match self {
@@ -1205,7 +1206,7 @@ mod tests {
             inputs: vec![(1, PlayerInput::default())],
         }
         .encode_raw();
-        // Richtung manipulieren (Position nach Tag, ack, Anzahl, first, offset)
+        // manipulate the direction (position after tag, ack, count, first, offset)
         bytes[5] = 4; // ZigZag 2
         assert!(ClientMsg::decode_raw(&bytes).is_err());
         assert!(ClientMsg::decode(&[9]).is_err());
@@ -1213,7 +1214,7 @@ mod tests {
             ClientMsg::decode_raw(&[9, EMOTES]).is_err(),
             "Emote außerhalb"
         );
-        // Palettennummern außerhalb der Palette
+        // palette numbers outside the palette
         for skin in [[16, 0, 0], [0, 16, 0], [0, 0, 8]] {
             let mut bytes = ClientMsg::SetSkin(Skin::default()).encode_raw();
             bytes[1..4].copy_from_slice(&skin);

@@ -1,34 +1,34 @@
-//! Statischer Huffman-Code (Stufe 3 von E-063).
+//! Static Huffman code (stage 3 of E-063).
 //!
-//! Die Häufigkeitstabelle wird auf eigenem Verkehr trainiert (`cargo xtask
-//! train-huffman`) und liegt in `huffman_table.rs`. Der Code ist kanonisch, sodass
-//! Sender und Empfänger ihn identisch aus der Tabelle ableiten.
+//! The frequency table is trained on our own traffic (`cargo xtask
+//! train-huffman`) and lives in `huffman_table.rs`. The code is canonical, so that
+//! sender and receiver derive it identically from the table.
 
 use crate::codec::{DecodeError, DecodeResult};
 
-/// 256 Byte-Werte + Endezeichen.
+/// 256 byte values + end symbol.
 const SYMBOLS: usize = 257;
 const EOF: usize = 256;
-/// Längster erlaubter Code (begrenzt durch Glättung der Häufigkeiten).
+/// Longest allowed code (limited by smoothing the frequencies).
 const MAX_LEN: u8 = 24;
 
 #[derive(Debug, Clone)]
 pub struct Huffman {
-    /// Code und Länge je Symbol.
+    /// Code and length per symbol.
     codes: Vec<(u32, u8)>,
-    /// Für die Dekodierung: pro Länge der erste Code, der erste Index und die Anzahl.
+    /// For decoding: per length the first code, the first index and the count.
     first_code: [u32; MAX_LEN as usize + 1],
     first_index: [usize; MAX_LEN as usize + 1],
     count: [usize; MAX_LEN as usize + 1],
-    /// Symbole in kanonischer Reihenfolge.
+    /// Symbols in canonical order.
     sorted: Vec<u16>,
 }
 
 impl Huffman {
-    /// Baut den Code aus Häufigkeiten der 256 Byte-Werte (0 wird wie 1 behandelt).
+    /// Builds the code from the frequencies of the 256 byte values (0 is treated like 1).
     ///
     /// # Panics
-    /// Nie für gültige Tabellen (Codelängen werden begrenzt).
+    /// Never for valid tables (code lengths are limited).
     pub fn new(freq: &[u32; 256]) -> Self {
         let mut weights: Vec<u64> = freq.iter().map(|&f| u64::from(f.max(1))).collect();
         weights.push(1); // EOF
@@ -37,12 +37,12 @@ impl Huffman {
             if l.iter().all(|&x| x <= MAX_LEN) {
                 break l;
             }
-            // zu lange Codes: Häufigkeiten glätten
+            // codes too long: smooth the frequencies
             for w in &mut weights {
                 *w = (*w >> 1) + 1;
             }
         };
-        // kanonische Codes
+        // canonical codes
         let mut sorted: Vec<u16> = (0..SYMBOLS as u16).collect();
         sorted.sort_by_key(|&s| (lengths[s as usize], s));
         let mut codes = vec![(0u32, 0u8); SYMBOLS];
@@ -98,7 +98,7 @@ impl Huffman {
     }
 
     /// # Errors
-    /// Bei ungültigen Daten oder wenn das Ergebnis `max` Bytes überschreitet.
+    /// On invalid data or if the result exceeds `max` bytes.
     pub fn decode(&self, data: &[u8], max: usize) -> DecodeResult<Vec<u8>> {
         let mut out = Vec::with_capacity(data.len() * 2);
         let (mut code, mut len) = (0u32, 0usize);
@@ -128,7 +128,7 @@ impl Huffman {
     }
 }
 
-/// Codelängen per klassischem Huffman-Baum.
+/// Code lengths via a classic Huffman tree.
 fn code_lengths(weights: &[u64]) -> Vec<u8> {
     use std::cmp::Reverse;
     use std::collections::BinaryHeap;
@@ -160,7 +160,7 @@ fn code_lengths(weights: &[u64]) -> Vec<u8> {
         .collect()
 }
 
-/// Der trainierte Code des Spielprotokolls.
+/// The trained code of the game protocol.
 pub fn game() -> &'static Huffman {
     static CODE: std::sync::OnceLock<Huffman> = std::sync::OnceLock::new();
     CODE.get_or_init(|| Huffman::new(&crate::huffman_table::FREQUENCIES))

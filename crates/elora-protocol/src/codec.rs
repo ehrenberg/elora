@@ -1,6 +1,6 @@
-//! Byte-Kodierung: variable Ganzzahl-Länge (`LEB128`), `ZigZag` für Vorzeichen.
+//! Byte encoding: variable integer length (`LEB128`), `ZigZag` for signs.
 
-/// Fehler beim Dekodieren. Jedes fehlerhafte Paket wird abgelehnt, nie „geraten“.
+/// Error while decoding. Every faulty packet is rejected, never "guessed".
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 pub enum DecodeError {
     #[error("Daten zu kurz")]
@@ -39,7 +39,7 @@ impl Writer {
         self.buf.push(u8::from(v));
     }
 
-    /// Vorzeichenlose Zahl, 7 Bit pro Byte.
+    /// Unsigned number, 7 bits per byte.
     pub fn uvar(&mut self, mut v: u64) {
         loop {
             let byte = (v & 0x7f) as u8;
@@ -52,7 +52,7 @@ impl Writer {
         }
     }
 
-    /// Vorzeichenbehaftete Zahl (`ZigZag`: kleine Beträge = wenige Bytes).
+    /// Signed number (`ZigZag`: small magnitudes = few bytes).
     pub fn ivar(&mut self, v: i64) {
         #[allow(clippy::cast_sign_loss)]
         self.uvar(((v << 1) ^ (v >> 63)) as u64);
@@ -87,7 +87,7 @@ impl<'a> Reader<'a> {
         self.pos >= self.data.len()
     }
 
-    /// Fehler, wenn noch Bytes übrig sind.
+    /// Error if bytes are left over.
     ///
     /// # Errors
     /// [`DecodeError::TrailingBytes`]
@@ -100,7 +100,7 @@ impl<'a> Reader<'a> {
     }
 
     /// # Errors
-    /// Bei zu kurzen Daten.
+    /// On data that is too short.
     pub fn u8(&mut self) -> DecodeResult<u8> {
         let v = *self.data.get(self.pos).ok_or(DecodeError::UnexpectedEnd)?;
         self.pos += 1;
@@ -108,7 +108,7 @@ impl<'a> Reader<'a> {
     }
 
     /// # Errors
-    /// Bei zu kurzen Daten oder einem Wert außer 0/1.
+    /// On data that is too short or a value other than 0/1.
     pub fn bool(&mut self) -> DecodeResult<bool> {
         match self.u8()? {
             0 => Ok(false),
@@ -118,7 +118,7 @@ impl<'a> Reader<'a> {
     }
 
     /// # Errors
-    /// Bei zu kurzen Daten oder mehr als 64 Bit.
+    /// On data that is too short or more than 64 bits.
     pub fn uvar(&mut self) -> DecodeResult<u64> {
         let mut v = 0u64;
         for shift in (0..64).step_by(7) {
@@ -136,29 +136,29 @@ impl<'a> Reader<'a> {
     }
 
     /// # Errors
-    /// Wie [`Self::uvar`].
+    /// Like [`Self::uvar`].
     pub fn ivar(&mut self) -> DecodeResult<i64> {
         let u = self.uvar()?;
         #[allow(clippy::cast_possible_wrap)]
         Ok(((u >> 1) as i64) ^ -((u & 1) as i64))
     }
 
-    /// Zahl mit Bereichsprüfung.
+    /// Number with a range check.
     ///
     /// # Errors
-    /// Wenn der Wert nicht in den Zieltyp passt.
+    /// If the value does not fit into the target type.
     pub fn int<T: TryFrom<i64>>(&mut self, what: &'static str) -> DecodeResult<T> {
         T::try_from(self.ivar()?).map_err(|_| DecodeError::Invalid(what))
     }
 
     /// # Errors
-    /// Wenn der Wert nicht in den Zieltyp passt.
+    /// If the value does not fit into the target type.
     pub fn uint<T: TryFrom<u64>>(&mut self, what: &'static str) -> DecodeResult<T> {
         T::try_from(self.uvar()?).map_err(|_| DecodeError::Invalid(what))
     }
 
     /// # Errors
-    /// Bei zu kurzen Daten oder Länge über `max`.
+    /// On data that is too short or a length over `max`.
     pub fn bytes(&mut self, max: usize) -> DecodeResult<&'a [u8]> {
         let len: usize = self.uint("Länge")?;
         if len > max {
@@ -174,13 +174,13 @@ impl<'a> Reader<'a> {
     }
 
     /// # Errors
-    /// Bei zu kurzen Daten, Länge über `max` oder ungültigem UTF-8.
+    /// On data that is too short, a length over `max` or invalid UTF-8.
     pub fn str(&mut self, max: usize) -> DecodeResult<&'a str> {
         std::str::from_utf8(self.bytes(max)?).map_err(|_| DecodeError::Utf8)
     }
 
     /// # Errors
-    /// Bei zu kurzen Daten.
+    /// On data that is too short.
     pub fn f32(&mut self) -> DecodeResult<f32> {
         let end = self.pos + 4;
         let b = self

@@ -1,8 +1,8 @@
-//! Byte-Häufigkeiten für den statischen Huffman-Code (E-063).
+//! Byte frequencies for the static Huffman code (E-063).
 //!
-//! Erzeugt mit `cargo xtask train-huffman` – nicht von Hand ändern.
+//! Generated with `cargo xtask train-huffman` – do not edit by hand.
 
-/// Häufigkeiten der Byte-Werte 0..=255.
+/// Frequencies of the byte values 0..=255.
 pub const FREQUENCIES: [u32; 256] = [
     5408245, 1548712, 1174860, 548392, 680717, 105651, 100904, 93332, 91943, 82435, 78536, 91110,
     92890, 58386, 67012, 61798, 57601, 56023, 56727, 68463, 74010, 53079, 55685, 45870, 32167,

@@ -1,5 +1,5 @@
-//! Server-Info für den Server-Browser (M7.6): Antwort auf die verbindungslose
-//! Info-Abfrage von `elora-net`.
+//! Server info for the server browser (M7.6): answer to the connectionless
+//! info query of `elora-net`.
 
 use elora_sim::Team;
 
@@ -7,7 +7,7 @@ use crate::PROTOCOL_VERSION;
 use crate::codec::{DecodeError, DecodeResult, Reader, Writer};
 use crate::msg::{team_code, team_from};
 
-/// Höchstens so viele Spieler stehen in der Liste (die Antwort muss in ein Datagramm passen).
+/// At most this many players are listed (the answer must fit into one datagram).
 pub const MAX_LISTED: usize = 32;
 const MAX_NAME: usize = 64;
 const MAX_TEXT: usize = 128;
@@ -22,16 +22,16 @@ pub struct InfoPlayer {
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ServerInfo {
-    /// Protokollversion des Servers; verbinden geht nur bei Gleichheit.
+    /// Protocol version of the server; connecting only works if they are equal.
     pub version: u32,
     pub name: String,
     pub map: String,
-    /// Modus als Anzeige, z. B. `CTF` oder `iDM`.
+    /// Mode for display, e.g. `CTF` or `iDM`.
     pub mode: String,
-    /// Verbundene Menschen (ohne Dummies, Zuschauer eingeschlossen).
+    /// Connected humans (without dummies, spectators included).
     pub clients: u32,
     pub max_clients: u32,
-    /// Spielerliste (höchstens [`MAX_LISTED`]).
+    /// Player list (at most [`MAX_LISTED`]).
     pub players: Vec<InfoPlayer>,
 }
 
@@ -60,7 +60,7 @@ impl ServerInfo {
     }
 
     /// # Errors
-    /// Bei fehlerhaften Daten.
+    /// On faulty data.
     pub fn decode(data: &[u8]) -> DecodeResult<Self> {
         let mut r = Reader::new(data);
         let version = r.uint("Version")?;

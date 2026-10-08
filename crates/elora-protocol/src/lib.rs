@@ -1,6 +1,6 @@
-//! Netzwerkprotokoll von Elora (E-008): Nachrichten, Serialisierung, Snapshots.
+//! Network protocol of Elora (E-008): messages, serialization, snapshots.
 //!
-//! Kennt keine Sockets – Transport, Verschlüsselung und Zuverlässigkeit liegen in
+//! Knows no sockets – transport, encryption and reliability live in
 //! `elora-net`.
 
 pub mod codec;
@@ -16,5 +16,5 @@ pub use msg::{ClientMsg, MAP_CHUNK, MAX_MAP, MapChecksum, ServerMsg, Skin, VoteI
 pub use snapshot::{GameView, Snapshot};
 pub use text::{Message, VoteSubject, WinnerName, reason};
 
-/// Version des Spielprotokolls; Client und Server müssen übereinstimmen.
+/// Version of the game protocol; client and server must match.
 pub const PROTOCOL_VERSION: u32 = 6;
