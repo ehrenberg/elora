@@ -1,6 +1,6 @@
-//! Testkarte für die Fähigkeiten (R2-M1, A1.1): `maps/faehigkeiten-test.emap`.
+//! Test map for the abilities (R2-M1, A1.1): `maps/faehigkeiten-test.emap`.
 //!
-//! Neu schreiben: `cargo test -p elora-map --test abilities_map -- --ignored`
+//! Rewrite: `cargo test -p elora-map --test abilities_map -- --ignored`
 
 use elora_map::Map;
 
@@ -16,28 +16,28 @@ fn layout() -> Vec<String> {
             }
         }
     };
-    // Rahmen, Boden
+    // Frame, floor
     fill(0, W - 1, 0, 0, '#');
     fill(0, W - 1, 29, H - 1, '#');
     fill(0, 0, 0, H - 1, '#');
     fill(W - 1, W - 1, 0, H - 1, '#');
 
-    // 1 Hook-Ruck: hohe Halle mit Decke
+    // 1 Hook dash: tall hall with a ceiling
     fill(2, 20, 4, 4, '#');
 
-    // 2 Stampfen: Bröckel-Brücke über einer Kammer mit Herz
+    // 2 Stomp: crumbling bridge over a chamber with a heart
     fill(17, 20, 25, 25, '=');
     fill(21, 21, 22, 28, '#');
     fill(31, 31, 22, 28, '#');
     fill(22, 30, 22, 23, ':');
 
-    // 3 Eisgriff: Kamin aus Kletterwänden, oben ein Sims; dazu eine einzelne Wand
+    // 3 Ice grip: chimney of climbing walls, a ledge at the top; plus a single wall
     fill(36, 36, 9, 28, '|');
     fill(40, 40, 9, 28, '|');
     fill(41, 55, 8, 8, '#');
     fill(46, 46, 14, 28, '|');
 
-    // 4 Gleiten: vom Sims über die Stachelgrube zur Plattform; darüber nicht hookbar
+    // 4 Glide: from the ledge over the spike pit to the platform; not hookable above it
     fill(41, W - 2, 0, 0, '%');
     fill(56, 75, 28, 28, '^');
     fill(70, 77, 20, 20, '#');
