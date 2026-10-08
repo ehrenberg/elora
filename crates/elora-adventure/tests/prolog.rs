@@ -25,7 +25,7 @@ fn go_to(s: &mut Session, w: &mut World, id: &str, dx: f32) {
         .map
         .adventure
         .object(id)
-        .unwrap_or_else(|| panic!("{id} fehlt"));
+        .unwrap_or_else(|| panic!("{id} missing"));
     let pos = o.kind.area().map_or(o.pos, |a| o.pos + a * 0.5);
     w.spawn_character(s.player, pos + Vec2::new(dx, -4.0));
     for _ in 0..30 {
@@ -46,7 +46,7 @@ fn talk(s: &mut Session, w: &mut World, npc: &str) -> Vec<String> {
             SessionEvent::Talk { dialog, .. } => Some(dialog.clone()),
             _ => None,
         })
-        .unwrap_or_else(|| panic!("kein Gespräch mit {npc}: {ev:?}"));
+        .unwrap_or_else(|| panic!("no dialog with {npc}: {ev:?}"));
     let content = s.content.clone();
     let (mut conv, mut turn) = Conversation::start(&content, &mut s.save, &dialog).unwrap();
     let mut nodes = vec![conv.node.clone()];
@@ -74,7 +74,7 @@ fn walk_until_travel(s: &mut Session, w: &mut World, direction: i8) -> (String, 
             }
         }
     }
-    panic!("kein Übergang");
+    panic!("no exit");
 }
 
 fn holds(s: &Session, cond: &str) -> bool {
@@ -261,7 +261,7 @@ fn chapter_three_from_the_sunken_path_to_the_spring_and_home() {
     for _ in 0..20 {
         step(&mut s, &mut w, PlayerInput::default(), false);
     }
-    assert!(holds(&s, "quest ruine schritt kammer"), "der Boden trägt");
+    assert!(holds(&s, "quest ruine schritt kammer"), "the floor holds");
     let down = PlayerInput {
         down: true,
         ..PlayerInput::default()
@@ -286,7 +286,7 @@ fn chapter_three_from_the_sunken_path_to_the_spring_and_home() {
     }
     assert!(
         holds(&s, "quest ruine schritt tafel"),
-        "durch den Boden gestampft"
+        "stomped through the floor"
     );
     talk(&mut s, &mut w, "tafel-kammer");
     assert!(holds(&s, "quest ruine schritt bericht"));
@@ -311,9 +311,9 @@ fn chapter_three_from_the_sunken_path_to_the_spring_and_home() {
     let mut w = s.enter("wueste-arena", load("wueste-arena"), "west", &tuning);
     assert!(holds(&s, "quest glutsand schritt hueter"));
     go_to(&mut s, &mut w, "sandschlange", -200.0);
-    assert!(!s.in_sun, "Kessel liegt im Schatten");
+    assert!(!s.in_sun, "the basin lies in the shade");
     // dazed on the ground, one hammer blow calms her
-    assert_eq!(w.creatures.len(), 1, "nur die Sandschlange im Kessel");
+    assert_eq!(w.creatures.len(), 1, "only the sand snake in the basin");
     let snake = &mut w.creatures[0];
     snake.mode = elora_sim::creature::serpent::STUNNED;
     snake.timer = 0;
@@ -338,10 +338,10 @@ fn chapter_three_from_the_sunken_path_to_the_spring_and_home() {
         done.contains(&SessionEvent::ChapterDone {
             area: "glutsandwueste".into()
         }),
-        "Gewinn-Bildschirm nach dem Hüter"
+        "victory screen after the guardian"
     );
     assert_eq!(s.save.flag("besiegt.sandschlange"), 1);
-    assert!(s.save.count("quellfunke") >= 1, "Funke eingesammelt");
+    assert!(s.save.count("quellfunke") >= 1, "spark collected");
     assert!(holds(&s, "quest glutsand schritt funke"));
     let gate = s.map.adventure.object("tor").unwrap().pos;
     assert!(!w.collision.tile_at(gate + Vec2::new(16.0, 16.0)).is_solid());
@@ -371,7 +371,7 @@ fn stomp_vaults_open_only_with_a_stomp() {
             .map
             .adventure
             .object(&format!("{id}-truhe"))
-            .unwrap_or_else(|| panic!("{map}: Truhe fehlt"))
+            .unwrap_or_else(|| panic!("{map}: chest missing"))
             .pos;
         // crumble floor next to the chest: centre and top edge
         let crumbs: Vec<(i32, i32)> = (-6..=6)
@@ -383,7 +383,7 @@ fn stomp_vaults_open_only_with_a_stomp() {
             })
             .filter(|&(tx, ty)| w.collision.tile(tx, ty) == elora_sim::Tile::Crumble)
             .collect();
-        assert!(!crumbs.is_empty(), "{map}: kein Bröckelboden");
+        assert!(!crumbs.is_empty(), "{map}: no crumbling floor");
         let top = crumbs.iter().map(|c| c.1).min().unwrap();
         #[allow(clippy::cast_precision_loss)]
         let mid = crumbs.iter().map(|c| c.0 as f32).sum::<f32>() / crumbs.len() as f32;
@@ -412,7 +412,7 @@ fn stomp_vaults_open_only_with_a_stomp() {
         #[allow(clippy::cast_precision_loss)]
         let surface = top as f32 * 32.0;
         let y = w.character(s.player).unwrap().core.pos.y;
-        assert!(y < surface, "{map}: ohne Stampfen nicht hinein ({y})");
+        assert!(y < surface, "{map}: no way in without stomp ({y})");
         // with stomp it breaks
         w.spawn_character(s.player, above);
         w.set_abilities(
@@ -425,8 +425,8 @@ fn stomp_vaults_open_only_with_a_stomp() {
         run(&mut s, &mut w, down, 60);
         run(&mut s, &mut w, PlayerInput::default(), 30);
         let p = w.character(s.player).unwrap().core.pos;
-        assert!(p.y > surface + 64.0, "{map}: in der Kammer ({p:?})");
-        assert!((p.y - chest.y).abs() < 24.0, "{map}: unten bei der Truhe");
+        assert!(p.y > surface + 64.0, "{map}: in the chamber ({p:?})");
+        assert!((p.y - chest.y).abs() < 24.0, "{map}: down at the chest");
         // a jump (with double jump) leads back out
         run(&mut s, &mut w, jump, 1);
         run(&mut s, &mut w, PlayerInput::default(), 14);
@@ -436,7 +436,7 @@ fn stomp_vaults_open_only_with_a_stomp() {
             step(&mut s, &mut w, PlayerInput::default(), false);
             out |= w.character(s.player).unwrap().core.pos.y < surface - 14.0;
         }
-        assert!(out, "{map}: wieder hinaus");
+        assert!(out, "{map}: back out");
     }
 }
 
@@ -475,7 +475,7 @@ fn chapter_four_from_the_mountain_path_to_the_ice_hall_and_home() {
     run(&mut s, &mut w, down, 60);
     assert!(
         w.collision.tile(344, 32) == elora_sim::Tile::Crumble,
-        "Deckel hält"
+        "lid holds"
     );
     // with stomp it breaks, Elora falls into the passage and reaches the transition
     w.spawn_character(s.player, lid);
@@ -503,7 +503,7 @@ fn chapter_four_from_the_mountain_path_to_the_ice_hall_and_home() {
     // a fire burns at the entrance: it stays warm there
     s.cold = 0.8;
     go_to(&mut s, &mut w, "feuer-eingang", 0.0);
-    assert!(s.cold < 0.8, "am Feuer wärmer: {}", s.cold);
+    assert!(s.cold < 0.8, "warmer at the fire: {}", s.cold);
 
     // mountain village: Flocke, rope from the cellar, climbing claws
     let mut w = travel(&mut s, &mut w, "ost", 1);
@@ -515,7 +515,7 @@ fn chapter_four_from_the_mountain_path_to_the_ice_hall_and_home() {
     for _ in 0..40 {
         step(&mut s, &mut w, PlayerInput::default(), false);
     }
-    assert_eq!(s.save.count("seil"), 1, "Seil aus der Truhe im Keller");
+    assert_eq!(s.save.count("seil"), 1, "rope from the chest in the cellar");
     assert_eq!(talk(&mut s, &mut w, "flocke")[0], "seil_zurueck");
     assert!(s.save.abilities().has(elora_sim::Ability::Grip));
     assert!(holds(&s, "quest kletterer aktiv"));
@@ -537,15 +537,15 @@ fn chapter_four_from_the_mountain_path_to_the_ice_hall_and_home() {
     // ice hall: fight, gate opens
     let mut w = travel(&mut s, &mut w, "ost", 1);
     assert_eq!(s.map_name, "frost-arena");
-    assert!(s.map.weather.is_clear(), "die Halle bleibt schön");
+    assert!(s.map.weather.is_clear(), "the hall stays fair");
     assert!(holds(&s, "quest frostspitzen schritt hueter"));
     go_to(&mut s, &mut w, "eiskoenigin", -150.0);
-    let kind = w.creature_kind("kristella").expect("Art");
+    let kind = w.creature_kind("kristella").expect("kind");
     let queen = w
         .creatures
         .iter_mut()
         .find(|c| c.kind == kind)
-        .expect("Kristella in der Halle");
+        .expect("Kristella in the hall");
     queen.mode = elora_sim::creature::queen::TIRED;
     queen.timer = 0;
     queen.health = 1;
@@ -569,10 +569,10 @@ fn chapter_four_from_the_mountain_path_to_the_ice_hall_and_home() {
         done.contains(&SessionEvent::ChapterDone {
             area: "frostspitzen".into()
         }),
-        "Gewinn-Bildschirm nach der Hüterin"
+        "victory screen after the guardian"
     );
     assert_eq!(s.save.flag("besiegt.kristella"), 1);
-    assert!(s.save.count("quellfunke") >= 1, "Funke eingesammelt");
+    assert!(s.save.count("quellfunke") >= 1, "spark collected");
     let gate = s.map.adventure.object("tor").unwrap().pos;
     assert!(!w.collision.tile_at(gate + Vec2::new(16.0, 16.0)).is_solid());
     assert_eq!(talk(&mut s, &mut w, "kristella")[0], "erwacht");
@@ -604,7 +604,7 @@ fn climb_vaults_need_the_grip() {
                 .map
                 .adventure
                 .object(&format!("{id}-truhe"))
-                .unwrap_or_else(|| panic!("{map}: Truhe fehlt"))
+                .unwrap_or_else(|| panic!("{map}: chest missing"))
                 .pos;
             // under the chimney: five columns next to the chest is the middle between the walls
             // (the forest maps are mirrored: there the ledge is on the left)
@@ -671,12 +671,12 @@ fn climb_vaults_need_the_grip() {
         let (best, top) = highest(grip);
         assert!(
             best < top + 8.0,
-            "{map}: mit Eisgriff auf dem Sims ({best} / {top})"
+            "{map}: onto the ledge with ice grip ({best} / {top})"
         );
         let (best, top) = highest(elora_sim::Abilities::NONE);
         assert!(
             best > top + 6.0 * 32.0,
-            "{map}: ohne Eisgriff nicht ({best} / {top})"
+            "{map}: not without ice grip ({best} / {top})"
         );
     }
 }

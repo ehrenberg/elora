@@ -1350,7 +1350,7 @@ mod tests {
     fn characters_appear_when_their_condition_holds() {
         let mut s = Session::new_game(crate::Content::builtin());
         assert!(s.present("oma"));
-        assert!(!s.present("hummel"), "erst nach dem Kampf");
+        assert!(!s.present("hummel"), "only after the fight");
         s.save.set_flag("besiegt.brummbaer", 1);
         assert!(s.present("hummel"));
     }
@@ -1365,7 +1365,7 @@ mod tests {
         let mut save = Session::new_game(crate::Content::builtin()).save;
         let mut a = m.clone();
         adapt_decor(&mut a, &save);
-        assert_eq!(a.decor_back.len(), 1, "ohne Fest kein Schmuck");
+        assert_eq!(a.decor_back.len(), 1, "no decoration without the festival");
         assert_eq!(
             a.decor_back[0].art,
             Art::Builtin("bluetenquelle-verdorrt".into())
@@ -1405,7 +1405,7 @@ mod tests {
         recolor(&mut some, 2);
         assert!(colourful(&some) > 0 && colourful(&some) < 20);
         recolor(&mut m, 5);
-        assert_eq!(colourful(&m), 20, "alle fünf Quellen");
+        assert_eq!(colourful(&m), 20, "all five springs");
         assert_eq!(m.decor_back[0].art, Art::Builtin("haus-oma".into()));
     }
 }

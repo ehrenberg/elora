@@ -57,7 +57,7 @@ pub fn tauwinkel() -> Map {
     }
     let refs = rows(&g);
     let r: Vec<&str> = refs.iter().map(String::as_str).collect();
-    let mut m = Map::from_rows("Tauwinkel (Test)", &r).expect("gültig");
+    let mut m = Map::from_rows("Tauwinkel (Test)", &r).expect("valid");
     m.entities.clear();
     m.adventure.objects = vec![
         o("start", at(5, floor, 28.0), ObjectKind::Spawn),
@@ -168,7 +168,7 @@ pub fn meadow() -> Map {
     }
     let refs = rows(&g);
     let r: Vec<&str> = refs.iter().map(String::as_str).collect();
-    let mut m = Map::from_rows("Blütenwiesen 1 (Test)", &r).expect("gültig");
+    let mut m = Map::from_rows("Blütenwiesen 1 (Test)", &r).expect("valid");
     m.entities.clear();
     let creature = |id: &str, kind: &str, tx: usize, hh: f32| {
         o(
@@ -249,7 +249,7 @@ pub fn load(name: &str) -> Map {
     match name {
         "tauwinkel" => tauwinkel(),
         "wiese-1" => meadow(),
-        _ => panic!("keine Test-Karte {name}"),
+        _ => panic!("no test map {name}"),
     }
 }
 
@@ -258,7 +258,7 @@ fn test_maps_match_content_and_link_up() {
     let c = elora_adventure::Content::builtin();
     let (a, b) = (tauwinkel(), meadow());
     for m in [&a, &b] {
-        let back = elora_map::decode(&elora_map::encode(m)).expect("Karte gültig");
+        let back = elora_map::decode(&elora_map::encode(m)).expect("map valid");
         let errors = elora_adventure::check::map_objects(&c, &back);
         assert!(errors.is_empty(), "{errors:?}");
     }

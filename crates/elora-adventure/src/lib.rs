@@ -31,12 +31,12 @@ mod tests {
     fn builtin_content_is_valid() {
         let c = Content::builtin();
         assert!(c.items.len() >= 10);
-        assert_eq!(c.skills.len(), 16, "E-242: 16 Knoten");
-        assert_eq!(c.upgrades.len(), 9, "3 Waffen × 3 Stufen");
+        assert_eq!(c.skills.len(), 16, "E-242: 16 nodes");
+        assert_eq!(c.upgrades.len(), 9, "3 weapons × 3 levels");
         assert_eq!(
             c.creatures.len(),
             21,
-            "bis Kapitel 4 mit Gelände, Gegnern und Kristella"
+            "up to chapter 4 with terrain, enemies and Kristella"
         );
     }
 
@@ -51,7 +51,7 @@ mod tests {
         assert_eq!(
             c.dialogs.len(),
             b.dialogs.len(),
-            "alle Gespräche eingetragen (data.rs)"
+            "all dialogs registered (data.rs)"
         );
         assert_eq!(c.quests, b.quests);
     }

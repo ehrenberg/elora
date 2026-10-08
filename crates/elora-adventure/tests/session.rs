@@ -80,7 +80,7 @@ fn chest_switch_and_door() {
     let ev = step(&mut s, &mut w, PlayerInput::default(), true);
     assert!(
         ev.contains(&SessionEvent::TilesChanged),
-        "Tor öffnet sich: {ev:?}"
+        "gate opens: {ev:?}"
     );
     let door = s.map.adventure.object("tor").unwrap().pos;
     assert_eq!(w.collision.tile_at(door + Vec2::new(16.0, 16.0)), Tile::Air);
@@ -130,7 +130,7 @@ fn walking_into_the_exit_travels_and_zones_count() {
             }
         }
     }
-    let (map, spawn) = travel.expect("Übergang beim Hineinlaufen");
+    let (map, spawn) = travel.expect("exit when walking in");
     assert_eq!((map.as_str(), spawn.as_str()), ("wiese-1", "west"));
     let mut w = s.enter(&map, load(&map), &spawn, &Tuning::default());
     assert_eq!(s.save.location.map, "wiese-1");
@@ -196,7 +196,7 @@ fn defeated_boss_sets_a_flag() {
     let (mut s, mut w) = start();
     let kind = w
         .creature_kind("brummbaer")
-        .expect("Hüter in creatures.toml");
+        .expect("guardian in creatures.toml");
     let id = w.add_creature(kind, Vec2::new(300.0, 200.0)).unwrap();
     w.step(&[PlayerInput::default()]);
     w.events.push(elora_sim::Event::CreatureDeath {
@@ -219,7 +219,7 @@ fn unlocks_from_dialogs_reach_the_running_world() {
     let ch = w.character(s.player).unwrap();
     assert!(
         !ch.core.abilities.has(elora_sim::Ability::HookJerk),
-        "noch nicht"
+        "not yet"
     );
     s.sync_world(&mut w);
     let ch = w.character(s.player).unwrap();
@@ -295,7 +295,7 @@ fn follower_appears_follows_and_stays_home() {
             .find(|c| w.creature_kinds[c.kind].name == "pilzkind")
             .map(|c| c.pos)
     };
-    assert!(kid(&w).is_some(), "folgt");
+    assert!(kid(&w).is_some(), "follows");
     // new map with mushroom ring: the child comes along
     let mut home = load("wiese-1");
     let spawn = home.adventure.object("west").unwrap().pos;
@@ -307,13 +307,13 @@ fn follower_appears_follows_and_stays_home() {
         },
     });
     let mut w = s.enter("wald-1", home, "west", &Tuning::default());
-    assert!(kid(&w).is_some(), "über den Kartenwechsel");
+    assert!(kid(&w).is_some(), "across the map change");
     for _ in 0..5 {
         w.step(&[PlayerInput::default()]);
         s.tick(&mut w, false);
     }
     assert_eq!(s.save.flag("pilzkind.daheim"), 1);
-    assert!(kid(&w).is_none(), "bleibt daheim");
+    assert!(kid(&w).is_none(), "stays home");
 }
 
 /// 1.2 s in glow mushrooms: colourful daze (E-311).
@@ -330,7 +330,7 @@ fn standing_in_glowing_mushrooms_dazes() {
     for _ in 0..50 {
         step(&mut s, &mut w, PlayerInput::default(), false);
     }
-    assert_eq!(w.character(s.player).unwrap().core.dazed, 0, "noch nicht");
+    assert_eq!(w.character(s.player).unwrap().core.dazed, 0, "not yet");
     for _ in 0..15 {
         step(&mut s, &mut w, PlayerInput::default(), false);
     }
@@ -361,13 +361,13 @@ fn heat_fills_in_the_sun_and_cools_in_shade_and_at_the_oasis() {
         let p = w.character(s.player).unwrap().core.pos - Vec2::new(0.0, k as f32 * 32.0);
         !w.collision.tile_at(p).is_solid()
     });
-    assert!(sky_above, "Testkarte: freier Himmel über dem Eingang");
+    assert!(sky_above, "test map: open sky above the entrance");
     for _ in 0..500 {
         step(&mut s, &mut w, PlayerInput::default(), false);
     }
     assert!(
         s.in_sun && s.heat > 0.45 && s.heat < 0.55,
-        "halb voll: {}",
+        "half full: {}",
         s.heat
     );
     for _ in 0..520 {
@@ -382,15 +382,15 @@ fn heat_fills_in_the_sun_and_cools_in_shade_and_at_the_oasis() {
     for _ in 0..100 {
         step(&mut s, &mut w, PlayerInput::default(), false);
     }
-    assert!(!s.in_sun && s.heat < 0.9, "kühlt im Schatten: {}", s.heat);
-    assert!(s.overheated, "bleibt langsam, bis die Hälfte erreicht ist");
+    assert!(!s.in_sun && s.heat < 0.9, "cools in the shade: {}", s.heat);
+    assert!(s.overheated, "stays slow until half is reached");
     // oasis cools fast
     w.collision.set_tile(tx, ty, Tile::Air);
     s.map.adventure.objects.last_mut().unwrap().pos = pos - Vec2::new(20.0, 20.0);
     for _ in 0..50 {
         step(&mut s, &mut w, PlayerInput::default(), false);
     }
-    assert!(s.heat < 0.5 && !s.overheated, "an der Oase: {}", s.heat);
+    assert!(s.heat < 0.5 && !s.overheated, "at the oasis: {}", s.heat);
     assert!(!w.character(s.player).unwrap().core.overheated);
 }
 
@@ -456,7 +456,7 @@ fn weather_follows_the_springs() {
             .all(|k| ["schoen", "blueten", "regen"].contains(k)),
         "{bright:?}"
     );
-    assert!(bright.contains("schoen"), "meist schön");
+    assert!(bright.contains("schoen"), "mostly fair");
     assert_eq!(
         kinds(false, "wiese-arena").into_iter().collect::<Vec<_>>(),
         ["schoen"],
@@ -480,7 +480,7 @@ fn weather_follows_the_springs() {
 fn tauwinkel_clears_after_the_first_spring() {
     use elora_map::WeatherKind;
     let (mut s, _w) = start();
-    assert_eq!(s.map.weather.kind, WeatherKind::Rain, "Niesel");
+    assert_eq!(s.map.weather.kind, WeatherKind::Rain, "drizzle");
     assert!(s.map.weather.intensity < 0.5);
     s.save.set_flag("quellen_befreit", 1);
     s.refresh_decor();
@@ -495,7 +495,7 @@ fn tauwinkel_clears_after_the_first_spring() {
     assert_ne!(
         (s.map.weather.kind, s.map.weather.intensity < 0.5),
         (WeatherKind::Rain, true),
-        "kein Niesel mehr"
+        "no more drizzle"
     );
 }
 
@@ -550,14 +550,14 @@ fn avalanche_rolls_rocks_then_rests() {
     };
     let t = Tuning::default();
     let rocks = usize::try_from(t.avalanche_rocks).unwrap();
-    assert_eq!(count_after(&mut s, &mut w, 200), rocks, "eine Lawine");
+    assert_eq!(count_after(&mut s, &mut w, 200), rocks, "one avalanche");
     // Elora keeps standing on the trigger spot: the slope rests first
-    assert_eq!(count_after(&mut s, &mut w, 100), rocks, "Ruhe nach A-41");
+    assert_eq!(count_after(&mut s, &mut w, 100), rocks, "quiet after A-41");
     let rest = elora_sim::tuning::ms_to_ticks(t.avalanche_rest);
     assert_eq!(
         count_after(&mut s, &mut w, rest),
         rocks * 2,
-        "danach wieder"
+        "again afterwards"
     );
 }
 
@@ -585,7 +585,7 @@ fn cold_fills_outside_faster_in_blizzards_and_warms_at_fire_and_roofs() {
     };
     // outside: about 60 s until full
     run(&mut s, &mut w, 1500);
-    assert!(s.cold > 0.45 && s.cold < 0.55, "halb voll: {}", s.cold);
+    assert!(s.cold > 0.45 && s.cold < 0.55, "half full: {}", s.cold);
     // twice as fast in a blizzard
     s.map.weather = Weather {
         kind: WeatherKind::Blizzard,
@@ -603,14 +603,14 @@ fn cold_fills_outside_faster_in_blizzards_and_warms_at_fire_and_roofs() {
     run(&mut s, &mut w, 100);
     assert!(
         s.cold < 0.95 && s.frozen,
-        "wärmt unter dem Dach: {}",
+        "warms under the roof: {}",
         s.cold
     );
     // warm quickly at the fire
     w.collision.set_tile(tx, ty, Tile::Air);
     s.map.adventure.objects.last_mut().unwrap().pos = pos - Vec2::new(20.0, 20.0);
     run(&mut s, &mut w, 100);
-    assert!(s.cold < 0.4 && !s.frozen, "am Feuer: {}", s.cold);
+    assert!(s.cold < 0.4 && !s.frozen, "at the fire: {}", s.cold);
     assert!(!w.character(s.player).unwrap().core.overheated);
 }
 
@@ -630,7 +630,7 @@ fn kristellas_storm_fills_the_hall_until_she_is_calmed() {
     let map = load("wiese-1");
     let mut s = Session::new_game(Content::builtin());
     let mut w = s.enter("frost-arena", map, "west", &Tuning::default());
-    assert!(s.map.weather.is_clear(), "Arenen bleiben schön");
+    assert!(s.map.weather.is_clear(), "arenas stay fair");
     let me = w.character(s.player).unwrap().core.pos;
     let queen = w.creature_kind("kristella").expect("in creatures.toml");
     let id = w.add_creature(queen, me - Vec2::new(0.0, 200.0)).unwrap();
@@ -639,10 +639,10 @@ fn kristellas_storm_fills_the_hall_until_she_is_calmed() {
     for _ in 0..5 {
         step(&mut s, &mut w, PlayerInput::default(), false);
     }
-    assert_eq!(s.map.weather.kind, WeatherKind::Blizzard, "Schneesturm");
+    assert_eq!(s.map.weather.kind, WeatherKind::Blizzard, "blizzard");
     assert!(
         w.weather.is_some_and(|e| e.wind.abs() > 0.5),
-        "Wind in der Halle"
+        "wind in the hall"
     );
     // calmed: the storm settles
     let c = w.creatures.iter_mut().find(|c| c.id == id).unwrap();

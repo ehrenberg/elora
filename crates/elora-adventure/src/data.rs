@@ -578,7 +578,7 @@ impl Content {
         for it in items.item {
             if let Some(old) = map.insert(it.id.clone(), it) {
                 return Err(ContentError::Invalid(format!(
-                    "Gegenstand `{}` doppelt",
+                    "item `{}` duplicated",
                     old.id
                 )));
             }
@@ -610,15 +610,15 @@ impl Content {
             self.items.get(GLEAM_DROPS).map(|i| &i.kind),
             Some(ItemKind::Currency)
         ) {
-            return bad(format!("`{GLEAM_DROPS}` fehlt oder ist keine Währung"));
+            return bad(format!("`{GLEAM_DROPS}` missing or not a currency"));
         }
         let mut ids = std::collections::BTreeSet::new();
         for n in &self.skills {
             if !ids.insert(&n.id) {
-                return bad(format!("Knoten `{}` doppelt", n.id));
+                return bad(format!("skill node `{}` duplicated", n.id));
             }
             if n.ranks == 0 || n.per_rank.is_empty() {
-                return bad(format!("Knoten `{}` ohne Ränge oder Wirkung", n.id));
+                return bad(format!("skill node `{}` has no ranks or effect", n.id));
             }
         }
         for n in &self.skills {
@@ -628,14 +628,14 @@ impl Content {
                     .iter()
                     .any(|m| &m.id == r && m.branch == n.branch)
             {
-                return bad(format!("Knoten `{}` braucht unbekanntes `{r}`", n.id));
+                return bad(format!("skill node `{}` requires unknown `{r}`", n.id));
             }
         }
         for u in &self.upgrades {
             for m in &u.materials {
                 if !self.items.contains_key(&m.item) {
                     return bad(format!(
-                        "Ausbau {:?} {}: Material `{}` unbekannt",
+                        "upgrade {:?} {}: material `{}` unknown",
                         u.weapon, u.level, m.item
                     ));
                 }
@@ -654,7 +654,7 @@ impl Content {
                 .enumerate()
                 .any(|(i, &l)| usize::from(l) != i + 1)
             {
-                return bad(format!("Ausbaustufen von {w:?} nicht lückenlos ab 1"));
+                return bad(format!("upgrade levels of {w:?} not contiguous from 1"));
             }
         }
         for s in self.shops.values() {
@@ -662,10 +662,7 @@ impl Content {
                 match self.items.get(it) {
                     Some(d) if d.price > 0 => {}
                     _ => {
-                        return bad(format!(
-                            "Laden `{}`: `{it}` unbekannt oder ohne Preis",
-                            s.id
-                        ));
+                        return bad(format!("shop `{}`: `{it}` unknown or without price", s.id));
                     }
                 }
             }
@@ -678,14 +675,14 @@ impl Content {
                     || !range_ok(w.intensity, 0.0)
                     || !range_ok(w.wind, -1.0)
                 {
-                    return bad(format!("Gebiet `{}`: Wetter `{}` ungültig", a.id, w.kind));
+                    return bad(format!("area `{}`: weather `{}` invalid", a.id, w.kind));
                 }
             }
         }
         for k in &self.creatures {
             for l in &k.loot {
                 if !self.items.contains_key(&l.item) {
-                    return bad(format!("Beute von `{}`: `{}` unbekannt", k.name, l.item));
+                    return bad(format!("loot of `{}`: `{}` unknown", k.name, l.item));
                 }
             }
         }

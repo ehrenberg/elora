@@ -134,7 +134,7 @@ fn err<T>(src: &str, what: &str) -> Result<T, ScriptError> {
 }
 
 fn int(src: &str, s: &str) -> Result<i64, ScriptError> {
-    s.parse().or_else(|_| err(src, "Zahl erwartet"))
+    s.parse().or_else(|_| err(src, "number expected"))
 }
 
 /// Area ability by German name.
@@ -176,7 +176,7 @@ impl Cond {
         }
         let t: Vec<&str> = s.split_whitespace().collect();
         let cmp = |op: &str| {
-            Cmp::parse(op).ok_or_else(|| ScriptError(format!("`{src}`: Vergleich erwartet")))
+            Cmp::parse(op).ok_or_else(|| ScriptError(format!("`{src}`: comparison expected")))
         };
         Ok(match t.as_slice() {
             ["stufe", op, n] => Self::Level(cmp(op)?, int(src, n)?),
@@ -188,7 +188,7 @@ impl Cond {
                     "aktiv" => QuestCheck::Active,
                     "erledigt" => QuestCheck::Done,
                     "gescheitert" => QuestCheck::Failed,
-                    _ => return err(src, "neu, aktiv, erledigt oder gescheitert erwartet"),
+                    _ => return err(src, "expected neu, aktiv, erledigt or gescheitert"),
                 },
             ),
             ["quest", id, "schritt", step] => {
@@ -200,14 +200,13 @@ impl Cond {
             ["hat", item] => Self::Has((*item).to_owned(), 1),
             ["hat", item, n] => Self::Has(
                 (*item).to_owned(),
-                u32::try_from(int(src, n)?).or_else(|_| err(src, "Anzahl ab 0"))?,
+                u32::try_from(int(src, n)?).or_else(|_| err(src, "count must be 0 or more"))?,
             ),
-            ["faehigkeit", name] => {
-                Self::Ability(ability_by_name(name).ok_or_else(|| {
-                    ScriptError(format!("`{src}`: unbekannte Fähigkeit `{name}`"))
-                })?)
-            }
-            _ => return err(src, "unbekannte Bedingung"),
+            ["faehigkeit", name] => Self::Ability(
+                ability_by_name(name)
+                    .ok_or_else(|| ScriptError(format!("`{src}`: unknown ability `{name}`")))?,
+            ),
+            _ => return err(src, "unknown condition"),
         })
     }
 }
@@ -219,7 +218,7 @@ impl Action {
         let t: Vec<&str> = src.split_whitespace().collect();
         let count = |n: Option<&&str>| -> Result<u32, ScriptError> {
             n.map_or(Ok(1), |n| {
-                u32::try_from(int(src, n)?).or_else(|_| err(src, "Anzahl ab 0"))
+                u32::try_from(int(src, n)?).or_else(|_| err(src, "count must be 0 or more"))
             })
         };
         let signed =
@@ -232,12 +231,12 @@ impl Action {
                     "weiter" => QuestOp::Advance,
                     "fertig" => QuestOp::Finish,
                     "scheitern" => QuestOp::Fail,
-                    _ => return err(src, "start, weiter, fertig oder scheitern erwartet"),
+                    _ => return err(src, "expected start, weiter, fertig or scheitern"),
                 },
             ),
             ["zuneigung", who, n] => Self::Affection(
                 (*who).to_owned(),
-                i32::try_from(signed(n)?).or_else(|_| err(src, "Zahl zu groß"))?,
+                i32::try_from(signed(n)?).or_else(|_| err(src, "number too large"))?,
             ),
             ["merker", name, "=", n] => Self::SetFlag((*name).to_owned(), int(src, n)?),
             ["merker", name, n] if n.starts_with(['+', '-']) => {
@@ -251,19 +250,18 @@ impl Action {
             }
             ["erfahrung", n] => Self::Xp(count(Some(n))?),
             ["punkte", n] => Self::Points(count(Some(n))?),
-            ["faehigkeit", name] => {
-                Self::Ability(ability_by_name(name).ok_or_else(|| {
-                    ScriptError(format!("`{src}`: unbekannte Fähigkeit `{name}`"))
-                })?)
-            }
+            ["faehigkeit", name] => Self::Ability(
+                ability_by_name(name)
+                    .ok_or_else(|| ScriptError(format!("`{src}`: unknown ability `{name}`")))?,
+            ),
             ["waffe", name] => Self::Weapon(
                 weapon_by_name(name)
-                    .ok_or_else(|| ScriptError(format!("`{src}`: unbekannte Waffe `{name}`")))?,
+                    .ok_or_else(|| ScriptError(format!("`{src}`: unknown weapon `{name}`")))?,
             ),
             ["laden", id] => Self::Open(Open::Shop((*id).to_owned())),
             ["schmied"] => Self::Open(Open::Forge),
             ["baum"] => Self::Open(Open::Skills),
-            _ => return err(src, "unbekannte Folge"),
+            _ => return err(src, "unknown action"),
         })
     }
 }

@@ -18,17 +18,17 @@ pub const SLOTS: usize = 3;
 
 #[derive(Debug, thiserror::Error)]
 pub enum SaveError {
-    #[error("kein Spielstand von Elora")]
+    #[error("not an Elora save game")]
     NotASave,
-    #[error("Formatversion {0} wird nicht unterstützt")]
+    #[error("format version {0} is not supported")]
     Version(u16),
-    #[error("Prüfsumme stimmt nicht – der Spielstand ist beschädigt")]
+    #[error("checksum mismatch – the save game is damaged")]
     Checksum,
-    #[error("Inhalt nicht lesbar: {0}")]
+    #[error("content not readable: {0}")]
     Content(String),
-    #[error("Platz {0} ist beschädigt und wird nicht überschrieben")]
+    #[error("save slot {0} is damaged and will not be overwritten")]
     Damaged(usize),
-    #[error("Platz {0} gibt es nicht")]
+    #[error("save slot {0} does not exist")]
     NoSlot(usize),
     #[error(transparent)]
     Io(#[from] std::io::Error),
@@ -39,7 +39,7 @@ pub enum SaveError {
 /// # Panics
 /// Never for valid save games (serialization cannot fail).
 pub fn encode(game: &SaveGame) -> Vec<u8> {
-    let text = toml::to_string(game).expect("Spielstand serialisierbar");
+    let text = toml::to_string(game).expect("save game serializable");
     let packed = miniz_oxide::deflate::compress_to_vec_zlib(text.as_bytes(), 9);
     let mut out = Vec::with_capacity(packed.len() + 38);
     out.extend_from_slice(MAGIC);
@@ -197,7 +197,7 @@ mod tests {
         assert_eq!(decode(&data).unwrap(), g);
         assert!(
             !data.windows(9).any(|w| w == b"tauwinkel"),
-            "Inhalt ist gepackt (E-245)"
+            "content is compressed (E-245)"
         );
     }
 

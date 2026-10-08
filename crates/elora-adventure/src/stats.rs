@@ -143,10 +143,10 @@ mod tests {
             s.add(&b);
         }
         let t = s.apply(&base);
-        assert_eq!(t.hammer_damage, 4, "(3 + 1) × 1,1 gerundet");
+        assert_eq!(t.hammer_damage, 4, "(3 + 1) × 1.1 rounded");
         assert_eq!(t.grenade_damage, 7);
         assert!(t.hammer_fire_delay < base.hammer_fire_delay);
-        assert_eq!(t.jerk_cooldown, 100, "nie unter 100 ms");
+        assert_eq!(t.jerk_cooldown, 100, "never below 100 ms");
         assert!((t.glide_fall_speed - 0.3).abs() < 1e-6);
         // movement feel stays (E-212)
         assert_eq!(t.ground_control_speed, base.ground_control_speed);

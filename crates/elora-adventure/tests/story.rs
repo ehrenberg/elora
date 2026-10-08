@@ -36,7 +36,7 @@ fn oma_starts_the_well_quest_with_a_choice() {
             .contains(&Outcome::Notice(Notice::QuestStarted("brunnen".into())))
     );
     assert_eq!(g.affection("oma"), 1);
-    assert!(!conv.advance(&c, &mut g).open, "Ende nach der Zusage");
+    assert!(!conv.advance(&c, &mut g).open, "ends after the promise");
     // next dialog: reminder instead of greeting
     let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
     assert_eq!(conv.node, "erinnerung");
@@ -56,7 +56,7 @@ fn lotte_gives_a_potion_once() {
     assert_eq!(g.count("heiltrank"), 1);
     let (conv, _) = Conversation::start(&c, &mut g, "lotte").unwrap();
     assert_eq!(conv.node, "laden");
-    assert_eq!(g.count("heiltrank"), 1, "nur einmal");
+    assert_eq!(g.count("heiltrank"), 1, "only once");
 }
 
 #[test]
@@ -68,7 +68,7 @@ fn cheeky_answer_is_remembered() {
     assert_eq!(conv.node, "frech");
     conv.advance(&c, &mut g);
     assert_eq!(conv.node, "bitte");
-    assert_eq!(g.affection("oma"), 0, "frech gibt keine Zuneigung");
+    assert_eq!(g.affection("oma"), 0, "cheeky gives no affection");
 }
 
 #[test]
@@ -114,10 +114,7 @@ fn well_quest_runs_through_all_goal_types() {
     assert!(out.contains(&Outcome::Notice(Notice::QuestDone("brunnen".into()))));
     assert_eq!(g.quest("brunnen").unwrap().status, QuestStatus::Done);
     assert!(g.gleam_drops >= 30, "Belohnung");
-    assert!(
-        g.holds(&c, "quest bluetenquelle aktiv"),
-        "Kapitel 1 beginnt"
-    );
+    assert!(g.holds(&c, "quest bluetenquelle aktiv"), "chapter 1 begins");
     let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
     assert_eq!(conv.node, "danach");
 }
@@ -147,7 +144,11 @@ fn side_quest_bring_and_fail() {
 fn hidden_choice_until_condition_holds() {
     let (c, mut g) = game();
     let (conv, _) = Conversation::start(&c, &mut g, "tueftel").unwrap();
-    assert_eq!(conv.choices(&c, &g), vec![1], "Baum erst ab Stufe 2");
+    assert_eq!(
+        conv.choices(&c, &g),
+        vec![1],
+        "skill tree only from level 2"
+    );
     g.add_xp(&c, 25);
     let (mut conv, _) = Conversation::start(&c, &mut g, "tueftel").unwrap();
     assert_eq!(conv.choices(&c, &g), vec![0, 1]);
@@ -187,27 +188,27 @@ fn broken_dialogs_are_reported() {
     let cases = [
         (
             "[[node]]\nid = \"a\"\ntext = { de = \"Hallo\", en = \"\" }\n",
-            "englischer Text fehlt",
+            "English text missing",
         ),
         (
             "[[node]]\nid = \"a\"\nnext = \"b\"\ntext = { de = \"x\", en = \"x\" }\n",
-            "Knoten `b` gibt es nicht",
+            "node `b` does not exist",
         ),
         (
             "[[node]]\nid = \"a\"\ntext = { de = \"x\", en = \"x\" }\ndo = [\"quest gibtsnicht start\"]\n",
-            "unbekannte Aufgabe",
+            "unknown quest",
         ),
         (
             "[[node]]\nid = \"a\"\ntext = { de = \"x\", en = \"x\" }\n[[node.choice]]\nif = \"stufe ungefähr 2\"\ntext = { de = \"x\", en = \"x\" }\n",
-            "Vergleich erwartet",
+            "comparison expected",
         ),
         (
             "[[node]]\nid = \"a\"\ntext = { de = \"x\", en = \"x\" }\n[[node]]\nid = \"z\"\ntext = { de = \"x\", en = \"x\" }\n",
-            "nie erreichbar",
+            "never reachable",
         ),
         (
             "[[node]]\nid = \"a\"\nspeaker = \"niemand\"\ntext = { de = \"x\", en = \"x\" }\n",
-            "unbekannte Figur",
+            "unknown character",
         ),
     ];
     for (body, expected) in cases {
@@ -352,9 +353,9 @@ fn exits_must_lead_to_existing_entrances() {
     );
     let errors = map_links(&[("dorf", &a), ("wiese-1", &b)]);
     assert_eq!(errors.len(), 1, "{errors:?}");
-    assert!(errors[0].contains("Eingang `ost` fehlt"));
+    assert!(errors[0].contains("entrance `ost` missing"));
     let errors = map_links(&[("dorf", &a)]);
-    assert!(errors[0].contains("Zielkarte `wiese-1` fehlt"));
+    assert!(errors[0].contains("target map `wiese-1` missing"));
 }
 
 /// Chapter 1 (R2-M2.1): honeycomb, bumblebee, spring spark at Tüftel, festival at Oma,
@@ -484,7 +485,7 @@ fn chapter_two_runs_from_the_slope_to_the_party() {
     assert_eq!(conv.node, "fest2");
     assert!(g.holds(&c, "quest murmelwald erledigt"));
     assert!(g.holds(&c, "quest glutsand aktiv"));
-    assert_eq!(g.flag("befreit.waldquelle"), 1, "Weltkarte: Quelle befreit");
+    assert_eq!(g.flag("befreit.waldquelle"), 1, "world map: spring freed");
     // village after chapter 2: Lotte gives mushroom soup, Klonk talks about the resin
     let (conv, _) = Conversation::start(&c, &mut g, "lotte").unwrap();
     assert_eq!(conv.node, "wald");
@@ -542,7 +543,7 @@ fn chapter_three_runs_from_the_desert_to_the_party() {
     conv.choose(&c, &mut g, 0);
     assert!(g.holds(&c, "quest ruine aktiv"));
     let (conv, _) = Conversation::start(&c, &mut g, "sirup").unwrap();
-    assert_eq!(conv.node, "danach", "kennt Elora schon");
+    assert_eq!(conv.node, "danach", "already knows Elora");
     g.on_reach(&c, "wueste-3", None);
     g.on_reach(&c, "wueste-arena", None);
     g.location.map = "wueste-arena".into();
@@ -586,7 +587,7 @@ fn chapter_three_runs_from_the_desert_to_the_party() {
     assert_eq!(conv.node, "laser");
     assert!(g.weapons.contains_key(&elora_sim::Weapon::Laser));
     let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
-    assert_ne!(conv.node, "laser", "nur einmal");
+    assert_ne!(conv.node, "laser", "only once");
     // village after chapter 3: Lotte gives cactus fruits from Sirup, Pip is amazed
     let fruit = g.count("kaktusfrucht");
     let (conv, _) = Conversation::start(&c, &mut g, "lotte").unwrap();
@@ -620,7 +621,7 @@ fn oasis_quest_fills_the_skin_once_and_waters_three_patches() {
     assert_eq!(conv.node, "trocken");
     let (conv, _) = Conversation::start(&c, &mut g, "ruinenquelle").unwrap();
     assert_eq!(conv.node, "fuellen");
-    assert_eq!(g.count("wasser"), 3, "drei Füllungen (E-322)");
+    assert_eq!(g.count("wasser"), 3, "three fillings (E-322)");
     assert!(g.holds(&c, "quest oase schritt giessen"));
     let (conv, _) = Conversation::start(&c, &mut g, "ruinenquelle").unwrap();
     assert_eq!(conv.node, "voll");

@@ -77,29 +77,29 @@ pub enum Notice {
 /// Why something is not possible.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
 pub enum Refusal {
-    #[error("unbekannt")]
+    #[error("unknown")]
     Unknown,
-    #[error("keine Punkte")]
+    #[error("no points")]
     NoPoints,
-    #[error("höchster Rang erreicht")]
+    #[error("highest rank reached")]
     MaxRank,
-    #[error("Knoten darüber fehlt")]
+    #[error("node above missing")]
     Locked,
-    #[error("Gebietsfähigkeit fehlt")]
+    #[error("area ability missing")]
     NeedsAbility,
-    #[error("zu wenig Glanztropfen")]
+    #[error("not enough gleam drops")]
     TooExpensive,
-    #[error("Material fehlt")]
+    #[error("material missing")]
     MissingMaterial,
-    #[error("nicht vorhanden")]
+    #[error("not owned")]
     NotOwned,
-    #[error("passt nicht")]
+    #[error("wrong kind")]
     WrongKind,
-    #[error("Tasche voll")]
+    #[error("bag full")]
     Full,
-    #[error("Waffe fehlt")]
+    #[error("weapon missing")]
     NoWeapon,
-    #[error("höchste Stufe erreicht")]
+    #[error("highest level reached")]
     MaxLevel,
 }
 
@@ -556,7 +556,7 @@ mod tests {
         assert_eq!(
             (g.level, g.max_health(&c)),
             (3, 11),
-            "alle 2 Stufen +1 Leben (E-241)"
+            "+1 health every 2 levels (E-241)"
         );
         g.add_xp(&c, 1_000_000);
         assert_eq!((g.level, g.xp), (30, 0));
@@ -584,7 +584,7 @@ mod tests {
         assert_eq!(t.jerk_cooldown, 650);
         assert!(t.hammer_damage >= 4);
         let total: u32 = c.skills.iter().map(|n| u32::from(n.ranks)).sum();
-        assert!(total > 29 + 2, "nicht alles erreichbar (E-242): {total}");
+        assert!(total > 29 + 2, "not everything reachable (E-242): {total}");
     }
 
     #[test]
@@ -598,7 +598,7 @@ mod tests {
         assert_eq!(g.max_health(&c), 11);
         assert_eq!(g.count("strohhut"), 0);
         g.unequip(&c, Slot::Hat);
-        assert_eq!(g.sell(&c, "strohhut"), Ok(80), "40 % von 200");
+        assert_eq!(g.sell(&c, "strohhut"), Ok(80), "40 % of 200");
         for _ in 0..5 {
             g.buy(&c, "lotte", "heiltrank").unwrap();
         }
@@ -634,7 +634,7 @@ mod tests {
         g.add_item(&c, GLEAM_DROPS, 40).unwrap();
         assert_eq!(g.die(&c), 10);
         assert_eq!(g.gleam_drops, 130);
-        assert_eq!(g.die(&c), 0, "nichts mehr seit dem Speichern");
+        assert_eq!(g.die(&c), 0, "nothing more since saving");
     }
 
     #[test]
@@ -655,7 +655,7 @@ mod tests {
         assert_eq!(g.xp, kinds[k].xp);
         assert!(
             g.on_event(&c, kinds, 1, &death).is_empty(),
-            "fremder Sieg zählt nicht"
+            "another player's kill does not count"
         );
         let loot = Event::LootCollect {
             player: 0,
