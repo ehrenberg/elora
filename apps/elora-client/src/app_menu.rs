@@ -282,6 +282,10 @@ impl App {
                 self.apply_menu(MenuAction::Resume);
             }
             MenuAction::Vote(yes) => self.apply(Action::Vote(yes)),
+            MenuAction::WatchIntro => {
+                self.apply_menu(MenuAction::Resume);
+                self.start_intro();
+            }
             MenuAction::Respawn => {
                 self.apply(Action::Respawn);
                 self.apply_menu(MenuAction::Resume);

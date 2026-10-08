@@ -92,3 +92,10 @@ Per ffmpeg nach Ogg Vorbis umgewandelt (Stereo, 44,1 kHz, Qualität 4); das Spie
 | `boss-wueste.ogg` | „Hard Boss Battle 1“ | [OpenGameArt – Hard Boss Battle 1](https://opengameart.org/content/hard-boss-battle-1) | MintoDog | CC0 1.0 |
 | `frost.ogg` | „Ice Village“ | [OpenGameArt – Ice Village](https://opengameart.org/content/ice-village) | KarateStudios | CC0 1.0 |
 | `boss-frost.ogg` | „Dramatic Boss Encounter“ | [OpenGameArt – Dramatic Boss Encounter](https://opengameart.org/content/dramatic-boss-encounter) | cynicmusic | CC0 1.0 |
+
+## Intro video (`assets/intro/`)
+
+`intro.ivf` (AV1) is converted with `cargo xtask intro-import`. **Current file: placeholder**
+made from the project's own design sheets (`docs/release-2/design/`, CC-BY-SA 4.0). The final
+video is created by the project owner with an external AI tool (exception to E-295, E-355);
+tool and licence are named here when it is added. Subtitles: `intro.toml` + `assets/lang`.

@@ -55,6 +55,8 @@ pub enum MenuAction {
     AdventureNew(usize),
     AdventureContinue(usize),
     AdventureDelete(usize),
+    /// Watch the intro video again (pause menu of the adventure, E-355).
+    WatchIntro,
 }
 
 /// "Create server" form (E-122).

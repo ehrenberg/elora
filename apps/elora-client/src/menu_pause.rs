@@ -106,6 +106,12 @@ pub fn content(
             TEXT_DIM,
             Align::Left,
         );
+        if crate::intro::available() {
+            let r = Rect::new(right.min.x, right.min.y + 30.0 * s, 180.0 * s, 30.0 * s);
+            if ui.button("pause_intro", r, lang.t("intro.watch"), BLUE) {
+                action = Some(MenuAction::WatchIntro);
+            }
+        }
         return action;
     }
     if !p.online {

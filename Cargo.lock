@@ -4497,6 +4497,7 @@ dependencies = [
  "elora-map",
  "elora-protocol",
  "elora-sim",
+ "elora-video",
  "resvg",
 ]
 

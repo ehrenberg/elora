@@ -24,13 +24,13 @@ Enter or a click. Afterwards the game starts in Tauwinkel as today.
 
 | # | Task | Notes |
 |---|---|---|
-| I-1 | New crate `crates/elora-video`: IVF reader, AV1 decoding with `rav1d`, YUV 4:2:0 → RGBA | The only crate with `#![allow(unsafe_code)]` (E-356); small, documented, unit tests with a tiny test clip (~50 KB) made by ffmpeg; `asm` feature off (no nasm needed for cross builds) unless decoding is too slow |
-| I-2 | Renderer: full-screen textured quad, the texture updated per frame | First image texture in `elora-render` (everything else is meshes) |
-| I-3 | Client: intro screen before the first map of a new adventure; skip with Esc/Space/Enter/click (not in the first 0.5 s); subtitles with fade; decoding on a background thread, a few frames buffered; music start and fade-out | Also “Watch intro” in the adventure menu (pause → adventure tab) |
-| I-4 | `cargo xtask intro-import <video> [--crf N]`: ffmpeg → 1280×720, 24 fps, AV1 (SVT-AV1), no audio, writes `assets/intro/intro.ivf`, prints size and duration | Checks that ffmpeg with an AV1 encoder is installed |
-| I-5 | Packaging: ship `assets/intro/`; `SOURCES.md` and the About page name the tool and the licence of the video (E-355) | |
-| I-6 | Placeholder until the real video exists: a short clip from the existing chapter drafts (design tools) so I-3 can be tested and played | Replaced by the real video |
-| I-7 | Tests: decoder (frame count, size, first pixel colours of the test clip), intro timing (skip, end, subtitle at time t), the game starts without `intro.ivf` | `cargo xtask check` green |
+| I-1 ✅ | New crate `crates/elora-video`: IVF reader, AV1 decoding with `rav1d`, YUV 4:2:0 → RGBA | The only crate with `#![allow(unsafe_code)]` (E-356); small, documented, unit tests with a tiny test clip (~50 KB) made by ffmpeg; `asm` feature off (no nasm needed for cross builds) unless decoding is too slow |
+| I-2 ✅ | Renderer: full-screen textured quad, the texture updated per frame | First image texture in `elora-render` (everything else is meshes) |
+| I-3 ✅ | Client: intro screen before the first map of a new adventure; skip with Esc/Space/Enter/click (not in the first 0.5 s); subtitles with fade; decoding on a background thread, a few frames buffered; music start and fade-out | Also “Watch intro” in the adventure menu (pause → adventure tab) |
+| I-4 ✅ | `cargo xtask intro-import <video> [--crf N]`: ffmpeg → 1280×720, 24 fps, AV1 (SVT-AV1), no audio, writes `assets/intro/intro.ivf`, prints size and duration | Checks that ffmpeg with an AV1 encoder is installed |
+| I-5 ✅ | Packaging: ship `assets/intro/`; `SOURCES.md` and the About page name the tool and the licence of the video (E-355) | |
+| I-6 ✅ | Placeholder until the real video exists: a short clip from the existing chapter drafts (design tools) so I-3 can be tested and played | Replaced by the real video |
+| I-7 ✅ | Tests: decoder (frame count, size, first pixel colours of the test clip), intro timing (skip, end, subtitle at time t), the game starts without `intro.ivf` | `cargo xtask check` green |
 
 ## Storyboard (for the video tool) – please review
 

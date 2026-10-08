@@ -20,6 +20,12 @@ const FADE: f32 = 0.4;
 /// Frames decoded ahead.
 const AHEAD: usize = 4;
 
+/// Is there an intro video? Checked once.
+pub fn available() -> bool {
+    static FOUND: std::sync::OnceLock<bool> = std::sync::OnceLock::new();
+    *FOUND.get_or_init(|| elora_server::paths::resolve(Path::new(VIDEO)).is_file())
+}
+
 /// One subtitle: shown from `from` to `to` seconds, text `intro.<key>` from `assets/lang`.
 #[derive(Debug, Clone, PartialEq, Deserialize)]
 pub struct Line {

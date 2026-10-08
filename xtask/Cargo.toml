@@ -13,6 +13,7 @@ elora-map.workspace = true
 elora-protocol.workspace = true
 resvg.workspace = true
 elora-audio.workspace = true
+elora-video.workspace = true
 
 [lints]
 workspace = true

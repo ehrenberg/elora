@@ -22,6 +22,9 @@ Commands:
                  sounds (procedural + files) as WAV to target/sounds/ (listening test, M5.7)
   sound-import <name> <input> [start_s] [length_s]
                  sound file via ffmpeg to assets/sounds/files/<name>.wav (add the source to assets/SOURCES.md!)
+  intro-import <video> [--crf N]
+                 video via ffmpeg (AV1) to assets/intro/intro.ivf: 1280×720, 24 fps, no sound
+                 (E-355; name the tool and licence in assets/SOURCES.md!)
   package [--archive]
                  release package in dist/ (programs, maps, licenses; macOS: Elora.app),
                  with --archive as .tar.gz or .zip (M8.3)
@@ -43,6 +46,10 @@ fn main() -> ExitCode {
         Some("sound-import") => {
             let args: Vec<String> = std::env::args().skip(2).collect();
             sound_import(&args)
+        }
+        Some("intro-import") => {
+            let args: Vec<String> = std::env::args().skip(2).collect();
+            intro_import(&args)
         }
         Some("sound-preview") => {
             let args: Vec<String> = std::env::args().skip(2).collect();
@@ -253,6 +260,75 @@ fn sound_preview(names: &[String]) -> Result<(), String> {
 /// `sound-import <name> <input> [start_s] [length_s]`: sound file (any format that
 /// ffmpeg reads) to `assets/sounds/files/<name>.wav` – mono, 44.1 kHz, 16 bit,
 /// silence at the start removed, 15 ms fade-out at the end, peak at −1 dB.
+/// Converts the intro video for the game (I-4, E-355): AV1 in IVF, 1280×720 with black bars
+/// if needed, 24 fps, BT.709, no audio (the game plays the Tauwinkel music, E-357).
+fn intro_import(args: &[String]) -> Result<(), String> {
+    let usage = "Usage: cargo xtask intro-import <video> [--crf N]";
+    let input = args.first().filter(|a| !a.starts_with("--")).ok_or(usage)?;
+    let crf = match args.iter().position(|a| a == "--crf") {
+        Some(i) => args.get(i + 1).ok_or(usage)?.clone(),
+        None => "36".to_owned(),
+    };
+    let encoders = Command::new("ffmpeg")
+        .args(["-hide_banner", "-encoders"])
+        .output()
+        .map_err(|e| format!("ffmpeg could not be started: {e}"))?;
+    let list = String::from_utf8_lossy(&encoders.stdout);
+    let encoder = ["libsvtav1", "libaom-av1"]
+        .into_iter()
+        .find(|e| list.contains(e))
+        .ok_or("ffmpeg has no AV1 encoder (libsvtav1 or libaom-av1)")?;
+    let out = std::path::Path::new("assets/intro/intro.ivf");
+    std::fs::create_dir_all("assets/intro").map_err(|e| e.to_string())?;
+    let filter = "scale=1280:720:force_original_aspect_ratio=decrease,\
+                  pad=1280:720:(ow-iw)/2:(oh-ih)/2,fps=24,format=yuv420p";
+    let mut cmd = Command::new("ffmpeg");
+    cmd.args(["-v", "error", "-y", "-i", input, "-an", "-vf", filter]);
+    cmd.args(["-c:v", encoder, "-crf", &crf]);
+    if encoder == "libsvtav1" {
+        cmd.args(["-preset", "5", "-g", "240"]);
+    } else {
+        cmd.args(["-cpu-used", "4", "-g", "240"]);
+    }
+    cmd.args([
+        "-colorspace",
+        "bt709",
+        "-color_primaries",
+        "bt709",
+        "-color_trc",
+        "bt709",
+        "-color_range",
+        "tv",
+        "-f",
+        "ivf",
+    ]);
+    cmd.arg(out);
+    let status = cmd
+        .status()
+        .map_err(|e| format!("ffmpeg could not be started: {e}"))?;
+    if !status.success() {
+        return Err("ffmpeg failed".into());
+    }
+    let data = std::fs::read(out).map_err(|e| e.to_string())?;
+    let header = elora_video::Header::parse(&data).map_err(|e| e.to_string())?;
+    // decode once completely: the game must be able to play it
+    let mut video = elora_video::Video::new(data.clone()).map_err(|e| e.to_string())?;
+    let mut frames = 0u32;
+    while video.next_frame().map_err(|e| e.to_string())?.is_some() {
+        frames += 1;
+    }
+    #[allow(clippy::cast_precision_loss)]
+    let mb = data.len() as f64 / 1_048_576.0;
+    println!(
+        "{}: {}×{}, {frames} frames, {:.1} s, {mb:.1} MB ({encoder}, crf {crf})",
+        out.display(),
+        header.width,
+        header.height,
+        f64::from(frames) / f64::from(header.fps()),
+    );
+    Ok(())
+}
+
 fn sound_import(args: &[String]) -> Result<(), String> {
     let usage = "Usage: cargo xtask sound-import <name> <input> [start_s] [length_s]";
     let (Some(name), Some(input)) = (args.first(), args.get(1)) else {

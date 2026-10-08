@@ -210,6 +210,20 @@ Back to the procedural sound: delete the file and add an entry with layers in `s
 
 **Music** lives as Ogg Vorbis in `assets/music/` (per region via `music`, `boss_music`, `party_music` in `assets/adventure/worldmap.toml`); sources in `assets/SOURCES.md`, CC-BY tracks must also be credited on the “About Elora” page.
 
+### Adventure intro video (E-355)
+
+The intro before a new adventure is `assets/intro/intro.ivf` (AV1, 1280×720, 24 fps, no sound);
+the subtitles are in `assets/intro/intro.toml` with the texts in `assets/lang` (`[intro]`).
+Convert a new video with the local ffmpeg (needs an AV1 encoder, SVT-AV1 or libaom):
+
+```sh
+cargo xtask intro-import ~/Videos/intro.mp4            # default quality (crf 36)
+cargo xtask intro-import ~/Videos/intro.mp4 --crf 30   # better quality, bigger file
+```
+
+The command letterboxes to 16:9, drops the audio, decodes the result once with the game's
+decoder and prints size and length. Name the tool and licence in `assets/SOURCES.md`.
+
 ## Packages and releases
 
 `cargo xtask package --archive` builds a release package for your own system under `dist/` (programs, maps, music, licenses, icon; on macOS also `Elora.app`).

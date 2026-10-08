@@ -9,6 +9,7 @@
 //!   maps/                               release + training maps, abenteuer/: adventure maps
 //!   assets/music/                       music (menu, regions)
 //!   assets/ambience/                    weather sounds (rain, wind, sand, thunder)
+//!   assets/intro/                       intro video and subtitles of the adventure (E-355)
 //!   LICENSE, THIRD_PARTY_LICENSES, SOURCES.md, LIESMICH.txt
 //!   elora.png                           program icon (256 × 256)
 //! ```
@@ -157,7 +158,7 @@ fn fill(target: &Target, dir: &Path, bin_dir: &Path, data_dir: &Path) -> Result<
         &data_dir.join("maps/abenteuer"),
         &|p| p.extension().is_some_and(|e| e == "emap"),
     )?;
-    for dir in ["assets/music", "assets/ambience"] {
+    for dir in ["assets/music", "assets/ambience", "assets/intro"] {
         if Path::new(dir).is_dir() {
             copy_dir(Path::new(dir), &data_dir.join(dir), &|_| true)?;
         }
