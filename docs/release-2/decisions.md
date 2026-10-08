@@ -168,6 +168,7 @@ Continued from **E-200**. Release 1 (E-001 to E-173) is in the
 | E-357 | 2026-10-08 | Intro plan (docs/release-2/intro-plan.md) | **Accepted** with storyboard; music: the existing **Tauwinkel track**; the intro plays at **every new adventure** (always skippable) |
 | E-358 | 2026-10-08 | Scope of the id renaming (RF-10 to RF-13) | One **word dictionary** (`renames.toml`) translates ids word by word; it also drives the migration of saves and old maps. **Map format and network names too** (decor, weather keys, object kinds, multiplayer map names) with **protocol 7** and aliases in the map loader (0.9.x and the new version no longer play together online). **Proper names stay** (characters, places). **Internal ids** (dialog nodes, zone prefixes) are translated as well. Old saves are converted **automatically on load, without a backup** |
 | E-359 | 2026-10-08 | Intro narration | Spoken narration (de/en) instead of subtitles, created by the owner with the **speech generation of the Google AI Studio playground** – like the video a **second exception to E-295**, limited to the intro; Tauwinkel music at 35 % underneath |
+| E-360 | 2026-10-08 | Setup screen draft (RF-30) | Draft `docs/release-2/design/setup-screen.png` **accepted**; the screen starts in the **system language** (German if the system is German, otherwise English) |
 
 ## Open points
 

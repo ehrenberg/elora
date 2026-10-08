@@ -55,6 +55,8 @@ pub enum MenuAction {
     AdventureNew(usize),
     AdventureContinue(usize),
     AdventureDelete(usize),
+    /// Setup on the first start confirmed (RF-30): save the settings, open the main menu.
+    SetupDone,
     /// Watch the intro video again (pause menu of the adventure, E-355).
     WatchIntro,
 }
@@ -109,6 +111,7 @@ pub struct MenuCtx<'a> {
 }
 
 #[derive(Debug, Default)]
+#[allow(clippy::struct_excessive_bools)] // independent states of the menu
 pub struct Menu {
     pub page: Page,
     pub settings_tab: usize,
@@ -131,6 +134,8 @@ pub struct Menu {
     pub last_click: Option<(std::time::Instant, Vec2)>,
     /// Slot whose deletion is about to be confirmed.
     pub confirm_delete: Option<usize>,
+    /// First start: the setup screen replaces the menu until it is confirmed (RF-30).
+    pub setup: bool,
 }
 
 /// Color of the selected tab (editor, training and quit are actions and never selected).
@@ -153,6 +158,12 @@ impl Menu {
             s: cx.s,
         };
         ui.begin(cx.dt);
+        if self.setup {
+            let (action, changed) = crate::menu_setup::page(&mut ui, cx, edit);
+            ui.end();
+            self.input.next_frame();
+            return (action, changed);
+        }
         let mut action = top_bar(&mut ui, cx, &mut self.page);
         let s = cx.s;
         let content = Rect::new(
@@ -626,6 +637,8 @@ mod tests {
             ("about", Page::Settings),
             ("controls", Page::Settings),
             ("pause", Page::Play),
+            ("setup", Page::Play),
+            ("setup-empty", Page::Play),
         ] {
             let mut browser = crate::browser::Browser::default();
             browser.tab = crate::browser::Tab::Favorites;
@@ -711,6 +724,7 @@ mod tests {
                     _ => 0,
                 },
                 address: "127.0.0.1:8303".into(),
+                setup: name.starts_with("setup"),
                 ..Menu::default()
             };
             let cx = MenuCtx {
@@ -738,7 +752,11 @@ mod tests {
                 dt: 0.016,
             };
             let mut batch = ShapeBatch::default();
-            let mut player = "Elora".to_owned();
+            let mut player = if name == "setup-empty" {
+                String::new()
+            } else {
+                "Elora".to_owned()
+            };
             let mut skin = Skin::default();
             let mut graphics = crate::settings::GraphicsSettings::default();
             let mut audio = elora_audio::AudioSettings::default();

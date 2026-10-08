@@ -664,6 +664,15 @@ sandstorm = "Sandsturm"
 snow = "Schnee"
 blizzard = "Schneesturm"
 
+# First-start setup (RF-30, E-351)
+[setup]
+title = "Willkommen in Elora!"
+sub = "Bevor es losgeht: Wie heißt du, und wie soll Elora aussehen?"
+language = "Sprache"
+go = "Los geht's!"
+hint = "Bitte gib einen Namen ein."
+later = "Alles lässt sich später unter Einstellungen ändern."
+
 # Adventure intro (E-355)
 [intro]
 skip = "Überspringen: {key}"

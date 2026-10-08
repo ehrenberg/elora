@@ -101,8 +101,8 @@ listing the 0.9.x servers.
 
 | # | Task | Notes |
 |---|---|---|
-| RF-30 | Setup screen on the first start: one page with **name** (required, not empty), **language** (switches the screen immediately) and **Elora's look** (body, feet, eyes with a live preview); a “Let's go” button saves the settings and opens the main menu | Shown only when no settings file exists yet; no skipping; built in English and in the new structure |
-| RF-31 | First-start detection and validation as testable functions (settings file missing → setup; name trimmed, length limit like the player settings) | Unit tests; existing installs never see the screen |
+| RF-30 ✅ | Setup screen on the first start: one page with **name** (required, not empty), **language** (switches the screen immediately) and **Elora's look** (body, feet, eyes with a live preview); a “Let's go” button saves the settings and opens the main menu | Shown only when no settings file exists yet; no skipping; built in English and in the new structure |
+| RF-31 ✅ | First-start detection and validation as testable functions (settings file missing → setup; name trimmed, length limit like the player settings) | Unit tests; existing installs never see the screen |
 
 ### Phase 4 – verification
 

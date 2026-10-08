@@ -92,6 +92,21 @@ fn move_old_maps(old: &Path, new: &Path) {
     let _ = std::fs::remove_dir(old);
 }
 
+/// Longest player name (characters), as in the player settings.
+pub const NAME_MAX: usize = 16;
+
+/// First start: no settings file yet, so the setup screen is shown (RF-30, RF-31).
+pub fn first_start() -> bool {
+    !settings_path().exists()
+}
+
+/// A usable player name: trimmed, not empty, at most [`NAME_MAX`] characters.
+pub fn player_name(input: &str) -> Option<String> {
+    let name: String = input.trim().chars().take(NAME_MAX).collect();
+    let name = name.trim_end().to_owned();
+    (!name.is_empty()).then_some(name)
+}
+
 /// Path of the settings file (fallback: working directory).
 pub fn settings_path() -> PathBuf {
     config_dir().map_or_else(|| PathBuf::from(SETTINGS_FILE), |d| d.join(SETTINGS_FILE))
@@ -390,5 +405,15 @@ mod tests {
         assert!(!old.exists(), "old folder removed");
         move_old_maps(&old, &new); // nothing left to do
         std::fs::remove_dir_all(&dir).unwrap();
+    }
+
+    #[test]
+    fn player_names_are_trimmed_and_required() {
+        assert_eq!(player_name("  Basti  "), Some("Basti".into()));
+        assert_eq!(player_name("   "), None);
+        assert_eq!(player_name(""), None);
+        let long = "abcdefghijklmnopqrstuvwxyz";
+        assert_eq!(player_name(long).map(|n| n.chars().count()), Some(NAME_MAX));
+        assert_eq!(player_name("Ü Elora"), Some("Ü Elora".into()));
     }
 }

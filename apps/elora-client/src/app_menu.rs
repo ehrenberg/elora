@@ -283,6 +283,10 @@ impl App {
                 self.apply_menu(MenuAction::Resume);
             }
             MenuAction::Vote(yes) => self.apply(Action::Vote(yes)),
+            MenuAction::SetupDone => {
+                self.menu.setup = false;
+                self.save_settings();
+            }
             MenuAction::WatchIntro => {
                 self.apply_menu(MenuAction::Resume);
                 self.start_intro();

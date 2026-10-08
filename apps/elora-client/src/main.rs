@@ -46,6 +46,7 @@ mod menu_browser;
 mod menu_pause;
 mod menu_scene;
 mod menu_settings;
+mod menu_setup;
 mod sandbox;
 mod settings;
 mod skins;

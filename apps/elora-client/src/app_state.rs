@@ -33,6 +33,11 @@ impl App {
         controls.auto_switch = settings.input.auto_switch;
         let mut net = NetUi::default();
         net.name.clone_from(&settings.player.name);
+        // first start (RF-30): the setup screen asks for the name
+        let setup = settings::first_start();
+        if setup {
+            net.name.clear();
+        }
         net.skin = settings.player.skin();
         if let Some(r) = &sandbox.rules {
             net.sandbox_mode = Some(r.cfg.mode);
@@ -80,7 +85,10 @@ impl App {
             editor: None,
             editor_test: None,
             editor_area: editor::panel::AreaInfo::default(),
-            menu: menu::Menu::default(),
+            menu: menu::Menu {
+                setup,
+                ..menu::Menu::default()
+            },
             maps: app_menu::map_names(),
             bind_capture: None,
             adventure: None,

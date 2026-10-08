@@ -143,7 +143,7 @@ fn player(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, page: Rect, edit: &mut SettingsEdit
         "set_name",
         Rect::new(x, y + 12.0 * s, 240.0 * s, 30.0 * s),
         edit.name,
-        16,
+        crate::settings::NAME_MAX,
         "Elora",
     ) != crate::ui::FieldEvent::None;
     y += 64.0 * s;
