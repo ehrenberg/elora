@@ -92,7 +92,7 @@ listing the 0.9.x servers.
 | RF-23 ✅ | Unify heat and cold bars: one `TemperatureBar` with data from `worldmap.toml` (fill/cool times, zone prefixes) instead of constants in code | Today: `HEAT_*`/`COLD_*` constants, two near-identical functions |
 | RF-24 ✅ | Protocol: one list of non-networked events instead of two hand-kept `matches!` lists in `msg.rs` | New events had to be added twice |
 | RF-25 | Generate asset lists (decor, creatures, characters, music test lists) from the asset folders in `build.rs` instead of hand-kept arrays | Several were missed or had to be updated in 3 places |
-| RF-26 | Shared test support: one `test_world()`/`CreatureKind` builder for `elora-sim` tests instead of per-file copies | `freeze_ms` had to be added to five initializers |
+| RF-26 ✅ | Shared test support: one `test_world()`/`CreatureKind` builder for `elora-sim` tests instead of per-file copies | `freeze_ms` had to be added to five initializers |
 | RF-27 | Map generators: move shared helpers (`edge_exit`, `zone`, `big`, `chimney`, `climb_vault`, `stomp_vault`, …) into one `editor/gen` module; document the mirroring of forest maps | Helpers were made `pub(super)` ad hoc |
 | RF-28 | Reduce `#[allow(clippy::…)]`: remove those that no longer apply, replace casts with helpers (`tile_of`, `to_f32`) | Goal: no `too_many_lines` outside generators and tests |
 | RF-29 | Review public API docs (`cargo doc` without warnings, `missing_docs` on library crates) | |
