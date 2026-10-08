@@ -1,8 +1,7 @@
-//! Socket-Abstraktion und Netzwerk-Simulator (M3.3).
+//! Socket abstraction and network simulator (M3.3).
 //!
-//! [`UdpSocket`] für echten Verkehr; [`MemNetwork`] für Tests im Speicher mit
-//! virtueller Zeit. Beide können über [`Conditions`] Ping, Jitter, Verlust und
-//! Umordnung simulieren.
+//! [`UdpSocket`] for real traffic; [`MemNetwork`] for in-memory tests with virtual
+//! time. Both can simulate ping, jitter, loss and reordering via [`Conditions`].
 
 use std::collections::{HashMap, VecDeque};
 use std::io;
@@ -10,7 +9,7 @@ use std::net::SocketAddr;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
-/// Größter Datagramm-Puffer.
+/// Largest datagram buffer.
 pub const MAX_DATAGRAM: usize = 1500;
 
 pub trait Socket {
@@ -19,16 +18,16 @@ pub trait Socket {
     fn local_addr(&self) -> SocketAddr;
 }
 
-/// Simulierte Leitungseigenschaften (pro Richtung, auf ausgehende Pakete angewendet).
+/// Simulated link properties (per direction, applied to outgoing packets).
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct Conditions {
-    /// Einfache Verzögerung (halbe Round-Trip-Zeit bei beidseitiger Anwendung).
+    /// One-way delay (half the round-trip time when applied on both sides).
     pub latency: Duration,
-    /// Zusätzliche zufällige Verzögerung 0..jitter.
+    /// Additional random delay 0..jitter.
     pub jitter: Duration,
-    /// Verlustrate 0..1.
+    /// Loss rate 0..1.
     pub loss: f32,
-    /// Anteil doppelt gesendeter Pakete 0..1.
+    /// Share of duplicated packets 0..1.
     pub duplicate: f32,
 }
 
@@ -38,7 +37,7 @@ impl Conditions {
     }
 }
 
-/// Verzögert und verwirft Pakete nach [`Conditions`].
+/// Delays and drops packets according to [`Conditions`].
 #[derive(Debug)]
 pub struct Conditioner {
     pub conditions: Conditions,
@@ -74,7 +73,7 @@ impl Conditioner {
         }
     }
 
-    /// Alle fälligen Pakete (in Reihenfolge ihres Fälligkeitszeitpunkts).
+    /// All due packets (in order of their due time).
     pub fn pop_ready(&mut self, now: Instant) -> Vec<(Vec<u8>, SocketAddr)> {
         let (mut ready, rest): (Vec<_>, Vec<_>) =
             self.queue.drain(..).partition(|(t, ..)| *t <= now);
@@ -84,11 +83,11 @@ impl Conditioner {
     }
 }
 
-/// Echter, nicht blockierender UDP-Socket mit optionalem Simulator.
+/// Real, non-blocking UDP socket with optional simulator.
 ///
-/// Entweder für eine Adressfamilie ([`UdpSocket::bind`]) oder für beide ([`UdpSocket::bind_dual`]:
-/// je ein Socket für IPv4 und IPv6 auf demselben Port – wichtig für Anschlüsse ohne eigene
-/// IPv4-Adresse wie DS-Lite).
+/// Either for one address family ([`UdpSocket::bind`]) or for both ([`UdpSocket::bind_dual`]:
+/// one socket each for IPv4 and IPv6 on the same port – important for connections without
+/// their own IPv4 address such as DS-Lite).
 #[derive(Debug)]
 pub struct UdpSocket {
     v4: Option<std::net::UdpSocket>,
@@ -99,7 +98,7 @@ pub struct UdpSocket {
 fn v6_only(port: u16) -> io::Result<std::net::UdpSocket> {
     use socket2::{Domain, Protocol, Socket as RawSocket, Type};
     let s = RawSocket::new(Domain::IPV6, Type::DGRAM, Some(Protocol::UDP))?;
-    // nur IPv6: IPv4 läuft über den eigenen Socket auf demselben Port
+    // IPv6 only: IPv4 runs over its own socket on the same port
     s.set_only_v6(true)?;
     s.bind(&SocketAddr::from(([0u16; 8], port)).into())?;
     let s: std::net::UdpSocket = s.into();
@@ -116,10 +115,10 @@ impl UdpSocket {
         }
     }
 
-    /// Socket für die Adressfamilie von `addr`.
+    /// Socket for the address family of `addr`.
     ///
     /// # Errors
-    /// Wenn der Socket nicht gebunden werden kann.
+    /// If the socket cannot be bound.
     pub fn bind(addr: SocketAddr) -> io::Result<Self> {
         let socket = std::net::UdpSocket::bind(addr)?;
         socket.set_nonblocking(true)?;
@@ -130,13 +129,13 @@ impl UdpSocket {
         })
     }
 
-    /// IPv4 und IPv6 auf `port` (0 = beliebig). Fehlt IPv6 auf dem Rechner, nur IPv4.
+    /// IPv4 and IPv6 on `port` (0 = any). If the machine lacks IPv6, IPv4 only.
     ///
     /// # Errors
-    /// Wenn weder IPv4 noch IPv6 gebunden werden kann.
+    /// If neither IPv4 nor IPv6 can be bound.
     pub fn bind_dual(port: u16) -> io::Result<Self> {
         let v4 = std::net::UdpSocket::bind(SocketAddr::from(([0, 0, 0, 0], port)));
-        // beliebiger Port: IPv6 auf demselben Port wie IPv4, damit beide gleich erreichbar sind
+        // any port: IPv6 on the same port as IPv4 so that both are equally reachable
         let port6 = match &v4 {
             Ok(s) if port == 0 => s.local_addr().map_or(0, |a| a.port()),
             _ => port,
@@ -157,20 +156,20 @@ impl UdpSocket {
         }
     }
 
-    /// Lauscht der Socket auf IPv6?
+    /// Does the socket listen on IPv6?
     pub fn has_ipv6(&self) -> bool {
         self.v6.is_some()
     }
 
-    /// Lauscht der Socket auf IPv4?
+    /// Does the socket listen on IPv4?
     pub fn has_ipv4(&self) -> bool {
         self.v4.is_some()
     }
 
-    /// Broadcast erlauben (LAN-Suche des Server-Browsers, nur IPv4).
+    /// Allow broadcast (LAN search of the server browser, IPv4 only).
     ///
     /// # Errors
-    /// Wenn das Betriebssystem die Option ablehnt.
+    /// If the operating system rejects the option.
     pub fn set_broadcast(&self, on: bool) -> io::Result<()> {
         match &self.v4 {
             Some(s) => s.set_broadcast(on),
@@ -196,7 +195,7 @@ fn recv(socket: &std::net::UdpSocket, buf: &mut [u8]) -> Option<(usize, SocketAd
     loop {
         match socket.recv_from(buf) {
             Ok(v) => return Some(v),
-            // z. B. ICMP „Port nicht erreichbar“ unter Windows: überspringen
+            // e.g. ICMP "port unreachable" on Windows: skip
             Err(e) if e.kind() == io::ErrorKind::ConnectionReset => {}
             Err(_) => return None,
         }
@@ -272,7 +271,7 @@ mod udp_tests {
 
 type Inbox = HashMap<SocketAddr, VecDeque<(Vec<u8>, SocketAddr)>>;
 
-/// Netzwerk im Speicher für Tests.
+/// In-memory network for tests.
 #[derive(Debug, Clone, Default)]
 pub struct MemNetwork {
     inboxes: Arc<Mutex<Inbox>>,
@@ -283,10 +282,10 @@ impl MemNetwork {
         Self::default()
     }
 
-    /// Neuer Socket an `addr`.
+    /// New socket at `addr`.
     ///
     /// # Panics
-    /// Wenn der interne Lock vergiftet ist (nur nach einem Panic in einem Test).
+    /// If the internal lock is poisoned (only after a panic in a test).
     pub fn socket(&self, addr: SocketAddr, conditions: Conditions, seed: u64) -> MemSocket {
         self.inboxes.lock().expect("Lock").entry(addr).or_default();
         MemSocket {

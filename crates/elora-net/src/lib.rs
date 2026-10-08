@@ -1,7 +1,7 @@
-//! UDP-Transport von Elora (E-012): Handshake mit Token, Noise-Verschlüsselung
-//! (E-061, E-062), zuverlässige und unzuverlässige Nachrichten, Netzwerk-Simulator.
+//! UDP transport of Elora (E-012): handshake with token, Noise encryption
+//! (E-061, E-062), reliable and unreliable messages, network simulator.
 //!
-//! Kennt keine Spielinhalte – Bytes rein, Bytes raus.
+//! Knows nothing about game content – bytes in, bytes out.
 
 pub mod endpoint;
 pub mod info;

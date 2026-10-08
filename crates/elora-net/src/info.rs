@@ -1,14 +1,14 @@
-//! Server-Info ohne Verbindung (M7.6) – Grundlage des Server-Browsers.
+//! Connectionless server info (M7.6) – basis of the server browser.
 //!
-//! Ablauf je Server: Token anfordern (Anfrage auf 512 Byte aufgefüllt, Antwort kleiner –
-//! keine Verstärkung), dann Info-Anfrage mit Token und Zufallswert; der Server antwortet
-//! nur an die Adresse, der das Token gehört, und höchstens [`INFO_RATE`]-mal je Sekunde.
-//! Der Ping ist die Zeit zwischen Info-Anfrage und Antwort.
+//! Flow per server: request a token (request padded to 512 bytes, reply smaller – no
+//! amplification), then an info request with token and random nonce; the server only
+//! answers the address the token belongs to, and at most [`INFO_RATE`] times per second.
+//! The ping is the time between info request and reply.
 //!
 //! [`INFO_RATE`]: crate::endpoint
 //!
-//! Die Nutzdaten (Name, Karte, Spieler …) sind für diese Schicht undurchsichtig; sie
-//! werden in `elora-protocol` kodiert.
+//! The payload (name, map, players …) is opaque to this layer; it is encoded in
+//! `elora-protocol`.
 
 use std::collections::HashMap;
 use std::net::SocketAddr;
@@ -19,12 +19,12 @@ use crate::endpoint::{
 };
 use crate::socket::{MAX_DATAGRAM, Socket};
 
-/// Nach dieser Zeit ohne Antwort gilt ein Server als nicht erreichbar.
+/// After this time without a reply a server counts as unreachable.
 pub const INFO_TIMEOUT: Duration = Duration::from_secs(2);
-/// Token-Anfrage wird so oft wiederholt, falls ein Paket verloren geht.
+/// The token request is repeated at this interval in case a packet gets lost.
 const RESEND: Duration = Duration::from_millis(500);
 
-/// Antwort eines Servers.
+/// Reply of a server.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InfoReply {
     pub addr: SocketAddr,
@@ -44,11 +44,11 @@ struct Query {
     started: Instant,
 }
 
-/// Fragt Server nach ihren Infos (auch per Broadcast im LAN).
+/// Asks servers for their info (also via broadcast in the LAN).
 pub struct InfoProbe<S: Socket> {
     socket: S,
     queries: HashMap<SocketAddr, Query>,
-    /// Laufende Broadcast-Suche: bis wann Antworten neuer Adressen angenommen werden.
+    /// Running broadcast search: until when replies from new addresses are accepted.
     discovery_until: Option<Instant>,
     rng: u64,
     buf: Vec<u8>,
@@ -93,7 +93,7 @@ impl<S: Socket> InfoProbe<S> {
         v.to_le_bytes()
     }
 
-    /// Server `addr` abfragen (ersetzt eine laufende Abfrage).
+    /// Query server `addr` (replaces a running query).
     pub fn query(&mut self, addr: SocketAddr, now: Instant) {
         self.queries.insert(
             addr,
@@ -105,8 +105,8 @@ impl<S: Socket> InfoProbe<S> {
         self.socket.send_to(&token_request(), addr, now);
     }
 
-    /// LAN-Suche: Token-Anfrage an `targets` (z. B. Broadcast-Adressen); jeder Server,
-    /// der innerhalb von [`INFO_TIMEOUT`] antwortet, wird abgefragt.
+    /// LAN search: token request to `targets` (e.g. broadcast addresses); every server
+    /// that answers within [`INFO_TIMEOUT`] is queried.
     pub fn discover(&mut self, targets: &[SocketAddr], now: Instant) {
         self.discovery_until = Some(now + INFO_TIMEOUT);
         let p = token_request();
@@ -115,13 +115,13 @@ impl<S: Socket> InfoProbe<S> {
         }
     }
 
-    /// Laufen noch Abfragen?
+    /// Are queries still running?
     pub fn busy(&self) -> bool {
         !self.queries.is_empty() || self.discovery_until.is_some()
     }
 
-    /// Empfängt Antworten, wiederholt Anfragen, verwirft abgelaufene. Liefert neue Infos
-    /// und die Adressen, die nicht geantwortet haben.
+    /// Receives replies, repeats requests, drops expired ones. Returns new infos and the
+    /// addresses that did not answer.
     pub fn poll(&mut self, now: Instant) -> (Vec<InfoReply>, Vec<SocketAddr>) {
         let mut replies = Vec::new();
         let mut buf = std::mem::take(&mut self.buf);
@@ -276,7 +276,7 @@ mod tests {
         b.set_info(b"B".to_vec());
         let mut probe = InfoProbe::new(net.socket(addr(9002), Conditions::default(), 4), 9);
         let mut now = Instant::now();
-        // im Speichernetz ersetzt die Liste der Ports den Broadcast
+        // in the in-memory network the list of ports replaces the broadcast
         probe.discover(&[addr(8303), addr(8304), addr(8305)], now);
         let mut found = Vec::new();
         for _ in 0..20 {
@@ -288,7 +288,7 @@ mod tests {
         found.sort();
         assert_eq!(found, vec![b"A".to_vec(), b"B".to_vec()]);
 
-        // Info-Anfrage mit falschem Token bleibt unbeantwortet
+        // info request with a wrong token stays unanswered
         let mut raw = net.socket(addr(9003), Conditions::default(), 5);
         let mut req = vec![P_INFO_REQUEST];
         req.extend_from_slice(&[0; 8]);

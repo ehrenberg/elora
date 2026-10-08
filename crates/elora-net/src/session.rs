@@ -1,27 +1,27 @@
-//! Zuverlässigkeitsschicht einer Verbindung (ohne Socket und ohne Kryptografie).
+//! Reliability layer of a connection (without socket and without cryptography).
 //!
-//! Jedes Paket hat eine fortlaufende Nummer (zugleich der Nonce der Verschlüsselung)
-//! und bestätigt die zuletzt empfangenen Pakete (höchste Nummer + 32-Bit-Feld der
-//! Vorgänger). Zuverlässige Nachrichten werden erneut gesendet, bis ein Paket mit
-//! ihnen bestätigt ist, und in Reihenfolge zugestellt. Unzuverlässige Nachrichten
-//! werden bei Bedarf in Fragmente geteilt; fehlt ein Fragment, ist die Nachricht weg.
+//! Every packet has a sequential number (which is also the encryption nonce) and
+//! acknowledges the most recently received packets (highest number + 32-bit field of
+//! its predecessors). Reliable messages are resent until a packet carrying them is
+//! acknowledged, and are delivered in order. Unreliable messages are split into
+//! fragments if needed; if a fragment is missing, the message is lost.
 
 use std::collections::{BTreeMap, HashMap, VecDeque};
 use std::time::{Duration, Instant};
 
-/// Nutzdaten pro Paket (unter typischer MTU, abzüglich Kopf und Verschlüsselung).
+/// Payload per packet (below a typical MTU, minus header and encryption).
 pub const MAX_PAYLOAD: usize = 1200;
-/// Größe eines Fragments bzw. Teilstücks.
+/// Size of a fragment or chunk.
 const PIECE: usize = 1000;
-/// Obergrenze einer einzelnen Nachricht.
+/// Upper limit of a single message.
 pub const MAX_MESSAGE: usize = 8 * 1024 * 1024;
-/// So viele gesendete Pakete merken wir uns für Acks und RTT.
+/// This many sent packets are remembered for acks and RTT.
 const SENT_HISTORY: usize = 512;
-/// Obergrenze gepufferter zuverlässiger Nachrichten beim Empfänger.
+/// Upper limit of buffered reliable messages at the receiver.
 const MAX_REORDER: u64 = 16 * 1024;
 const MAX_ASSEMBLIES: usize = 32;
 
-/// Fehler durch fehlerhafte oder bösartige Pakete; die Verbindung wird getrennt.
+/// Error caused by malformed or malicious packets; the connection is closed.
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 pub enum SessionError {
     #[error("fehlerhaftes Paket")]
@@ -30,7 +30,7 @@ pub enum SessionError {
     TooLarge,
 }
 
-/// Was die Gegenseite geschickt hat.
+/// What the peer sent.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Delivery {
     Reliable(Vec<u8>),
@@ -49,7 +49,7 @@ struct SentPacket {
 #[derive(Debug)]
 struct Pending {
     data: Vec<u8>,
-    /// Weitere Teilstücke folgen (große zuverlässige Nachricht).
+    /// More chunks follow (large reliable message).
     more: bool,
     last_sent: Option<Instant>,
 }
@@ -60,12 +60,12 @@ struct Assembly {
     started: Instant,
 }
 
-/// Messwerte einer Verbindung.
+/// Measurements of a connection.
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct Stats {
-    /// Geglättete Round-Trip-Zeit.
+    /// Smoothed round-trip time.
     pub rtt: Duration,
-    /// Anteil unbestätigter Pakete (0..1) der letzten Pakete.
+    /// Share of unacknowledged packets (0..1) among the most recent packets.
     pub loss: f32,
     pub bytes_sent: u64,
     pub bytes_received: u64,
@@ -78,7 +78,7 @@ pub struct Session {
     sent: VecDeque<SentPacket>,
     recv_highest: Option<u64>,
     recv_bits: u32,
-    /// Seit dem letzten eigenen Paket etwas empfangen (Ack fällig).
+    /// Received something since our last own packet (ack due).
     ack_due: bool,
     next_reliable: u64,
     unacked: BTreeMap<u64, Pending>,
@@ -100,7 +100,7 @@ impl Default for Session {
     }
 }
 
-// Rahmen-Kennungen
+// Frame identifiers
 const F_RELIABLE: u8 = 0;
 const F_UNRELIABLE: u8 = 1;
 const F_FRAGMENT: u8 = 2;
@@ -181,10 +181,10 @@ impl Session {
         }
     }
 
-    /// Nachricht zuverlässig und geordnet senden.
+    /// Send a message reliably and ordered.
     ///
     /// # Errors
-    /// Wenn die Nachricht größer als [`MAX_MESSAGE`] ist.
+    /// If the message is larger than [`MAX_MESSAGE`].
     pub fn send_reliable(&mut self, data: &[u8]) -> Result<(), SessionError> {
         if data.len() > MAX_MESSAGE {
             return Err(SessionError::TooLarge);
@@ -210,10 +210,10 @@ impl Session {
         Ok(())
     }
 
-    /// Nachricht unzuverlässig senden (nur mit dem nächsten Paket, kein Wiederholen).
+    /// Send a message unreliably (only with the next packet, no resending).
     ///
     /// # Errors
-    /// Wenn die Nachricht größer als [`MAX_MESSAGE`] ist.
+    /// If the message is larger than [`MAX_MESSAGE`].
     pub fn send_unreliable(&mut self, data: &[u8]) -> Result<(), SessionError> {
         if data.len() > MAX_MESSAGE {
             return Err(SessionError::TooLarge);
@@ -222,7 +222,7 @@ impl Session {
         Ok(())
     }
 
-    /// Trennung mitteilen; wird mit dem nächsten Paket gesendet.
+    /// Announce disconnection; sent with the next packet.
     pub fn send_disconnect(&mut self, reason: &str) {
         self.disconnect = Some(reason.chars().take(200).collect());
     }
@@ -236,7 +236,7 @@ impl Session {
         base.max(Duration::from_millis(40)) + Duration::from_millis(10)
     }
 
-    /// Soll jetzt ein Paket gesendet werden (Daten, fälliges Ack oder Keepalive)?
+    /// Should a packet be sent now (data, due ack or keepalive)?
     pub fn wants_send(&self, now: Instant, keepalive: Duration) -> bool {
         let timeout = self.resend_timeout();
         self.ack_due
@@ -249,7 +249,7 @@ impl Session {
             || self.last_send.is_none_or(|t| now - t >= keepalive)
     }
 
-    /// Baut die zu sendenden Pakete. `next_seq` vergibt Paketnummern.
+    /// Builds the packets to send. `next_seq` hands out packet numbers.
     pub fn build_packets(
         &mut self,
         now: Instant,
@@ -263,7 +263,7 @@ impl Session {
             .filter(|(_, p)| p.last_sent.is_none_or(|t| now - t >= timeout))
             .map(|(&id, _)| id)
             .collect();
-        due.reverse(); // als Stapel: kleinste ID zuerst
+        due.reverse(); // as a stack: smallest ID first
         let mut frames: Vec<Vec<u8>> = Vec::new();
         if let Some(reason) = self.disconnect.take() {
             let mut f = vec![F_DISCONNECT];
@@ -271,7 +271,7 @@ impl Session {
             f.extend_from_slice(reason.as_bytes());
             frames.push(f);
         }
-        // Unzuverlässige Nachrichten (ggf. fragmentiert)
+        // Unreliable messages (fragmented if needed)
         let mut unreliable = Vec::new();
         while let Some(msg) = self.unreliable_out.pop_front() {
             if msg.len() + 8 <= PIECE {
@@ -301,7 +301,7 @@ impl Session {
         loop {
             let mut body = Vec::with_capacity(MAX_PAYLOAD);
             let mut reliable = Vec::new();
-            // zuerst fällige zuverlässige Nachrichten
+            // due reliable messages first
             while let Some(&id) = due.last() {
                 let p = &self.unacked[&id];
                 let size = 1 + uvar_len(id) + 1 + uvar_len(p.data.len() as u64) + p.data.len();
@@ -357,7 +357,7 @@ impl Session {
     }
 
     fn update_loss(&mut self) {
-        // Pakete, die alt genug für ein Ack sind (älter als 2 RTT)
+        // packets old enough for an ack (older than 2 RTT)
         let n = self.sent.len().saturating_sub(4);
         if n == 0 {
             return;
@@ -386,10 +386,10 @@ impl Session {
         self.rtt_known = true;
     }
 
-    /// Verarbeitet ein empfangenes (bereits entschlüsseltes) Paket.
+    /// Processes a received (already decrypted) packet.
     ///
     /// # Errors
-    /// Bei fehlerhaften Daten; die Verbindung sollte dann getrennt werden.
+    /// On malformed data; the connection should then be closed.
     pub fn receive(
         &mut self,
         seq: u64,
@@ -470,7 +470,7 @@ impl Session {
                 _ => return Err(SessionError::Malformed),
             }
         }
-        // zuverlässige Nachrichten in Reihenfolge zustellen
+        // deliver reliable messages in order
         while let Some((more, data)) = self.reorder.remove(&self.next_expected) {
             self.next_expected += 1;
             if self.partial.len() + data.len() > MAX_MESSAGE {
@@ -514,7 +514,7 @@ impl Session {
         }
     }
 
-    /// Anzahl noch unbestätigter zuverlässiger Nachrichten.
+    /// Number of reliable messages not yet acknowledged.
     pub fn pending_reliable(&self) -> usize {
         self.unacked.len()
     }
@@ -524,7 +524,7 @@ impl Session {
 mod tests {
     use super::*;
 
-    /// Zwei Sitzungen über eine verlustbehaftete, umordnende Leitung.
+    /// Two sessions over a lossy, reordering link.
     struct Link {
         a: Session,
         b: Session,
@@ -553,7 +553,7 @@ mod tests {
             self.rng % 100
         }
 
-        /// Ein Zeitschritt; `loss` in Prozent. Liefert, was b von a erhalten hat.
+        /// One time step; `loss` in percent. Returns what b received from a.
         fn step(&mut self, loss: u64) -> Vec<Delivery> {
             self.now += Duration::from_millis(20);
             let mut sa = self.seq_a;
@@ -571,7 +571,7 @@ mod tests {
             let mut got = Vec::new();
             let mut pa: Vec<_> = pa.into_iter().filter(|_| self.rand() >= loss).collect();
             if pa.len() > 1 {
-                pa.reverse(); // Umordnung
+                pa.reverse(); // reordering
             }
             for (seq, p) in pa {
                 got.extend(self.b.receive(seq, &p, self.now).unwrap());

@@ -1,13 +1,13 @@
-//! Verbindungen: Token-Handshake, Noise-Verschlüsselung (E-061, E-062), Timeouts.
+//! Connections: token handshake, Noise encryption (E-061, E-062), timeouts.
 //!
-//! Ablauf:
-//! 1. Client → `TokenRequest` (auf 512 Byte aufgefüllt: Antworten sind nie größer
-//!    als Anfragen → kein Verstärkungsangriff)
-//! 2. Server → `Token` (an die Absenderadresse gebunden, zustandslos geprüft)
-//! 3. Client → `Hello` (Token + Noise-Nachricht 1)
-//! 4. Server → `HelloReply` (Noise-Nachricht 2 mit Server-Schlüssel)
-//! 5. Client prüft den Server-Schlüssel (TOFU, E-062) → `Confirm` (Noise-Nachricht 3)
-//! 6. Danach nur noch `Data`: Paketnummer (= Nonce) + verschlüsselte [`Session`]-Daten.
+//! Flow:
+//! 1. Client → `TokenRequest` (padded to 512 bytes: replies are never larger than
+//!    requests → no amplification attack)
+//! 2. Server → `Token` (bound to the sender address, checked statelessly)
+//! 3. Client → `Hello` (token + Noise message 1)
+//! 4. Server → `HelloReply` (Noise message 2 with server key)
+//! 5. Client checks the server key (TOFU, E-062) → `Confirm` (Noise message 3)
+//! 6. After that only `Data`: packet number (= nonce) + encrypted [`Session`] data.
 
 use std::collections::HashMap;
 use std::hash::{BuildHasher, Hasher};
@@ -20,7 +20,7 @@ use crate::session::{Delivery, Session, Stats};
 use crate::socket::{MAX_DATAGRAM, Socket};
 
 pub const NOISE_PARAMS: &str = "Noise_XX_25519_ChaChaPoly_BLAKE2s";
-/// Kennung des Protokolls in der Token-Anfrage.
+/// Protocol identifier in the token request.
 pub(crate) const MAGIC: &[u8; 8] = b"ELORA\0\0\x01";
 pub(crate) const TOKEN_REQUEST_SIZE: usize = 512;
 const TIMEOUT: Duration = Duration::from_secs(10);
@@ -36,13 +36,13 @@ const P_HELLO_REPLY: u8 = 4;
 const P_CONFIRM: u8 = 5;
 const P_DATA: u8 = 6;
 const P_REJECT: u8 = 7;
-/// Info-Abfrage ohne Verbindung (M7.6): `[8][Token 8][Nonce 4]` → `[9][Nonce 4][Info]`.
+/// Connectionless info query (M7.6): `[8][Token 8][Nonce 4]` → `[9][Nonce 4][Info]`.
 pub(crate) const P_INFO_REQUEST: u8 = 8;
 pub(crate) const P_INFO: u8 = 9;
-/// Höchstens so viele Info-Antworten je IP-Adresse und Sekunde.
+/// At most this many info replies per IP address and second.
 const INFO_RATE: u32 = 20;
 
-/// Statischer Schlüssel eines Servers.
+/// Static key of a server.
 #[derive(Clone, PartialEq, Eq)]
 pub struct Keypair {
     pub private: Vec<u8>,
@@ -58,10 +58,10 @@ impl std::fmt::Debug for Keypair {
 }
 
 impl Keypair {
-    /// Neuer zufälliger Schlüssel.
+    /// New random key.
     ///
     /// # Panics
-    /// Wenn das Betriebssystem keine Zufallszahlen liefert.
+    /// If the operating system provides no random numbers.
     pub fn generate() -> Self {
         let kp = builder().generate_keypair().expect("Schlüsselerzeugung");
         Self {
@@ -71,7 +71,7 @@ impl Keypair {
     }
 }
 
-/// Hex-Darstellung (z. B. für Fingerabdrücke von Server-Schlüsseln).
+/// Hex representation (e.g. for fingerprints of server keys).
 pub fn hex(bytes: &[u8]) -> String {
     use std::fmt::Write as _;
     bytes
@@ -86,26 +86,26 @@ fn builder() -> snow::Builder<'static> {
     snow::Builder::new(NOISE_PARAMS.parse().expect("gültige Noise-Parameter"))
 }
 
-/// Grund einer Trennung.
+/// Reason of a disconnection.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DisconnectReason {
     Timeout,
-    /// Von der Gegenseite beendet, mit Grund.
+    /// Closed by the peer, with a reason.
     Remote(String),
-    /// Vom Server abgelehnt (vor dem Handshake, unverschlüsselt).
+    /// Rejected by the server (before the handshake, unencrypted).
     Rejected(String),
-    /// Server-Schlüssel stimmt nicht mit dem gespeicherten überein (E-062).
+    /// Server key does not match the stored one (E-062).
     KeyMismatch {
         expected: Vec<u8>,
         got: Vec<u8>,
     },
-    /// Fehlerhafte Daten oder Krypto-Fehler.
+    /// Malformed data or crypto error.
     Protocol,
-    /// Lokal beendet.
+    /// Closed locally.
     Local,
 }
 
-/// Schutz gegen wiedereingespielte Pakete (Fenster von 64 Nummern).
+/// Protection against replayed packets (window of 64 numbers).
 #[derive(Debug, Default)]
 struct ReplayWindow {
     highest: u64,
@@ -131,7 +131,7 @@ impl ReplayWindow {
     }
 }
 
-/// Eine aufgebaute, verschlüsselte Verbindung.
+/// An established, encrypted connection.
 struct Link {
     transport: StatelessTransportState,
     session: Session,
@@ -151,7 +151,7 @@ impl Link {
         }
     }
 
-    /// Entschlüsselt ein `Data`-Paket und reicht es an die Session.
+    /// Decrypts a `Data` packet and passes it to the session.
     fn receive(&mut self, packet: &[u8], now: Instant) -> Option<Vec<Delivery>> {
         let nonce = u64::from_le_bytes(packet.get(1..9)?.try_into().ok()?);
         let mut plain = vec![0; packet.len()];
@@ -187,7 +187,7 @@ impl Link {
     }
 }
 
-/// Ereignisse des Servers.
+/// Events of the server.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ServerEvent {
     Connected {
@@ -217,7 +217,7 @@ struct ServerConn {
     closing: bool,
 }
 
-/// Server-Seite: nimmt Verbindungen an und verwaltet sie.
+/// Server side: accepts connections and manages them.
 pub struct ServerEndpoint<S: Socket> {
     socket: S,
     keypair: Keypair,
@@ -228,9 +228,9 @@ pub struct ServerEndpoint<S: Socket> {
     by_id: HashMap<u32, SocketAddr>,
     next_id: u32,
     buf: Vec<u8>,
-    /// Antwort auf Info-Abfragen (vom Spielserver gesetzt, für das Netz undurchsichtig).
+    /// Reply to info queries (set by the game server, opaque to the network).
     info: Vec<u8>,
-    /// Rate-Grenze der Info-Antworten: IP → (Beginn der Sekunde, Anzahl).
+    /// Rate limit of info replies: IP → (start of the second, count).
     info_rate: HashMap<std::net::IpAddr, (Instant, u32)>,
 }
 
@@ -265,14 +265,14 @@ impl<S: Socket> ServerEndpoint<S> {
         }
     }
 
-    /// Setzt die Antwort auf Info-Abfragen (Server-Browser, M7.6). Zu große Daten
-    /// werden abgeschnitten, damit die Antwort in ein Datagramm passt.
+    /// Sets the reply to info queries (server browser, M7.6). Data that is too large
+    /// is truncated so that the reply fits into one datagram.
     pub fn set_info(&mut self, mut info: Vec<u8>) {
         info.truncate(MAX_DATAGRAM - 16);
         self.info = info;
     }
 
-    /// Info-Anfrage beantworten, wenn das Token gültig ist und die Rate-Grenze passt.
+    /// Answer an info request if the token is valid and the rate limit allows it.
     fn handle_info_request(&mut self, p: &[u8], addr: SocketAddr, now: Instant) {
         if p.len() != 13 || !self.token_valid(addr, &p[1..9]) {
             return;
@@ -334,7 +334,7 @@ impl<S: Socket> ServerEndpoint<S> {
             .any(|&b| self.token(addr, b) == token)
     }
 
-    /// Sendet `data` an Client `id`.
+    /// Sends `data` to client `id`.
     pub fn send(&mut self, id: u32, data: &[u8], reliable: bool) {
         let Some(conn) = self.by_id.get(&id).and_then(|a| self.conns.get_mut(a)) else {
             return;
@@ -347,7 +347,7 @@ impl<S: Socket> ServerEndpoint<S> {
         };
     }
 
-    /// Trennt Client `id` mit Grund (wird noch zugestellt).
+    /// Disconnects client `id` with a reason (still delivered).
     pub fn disconnect(&mut self, id: u32, reason: &str, now: Instant) {
         let Some(&addr) = self.by_id.get(&id) else {
             return;
@@ -359,7 +359,7 @@ impl<S: Socket> ServerEndpoint<S> {
         }
     }
 
-    /// Empfängt alles Anstehende und prüft Timeouts.
+    /// Receives everything pending and checks timeouts.
     pub fn poll(&mut self, now: Instant) -> Vec<ServerEvent> {
         let mut events = Vec::new();
         let mut buf = std::mem::take(&mut self.buf);
@@ -388,7 +388,7 @@ impl<S: Socket> ServerEndpoint<S> {
         events
     }
 
-    /// Sendet fällige Pakete aller Verbindungen.
+    /// Sends due packets of all connections.
     pub fn flush(&mut self, now: Instant) {
         for (addr, conn) in &mut self.conns {
             conn.link.flush(&mut self.socket, *addr, now, false);
@@ -405,7 +405,7 @@ impl<S: Socket> ServerEndpoint<S> {
         match p.first().copied() {
             Some(P_TOKEN_REQUEST) if p.len() == TOKEN_REQUEST_SIZE => {
                 if &p[1..9] != MAGIC {
-                    // Codes wie `elora_protocol::reason` – der Client übersetzt sie
+                    // codes like `elora_protocol::reason` – the client translates them
                     self.reject(addr, "#wrong-version", now);
                     return;
                 }
@@ -426,7 +426,7 @@ impl<S: Socket> ServerEndpoint<S> {
             return;
         }
         if let Some(pending) = self.pending.get(&addr) {
-            // Antwort ging verloren: erneut senden
+            // reply got lost: send again
             let reply = pending.reply.clone();
             self.socket.send_to(&reply, addr, now);
             return;
@@ -489,7 +489,7 @@ impl<S: Socket> ServerEndpoint<S> {
         let id = self.next_id;
         self.next_id = self.next_id.wrapping_add(1);
         let mut link = Link::new(transport, now);
-        // sofort ein Paket, damit der Client den Aufbau bestätigt sieht
+        // send a packet right away so the client sees the connection confirmed
         link.flush(&mut self.socket, addr, now, true);
         self.conns.insert(
             addr,
@@ -514,7 +514,7 @@ impl<S: Socket> ServerEndpoint<S> {
             return;
         };
         let id = conn.id;
-        // Entschlüsselung fehlgeschlagen → ignorieren (könnte gefälscht sein)
+        // decryption failed → ignore (could be forged)
         let Some(deliveries) = conn.link.receive(p, now) else {
             return;
         };
@@ -544,10 +544,10 @@ impl<S: Socket> ServerEndpoint<S> {
     }
 }
 
-/// Ereignisse des Clients.
+/// Events of the client.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ClientEvent {
-    /// Handshake fertig. `server_key` für TOFU speichern (E-062).
+    /// Handshake done. Store `server_key` for TOFU (E-062).
     Connected {
         server_key: Vec<u8>,
     },
@@ -560,7 +560,7 @@ pub enum ClientEvent {
 
 enum ClientState {
     RequestingToken,
-    /// `packet` wird bei Verlust unverändert wiederholt (passt zur gespeicherten Server-Antwort).
+    /// `packet` is resent unchanged on loss (matches the stored server reply).
     Hello {
         packet: Vec<u8>,
         state: Box<HandshakeState>,
@@ -574,11 +574,11 @@ enum ClientState {
     Closed,
 }
 
-/// Client-Seite: eine Verbindung zu einem Server.
+/// Client side: one connection to a server.
 pub struct ClientEndpoint<S: Socket> {
     socket: S,
     server: SocketAddr,
-    /// Erwarteter Server-Schlüssel (aus `known_servers`), sonst TOFU.
+    /// Expected server key (from `known_servers`), otherwise TOFU.
     expected_key: Option<Vec<u8>>,
     state: ClientState,
     started: Instant,
@@ -638,7 +638,7 @@ impl<S: Socket> ClientEndpoint<S> {
         }
     }
 
-    /// Beendet die Verbindung (Grund wird noch gesendet).
+    /// Closes the connection (the reason is still sent).
     pub fn disconnect(&mut self, reason: &str, now: Instant) {
         if let ClientState::Connected(link) = &mut self.state {
             link.session.send_disconnect(reason);
@@ -671,7 +671,7 @@ impl<S: Socket> ClientEndpoint<S> {
         }
     }
 
-    /// Empfängt, treibt den Handshake voran, prüft Timeouts.
+    /// Receives, advances the handshake, checks timeouts.
     pub fn poll(&mut self, now: Instant) -> Vec<ClientEvent> {
         let mut events = Vec::new();
         if matches!(self.state, ClientState::Closed) {
@@ -696,7 +696,7 @@ impl<S: Socket> ClientEndpoint<S> {
         events
     }
 
-    /// Sendet fällige Pakete (inkl. Handshake-Wiederholungen).
+    /// Sends due packets (incl. handshake resends).
     pub fn flush(&mut self, now: Instant) {
         match &mut self.state {
             ClientState::Connected(link) => link.flush(&mut self.socket, self.server, now, false),

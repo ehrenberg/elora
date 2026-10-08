@@ -1,4 +1,4 @@
-//! Verbindungs-Tests über ein Netzwerk im Speicher mit virtueller Zeit.
+//! Connection tests over an in-memory network with virtual time.
 
 use std::net::SocketAddr;
 use std::time::{Duration, Instant};
@@ -164,7 +164,7 @@ fn key_mismatch_is_reported() {
             DisconnectReason::KeyMismatch { .. }
         ))
     ));
-    // passender Schlüssel verbindet
+    // matching key connects
     let key = n.server.public_key().to_vec();
     let c2 = n.connect(Some(key));
     n.run(200);
@@ -209,7 +209,7 @@ fn disconnect_reason_and_timeout() {
         )))
     );
 
-    // Client b verstummt → Server meldet Timeout nach 10 s
+    // client b goes silent → server reports a timeout after 10 s
     n.clients.remove(b);
     n.client_events.remove(b);
     n.run(11_000);
