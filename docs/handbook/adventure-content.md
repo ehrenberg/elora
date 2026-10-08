@@ -66,6 +66,7 @@ A node can have `speaker = "elora"` or another character. Every node must be rea
 | `zuneigung lotte >= 5` | A character's affection (−10 to 10) |
 | `hat bernstein 3`, `hat heiltrank` | Item (without a number: at least one) |
 | `faehigkeit gleiten` | hook-ruck, heranhooken, stampfen, eisgriff, gleiten |
+| `waffe hammer` | Elora owns the weapon: hammer, granate, laser (E-354) |
 
 Combine with ` und `, negate with a leading `nicht `: `nicht merker oma.frech und stufe >= 2`.
 

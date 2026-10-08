@@ -11,6 +11,7 @@
 //! | `zuneigung lotte >= 5` | affection of a character |
 //! | `hat bernstein 3` | item (without number: at least 1) |
 //! | `faehigkeit gleiten` | area ability |
+//! | `waffe hammer` | Elora owns the weapon (E-354) |
 //!
 //! Several conditions with ` und `, negation with `nicht ` in front.
 //!
@@ -83,6 +84,7 @@ pub enum Cond {
     Affection(String, Cmp, i64),
     Has(String, u32),
     Ability(Ability),
+    Weapon(Weapon),
     Not(Box<Cond>),
     All(Vec<Cond>),
 }
@@ -206,6 +208,10 @@ impl Cond {
                 ability_by_name(name)
                     .ok_or_else(|| ScriptError(format!("`{src}`: unknown ability `{name}`")))?,
             ),
+            ["waffe", name] => Self::Weapon(
+                weapon_by_name(name)
+                    .ok_or_else(|| ScriptError(format!("`{src}`: unknown weapon `{name}`")))?,
+            ),
             _ => return err(src, "unknown condition"),
         })
     }
@@ -290,6 +296,10 @@ mod tests {
         assert_eq!(
             Cond::parse("faehigkeit gleiten"),
             Ok(Cond::Ability(Ability::Glide))
+        );
+        assert_eq!(
+            Cond::parse("waffe hammer"),
+            Ok(Cond::Weapon(Weapon::Hammer))
         );
         assert!(Cond::parse("stufe ungefähr 3").is_err());
         assert!(Cond::parse("quest brunnen bald").is_err());

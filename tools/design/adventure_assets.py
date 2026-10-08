@@ -38,11 +38,14 @@ def straw_dummy():
 
 
 def signpost_npc():
-    """Readable sign (E-273), same shape as the decoration."""
-    s = '<rect x="-4" y="-92" width="8" height="92" fill="#a87a52" stroke="#2b2b2b" stroke-width="2"/>'
+    """Readable sign (E-273), shape of the decoration; about twice as high as it was, with a
+    longer post (playtest, E-354)."""
+    s = '<rect x="-4" y="-135" width="8" height="135" fill="#a87a52" stroke="#2b2b2b" stroke-width="2"/>'
+    s += '<g transform="translate(0,-43)">'
     s += '<path d="M -6,-84 H 42 L 52,-75 L 42,-66 H -6 Z" fill="#c9955c" stroke="#2b2b2b" stroke-width="2" stroke-linejoin="round"/>'
     s += '<path d="M 6,-58 H -42 L -52,-49 L -42,-40 H 6 Z" fill="#b8865a" stroke="#2b2b2b" stroke-width="2" stroke-linejoin="round"/>'
     s += '<path d="M 4,-78 H 34 M 4,-72 H 24 M -8,-52 H -36 M -8,-46 H -26" stroke="#7a5434" stroke-width="1.6" stroke-linecap="round"/>'
+    s += '</g>'
     return s
 
 
@@ -99,8 +102,8 @@ CHARACTERS = {
     'lotte': (1.0, lotte()),
     'tueftel': (1.0, tueftel()),
     'pip': (0.7, pip()),
-    # same size as the decoration (world units): 1 / 0.36
-    'wegweiser': (1 / 0.36 * 0.55, signpost_npc()),
+    # decoration scale (world units: 1 / 0.36), about twice as high as the decoration (E-354)
+    'wegweiser': (1 / 0.36 * 0.75, signpost_npc()),
     # Chapter 1 (R2-M2.1): beekeeper Wabe, bumblebee as speaker after the fight
     'wabe': (1.0, wabe()),
     'hummel': (0.6, f'<g transform="translate(0,-60)">{bumblebee("ruhig")}</g>'),

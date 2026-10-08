@@ -812,3 +812,25 @@ fn herbal_tea_heals_and_the_bobble_hat_slows_the_cold() {
     g.equip(&c, "bommelmuetze").unwrap();
     assert!((g.stats(&c).cold_pct + 40.0).abs() < f32::EPSILON);
 }
+
+/// Signposts only explain what Elora can already do (E-354): before that they say "later"
+/// or what is still missing.
+#[test]
+fn signposts_explain_only_what_elora_already_has() {
+    for (sign, unlock) in [
+        ("schild-ruck", "faehigkeit hook-ruck"),
+        ("schild-zug", "faehigkeit heranhooken"),
+        ("schild-stampf", "faehigkeit stampfen"),
+        ("schild-kamin", "faehigkeit eisgriff"),
+        ("schild-hammer", "waffe hammer"),
+        ("schild-bergsteig", "faehigkeit stampfen"),
+        ("schild-wueste", "quest glutsand start"),
+    ] {
+        let (c, mut g) = game();
+        let (talk, _) = Conversation::start(&c, &mut g, sign).expect("sign");
+        assert_eq!(talk.node, "spaeter", "{sign} before");
+        g.run(&c, &[unlock.into()]);
+        let (talk, _) = Conversation::start(&c, &mut g, sign).expect("sign");
+        assert_eq!(talk.node, "text", "{sign} after `{unlock}`");
+    }
+}

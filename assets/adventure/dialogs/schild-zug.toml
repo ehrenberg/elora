@@ -2,8 +2,17 @@
 speaker = "wegweiser"
 
 [[start]]
+if = "faehigkeit heranhooken"
 node = "text"
+
+[[start]]
+node = "spaeter"
 
 [[node]]
 id = "text"
 text = { de = "Tüftels Zugtruhe: Hook nach oben an die Wurzel mit dem Hebel ({taste:hook}) – mit Heranhooken legst du ihn um, und das Tor geht auf.", en = "Tüftel's pull chest: hook up at the root with the lever ({taste:hook}) – with the pull hook you flip it, and the gate opens." }
+
+# before Elora can use it (E-354)
+[[node]]
+id = "spaeter"
+text = { de = "Tüftels Zugtruhe. Das Tor bleibt zu – Tüftel hat dafür noch nicht das richtige Werkzeug gebaut. Schau später wieder vorbei!", en = "Tüftel's pull chest. The gate stays shut – Tüftel hasn't built the right tool for it yet. Come back later!" }

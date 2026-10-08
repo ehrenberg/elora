@@ -163,6 +163,7 @@ impl SaveGame {
             Cond::Affection(who, op, n) => op.holds(i64::from(self.affection(who)), *n),
             Cond::Has(item, n) => self.count(item) >= *n,
             Cond::Ability(a) => self.abilities().has(*a),
+            Cond::Weapon(w) => self.weapons.contains_key(w),
             Cond::Not(c) => !self.check(content, c),
             Cond::All(cs) => cs.iter().all(|c| self.check(content, c)),
         }

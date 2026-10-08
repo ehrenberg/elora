@@ -2,8 +2,17 @@
 speaker = "wegweiser"
 
 [[start]]
+if = "nicht quest glutsand neu"
 node = "text"
+
+[[start]]
+node = "spaeter"
 
 [[node]]
 id = "text"
 text = { de = "↓ Glutsandwüste – Hohlweg. Wasser mitnehmen!", en = "↓ Glutsandwüste – sunken path. Bring water!" }
+
+# before Elora can use it (E-354)
+[[node]]
+id = "spaeter"
+text = { de = "↓ Glutsandwüste – Hohlweg. Der Weg ist noch verschüttet. Wenn im Murmelwald alles wieder gut ist, weiß Oma Pfütze mehr.", en = "↓ Glutsandwüste – sunken path. The way is still buried. Once all is well again in the Murmelwald, Oma Pfütze will know more." }

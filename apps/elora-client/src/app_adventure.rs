@@ -955,7 +955,21 @@ impl App {
                 Prompt::Rest => "adventure.prompt_rest",
             };
             let anchor = session.anchor(&id).unwrap_or(o.pos);
-            let p = to_screen(anchor - Vec2::new(0.0, 40.0));
+            // tall signs and boards: hint above the figure instead of across it (E-354)
+            let lift = match &o.kind {
+                ObjectKind::Npc { character, .. }
+                    if crate::creatures::CreatureArt::is_still(character) =>
+                {
+                    self.creature_art
+                        .character_mesh(character)
+                        .and_then(elora_render::Mesh::bounds)
+                        .map_or(40.0, |(min, _)| {
+                            (-min.y - elora_sim::PHYS_SIZE / 2.0 + 12.0).max(40.0)
+                        })
+                }
+                _ => 40.0,
+            };
+            let p = to_screen(anchor - Vec2::new(0.0, lift));
             let label = self
                 .settings
                 .bindings

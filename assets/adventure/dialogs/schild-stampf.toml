@@ -2,8 +2,17 @@
 speaker = "wegweiser"
 
 [[start]]
+if = "faehigkeit stampfen"
 node = "text"
+
+[[start]]
+node = "spaeter"
 
 [[node]]
 id = "text"
 text = { de = "Tüftels Stampfplatte: Spring hoch und drück in der Luft {taste:down}. Mürber Boden bricht dann.", en = "Tüftel's stomp plate: jump up and press {taste:down} in mid-air. Crumbly ground will break." }
+
+# before Elora can use it (E-354)
+[[node]]
+id = "spaeter"
+text = { de = "Tüftels Stampfplatte. Noch ist der Boden hier zu fest für dich – Tüftel hat schon eine Idee. Schau später wieder vorbei!", en = "Tüftel's stomp plate. The ground here is still too firm for you – Tüftel already has an idea. Come back later!" }

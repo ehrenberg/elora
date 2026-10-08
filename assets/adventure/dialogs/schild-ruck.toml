@@ -2,8 +2,17 @@
 speaker = "wegweiser"
 
 [[start]]
+if = "faehigkeit hook-ruck"
 node = "text"
+
+[[start]]
+node = "spaeter"
 
 [[node]]
 id = "text"
 text = { de = "Tüftels Ruck-Strecke: Hook an die Blüte ({taste:hook}), dann {taste:ability} – der Ruck trägt dich höher als der Hook allein. Oben wartet eine Belohnung.", en = "Tüftel's jolt course: hook the blossom ({taste:hook}), then {taste:ability} – the jolt carries you higher than the hook alone. A reward waits at the top." }
+
+# before Elora can use it (E-354)
+[[node]]
+id = "spaeter"
+text = { de = "Tüftels Ruck-Strecke. Tüftel tüftelt hier noch an etwas Neuem – schau später wieder vorbei!", en = "Tüftel's jolt course. Tüftel is still working on something new here – come back later!" }
