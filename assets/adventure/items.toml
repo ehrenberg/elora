@@ -3,47 +3,47 @@
 # bonuses see crates/elora-adventure/src/data.rs (Bonus), e.g. { max_health = 1 } or { damage_pct = 10.0 }
 
 [[item]]
-id = "glanztropfen"
+id = "gleam_drops"
 type = "currency"
 name = { de = "Glanztropfen", en = "Gleam drops" }
 desc = { de = "Die Währung von Tauwinkel.", en = "The currency of Tauwinkel." }
 
 # materials per region (P-13)
 [[item]]
-id = "bernstein"
+id = "amber"
 type = "material"
 name = { de = "Bernstein", en = "Amber" }
 desc = { de = "Aus den Blütenwiesen. Klonk mag ihn für Hämmer.", en = "From the Blütenwiesen. Klonk likes it for hammers." }
 
 [[item]]
-id = "harz"
+id = "resin"
 type = "material"
 name = { de = "Harz", en = "Resin" }
 desc = { de = "Klebrig, aus dem Murmelwald.", en = "Sticky, from the Murmelwald." }
 
 [[item]]
-id = "glutstein"
+id = "ember_stone"
 type = "material"
 price = 25
 name = { de = "Glutstein", en = "Ember stone" }
 desc = { de = "Noch warm, aus der Glutsandwüste.", en = "Still warm, from the Glutsandwüste." }
 
 [[item]]
-id = "eiskristall"
+id = "ice_crystal"
 type = "material"
 price = 25
 name = { de = "Eiskristall", en = "Ice crystal" }
 desc = { de = "Schmilzt nie, aus den Frostspitzen.", en = "Never melts, from the Frostspitzen." }
 
 [[item]]
-id = "sternsplitter"
+id = "star_shard"
 type = "material"
 name = { de = "Sternsplitter", en = "Star shard" }
 desc = { de = "Leuchtet leise, aus der Sternschlucht.", en = "Glows softly, from the Sternschlucht." }
 
 # consumables (P-25)
 [[item]]
-id = "heiltrank"
+id = "healing_potion"
 type = "consumable"
 effect = { heal = 5 }
 price = 15
@@ -51,23 +51,23 @@ name = { de = "Heiltrank", en = "Healing potion" }
 desc = { de = "Stellt 5 Leben her.", en = "Restores 5 health." }
 
 [[item]]
-id = "pilzsuppe"
+id = "mushroom_soup"
 type = "consumable"
 effect = { heal = 8 }
 name = { de = "Pilzsuppe", en = "Mushroom soup" }
 desc = { de = "Von Mama Morchel. Stellt 8 Leben her – und schmeckt nach Moos.", en = "From Mama Morel. Restores 8 health – and tastes of moss." }
 
 [[item]]
-id = "tautrank"
+id = "dew_potion"
 type = "consumable"
-effect = { tau = 10 }
+effect = { dew = 10 }
 price = 25
 name = { de = "Tautrank", en = "Dew potion" }
 desc = { de = "10 Sekunden Hook-Ruck ohne Abklingzeit.", en = "Hook jerk without cooldown for 10 seconds." }
 
 # equipment (examples from the draft)
 [[item]]
-id = "strohhut"
+id = "straw_hat"
 type = "equipment"
 slot = "hat"
 price = 200
@@ -75,7 +75,7 @@ bonuses = [{ max_health = 1 }]
 name = { de = "Strohhut", en = "Straw hat" }
 
 [[item]]
-id = "sandstiefel"
+id = "sand_boots"
 type = "equipment"
 slot = "boots"
 price = 80
@@ -84,7 +84,7 @@ name = { de = "Sandstiefel", en = "Sand boots" }
 desc = { de = "Kaum gebraucht, nur ein bisschen verschluckt.", en = "Barely used, only slightly swallowed." }
 
 [[item]]
-id = "gluecksanhaenger"
+id = "lucky_pendant"
 type = "equipment"
 slot = "pendant"
 price = 120
@@ -92,7 +92,7 @@ bonuses = [{ drops_pct = 10.0 }]
 name = { de = "Glücksanhänger", en = "Lucky pendant" }
 
 [[item]]
-id = "tauumhang"
+id = "dew_cape"
 type = "equipment"
 slot = "cape"
 rarity = "rare"
@@ -101,7 +101,7 @@ name = { de = "Tauumhang", en = "Dew cape" }
 desc = { de = "Riecht ein bisschen nach Morgen.", en = "Smells a little like morning." }
 
 [[item]]
-id = "wabenhut"
+id = "honeycomb_hat"
 type = "equipment"
 slot = "hat"
 rarity = "rare"
@@ -110,7 +110,7 @@ name = { de = "Wabenhut", en = "Honeycomb hat" }
 desc = { de = "Von Imkerin Wabe. Heilblumen mögen ihn – sie heilen etwas mehr.", en = "From beekeeper Wabe. Healing blossoms like it – they heal a little more." }
 
 [[item]]
-id = "eulenfeder"
+id = "owl_feather"
 type = "equipment"
 slot = "pendant"
 rarity = "rare"
@@ -120,7 +120,7 @@ desc = { de = "Von Plumm. Beute fliegt dir von weiter her zu.", en = "From Plumm
 
 # collectibles (world book §8)
 [[item]]
-id = "quellfunke"
+id = "spring_spark"
 type = "key"
 name = { de = "Quellfunke", en = "Spring spark" }
 desc = { de = "Ein Funke der Blütenquelle. Tüftel kann daraus etwas bauen.", en = "A spark of the Blossom Spring. Tüftel can build something from it." }
@@ -132,33 +132,33 @@ name = { de = "Erinnerungsrune", en = "Memory rune" }
 desc = { de = "Ein moosiger Stein mit einem leuchtenden Zeichen. Plumm kann ihn lesen.", en = "A mossy stone with a glowing sign. Plumm can read it." }
 
 [[item]]
-id = "biene"
+id = "bee"
 type = "collectible"
 name = { de = "Biene", en = "Bee" }
 desc = { de = "Eine von Wabes ausgeschwärmten Bienen. Sie summt leise vor sich hin.", en = "One of Wabe's swarmed-out bees. It hums quietly to itself." }
 
 [[item]]
-id = "glitzerstein"
+id = "glitter_stone"
 type = "collectible"
 name = { de = "Glitzerstein", en = "Glitter stone" }
 desc = { de = "Pip sammelt sie.", en = "Pip collects them." }
 
 # ammunition from chests (E-243): refills the weapon
 [[item]]
-id = "munition_granate"
+id = "ammo_grenade"
 type = "ammo"
 weapon = "Grenade"
 name = { de = "Granaten", en = "Grenades" }
 
 [[item]]
-id = "munition_laser"
+id = "ammo_laser"
 type = "ammo"
 weapon = "Laser"
 name = { de = "Laser-Ladung", en = "Laser charge" }
 
 # Chapter 3 – Glutsandwüste (R2-M2.3, docs/release-2/m2-3-content.md)
 [[item]]
-id = "kaktusfrucht"
+id = "cactus_fruit"
 type = "consumable"
 effect = { cool = 3 }
 price = 12
@@ -166,7 +166,7 @@ name = { de = "Kaktusfrucht", en = "Cactus fruit" }
 desc = { de = "Stellt 3 Leben her und kühlt: Die Hitze-Leiste ist danach leer.", en = "Restores 3 health and cools you down: the heat bar is empty afterwards." }
 
 [[item]]
-id = "sonnenschleier"
+id = "sun_veil"
 type = "equipment"
 slot = "hat"
 rarity = "rare"
@@ -175,7 +175,7 @@ name = { de = "Sonnenschleier", en = "Sun veil" }
 desc = { de = "Aus der verschütteten Kammer des Glutvolks. Die Hitze-Leiste füllt sich langsamer.", en = "From the buried chamber of the Ember Folk. The heat bar fills more slowly." }
 
 [[item]]
-id = "karawanenkette"
+id = "caravan_necklace"
 type = "equipment"
 slot = "pendant"
 price = 180
@@ -184,32 +184,32 @@ name = { de = "Karawanenkette", en = "Caravan chain" }
 desc = { de = "Sirup schwört, sie hat ihn durch drei Sandstürme gebracht. Nach einem Treffer länger geschützt.", en = "Sirup swears it got him through three sandstorms. Protected for longer after a hit." }
 
 [[item]]
-id = "wasserschlauch"
+id = "waterskin"
 type = "key"
 name = { de = "Wasserschlauch", en = "Water skin" }
 desc = { de = "Aus Ziegenleder, riecht ein bisschen nach Kamel.", en = "Made of goat leather, smells a little of camel." }
 
 [[item]]
-id = "wasser"
+id = "water"
 type = "key"
 name = { de = "Schluck Wasser", en = "Sip of water" }
 desc = { de = "Klar und kühl, aus der Ruinenquelle.", en = "Clear and cool, from the ruin spring." }
 
 # Chapter 4 – Frostspitzen (R2-M2.4, docs/release-2/m2-4-content.md)
 [[item]]
-id = "seil"
+id = "rope"
 type = "key"
 name = { de = "Flockes Seil", en = "Flocke's rope" }
 desc = { de = "Dick, rau und mit drei Knoten, die Flocke „Glück, Mut und Abendbrot“ nennt.", en = "Thick, rough and with three knots that Flocke calls “luck, courage and supper”." }
 
 [[item]]
-id = "klarkristall"
+id = "clear_crystal"
 type = "collectible"
 name = { de = "Klarkristall", en = "Clear crystal" }
 desc = { de = "Ganz klar. Wenn man hindurchsieht, wirkt die Welt ein bisschen ruhiger.", en = "Perfectly clear. Looking through it, the world seems a little calmer." }
 
 [[item]]
-id = "kraeutertee"
+id = "herbal_tea"
 type = "consumable"
 effect = { warm = 2 }
 price = 12
@@ -217,7 +217,7 @@ name = { de = "Kräutertee", en = "Herbal tea" }
 desc = { de = "Stellt 2 Leben her und wärmt: Die Kälte-Leiste ist danach leer.", en = "Restores 2 health and warms you up: the cold bar is empty afterwards." }
 
 [[item]]
-id = "bommelmuetze"
+id = "bobble_hat"
 type = "equipment"
 slot = "hat"
 rarity = "rare"
@@ -226,7 +226,7 @@ name = { de = "Bommelmütze", en = "Bobble hat" }
 desc = { de = "Flockes alte Mütze. Die Kälte-Leiste füllt sich langsamer – und die Laune friert nicht ein.", en = "Flocke's old hat. The cold bar fills more slowly – and your mood doesn't freeze." }
 
 [[item]]
-id = "fellstiefel"
+id = "fur_boots"
 type = "equipment"
 slot = "boots"
 price = 220
@@ -236,7 +236,7 @@ desc = { de = "Warm und fest. Die Kälte-Leiste füllt sich etwas langsamer.", e
 
 # Klonk's pendants made of clear crystals (to choose from)
 [[item]]
-id = "wuchtkristall"
+id = "force_crystal"
 type = "equipment"
 slot = "pendant"
 rarity = "rare"
@@ -245,7 +245,7 @@ name = { de = "Wuchtkristall", en = "Impact crystal" }
 desc = { de = "Von Klonk geschliffen. Der Hammer schlägt härter zu.", en = "Cut by Klonk. The hammer hits harder." }
 
 [[item]]
-id = "sprengkristall"
+id = "blast_crystal"
 type = "equipment"
 slot = "pendant"
 rarity = "rare"
@@ -254,7 +254,7 @@ name = { de = "Sprengkristall", en = "Blast crystal" }
 desc = { de = "Von Klonk geschliffen. Granaten explodieren größer.", en = "Cut by Klonk. Grenades explode bigger." }
 
 [[item]]
-id = "lichtkristall"
+id = "light_crystal"
 type = "equipment"
 slot = "pendant"
 rarity = "rare"

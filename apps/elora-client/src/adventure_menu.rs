@@ -103,7 +103,7 @@ pub fn bonus_text(lang: &Lang, b: Bonus) -> String {
         Bonus::InvulnerableMs(v) => ("bonus.invulnerable_ms", format!("{v:+}")),
         Bonus::HealBonus(v) => ("bonus.heal_bonus", format!("{v:+}")),
         Bonus::SecondChance(v) => ("bonus.second_chance", v.to_string()),
-        Bonus::JerkCooldownMs(v) => ("bonus.ruck_cooldown_ms", format!("{v:+}")),
+        Bonus::JerkCooldownMs(v) => ("bonus.jerk_cooldown_ms", format!("{v:+}")),
         Bonus::HookLengthPct(v) => ("bonus.hook_length_pct", format!("{v:+}")),
         Bonus::StompRadius(v) => ("bonus.stomp_radius", format!("{v:+}")),
         Bonus::StompDamage(v) => ("bonus.stomp_damage", format!("{v:+}")),
@@ -137,11 +137,11 @@ pub fn item_icon(
     let line = ui::OUTLINE;
     let kind = d.content.item(id).map(|i| &i.kind);
     let material_color = |id: &str| match id {
-        "bernstein" => Color::hex(0xe0b85a),
-        "harz" => Color::hex(0xc9955c),
-        "glutstein" => Color::hex(0xe8685a),
-        "eiskristall" => Color::hex(0xbfe6f5),
-        "sternsplitter" => Color::hex(0xa77be0),
+        "amber" => Color::hex(0xe0b85a),
+        "resin" => Color::hex(0xc9955c),
+        "ember_stone" => Color::hex(0xe8685a),
+        "ice_crystal" => Color::hex(0xbfe6f5),
+        "star_shard" => Color::hex(0xa77be0),
         _ => Color::hex(0x9aa4ae),
     };
     match kind {
@@ -867,7 +867,7 @@ fn quests(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState, area: Rect) -> 
         parts.push(lang.f("adventure.xp", &[("n", &r.xp)]));
     }
     if r.gleam_drops > 0 {
-        parts.push(lang.f("adventure.glanz", &[("n", &r.gleam_drops)]));
+        parts.push(lang.f("adventure.gleam", &[("n", &r.gleam_drops)]));
     }
     for c in &r.items {
         let name = d
@@ -903,7 +903,7 @@ fn world_map(ui: &mut Ui<'_>, d: &MenuData<'_>, area: Rect) {
         d.save
             .flags
             .keys()
-            .filter_map(|k| k.strip_prefix("besucht:"))
+            .filter_map(|k| k.strip_prefix("visited:"))
             .filter(|m| m.starts_with(prefix))
             .count()
     };
@@ -1255,7 +1255,7 @@ mod tests {
     use elora_render::{Font, ShapeBatch};
 
     /// Visual check: `cargo test -p elora-client --bin elora adventure_menu_sheet -- --ignored`,
-    /// then per page `cargo xtask svg-preview target/abenteuer-menu-<seite>.svg … 1280`.
+    /// then per page `cargo xtask svg-preview target/adventure-menu-<seite>.svg … 1280`.
     #[test]
     #[ignore = "only writes files for visual inspection"]
     fn adventure_menu_sheet() {
@@ -1267,35 +1267,35 @@ mod tests {
         let mut save = SaveGame::new(
             &c,
             Location {
-                map: "wiese-1".into(),
+                map: "meadow-1".into(),
                 spawn: "west".into(),
             },
         );
         save.add_xp(&c, 400);
         save.grant_ability(elora_sim::Ability::HookJerk);
-        save.learn(&c, "schneller_ruck").unwrap();
-        save.learn(&c, "kraft").unwrap();
-        save.learn(&c, "kraft").unwrap();
+        save.learn(&c, "quick_jerk").unwrap();
+        save.learn(&c, "power").unwrap();
+        save.learn(&c, "power").unwrap();
         for (id, n) in [
-            ("glanztropfen", 140),
-            ("heiltrank", 3),
-            ("bernstein", 2),
-            ("tauumhang", 1),
-            ("glitzerstein", 1),
-            ("strohhut", 1),
+            ("gleam_drops", 140),
+            ("healing_potion", 3),
+            ("amber", 2),
+            ("dew_cape", 1),
+            ("glitter_stone", 1),
+            ("straw_hat", 1),
         ] {
             save.add_item(&c, id, n).unwrap();
         }
-        save.equip(&c, "strohhut").unwrap();
+        save.equip(&c, "straw_hat").unwrap();
         save.give_weapon(Weapon::Grenade);
-        save.set_flag("besucht:tauwinkel", 1);
-        save.set_flag("besucht:wiese-1", 1);
+        save.set_flag("visited:tauwinkel", 1);
+        save.set_flag("visited:meadow-1", 1);
         save.run(
             &c,
             &[
-                "quest brunnen start".into(),
-                "quest brunnen weiter".into(),
-                "quest pips_stein start".into(),
+                "quest well start".into(),
+                "quest well advance".into(),
+                "quest pips_stone start".into(),
             ],
         );
         let tint = crate::skins::tint(
@@ -1306,12 +1306,12 @@ mod tests {
         );
         let screen = Vec2::new(1280.0, 720.0);
         for (name, panel) in [
-            ("inventar", Panel::Inventory),
-            ("faehigkeiten", Panel::Skills),
-            ("aufgaben", Panel::Quests),
-            ("karte", Panel::Map),
-            ("laden", Panel::Shop("lotte".into())),
-            ("schmiede", Panel::Forge),
+            ("inventory", Panel::Inventory),
+            ("abilities", Panel::Skills),
+            ("quests", Panel::Quests),
+            ("map", Panel::Map),
+            ("shop", Panel::Shop("lotte".into())),
+            ("smithy", Panel::Forge),
         ] {
             let mut batch = ShapeBatch::default();
             batch.fill_rect(Vec2::ZERO, screen, Color::hex(0x8fbf7a));
@@ -1337,7 +1337,7 @@ mod tests {
             };
             let mut st = MenuState {
                 panel,
-                item: Some("tauumhang".into()),
+                item: Some("dew_cape".into()),
                 ..MenuState::default()
             };
             draw(&mut ui, &data, &mut st);
@@ -1345,7 +1345,7 @@ mod tests {
             let svg = batch.debug_svg(Vec2::ZERO, screen, Color::hex(0x8fbf7a));
             std::fs::write(
                 format!(
-                    "{}/../../target/abenteuer-menu-{name}.svg",
+                    "{}/../../target/adventure-menu-{name}.svg",
                     env!("CARGO_MANIFEST_DIR")
                 ),
                 svg,

@@ -235,7 +235,7 @@ impl Sound {
             Self::ShellClack => "shell_clack",
             Self::SnakeHiss => "snake_hiss",
             Self::Quicksand => "quicksand",
-            Self::HookJerk => "hook_ruck",
+            Self::HookJerk => "hook_jerk",
             Self::IceCrack => "ice_crack",
             Self::IceBreak => "ice_break",
             Self::IcicleShatter => "icicle_shatter",
@@ -413,13 +413,13 @@ pub fn for_creature(e: &Event, kind: &str) -> Option<Vec<Cue>> {
     use CreatureAct::{Burrow, Emerge, Land, Wake, Warn};
     let one = |sound, pos| Some(vec![Cue::at(sound, pos)]);
     match (kind, e) {
-        ("duenenwurm", &Event::CreatureAct { act, pos, .. }) => match act {
+        ("dune_worm", &Event::CreatureAct { act, pos, .. }) => match act {
             Warn => Some(vec![Cue::at(Sound::SandRumble, pos).pitched(1.3)]),
             Emerge => one(Sound::SandBurst, pos),
             Burrow => one(Sound::SandDig, pos),
             _ => None,
         },
-        ("sandschlange", &Event::CreatureAct { act, pos, .. }) => match act {
+        ("sand_serpent", &Event::CreatureAct { act, pos, .. }) => match act {
             Wake => one(Sound::SnakeHiss, pos),
             Warn => one(Sound::SandRumble, pos),
             Emerge => Some(vec![
@@ -433,24 +433,24 @@ pub fn for_creature(e: &Event, kind: &str) -> Option<Vec<Cue>> {
             ]),
             _ => None,
         },
-        ("funkenmotte", &Event::CreatureFire { pos, .. }) => one(Sound::Spark, pos),
+        ("spark_moth", &Event::CreatureFire { pos, .. }) => one(Sound::Spark, pos),
         // Frostspitzen (R2-M2.4)
-        ("eiszapfen", &Event::CreatureAct { act: Warn, pos, .. }) => {
+        ("icicle", &Event::CreatureAct { act: Warn, pos, .. }) => {
             Some(vec![Cue::at(Sound::IceCrack, pos).pitched(1.6)])
         }
-        ("eiszapfen", &Event::CreatureDeath { pos, .. }) => one(Sound::IcicleShatter, pos),
+        ("icicle", &Event::CreatureDeath { pos, .. }) => one(Sound::IcicleShatter, pos),
         // avalanche starts (the session reports the first chunk), chunk bursts
-        ("schneebrocken", &Event::CreatureAct { act: Warn, pos, .. }) => {
+        ("snow_chunk", &Event::CreatureAct { act: Warn, pos, .. }) => {
             Some(vec![Cue::at(Sound::SandRumble, pos).pitched(0.55)])
         }
-        ("schneebrocken", &Event::CreatureDeath { pos, .. }) => {
+        ("snow_chunk", &Event::CreatureDeath { pos, .. }) => {
             Some(vec![Cue::at(Sound::SnowCrunch, pos).pitched(0.7)])
         }
-        ("schneeballrobbe", &Event::CreatureFire { pos, .. }) => {
+        ("snowball_seal", &Event::CreatureFire { pos, .. }) => {
             Some(vec![Cue::at(Sound::SnowCrunch, pos).pitched(1.3)])
         }
         (
-            "fledermaus",
+            "bat",
             &Event::CreatureAct {
                 act: CreatureAct::Dive,
                 pos,
@@ -466,7 +466,7 @@ pub fn for_creature(e: &Event, kind: &str) -> Option<Vec<Cue>> {
             Land => one(Sound::BossLand, pos),
             _ => None,
         },
-        ("sandkrabbe", &Event::CreatureHit { pos, damage: 0, .. }) => one(Sound::ShellClack, pos),
+        ("sand_crab", &Event::CreatureHit { pos, damage: 0, .. }) => one(Sound::ShellClack, pos),
         _ => None,
     }
 }
@@ -540,25 +540,22 @@ mod tests {
             for_creature(e, kind).map(|c| c.iter().map(|c| c.sound).collect::<Vec<_>>())
         };
         assert_eq!(
-            sounds(&act(CreatureAct::Emerge), "duenenwurm"),
+            sounds(&act(CreatureAct::Emerge), "dune_worm"),
             Some(vec![Sound::SandBurst])
         );
         assert_eq!(
-            sounds(&act(CreatureAct::Emerge), "sandschlange"),
+            sounds(&act(CreatureAct::Emerge), "sand_serpent"),
             Some(vec![Sound::SandBurst, Sound::SnakeHiss])
         );
-        assert_eq!(sounds(&act(CreatureAct::Emerge), "wurzelschlange"), None);
+        assert_eq!(sounds(&act(CreatureAct::Emerge), "root_snake"), None);
         let blocked = Event::CreatureHit {
             id: 1,
             pos: Vec2::ZERO,
             damage: 0,
             from: None,
         };
-        assert_eq!(
-            sounds(&blocked, "sandkrabbe"),
-            Some(vec![Sound::ShellClack])
-        );
-        assert_eq!(sounds(&blocked, "brummbaer"), None);
+        assert_eq!(sounds(&blocked, "sand_crab"), Some(vec![Sound::ShellClack]));
+        assert_eq!(sounds(&blocked, "bumblebear"), None);
     }
 
     #[test]
@@ -615,18 +612,15 @@ mod tests {
                 .map(|c| c.sound)
                 .collect()
         };
-        assert_eq!(sounds(&death, "eiszapfen"), [Sound::IcicleShatter]);
-        assert_eq!(sounds(&death, "schneebrocken"), [Sound::SnowCrunch]);
-        assert_eq!(
-            sounds(&act(CreatureAct::Dive), "fledermaus"),
-            [Sound::BatScreech]
-        );
+        assert_eq!(sounds(&death, "icicle"), [Sound::IcicleShatter]);
+        assert_eq!(sounds(&death, "snow_chunk"), [Sound::SnowCrunch]);
+        assert_eq!(sounds(&act(CreatureAct::Dive), "bat"), [Sound::BatScreech]);
         assert_eq!(
             sounds(&act(CreatureAct::Warn), "kristella"),
             [Sound::FrostWave]
         );
         assert_eq!(
-            sounds(&act(CreatureAct::Warn), "schneebrocken"),
+            sounds(&act(CreatureAct::Warn), "snow_chunk"),
             [Sound::SandRumble]
         );
         let ice = |broken| Event::IceCrack {

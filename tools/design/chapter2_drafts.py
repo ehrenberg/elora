@@ -499,14 +499,14 @@ def mushroom_ring():
 
 # Decoration for the chapter 2 maps (E-312): name: (drawing, viewBox), origin at the bottom centre.
 DECOR = {
-    'waldbaum': (forest_tree(), '-200 -680 400 690'),
-    'waldhaus': (tree_house(), '-100 -160 200 204'),
-    'haengebruecke': (suspension_bridge(), '-160 -70 320 72'),
-    'leuchtpilze': (glow_mushrooms(), '-74 -92 148 94'),
-    'wurzelbogen': (root_arch(), '-140 -180 280 182'),
-    'pilzring': (mushroom_ring(), '-130 -56 260 58'),
-    'waldquelle-verdorrt': (forest_spring(False), '-160 -160 320 162'),
-    'waldquelle-befreit': (forest_spring(True), '-160 -160 320 162'),
+    'forest_tree': (forest_tree(), '-200 -680 400 690'),
+    'forest_house': (tree_house(), '-100 -160 200 204'),
+    'hanging_bridge': (suspension_bridge(), '-160 -70 320 72'),
+    'glow_mushrooms': (glow_mushrooms(), '-74 -92 148 94'),
+    'root_arch': (root_arch(), '-140 -180 280 182'),
+    'mushroom_ring': (mushroom_ring(), '-130 -56 260 58'),
+    'moss-spring-withered': (forest_spring(False), '-160 -160 320 162'),
+    'moss-spring-freed': (forest_spring(True), '-160 -160 320 162'),
 }
 
 

@@ -1,4 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-160 -76 320 80">
-  <!-- Kapitel 3: oase (R2-M2.3, aus tools/design/kapitel3_entwuerfe.py). Ursprung unten in der Mitte. -->
-  <ellipse cx="0" cy="-6" rx="150" ry="20" fill="#5fc8e8" stroke="#2b2b2b" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><path d="M -80,-10 q 14,-6 28,0 M 30,-8 q 14,-6 28,0" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/><path d="M -150,-6 q -6,-30 4,-60 M -142,-6 q 2,-26 10,-46" fill="none" stroke="#4f8f3a" stroke-width="5" stroke-linecap="round"/><path d="M -130,-6 q -6,-30 4,-60 M -122,-6 q 2,-26 10,-46" fill="none" stroke="#4f8f3a" stroke-width="5" stroke-linecap="round"/><path d="M 132,-6 q -6,-30 4,-60 M 140,-6 q 2,-26 10,-46" fill="none" stroke="#4f8f3a" stroke-width="5" stroke-linecap="round"/><path d="M 150,-6 q -6,-30 4,-60 M 158,-6 q 2,-26 10,-46" fill="none" stroke="#4f8f3a" stroke-width="5" stroke-linecap="round"/>
-</svg>

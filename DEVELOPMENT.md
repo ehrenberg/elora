@@ -140,7 +140,7 @@ cargo run --bin elora-server -- --config server.toml
 |---|---|---|
 | `--port` | 8303 | UDP port |
 | `--bind` | `::` | `::` = IPv4 and IPv6 (registers with the master over both), `0.0.0.0` = IPv4 only |
-| `--map` | `maps/dm-wiese.emap` | Map (relative: first the working directory, then the installation's data folder) |
+| `--map` | `maps/dm-meadow.emap` | Map (relative: first the working directory, then the installation's data folder) |
 | `--max-clients` | 8 | Players, 1–64 |
 | `--name` | Elora-Server | Display name |
 | `--high-bandwidth` | off | Snapshots at 50 instead of 25 Hz (LAN only) |
@@ -186,8 +186,8 @@ For web hosting without your own service there is a PHP version of the master an
 ## Maps
 
 - **Format:** [`docs/handbook/map-format.md`](docs/handbook/map-format.md); view with `cargo xtask map-dump`.
-- **Release maps** (M6.10): `dm-wiese` (64×36, 4–8 players), `dm-wueste` (96×48, 8–12), `dm-winter` (128×64, 12–16), `ctf-wald` (150×48, 8–12), `ctf-nacht` (190×64, 12–16). Layouts are built and checked in `tools/design/release_maps/` (`python3 tools/design/release_maps/export.py`); the files are written by `cargo test -p elora-client --bin elora write_release_maps -- --ignored`.
-- **Adventure maps** (`maps/abenteuer/`) come from generators in `apps/elora-client/src/editor/` (`prologue.rs`, `chapter1.rs` to `chapter4.rs`) and are written with `write_prologue_maps`, `write_chapter1_maps` etc. (`cargo test -p elora-client --bin elora <name> -- --ignored`). A test checks that the shipped files are up to date.
+- **Release maps** (M6.10): `dm-meadow` (64×36, 4–8 players), `dm-desert` (96×48, 8–12), `dm-winter` (128×64, 12–16), `ctf-forest` (150×48, 8–12), `ctf-night` (190×64, 12–16). Layouts are built and checked in `tools/design/release_maps/` (`python3 tools/design/release_maps/export.py`); the files are written by `cargo test -p elora-client --bin elora write_release_maps -- --ignored`.
+- **Adventure maps** (`maps/adventure/`) come from generators in `apps/elora-client/src/editor/` (`prologue.rs`, `chapter1.rs` to `chapter4.rs`) and are written with `write_prologue_maps`, `write_chapter1_maps` etc. (`cargo test -p elora-client --bin elora <name> -- --ignored`). A test checks that the shipped files are up to date.
 - **Adventure content** (characters, dialogs, quests, enemies, items) lives as TOML in `assets/adventure/`: [`docs/handbook/adventure-content.md`](docs/handbook/adventure-content.md).
 - **Graphics** are made with Python scripts in `tools/design/` (no AI services, E-295).
 
@@ -296,8 +296,8 @@ Details: [Architecture](docs/handbook/architecture.md) · Principles: [`docs/han
 | Problem | Solution |
 |---|---|
 | „kein passender Grafikadapter“ (no suitable graphics adapter) / window does not start | Install the Vulkan driver (see above); if necessary force OpenGL: `WGPU_BACKEND=gl cargo run --bin elora` |
-| `elora-server … nicht gefunden` (not found) when hosting from the client | Run `cargo build` once (builds all programs) |
-| `Port … nicht verfügbar` (not available) | Another server is already running on that port → change `--port` |
+| `elora-server … not found` when hosting from the client | Run `cargo build` once (builds all programs) |
+| `socket not available` | Another server is already running on that port → change `--port` |
 | `cargo xtask check` reports missing commands | Install `cargo-deny` and `cargo-nextest` (see setup) |
 | Test „… veraltet“ (map out of date) | Generator changed, map not rewritten → run the matching `write_…_maps` test with `--ignored` |
 

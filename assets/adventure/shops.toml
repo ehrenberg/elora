@@ -6,20 +6,20 @@
 id = "lotte"
 owner = "lotte"
 discount = [{ affection = 5, pct = 10 }, { affection = 10, pct = 20 }]
-stock = ["heiltrank", "tautrank", "sandstiefel", "gluecksanhaenger", "strohhut", "kraeutertee"]
+stock = ["healing_potion", "dew_potion", "sand_boots", "lucky_pendant", "straw_hat", "herbal_tea"]
 # only once Elora can use them (E-354)
-stock_if = { tautrank = "faehigkeit hook-ruck", sandstiefel = "nicht quest glutsand neu", kraeutertee = "quest frostspitzen erledigt" }
+stock_if = { dew_potion = "ability hook-jerk", sand_boots = "not quest glutsand new", herbal_tea = "quest frostspitzen done" }
 
 # Sirup the caravan leader (R2-M2.3, E-324)
 [[shop]]
 id = "sirup"
 owner = "sirup"
 discount = [{ affection = 5, pct = 10 }, { affection = 10, pct = 20 }]
-stock = ["kaktusfrucht", "glutstein", "karawanenkette"]
+stock = ["cactus_fruit", "ember_stone", "caravan_necklace"]
 
 # Flocke the mountain guide (R2-M2.4)
 [[shop]]
 id = "flocke"
 owner = "flocke"
 discount = [{ affection = 5, pct = 10 }, { affection = 10, pct = 20 }]
-stock = ["kraeutertee", "eiskristall", "fellstiefel"]
+stock = ["herbal_tea", "ice_crystal", "fur_boots"]

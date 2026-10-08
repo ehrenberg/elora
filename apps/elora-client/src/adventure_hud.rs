@@ -100,7 +100,7 @@ pub fn status(
         .fill_rounded_rect(pill.min, pill.max, 16.0 * s, PANEL);
     art.draw_loot_icon(
         ui.batch,
-        "glanztropfen",
+        "gleam_drops",
         pill.min + Vec2::new(19.0 * s, 17.0 * s),
         1.1 * s,
     );
@@ -594,7 +594,7 @@ pub fn dialog(
         .fill_circle(pc, 50.0 * s, Color::rgba(0.95, 0.76, 0.31, 0.16));
     let ground = pc + Vec2::new(-4.0 * s, 46.0 * s);
     if !art.draw_character(ui.batch, v.speaker, ground, 1, 1.75 * s) {
-        art.draw_loot_icon(ui.batch, "glanztropfen", pc, 2.5 * s);
+        art.draw_loot_icon(ui.batch, "gleam_drops", pc, 2.5 * s);
     }
     let tag_w = ui.text_width(v.name, 11.0) + 24.0 * s;
     let tag = Rect::new(pc.x - tag_w / 2.0, pc.y + 56.0 * s, tag_w, 22.0 * s);
@@ -833,7 +833,7 @@ mod tests {
         let c = Content::builtin();
         let mut save = SaveGame::new(&c, Location::default());
         save.add_xp(&c, 70);
-        save.add_item(&c, "glanztropfen", 128).unwrap();
+        save.add_item(&c, "gleam_drops", 128).unwrap();
         let (mut conv, _) = Conversation::start(&c, &mut save, "oma").unwrap();
         let screen = Vec2::new(1280.0, 720.0);
         let mut batch = ShapeBatch::default();
@@ -884,7 +884,7 @@ mod tests {
         std::fs::write(
             concat!(
                 env!("CARGO_MANIFEST_DIR"),
-                "/../../target/abenteuer-hud.svg"
+                "/../../target/adventure-hud.svg"
             ),
             svg,
         )

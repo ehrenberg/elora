@@ -1,9 +1,0 @@
-# Signpost (E-273, A1.9)
-speaker = "wegweiser"
-
-[[start]]
-node = "text"
-
-[[node]]
-id = "text"
-text = { de = "Blütenwiesen. Beute fliegt dir zu, wenn du nah genug bist. Heilblumen heilen beim Berühren. Vorsicht vor Dornen! Wer oben bleibt, findet mehr.", en = "Blütenwiesen. Loot flies to you when you get close. Healing blossoms heal when you touch them. Beware of thorns! Stay up high to find more." }

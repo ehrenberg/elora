@@ -4,7 +4,7 @@
 //! the sunken path at the east path leads down, the maps are built from left to right.
 //!
 //! `cargo test -p elora-client --bin elora write_chapter3_maps -- --ignored` writes
-//! `maps/abenteuer/*.emap`.
+//! `maps/adventure/*.emap`.
 
 #![allow(
     clippy::cast_precision_loss,
@@ -24,7 +24,7 @@ use super::release::{self, Theme};
 
 /// Desert: theme „Wüste“ of the release maps, large decoration matching the region.
 const DESERT: Theme = Theme {
-    back: &[("kaktus", 5), ("rock-2", 1), ("rock-1", 1)],
+    back: &[("cactus", 5), ("rock-2", 1), ("rock-1", 1)],
     front: &["rock-1", "grass-2"],
     front_density: 10,
     back_spacing: 13,
@@ -62,16 +62,16 @@ pub(super) fn zone(id: &str, x: (usize, usize), y: (usize, usize)) -> Object {
 }
 
 fn crab(id: &str, tx: usize, ty: usize) -> Object {
-    creature(id, "sandkrabbe", tx, ty, 30.0)
+    creature(id, "sand_crab", tx, ty, 30.0)
 }
 
 fn worm(id: &str, tx: usize, ty: usize) -> Object {
-    creature(id, "duenenwurm", tx, ty, 36.0)
+    creature(id, "dune_worm", tx, ty, 36.0)
 }
 
 /// Spark moth `rows` tiles above the ground.
 fn moth(id: &str, tx: usize, ty: usize, rows: usize) -> Object {
-    creature(id, "funkenmotte", tx, ty - rows, 32.0)
+    creature(id, "spark_moth", tx, ty - rows, 32.0)
 }
 
 /// Quicksand instead of ground in the columns `x0..=x1` (one row, solid ground below, E-318).
@@ -82,7 +82,7 @@ fn quicksand(g: &mut Grid, x0: usize, x1: usize, top: usize) {
 /// Gray footprints of the wanderer (E-325).
 fn tracks(m: &mut Map, spots: &[(f32, usize)]) {
     for &(tx, ty) in spots {
-        m.decor_front.push(big("grauspur", tx, ty, 2.2));
+        m.decor_front.push(big("grey_trail", tx, ty, 2.2));
     }
 }
 
@@ -123,44 +123,44 @@ pub fn desert_1() -> Map {
     g.ground(216, w - 1, 42);
     let mut m = g.map("Glutsandwüste 1");
     m.adventure.objects = vec![
-        edge_exit("weg-dorf", 0, h, "tauwinkel", "hohlweg"),
-        o("nord", at(6, 24, 28.0), ObjectKind::Spawn),
-        sign("schild-hitze", 11, 24),
+        edge_exit("path-village", 0, h, "tauwinkel", "sunken_path"),
+        o("north", at(6, 24, 28.0), ObjectKind::Spawn),
+        sign("sign-heat", 11, 24),
         chest(
-            "truhe-munition",
+            "chest-ammo",
             13,
             24,
-            &[("munition_granate", 1), ("glanztropfen", 10)],
+            &[("ammo_grenade", 1), ("gleam_drops", 10)],
         ),
-        crab("krabbe-1", 56, 40),
-        sign("schild-treibsand", 68, 44),
-        crab("krabbe-2", 85, 44),
-        worm("wurm-1", 100, 41),
-        o("duenen-rast", at(120, 38, 40.0), ObjectKind::SavePoint),
-        plant("blume-1", 126, 38),
-        worm("wurm-2", 144, 44),
-        crab("krabbe-3", 157, 44),
-        worm("wurm-3", 168, 44),
-        crab("krabbe-4", 192, 42),
-        worm("wurm-4", 208, 40),
-        o("ost", at(234, 42, 28.0), ObjectKind::Spawn),
-        edge_exit("weg-lager", w - 2, h, "wueste-2", "west"),
+        crab("crab-1", 56, 40),
+        sign("sign-quicksand", 68, 44),
+        crab("crab-2", 85, 44),
+        worm("worm-1", 100, 41),
+        o("dunes-rest", at(120, 38, 40.0), ObjectKind::SavePoint),
+        plant("flower-1", 126, 38),
+        worm("worm-2", 144, 44),
+        crab("crab-3", 157, 44),
+        worm("worm-3", 168, 44),
+        crab("crab-4", 192, 42),
+        worm("worm-4", 208, 40),
+        o("east", at(234, 42, 28.0), ObjectKind::Spawn),
+        edge_exit("path-camp", w - 2, h, "desert-2", "west"),
     ];
     m.decor_back = vec![
-        big("duene", 8.0, 24, 1.2),
-        big("felsbogen", 47.0, 40, 1.5),
-        big("duene", 70.0, 44, 1.6),
-        big("palme", 115.0, 38, 1.0),
-        big("duene", 135.0, 41, 1.3),
-        big("felsbogen", 180.5, 42, 1.4),
-        big("duene", 205.0, 40, 1.5),
-        big("palme", 228.0, 42, 0.9),
+        big("dune", 8.0, 24, 1.2),
+        big("rock_arch", 47.0, 40, 1.5),
+        big("dune", 70.0, 44, 1.6),
+        big("palm", 115.0, 38, 1.0),
+        big("dune", 135.0, 41, 1.3),
+        big("rock_arch", 180.5, 42, 1.4),
+        big("dune", 205.0, 40, 1.5),
+        big("palm", 228.0, 42, 0.9),
     ];
     m.decor_front = vec![
-        big("kaktus", 30.0, 36, 0.6),
-        big("kaktus", 95.0, 41, 0.5),
-        big("kaktus", 133.0, 41, 0.6),
-        big("kaktus", 196.0, 42, 0.5),
+        big("cactus", 30.0, 36, 0.6),
+        big("cactus", 95.0, 41, 0.5),
+        big("cactus", 133.0, 41, 0.6),
+        big("cactus", 196.0, 42, 0.5),
     ];
     tracks(
         &mut m,
@@ -194,71 +194,71 @@ pub fn desert_2() -> Map {
     // climbing spot for the return with the ice grip (M2.4.7)
     let climb = climb_vault(
         &mut g,
-        "wueste2-kletter",
+        "desert2-climb",
         16,
         40,
-        &[("glanztropfen", 60), ("glutstein", 2)],
+        &[("gleam_drops", 60), ("ember_stone", 2)],
     );
     let mut m = g.map("Karawanenlager");
     let blossom = |n: usize, tx: usize| {
         o(
-            &format!("bluete-{n}"),
+            &format!("blossom-{n}"),
             at(tx, 45, 28.0),
             ObjectKind::Npc {
-                character: format!("bluete-{n}"),
-                dialog: "oase-bluete".into(),
+                character: format!("blossom-{n}"),
+                dialog: "oasis-blossom".into(),
                 facing: 1,
                 walk: 0.0,
             },
         )
     };
     m.adventure.objects = vec![
-        edge_exit("weg-duenen", 0, h, "wueste-1", "ost"),
+        edge_exit("path-dunes", 0, h, "desert-1", "east"),
         o("west", at(5, 40, 28.0), ObjectKind::Spawn),
-        o("lager", at(47, 40, 40.0), ObjectKind::SavePoint),
+        o("camp", at(47, 40, 40.0), ObjectKind::SavePoint),
         npc("sirup", 52, 40, -1, 24.0),
         chest(
-            "truhe-munition",
+            "chest-ammo",
             68,
             40,
-            &[("munition_granate", 1), ("glanztropfen", 10)],
+            &[("ammo_grenade", 1), ("gleam_drops", 10)],
         ),
-        crab("krabbe-1", 90, 42),
+        crab("crab-1", 90, 42),
         npc("palma", 104, 45, 1, 0.0),
-        npc("giessstelle-1", 100, 45, 1, 0.0),
+        npc("watering-spot-1", 100, 45, 1, 0.0),
         blossom(1, 100),
-        npc("giessstelle-2", 109, 45, 1, 0.0),
+        npc("watering-spot-2", 109, 45, 1, 0.0),
         blossom(2, 109),
-        npc("giessstelle-3", 133, 45, 1, 0.0),
+        npc("watering-spot-3", 133, 45, 1, 0.0),
         blossom(3, 133),
-        zone("oase-1", (96, 140), (33, 44)),
-        plant("blume-1", 138, 45),
-        moth("motte-1", 160, 40, 9),
-        crab("krabbe-2", 175, 40),
-        plant("blume-2", 170, 40),
-        moth("motte-2", 188, 40, 8),
-        crab("krabbe-3", 202, 40),
-        o("ost", at(214, 40, 28.0), ObjectKind::Spawn),
-        edge_exit("weg-ruinen", w - 2, h, "wueste-3", "west"),
+        zone("oasis-1", (96, 140), (33, 44)),
+        plant("flower-1", 138, 45),
+        moth("moth-1", 160, 40, 9),
+        crab("crab-2", 175, 40),
+        plant("flower-2", 170, 40),
+        moth("moth-2", 188, 40, 8),
+        crab("crab-3", 202, 40),
+        o("east", at(214, 40, 28.0), ObjectKind::Spawn),
+        edge_exit("path-ruins", w - 2, h, "desert-3", "west"),
         climb,
     ];
     m.decor_back = vec![
-        big("duene", 12.0, 40, 1.4),
-        big("zelt", 40.0, 40, 0.75),
-        big("zelt", 62.0, 40, 0.75),
-        big("kamel", 72.0, 40, 0.55),
-        big("palme", 98.0, 45, 1.1),
-        big("oase", 120.0, 45, 1.4),
-        big("palme", 128.0, 45, 0.9),
-        big("palme", 139.0, 45, 1.2),
-        big("duene", 170.0, 40, 1.5),
-        big("felsbogen", 205.0, 40, 1.0),
+        big("dune", 12.0, 40, 1.4),
+        big("tent", 40.0, 40, 0.75),
+        big("tent", 62.0, 40, 0.75),
+        big("camel", 72.0, 40, 0.55),
+        big("palm", 98.0, 45, 1.1),
+        big("oasis", 120.0, 45, 1.4),
+        big("palm", 128.0, 45, 0.9),
+        big("palm", 139.0, 45, 1.2),
+        big("dune", 170.0, 40, 1.5),
+        big("rock_arch", 205.0, 40, 1.0),
     ];
     m.decor_front = vec![
-        decor("faesser", 46.0, 40),
-        decor("korb", 57.0, 40),
-        big("kaktus", 84.0, 42, 0.5),
-        big("kaktus", 158.0, 40, 0.6),
+        decor("barrels", 46.0, 40),
+        decor("basket", 57.0, 40),
+        big("cactus", 84.0, 42, 0.5),
+        big("cactus", 158.0, 40, 0.6),
     ];
     tracks(
         &mut m,
@@ -296,11 +296,11 @@ pub fn desert_3() -> Map {
     // pull chest (pull hook) and hook jerk spot (hook jerk)
     let vault = pull_vault(
         &mut g,
-        "ruine",
+        "ruin",
         134,
         46,
-        "ruine.zugtor",
-        &[("glanztropfen", 45), ("glutstein", 2)],
+        "ruin.pull_gate",
+        &[("gleam_drops", 45), ("ember_stone", 2)],
     );
     let jerk_top = jerk_gate(&mut g, 148, 46);
     // buried chamber: crumbling floor (two rows), below it a room with a ledge
@@ -312,61 +312,61 @@ pub fn desert_3() -> Map {
     g.fill((205, 209), (46, 46), '^');
     let mut m = g.map("Ruinen des Glutvolks");
     m.adventure.objects = vec![
-        edge_exit("weg-lager", 0, h, "wueste-2", "ost"),
+        edge_exit("path-camp", 0, h, "desert-2", "east"),
         o("west", at(4, 46, 28.0), ObjectKind::Spawn),
-        npc("tafel-1", 14, 46, 1, 0.0),
-        crab("krabbe-1", 26, 46),
-        moth("motte-1", 40, 40, 8),
-        worm("wurm-1", 56, 46),
-        npc("tafel-2", 76, 46, 1, 0.0),
+        npc("tablet-1", 14, 46, 1, 0.0),
+        crab("crab-1", 26, 46),
+        moth("moth-1", 40, 40, 8),
+        worm("worm-1", 56, 46),
+        npc("tablet-2", 76, 46, 1, 0.0),
         chest(
-            "truhe-munition",
+            "chest-ammo",
             58,
             46,
-            &[("munition_granate", 1), ("glanztropfen", 10)],
+            &[("ammo_grenade", 1), ("gleam_drops", 10)],
         ),
-        crab("krabbe-2", 86, 46),
-        o("hof", at(108, 49, 40.0), ObjectKind::SavePoint),
-        npc("ruinenquelle", 116, 49, 1, 0.0),
-        moth("motte-2", 122, 49, 7),
+        crab("crab-2", 86, 46),
+        o("yard", at(108, 49, 40.0), ObjectKind::SavePoint),
+        npc("ruin_spring", 116, 49, 1, 0.0),
+        moth("moth-2", 122, 49, 7),
         chest(
-            "truhe-ruck",
+            "chest-jerk",
             155,
             jerk_top,
-            &[("glanztropfen", 50), ("tautrank", 1)],
+            &[("gleam_drops", 50), ("dew_potion", 1)],
         ),
-        worm("wurm-2", 165, 46),
-        sign("schild-kammer", 173, 46),
-        zone("ruinenkammer", (172, 184), (48, 55)),
-        npc("tafel-kammer", 176, 56, 1, 0.0),
-        chest("truhe-kammer", 182, 56, &[("sonnenschleier", 1)]),
-        crab("krabbe-3", 194, 46),
-        moth("motte-3", 200, 46, 8),
-        worm("wurm-3", 216, 46),
-        plant("blume-1", 222, 46),
-        o("ost", at(234, 46, 28.0), ObjectKind::Spawn),
-        edge_exit("weg-kessel", w - 2, h, "wueste-arena", "west"),
+        worm("worm-2", 165, 46),
+        sign("sign-chamber", 173, 46),
+        zone("ruin_chamber", (172, 184), (48, 55)),
+        npc("tablet-chamber", 176, 56, 1, 0.0),
+        chest("chest-chamber", 182, 56, &[("sun_veil", 1)]),
+        crab("crab-3", 194, 46),
+        moth("moth-3", 200, 46, 8),
+        worm("worm-3", 216, 46),
+        plant("flower-1", 222, 46),
+        o("east", at(234, 46, 28.0), ObjectKind::Spawn),
+        edge_exit("path-basin", w - 2, h, "desert-arena", "west"),
     ];
     m.adventure.objects.extend(vault);
     m.decor_back = vec![
-        big("ruinentor", 22.0, 46, 0.9),
-        big("saeule", 38.0, 46, 0.9),
-        big("saeule-bruch", 54.0, 46, 1.0),
-        big("saeule", 72.0, 46, 1.0),
-        big("saeule-bruch", 84.0, 46, 0.9),
-        big("saeule", 105.0, 49, 0.9),
-        big("saeule", 126.0, 49, 0.9),
-        big("ruinentor", 116.0, 49, 1.0),
-        big("saeule-bruch", 145.0, 46, 1.0),
-        big("saeule", 168.0, 46, 1.0),
-        big("ruinentor", 190.0, 46, 0.9),
-        big("saeule-bruch", 200.0, 46, 0.8),
-        big("duene", 225.0, 46, 1.3),
+        big("ruin_gate", 22.0, 46, 0.9),
+        big("pillar", 38.0, 46, 0.9),
+        big("pillar-broken", 54.0, 46, 1.0),
+        big("pillar", 72.0, 46, 1.0),
+        big("pillar-broken", 84.0, 46, 0.9),
+        big("pillar", 105.0, 49, 0.9),
+        big("pillar", 126.0, 49, 0.9),
+        big("ruin_gate", 116.0, 49, 1.0),
+        big("pillar-broken", 145.0, 46, 1.0),
+        big("pillar", 168.0, 46, 1.0),
+        big("ruin_gate", 190.0, 46, 0.9),
+        big("pillar-broken", 200.0, 46, 0.8),
+        big("dune", 225.0, 46, 1.3),
     ];
     m.decor_front = vec![
-        big("kaktus", 8.0, 46, 0.5),
-        big("kaktus", 90.0, 46, 0.5),
-        big("kaktus", 228.0, 46, 0.6),
+        big("cactus", 8.0, 46, 0.5),
+        big("cactus", 90.0, 46, 0.5),
+        big("cactus", 228.0, 46, 0.6),
     ];
     tracks(
         &mut m,
@@ -398,29 +398,29 @@ pub fn desert_arena() -> Map {
     let mut m = g.map("Glutquelle");
     m.adventure.objects = vec![
         o("west", at(5, 28, 28.0), ObjectKind::Spawn),
-        o("vor-der-quelle", at(11, 28, 40.0), ObjectKind::SavePoint),
+        o("before-the-spring", at(11, 28, 40.0), ObjectKind::SavePoint),
         chest(
-            "truhe-munition",
+            "chest-ammo",
             14,
             28,
-            &[("munition_granate", 1), ("munition_laser", 1)],
+            &[("ammo_grenade", 1), ("ammo_laser", 1)],
         ),
         o(
-            "sandschlange",
+            "sand_serpent",
             at(50, 44, 70.0),
             ObjectKind::Creature {
-                kind: "sandschlange".into(),
+                kind: "sand_serpent".into(),
                 persistent: true,
             },
         ),
-        npc("schlange", 50, 44, -1, 0.0),
-        zone("schatten-kessel", (20, 79), (14, 43)),
+        npc("serpent", 50, 44, -1, 0.0),
+        zone("shade-basin", (20, 79), (14, 43)),
         o(
-            "tor",
+            "gate",
             corner(80, 36),
             ObjectKind::Door {
                 size: (2, 8),
-                open_if: "merker besiegt.sandschlange".into(),
+                open_if: "flag defeated.sand_serpent".into(),
             },
         ),
         o(
@@ -431,18 +431,18 @@ pub fn desert_arena() -> Map {
                 mode: CameraMode::Bounds,
             },
         ),
-        o("ost", at(104, 44, 28.0), ObjectKind::Spawn),
-        edge_exit("weg-heim", w - 2, h, "tauwinkel", "hohlweg"),
+        o("east", at(104, 44, 28.0), ObjectKind::Spawn),
+        edge_exit("path-home", w - 2, h, "tauwinkel", "sunken_path"),
     ];
     m.decor_back = vec![
-        big("glutquelle-verdorrt", 50.0, 44, 1.6),
-        big("palme", 4.0, 28, 1.0),
-        big("felsbogen", 11.0, 28, 0.9),
-        big("saeule", 24.0, 44, 1.2),
-        big("saeule-bruch", 76.0, 44, 1.2),
-        big("duene", 95.0, 44, 1.3),
+        big("ember-spring-withered", 50.0, 44, 1.6),
+        big("palm", 4.0, 28, 1.0),
+        big("rock_arch", 11.0, 28, 0.9),
+        big("pillar", 24.0, 44, 1.2),
+        big("pillar-broken", 76.0, 44, 1.2),
+        big("dune", 95.0, 44, 1.3),
     ];
-    m.decor_front = vec![big("kaktus", 15.0, 28, 0.5), big("kaktus", 100.0, 44, 0.5)];
+    m.decor_front = vec![big("cactus", 15.0, 28, 0.5), big("cactus", 100.0, 44, 0.5)];
     tracks(&mut m, &[(40.0, 44), (60.0, 44), (90.0, 44), (102.0, 44)]);
     desert(m)
 }
@@ -450,10 +450,10 @@ pub fn desert_arena() -> Map {
 /// Maps of chapter 3 with their names.
 pub fn maps() -> Vec<(&'static str, Map)> {
     vec![
-        ("wueste-1", desert_1()),
-        ("wueste-2", desert_2()),
-        ("wueste-3", desert_3()),
-        ("wueste-arena", desert_arena()),
+        ("desert-1", desert_1()),
+        ("desert-2", desert_2()),
+        ("desert-3", desert_3()),
+        ("desert-arena", desert_arena()),
     ]
 }
 
@@ -465,7 +465,7 @@ mod tests {
 
     fn shipped(name: &str) -> String {
         format!(
-            "{}/../../maps/abenteuer/{name}.{}",
+            "{}/../../maps/adventure/{name}.{}",
             env!("CARGO_MANIFEST_DIR"),
             elora_map::EXTENSION
         )
@@ -495,14 +495,14 @@ mod tests {
         for id in [
             "sirup",
             "palma",
-            "giessstelle-1",
-            "giessstelle-2",
-            "giessstelle-3",
-            "ruinenquelle",
-            "tafel-kammer",
-            "ruinenkammer",
-            "oase-1",
-            "sandschlange",
+            "watering-spot-1",
+            "watering-spot-2",
+            "watering-spot-3",
+            "ruin_spring",
+            "tablet-chamber",
+            "ruin_chamber",
+            "oasis-1",
+            "sand_serpent",
         ] {
             assert!(objects.iter().any(|o| o.id == id), "{id} missing");
         }
@@ -542,7 +542,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "writes maps/abenteuer/*.emap"]
+    #[ignore = "writes maps/adventure/*.emap"]
     fn write_chapter3_maps() {
         for (name, map) in maps() {
             map.save(std::path::Path::new(&shipped(name))).unwrap();

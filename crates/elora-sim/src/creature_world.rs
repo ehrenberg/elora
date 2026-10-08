@@ -1085,7 +1085,7 @@ impl World {
     /// Icicles of the guardian (angry): on the ceiling above and next to Elora; they tremble
     /// at once.
     fn drop_icicles(&mut self, drops: &[(Vec2, u32)]) {
-        let Some(kind) = self.creature_kind("eiszapfen") else {
+        let Some(kind) = self.creature_kind("icicle") else {
             return;
         };
         let half = self.creature_kinds[kind].size[1] / 2.0;

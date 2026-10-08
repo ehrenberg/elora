@@ -4,7 +4,7 @@
 //! to right (deeper in the forest) and then mirrored.
 //!
 //! `cargo test -p elora-client --bin elora write_chapter2_maps -- --ignored` writes
-//! `maps/abenteuer/*.emap`.
+//! `maps/adventure/*.emap`.
 
 #![allow(
     clippy::cast_precision_loss,
@@ -55,7 +55,7 @@ fn big(name: &str, tx: f32, ty: usize, scale: f32) -> Decor {
 fn thorn_decor(m: &mut Map, y: usize, x0: usize, x1: usize) {
     let mut x = x0;
     while x < x1 {
-        m.decor_front.push(decor("dornen", x as f32 + 0.5, y + 1));
+        m.decor_front.push(decor("thorns", x as f32 + 0.5, y + 1));
         x += 2;
     }
 }
@@ -120,78 +120,78 @@ pub fn forest_1() -> Map {
     // climbing spot for the return with the ice grip (M2.4.7)
     let climb = climb_vault(
         &mut g,
-        "wald1-kletter",
+        "forest1-climb",
         152,
         40,
-        &[("glanztropfen", 60), ("harz", 2)],
+        &[("gleam_drops", 60), ("resin", 2)],
     );
     // stomp chamber for the return with stomp (M2.3.6)
     let stomp = stomp_vault(
         &mut g,
-        "wald1-stampf",
+        "forest1-stomp",
         140,
         42,
-        &[("glanztropfen", 60), ("harz", 2)],
+        &[("gleam_drops", 60), ("resin", 2)],
     );
     let mut m = g.map("Murmelwald 1");
     m.adventure.objects = vec![
-        edge_exit("weg-dorf", 0, h, "tauwinkel", "west"),
-        o("ost", at(6, 44, 28.0), ObjectKind::Spawn),
-        sign("schild-wald", 11, 44),
+        edge_exit("path-village", 0, h, "tauwinkel", "west"),
+        o("east", at(6, 44, 28.0), ObjectKind::Spawn),
+        sign("sign-forest", 11, 44),
         o(
-            "pilzring",
+            "mushroom_ring",
             corner(17, 34),
             ObjectKind::Zone {
                 size: Vec2::new(14.0 * T, 10.0 * T),
             },
         ),
-        npc("pilzmama", 22, 44, 1, 0.0),
-        npc("pilzkind_froh", 26, 44, -1, 0.0),
-        sign("schild-pilzring", 32, 44),
-        creature("schlange-1", "wurzelschlange", 52, 40, 110.0),
-        creature("wicht-1", "pilzwicht", 72, 42, 40.0),
+        npc("mushroom_mama", 22, 44, 1, 0.0),
+        npc("mushroom_child_happy", 26, 44, -1, 0.0),
+        sign("sign-mushroom-ring", 32, 44),
+        creature("serpent-1", "root_snake", 52, 40, 110.0),
+        creature("imp-1", "mushroom_imp", 72, 42, 40.0),
         rune("rune-1", 90, 20),
-        creature("wicht-2", "pilzwicht", 86, 42, 40.0),
-        creature("schlange-2", "wurzelschlange", 104, 46, 110.0),
+        creature("imp-2", "mushroom_imp", 86, 42, 40.0),
+        creature("serpent-2", "root_snake", 104, 46, 110.0),
         chest(
-            "truhe-munition",
+            "chest-ammo",
             100,
             46,
-            &[("munition_granate", 1), ("glanztropfen", 10)],
+            &[("ammo_grenade", 1), ("gleam_drops", 10)],
         ),
-        creature("pirat-1", "eichhornpirat", 113, 36, 52.0),
-        plant("blume-1", 118, 46),
-        o("quellstein", at(130, 42, 40.0), ObjectKind::SavePoint),
-        creature("wicht-3", "pilzwicht", 160, 40, 40.0),
-        creature("schlange-3", "wurzelschlange", 172, 40, 110.0),
+        creature("pirate-1", "squirrel_pirate", 113, 36, 52.0),
+        plant("flower-1", 118, 46),
+        o("spring_stone", at(130, 42, 40.0), ObjectKind::SavePoint),
+        creature("imp-3", "mushroom_imp", 160, 40, 40.0),
+        creature("serpent-3", "root_snake", 172, 40, 110.0),
         rune("rune-2", 187, 20),
-        plant("blume-2", 196, 38),
+        plant("flower-2", 196, 38),
         o("west", at(214, 40, 28.0), ObjectKind::Spawn),
-        edge_exit("weg-wald-2", w - 2, h, "wald-2", "ost"),
+        edge_exit("path-forest-2", w - 2, h, "forest-2", "east"),
         stomp,
         climb,
     ];
     m.decor_back = vec![
-        big("waldbaum", 4.0, 44, 0.8),
-        big("pilzring", 24.0, 44, 1.0),
-        big("waldbaum", 40.0, 42, 0.9),
-        big("waldbaum", 70.0, 42, 1.4),
-        big("waldbaum", 84.0, 42, 1.5),
-        big("waldbaum", 112.0, 46, 1.3),
-        big("wurzelbogen", 140.0, 42, 1.0),
-        big("waldbaum", 165.0, 40, 1.1),
-        big("wurzelbogen", 196.0, 38, 0.9),
-        big("waldbaum", 208.0, 40, 1.0),
+        big("forest_tree", 4.0, 44, 0.8),
+        big("mushroom_ring", 24.0, 44, 1.0),
+        big("forest_tree", 40.0, 42, 0.9),
+        big("forest_tree", 70.0, 42, 1.4),
+        big("forest_tree", 84.0, 42, 1.5),
+        big("forest_tree", 112.0, 46, 1.3),
+        big("root_arch", 140.0, 42, 1.0),
+        big("forest_tree", 165.0, 40, 1.1),
+        big("root_arch", 196.0, 38, 0.9),
+        big("forest_tree", 208.0, 40, 1.0),
     ];
     m.decor_front = vec![
-        decor("leuchtpilze", 15.0, 44),
-        decor("farn", 36.0, 42),
-        decor("leuchtpilze", 60.0, 40),
-        decor("farn", 98.0, 46),
-        decor("leuchtpilze", 122.0, 44),
-        decor("farn", 152.0, 40),
-        decor("baumstumpf", 180.0, 38),
-        decor("leuchtpilze", 204.0, 40),
+        decor("glow_mushrooms", 15.0, 44),
+        decor("fern", 36.0, 42),
+        decor("glow_mushrooms", 60.0, 40),
+        decor("fern", 98.0, 46),
+        decor("glow_mushrooms", 122.0, 44),
+        decor("fern", 152.0, 40),
+        decor("tree_stump", 180.0, 38),
+        decor("glow_mushrooms", 204.0, 40),
     ];
     forest(m)
 }
@@ -221,48 +221,48 @@ pub fn forest_2() -> Map {
     }
     let mut m = g.map("Murmelwald 2");
     m.adventure.objects = vec![
-        edge_exit("weg-wald-1", 0, h, "wald-1", "west"),
-        o("ost", at(6, 80, 28.0), ObjectKind::Spawn),
-        npc("pilzkind", 40, 78, 1, 0.0),
+        edge_exit("path-forest-1", 0, h, "forest-1", "west"),
+        o("east", at(6, 80, 28.0), ObjectKind::Spawn),
+        npc("mushroom_child", 40, 78, 1, 0.0),
         chest(
-            "truhe-munition",
+            "chest-ammo",
             50,
             78,
-            &[("munition_granate", 1), ("glanztropfen", 10)],
+            &[("ammo_grenade", 1), ("gleam_drops", 10)],
         ),
-        creature("wicht-1", "pilzwicht", 52, 78, 40.0),
-        creature("schlange-1", "wurzelschlange", 90, 76, 110.0),
-        o("baum-rast", at(100, 76, 40.0), ObjectKind::SavePoint),
-        creature("pirat-1", "eichhornpirat", 95, 44, 52.0),
+        creature("imp-1", "mushroom_imp", 52, 78, 40.0),
+        creature("serpent-1", "root_snake", 90, 76, 110.0),
+        o("tree-rest", at(100, 76, 40.0), ObjectKind::SavePoint),
+        creature("pirate-1", "squirrel_pirate", 95, 44, 52.0),
         npc("plumm", 126, 40, -1, 0.0),
-        creature("pirat-2", "eichhornpirat", 140, 36, 52.0),
+        creature("pirate-2", "squirrel_pirate", 140, 36, 52.0),
         rune("rune-3", 153, 28),
-        chest("truhe-krone", 155, 28, &[("glanztropfen", 35), ("harz", 2)]),
-        creature("schlange-2", "wurzelschlange", 150, 78, 110.0),
-        plant("blume-1", 120, 76),
-        creature("wicht-2", "pilzwicht", 180, 80, 40.0),
+        chest("chest-crown", 155, 28, &[("gleam_drops", 35), ("resin", 2)]),
+        creature("serpent-2", "root_snake", 150, 78, 110.0),
+        plant("flower-1", 120, 76),
+        creature("imp-2", "mushroom_imp", 180, 80, 40.0),
         o("west", at(194, 80, 28.0), ObjectKind::Spawn),
-        edge_exit("weg-wald-3", w - 2, h, "wald-3", "ost"),
+        edge_exit("path-forest-3", w - 2, h, "forest-3", "east"),
     ];
     m.decor_back = vec![
-        big("waldbaum", 20.0, 80, 1.3),
-        big("waldbaum", 60.0, 78, 2.1),
-        big("waldbaum", 75.0, 76, 2.2),
-        big("waldhaus", 96.0, 44, 1.0),
-        big("haengebruecke", 106.0, 44, 1.0),
-        big("waldbaum", 112.0, 76, 2.2),
-        big("waldhaus", 126.0, 40, 1.1),
-        big("waldbaum", 140.0, 76, 2.2),
-        big("waldbaum", 158.0, 78, 2.1),
-        big("waldbaum", 185.0, 80, 1.3),
+        big("forest_tree", 20.0, 80, 1.3),
+        big("forest_tree", 60.0, 78, 2.1),
+        big("forest_tree", 75.0, 76, 2.2),
+        big("forest_house", 96.0, 44, 1.0),
+        big("hanging_bridge", 106.0, 44, 1.0),
+        big("forest_tree", 112.0, 76, 2.2),
+        big("forest_house", 126.0, 40, 1.1),
+        big("forest_tree", 140.0, 76, 2.2),
+        big("forest_tree", 158.0, 78, 2.1),
+        big("forest_tree", 185.0, 80, 1.3),
     ];
     m.decor_front = vec![
-        decor("leuchtpilze", 36.0, 78),
-        decor("leuchtpilze", 44.0, 78),
-        decor("farn", 64.0, 76),
-        decor("farn", 104.0, 76),
-        decor("leuchtpilze", 130.0, 76),
-        decor("baumstumpf", 175.0, 80),
+        decor("glow_mushrooms", 36.0, 78),
+        decor("glow_mushrooms", 44.0, 78),
+        decor("fern", 64.0, 76),
+        decor("fern", 104.0, 76),
+        decor("glow_mushrooms", 130.0, 76),
+        decor("tree_stump", 175.0, 80),
     ];
     forest(m)
 }
@@ -305,71 +305,71 @@ pub fn forest_3() -> Map {
     // stomp chamber in the cave floor (M2.3.6)
     let stomp = stomp_vault(
         &mut g,
-        "wald3-stampf",
+        "forest3-stomp",
         26,
         57,
-        &[("glanztropfen", 70), ("tautrank", 1)],
+        &[("gleam_drops", 70), ("dew_potion", 1)],
     );
     let mut m = g.map("Murmelwald 3");
     m.adventure.objects = vec![
-        edge_exit("weg-wald-2", 0, h, "wald-2", "west"),
-        o("ost", at(5, 30, 28.0), ObjectKind::Spawn),
-        creature("schlange-1", "wurzelschlange", 36, 57, 110.0),
-        creature("wicht-1", "pilzwicht", 44, 57, 40.0),
-        creature("pirat-1", "eichhornpirat", 75, 55, 52.0),
-        o("hoehle", at(102, 57, 40.0), ObjectKind::SavePoint),
+        edge_exit("path-forest-2", 0, h, "forest-2", "west"),
+        o("east", at(5, 30, 28.0), ObjectKind::Spawn),
+        creature("serpent-1", "root_snake", 36, 57, 110.0),
+        creature("imp-1", "mushroom_imp", 44, 57, 40.0),
+        creature("pirate-1", "squirrel_pirate", 75, 55, 52.0),
+        o("cave", at(102, 57, 40.0), ObjectKind::SavePoint),
         chest(
-            "truhe-munition",
+            "chest-ammo",
             108,
             57,
-            &[("munition_granate", 1), ("glanztropfen", 10)],
+            &[("ammo_grenade", 1), ("gleam_drops", 10)],
         ),
         o(
-            "zug",
+            "pull",
             Vec2::new(123.0 * T, 47.0 * T + 14.0),
             ObjectKind::Switch {
-                flag: "zug.wald3".into(),
+                flag: "pull.forest3".into(),
                 once: true,
                 trigger: elora_map::adventure::SwitchTrigger::Hook,
             },
         ),
         o(
-            "tor-kammer",
+            "gate-chamber",
             corner(106, 39),
             ObjectKind::Door {
                 size: (11, 1),
-                open_if: "merker zug.wald3".into(),
+                open_if: "flag pull.forest3".into(),
             },
         ),
         rune("rune-5", 109, 38),
         chest(
-            "truhe-kammer",
+            "chest-chamber",
             114,
             38,
-            &[("glanztropfen", 40), ("tautrank", 1)],
+            &[("gleam_drops", 40), ("dew_potion", 1)],
         ),
-        creature("schlange-2", "wurzelschlange", 120, 57, 110.0),
-        creature("wicht-2", "pilzwicht", 150, 52, 40.0),
-        plant("blume-1", 148, 52),
+        creature("serpent-2", "root_snake", 120, 57, 110.0),
+        creature("imp-2", "mushroom_imp", 150, 52, 40.0),
+        plant("flower-1", 148, 52),
         rune("rune-4", 179, jerk_top),
         o("west", at(194, 26, 28.0), ObjectKind::Spawn),
-        edge_exit("weg-arena", w - 2, h, "wald-arena", "ost"),
+        edge_exit("path-arena", w - 2, h, "forest-arena", "east"),
         stomp,
     ];
     m.decor_back = vec![
-        big("waldbaum", 8.0, 30, 1.0),
-        big("waldbaum", 40.0, 30, 1.2),
-        big("waldbaum", 90.0, 30, 1.1),
-        big("waldbaum", 140.0, 30, 1.2),
-        big("waldbaum", 190.0, 26, 1.1),
+        big("forest_tree", 8.0, 30, 1.0),
+        big("forest_tree", 40.0, 30, 1.2),
+        big("forest_tree", 90.0, 30, 1.1),
+        big("forest_tree", 140.0, 30, 1.2),
+        big("forest_tree", 190.0, 26, 1.1),
     ];
     m.decor_front = vec![
-        decor("leuchtpilze", 30.0, 57),
-        decor("leuchtpilze", 70.0, 55),
-        decor("leuchtpilze", 104.0, 57),
-        decor("leuchtpilze", 126.0, 57),
-        decor("leuchtpilze", 150.0, 52),
-        decor("farn", 166.0, 26),
+        decor("glow_mushrooms", 30.0, 57),
+        decor("glow_mushrooms", 70.0, 55),
+        decor("glow_mushrooms", 104.0, 57),
+        decor("glow_mushrooms", 126.0, 57),
+        decor("glow_mushrooms", 150.0, 52),
+        decor("fern", 166.0, 26),
     ];
     thorn_decor(&mut m, 60, 51, 62);
     thorn_decor(&mut m, 60, 91, 98);
@@ -391,23 +391,23 @@ pub fn forest_arena() -> Map {
     g.ground(82, w - 1, 44);
     let mut m = g.map("Waldquelle");
     m.adventure.objects = vec![
-        o("ost", at(5, 26, 28.0), ObjectKind::Spawn),
-        o("vor-der-quelle", at(11, 26, 40.0), ObjectKind::SavePoint),
+        o("east", at(5, 26, 28.0), ObjectKind::Spawn),
+        o("before-the-spring", at(11, 26, 40.0), ObjectKind::SavePoint),
         o(
-            "wurzelwaechter",
+            "root_warden",
             at(56, 44, 280.0),
             ObjectKind::Creature {
-                kind: "wurzelwaechter".into(),
+                kind: "root_warden".into(),
                 persistent: true,
             },
         ),
-        npc("waechter", 56, 44, -1, 0.0),
+        npc("warden", 56, 44, -1, 0.0),
         o(
-            "tor",
+            "gate",
             corner(80, 36),
             ObjectKind::Door {
                 size: (2, 8),
-                open_if: "merker besiegt.wurzelwaechter".into(),
+                open_if: "flag defeated.root_warden".into(),
             },
         ),
         o(
@@ -419,20 +419,20 @@ pub fn forest_arena() -> Map {
             },
         ),
         o("west", at(94, 44, 28.0), ObjectKind::Spawn),
-        edge_exit("weg-heim", w - 2, h, "tauwinkel", "west"),
+        edge_exit("path-home", w - 2, h, "tauwinkel", "west"),
     ];
     m.decor_back = vec![
-        big("waldquelle-verdorrt", 56.0, 44, 1.5),
-        big("waldbaum", 4.0, 26, 1.0),
-        big("waldbaum", 14.0, 26, 1.1),
-        big("waldbaum", 22.0, 44, 1.5),
-        big("waldbaum", 77.0, 44, 1.5),
-        big("waldbaum", 90.0, 44, 1.2),
+        big("moss-spring-withered", 56.0, 44, 1.5),
+        big("forest_tree", 4.0, 26, 1.0),
+        big("forest_tree", 14.0, 26, 1.1),
+        big("forest_tree", 22.0, 44, 1.5),
+        big("forest_tree", 77.0, 44, 1.5),
+        big("forest_tree", 90.0, 44, 1.2),
     ];
     m.decor_front = vec![
-        decor("leuchtpilze", 30.0, 44),
-        decor("leuchtpilze", 70.0, 44),
-        decor("farn", 40.0, 44),
+        decor("glow_mushrooms", 30.0, 44),
+        decor("glow_mushrooms", 70.0, 44),
+        decor("fern", 40.0, 44),
     ];
     forest(m)
 }
@@ -440,10 +440,10 @@ pub fn forest_arena() -> Map {
 /// Maps of chapter 2 with their names.
 pub fn maps() -> Vec<(&'static str, Map)> {
     vec![
-        ("wald-1", forest_1()),
-        ("wald-2", forest_2()),
-        ("wald-3", forest_3()),
-        ("wald-arena", forest_arena()),
+        ("forest-1", forest_1()),
+        ("forest-2", forest_2()),
+        ("forest-3", forest_3()),
+        ("forest-arena", forest_arena()),
     ]
 }
 
@@ -455,7 +455,7 @@ mod tests {
 
     fn shipped(name: &str) -> String {
         format!(
-            "{}/../../maps/abenteuer/{name}.{}",
+            "{}/../../maps/adventure/{name}.{}",
             env!("CARGO_MANIFEST_DIR"),
             elora_map::EXTENSION
         )
@@ -504,7 +504,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "writes maps/abenteuer/*.emap"]
+    #[ignore = "writes maps/adventure/*.emap"]
     fn write_chapter2_maps() {
         for (name, map) in maps() {
             map.save(std::path::Path::new(&shipped(name))).unwrap();

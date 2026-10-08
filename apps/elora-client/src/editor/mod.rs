@@ -113,7 +113,7 @@ pub struct Editor {
     pub map: Map,
     /// Tool „Abenteuer“ (A1.8).
     pub adventure: adventure::AdventureTool,
-    /// Name of the adventure map (file name under `abenteuer/`, target of transitions, E-271).
+    /// Name of the adventure map (file name under `adventure/`, target of transitions, E-271).
     pub adventure_id: String,
     /// World point under the mouse (playtest „an der Maus“).
     pub mouse_world: Option<Vec2>,
@@ -421,7 +421,7 @@ impl Editor {
                     .path
                     .parent()
                     .and_then(Path::file_name)
-                    .is_some_and(|d| d == "abenteuer")
+                    .is_some_and(|d| d == "adventure")
                 {
                     self.adventure_id = file
                         .path
@@ -435,7 +435,7 @@ impl Editor {
     }
 
     /// Target file in the user directory (after the map name); adventure maps under
-    /// `abenteuer/` after their name (E-271).
+    /// `adventure/` after their name (E-271).
     pub fn target_path(&self) -> Option<PathBuf> {
         let dir = self.user_dir.as_ref()?;
         if self.is_adventure_map() {
@@ -445,7 +445,7 @@ impl Editor {
                 elora_client::map_store::safe_name(&self.adventure_id)
             };
             return Some(
-                dir.join("abenteuer")
+                dir.join("adventure")
                     .join(format!("{id}.{}", elora_map::EXTENSION)),
             );
         }
@@ -508,8 +508,8 @@ impl Editor {
         all.extend(list(&self.bundled_dir, false));
         // adventure maps (E-262, E-271)
         let adventure = |dir: &Path, own: bool| {
-            list(&dir.join("abenteuer"), own).into_iter().map(|mut f| {
-                f.name = format!("abenteuer/{}", f.name);
+            list(&dir.join("adventure"), own).into_iter().map(|mut f| {
+                f.name = format!("adventure/{}", f.name);
                 f
             })
         };
@@ -580,10 +580,10 @@ mod tests {
     fn strokes_are_single_undo_steps() {
         let mut e = editor();
         let t = Instant::now();
-        e.fill_cells(Cells::span((1, 1), (1, 1)), Tile::Solid, "strich-1", t);
-        e.fill_cells(Cells::span((2, 1), (2, 1)), Tile::Solid, "strich-1", t);
+        e.fill_cells(Cells::span((1, 1), (1, 1)), Tile::Solid, "line-1", t);
+        e.fill_cells(Cells::span((2, 1), (2, 1)), Tile::Solid, "line-1", t);
         e.end_edit();
-        e.fill_cells(Cells::span((3, 1), (3, 1)), Tile::Ice, "strich-2", t);
+        e.fill_cells(Cells::span((3, 1), (3, 1)), Tile::Ice, "line-2", t);
         assert!(e.dirty);
         e.undo();
         assert_eq!(e.map.tiles[e.map.width + 3], Tile::Air);
@@ -601,7 +601,7 @@ mod tests {
         assert!(!e.can_redo());
         // a new change clears redo
         e.undo();
-        e.fill_cells(Cells::span((5, 5), (5, 5)), Tile::Death, "strich-3", t);
+        e.fill_cells(Cells::span((5, 5), (5, 5)), Tile::Death, "line-3", t);
         assert!(!e.can_redo());
     }
 
@@ -658,7 +658,7 @@ mod tests {
     fn save_and_open_roundtrip_including_drafts() {
         let dir = std::env::temp_dir().join(format!("elora-editor-{}", std::process::id()));
         let _ = std::fs::remove_dir_all(&dir);
-        let mut e = Editor::new(Some(dir.clone()), dir.join("mitgeliefert"));
+        let mut e = Editor::new(Some(dir.clone()), dir.join("bundled"));
         e.map.name = "Meine Karte!".into();
         e.fill_cells(
             Cells::span((0, 0), (0, 0)),
@@ -672,7 +672,7 @@ mod tests {
         let files = e.map_files();
         assert_eq!(files.len(), 1);
         assert_eq!(files[0].name, "Meine_Karte_");
-        let mut f = Editor::new(Some(dir.clone()), dir.join("mitgeliefert"));
+        let mut f = Editor::new(Some(dir.clone()), dir.join("bundled"));
         f.open(&files[0]);
         assert_eq!(f.map, e.map);
         assert_eq!(f.file.as_ref(), Some(&files[0].path));

@@ -201,11 +201,11 @@ fn disconnect_reason_and_timeout() {
             _ => None,
         })
         .unwrap();
-    n.server.disconnect(id_a, "gekickt", n.now);
+    n.server.disconnect(id_a, "kicked", n.now);
     n.run(100);
     assert!(
         n.client_events[a].contains(&ClientEvent::Disconnected(DisconnectReason::Remote(
-            "gekickt".into()
+            "kicked".into()
         )))
     );
 

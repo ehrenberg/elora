@@ -16,17 +16,17 @@ pos = [0.5, 0.56]
 color = "#f2c14e"
 maps = "tauwinkel"
 music = "tauwinkel"
-party_music = "fest"
+party_music = "party"
 clears_after_springs = 1
 weather_gloomy = [
-    { kind = "schoen", weight = 11 },
-    { kind = "regen", weight = 7, intensity = [0.25, 0.45], wind = [-0.15, 0.15] },
-    { kind = "gewitter", weight = 2, intensity = [0.4, 0.6] },
+    { kind = "clear", weight = 11 },
+    { kind = "rain", weight = 7, intensity = [0.25, 0.45], wind = [-0.15, 0.15] },
+    { kind = "storm", weight = 2, intensity = [0.4, 0.6] },
 ]
 weather = [
-    { kind = "schoen", weight = 6 },
-    { kind = "blueten", weight = 2, intensity = [0.4, 0.7], wind = [0.2, 0.6] },
-    { kind = "regen", weight = 1, intensity = [0.3, 0.6] },
+    { kind = "clear", weight = 6 },
+    { kind = "blossoms", weight = 2, intensity = [0.4, 0.7], wind = [0.2, 0.6] },
+    { kind = "rain", weight = 1, intensity = [0.3, 0.6] },
 ]
 
 [[area]]
@@ -34,22 +34,22 @@ id = "bluetenwiesen"
 name = { de = "Blütenwiesen", en = "Blütenwiesen" }
 pos = [0.24, 0.72]
 color = "#ef7fb0"
-maps = "wiese-"
+maps = "meadow-"
 music = "bluetenwiesen"
-spring = "bluetenquelle"
+spring = "blossom_spring"
 chapter = 1
-guardian = "brummbaer"
+guardian = "bumblebear"
 victory = { de = "Die Brummbär-Hummel brummt wieder fröhlich – und die Blütenquelle singt ihr Morgenlied.", en = "The Bumblebear is buzzing happily again – and the Blossom Spring sings its morning song." }
 honor = { de = "Bienenflüsterin", en = "Bee Whisperer" }
 weather_gloomy = [
-    { kind = "schoen", weight = 11 },
-    { kind = "regen", weight = 7, intensity = [0.5, 0.9] },
-    { kind = "gewitter", weight = 2, intensity = [0.6, 1.0] },
+    { kind = "clear", weight = 11 },
+    { kind = "rain", weight = 7, intensity = [0.5, 0.9] },
+    { kind = "storm", weight = 2, intensity = [0.6, 1.0] },
 ]
 weather = [
-    { kind = "schoen", weight = 5 },
-    { kind = "blueten", weight = 3, intensity = [0.4, 0.8], wind = [0.2, 0.7] },
-    { kind = "regen", weight = 1, intensity = [0.3, 0.6] },
+    { kind = "clear", weight = 5 },
+    { kind = "blossoms", weight = 3, intensity = [0.4, 0.8], wind = [0.2, 0.7] },
+    { kind = "rain", weight = 1, intensity = [0.3, 0.6] },
 ]
 
 [[area]]
@@ -57,24 +57,24 @@ id = "murmelwald"
 name = { de = "Murmelwald", en = "Murmelwald" }
 pos = [0.18, 0.32]
 color = "#6cbf4a"
-maps = "wald-"
+maps = "forest-"
 music = "murmelwald"
-boss_music = "boss-wald"
-spring = "waldquelle"
+boss_music = "boss-forest"
+spring = "moss_spring"
 chapter = 2
-guardian = "wurzelwaechter"
+guardian = "root_warden"
 victory = { de = "Der Wurzelwächter ist erwacht, und die Wurzeln flüstern wieder alte Geschichten.", en = "The Root Warden is awake, and the roots whisper old stories again." }
 honor = { de = "Wurzelfreundin", en = "Friend of the Roots" }
 weather_gloomy = [
-    { kind = "schoen", weight = 11 },
-    { kind = "nebel", weight = 4, intensity = [0.6, 0.9] },
-    { kind = "regen", weight = 3, intensity = [0.5, 0.8] },
-    { kind = "gewitter", weight = 2, intensity = [0.5, 0.8] },
+    { kind = "clear", weight = 11 },
+    { kind = "fog", weight = 4, intensity = [0.6, 0.9] },
+    { kind = "rain", weight = 3, intensity = [0.5, 0.8] },
+    { kind = "storm", weight = 2, intensity = [0.5, 0.8] },
 ]
 weather = [
-    { kind = "schoen", weight = 4 },
-    { kind = "nebel", weight = 2, intensity = [0.3, 0.6] },
-    { kind = "blaetter", weight = 3, intensity = [0.4, 0.8], wind = [-0.6, 0.6] },
+    { kind = "clear", weight = 4 },
+    { kind = "fog", weight = 2, intensity = [0.3, 0.6] },
+    { kind = "leaves", weight = 3, intensity = [0.4, 0.8], wind = [-0.6, 0.6] },
 ]
 
 [[area]]
@@ -82,23 +82,23 @@ id = "glutsandwueste"
 name = { de = "Glutsandwüste", en = "Glutsandwüste" }
 pos = [0.5, 0.18]
 color = "#e0b85a"
-maps = "wueste-"
+maps = "desert-"
 hot = true
-spring = "glutquelle"
-music = "wueste"
-boss_music = "boss-wueste"
+spring = "ember_spring"
+music = "desert"
+boss_music = "boss-desert"
 chapter = 3
-guardian = "sandschlange"
+guardian = "sand_serpent"
 victory = { de = "Die Sandschlange döst friedlich in der Wärme – und die Glutquelle leuchtet golden wie Honig.", en = "The Sand Serpent dozes peacefully in the warmth – and the Ember Spring glows golden like honey." }
 honor = { de = "Wüstentänzerin", en = "Desert Dancer" }
 weather_gloomy = [
-    { kind = "schoen", weight = 11 },
-    { kind = "sandsturm", weight = 7, intensity = [0.5, 0.9], wind = [0.4, 0.9] },
-    { kind = "gewitter", weight = 2, intensity = [0.5, 0.8] },
+    { kind = "clear", weight = 11 },
+    { kind = "sandstorm", weight = 7, intensity = [0.5, 0.9], wind = [0.4, 0.9] },
+    { kind = "storm", weight = 2, intensity = [0.5, 0.8] },
 ]
 weather = [
-    { kind = "schoen", weight = 6 },
-    { kind = "sandsturm", weight = 1, intensity = [0.4, 0.7], wind = [0.3, 0.8] },
+    { kind = "clear", weight = 6 },
+    { kind = "sandstorm", weight = 1, intensity = [0.4, 0.7], wind = [0.3, 0.8] },
 ]
 
 [[area]]
@@ -110,18 +110,18 @@ maps = "frost-"
 cold = true
 music = "frost"
 boss_music = "boss-frost"
-spring = "frostquelle"
+spring = "frost_spring"
 chapter = 4
 guardian = "kristella"
 victory = { de = "Kristella lächelt wieder – und die Frostquelle glitzert klar wie ein Wintermorgen.", en = "Kristella smiles again – and the Frost Spring sparkles as clear as a winter morning." }
 honor = { de = "Gipfelstürmerin", en = "Summit Climber" }
 weather_gloomy = [
-    { kind = "schnee", weight = 11, intensity = [0.2, 0.4] },
-    { kind = "schneesturm", weight = 9, intensity = [0.6, 1.0], wind = [-0.9, 0.9] },
+    { kind = "snow", weight = 11, intensity = [0.2, 0.4] },
+    { kind = "blizzard", weight = 9, intensity = [0.6, 1.0], wind = [-0.9, 0.9] },
 ]
 weather = [
-    { kind = "schnee", weight = 3, intensity = [0.4, 0.8] },
-    { kind = "schoen", weight = 2 },
+    { kind = "snow", weight = 3, intensity = [0.4, 0.8] },
+    { kind = "clear", weight = 2 },
 ]
 
 [[area]]
@@ -129,4 +129,4 @@ id = "sternschlucht"
 name = { de = "Sternschlucht", en = "Sternschlucht" }
 pos = [0.8, 0.74]
 color = "#a77be0"
-maps = "schlucht-"
+maps = "gorge-"

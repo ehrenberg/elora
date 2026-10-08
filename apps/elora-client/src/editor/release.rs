@@ -39,7 +39,7 @@ pub struct Theme {
 
 pub const THEMES: [Theme; 5] = [
     Theme {
-        file: "dm-wiese",
+        file: "dm-meadow",
         name: "Wiese",
         rows: layouts::MEADOW,
         material: None,
@@ -66,7 +66,7 @@ pub const THEMES: [Theme; 5] = [
         back_spacing: 7,
     },
     Theme {
-        file: "dm-wueste",
+        file: "dm-desert",
         name: "Wüste",
         rows: layouts::DESERT,
         material: Some("sand"),
@@ -102,7 +102,7 @@ pub const THEMES: [Theme; 5] = [
         back_spacing: 8,
     },
     Theme {
-        file: "ctf-wald",
+        file: "ctf-forest",
         name: "Wald",
         rows: layouts::FOREST,
         material: None,
@@ -129,7 +129,7 @@ pub const THEMES: [Theme; 5] = [
         back_spacing: 5,
     },
     Theme {
-        file: "ctf-nacht",
+        file: "ctf-night",
         name: "Nacht",
         rows: layouts::NIGHT,
         material: None,
@@ -277,8 +277,8 @@ pub fn build(theme: &Theme) -> Map {
 pub fn weather_of(file: &str) -> Weather {
     let (kind, intensity, wind) = match file {
         "dm-winter" => (WeatherKind::Snow, 0.6, 0.2),
-        "ctf-nacht" => (WeatherKind::Fog, 0.35, 0.0),
-        "dm-wueste" => (WeatherKind::Sandstorm, 0.3, 0.5),
+        "ctf-night" => (WeatherKind::Fog, 0.35, 0.0),
+        "dm-desert" => (WeatherKind::Sandstorm, 0.3, 0.5),
         _ => return Weather::CLEAR,
     };
     Weather {
@@ -362,7 +362,7 @@ mod tests {
             );
             assert_eq!(shipped.weather, weather_of(theme.file));
         }
-        assert!(weather_of("dm-wiese").is_clear());
+        assert!(weather_of("dm-meadow").is_clear());
     }
 
     /// Writes the release maps to `maps/` (after changes to layout or theme).

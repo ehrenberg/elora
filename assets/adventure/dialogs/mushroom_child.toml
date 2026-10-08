@@ -1,0 +1,35 @@
+# The lost mushroom child (R2-M2.2, E-308)
+speaker = "mushroom_child"
+
+[[start]]
+node = "cry"
+
+[[node]]
+id = "cry"
+text = { de = "Schnüff … ich wollte nur die leuchtenden Pilze ansehen … und jetzt find ich nicht mehr heim. Mama wohnt im Pilzring am Waldrand.", en = "Sniff … I only wanted to look at the glowing mushrooms … and now I can't find my way home. Mama lives in the mushroom ring at the edge of the forest." }
+
+[[node.choice]]
+tone = "friendly"
+text = { de = "Komm mit, ich bring dich heim.", en = "Come along, I'll take you home." }
+next = "with"
+do = ["quest mushroom_child start", "flag mushroom_child.on_the_way = 1", "affection mushroom_child +1"]
+
+[[node.choice]]
+tone = "curious"
+text = { de = "Wie heißt du denn?", en = "What's your name?" }
+next = "name"
+
+[[node.choice]]
+text = { de = "Warte hier, ich komme wieder.", en = "Wait here, I'll come back." }
+
+[[node]]
+id = "name"
+text = { de = "Krümel. Weil ich so klein bin.", en = "Crumb. Because I'm so small." }
+next = "cry"
+
+[[node]]
+id = "with"
+text = { de = "Wirklich? Ich bleib ganz nah bei dir! Aber über große Löcher kann ich nicht springen …", en = "Really? I'll stay right next to you! But I can't jump over big holes …" }
+
+[[bark]]
+text = { de = "Schnüff …", en = "Sniff …" }

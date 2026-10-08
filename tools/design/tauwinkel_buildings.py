@@ -340,17 +340,17 @@ def flower_bed(pale=True):
 
 
 BUILDINGS = [
-    ('haus-elora', 'Eloras Haus', 'Fachwerk, Ziegeldach, gelbe Läden, Blumenkasten', elora_house, 190),
-    ('haus-oma', 'Haus von Oma Pfütze', 'altes Steinhaus, Reetdach, Bank und Kräuterbeet', oma_house, 200),
-    ('brunnen', 'Dorfbrunnen', 'Deckel mit Eisenbändern und Schloss (Weltbuch §2), Schindeldach', well, 180),
-    ('werkstatt', 'Tüftels Werkstatt', 'Ziegel und Fachwerk, Schieferdach, Holztor, Zahnrad-Schild', tueftel_workshop, 240),
-    ('schmiede', 'Klonks Schmiede', 'Stein, offene Esse, Amboss, Schornstein, Hammer-Schild', klonk_forge, 240),
-    ('laden', 'Lottes Laden', 'Schaufenster mit Tränken, Markise, Fässer, Trank-Schild', lotte_shop, 260),
-    ('baumhaus', 'Pips Baumhaus', 'Bretterhütte auf Plattform (5 Tiles), Strickleiter', pip_tree_house, 180),
-    ('anschlagbrett', 'Anschlagbrett', 'Aufgaben am Brunnenplatz', notice_board, 100),
-    ('wegweiser', 'Wegweiser', 'zum Lesen mit E (E-273)', signpost, 110),
-    ('fahne', 'Fahne', 'verblasst / farbig (E-277)', banner, 70),
-    ('beet', 'Blumenbeet', 'verblasst / farbig (E-277)', flower_bed, 110),
+    ('house-elora', 'Eloras Haus', 'Fachwerk, Ziegeldach, gelbe Läden, Blumenkasten', elora_house, 190),
+    ('house-oma', 'Haus von Oma Pfütze', 'altes Steinhaus, Reetdach, Bank und Kräuterbeet', oma_house, 200),
+    ('well', 'Dorfbrunnen', 'Deckel mit Eisenbändern und Schloss (Weltbuch §2), Schindeldach', well, 180),
+    ('workshop', 'Tüftels Werkstatt', 'Ziegel und Fachwerk, Schieferdach, Holztor, Zahnrad-Schild', tueftel_workshop, 240),
+    ('smithy', 'Klonks Schmiede', 'Stein, offene Esse, Amboss, Schornstein, Hammer-Schild', klonk_forge, 240),
+    ('shop', 'Lottes Laden', 'Schaufenster mit Tränken, Markise, Fässer, Trank-Schild', lotte_shop, 260),
+    ('treehouse', 'Pips Baumhaus', 'Bretterhütte auf Plattform (5 Tiles), Strickleiter', pip_tree_house, 180),
+    ('notice_board', 'Anschlagbrett', 'Aufgaben am Brunnenplatz', notice_board, 100),
+    ('signpost', 'Wegweiser', 'zum Lesen mit E (E-273)', signpost, 110),
+    ('banner', 'Fahne', 'verblasst / farbig (E-277)', banner, 70),
+    ('flower-bed', 'Blumenbeet', 'verblasst / farbig (E-277)', flower_bed, 110),
 ]
 
 
@@ -403,8 +403,8 @@ def sheet():
         o.append(f'<rect x="{cx}" y="{cy}" width="{cw}" height="{ch}" rx="16" fill="#fffaf0" stroke="#e7dcc8"/>')
         gy = cy + ch - 50
         o.append(f'<rect x="{cx + 16}" y="{gy}" width="{cw - 32}" height="8" rx="4" fill="#8fbf7a"/>')
-        s = 0.58 if key in ('baumhaus',) else 0.8
-        pale_pair = key in ('fahne', 'beet')
+        s = 0.58 if key in ('treehouse',) else 0.8
+        pale_pair = key in ('banner', 'flower-bed')
         if pale_pair:
             o.append(f'<g transform="translate({cx + cw / 2 - 90},{gy}) scale({s})">{fn(True)}</g>')
             o.append(f'<g transform="translate({cx + cw / 2 + 40},{gy}) scale({s})">{fn(False)}</g>')
@@ -431,21 +431,21 @@ def herb_bed(pale=True):
 
 # Decoration for the maps (E-278): buildings without flowers, flowers/beds/flags as variants (E-277)
 DECOR = {
-    'haus-elora': (elora_house, '-140 -290 280 292'),
-    'haus-oma': (oma_house, '-120 -220 240 222'),
-    'brunnen': (well, '-100 -180 200 182'),
-    'werkstatt': (tueftel_workshop, '-120 -300 270 302'),
-    'schmiede': (klonk_forge, '-120 -320 270 322'),
-    'laden': (lotte_shop, '-150 -260 300 262'),
-    'baumhaus': (pip_tree_house, '-150 -420 300 422'),
-    'anschlagbrett': (notice_board, '-60 -140 120 142'),
-    'wegweiser': (signpost, '-60 -100 120 102'),
+    'house-elora': (elora_house, '-140 -290 280 292'),
+    'house-oma': (oma_house, '-120 -220 240 222'),
+    'well': (well, '-100 -180 200 182'),
+    'workshop': (tueftel_workshop, '-120 -300 270 302'),
+    'smithy': (klonk_forge, '-120 -320 270 322'),
+    'shop': (lotte_shop, '-150 -260 300 262'),
+    'treehouse': (pip_tree_house, '-150 -420 300 422'),
+    'notice_board': (notice_board, '-60 -140 120 142'),
+    'signpost': (signpost, '-60 -100 120 102'),
 }
 VARIANTS = {
-    'blumenkasten': (window_box, '-30 -30 60 32'),
-    'beet': (flower_bed, '-60 -30 120 32'),
-    'kraeuterbeet': (herb_bed, '-24 -24 48 26'),
-    'fahne': (banner, '-10 -160 80 162'),
+    'window-box': (window_box, '-30 -30 60 32'),
+    'flower-bed': (flower_bed, '-60 -30 120 32'),
+    'herb-bed': (herb_bed, '-24 -24 48 26'),
+    'banner': (banner, '-10 -160 80 162'),
 }
 
 
@@ -459,8 +459,8 @@ def export_decor():
     for name, (fn, vb) in DECOR.items():
         write(name, fn(None), vb, f'Tauwinkel: {name}')
     for name, (fn, vb) in VARIANTS.items():
-        write(f'{name}-blass', fn(True), vb, f'{name}, verblasst (E-277)')
-        write(f'{name}-bunt', fn(False), vb, f'{name}, farbig (E-277)')
+        write(f'{name}-pale', fn(True), vb, f'{name}, verblasst (E-277)')
+        write(f'{name}-colourful', fn(False), vb, f'{name}, farbig (E-277)')
 
 
 if __name__ == '__main__':

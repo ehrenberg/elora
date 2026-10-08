@@ -48,7 +48,7 @@ fn run(w: &mut World, i: PlayerInput, ticks: u32) {
 }
 
 fn pos(w: &World) -> Vec2 {
-    w.character(0).expect("lebt").core.pos
+    w.character(0).expect("alive").core.pos
 }
 
 fn spawn(w: &mut World, at: Vec2) {

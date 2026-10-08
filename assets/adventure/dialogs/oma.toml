@@ -2,180 +2,180 @@
 speaker = "oma"
 
 [[start]]
-if = "quest sternschlucht aktiv"
-node = "stern"
+if = "quest sternschlucht active"
+node = "star"
 
 [[start]]
-if = "quest frostspitzen schritt fest"
-node = "fest4"
+if = "quest frostspitzen step party"
+node = "party4"
 
 [[start]]
-if = "quest frostspitzen aktiv und merker besiegt.kristella"
-node = "funke"
+if = "quest frostspitzen active and flag defeated.kristella"
+node = "spark"
 
 [[start]]
-if = "quest frostspitzen schritt aufbruch"
+if = "quest frostspitzen step departure"
 node = "frost"
 
 [[start]]
-if = "quest frostspitzen aktiv"
-node = "unterwegs4"
+if = "quest frostspitzen active"
+node = "on_the_way4"
 
 [[start]]
-if = "quest glutsand schritt fest"
-node = "fest3"
+if = "quest glutsand step party"
+node = "party3"
 
 [[start]]
-if = "quest glutsand aktiv und merker besiegt.sandschlange"
-node = "funke"
+if = "quest glutsand active and flag defeated.sand_serpent"
+node = "spark"
 
 [[start]]
-if = "quest glutsand schritt aufbruch"
+if = "quest glutsand step departure"
 node = "glutsand"
 
 [[start]]
-if = "quest glutsand aktiv"
-node = "unterwegs"
+if = "quest glutsand active"
+node = "on_the_way"
 
 [[start]]
-if = "quest murmelwald schritt fest"
-node = "fest2"
+if = "quest murmelwald step party"
+node = "party2"
 
 [[start]]
-if = "quest murmelwald aktiv und merker besiegt.wurzelwaechter"
-node = "funke"
+if = "quest murmelwald active and flag defeated.root_warden"
+node = "spark"
 
 [[start]]
-if = "quest murmelwald schritt westhang"
-node = "westhang"
+if = "quest murmelwald step west_slope"
+node = "west_slope"
 
 [[start]]
-if = "quest bluetenquelle schritt fest"
-node = "fest"
+if = "quest blossom_spring step party"
+node = "party"
 
 [[start]]
-if = "quest murmelwald aktiv"
+if = "quest murmelwald active"
 node = "murmelwald"
 
 [[start]]
-if = "quest bluetenquelle aktiv und merker besiegt.brummbaer"
-node = "funke"
+if = "quest blossom_spring active and flag defeated.bumblebear"
+node = "spark"
 
 [[start]]
-if = "quest brunnen erledigt"
-node = "danach"
+if = "quest well done"
+node = "after"
 
 [[start]]
-if = "quest brunnen aktiv"
-node = "erinnerung"
+if = "quest well active"
+node = "memory"
 
 [[start]]
-node = "begruessung"
+node = "greeting"
 
 [[node]]
-id = "begruessung"
+id = "greeting"
 text = { de = "Ach, Elora, Kind. Siehst du, wie blass die Blumen am Brunnen sind? Als ich so klein war wie du, sang die Blütenquelle noch Morgenlieder …", en = "Oh, Elora, dear. Do you see how pale the flowers by the well are? When I was as small as you, the Blossom Spring still sang morning songs …" }
 
 [[node.choice]]
-tone = "freundlich"
+tone = "friendly"
 text = { de = "Ich finde heraus, was mit der Quelle los ist, versprochen!", en = "I'll find out what's wrong with the spring, I promise!" }
-next = "zusage"
-do = ["quest brunnen start", "zuneigung oma +1"]
+next = "promise"
+do = ["quest well start", "affection oma +1"]
 
 [[node.choice]]
-tone = "neugierig"
+tone = "curious"
 text = { de = "Morgenlieder? Erzähl mir mehr von den Quellen.", en = "Morning songs? Tell me more about the springs." }
-next = "quellen"
+next = "springs"
 
 [[node.choice]]
-tone = "frech"
+tone = "cheeky"
 text = { de = "Vielleicht sind die Blumen einfach müde, Oma.", en = "Maybe the flowers are just tired, Oma." }
-next = "frech"
-do = ["merker oma.frech = 1"]
+next = "cheeky"
+do = ["flag oma.cheeky = 1"]
 
 [[node]]
-id = "quellen"
+id = "springs"
 text = { de = "Fünf Quellen gibt es im Tauland, und jede singt ihr eigenes Lied. Ihr Tau gibt uns Farbe und Mut. Die Blütenquelle liegt hinter den Wiesen im Osten.", en = "There are five springs in the Tauland, and each sings its own song. Their dew gives us colour and courage. The Blossom Spring lies beyond the meadows to the east." }
-next = "bitte"
-do = ["zuneigung oma +1"]
+next = "please"
+do = ["affection oma +1"]
 
 [[node]]
-id = "frech"
+id = "cheeky"
 text = { de = "Hmpf. Müde Blumen singen nicht. Und blasse schon gar nicht.", en = "Hmph. Tired flowers don't sing. And pale ones even less." }
-next = "bitte"
+next = "please"
 
 [[node]]
-id = "bitte"
+id = "please"
 text = { de = "Würdest du nach der Quelle sehen? Aber geh nicht unvorbereitet. Tüftel zeigt dir, wie man richtig hookt, und Klonk hat sicher einen Hammer für dich.", en = "Would you look in on the spring? But don't go unprepared. Tüftel will show you how to hook properly, and Klonk surely has a hammer for you." }
 
 [[node.choice]]
-tone = "freundlich"
+tone = "friendly"
 text = { de = "Mach ich!", en = "Will do!" }
-next = "zusage"
-do = ["quest brunnen start"]
+next = "promise"
+do = ["quest well start"]
 
 [[node]]
-id = "zusage"
+id = "promise"
 text = { de = "Du bist ein gutes Kind. Und wenn du müde wirst: Am Quellstein hier am Brunnen kannst du rasten.", en = "You're a good child. And if you get tired: you can rest at the spring stone here by the well." }
 
 [[node]]
-id = "erinnerung"
+id = "memory"
 text = { de = "Erst zu Tüftel und Klonk, dann über den Ostpfad in die Wiesen. Und sei vorsichtig mit den Stachelkäfern!", en = "First to Tüftel and Klonk, then along the east path into the meadows. And watch out for the Stachelkäfer!" }
 
 [[node.choice]]
-tone = "frech"
-if = "quest pips_stein aktiv"
+tone = "cheeky"
+if = "quest pips_stone active"
 text = { de = "Pip schickt mich übrigens Glitzersteine suchen, statt seine Aufgaben zu machen.", en = "By the way, Pip is sending me to look for glitter stones instead of doing his chores." }
-next = "verpetzt"
-do = ["merker pip.verpetzt = 1", "zuneigung pip -2"]
+next = "told_on"
+do = ["flag pip.told_on = 1", "affection pip -2"]
 
 [[node.choice]]
 text = { de = "Ich gehe schon.", en = "I'm on my way." }
 
 [[node]]
-id = "verpetzt"
+id = "told_on"
 text = { de = "So, so. Na, dem werde ich was erzählen. Aber du, Kind, kümmere dich um die Quelle.", en = "Is that so. Well, I'll have a word with him. But you, dear, see to the spring." }
 
 [[node]]
-id = "danach"
+id = "after"
 text = { de = "Du warst schon am Wiesenrand? Dann bist du bereit für mehr. Die Blütenquelle liegt tief in den Wiesen – dort, wo die alte Hummel brummt.", en = "You've already been to the edge of the meadow? Then you're ready for more. The Blossom Spring lies deep in the meadows – where the old bumblebee hums." }
 
 [[node]]
-id = "fest"
+id = "party"
 text = { de = "Elora! Sieh nur, die Beete am Brunnen blühen wieder! Hörst du? Die Blütenquelle singt. Heute Abend feiern wir – mit Laternen und Musik!", en = "Elora! Look, the flowerbeds by the well are blooming again! Can you hear it? The Blossom Spring is singing. Tonight we celebrate – with lanterns and music!" }
 
 [[node.choice]]
-tone = "freundlich"
+tone = "friendly"
 text = { de = "Die Hummel war gar nicht böse. Sie war nur ganz verwirrt.", en = "The bumblebee wasn't evil at all. It was just very confused." }
-next = "verwirrt"
-do = ["zuneigung oma +1"]
+next = "confused"
+do = ["affection oma +1"]
 
 [[node.choice]]
-tone = "neugierig"
+tone = "curious"
 text = { de = "Und die anderen Quellen? Sind die auch verstummt?", en = "And the other springs? Have they gone silent too?" }
-next = "zweite"
+next = "second"
 
 [[node.choice]]
-tone = "frech"
+tone = "cheeky"
 text = { de = "Gibt es beim Fest auch Kuchen?", en = "Will there be cake at the party?" }
-next = "kuchen"
+next = "cake"
 
 [[node]]
-id = "verwirrt"
+id = "confused"
 text = { de = "Verwirrt? Hm. Dann ist das Grau nicht von allein gekommen. Jemand – oder etwas – nimmt den Quellen die Farbe.", en = "Confused? Hm. Then the grey didn't come by itself. Someone – or something – is taking the colour from the springs." }
-next = "zweite"
+next = "second"
 
 [[node]]
-id = "kuchen"
+id = "cake"
 text = { de = "Lotte backt Honigkuchen. Mit Honig von Wabe, versteht sich.", en = "Lotte is baking honey cake. With Wabe's honey, of course." }
-next = "zweite"
+next = "second"
 
 [[node]]
-id = "zweite"
+id = "second"
 text = { de = "Die zweite Quelle liegt im Murmelwald, im Westen. Die Wurzeln dort flüstern alte Geschichten. Aber heute wird gefeiert – morgen ist auch noch ein Tag.", en = "The second spring lies in the Murmelwald, to the west. The roots there whisper old stories. But today we celebrate – tomorrow is another day." }
 
 [[node]]
-id = "funke"
+id = "spark"
 text = { de = "Ein Quellfunke! Bring ihn schnell zu Tüftel, Kind. Der weiß, was man damit anfängt.", en = "A spring spark! Take it to Tüftel quickly, dear. He'll know what to do with it." }
 
 [[node]]
@@ -183,47 +183,47 @@ id = "murmelwald"
 text = { de = "Der Murmelwald wartet. Aber ruh dich ruhig noch ein bisschen aus – das Fest war lang.", en = "The Murmelwald is waiting. But do rest a little longer – it was a long party." }
 
 [[node]]
-id = "westhang"
+id = "west_slope"
 text = { de = "Der Murmelwald liegt oben am Westhang, hinter deinem Haus. Früher führte ein Pfad hinauf – halt dich an den Wurzeln fest, Kind.", en = "The Murmelwald lies up the western slope, behind your house. A path used to lead up there – hold on to the roots, dear." }
 
 [[node]]
-id = "fest2"
+id = "party2"
 text = { de = "Hörst du, wie die Blätter am Brunnen rascheln? Zwei Quellen singen wieder! Heute Abend feiern wir noch einmal.", en = "Can you hear the leaves rustling by the well? Two springs are singing again! Tonight we celebrate once more." }
 
 [[node.choice]]
-tone = "neugierig"
+tone = "curious"
 text = { de = "Plumm sagt, es gab eine sechste Quelle. Weißt du davon?", en = "Plumm says there was a sixth spring. Do you know about it?" }
-if = "merker sechste_quelle"
-next = "sechste"
+if = "flag sixth_spring"
+next = "sixth"
 
 [[node.choice]]
-tone = "freundlich"
+tone = "friendly"
 text = { de = "Der Wächter war auch nur müde und verwirrt.", en = "The warden was only tired and confused as well." }
-next = "muede"
-do = ["zuneigung oma +1"]
+next = "tired"
+do = ["affection oma +1"]
 
 [[node.choice]]
-tone = "frech"
+tone = "cheeky"
 text = { de = "Feiern wir jetzt nach jeder Quelle?", en = "Are we going to celebrate after every spring now?" }
-next = "jede"
+next = "each"
 
 [[node]]
-id = "sechste"
+id = "sixth"
 text = { de = "Eine sechste … Da war ein Lied, als ich klein war. Ich weiß nur noch die erste Zeile. Vielleicht fällt mir der Rest wieder ein.", en = "A sixth … There was a song when I was little. I only remember the first line. Maybe the rest will come back to me." }
-next = "wueste"
+next = "desert"
 
 [[node]]
-id = "muede"
+id = "tired"
 text = { de = "Müde, verwirrt … und grau. Irgendetwas wandert durchs Tauland und nimmt die Farben mit.", en = "Tired, confused … and grey. Something is wandering the Tauland, taking the colours with it." }
-next = "wueste"
+next = "desert"
 
 [[node]]
-id = "jede"
+id = "each"
 text = { de = "Nach jeder einzelnen! So, und jetzt hilf Lotte mit den Laternen.", en = "After every single one! Now go and help Lotte with the lanterns." }
-next = "wueste"
+next = "desert"
 
 [[node]]
-id = "wueste"
+id = "desert"
 text = { de = "Die dritte Quelle liegt in der Glutsandwüste. Eine Karawane erzählt von einem grauen Wanderer. Aber erst wird gefeiert.", en = "The third spring lies in the Glutsandwüste. A caravan tells of a grey wanderer. But first we celebrate." }
 
 [[node]]
@@ -231,17 +231,17 @@ id = "glutsand"
 text = { de = "Die Glutquelle, Kind. Sie hat mir als Mädchen die Hände gewärmt. Nimm am Ostpfad den Hohlweg nach Süden. Und trink genug – die Sonne dort ist nicht so freundlich wie ich.", en = "The Ember Spring, dear. It warmed my hands when I was a girl. Take the sunken path south off the east path. And drink enough – the sun there isn't as friendly as I am." }
 
 [[node]]
-id = "unterwegs"
+id = "on_the_way"
 text = { de = "Die Wüste wird dich nicht beißen. Nur die Krabben.", en = "The desert won't bite you. Only the crabs will." }
 
 # party after chapter 3 (R2-M2.3)
 [[node]]
-id = "fest3"
+id = "party3"
 text = { de = "Gold! Die Häuser leuchten wie Honig in der Abendsonne. Und du, mein mutiger Tropfen …", en = "Gold! The houses glow like honey in the evening sun. And you, my brave little drop …" }
-next = "fest3_lied"
+next = "party3_song"
 
 [[node]]
-id = "fest3_lied"
+id = "party3_song"
 text = { de = "Ein grauer Wanderer, sagst du? Der nach einem Lied sucht? … Ich weiß nicht warum, aber dabei wird mir ganz wehmütig. Die Berge im Norden, die Frostspitzen. Dort wartet die vierte Quelle.", en = "A grey wanderer, you say? Who is looking for a song? … I don't know why, but it makes me feel quite wistful. The mountains in the north, the Frostspitzen. The fourth spring awaits there." }
 
 [[node]]
@@ -249,32 +249,32 @@ id = "frost"
 text = { de = "Die Frostquelle, Kind. Sie hat mich als junges Ding so klar denken lassen, dass ich einmal sogar die Steuern verstanden habe. Oben im Oberdorf liegt ein Eisblock vor dem alten Bergsteig. Du weißt ja jetzt, wie man aufstampft. Und zieh dich warm an!", en = "The Frost Spring, dear. When I was young it let me think so clearly that I once even understood the taxes. At the top of the upper village an ice block lies in front of the old mountain path. You know how to stomp now. And dress warmly!" }
 
 [[node]]
-id = "unterwegs4"
+id = "on_the_way4"
 text = { de = "Hast du auch eine Mütze? Ohne Mütze wird man zum Eiszapfen.", en = "Do you have a hat? Without a hat you'll turn into an icicle." }
 
 [[node]]
-id = "fest4"
+id = "party4"
 text = { de = "Blau wie ein Wintermorgen! Und klar – endlich klar in meinem Kopf. Kristella sagt, er ist einsam?", en = "Blue as a winter morning! And clear – finally clear in my head. Kristella says he is lonely?" }
-next = "fest4_lied"
+next = "party4_song"
 
 [[node]]
-id = "fest4_lied"
+id = "party4_song"
 text = { de = "… Einsam. Wie ein Brunnen ohne Lied. Ach, warum fällt mir das jetzt ein? Irgendwann musst du nach Osten, in die Sternschlucht … Dort wohnt Luma, die Sternenweberin. Sie kennt alle Lieder.", en = "… Lonely. Like a well without a song. Oh, why does that come to mind now? One day you must go east, to the Sternschlucht … Luma the star weaver lives there. She knows every song." }
 
 [[node]]
-id = "stern"
+id = "star"
 text = { de = "Die Sternschlucht … der Weg dorthin ist noch verschlossen. Ruh dich aus, Kind – bald geht's weiter.", en = "The Sternschlucht … the way there is still closed. Rest, dear – soon we'll go on." }
 
 [[bark]]
-if = "merker fest"
+if = "flag party"
 text = { de = "Was für ein schönes Fest!", en = "What a lovely party!" }
 
 [[bark]]
-if = "quest brunnen neu"
+if = "quest well new"
 text = { de = "Elora, Kind, komm doch mal her.", en = "Elora, dear, come over here." }
 
 [[bark]]
-if = "quest brunnen aktiv"
+if = "quest well active"
 text = { de = "Pass auf dich auf!", en = "Take care of yourself!" }
 
 [[bark]]

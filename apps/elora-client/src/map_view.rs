@@ -41,13 +41,13 @@ fn sways(name: &str) -> bool {
         "bush-",
         "grass-",
         "flower-",
-        "waldbaum",
-        "palme",
-        "riesenblume",
-        "farn",
-        "beerenbusch",
-        "loewenzahn",
-        "fahne-",
+        "forest_tree",
+        "palm",
+        "giant_flower",
+        "fern",
+        "berry_bush",
+        "dandelion",
+        "banner-",
     ]
     .iter()
     .any(|p| name.starts_with(p))
@@ -987,7 +987,7 @@ mod tests {
     fn broken_embedded_image_is_skipped() {
         let mut map = look_test_map();
         map.images.push(elora_map::Image {
-            name: "kaputt".into(),
+            name: "broken".into(),
             svg: b"<svg".to_vec(),
         });
         map.decor_front

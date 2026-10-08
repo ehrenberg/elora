@@ -61,7 +61,7 @@ pub fn tauwinkel() -> Map {
     m.entities.clear();
     m.adventure.objects = vec![
         o("start", at(5, floor, 28.0), ObjectKind::Spawn),
-        o("ost", at(62, floor, 28.0), ObjectKind::Spawn),
+        o("east", at(62, floor, 28.0), ObjectKind::Spawn),
         o(
             "oma",
             at(12, floor, 28.0),
@@ -72,7 +72,7 @@ pub fn tauwinkel() -> Map {
                 walk: 0.0,
             },
         ),
-        o("brunnen", at(18, floor, 40.0), ObjectKind::SavePoint),
+        o("well", at(18, floor, 40.0), ObjectKind::SavePoint),
         o(
             "tueftel",
             at(24, floor, 28.0),
@@ -104,41 +104,41 @@ pub fn tauwinkel() -> Map {
             },
         ),
         o(
-            "truhe-1",
+            "chest-1",
             at(34, floor, 26.0),
             ObjectKind::Chest {
-                contents: vec![("glanztropfen".into(), 20), ("heiltrank".into(), 1)],
+                contents: vec![("gleam_drops".into(), 20), ("healing_potion".into(), 1)],
                 lock: String::new(),
             },
         ),
         o(
-            "hebel",
+            "lever",
             at(42, floor, 30.0),
             ObjectKind::Switch {
-                flag: "tor.dorf".into(),
+                flag: "gate.village".into(),
                 once: false,
                 trigger: SwitchTrigger::Interact,
             },
         ),
         o(
-            "tor",
+            "gate",
             corner(46, 17),
             ObjectKind::Door {
                 size: (1, 3),
-                open_if: "merker tor.dorf".into(),
+                open_if: "flag gate.village".into(),
             },
         ),
         o(
-            "blume",
+            "flower",
             at(52, floor, 16.0),
             ObjectKind::HealPlant { heal: 2 },
         ),
         o(
-            "weg-wiese",
+            "path-meadow",
             corner(66, 14),
             ObjectKind::Exit {
                 size: Vec2::new(3.0 * T, 6.0 * T),
-                map: "wiese-1".into(),
+                map: "meadow-1".into(),
                 spawn: "west".into(),
                 on_touch: true,
             },
@@ -183,57 +183,57 @@ pub fn meadow() -> Map {
     m.adventure.objects = vec![
         o("west", at(5, floor, 28.0), ObjectKind::Spawn),
         o(
-            "weg-dorf",
+            "path-village",
             corner(1, 14),
             ObjectKind::Exit {
                 size: Vec2::new(T, 8.0 * T),
                 map: "tauwinkel".into(),
-                spawn: "ost".into(),
+                spawn: "east".into(),
                 on_touch: true,
             },
         ),
         o(
-            "wiesenrand",
+            "meadow_edge",
             corner(24, 12),
             ObjectKind::Zone {
                 size: Vec2::new(12.0 * T, 10.0 * T),
             },
         ),
-        creature("kaefer-1", "stachelkaefer", 38, 26.0),
-        creature("kaefer-2", "stachelkaefer", 44, 26.0),
-        creature("kaefer-3", "stachelkaefer", 50, 26.0),
-        creature("blaeser", "pollenblaeser", 56, 60.0),
-        creature("huepfer", "grashuepfer", 62, 28.0),
+        creature("beetle-1", "spike_beetle", 38, 26.0),
+        creature("beetle-2", "spike_beetle", 44, 26.0),
+        creature("beetle-3", "spike_beetle", 50, 26.0),
+        creature("blower", "pollen_blower", 56, 60.0),
+        creature("hopper", "grasshopper", 62, 28.0),
         o(
-            "blume",
+            "flower",
             at(48, floor, 16.0),
             ObjectKind::HealPlant { heal: 2 },
         ),
         o(
-            "stein",
+            "stone",
             Vec2::new(64.0 * T, 16.0 * T - 14.0),
             ObjectKind::Collectible {
-                item: "glitzerstein".into(),
+                item: "glitter_stone".into(),
             },
         ),
-        o("quellstein", at(78, floor, 40.0), ObjectKind::SavePoint),
+        o("spring_stone", at(78, floor, 40.0), ObjectKind::SavePoint),
         o(
-            "truhe-quelle",
+            "chest-spring",
             at(84, floor, 26.0),
             ObjectKind::Chest {
-                contents: vec![("glanztropfen".into(), 40), ("bernstein".into(), 3)],
-                lock: "hat glitzerstein".into(),
+                contents: vec![("gleam_drops".into(), 40), ("amber".into(), 3)],
+                lock: "has glitter_stone".into(),
             },
         ),
         o(
-            "quelle",
+            "spring",
             corner(80, 12),
             ObjectKind::Zone {
                 size: Vec2::new(9.0 * T, 10.0 * T),
             },
         ),
         o(
-            "kamera-quelle",
+            "camera-spring",
             corner(74, 4),
             ObjectKind::Camera {
                 size: Vec2::new(15.0 * T, 18.0 * T),
@@ -248,7 +248,7 @@ pub fn meadow() -> Map {
 pub fn load(name: &str) -> Map {
     match name {
         "tauwinkel" => tauwinkel(),
-        "wiese-1" => meadow(),
+        "meadow-1" => meadow(),
         _ => panic!("no test map {name}"),
     }
 }
@@ -262,6 +262,6 @@ fn test_maps_match_content_and_link_up() {
         let errors = elora_adventure::check::map_objects(&c, &back);
         assert!(errors.is_empty(), "{errors:?}");
     }
-    let errors = elora_adventure::check::map_links(&[("tauwinkel", &a), ("wiese-1", &b)]);
+    let errors = elora_adventure::check::map_links(&[("tauwinkel", &a), ("meadow-1", &b)]);
     assert!(errors.is_empty(), "{errors:?}");
 }

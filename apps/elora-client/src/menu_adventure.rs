@@ -110,7 +110,7 @@ pub fn page(
                     (lang.f("adventure.level", &[("n", level)]), 14.0, TEXT),
                     (map.clone(), 12.0, TEXT_DIM),
                     (play_time(lang, *play_secs), 12.0, TEXT_DIM),
-                    (lang.f("adventure.glanz", &[("n", gleam)]), 12.0, TEXT_DIM),
+                    (lang.f("adventure.gleam", &[("n", gleam)]), 12.0, TEXT_DIM),
                 ];
                 for (k, (t, size, color)) in lines.iter().enumerate() {
                     #[allow(clippy::cast_precision_loss)]

@@ -77,13 +77,13 @@ def landscape(grey):
     s += band('assets/map/backgrounds/forest.svg', 820, 0.9, 1.0, grey)
     # the five springs: meadow, forest, desert, frost; the star spring as a violet glow
     springs = [
-        ('assets/map/decor/bluetenquelle', 300, 760, '#7fd99a'),
-        ('assets/map/decor/waldquelle', 640, 700, '#a8744a'),
-        ('assets/map/decor/glutquelle', 1280, 720, '#f2c14e'),
-        ('assets/map/decor/frostquelle', 1650, 600, '#9fd8f0'),
+        ('assets/map/decor/blossom-spring', 300, 760, '#7fd99a'),
+        ('assets/map/decor/moss-spring', 640, 700, '#a8744a'),
+        ('assets/map/decor/ember-spring', 1280, 720, '#f2c14e'),
+        ('assets/map/decor/frost-spring', 1650, 600, '#9fd8f0'),
     ]
     for base, x, y, color in springs:
-        state = 'verdorrt' if grey else 'befreit'
+        state = 'withered' if grey else 'freed'
         if not grey:
             s += spring_glow(x, y - 60, color)
         s += place(f'{base}-{state}.svg', x, y, 0.55)
@@ -96,11 +96,11 @@ def landscape(grey):
     # Tauwinkel in the hollow
     village = [
         ('assets/map/decor/tree-round.svg', 600, 0.85),
-        ('assets/map/decor/haus-oma.svg', 700, 0.62),
-        ('assets/map/decor/werkstatt.svg', 840, 0.52),
-        ('assets/map/decor/brunnen.svg', 960, 0.7),
-        ('assets/map/decor/haus-elora.svg', 1090, 0.5),
-        ('assets/map/decor/schmiede.svg', 1240, 0.52),
+        ('assets/map/decor/house-oma.svg', 700, 0.62),
+        ('assets/map/decor/workshop.svg', 840, 0.52),
+        ('assets/map/decor/well.svg', 960, 0.7),
+        ('assets/map/decor/house-elora.svg', 1090, 0.5),
+        ('assets/map/decor/smithy.svg', 1240, 0.52),
         ('assets/map/decor/tree-round.svg', 1350, 0.8),
     ]
     for path, x, sc in village:
@@ -115,12 +115,12 @@ def square(grey):
     s += f'<rect x="0" y="900" width="{W}" height="{H - 900}" fill="#8fbf7a"' + (
         ' filter="url(#grey)"' if grey else '') + '/>'
     s += '<rect x="0" y="900" width="1920" height="10" fill="#6a9a58" opacity="0.6"/>'
-    s += place('assets/map/decor/haus-oma.svg', 330, 910, 1.4, grey=grey)
+    s += place('assets/map/decor/house-oma.svg', 330, 910, 1.4, grey=grey)
     s += place('assets/map/decor/tree-round.svg', 70, 910, 1.4, grey=grey)
-    s += place('assets/map/decor/brunnen.svg', 980, 910, 1.5, grey=grey)
-    s += place('assets/map/decor/werkstatt.svg', 1640, 910, 1.1, grey=grey)
-    box = 'blass' if grey else 'bunt'
-    s += place(f'assets/map/decor/blumenkasten-{box}.svg', 1400, 910, 1.2, grey=grey)
+    s += place('assets/map/decor/well.svg', 980, 910, 1.5, grey=grey)
+    s += place('assets/map/decor/workshop.svg', 1640, 910, 1.1, grey=grey)
+    box = 'pale' if grey else 'colourful'
+    s += place(f'assets/map/decor/window-box-{box}.svg', 1400, 910, 1.2, grey=grey)
     # characters keep their colours: they are the ones who still care
     s += place('assets/adventure/characters/oma.svg', 700, 912, 3.0)
     s += place('assets/elora/elora.svg', 1250, 912, 1.15)
@@ -137,8 +137,8 @@ def sunrise(elora=True):
     s += spring_glow(1180, 700, '#7fd99a', 70)
     s += f'<rect x="0" y="815" width="{W}" height="{H - 815}" fill="#7fbf6a"/>'
     s += band('assets/map/backgrounds/hills-near.svg', 1080, 1.8)
-    s += place('assets/map/decor/riesenblume-gelb.svg', 260, 1000, 1.0)
-    s += place('assets/map/decor/riesenblume-rosa.svg', 1700, 1020, 0.9)
+    s += place('assets/map/decor/giant-flower-yellow.svg', 260, 1000, 1.0)
+    s += place('assets/map/decor/giant-flower-pink.svg', 1700, 1020, 0.9)
     if elora:
         s += place('assets/elora/elora.svg', 640, 905, 0.9)
     return s
@@ -165,13 +165,13 @@ def main():
         ]),
         'ref-oma.svg': sheet([('assets/adventure/characters/oma.svg', 960, 950, 9.0, False)]),
         'ref-tauwinkel.svg': sheet([
-            ('assets/map/decor/haus-oma.svg', 260, 700, 1.4, False),
-            ('assets/map/decor/brunnen.svg', 720, 700, 1.6, False),
-            ('assets/map/decor/werkstatt.svg', 1180, 700, 1.1, False),
-            ('assets/map/decor/schmiede.svg', 1660, 700, 1.1, False),
+            ('assets/map/decor/house-oma.svg', 260, 700, 1.4, False),
+            ('assets/map/decor/well.svg', 720, 700, 1.6, False),
+            ('assets/map/decor/workshop.svg', 1180, 700, 1.1, False),
+            ('assets/map/decor/smithy.svg', 1660, 700, 1.1, False),
             ('assets/map/decor/tree-round.svg', 300, 1060, 1.5, False),
-            ('assets/map/decor/bluetenquelle-befreit.svg', 960, 1060, 1.3, False),
-            ('assets/map/decor/riesenblume-rosa.svg', 1600, 1060, 1.2, False),
+            ('assets/map/decor/blossom-spring-freed.svg', 960, 1060, 1.3, False),
+            ('assets/map/decor/giant-flower-pink.svg', 1600, 1060, 1.2, False),
         ]),
     }
     for name, svg in files.items():

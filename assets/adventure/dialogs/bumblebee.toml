@@ -1,0 +1,52 @@
+# Bumblebear after the fight (R2-M2.1, E-298): was only confused
+speaker = "bumblebee"
+
+[[start]]
+if = "flag bumblebee.talked"
+node = "later"
+
+[[start]]
+node = "awake"
+
+[[node]]
+id = "awake"
+text = { de = "Bsss … wo … wo bin ich? Mir war so grau im Kopf. Als hätte jemand alle Farben aus mir herausgetrunken.", en = "Bzzz … where … where am I? My head felt so grey. As if someone had drunk all the colours out of me." }
+
+[[node.choice]]
+tone = "friendly"
+text = { de = "Du bist an der Blütenquelle. Alles ist gut.", en = "You're at the Blossom Spring. Everything's all right." }
+next = "thanks"
+do = ["affection bumblebee +1"]
+
+[[node.choice]]
+tone = "curious"
+text = { de = "Wer hat dir die Farben genommen?", en = "Who took your colours?" }
+next = "shade"
+
+[[node.choice]]
+tone = "cheeky"
+text = { de = "Du hast mich mit Pollen beworfen!", en = "You pelted me with pollen!" }
+next = "pollen"
+
+[[node]]
+id = "shade"
+text = { de = "Ein grauer Schatten … er kam nachts und trank aus der Quelle. Er war so dünn. Und so traurig.", en = "A grey shadow … it came at night and drank from the spring. It was so thin. And so sad." }
+next = "thanks"
+do = ["flag withered_one.seen = 1"]
+
+[[node]]
+id = "pollen"
+text = { de = "Oh weh. Das tut mir leid. Ich wusste nicht mehr, was ich tat.", en = "Oh dear. I'm sorry. I didn't know what I was doing anymore." }
+next = "thanks"
+
+[[node]]
+id = "thanks"
+text = { de = "Die Quelle singt wieder. Nimm den Funken mit – er gehört nach Tauwinkel. Und grüß Wabe von mir.", en = "The spring is singing again. Take the spark with you – it belongs in Tauwinkel. And say hello to Wabe for me." }
+do = ["flag bumblebee.talked = 1", "flag freed.blossom_spring = 1"]
+
+[[node]]
+id = "later"
+text = { de = "Bsss … ich passe jetzt wieder gut auf die Quelle auf.", en = "Bzzz … I'm taking good care of the spring again now." }
+
+[[bark]]
+text = { de = "Bsss … danke, Kleine.", en = "Bzzz … thank you, little one." }

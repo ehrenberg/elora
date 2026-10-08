@@ -46,7 +46,7 @@ fn world(edit: impl FnOnce(&mut Vec<Tile>)) -> World {
     w.adventure = true;
     w.creature_kinds = vec![
         kind(
-            "schneeballrobbe",
+            "snowball_seal",
             [48.0, 28.0],
             0,
             Behavior::Seal {
@@ -59,7 +59,7 @@ fn world(edit: impl FnOnce(&mut Vec<Tile>)) -> World {
             },
         ),
         kind(
-            "fledermaus",
+            "bat",
             [32.0, 36.0],
             0,
             Behavior::Bat {
@@ -69,7 +69,7 @@ fn world(edit: impl FnOnce(&mut Vec<Tile>)) -> World {
             },
         ),
         kind(
-            "frostgeist",
+            "frost_ghost",
             [40.0, 52.0],
             600,
             Behavior::Ghost {
@@ -108,7 +108,7 @@ fn idle() -> PlayerInput {
 }
 
 fn creature(w: &World, id: u32) -> &elora_sim::Creature {
-    w.creatures.iter().find(|c| c.id == id).expect("lebt")
+    w.creatures.iter().find(|c| c.id == id).expect("alive")
 }
 
 #[test]

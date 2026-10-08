@@ -2,68 +2,68 @@
 speaker = "palma"
 
 [[start]]
-if = "quest oase schritt danke"
-node = "danke"
+if = "quest oasis step thanks"
+node = "thanks"
 
 [[start]]
-if = "quest oase aktiv"
-node = "erinnerung"
+if = "quest oasis active"
+node = "memory"
 
 [[start]]
-if = "quest oase erledigt"
-node = "danach"
+if = "quest oasis done"
+node = "after"
 
 [[start]]
-node = "begruessung"
+node = "greeting"
 
 [[node]]
-id = "begruessung"
+id = "greeting"
 text = { de = "Leise, bitte. Die Oase schläft. Früher hat sie gesungen wie ein Bach im Frühling. Seit der Graue hier war, wird sie jeden Tag stiller. Drei Stellen am Ufer sind schon ganz verdorrt.", en = "Quietly, please. The oasis is sleeping. It used to sing like a brook in spring. Since the grey one was here, it grows quieter every day. Three patches on the bank have already withered completely." }
 
 [[node.choice]]
-tone = "freundlich"
+tone = "friendly"
 text = { de = "Kann ich helfen?", en = "Can I help?" }
-next = "auftrag"
-do = ["zuneigung palma +1"]
+next = "task"
+do = ["affection palma +1"]
 
 [[node.choice]]
-tone = "neugierig"
+tone = "curious"
 text = { de = "Wer ist der Graue?", en = "Who is the grey one?" }
-next = "grauer"
+next = "grey"
 
 [[node]]
-id = "grauer"
+id = "grey"
 text = { de = "Ich habe ihn nur von weitem gesehen. Er war … traurig, glaube ich. Wer so trinkt, hat großen Durst nach etwas, das Wasser nicht stillen kann.", en = "I only saw him from afar. He was … sad, I think. Whoever drinks like that thirsts for something water cannot quench." }
-next = "auftrag"
+next = "task"
 
 [[node]]
-id = "auftrag"
+id = "task"
 text = { de = "In den Ruinen gibt es noch eine kleine Quelle, tief zwischen den Säulen. Nimm meinen Wasserschlauch. Er fasst genug für alle drei Stellen.", en = "There is still a little spring in the ruins, deep between the pillars. Take my water skin. It holds enough for all three patches." }
 
 [[node.choice]]
-tone = "freundlich"
+tone = "friendly"
 text = { de = "Ich bringe Wasser.", en = "I'll bring water." }
-do = ["gib wasserschlauch 1", "quest oase start"]
+do = ["give waterskin 1", "quest oasis start"]
 
 [[node.choice]]
 text = { de = "Vielleicht später.", en = "Maybe later." }
 
 [[node]]
-id = "erinnerung"
+id = "memory"
 text = { de = "Der Schlauch fasst drei Schluck. Jede verdorrte Stelle braucht einen.", en = "The skin holds three sips. Each withered patch needs one." }
 
 [[node]]
-id = "danke"
+id = "thanks"
 text = { de = "Hörst du das? Sie summt wieder. Ganz leise, aber sie summt. Danke, kleiner Tropfen. Nimm diese Früchte – sie kühlen, wenn die Sonne zu sehr drückt.", en = "Can you hear that? It's humming again. Very softly, but it hums. Thank you, little drop. Take these fruits – they cool you when the sun presses too hard." }
-do = ["zuneigung palma +2"]
+do = ["affection palma +2"]
 
 [[node]]
-id = "danach"
+id = "after"
 text = { de = "Pssst … die Oase summt.", en = "Shhh … the oasis is humming." }
 
 [[bark]]
 text = { de = "Im Schatten der Palmen ist es kühl.", en = "It's cool in the shade of the palms." }
 
 [[bark]]
-if = "quest oase erledigt"
+if = "quest oasis done"
 text = { de = "Pssst … die Oase summt.", en = "Shhh … the oasis is humming." }

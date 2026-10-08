@@ -72,6 +72,7 @@ fn main() -> anyhow::Result<()> {
     // find bundled maps even when the server starts from a different folder (M8.2)
     cfg.map = elora_server::paths::resolve(&cfg.map);
     cfg.maps_dir = elora_server::paths::resolve(&cfg.maps_dir);
+    cfg.migrate_map_names();
 
     let maps = load_maps(&cfg)?;
     let map_name = maps[0].name.clone();

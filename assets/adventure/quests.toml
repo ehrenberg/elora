@@ -3,13 +3,13 @@
 # Prologue (A1.9, docs/release-2/prolog.md)
 
 [[quest]]
-id = "brunnen"
+id = "well"
 kind = "main"
 giver = "oma"
 name = { de = "Der blasse Brunnen", en = "The Pale Well" }
 desc = { de = "Die Blumen am Dorfbrunnen verlieren ihre Farbe. Oma Pfütze glaubt, die Blütenquelle sei verstummt. Vorher soll Elora sich bei Tüftel und Klonk vorbereiten.", en = "The flowers by the village well are losing their colour. Oma Pfütze believes the Blossom Spring has fallen silent. First, Elora should get ready with Tüftel and Klonk." }
-reward = { xp = 50, glanztropfen = 30 }
-next = "bluetenquelle"
+reward = { xp = 50, gleam_drops = 30 }
+next = "blossom_spring"
 
 [[quest.step]]
 id = "tueftel"
@@ -22,34 +22,34 @@ text = { de = "Bei Klonk in der Schmiede vorbeischauen", en = "Drop by Klonk's f
 goal = { type = "talk", who = "klonk" }
 
 [[quest.step]]
-id = "wiese"
+id = "meadow"
 text = { de = "Über den Ostpfad in die Blütenwiesen gehen", en = "Take the east path into the Blütenwiesen" }
-goal = { type = "reach", map = "wiese-1" }
+goal = { type = "reach", map = "meadow-1" }
 
 [[quest.step]]
-id = "kaefer"
+id = "beetle"
 text = { de = "Drei Stachelkäfer an der Brücke vertreiben", en = "Drive three Stachelkäfer away from the bridge" }
-goal = { type = "defeat", kind = "stachelkaefer", count = 3, map = "wiese-1" }
+goal = { type = "defeat", kind = "spike_beetle", count = 3, map = "meadow-1" }
 
 [[quest.step]]
-id = "wiesenrand"
+id = "meadow_edge"
 text = { de = "Den Quellstein am Wiesenrand erreichen", en = "Reach the spring stone at the edge of the meadow" }
-goal = { type = "reach", map = "wiese-1", zone = "wiesenrand" }
+goal = { type = "reach", map = "meadow-1", zone = "meadow_edge" }
 
 # Chapter 1 – Blütenwiesen (R2-M2.1, docs/release-2/m2-1-plan.md)
 [[quest]]
-id = "bluetenquelle"
+id = "blossom_spring"
 kind = "main"
 giver = "oma"
 name = { de = "Die Blütenquelle", en = "The Blossom Spring" }
 desc = { de = "Die Blütenquelle liegt tief in den Blütenwiesen. Irgendwo dort brummt die alte Hummel – und sie klingt gar nicht glücklich.", en = "The Blossom Spring lies deep in the Blütenwiesen. Somewhere there, the old bumblebee is buzzing – and it doesn't sound happy at all." }
-reward = { xp = 150, glanztropfen = 80 }
+reward = { xp = 150, gleam_drops = 80 }
 next = "murmelwald"
 
 [[quest.step]]
-id = "tiefer"
+id = "deeper"
 text = { de = "Tiefer in die Blütenwiesen vordringen", en = "Venture deeper into the Blütenwiesen" }
-goal = { type = "reach", map = "wiese-2" }
+goal = { type = "reach", map = "meadow-2" }
 
 [[quest.step]]
 id = "wabe"
@@ -57,27 +57,27 @@ text = { de = "Mit der Imkerin an den Bienenstöcken sprechen", en = "Talk to th
 goal = { type = "talk", who = "wabe" }
 
 [[quest.step]]
-id = "wurzeln"
+id = "roots"
 text = { de = "Unter den Wurzeln hindurch nach oben", en = "Pass beneath the roots and climb up" }
-goal = { type = "reach", map = "wiese-3" }
+goal = { type = "reach", map = "meadow-3" }
 
 [[quest.step]]
-id = "quelle"
+id = "spring"
 text = { de = "Die Blütenquelle erreichen", en = "Reach the Blossom Spring" }
-goal = { type = "reach", map = "wiese-arena" }
+goal = { type = "reach", map = "meadow-arena" }
 
 [[quest.step]]
-id = "hueter"
+id = "guardian"
 text = { de = "Die Brummbär-Hummel beruhigen", en = "Calm the Bumblebear" }
-goal = { type = "defeat", kind = "brummbaer", count = 1, map = "wiese-arena" }
+goal = { type = "defeat", kind = "bumblebear", count = 1, map = "meadow-arena" }
 
 [[quest.step]]
-id = "funke"
+id = "spark"
 text = { de = "Tüftel den Quellfunken bringen", en = "Bring Tüftel the spring spark" }
-goal = { type = "bring", item = "quellfunke", count = 1, to = "tueftel" }
+goal = { type = "bring", item = "spring_spark", count = 1, to = "tueftel" }
 
 [[quest.step]]
-id = "fest"
+id = "party"
 text = { de = "Mit Oma Pfütze am Brunnen feiern", en = "Celebrate with Oma Pfütze at the well" }
 goal = { type = "talk", who = "oma" }
 
@@ -88,13 +88,13 @@ kind = "main"
 giver = "oma"
 name = { de = "Das Flüstern im Murmelwald", en = "Whispers in the Murmelwald" }
 desc = { de = "Die zweite Quelle liegt im Murmelwald, oben am Westhang. Oma sagt, die Wurzeln dort erzählen alte Geschichten.", en = "The second spring lies in the Murmelwald, up the western slope. Oma says the roots there tell old stories." }
-reward = { xp = 250, glanztropfen = 120 }
+reward = { xp = 250, gleam_drops = 120 }
 next = "glutsand"
 
 [[quest.step]]
-id = "westhang"
+id = "west_slope"
 text = { de = "Über den Westhang in den Murmelwald", en = "Climb the western slope into the Murmelwald" }
-goal = { type = "reach", map = "wald-1" }
+goal = { type = "reach", map = "forest-1" }
 
 [[quest.step]]
 id = "plumm"
@@ -102,27 +102,27 @@ text = { de = "Den alten Uhu in den Baumkronen finden", en = "Find the old owl i
 goal = { type = "talk", who = "plumm" }
 
 [[quest.step]]
-id = "wurzeln"
+id = "roots"
 text = { de = "Hinab in die Wurzelhöhlen", en = "Descend into the root caves" }
-goal = { type = "reach", map = "wald-3" }
+goal = { type = "reach", map = "forest-3" }
 
 [[quest.step]]
-id = "quelle"
+id = "spring"
 text = { de = "Die Waldquelle erreichen", en = "Reach the Forest Spring" }
-goal = { type = "reach", map = "wald-arena" }
+goal = { type = "reach", map = "forest-arena" }
 
 [[quest.step]]
-id = "hueter"
+id = "guardian"
 text = { de = "Den Wurzelwächter beruhigen", en = "Calm the Root Warden" }
-goal = { type = "defeat", kind = "wurzelwaechter", count = 1, map = "wald-arena" }
+goal = { type = "defeat", kind = "root_warden", count = 1, map = "forest-arena" }
 
 [[quest.step]]
-id = "funke"
+id = "spark"
 text = { de = "Tüftel den Quellfunken bringen", en = "Bring Tüftel the spring spark" }
-goal = { type = "bring", item = "quellfunke", count = 1, to = "tueftel" }
+goal = { type = "bring", item = "spring_spark", count = 1, to = "tueftel" }
 
 [[quest.step]]
-id = "fest"
+id = "party"
 text = { de = "Mit Oma Pfütze am Brunnen feiern", en = "Celebrate with Oma Pfütze at the well" }
 goal = { type = "talk", who = "oma" }
 
@@ -133,13 +133,13 @@ kind = "main"
 giver = "oma"
 name = { de = "Spuren im Sand", en = "Tracks in the Sand" }
 desc = { de = "Die dritte Quelle liegt in der Glutsandwüste. Eine Karawane erzählt von einem grauen Wanderer.", en = "The third spring lies in the Glutsandwüste. A caravan tells of a grey wanderer." }
-reward = { xp = 350, glanztropfen = 160 }
+reward = { xp = 350, gleam_drops = 160 }
 next = "frostspitzen"
 
 [[quest.step]]
-id = "aufbruch"
+id = "departure"
 text = { de = "Am Ostpfad den Hohlweg in die Wüste nehmen", en = "Take the sunken path off the east path into the desert" }
-goal = { type = "reach", map = "wueste-1" }
+goal = { type = "reach", map = "desert-1" }
 
 [[quest.step]]
 id = "sirup"
@@ -147,27 +147,27 @@ text = { de = "Die Karawane in der Wüste finden", en = "Find the caravan in the
 goal = { type = "talk", who = "sirup" }
 
 [[quest.step]]
-id = "ruinen"
+id = "ruins"
 text = { de = "Den grauen Spuren zu den Ruinen folgen", en = "Follow the grey tracks to the ruins" }
-goal = { type = "reach", map = "wueste-3" }
+goal = { type = "reach", map = "desert-3" }
 
 [[quest.step]]
-id = "quelle"
+id = "spring"
 text = { de = "Die Glutquelle im Sandkessel erreichen", en = "Reach the Ember Spring in the sand basin" }
-goal = { type = "reach", map = "wueste-arena" }
+goal = { type = "reach", map = "desert-arena" }
 
 [[quest.step]]
-id = "hueter"
+id = "guardian"
 text = { de = "Die Sandschlange beruhigen", en = "Calm the Sand Serpent" }
-goal = { type = "defeat", kind = "sandschlange", count = 1, map = "wueste-arena" }
+goal = { type = "defeat", kind = "sand_serpent", count = 1, map = "desert-arena" }
 
 [[quest.step]]
-id = "funke"
+id = "spark"
 text = { de = "Tüftel den Quellfunken bringen", en = "Bring Tüftel the spring spark" }
-goal = { type = "bring", item = "quellfunke", count = 1, to = "tueftel" }
+goal = { type = "bring", item = "spring_spark", count = 1, to = "tueftel" }
 
 [[quest.step]]
-id = "fest"
+id = "party"
 text = { de = "Mit Oma Pfütze am Brunnen feiern", en = "Celebrate with Oma Pfütze at the well" }
 goal = { type = "talk", who = "oma" }
 
@@ -178,11 +178,11 @@ kind = "main"
 giver = "oma"
 name = { de = "Der Ruf der Frostspitzen", en = "The Call of the Frostspitzen" }
 desc = { de = "Die vierte Quelle liegt in den Frostspitzen im Norden. Dorthin führten die grauen Spuren.", en = "The fourth spring lies in the Frostspitzen to the north. That is where the grey tracks led." }
-reward = { xp = 400, glanztropfen = 180 }
+reward = { xp = 400, gleam_drops = 180 }
 next = "sternschlucht"
 
 [[quest.step]]
-id = "aufbruch"
+id = "departure"
 text = { de = "Oben im Oberdorf den Bergsteig freilegen", en = "Clear the mountain path at the top of the upper village" }
 goal = { type = "reach", map = "frost-1" }
 
@@ -192,32 +192,32 @@ text = { de = "Im verlassenen Bergdorf nach jemandem suchen", en = "Look for som
 goal = { type = "talk", who = "flocke" }
 
 [[quest.step]]
-id = "seil"
+id = "rope"
 text = { de = "Flockes Seil aus dem vereisten Keller holen", en = "Fetch Flocke's rope from the frozen cellar" }
-goal = { type = "bring", item = "seil", count = 1, to = "flocke" }
+goal = { type = "bring", item = "rope", count = 1, to = "flocke" }
 
 [[quest.step]]
-id = "grat"
+id = "ridge"
 text = { de = "Mit den Steigkrallen hinauf zum Gipfelgrat", en = "Climb up to the summit ridge with the climbing claws" }
 goal = { type = "reach", map = "frost-3" }
 
 [[quest.step]]
-id = "quelle"
+id = "spring"
 text = { de = "Die Eishalle der Frostquelle finden", en = "Find the ice hall of the Frost Spring" }
 goal = { type = "reach", map = "frost-arena" }
 
 [[quest.step]]
-id = "hueter"
+id = "guardian"
 text = { de = "Kristella beruhigen", en = "Calm Kristella" }
 goal = { type = "defeat", kind = "kristella", count = 1, map = "frost-arena" }
 
 [[quest.step]]
-id = "funke"
+id = "spark"
 text = { de = "Tüftel den Quellfunken bringen", en = "Bring Tüftel the spring spark" }
-goal = { type = "bring", item = "quellfunke", count = 1, to = "tueftel" }
+goal = { type = "bring", item = "spring_spark", count = 1, to = "tueftel" }
 
 [[quest.step]]
-id = "fest"
+id = "party"
 text = { de = "Mit Oma Pfütze am Brunnen feiern", en = "Celebrate with Oma Pfütze at the well" }
 goal = { type = "talk", who = "oma" }
 
@@ -231,31 +231,31 @@ desc = { de = "Kristella sah den Grauen nach Osten ziehen, zur Sternschlucht. Do
 reward = { xp = 100 }
 
 [[quest.step]]
-id = "aufbruch"
+id = "departure"
 text = { de = "In die Sternschlucht aufbrechen (bald)", en = "Set out for the Sternschlucht (soon)" }
 goal = { type = "manual" }
 
 # side quests in chapter 4 (D-M24-08, D-M24-09)
 [[quest]]
-id = "kletterer"
+id = "climbers"
 kind = "side"
 giver = "flocke"
 name = { de = "Verlorene Kletterer", en = "Lost Climbers" }
 desc = { de = "Bolle, Kiesel und Wicke sind von ihrer Tour nicht zurückgekommen. Flocke macht schon mal Tee.", en = "Bolle, Kiesel and Wicke haven't come back from their climb. Flocke is already making tea." }
-reward = { xp = 100, points = 1, items = [{ item = "bommelmuetze", count = 1 }] }
+reward = { xp = 100, points = 1, items = [{ item = "bobble_hat", count = 1 }] }
 
 [[quest.step]]
-id = "finden"
+id = "find"
 text = { de = "Die drei verschollenen Kletterer finden", en = "Find the three missing climbers" }
-goal = { type = "flag", flag = "kletterer.gefunden", value = 3 }
+goal = { type = "flag", flag = "climbers.found", value = 3 }
 
 [[quest.step]]
-id = "bericht"
+id = "report"
 text = { de = "Flocke Bescheid geben", en = "Let Flocke know" }
 goal = { type = "talk", who = "flocke" }
 
 [[quest]]
-id = "klarkristalle"
+id = "clear_crystals"
 kind = "side"
 giver = "klonk"
 name = { de = "Klarkristalle für Klonk", en = "Clear Crystals for Klonk" }
@@ -263,134 +263,134 @@ desc = { de = "Acht Klarkristalle liegen versteckt in den Frostspitzen. Klonk wi
 reward = { xp = 100 }
 
 [[quest.step]]
-id = "sammeln"
+id = "collect"
 text = { de = "Acht Klarkristalle in den Frostspitzen finden", en = "Find eight clear crystals in the Frostspitzen" }
-goal = { type = "collect", item = "klarkristall", count = 8 }
+goal = { type = "collect", item = "clear_crystal", count = 8 }
 
 [[quest.step]]
-id = "bringen"
+id = "bring"
 text = { de = "Klonk die Kristalle bringen", en = "Bring Klonk the crystals" }
-goal = { type = "bring", item = "klarkristall", count = 8, to = "klonk" }
+goal = { type = "bring", item = "clear_crystal", count = 8, to = "klonk" }
 
 # side quests in chapter 3 (E-319, E-322, E-323)
 [[quest]]
-id = "oase"
+id = "oasis"
 kind = "side"
 giver = "palma"
 name = { de = "Wasser für die Oase", en = "Water for the Oasis" }
 desc = { de = "Seit der Graue an der Oase getrunken hat, wird sie stiller. Drei Stellen am Ufer sind verdorrt. In den Ruinen gibt es noch eine kleine Quelle.", en = "Since the grey one drank at the oasis, it has grown quieter. Three patches on the bank have withered. There is still a little spring in the ruins." }
-reward = { xp = 80, points = 1, items = [{ item = "kaktusfrucht", count = 3 }] }
+reward = { xp = 80, points = 1, items = [{ item = "cactus_fruit", count = 3 }] }
 
 [[quest.step]]
-id = "fuellen"
+id = "fill"
 text = { de = "Den Wasserschlauch an der Ruinenquelle füllen", en = "Fill the water skin at the ruin spring" }
-goal = { type = "collect", item = "wasser", count = 3 }
+goal = { type = "collect", item = "water", count = 3 }
 
 [[quest.step]]
-id = "giessen"
+id = "water"
 text = { de = "Die drei verdorrten Stellen der Oase gießen", en = "Water the three withered patches of the oasis" }
-goal = { type = "flag", flag = "oase.gegossen", value = 3 }
+goal = { type = "flag", flag = "oasis.watered", value = 3 }
 
 [[quest.step]]
-id = "danke"
+id = "thanks"
 text = { de = "Palma von der Oase erzählen", en = "Tell Palma about the oasis" }
 goal = { type = "talk", who = "palma" }
 
 [[quest]]
-id = "ruine"
+id = "ruin"
 kind = "side"
 giver = "sirup"
 name = { de = "Die verschüttete Ruine", en = "The Buried Ruin" }
 desc = { de = "Unter den Ruinen des Glutvolks liegt eine verschüttete Kammer. Sirups Vater schwor, darin stehe eine Tafel, die keiner je gelesen hat.", en = "Beneath the ruins of the Ember Folk lies a buried chamber. Sirup's father swore it holds a tablet nobody has ever read." }
-reward = { xp = 80, points = 1, glanztropfen = 60 }
+reward = { xp = 80, points = 1, gleam_drops = 60 }
 
 [[quest.step]]
-id = "kammer"
+id = "chamber"
 text = { de = "Die verschüttete Kammer öffnen (später wiederkommen)", en = "Open the buried chamber (come back later)" }
-goal = { type = "reach", map = "wueste-3", zone = "ruinenkammer" }
+goal = { type = "reach", map = "desert-3", zone = "ruin_chamber" }
 
 [[quest.step]]
-id = "tafel"
+id = "tablet"
 text = { de = "Die Tafel in der Kammer lesen", en = "Read the tablet in the chamber" }
-goal = { type = "talk", who = "tafel-kammer" }
+goal = { type = "talk", who = "tablet-chamber" }
 
 [[quest.step]]
-id = "bericht"
+id = "report"
 text = { de = "Sirup von der Kammer erzählen", en = "Tell Sirup about the chamber" }
 goal = { type = "talk", who = "sirup" }
 
 # side quests in chapter 2 (E-308, E-309)
 [[quest]]
-id = "runen"
+id = "runes"
 kind = "side"
 giver = "plumm"
 name = { de = "Erinnerungsrunen", en = "Memory Runes" }
 desc = { de = "Fünf Runen liegen im Murmelwald verstreut. Plumm glaubt, sie erzählen zusammen eine vergessene Geschichte. Zwei davon erreichst du erst später.", en = "Five runes lie scattered across the Murmelwald. Plumm believes that together they tell a forgotten story. Two of them you'll only reach later." }
-reward = { xp = 80, points = 1, items = [{ item = "eulenfeder", count = 1 }] }
+reward = { xp = 80, points = 1, items = [{ item = "owl_feather", count = 1 }] }
 
 [[quest.step]]
-id = "sammeln"
+id = "collect"
 text = { de = "Fünf Erinnerungsrunen finden", en = "Find five memory runes" }
 goal = { type = "collect", item = "rune", count = 5 }
 
 [[quest.step]]
-id = "bringen"
+id = "bring"
 text = { de = "Plumm die Runen vorlesen lassen", en = "Let Plumm read the runes" }
 goal = { type = "bring", item = "rune", count = 5, to = "plumm" }
 
 [[quest]]
-id = "pilzkind"
+id = "mushroom_child"
 kind = "side"
-giver = "pilzkind"
+giver = "mushroom_child"
 name = { de = "Das verirrte Pilzkind", en = "The Lost Mushroom Child" }
 desc = { de = "Ein kleines Pilzkind hat sich verlaufen. Sein Zuhause ist der Pilzring am Waldrand.", en = "A little mushroom child got lost. Its home is the mushroom ring at the edge of the forest." }
-reward = { xp = 60, glanztropfen = 40, items = [{ item = "heiltrank", count = 2 }] }
+reward = { xp = 60, gleam_drops = 40, items = [{ item = "healing_potion", count = 2 }] }
 
 [[quest.step]]
-id = "heim"
+id = "home"
 text = { de = "Das Pilzkind zum Pilzring bringen", en = "Bring the mushroom child to the mushroom ring" }
-goal = { type = "flag", flag = "pilzkind.daheim" }
+goal = { type = "flag", flag = "mushroom_child.home" }
 
 [[quest.step]]
-id = "danke"
+id = "thanks"
 text = { de = "Mit Mama Morchel sprechen", en = "Talk to Mama Morel" }
-goal = { type = "talk", who = "pilzmama" }
+goal = { type = "talk", who = "mushroom_mama" }
 
 # side quest in chapter 1 (E-300)
 [[quest]]
-id = "wabes_bienen"
+id = "wabes_bees"
 kind = "side"
 giver = "wabe"
 name = { de = "Wabes Bienen", en = "Wabe's Bees" }
 desc = { de = "Die Hummel hat Wabes Bienen aufgescheucht. Fünf haben sich in den Blütenwiesen verirrt – manche an Stellen, die du erst später erreichst.", en = "The bumblebee scared off Wabe's bees. Five have got lost in the Blütenwiesen – some in places you'll only reach later." }
-reward = { xp = 60, items = [{ item = "wabenhut", count = 1 }] }
+reward = { xp = 60, items = [{ item = "honeycomb_hat", count = 1 }] }
 
 [[quest.step]]
-id = "sammeln"
+id = "collect"
 text = { de = "Fünf Bienen finden", en = "Find five bees" }
-goal = { type = "collect", item = "biene", count = 5 }
+goal = { type = "collect", item = "bee", count = 5 }
 
 [[quest.step]]
-id = "bringen"
+id = "bring"
 text = { de = "Wabe die Bienen bringen", en = "Bring Wabe the bees" }
-goal = { type = "bring", item = "biene", count = 5, to = "wabe" }
+goal = { type = "bring", item = "bee", count = 5, to = "wabe" }
 
 # side quest that can fail (E-250)
 [[quest]]
-id = "pips_stein"
+id = "pips_stone"
 kind = "side"
 giver = "pip"
 name = { de = "Der Glitzerstein im Gras", en = "The Glitter Stone in the Grass" }
 desc = { de = "Pip hat in den Blütenwiesen einen Glitzerstein gesehen – hoch oben, wo man nur mit dem Hook hinkommt.", en = "Pip saw a glitter stone in the Blütenwiesen – high up, where only the hook can reach." }
-reward = { xp = 30, items = [{ item = "heiltrank", count = 1 }] }
-fail_if = "merker pip.verpetzt"
+reward = { xp = 30, items = [{ item = "healing_potion", count = 1 }] }
+fail_if = "flag pip.told_on"
 
 [[quest.step]]
-id = "finden"
+id = "find"
 text = { de = "Den Glitzerstein in den Blütenwiesen finden", en = "Find the glitter stone in the Blütenwiesen" }
-goal = { type = "collect", item = "glitzerstein", count = 1 }
+goal = { type = "collect", item = "glitter_stone", count = 1 }
 
 [[quest.step]]
-id = "bringen"
+id = "bring"
 text = { de = "Pip den Glitzerstein bringen", en = "Bring Pip the glitter stone" }
-goal = { type = "bring", item = "glitzerstein", count = 1, to = "pip" }
+goal = { type = "bring", item = "glitter_stone", count = 1, to = "pip" }

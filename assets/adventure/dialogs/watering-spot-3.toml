@@ -1,0 +1,18 @@
+# Withered patch 3 of the oasis (E-319)
+speaker = "watering-spot-3"
+
+[[start]]
+if = "has water"
+node = "water"
+
+[[start]]
+node = "dry"
+
+[[node]]
+id = "dry"
+text = { de = "Trockene, rissige Erde. Hier wuchs einmal etwas.", en = "Dry, cracked earth. Something used to grow here." }
+
+[[node]]
+id = "water"
+text = { de = "Du gießt einen Schluck Wasser. Die Erde trinkt gierig – und kleine Blüten öffnen sich.", en = "You pour a sip of water. The earth drinks greedily – and little blossoms open." }
+do = ["take water 1", "flag freed.watering-spot-3 = 1", "flag oasis.watered +1"]

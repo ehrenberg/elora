@@ -49,7 +49,7 @@ pub struct Sounds {
 pub const AMBIENCE_DIR: &str = "assets/ambience";
 
 /// The loops of the ambience track.
-pub const AMBIENCE: [&str; 3] = ["regen", "wind", "sand"];
+pub const AMBIENCE: [&str; 3] = ["rain", "wind", "sand"];
 
 /// Like [`ambience_levels`], muffled under a roof or in caves (`shelter` 0..1) (W1.6).
 pub fn sheltered_levels(w: elora_map::Weather, shelter: f32) -> [f32; 3] {
@@ -142,7 +142,7 @@ impl Sounds {
         if due.is_empty() {
             return;
         }
-        let Some(data) = self.ambience_file("donner") else {
+        let Some(data) = self.ambience_file("thunder") else {
             return;
         };
         for pos in due {
@@ -150,8 +150,8 @@ impl Sounds {
             let volume = (1.0 - d.length() / 3000.0).clamp(0.35, 1.0);
             let pan = (d.x / 1500.0).clamp(-0.6, 0.6);
             if let Err(e) = self.audio.play_once(&data, volume, pan) {
-                tracing::warn!("{AMBIENCE_DIR}/donner: {e}");
-                self.ambience.insert("donner".to_owned(), None);
+                tracing::warn!("{AMBIENCE_DIR}/thunder: {e}");
+                self.ambience.insert("thunder".to_owned(), None);
                 return;
             }
         }
@@ -159,15 +159,15 @@ impl Sounds {
 
     /// Crackling of the nearest fireplace (R2-M2.4): `level` 0..1 by distance, followed smoothly.
     pub fn fire(&mut self, level: f32) {
-        let Some(data) = self.ambience_file("feuer") else {
+        let Some(data) = self.ambience_file("fire") else {
             return;
         };
         if let Err(e) = self
             .audio
-            .ambience("feuer", &data, level.clamp(0.0, 1.0) * AMBIENCE_GAIN)
+            .ambience("fire", &data, level.clamp(0.0, 1.0) * AMBIENCE_GAIN)
         {
-            tracing::warn!("{AMBIENCE_DIR}/feuer: {e}");
-            self.ambience.insert("feuer".to_owned(), None);
+            tracing::warn!("{AMBIENCE_DIR}/fire: {e}");
+            self.ambience.insert("fire".to_owned(), None);
         }
     }
 
@@ -358,7 +358,7 @@ mod tests {
 
     #[test]
     fn ambience_files_are_shipped() {
-        for name in AMBIENCE.into_iter().chain(["donner", "feuer"]) {
+        for name in AMBIENCE.into_iter().chain(["thunder", "fire"]) {
             let path = format!(
                 "{}/../../{AMBIENCE_DIR}/{name}.ogg",
                 env!("CARGO_MANIFEST_DIR")

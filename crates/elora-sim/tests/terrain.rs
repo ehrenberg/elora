@@ -43,7 +43,7 @@ fn world(edit: impl FnOnce(&mut Vec<Tile>)) -> World {
     w.adventure = true;
     w.creature_kinds = vec![
         kind(
-            "eiszapfen",
+            "icicle",
             [20.0, 48.0],
             Behavior::Icicle {
                 sight: 48.0,
@@ -52,7 +52,7 @@ fn world(edit: impl FnOnce(&mut Vec<Tile>)) -> World {
             },
         ),
         kind(
-            "schneebrocken",
+            "snow_chunk",
             [36.0, 36.0],
             Behavior::Roller {
                 speed: 5.0,
@@ -223,11 +223,11 @@ fn icicle_shakes_falls_hurts_and_shatters() {
     assert_eq!(
         w.creatures.iter().find(|c| c.id == id).unwrap().mode,
         icicle::SHAKE,
-        "zittert"
+        "shakes"
     );
     let ev = run(&mut w, idle(), 80);
     assert!(health(&w) < before, "hits Elora");
-    assert!(w.creatures.iter().all(|c| c.id != id), "zerschellt");
+    assert!(w.creatures.iter().all(|c| c.id != id), "shatters");
     assert!(
         ev.iter()
             .any(|e| matches!(e, Event::CreatureDeath { id: i, killer: None, .. } if *i == id))
@@ -281,6 +281,6 @@ fn snow_rock_hurts_elora_and_bursts() {
     let id = w.add_creature(1, rock_at(30)).unwrap();
     w.creatures.iter_mut().find(|c| c.id == id).unwrap().facing = 1;
     run(&mut w, idle(), 60);
-    assert!(health(&w) < before, "trifft");
+    assert!(health(&w) < before, "hits");
     assert!(w.creatures.iter().all(|c| c.id != id), "bursts on Elora");
 }

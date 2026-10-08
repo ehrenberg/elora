@@ -47,7 +47,7 @@ fn new_game_starts_in_tauwinkel() {
     assert_eq!(ch.health, 10);
     assert!(w.adventure && !w.creature_kinds.is_empty());
     // gate is closed
-    let door = s.map.adventure.object("tor").unwrap().pos;
+    let door = s.map.adventure.object("gate").unwrap().pos;
     assert_eq!(
         w.collision.tile_at(door + Vec2::new(16.0, 16.0)),
         Tile::Unhookable
@@ -57,7 +57,7 @@ fn new_game_starts_in_tauwinkel() {
 #[test]
 fn chest_switch_and_door() {
     let (mut s, mut w) = start();
-    go_to(&mut s, &mut w, "truhe-1");
+    go_to(&mut s, &mut w, "chest-1");
     assert_eq!(
         s.interactable(w.character(s.player).unwrap().core.pos)
             .map(|x| x.1),
@@ -65,28 +65,28 @@ fn chest_switch_and_door() {
     );
     let ev = step(&mut s, &mut w, PlayerInput::default(), true);
     assert!(ev.contains(&SessionEvent::Notice(Notice::Item {
-        id: "glanztropfen".into(),
+        id: "gleam_drops".into(),
         count: 20
     })));
     // sparkles and sound at the chest (playtest)
-    let at = s.map.adventure.object("truhe-1").unwrap().pos;
+    let at = s.map.adventure.object("chest-1").unwrap().pos;
     assert!(ev.contains(&SessionEvent::ChestOpened { pos: at }));
     assert_eq!(s.save.gleam_drops, 20);
-    assert!(s.object_done("truhe-1"));
+    assert!(s.object_done("chest-1"));
     // opening a second time is not possible
     assert!(step(&mut s, &mut w, PlayerInput::default(), true).is_empty());
 
-    go_to(&mut s, &mut w, "hebel");
+    go_to(&mut s, &mut w, "lever");
     let ev = step(&mut s, &mut w, PlayerInput::default(), true);
     assert!(
         ev.contains(&SessionEvent::TilesChanged),
         "gate opens: {ev:?}"
     );
-    let door = s.map.adventure.object("tor").unwrap().pos;
+    let door = s.map.adventure.object("gate").unwrap().pos;
     assert_eq!(w.collision.tile_at(door + Vec2::new(16.0, 16.0)), Tile::Air);
     // lever back: gate stays open (E-254)
     step(&mut s, &mut w, PlayerInput::default(), true);
-    assert_eq!(s.save.flag("tor.dorf"), 0);
+    assert_eq!(s.save.flag("gate.village"), 0);
     assert_eq!(w.collision.tile_at(door + Vec2::new(16.0, 16.0)), Tile::Air);
 }
 
@@ -94,11 +94,11 @@ fn chest_switch_and_door() {
 fn save_point_rests_and_asks_to_save() {
     let (mut s, mut w) = start();
     w.character_mut(s.player).unwrap().health = 3;
-    go_to(&mut s, &mut w, "brunnen");
+    go_to(&mut s, &mut w, "well");
     let ev = step(&mut s, &mut w, PlayerInput::default(), true);
     assert!(ev.contains(&SessionEvent::Save));
     assert_eq!(w.character(s.player).unwrap().health, 10);
-    assert_eq!(s.save.location.spawn, "brunnen");
+    assert_eq!(s.save.location.spawn, "well");
 }
 
 #[test]
@@ -107,12 +107,12 @@ fn walking_into_the_exit_travels_and_zones_count() {
     s.save.run(
         &s.content.clone(),
         &[
-            "quest brunnen start".into(),
-            "quest brunnen weiter".into(),
-            "quest brunnen weiter".into(),
+            "quest well start".into(),
+            "quest well advance".into(),
+            "quest well advance".into(),
         ],
     );
-    let exit = s.map.adventure.object("weg-wiese").unwrap().pos;
+    let exit = s.map.adventure.object("path-meadow").unwrap().pos;
     w.spawn_character(s.player, exit + Vec2::new(-40.0, 150.0));
     let mut travel = None;
     for _ in 0..80 {
@@ -131,32 +131,29 @@ fn walking_into_the_exit_travels_and_zones_count() {
         }
     }
     let (map, spawn) = travel.expect("exit when walking in");
-    assert_eq!((map.as_str(), spawn.as_str()), ("wiese-1", "west"));
+    assert_eq!((map.as_str(), spawn.as_str()), ("meadow-1", "west"));
     let mut w = s.enter(&map, load(&map), &spawn, &Tuning::default());
-    assert_eq!(s.save.location.map, "wiese-1");
+    assert_eq!(s.save.location.map, "meadow-1");
     assert_eq!(w.creatures.len(), 5);
-    assert!(s.save.holds(&s.content, "quest brunnen schritt kaefer"));
+    assert!(s.save.holds(&s.content, "quest well step beetle"));
     s.save
-        .run(&s.content.clone(), &["quest brunnen weiter".into()]);
+        .run(&s.content.clone(), &["quest well advance".into()]);
     // reach zone „Wiesenrand“: quest done, the next one starts
-    let zone = s.map.adventure.object("wiesenrand").unwrap().pos;
+    let zone = s.map.adventure.object("meadow_edge").unwrap().pos;
     w.spawn_character(s.player, zone + Vec2::new(100.0, 200.0));
     let mut notes = Vec::new();
     for _ in 0..3 {
         notes.extend(step(&mut s, &mut w, PlayerInput::default(), false));
     }
-    assert!(
-        s.save.holds(&s.content, "quest brunnen erledigt"),
-        "{notes:?}"
-    );
-    assert!(s.save.holds(&s.content, "quest bluetenquelle aktiv"));
+    assert!(s.save.holds(&s.content, "quest well done"), "{notes:?}");
+    assert!(s.save.holds(&s.content, "quest blossom_spring active"));
 }
 
 #[test]
 fn death_loses_some_gleam_and_marks_dead() {
     let (mut s, mut w) = start();
     let c = s.content.clone();
-    s.save.add_item(&c, "glanztropfen", 40).unwrap();
+    s.save.add_item(&c, "gleam_drops", 40).unwrap();
     w.die(s.player, None, elora_sim::DeathCause::World);
     w.events.push(elora_sim::Event::Death {
         player: s.player,
@@ -173,20 +170,20 @@ fn death_loses_some_gleam_and_marks_dead() {
 #[test]
 fn locked_chest_needs_condition() {
     let (mut s, _) = start();
-    let mut w = s.enter("wiese-1", load("wiese-1"), "west", &Tuning::default());
-    go_to(&mut s, &mut w, "truhe-quelle");
+    let mut w = s.enter("meadow-1", load("meadow-1"), "west", &Tuning::default());
+    go_to(&mut s, &mut w, "chest-spring");
     let ev = step(&mut s, &mut w, PlayerInput::default(), true);
     assert_eq!(
         ev,
         vec![SessionEvent::Locked {
-            object: "truhe-quelle".into()
+            object: "chest-spring".into()
         }]
     );
     let c = s.content.clone();
-    s.save.add_item(&c, "glitzerstein", 1).unwrap();
+    s.save.add_item(&c, "glitter_stone", 1).unwrap();
     let ev = step(&mut s, &mut w, PlayerInput::default(), true);
     assert!(ev.contains(&SessionEvent::Notice(Notice::Item {
-        id: "bernstein".into(),
+        id: "amber".into(),
         count: 3
     })));
 }
@@ -195,7 +192,7 @@ fn locked_chest_needs_condition() {
 fn defeated_boss_sets_a_flag() {
     let (mut s, mut w) = start();
     let kind = w
-        .creature_kind("brummbaer")
+        .creature_kind("bumblebear")
         .expect("guardian in creatures.toml");
     let id = w.add_creature(kind, Vec2::new(300.0, 200.0)).unwrap();
     w.step(&[PlayerInput::default()]);
@@ -206,8 +203,8 @@ fn defeated_boss_sets_a_flag() {
         killer: Some(s.player),
     });
     s.tick(&mut w, false);
-    assert_eq!(s.save.flag("besiegt.brummbaer"), 1);
-    assert!(s.save.holds(&s.content, "merker besiegt.brummbaer"));
+    assert_eq!(s.save.flag("defeated.bumblebear"), 1);
+    assert!(s.save.holds(&s.content, "flag defeated.bumblebear"));
 }
 
 #[test]
@@ -215,7 +212,7 @@ fn unlocks_from_dialogs_reach_the_running_world() {
     let (mut s, mut w) = start();
     let c = s.content.clone();
     s.save
-        .run(&c, &["faehigkeit hook-ruck".into(), "waffe granate".into()]);
+        .run(&c, &["ability hook-jerk".into(), "weapon grenade".into()]);
     let ch = w.character(s.player).unwrap();
     assert!(
         !ch.core.abilities.has(elora_sim::Ability::HookJerk),
@@ -231,8 +228,8 @@ fn unlocks_from_dialogs_reach_the_running_world() {
 #[test]
 fn pulling_hook_grabs_collectibles_and_loot() {
     let mut s = Session::new_game(Content::builtin());
-    let mut w = s.enter("wiese-1", load("wiese-1"), "west", &Tuning::default());
-    let stone = s.map.adventure.object("stein").unwrap().pos;
+    let mut w = s.enter("meadow-1", load("meadow-1"), "west", &Tuning::default());
+    let stone = s.map.adventure.object("stone").unwrap().pos;
     let hook_at = |w: &mut World, s: &Session, at: Vec2| {
         let ch = w.character_mut(s.player).unwrap();
         ch.core.hook_state = elora_sim::HookState::Flying;
@@ -241,19 +238,19 @@ fn pulling_hook_grabs_collectibles_and_loot() {
     // without pull hook: nothing
     hook_at(&mut w, &s, stone);
     s.tick(&mut w, false);
-    assert_eq!(s.save.count("glitzerstein"), 0);
+    assert_eq!(s.save.count("glitter_stone"), 0);
     // with pull hook: collected
     s.save
-        .run(&s.content.clone(), &["faehigkeit heranhooken".into()]);
+        .run(&s.content.clone(), &["ability pull_hook".into()]);
     s.sync_world(&mut w);
     hook_at(&mut w, &s, stone);
     s.tick(&mut w, false);
-    assert_eq!(s.save.count("glitzerstein"), 1);
+    assert_eq!(s.save.count("glitter_stone"), 1);
     // loot on the hook ends up with Elora
     let far = Vec2::new(40.0 * 32.0, 10.0 * 32.0);
     w.loot.push(elora_sim::creature::Loot {
         id: 999,
-        item: "glanztropfen".into(),
+        item: "gleam_drops".into(),
         count: 5,
         pos: far,
         vel: Vec2::ZERO,
@@ -278,55 +275,55 @@ fn pulling_hook_grabs_collectibles_and_loot() {
 fn follower_appears_follows_and_stays_home() {
     use elora_map::{Object, ObjectKind};
     let mut s = Session::new_game(Content::builtin());
-    let mut w = s.enter("wiese-1", load("wiese-1"), "west", &Tuning::default());
+    let mut w = s.enter("meadow-1", load("meadow-1"), "west", &Tuning::default());
     assert!(
         w.creatures
             .iter()
-            .all(|c| w.creature_kinds[c.kind].name != "pilzkind")
+            .all(|c| w.creature_kinds[c.kind].name != "mushroom_child")
     );
     s.save.run(
         &s.content.clone(),
-        &["merker pilzkind.unterwegs = 1".into()],
+        &["flag mushroom_child.on_the_way = 1".into()],
     );
     s.sync_world(&mut w);
     let kid = |w: &World| {
         w.creatures
             .iter()
-            .find(|c| w.creature_kinds[c.kind].name == "pilzkind")
+            .find(|c| w.creature_kinds[c.kind].name == "mushroom_child")
             .map(|c| c.pos)
     };
     assert!(kid(&w).is_some(), "follows");
     // new map with mushroom ring: the child comes along
-    let mut home = load("wiese-1");
+    let mut home = load("meadow-1");
     let spawn = home.adventure.object("west").unwrap().pos;
     home.adventure.objects.push(Object {
-        id: "pilzring".into(),
+        id: "mushroom_ring".into(),
         pos: spawn - Vec2::new(200.0, 200.0),
         kind: ObjectKind::Zone {
             size: Vec2::new(400.0, 400.0),
         },
     });
-    let mut w = s.enter("wald-1", home, "west", &Tuning::default());
+    let mut w = s.enter("forest-1", home, "west", &Tuning::default());
     assert!(kid(&w).is_some(), "across the map change");
     for _ in 0..5 {
         w.step(&[PlayerInput::default()]);
         s.tick(&mut w, false);
     }
-    assert_eq!(s.save.flag("pilzkind.daheim"), 1);
+    assert_eq!(s.save.flag("mushroom_child.home"), 1);
     assert!(kid(&w).is_none(), "stays home");
 }
 
 /// 1.2 s in glow mushrooms: colourful daze (E-311).
 #[test]
 fn standing_in_glowing_mushrooms_dazes() {
-    let mut map = load("wiese-1");
+    let mut map = load("meadow-1");
     let spawn = map.adventure.object("west").unwrap().pos;
     map.decor_front.push(elora_map::Decor::new(
-        elora_map::Art::Builtin("leuchtpilze".into()),
+        elora_map::Art::Builtin("glow_mushrooms".into()),
         spawn + Vec2::new(0.0, 14.0),
     ));
     let mut s = Session::new_game(Content::builtin());
-    let mut w = s.enter("wiese-1", map, "west", &Tuning::default());
+    let mut w = s.enter("meadow-1", map, "west", &Tuning::default());
     for _ in 0..50 {
         step(&mut s, &mut w, PlayerInput::default(), false);
     }
@@ -342,17 +339,17 @@ fn standing_in_glowing_mushrooms_dazes() {
 fn heat_fills_in_the_sun_and_cools_in_shade_and_at_the_oasis() {
     use elora_map::ObjectKind;
     // a meadow map, but as desert
-    let mut map = load("wiese-1");
+    let mut map = load("meadow-1");
     let spawn = map.adventure.object("west").unwrap().pos;
     map.adventure.objects.push(elora_map::Object {
-        id: "oase-1".into(),
+        id: "oasis-1".into(),
         pos: spawn + Vec2::new(-80.0, -2000.0),
         kind: ObjectKind::Zone {
             size: Vec2::new(40.0, 40.0),
         },
     });
     let mut s = Session::new_game(Content::builtin());
-    let mut w = s.enter("wueste-1", map, "west", &Tuning::default());
+    let mut w = s.enter("desert-1", map, "west", &Tuning::default());
     // without a rolled sandstorm (it hides the sun, R2-W1) and without the beetles
     s.map.weather = elora_map::Weather::CLEAR;
     w.creatures.clear();
@@ -408,9 +405,9 @@ fn no_heat_outside_the_desert() {
 /// Cactus fruit (E-320): heals and empties the heat bar, Elora is fast again.
 #[test]
 fn cactus_fruit_cools_elora_down() {
-    let map = load("wiese-1");
+    let map = load("meadow-1");
     let mut s = Session::new_game(Content::builtin());
-    let mut w = s.enter("wueste-1", map, "west", &Tuning::default());
+    let mut w = s.enter("desert-1", map, "west", &Tuning::default());
     // without a rolled sandstorm (it hides the sun, R2-W1) and without the beetles
     s.map.weather = elora_map::Weather::CLEAR;
     w.creatures.clear();
@@ -419,9 +416,9 @@ fn cactus_fruit_cools_elora_down() {
     }
     assert!(s.overheated);
     s.save
-        .add_item(&s.content.clone(), "kaktusfrucht", 1)
+        .add_item(&s.content.clone(), "cactus_fruit", 1)
         .unwrap();
-    s.use_item(&mut w, "kaktusfrucht").unwrap();
+    s.use_item(&mut w, "cactus_fruit").unwrap();
     assert!(s.heat == 0.0 && !s.overheated);
     assert!(!w.character(s.player).unwrap().core.overheated);
 }
@@ -437,47 +434,47 @@ fn weather_follows_the_springs() {
             let mut s = Session::new_game(Content::builtin());
             s.save.play_time_secs = t * 37;
             if freed {
-                s.save.set_flag("befreit.bluetenquelle", 1);
-                s.save.set_flag("quellen_befreit", 1);
+                s.save.set_flag("freed.blossom_spring", 1);
+                s.save.set_flag("springs_freed", 1);
             }
-            let w = s.enter(map, load("wiese-1"), "west", &Tuning::default());
+            let w = s.enter(map, load("meadow-1"), "west", &Tuning::default());
             drop(w);
             seen.insert(s.map.weather.kind.key());
         }
         seen
     };
     // mostly dry and grey, sometimes rain or a thunderstorm (E-353)
-    let gloomy = kinds(false, "wiese-1");
+    let gloomy = kinds(false, "meadow-1");
     assert!(
         gloomy
             .iter()
-            .all(|k| ["schoen", "regen", "gewitter"].contains(k))
-            && gloomy.contains("schoen")
-            && gloomy.contains("regen"),
+            .all(|k| ["clear", "rain", "storm"].contains(k))
+            && gloomy.contains("clear")
+            && gloomy.contains("rain"),
         "{gloomy:?}"
     );
-    let bright = kinds(true, "wiese-1");
+    let bright = kinds(true, "meadow-1");
     assert!(
         bright
             .iter()
-            .all(|k| ["schoen", "blueten", "regen"].contains(k)),
+            .all(|k| ["clear", "blossoms", "rain"].contains(k)),
         "{bright:?}"
     );
-    assert!(bright.contains("schoen"), "mostly fair");
+    assert!(bright.contains("clear"), "mostly fair");
     assert_eq!(
-        kinds(false, "wiese-arena").into_iter().collect::<Vec<_>>(),
-        ["schoen"],
+        kinds(false, "meadow-arena").into_iter().collect::<Vec<_>>(),
+        ["clear"],
         "Arena"
     );
     // the map's own weather (editor) comes first
-    let mut map = load("wiese-1");
+    let mut map = load("meadow-1");
     map.weather = Weather {
         kind: WeatherKind::Fog,
         intensity: 0.5,
         wind: 0.0,
     };
     let mut s = Session::new_game(Content::builtin());
-    s.enter("wiese-1", map, "west", &Tuning::default());
+    s.enter("meadow-1", map, "west", &Tuning::default());
     assert_eq!(s.map.weather.kind, WeatherKind::Fog);
 }
 
@@ -495,7 +492,7 @@ fn tauwinkel_clears_after_the_first_spring() {
             || (w.kind == WeatherKind::Rain && w.intensity < 0.5),
         "{w:?}"
     );
-    s.save.set_flag("quellen_befreit", 1);
+    s.save.set_flag("springs_freed", 1);
     s.refresh_decor();
     assert!(
         matches!(
@@ -515,14 +512,14 @@ fn tauwinkel_clears_after_the_first_spring() {
 /// Sand hides the sun: in a sandstorm the heat bar does not fill (R2-W1, E-320).
 #[test]
 fn sandstorm_hides_the_sun() {
-    let mut map = load("wiese-1");
+    let mut map = load("meadow-1");
     map.weather = elora_map::Weather {
         kind: elora_map::WeatherKind::Sandstorm,
         intensity: 0.8,
         wind: 0.6,
     };
     let mut s = Session::new_game(Content::builtin());
-    let mut w = s.enter("wueste-1", map, "west", &Tuning::default());
+    let mut w = s.enter("desert-1", map, "west", &Tuning::default());
     for _ in 0..300 {
         step(&mut s, &mut w, PlayerInput::default(), false);
     }
@@ -532,7 +529,7 @@ fn sandstorm_hides_the_sun() {
 #[test]
 fn avalanche_rolls_rocks_then_rests() {
     use elora_map::ObjectKind;
-    let mut map = load("wiese-1");
+    let mut map = load("meadow-1");
     let spawn = map.adventure.object("west").unwrap().pos;
     let zone = |id: &str, pos: Vec2, size: Vec2| elora_map::Object {
         id: id.into(),
@@ -541,18 +538,18 @@ fn avalanche_rolls_rocks_then_rests() {
     };
     // slope far away, the trigger spot right at the entrance
     map.adventure.objects.push(zone(
-        "lawine-test",
+        "avalanche-test",
         spawn + Vec2::new(900.0, -600.0),
         Vec2::new(500.0, 500.0),
     ));
     map.adventure.objects.push(zone(
-        "lawine-test-tritt",
+        "avalanche-test-step",
         spawn - Vec2::new(100.0, 100.0),
         Vec2::new(200.0, 200.0),
     ));
     let mut s = Session::new_game(Content::builtin());
-    let mut w = s.enter("wiese-1", map, "west", &Tuning::default());
-    let rock = w.creature_kind("schneebrocken").expect("in creatures.toml");
+    let mut w = s.enter("meadow-1", map, "west", &Tuning::default());
+    let rock = w.creature_kind("snow_chunk").expect("in creatures.toml");
     let mut seen = std::collections::BTreeSet::new();
     let mut count_after = |s: &mut Session, w: &mut World, ticks: u32| {
         for _ in 0..ticks {
@@ -578,10 +575,10 @@ fn avalanche_rolls_rocks_then_rests() {
 fn cold_fills_outside_faster_in_blizzards_and_warms_at_fire_and_roofs() {
     use elora_map::{ObjectKind, Weather, WeatherKind};
     // a meadow map, but in the Frostspitzen
-    let mut map = load("wiese-1");
+    let mut map = load("meadow-1");
     let spawn = map.adventure.object("west").unwrap().pos;
     map.adventure.objects.push(elora_map::Object {
-        id: "feuer-1".into(),
+        id: "fire-1".into(),
         pos: spawn + Vec2::new(-80.0, -2000.0),
         kind: ObjectKind::Zone {
             size: Vec2::new(40.0, 40.0),
@@ -642,7 +639,7 @@ fn no_cold_outside_the_mountains() {
 #[test]
 fn kristellas_storm_fills_the_hall_until_she_is_calmed() {
     use elora_map::WeatherKind;
-    let map = load("wiese-1");
+    let map = load("meadow-1");
     let mut s = Session::new_game(Content::builtin());
     let mut w = s.enter("frost-arena", map, "west", &Tuning::default());
     assert!(s.map.weather.is_clear(), "arenas stay fair");

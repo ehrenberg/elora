@@ -1,0 +1,9 @@
+# Signpost (E-273, R2-M2.4)
+speaker = "signpost"
+
+[[start]]
+node = "text"
+
+[[node]]
+id = "text"
+text = { de = "Lawinengefahr! Lärm und Stampfen vermeiden.", en = "Avalanche danger! Avoid noise and stomping." }

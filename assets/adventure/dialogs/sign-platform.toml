@@ -1,0 +1,9 @@
+# Signpost (E-273, A1.9)
+speaker = "signpost"
+
+[[start]]
+node = "text"
+
+[[node]]
+id = "text"
+text = { de = "Holzstege tragen dich. Mit {taste:down} fällst du hindurch.", en = "Wooden walkways carry you. Press {taste:down} to drop through." }

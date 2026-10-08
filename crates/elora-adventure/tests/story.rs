@@ -13,7 +13,7 @@ fn game() -> (Content, SaveGame) {
         &c,
         Location {
             map: "tauwinkel".into(),
-            spawn: "brunnen".into(),
+            spawn: "well".into(),
         },
     );
     (c, g)
@@ -33,13 +33,13 @@ fn oma_starts_the_well_quest_with_a_choice() {
     let turn = conv.choose(&c, &mut g, 0);
     assert!(
         turn.outcomes
-            .contains(&Outcome::Notice(Notice::QuestStarted("brunnen".into())))
+            .contains(&Outcome::Notice(Notice::QuestStarted("well".into())))
     );
     assert_eq!(g.affection("oma"), 1);
     assert!(!conv.advance(&c, &mut g).open, "ends after the promise");
     // next dialog: reminder instead of greeting
     let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
-    assert_eq!(conv.node, "erinnerung");
+    assert_eq!(conv.node, "memory");
     assert_eq!(bark(&c, &g, "oma").unwrap().de, "Pass auf dich auf!");
 }
 
@@ -47,16 +47,16 @@ fn oma_starts_the_well_quest_with_a_choice() {
 fn lotte_gives_a_potion_once() {
     let (c, mut g) = game();
     let (conv, turn) = Conversation::start(&c, &mut g, "lotte").unwrap();
-    assert_eq!(conv.node, "erster");
+    assert_eq!(conv.node, "first");
     assert!(text(&c, &conv).contains("{taste:quick_heal}"));
     assert!(turn.outcomes.contains(&Outcome::Notice(Notice::Item {
-        id: "heiltrank".into(),
+        id: "healing_potion".into(),
         count: 1
     })));
-    assert_eq!(g.count("heiltrank"), 1);
+    assert_eq!(g.count("healing_potion"), 1);
     let (conv, _) = Conversation::start(&c, &mut g, "lotte").unwrap();
-    assert_eq!(conv.node, "laden");
-    assert_eq!(g.count("heiltrank"), 1, "only once");
+    assert_eq!(conv.node, "shop");
+    assert_eq!(g.count("healing_potion"), 1, "only once");
 }
 
 #[test]
@@ -64,10 +64,10 @@ fn cheeky_answer_is_remembered() {
     let (c, mut g) = game();
     let (mut conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
     conv.choose(&c, &mut g, 2);
-    assert_eq!(g.flag("oma.frech"), 1);
-    assert_eq!(conv.node, "frech");
+    assert_eq!(g.flag("oma.cheeky"), 1);
+    assert_eq!(conv.node, "cheeky");
     conv.advance(&c, &mut g);
-    assert_eq!(conv.node, "bitte");
+    assert_eq!(conv.node, "please");
     assert_eq!(g.affection("oma"), 0, "cheeky gives no affection");
 }
 
@@ -79,25 +79,25 @@ fn well_quest_runs_through_all_goal_types() {
     // talk: Tüftel
     let (conv, turn) = Conversation::start(&c, &mut g, "tueftel").unwrap();
     // the entry is chosen before the talk goal: Tüftel gives his advice, the step is done
-    assert_eq!(conv.node, "rat");
+    assert_eq!(conv.node, "advice");
     assert!(
         turn.outcomes
-            .contains(&Outcome::Notice(Notice::QuestStep("brunnen".into())))
+            .contains(&Outcome::Notice(Notice::QuestStep("well".into())))
     );
     // talk: Klonk with the hammer practice
     let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
-    assert_eq!(conv.node, "uebung");
-    assert!(g.holds(&c, "quest brunnen schritt wiese"));
+    assert_eq!(conv.node, "practice");
+    assert!(g.holds(&c, "quest well step meadow"));
     // reach a map
     assert!(g.on_reach(&c, "tauwinkel", None).is_empty());
-    g.on_reach(&c, "wiese-1", None);
-    assert!(g.holds(&c, "quest brunnen schritt kaefer"));
+    g.on_reach(&c, "meadow-1", None);
+    assert!(g.holds(&c, "quest well step beetle"));
     // defeat enemies (via world events)
-    g.location.map = "wiese-1".into();
+    g.location.map = "meadow-1".into();
     let kind = c
         .creatures
         .iter()
-        .position(|k| k.name == "stachelkaefer")
+        .position(|k| k.name == "spike_beetle")
         .unwrap();
     for _ in 0..3 {
         let e = Event::CreatureDeath {
@@ -108,36 +108,39 @@ fn well_quest_runs_through_all_goal_types() {
         };
         g.on_event(&c, &c.creatures, 0, &e);
     }
-    assert!(g.holds(&c, "quest brunnen schritt wiesenrand"));
-    assert!(g.on_reach(&c, "wiese-1", Some("falsch")).is_empty());
-    let out = g.on_reach(&c, "wiese-1", Some("wiesenrand"));
-    assert!(out.contains(&Outcome::Notice(Notice::QuestDone("brunnen".into()))));
-    assert_eq!(g.quest("brunnen").unwrap().status, QuestStatus::Done);
+    assert!(g.holds(&c, "quest well step meadow_edge"));
+    assert!(g.on_reach(&c, "meadow-1", Some("wrong")).is_empty());
+    let out = g.on_reach(&c, "meadow-1", Some("meadow_edge"));
+    assert!(out.contains(&Outcome::Notice(Notice::QuestDone("well".into()))));
+    assert_eq!(g.quest("well").unwrap().status, QuestStatus::Done);
     assert!(g.gleam_drops >= 30, "Belohnung");
-    assert!(g.holds(&c, "quest bluetenquelle aktiv"), "chapter 1 begins");
+    assert!(
+        g.holds(&c, "quest blossom_spring active"),
+        "chapter 1 begins"
+    );
     let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
-    assert_eq!(conv.node, "danach");
+    assert_eq!(conv.node, "after");
 }
 
 #[test]
 fn side_quest_bring_and_fail() {
     let (c, mut g) = game();
-    g.run(&c, &["quest pips_stein start".into()]);
+    g.run(&c, &["quest pips_stone start".into()]);
     g.on_talk(&c, "pip");
-    assert!(g.holds(&c, "quest pips_stein schritt finden"));
-    g.add_item(&c, "glitzerstein", 1).unwrap();
+    assert!(g.holds(&c, "quest pips_stone step find"));
+    g.add_item(&c, "glitter_stone", 1).unwrap();
     g.update_quests(&c);
-    assert!(g.holds(&c, "quest pips_stein schritt bringen"));
+    assert!(g.holds(&c, "quest pips_stone step bring"));
     let (conv, _) = Conversation::start(&c, &mut g, "pip").unwrap();
-    assert_eq!(conv.node, "stein_da");
-    assert!(g.holds(&c, "quest pips_stein erledigt"));
-    assert_eq!(g.count("glitzerstein"), 0, "abgegeben");
+    assert_eq!(conv.node, "stone_here");
+    assert!(g.holds(&c, "quest pips_stone done"));
+    assert_eq!(g.count("glitter_stone"), 0, "handed_in");
 
     let (c, mut g) = game();
-    g.run(&c, &["quest pips_stein start".into()]);
-    let out = g.run(&c, &["merker pip.verpetzt = 1".into()]);
-    assert!(out.contains(&Outcome::Notice(Notice::QuestFailed("pips_stein".into()))));
-    assert!(g.holds(&c, "quest pips_stein gescheitert"));
+    g.run(&c, &["quest pips_stone start".into()]);
+    let out = g.run(&c, &["flag pip.told_on = 1".into()]);
+    assert!(out.contains(&Outcome::Notice(Notice::QuestFailed("pips_stone".into()))));
+    assert!(g.holds(&c, "quest pips_stone failed"));
 }
 
 #[test]
@@ -162,12 +165,12 @@ fn hidden_choice_until_condition_holds() {
 #[test]
 fn affection_gives_discount() {
     let (c, mut g) = game();
-    assert_eq!(g.price(&c, "lotte", "strohhut"), Some(200));
-    g.run(&c, &["zuneigung lotte +5".into()]);
-    assert_eq!(g.price(&c, "lotte", "strohhut"), Some(180));
-    g.run(&c, &["zuneigung lotte +20".into()]);
-    assert_eq!(g.affection("lotte"), 10, "begrenzt");
-    assert_eq!(g.price(&c, "lotte", "strohhut"), Some(160));
+    assert_eq!(g.price(&c, "lotte", "straw_hat"), Some(200));
+    g.run(&c, &["affection lotte +5".into()]);
+    assert_eq!(g.price(&c, "lotte", "straw_hat"), Some(180));
+    g.run(&c, &["affection lotte +20".into()]);
+    assert_eq!(g.affection("lotte"), 10, "limited");
+    assert_eq!(g.price(&c, "lotte", "straw_hat"), Some(160));
 }
 
 /// Load the bundled content with one dialog replaced.
@@ -246,12 +249,12 @@ fn small(name: &str, objects: Vec<Object>) -> Map {
 fn map_objects_are_checked_against_content() {
     let c = Content::builtin();
     let good = small(
-        "wiese-1",
+        "meadow-1",
         vec![
             obj(
-                "kaefer",
+                "beetle",
                 ObjectKind::Creature {
-                    kind: "stachelkaefer".into(),
+                    kind: "spike_beetle".into(),
                     persistent: false,
                 },
             ),
@@ -265,23 +268,23 @@ fn map_objects_are_checked_against_content() {
                 },
             ),
             obj(
-                "truhe",
+                "chest",
                 ObjectKind::Chest {
-                    contents: vec![("glanztropfen".into(), 20)],
+                    contents: vec![("gleam_drops".into(), 20)],
                     lock: String::new(),
                 },
             ),
             obj(
-                "stein",
+                "stone",
                 ObjectKind::Collectible {
-                    item: "glitzerstein".into(),
+                    item: "glitter_stone".into(),
                 },
             ),
             obj(
-                "tor",
+                "gate",
                 ObjectKind::Door {
                     size: (1, 1),
-                    open_if: "merker tor.wiese".into(),
+                    open_if: "flag gate.meadow".into(),
                 },
             ),
         ],
@@ -292,12 +295,12 @@ fn map_objects_are_checked_against_content() {
         map_objects(&c, &good)
     );
     let bad = small(
-        "wiese-1",
+        "meadow-1",
         vec![
             obj(
                 "a",
                 ObjectKind::Creature {
-                    kind: "drache".into(),
+                    kind: "dragon".into(),
                     persistent: false,
                 },
             ),
@@ -305,7 +308,7 @@ fn map_objects_are_checked_against_content() {
                 "b",
                 ObjectKind::Npc {
                     character: "oma".into(),
-                    dialog: "fehlt".into(),
+                    dialog: "missing".into(),
                     facing: 1,
                     walk: 0.0,
                 },
@@ -329,7 +332,7 @@ fn map_objects_are_checked_against_content() {
     let errors = map_objects(&c, &bad);
     assert_eq!(errors.len(), 5, "{errors:?}");
     assert!(
-        errors[0].contains("drache") && errors[1].contains("fehlt") && errors[2].contains("gold")
+        errors[0].contains("dragon") && errors[1].contains("missing") && errors[2].contains("gold")
     );
 }
 
@@ -337,7 +340,7 @@ fn map_objects_are_checked_against_content() {
 fn exits_must_lead_to_existing_entrances() {
     let exit = |map: &str, spawn: &str| {
         obj(
-            "weg",
+            "path",
             ObjectKind::Exit {
                 size: Vec2::new(32.0, 32.0),
                 map: map.into(),
@@ -346,16 +349,19 @@ fn exits_must_lead_to_existing_entrances() {
             },
         )
     };
-    let a = small("dorf", vec![exit("wiese-1", "west")]);
+    let a = small("village", vec![exit("meadow-1", "west")]);
     let b = small(
-        "wiese-1",
-        vec![obj("west", ObjectKind::Spawn), exit("dorf", "ost")],
+        "meadow-1",
+        vec![obj("west", ObjectKind::Spawn), exit("village", "east")],
     );
-    let errors = map_links(&[("dorf", &a), ("wiese-1", &b)]);
+    let errors = map_links(&[("village", &a), ("meadow-1", &b)]);
     assert_eq!(errors.len(), 1, "{errors:?}");
-    assert!(errors[0].contains("entrance `ost` missing"));
-    let errors = map_links(&[("dorf", &a)]);
-    assert!(errors[0].contains("target map `wiese-1` missing"));
+    assert!(errors[0].contains("entrance `east` missing"), "{errors:?}");
+    let errors = map_links(&[("village", &a)]);
+    assert!(
+        errors[0].contains("target map `meadow-1` missing"),
+        "{errors:?}"
+    );
 }
 
 /// Chapter 1 (R2-M2.1): honeycomb, bumblebee, spring spark at Tüftel, festival at Oma,
@@ -363,25 +369,25 @@ fn exits_must_lead_to_existing_entrances() {
 #[test]
 fn chapter_one_runs_from_wabe_to_the_party() {
     let (c, mut g) = game();
-    g.run(&c, &["quest bluetenquelle start".into()]);
-    g.on_reach(&c, "wiese-2", None);
-    assert!(g.holds(&c, "quest bluetenquelle schritt wabe"));
+    g.run(&c, &["quest blossom_spring start".into()]);
+    g.on_reach(&c, "meadow-2", None);
+    assert!(g.holds(&c, "quest blossom_spring step wabe"));
     // honeycomb: main quest continues, side quest starts
     let (mut conv, _) = Conversation::start(&c, &mut g, "wabe").unwrap();
-    assert_eq!(conv.node, "begruessung");
+    assert_eq!(conv.node, "greeting");
     conv.choose(&c, &mut g, 0);
-    assert!(g.holds(&c, "quest wabes_bienen aktiv"));
-    assert!(g.holds(&c, "quest bluetenquelle schritt wurzeln"));
-    g.on_reach(&c, "wiese-3", None);
-    g.on_reach(&c, "wiese-arena", None);
-    assert!(g.holds(&c, "quest bluetenquelle schritt hueter"));
+    assert!(g.holds(&c, "quest wabes_bees active"));
+    assert!(g.holds(&c, "quest blossom_spring step roots"));
+    g.on_reach(&c, "meadow-3", None);
+    g.on_reach(&c, "meadow-arena", None);
+    assert!(g.holds(&c, "quest blossom_spring step guardian"));
     // guardian defeated (the session sets the flag), spring spark as loot
-    g.location.map = "wiese-arena".into();
-    g.set_flag("besiegt.brummbaer", 1);
+    g.location.map = "meadow-arena".into();
+    g.set_flag("defeated.bumblebear", 1);
     let kind = c
         .creatures
         .iter()
-        .position(|k| k.name == "brummbaer")
+        .position(|k| k.name == "bumblebear")
         .unwrap();
     g.on_event(
         &c,
@@ -394,47 +400,47 @@ fn chapter_one_runs_from_wabe_to_the_party() {
             killer: Some(0),
         },
     );
-    g.add_item(&c, "quellfunke", 1).unwrap();
-    assert!(g.holds(&c, "quest bluetenquelle schritt funke"));
+    g.add_item(&c, "spring_spark", 1).unwrap();
+    assert!(g.holds(&c, "quest blossom_spring step spark"));
     // the bumblebee speaks and points to the Dürrer
-    let (mut conv, _) = Conversation::start(&c, &mut g, "hummel").unwrap();
+    let (mut conv, _) = Conversation::start(&c, &mut g, "bumblebee").unwrap();
     conv.choose(&c, &mut g, 1);
-    assert_eq!(g.flag("duerrer.gesehen"), 1);
+    assert_eq!(g.flag("withered_one.seen"), 1);
     // Tüftel builds the hook jerk
     let (conv, _) = Conversation::start(&c, &mut g, "tueftel").unwrap();
-    assert_eq!(conv.node, "funke");
+    assert_eq!(conv.node, "spark");
     assert!(g.abilities().has(elora_sim::Ability::HookJerk));
-    assert_eq!(g.count("quellfunke"), 0, "abgegeben");
-    assert_eq!(g.flag("quellen_befreit"), 1);
-    assert_eq!(g.flag("fest"), 1);
-    assert!(g.holds(&c, "quest bluetenquelle schritt fest"));
+    assert_eq!(g.count("spring_spark"), 0, "handed_in");
+    assert_eq!(g.flag("springs_freed"), 1);
+    assert_eq!(g.flag("party"), 1);
+    assert!(g.holds(&c, "quest blossom_spring step party"));
     // festival at Oma: chapter done, chapter 2 announced
     let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
-    assert_eq!(conv.node, "fest");
-    assert!(g.holds(&c, "quest bluetenquelle erledigt"));
-    assert!(g.holds(&c, "quest murmelwald aktiv"));
+    assert_eq!(conv.node, "party");
+    assert!(g.holds(&c, "quest blossom_spring done"));
+    assert!(g.holds(&c, "quest murmelwald active"));
     // Klonk gives the grenade launcher (E-243), only once
     let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
-    assert_eq!(conv.node, "granate");
+    assert_eq!(conv.node, "grenade");
     assert!(g.weapons.contains_key(&elora_sim::Weapon::Grenade));
     let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
-    assert_ne!(conv.node, "granate");
+    assert_ne!(conv.node, "grenade");
 }
 
 #[test]
 fn wabes_bees_give_the_honeycomb_hat() {
     let (c, mut g) = game();
-    g.run(&c, &["quest wabes_bienen start".into()]);
-    g.add_item(&c, "biene", 4).unwrap();
+    g.run(&c, &["quest wabes_bees start".into()]);
+    g.add_item(&c, "bee", 4).unwrap();
     g.update_quests(&c);
-    assert!(g.holds(&c, "quest wabes_bienen schritt sammeln"));
-    g.add_item(&c, "biene", 1).unwrap();
+    assert!(g.holds(&c, "quest wabes_bees step collect"));
+    g.add_item(&c, "bee", 1).unwrap();
     g.update_quests(&c);
     let (conv, _) = Conversation::start(&c, &mut g, "wabe").unwrap();
-    assert_eq!(conv.node, "bienen_da");
-    assert!(g.holds(&c, "quest wabes_bienen erledigt"));
-    assert_eq!(g.count("wabenhut"), 1);
-    assert_eq!(g.count("biene"), 0);
+    assert_eq!(conv.node, "bees_here");
+    assert!(g.holds(&c, "quest wabes_bees done"));
+    assert_eq!(g.count("honeycomb_hat"), 1);
+    assert_eq!(g.count("bee"), 0);
 }
 
 /// Chapter 2 (R2-M2.2): west slope, Plumm, warden, pull hook at Tüftel, festival, runes.
@@ -443,22 +449,22 @@ fn chapter_two_runs_from_the_slope_to_the_party() {
     let (c, mut g) = game();
     g.run(&c, &["quest murmelwald start".into()]);
     let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
-    assert_eq!(conv.node, "westhang");
-    g.on_reach(&c, "wald-1", None);
+    assert_eq!(conv.node, "west_slope");
+    g.on_reach(&c, "forest-1", None);
     let (mut conv, _) = Conversation::start(&c, &mut g, "plumm").unwrap();
-    assert_eq!(conv.node, "begruessung");
-    assert!(g.holds(&c, "quest murmelwald schritt wurzeln"));
+    assert_eq!(conv.node, "greeting");
+    assert!(g.holds(&c, "quest murmelwald step roots"));
     conv.choose(&c, &mut g, 0);
     conv.choose(&c, &mut g, 0);
-    assert!(g.holds(&c, "quest runen aktiv"));
-    g.on_reach(&c, "wald-3", None);
-    g.on_reach(&c, "wald-arena", None);
-    g.location.map = "wald-arena".into();
-    g.set_flag("besiegt.wurzelwaechter", 1);
+    assert!(g.holds(&c, "quest runes active"));
+    g.on_reach(&c, "forest-3", None);
+    g.on_reach(&c, "forest-arena", None);
+    g.location.map = "forest-arena".into();
+    g.set_flag("defeated.root_warden", 1);
     let kind = c
         .creatures
         .iter()
-        .position(|k| k.name == "wurzelwaechter")
+        .position(|k| k.name == "root_warden")
         .unwrap();
     g.on_event(
         &c,
@@ -471,53 +477,53 @@ fn chapter_two_runs_from_the_slope_to_the_party() {
             killer: Some(0),
         },
     );
-    g.add_item(&c, "quellfunke", 1).unwrap();
-    assert!(g.holds(&c, "quest murmelwald schritt funke"));
-    let (mut conv, _) = Conversation::start(&c, &mut g, "waechter").unwrap();
+    g.add_item(&c, "spring_spark", 1).unwrap();
+    assert!(g.holds(&c, "quest murmelwald step spark"));
+    let (mut conv, _) = Conversation::start(&c, &mut g, "warden").unwrap();
     conv.choose(&c, &mut g, 0);
     conv.advance(&c, &mut g);
-    assert_eq!(g.flag("befreit.waldquelle"), 1);
+    assert_eq!(g.flag("freed.moss_spring"), 1);
     let (conv, _) = Conversation::start(&c, &mut g, "tueftel").unwrap();
-    assert_eq!(conv.node, "funke2");
+    assert_eq!(conv.node, "spark2");
     assert!(g.abilities().has(elora_sim::Ability::Pull));
-    assert_eq!(g.flag("quellen_befreit"), 2);
+    assert_eq!(g.flag("springs_freed"), 2);
     let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
-    assert_eq!(conv.node, "fest2");
-    assert!(g.holds(&c, "quest murmelwald erledigt"));
-    assert!(g.holds(&c, "quest glutsand aktiv"));
-    assert_eq!(g.flag("befreit.waldquelle"), 1, "world map: spring freed");
+    assert_eq!(conv.node, "party2");
+    assert!(g.holds(&c, "quest murmelwald done"));
+    assert!(g.holds(&c, "quest glutsand active"));
+    assert_eq!(g.flag("freed.moss_spring"), 1, "world map: spring freed");
     // village after chapter 2: Lotte gives mushroom soup, Klonk talks about the resin
     let (conv, _) = Conversation::start(&c, &mut g, "lotte").unwrap();
-    assert_eq!(conv.node, "wald");
-    assert_eq!(g.count("pilzsuppe"), 1);
+    assert_eq!(conv.node, "forest");
+    assert_eq!(g.count("mushroom_soup"), 1);
     let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
-    assert_eq!(conv.node, "harz");
+    assert_eq!(conv.node, "resin");
     // runes: Plumm reads aloud, feather and dewdrop point (E-309)
     let points = g.bonus_points;
     g.add_item(&c, "rune", 5).unwrap();
     g.update_quests(&c);
     let (conv, _) = Conversation::start(&c, &mut g, "plumm").unwrap();
-    assert_eq!(conv.node, "runen_da");
-    assert!(g.holds(&c, "quest runen erledigt"));
-    assert_eq!(g.count("eulenfeder"), 1);
+    assert_eq!(conv.node, "runes_here");
+    assert!(g.holds(&c, "quest runes done"));
+    assert_eq!(g.count("owl_feather"), 1);
     assert_eq!(g.bonus_points, points + 1);
-    assert_eq!(g.flag("sechste_quelle"), 1);
+    assert_eq!(g.flag("sixth_spring"), 1);
 }
 
 #[test]
 fn mushroom_child_quest_ends_with_mama() {
     let (c, mut g) = game();
-    let (mut conv, _) = Conversation::start(&c, &mut g, "pilzkind").unwrap();
+    let (mut conv, _) = Conversation::start(&c, &mut g, "mushroom_child").unwrap();
     conv.choose(&c, &mut g, 0);
-    assert!(g.holds(&c, "quest pilzkind aktiv"));
-    assert_eq!(g.flag("pilzkind.unterwegs"), 1);
+    assert!(g.holds(&c, "quest mushroom_child active"));
+    assert_eq!(g.flag("mushroom_child.on_the_way"), 1);
     // the session sets the flag as soon as the companion is home
-    g.set_flag("pilzkind.daheim", 1);
+    g.set_flag("mushroom_child.home", 1);
     g.update_quests(&c);
-    assert!(g.holds(&c, "quest pilzkind schritt danke"));
-    let (conv, _) = Conversation::start(&c, &mut g, "pilzmama").unwrap();
-    assert_eq!(conv.node, "danke");
-    assert!(g.holds(&c, "quest pilzkind erledigt"));
+    assert!(g.holds(&c, "quest mushroom_child step thanks"));
+    let (conv, _) = Conversation::start(&c, &mut g, "mushroom_mama").unwrap();
+    assert_eq!(conv.node, "thanks");
+    assert!(g.holds(&c, "quest mushroom_child done"));
 }
 
 #[test]
@@ -526,32 +532,32 @@ fn chapter_three_runs_from_the_desert_to_the_party() {
     g.run(&c, &["quest glutsand start".into()]);
     let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
     assert_eq!(conv.node, "glutsand");
-    g.on_reach(&c, "wueste-1", None);
-    assert!(g.holds(&c, "quest glutsand schritt sirup"));
+    g.on_reach(&c, "desert-1", None);
+    assert!(g.holds(&c, "quest glutsand step sirup"));
     let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
-    assert_eq!(conv.node, "unterwegs");
+    assert_eq!(conv.node, "on_the_way");
     // Sirup tells about the grey wanderer and knows the chamber
     let (mut conv, _) = Conversation::start(&c, &mut g, "sirup").unwrap();
-    assert_eq!(conv.node, "begruessung");
-    assert!(g.holds(&c, "quest glutsand schritt ruinen"));
+    assert_eq!(conv.node, "greeting");
+    assert!(g.holds(&c, "quest glutsand step ruins"));
     conv.choose(&c, &mut g, 0);
     assert_eq!(conv.node, "wanderer");
     conv.advance(&c, &mut g);
-    assert_eq!(conv.node, "spuren");
+    assert_eq!(conv.node, "tracks");
     conv.choose(&c, &mut g, 1);
-    assert_eq!(conv.node, "ruine");
+    assert_eq!(conv.node, "ruin");
     conv.choose(&c, &mut g, 0);
-    assert!(g.holds(&c, "quest ruine aktiv"));
+    assert!(g.holds(&c, "quest ruin active"));
     let (conv, _) = Conversation::start(&c, &mut g, "sirup").unwrap();
-    assert_eq!(conv.node, "danach", "already knows Elora");
-    g.on_reach(&c, "wueste-3", None);
-    g.on_reach(&c, "wueste-arena", None);
-    g.location.map = "wueste-arena".into();
-    g.set_flag("besiegt.sandschlange", 1);
+    assert_eq!(conv.node, "after", "already knows Elora");
+    g.on_reach(&c, "desert-3", None);
+    g.on_reach(&c, "desert-arena", None);
+    g.location.map = "desert-arena".into();
+    g.set_flag("defeated.sand_serpent", 1);
     let kind = c
         .creatures
         .iter()
-        .position(|k| k.name == "sandschlange")
+        .position(|k| k.name == "sand_serpent")
         .unwrap();
     g.on_event(
         &c,
@@ -564,24 +570,24 @@ fn chapter_three_runs_from_the_desert_to_the_party() {
             killer: Some(0),
         },
     );
-    g.add_item(&c, "quellfunke", 1).unwrap();
-    assert!(g.holds(&c, "quest glutsand schritt funke"));
-    let (mut conv, _) = Conversation::start(&c, &mut g, "schlange").unwrap();
+    g.add_item(&c, "spring_spark", 1).unwrap();
+    assert!(g.holds(&c, "quest glutsand step spark"));
+    let (mut conv, _) = Conversation::start(&c, &mut g, "serpent").unwrap();
     conv.advance(&c, &mut g);
-    assert_eq!(g.flag("befreit.glutquelle"), 1);
+    assert_eq!(g.flag("freed.ember_spring"), 1);
     let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
-    assert_eq!(conv.node, "funke");
+    assert_eq!(conv.node, "spark");
     let (conv, _) = Conversation::start(&c, &mut g, "tueftel").unwrap();
-    assert_eq!(conv.node, "funke3");
+    assert_eq!(conv.node, "spark3");
     assert!(g.abilities().has(elora_sim::Ability::Stomp));
-    assert_eq!(g.flag("quellen_befreit"), 3);
-    assert_eq!(g.count("quellfunke"), 0, "abgegeben");
+    assert_eq!(g.flag("springs_freed"), 3);
+    assert_eq!(g.count("spring_spark"), 0, "handed_in");
     let (mut conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
-    assert_eq!(conv.node, "fest3");
+    assert_eq!(conv.node, "party3");
     conv.advance(&c, &mut g);
-    assert_eq!(conv.node, "fest3_lied");
-    assert!(g.holds(&c, "quest glutsand erledigt"));
-    assert!(g.holds(&c, "quest frostspitzen aktiv"));
+    assert_eq!(conv.node, "party3_song");
+    assert!(g.holds(&c, "quest glutsand done"));
+    assert!(g.holds(&c, "quest frostspitzen active"));
     // Klonk gives the laser (E-243)
     let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
     assert_eq!(conv.node, "laser");
@@ -589,20 +595,20 @@ fn chapter_three_runs_from_the_desert_to_the_party() {
     let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
     assert_ne!(conv.node, "laser", "only once");
     // village after chapter 3: Lotte gives cactus fruits from Sirup, Pip is amazed
-    let fruit = g.count("kaktusfrucht");
+    let fruit = g.count("cactus_fruit");
     let (conv, _) = Conversation::start(&c, &mut g, "lotte").unwrap();
-    assert_eq!(conv.node, "wueste");
-    assert_eq!(g.count("kaktusfrucht"), fruit + 2);
+    assert_eq!(conv.node, "desert");
+    assert_eq!(g.count("cactus_fruit"), fruit + 2);
     assert!(bark(&c, &g, "pip").unwrap().de.contains("Schlange"));
     // chamber of the ruin: read the tablet, report to Sirup
-    g.on_reach(&c, "wueste-3", Some("ruinenkammer"));
-    assert!(g.holds(&c, "quest ruine schritt tafel"));
-    Conversation::start(&c, &mut g, "tafel-kammer").unwrap();
-    assert!(g.holds(&c, "quest ruine schritt bericht"));
+    g.on_reach(&c, "desert-3", Some("ruin_chamber"));
+    assert!(g.holds(&c, "quest ruin step tablet"));
+    Conversation::start(&c, &mut g, "tablet-chamber").unwrap();
+    assert!(g.holds(&c, "quest ruin step report"));
     let gleam = g.gleam_drops;
     let (conv, _) = Conversation::start(&c, &mut g, "sirup").unwrap();
-    assert_eq!(conv.node, "bericht");
-    assert!(g.holds(&c, "quest ruine erledigt"));
+    assert_eq!(conv.node, "report");
+    assert!(g.holds(&c, "quest ruin done"));
     assert_eq!(g.gleam_drops, gleam + 60);
 }
 
@@ -610,51 +616,51 @@ fn chapter_three_runs_from_the_desert_to_the_party() {
 fn oasis_quest_fills_the_skin_once_and_waters_three_patches() {
     let (c, mut g) = game();
     let (mut conv, _) = Conversation::start(&c, &mut g, "palma").unwrap();
-    assert_eq!(conv.node, "begruessung");
+    assert_eq!(conv.node, "greeting");
     conv.choose(&c, &mut g, 0);
-    assert_eq!(conv.node, "auftrag");
+    assert_eq!(conv.node, "task");
     conv.choose(&c, &mut g, 0);
-    assert!(g.holds(&c, "quest oase aktiv"));
-    assert_eq!(g.count("wasserschlauch"), 1);
+    assert!(g.holds(&c, "quest oasis active"));
+    assert_eq!(g.count("waterskin"), 1);
     // without water the spot stays dry
-    let (conv, _) = Conversation::start(&c, &mut g, "giessstelle-1").unwrap();
-    assert_eq!(conv.node, "trocken");
-    let (conv, _) = Conversation::start(&c, &mut g, "ruinenquelle").unwrap();
-    assert_eq!(conv.node, "fuellen");
-    assert_eq!(g.count("wasser"), 3, "three fillings (E-322)");
-    assert!(g.holds(&c, "quest oase schritt giessen"));
-    let (conv, _) = Conversation::start(&c, &mut g, "ruinenquelle").unwrap();
-    assert_eq!(conv.node, "voll");
+    let (conv, _) = Conversation::start(&c, &mut g, "watering-spot-1").unwrap();
+    assert_eq!(conv.node, "dry");
+    let (conv, _) = Conversation::start(&c, &mut g, "ruin_spring").unwrap();
+    assert_eq!(conv.node, "fill");
+    assert_eq!(g.count("water"), 3, "three fillings (E-322)");
+    assert!(g.holds(&c, "quest oasis step water"));
+    let (conv, _) = Conversation::start(&c, &mut g, "ruin_spring").unwrap();
+    assert_eq!(conv.node, "full");
     for n in 1..=3 {
-        let (conv, _) = Conversation::start(&c, &mut g, &format!("giessstelle-{n}")).unwrap();
-        assert_eq!(conv.node, "giessen");
-        assert_eq!(g.flag(&format!("befreit.giessstelle-{n}")), 1);
+        let (conv, _) = Conversation::start(&c, &mut g, &format!("watering-spot-{n}")).unwrap();
+        assert_eq!(conv.node, "water");
+        assert_eq!(g.flag(&format!("freed.watering-spot-{n}")), 1);
     }
-    assert_eq!(g.count("wasser"), 0);
-    assert_eq!(g.flag("oase.gegossen"), 3);
-    assert!(g.holds(&c, "quest oase schritt danke"));
+    assert_eq!(g.count("water"), 0);
+    assert_eq!(g.flag("oasis.watered"), 3);
+    assert!(g.holds(&c, "quest oasis step thanks"));
     let points = g.bonus_points;
     let (conv, _) = Conversation::start(&c, &mut g, "palma").unwrap();
-    assert_eq!(conv.node, "danke");
-    assert!(g.holds(&c, "quest oase erledigt"));
-    assert_eq!(g.count("kaktusfrucht"), 3);
+    assert_eq!(conv.node, "thanks");
+    assert!(g.holds(&c, "quest oasis done"));
+    assert_eq!(g.count("cactus_fruit"), 3);
     assert_eq!(g.bonus_points, points + 1);
 }
 
 #[test]
 fn cactus_fruit_heals_and_sun_veil_slows_the_heat() {
     let (c, mut g) = game();
-    g.add_item(&c, "kaktusfrucht", 1).unwrap();
+    g.add_item(&c, "cactus_fruit", 1).unwrap();
     g.health = 2;
     assert_eq!(
-        g.use_item(&c, "kaktusfrucht"),
+        g.use_item(&c, "cactus_fruit"),
         Ok(elora_adventure::data::Effect::Cool(3))
     );
     assert_eq!(g.health, 5);
-    g.add_item(&c, "sonnenschleier", 1).unwrap();
-    g.equip(&c, "sonnenschleier").unwrap();
+    g.add_item(&c, "sun_veil", 1).unwrap();
+    g.equip(&c, "sun_veil").unwrap();
     assert!((g.stats(&c).heat_pct + 40.0).abs() < 1e-6);
-    assert!(c.shops["sirup"].stock.contains(&"kaktusfrucht".to_owned()));
+    assert!(c.shops["sirup"].stock.contains(&"cactus_fruit".to_owned()));
 }
 
 /// Playtest 2026-10-06: whoever had not visited Klonk after chapter 1 only got the resin
@@ -665,20 +671,20 @@ fn klonk_hands_out_weapons_before_talking_about_resin() {
     g.run(
         &c,
         &[
-            "quest bluetenquelle start".into(),
-            "quest bluetenquelle fertig".into(),
-            "quest murmelwald fertig".into(),
-            "quest glutsand fertig".into(),
+            "quest blossom_spring start".into(),
+            "quest blossom_spring finish".into(),
+            "quest murmelwald finish".into(),
+            "quest glutsand finish".into(),
         ],
     );
     let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
-    assert_eq!(conv.node, "granate");
+    assert_eq!(conv.node, "grenade");
     assert!(g.weapons.contains_key(&elora_sim::Weapon::Grenade));
     let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
     assert_eq!(conv.node, "laser");
     assert!(g.weapons.contains_key(&elora_sim::Weapon::Laser));
     let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
-    assert_eq!(conv.node, "harz");
+    assert_eq!(conv.node, "resin");
 }
 
 #[test]
@@ -688,32 +694,32 @@ fn chapter_four_runs_from_the_mountain_path_to_the_party() {
     let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
     assert_eq!(conv.node, "frost");
     g.on_reach(&c, "frost-1", None);
-    assert!(g.holds(&c, "quest frostspitzen schritt flocke"));
+    assert!(g.holds(&c, "quest frostspitzen step flocke"));
     let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
-    assert_eq!(conv.node, "unterwegs4");
+    assert_eq!(conv.node, "on_the_way4");
     // Flocke: greeting, then the rope
     let (mut conv, _) = Conversation::start(&c, &mut g, "flocke").unwrap();
-    assert_eq!(conv.node, "begruessung");
-    assert!(g.holds(&c, "quest frostspitzen schritt seil"));
+    assert_eq!(conv.node, "greeting");
+    assert!(g.holds(&c, "quest frostspitzen step rope"));
     conv.choose(&c, &mut g, 0);
-    assert_eq!(conv.node, "seil");
+    assert_eq!(conv.node, "rope");
     let (conv, _) = Conversation::start(&c, &mut g, "flocke").unwrap();
-    assert_eq!(conv.node, "erinnerung");
+    assert_eq!(conv.node, "memory");
     // rope from the cellar: climbing claws (ice grip) in the middle of the chapter (E-340)
-    g.add_item(&c, "seil", 1).unwrap();
+    g.add_item(&c, "rope", 1).unwrap();
     let (mut conv, _) = Conversation::start(&c, &mut g, "flocke").unwrap();
-    assert_eq!(conv.node, "seil_zurueck");
+    assert_eq!(conv.node, "rope_back");
     assert!(g.abilities().has(elora_sim::Ability::Grip));
-    assert_eq!(g.count("seil"), 0, "abgegeben");
-    assert!(g.holds(&c, "quest frostspitzen schritt grat"));
+    assert_eq!(g.count("rope"), 0, "handed_in");
+    assert!(g.holds(&c, "quest frostspitzen step ridge"));
     conv.choose(&c, &mut g, 0);
-    assert_eq!(conv.node, "kletterer");
+    assert_eq!(conv.node, "climbers");
     conv.choose(&c, &mut g, 0);
-    assert!(g.holds(&c, "quest kletterer aktiv"));
+    assert!(g.holds(&c, "quest climbers active"));
     g.on_reach(&c, "frost-3", None);
     g.on_reach(&c, "frost-arena", None);
     g.location.map = "frost-arena".into();
-    g.set_flag("besiegt.kristella", 1);
+    g.set_flag("defeated.kristella", 1);
     let kind = c
         .creatures
         .iter()
@@ -730,28 +736,28 @@ fn chapter_four_runs_from_the_mountain_path_to_the_party() {
             killer: Some(0),
         },
     );
-    g.add_item(&c, "quellfunke", 1).unwrap();
-    assert!(g.holds(&c, "quest frostspitzen schritt funke"));
+    g.add_item(&c, "spring_spark", 1).unwrap();
+    assert!(g.holds(&c, "quest frostspitzen step spark"));
     let (mut conv, _) = Conversation::start(&c, &mut g, "kristella").unwrap();
     assert!(text(&c, &conv).contains("Genug"));
     conv.advance(&c, &mut g);
     assert!(text(&c, &conv).contains("einsam, nicht böse"));
     conv.advance(&c, &mut g);
-    assert_eq!(g.flag("befreit.frostquelle"), 1);
+    assert_eq!(g.flag("freed.frost_spring"), 1);
     let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
-    assert_eq!(conv.node, "funke");
+    assert_eq!(conv.node, "spark");
     let (conv, _) = Conversation::start(&c, &mut g, "tueftel").unwrap();
-    assert_eq!(conv.node, "funke4");
-    assert_eq!(g.flag("eisgriff.stark"), 1);
-    assert_eq!(g.flag("quellen_befreit"), 4);
+    assert_eq!(conv.node, "spark4");
+    assert_eq!(g.flag("ice_grip.strong"), 1);
+    assert_eq!(g.flag("springs_freed"), 4);
     let (mut conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
-    assert_eq!(conv.node, "fest4");
+    assert_eq!(conv.node, "party4");
     conv.advance(&c, &mut g);
-    assert_eq!(conv.node, "fest4_lied");
-    assert!(g.holds(&c, "quest frostspitzen erledigt"));
-    assert!(g.holds(&c, "quest sternschlucht aktiv"));
+    assert_eq!(conv.node, "party4_song");
+    assert!(g.holds(&c, "quest frostspitzen done"));
+    assert!(g.holds(&c, "quest sternschlucht active"));
     let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
-    assert_eq!(conv.node, "stern");
+    assert_eq!(conv.node, "star");
     // village after chapter 4: calls, herbal tea at Lotte, strengthened ice grip (D-M24-03)
     assert!(bark(&c, &g, "pip").unwrap().de.contains("Kristella"));
     assert!(bark(&c, &g, "lotte").unwrap().de.contains("Kräutertee"));
@@ -765,18 +771,18 @@ fn chapter_four_runs_from_the_mountain_path_to_the_party() {
 #[test]
 fn lost_climbers_go_home_and_flocke_gives_the_bobble_hat() {
     let (c, mut g) = game();
-    g.run(&c, &["quest kletterer start".into()]);
+    g.run(&c, &["quest climbers start".into()]);
     for who in ["bolle", "kiesel", "wicke"] {
         assert!(g.holds(&c, &format!("nicht merker kletterer.{who}")));
         Conversation::start(&c, &mut g, who).unwrap();
         assert!(g.holds(&c, &format!("merker kletterer.{who}")));
     }
-    assert!(g.holds(&c, "quest kletterer schritt bericht"));
+    assert!(g.holds(&c, "quest climbers step report"));
     let (conv, _) = Conversation::start(&c, &mut g, "flocke").unwrap();
-    assert_eq!(conv.node, "bericht");
-    assert!(g.holds(&c, "quest kletterer erledigt"));
-    assert_eq!(g.count("bommelmuetze"), 1);
-    assert!(bark(&c, &g, "wicke-huette").is_some());
+    assert_eq!(conv.node, "report");
+    assert!(g.holds(&c, "quest climbers done"));
+    assert_eq!(g.count("bobble_hat"), 1);
+    assert!(bark(&c, &g, "wicke-hut").is_some());
 }
 
 #[test]
@@ -784,32 +790,32 @@ fn klonk_cuts_one_crystal_pendant_of_your_choice() {
     let (c, mut g) = game();
     g.run(&c, &["quest frostspitzen start".into()]);
     let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
-    assert_eq!(conv.node, "kristalle");
-    assert!(g.holds(&c, "quest klarkristalle aktiv"));
+    assert_eq!(conv.node, "crystals");
+    assert!(g.holds(&c, "quest clear_crystals active"));
     let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
-    assert_eq!(conv.node, "kristalle_erinnerung");
-    g.add_item(&c, "klarkristall", 8).unwrap();
+    assert_eq!(conv.node, "crystals_memory");
+    g.add_item(&c, "clear_crystal", 8).unwrap();
     let _ = g.update_quests(&c);
-    assert!(g.holds(&c, "quest klarkristalle schritt bringen"));
+    assert!(g.holds(&c, "quest clear_crystals step bring"));
     let (mut conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
-    assert_eq!(conv.node, "kristalle_da");
-    assert_eq!(g.count("klarkristall"), 0, "abgegeben");
+    assert_eq!(conv.node, "crystals_here");
+    assert_eq!(g.count("clear_crystal"), 0, "handed_in");
     conv.choose(&c, &mut g, 2);
-    assert_eq!(g.count("lichtkristall"), 1);
-    assert_eq!(g.count("wuchtkristall") + g.count("sprengkristall"), 0);
-    assert!(g.holds(&c, "quest klarkristalle erledigt"));
+    assert_eq!(g.count("light_crystal"), 1);
+    assert_eq!(g.count("force_crystal") + g.count("blast_crystal"), 0);
+    assert!(g.holds(&c, "quest clear_crystals done"));
 }
 
 #[test]
 fn herbal_tea_heals_and_the_bobble_hat_slows_the_cold() {
     let (c, mut g) = game();
     g.health = 3;
-    g.add_item(&c, "kraeutertee", 1).unwrap();
-    let effect = g.use_item(&c, "kraeutertee").unwrap();
+    g.add_item(&c, "herbal_tea", 1).unwrap();
+    let effect = g.use_item(&c, "herbal_tea").unwrap();
     assert_eq!(effect, elora_adventure::data::Effect::Warm(2));
     assert_eq!(g.health, 5);
-    g.add_item(&c, "bommelmuetze", 1).unwrap();
-    g.equip(&c, "bommelmuetze").unwrap();
+    g.add_item(&c, "bobble_hat", 1).unwrap();
+    g.equip(&c, "bobble_hat").unwrap();
     assert!((g.stats(&c).cold_pct + 40.0).abs() < f32::EPSILON);
 }
 
@@ -818,17 +824,17 @@ fn herbal_tea_heals_and_the_bobble_hat_slows_the_cold() {
 #[test]
 fn signposts_explain_only_what_elora_already_has() {
     for (sign, unlock) in [
-        ("schild-ruck", "faehigkeit hook-ruck"),
-        ("schild-zug", "faehigkeit heranhooken"),
-        ("schild-stampf", "faehigkeit stampfen"),
-        ("schild-kamin", "faehigkeit eisgriff"),
-        ("schild-hammer", "waffe hammer"),
-        ("schild-bergsteig", "faehigkeit stampfen"),
-        ("schild-wueste", "quest glutsand start"),
+        ("sign-jerk", "ability hook-jerk"),
+        ("sign-pull", "ability pull_hook"),
+        ("sign-stomp", "ability stomp"),
+        ("sign-chimney", "ability ice_grip"),
+        ("sign-hammer", "weapon hammer"),
+        ("sign-mountain-path", "ability stomp"),
+        ("sign-desert", "quest glutsand start"),
     ] {
         let (c, mut g) = game();
         let (talk, _) = Conversation::start(&c, &mut g, sign).expect("sign");
-        assert_eq!(talk.node, "spaeter", "{sign} before");
+        assert_eq!(talk.node, "later", "{sign} before");
         g.run(&c, &[unlock.into()]);
         let (talk, _) = Conversation::start(&c, &mut g, sign).expect("sign");
         assert_eq!(talk.node, "text", "{sign} after `{unlock}`");
@@ -839,24 +845,24 @@ fn signposts_explain_only_what_elora_already_has() {
 fn klonk_sends_elora_to_tueftel_before_the_hammer() {
     let (c, mut g) = game();
     let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
-    assert_eq!(conv.node, "erst_tueftel", "no hammer, not sent yet");
+    assert_eq!(conv.node, "first_tueftel", "no hammer, not sent yet");
     // Oma, then Tüftel: now Klonk is on the step and hands out the hammer
     let (mut conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
     conv.choose(&c, &mut g, 0);
     Conversation::start(&c, &mut g, "tueftel").unwrap();
-    assert!(g.holds(&c, "quest brunnen schritt klonk"));
+    assert!(g.holds(&c, "quest well step klonk"));
     let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
-    assert_eq!(conv.node, "uebung");
+    assert_eq!(conv.node, "practice");
     let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
-    assert_eq!(conv.node, "schmiede", "with the hammer back to the forge");
+    assert_eq!(conv.node, "smithy", "with the hammer back to the forge");
 }
 
 #[test]
 fn buried_chamber_sign_waits_for_the_stomp() {
     let (c, mut g) = game();
-    let (talk, _) = Conversation::start(&c, &mut g, "schild-kammer").expect("sign");
-    assert_eq!(talk.node, "spaeter");
-    g.run(&c, &["faehigkeit stampfen".into()]);
-    let (talk, _) = Conversation::start(&c, &mut g, "schild-kammer").expect("sign");
+    let (talk, _) = Conversation::start(&c, &mut g, "sign-chamber").expect("sign");
+    assert_eq!(talk.node, "later");
+    g.run(&c, &["ability stomp".into()]);
+    let (talk, _) = Conversation::start(&c, &mut g, "sign-chamber").expect("sign");
     assert_eq!(talk.node, "text");
 }

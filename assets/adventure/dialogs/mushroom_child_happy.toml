@@ -1,0 +1,12 @@
+# Mushroom child at home (R2-M2.2)
+speaker = "mushroom_child_happy"
+
+[[start]]
+node = "happy"
+
+[[node]]
+id = "happy"
+text = { de = "Elora! Mama hat Pilzsuppe gekocht. Mit extra Moos!", en = "Elora! Mama made mushroom soup. With extra moss!" }
+
+[[bark]]
+text = { de = "Danke, Elora!", en = "Thank you, Elora!" }

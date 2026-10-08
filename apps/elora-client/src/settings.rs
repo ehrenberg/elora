@@ -58,6 +58,40 @@ pub fn user_maps_dir() -> Option<PathBuf> {
     data_dir().map(|d| d.join("maps"))
 }
 
+/// Moves self-made adventure maps from the 0.9.x folder `maps/abenteuer/` to
+/// `maps/adventure/` with English names (RF-13); the maps themselves are converted when they
+/// are loaded. Does nothing once the old folder is gone.
+pub fn migrate_user_maps() {
+    let Some(maps) = user_maps_dir() else { return };
+    move_old_maps(&maps.join("abenteuer"), &maps.join("adventure"));
+}
+
+fn move_old_maps(old: &Path, new: &Path) {
+    let Ok(entries) = std::fs::read_dir(old) else {
+        return;
+    };
+    if let Err(e) = std::fs::create_dir_all(new) {
+        tracing::warn!("{}: {e}", new.display());
+        return;
+    }
+    for entry in entries.flatten() {
+        let path = entry.path();
+        let Some(stem) = path.file_stem().and_then(|s| s.to_str()) else {
+            continue;
+        };
+        let ext = path.extension().and_then(|e| e.to_str()).unwrap_or("");
+        let target = new.join(format!("{}.{ext}", elora_map::rename::translate_id(stem)));
+        if target.exists() {
+            continue;
+        }
+        match std::fs::rename(&path, &target) {
+            Ok(()) => tracing::info!("moved {} to {}", path.display(), target.display()),
+            Err(e) => tracing::warn!("{}: {e}", path.display()),
+        }
+    }
+    let _ = std::fs::remove_dir(old);
+}
+
 /// Path of the settings file (fallback: working directory).
 pub fn settings_path() -> PathBuf {
     config_dir().map_or_else(|| PathBuf::from(SETTINGS_FILE), |d| d.join(SETTINGS_FILE))
@@ -343,5 +377,18 @@ mod tests {
             let dir = config_dir().expect("HOME set");
             assert!(dir.ends_with("elora"));
         }
+    }
+
+    #[test]
+    fn old_adventure_maps_move_to_english_names() {
+        let dir = std::env::temp_dir().join(format!("elora-maps-{}", std::process::id()));
+        let (old, new) = (dir.join("abenteuer"), dir.join("adventure"));
+        std::fs::create_dir_all(&old).unwrap();
+        std::fs::write(old.join("wiese-1.emap"), b"x").unwrap();
+        move_old_maps(&old, &new);
+        assert!(new.join("meadow-1.emap").is_file());
+        assert!(!old.exists(), "old folder removed");
+        move_old_maps(&old, &new); // nothing left to do
+        std::fs::remove_dir_all(&dir).unwrap();
     }
 }

@@ -1,9 +1,0 @@
-# Signpost (E-273, A1.9)
-speaker = "wegweiser"
-
-[[start]]
-node = "text"
-
-[[node]]
-id = "text"
-text = { de = "Osten: Blütenwiesen. Westen: Tauwinkel. Vorsicht vor Stachelkäfern!", en = "East: Blütenwiesen. West: Tauwinkel. Beware of Stachelkäfer!" }

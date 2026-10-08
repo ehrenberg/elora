@@ -353,9 +353,9 @@ decay = 0.4
 lowpass = 1500
 volume = 0.5
 
-[hook_ruck]            # hook jerk: whoosh while snapping over
+[hook_jerk]            # hook jerk: whoosh while snapping over
 volume = 0.45
-[[hook_ruck.layer]]
+[[hook_jerk.layer]]
 wave = "noise"
 freq = 3000
 attack = 0.02
@@ -364,7 +364,7 @@ decay = 0.2
 lowpass = 2500
 lowpass_sweep = 3.0
 highpass = 400
-[[hook_ruck.layer]]
+[[hook_jerk.layer]]
 wave = "sine"
 freq = 260
 slide = 2.2

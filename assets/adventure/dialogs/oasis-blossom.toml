@@ -1,0 +1,9 @@
+# Watered patch of the oasis (for bluete-1 to bluete-3)
+speaker = "blossom-1"
+
+[[start]]
+node = "text"
+
+[[node]]
+id = "text"
+text = { de = "Hier blüht es wieder.", en = "It's blooming here again." }

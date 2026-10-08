@@ -2,63 +2,63 @@
 speaker = "lotte"
 
 [[start]]
-if = "quest glutsand erledigt und nicht merker lotte.wueste"
-node = "wueste"
+if = "quest glutsand done and not flag lotte.desert"
+node = "desert"
 
 [[start]]
-if = "quest murmelwald erledigt und nicht merker lotte.wald"
-node = "wald"
+if = "quest murmelwald done and not flag lotte.forest"
+node = "forest"
 
 [[start]]
-if = "nicht merker lotte.geschenk"
-node = "erster"
+if = "not flag lotte.gift"
+node = "first"
 
 # sand boots only once the desert is in view (E-354)
 [[start]]
-if = "nicht quest glutsand neu"
-node = "laden_wueste"
+if = "not quest glutsand new"
+node = "shop_desert"
 
 [[start]]
-node = "laden"
+node = "shop"
 
 [[node]]
-id = "erster"
+id = "first"
 text = { de = "Elora! Du willst los? Hier, ein Heiltrank – geht aufs Haus. Mit {taste:quick_heal} trinkst du ihn, wenn's brenzlig wird.", en = "Elora! Heading out? Here, a healing potion – on the house. Press {taste:quick_heal} to drink it when things get dicey." }
-next = "laden"
-do = ["gib heiltrank 1", "merker lotte.geschenk = 1"]
+next = "shop"
+do = ["give healing_potion 1", "flag lotte.gift = 1"]
 
 [[node]]
-id = "laden"
+id = "shop"
 text = { de = "Frisch reingekommen: ein Strohhut! Hält Sonne und Regen ab.", en = "Fresh in: a straw hat! Keeps off sun and rain." }
 
 [[node.choice]]
-tone = "neugierig"
+tone = "curious"
 text = { de = "Zeig mal, was du hast.", en = "Show me what you've got." }
-do = ["laden lotte"]
+do = ["shop lotte"]
 
 [[node.choice]]
-tone = "freundlich"
+tone = "friendly"
 text = { de = "Dein Hut ist wunderschön, Lotte!", en = "Your hat is beautiful, Lotte!" }
 next = "hut"
-do = ["zuneigung lotte +1"]
+do = ["affection lotte +1"]
 
 [[node.choice]]
 text = { de = "Vielleicht später.", en = "Maybe later." }
 
 [[node]]
-id = "laden_wueste"
+id = "shop_desert"
 text = { de = "Frisch reingekommen: Sandstiefel! Kaum gebraucht, nur ein bisschen verschluckt.", en = "Fresh in: sand boots! Barely used, only slightly swallowed." }
 
 [[node.choice]]
-tone = "neugierig"
+tone = "curious"
 text = { de = "Zeig mal, was du hast.", en = "Show me what you've got." }
-do = ["laden lotte"]
+do = ["shop lotte"]
 
 [[node.choice]]
-tone = "freundlich"
+tone = "friendly"
 text = { de = "Dein Hut ist wunderschön, Lotte!", en = "Your hat is beautiful, Lotte!" }
 next = "hut"
-do = ["zuneigung lotte +1"]
+do = ["affection lotte +1"]
 
 [[node.choice]]
 text = { de = "Vielleicht später.", en = "Maybe later." }
@@ -68,31 +68,31 @@ id = "hut"
 text = { de = "Ach, du! Für dich gibt's bestimmt bald einen Freundschaftspreis.", en = "Oh, you! I'm sure there'll be a friendship price for you soon." }
 
 [[node]]
-id = "wald"
+id = "forest"
 text = { de = "Elora! Mama Morchel hat mir Pilzsuppe gebracht – angeblich hilft sie bei allem. Hier, eine Schüssel für dich. Und erzähl mal: Laufende Bäume?!", en = "Elora! Mama Morel brought me mushroom soup – supposedly it helps with everything. Here, a bowl for you. And tell me: walking trees?!" }
-next = "laden"
-do = ["gib pilzsuppe 1", "merker lotte.wald = 1"]
+next = "shop"
+do = ["give mushroom_soup 1", "flag lotte.forest = 1"]
 
 [[node]]
-id = "wueste"
+id = "desert"
 text = { de = "Elora! Heute Morgen stand ein Kamel vor meinem Laden – mit einem Brief von Sirup! Er schickt dir Kaktusfrüchte. Und mir gleich eine Rechnung dazu. Hier, die gehören dir.", en = "Elora! This morning a camel was standing outside my shop – with a letter from Sirup! He's sending you cactus fruit. And me an invoice to go with it. Here, these are yours." }
-next = "laden_wueste"
-do = ["gib kaktusfrucht 2", "merker lotte.wueste = 1"]
+next = "shop_desert"
+do = ["give cactus_fruit 2", "flag lotte.desert = 1"]
 
 [[bark]]
-if = "quest frostspitzen erledigt"
+if = "quest frostspitzen done"
 text = { de = "Kräutertee aus den Bergen – jetzt auch bei mir!", en = "Herbal tea from the mountains – now at my shop too!" }
 
 [[bark]]
-if = "quest glutsand erledigt und nicht merker fest"
+if = "quest glutsand done and not flag party"
 text = { de = "Kaktusfrüchte! Stachelig außen, saftig innen!", en = "Cactus fruit! Prickly outside, juicy inside!" }
 
 [[bark]]
-if = "quest murmelwald erledigt und nicht merker fest"
+if = "quest murmelwald done and not flag party"
 text = { de = "Pilzsuppe, frisch aus dem Wald!", en = "Mushroom soup, fresh from the forest!" }
 
 [[bark]]
-if = "merker fest"
+if = "flag party"
 text = { de = "Honigkuchen! Frisch aus dem Ofen!", en = "Honey cake! Fresh from the oven!" }
 
 [[bark]]

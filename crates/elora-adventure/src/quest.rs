@@ -68,7 +68,7 @@ pub struct Step {
 pub struct Reward {
     #[serde(default)]
     pub xp: u32,
-    #[serde(default, rename = "glanztropfen")]
+    #[serde(default)]
     pub gleam_drops: u32,
     #[serde(default)]
     pub items: Vec<Cost>,

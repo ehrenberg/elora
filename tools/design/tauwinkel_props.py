@@ -234,32 +234,32 @@ def stepping_stones():
 
 
 PROPS = {
-    'dornen': (thorns, '-36 -34 72 36', 'Dornenranke über Gruben (E-283)'),
-    'bank': (bench, '-44 -56 88 58', 'Bank'),
-    'laterne': (lantern, '-22 -168 44 170', 'Laterne'),
-    'faesser': (barrels, '-40 -82 80 84', 'Fässer'),
-    'holzstapel': (woodpile, '-46 -54 92 56', 'Holzstapel'),
-    'karren': (cart, '-56 -68 128 70', 'Heukarren'),
-    'waescheleine': (clothesline, '-78 -100 156 102', 'Wäscheleine'),
-    'heuballen': (hay_bales, '-38 -44 76 46', 'Heuballen'),
-    'mauer': (field_wall, '-52 -40 104 42', 'Feldsteinmauer'),
-    'giesskanne': (watering_can, '-18 -46 56 48', 'Gießkanne'),
-    'vogelhaus': (birdhouse, '-26 -124 52 126', 'Vogelhaus'),
-    'briefkasten': (mailbox, '-18 -72 42 74', 'Briefkasten'),
-    'korb': (basket, '-24 -40 50 42', 'Apfelkorb'),
-    'kuerbisse': (pumpkins, '-36 -38 70 40', 'Kürbisse'),
-    'katze': (cat, '-36 -28 62 30', 'schlafende Katze'),
-    'vogel': (bird, '-16 -18 30 20', 'Vogel'),
-    'schmetterling': (butterfly, '-14 -20 28 26', 'Schmetterling (bewegt)'),
-    'rauch': (smoke, '-12 -24 30 26', 'Rauch (steigt auf)'),
-    'baumstumpf': (tree_stump, '-26 -40 54 42', 'Baumstumpf'),
-    'farn': (fern, '-44 -50 88 52', 'Farn'),
-    'beerenbusch': (berry_bush, '-36 -46 72 48', 'Beerenbusch'),
-    'loewenzahn': (dandelion, '-20 -44 40 46', 'Löwenzahn'),
-    'trittsteine': (stepping_stones, '-54 -8 108 10', 'Trittsteine'),
+    'thorns': (thorns, '-36 -34 72 36', 'Dornenranke über Gruben (E-283)'),
+    'bench': (bench, '-44 -56 88 58', 'Bank'),
+    'lantern': (lantern, '-22 -168 44 170', 'Laterne'),
+    'barrels': (barrels, '-40 -82 80 84', 'Fässer'),
+    'woodpile': (woodpile, '-46 -54 92 56', 'Holzstapel'),
+    'cart': (cart, '-56 -68 128 70', 'Heukarren'),
+    'clothesline': (clothesline, '-78 -100 156 102', 'Wäscheleine'),
+    'hay_bale': (hay_bales, '-38 -44 76 46', 'Heuballen'),
+    'wall': (field_wall, '-52 -40 104 42', 'Feldsteinmauer'),
+    'watering_can': (watering_can, '-18 -46 56 48', 'Gießkanne'),
+    'birdhouse': (birdhouse, '-26 -124 52 126', 'Vogelhaus'),
+    'mailbox': (mailbox, '-18 -72 42 74', 'Briefkasten'),
+    'basket': (basket, '-24 -40 50 42', 'Apfelkorb'),
+    'pumpkins': (pumpkins, '-36 -38 70 40', 'Kürbisse'),
+    'cat': (cat, '-36 -28 62 30', 'schlafende Katze'),
+    'bird': (bird, '-16 -18 30 20', 'Vogel'),
+    'butterfly': (butterfly, '-14 -20 28 26', 'Schmetterling (bewegt)'),
+    'smoke': (smoke, '-12 -24 30 26', 'Rauch (steigt auf)'),
+    'tree_stump': (tree_stump, '-26 -40 54 42', 'Baumstumpf'),
+    'fern': (fern, '-44 -50 88 52', 'Farn'),
+    'berry_bush': (berry_bush, '-36 -46 72 48', 'Beerenbusch'),
+    'dandelion': (dandelion, '-20 -44 40 46', 'Löwenzahn'),
+    'stepping_stones': (stepping_stones, '-54 -8 108 10', 'Trittsteine'),
 }
 VARIANTS = {
-    'blumentopf': (flower_pot, '-16 -34 32 36', 'Blumentopf'),
+    'flower-pot': (flower_pot, '-16 -34 32 36', 'Blumentopf'),
 }
 
 
@@ -269,8 +269,8 @@ def sheet():
     w, h = cell * cols, 70 + rows * cell
     s = f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}"><rect width="{w}" height="{h}" fill="#f4efe4"/>'
     s += text(w / 2, 40, 'Tauwinkel – Requisiten (Playtest A1.9)', 22)
-    items = list(PROPS.items()) + [(n + '-blass', (lambda f=f: f(True), vb, note + ' (verblasst)')) for n, (f, vb, note) in VARIANTS.items()] \
-        + [(n + '-bunt', (lambda f=f: f(False), vb, note + ' (farbig)')) for n, (f, vb, note) in VARIANTS.items()]
+    items = list(PROPS.items()) + [(n + '-pale', (lambda f=f: f(True), vb, note + ' (verblasst)')) for n, (f, vb, note) in VARIANTS.items()] \
+        + [(n + '-colourful', (lambda f=f: f(False), vb, note + ' (farbig)')) for n, (f, vb, note) in VARIANTS.items()]
     for i, (name, (fn, _, note)) in enumerate(items):
         cx = cell * (i % cols) + cell / 2
         base = 70 + cell * (i // cols) + cell - 50
@@ -283,8 +283,8 @@ def sheet():
 def export():
     items = dict(PROPS)
     for n, (f, vb, note) in VARIANTS.items():
-        items[n + '-blass'] = (lambda f=f: f(True), vb, note + ', verblasst (E-277)')
-        items[n + '-bunt'] = (lambda f=f: f(False), vb, note + ', farbig (E-277)')
+        items[n + '-pale'] = (lambda f=f: f(True), vb, note + ', verblasst (E-277)')
+        items[n + '-colourful'] = (lambda f=f: f(False), vb, note + ', farbig (E-277)')
     for name, (fn, vb, note) in items.items():
         with open(f'assets/map/decor/{name}.svg', 'w') as f:
             f.write(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{vb}">\n'

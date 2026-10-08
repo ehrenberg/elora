@@ -242,7 +242,7 @@ impl Session {
         }
         for o in &map.adventure.objects.clone() {
             if let ObjectKind::Door { size, .. } = &o.kind {
-                let open = self.save.flag(&key("tuer", name, &o.id)) != 0;
+                let open = self.save.flag(&key("door", name, &o.id)) != 0;
                 for (tx, ty) in tile_range(o.pos, *size) {
                     set_map_tile(
                         &mut map,
@@ -303,7 +303,7 @@ impl Session {
         self.creatures.clear();
         for o in objects {
             if let ObjectKind::Creature { kind, persistent } = &o.kind {
-                if *persistent && self.save.defeated.contains(&key("gegner", name, &o.id)) {
+                if *persistent && self.save.defeated.contains(&key("enemy", name, &o.id)) {
                     continue;
                 }
                 if let Some(k) = world.creature_kind(kind)
@@ -329,7 +329,7 @@ impl Session {
             spawn: spawn.to_owned(),
         };
         // for the world map (E-264)
-        self.save.set_flag(&format!("besucht:{name}"), 1);
+        self.save.set_flag(&format!("visited:{name}"), 1);
         let reached = self.save.on_reach(&self.content, name, None);
         self.push_outcomes(reached);
         self.sync_followers(&mut world);
@@ -388,14 +388,14 @@ impl Session {
                         if persistent || boss {
                             self.save
                                 .defeated
-                                .insert(key("gegner", &self.map_name, &obj));
+                                .insert(key("enemy", &self.map_name, &obj));
                         }
                     }
                     // guardian defeated: flag for doors, dialogs and quests (R2-M2.1)
                     if let Some(k) = world.creature_kinds.get(*kind).filter(|k| k.boss) {
                         // a storm of the guardian calms down (Kristella, R2-M2.4)
                         self.map.weather = self.pick_weather(&self.map_name.clone());
-                        self.save.set_flag(&format!("besiegt.{}", k.name), 1);
+                        self.save.set_flag(&format!("defeated.{}", k.name), 1);
                         out.extend(outcomes(self.save.update_quests(&self.content)));
                         // chapter done: victory screen
                         if let Some(a) = self
@@ -573,7 +573,7 @@ impl Session {
         else {
             return out;
         };
-        let k = key("fund", &self.map_name, id);
+        let k = key("find", &self.map_name, id);
         if self.save.flag(&k) == 0 && self.save.add_item(&self.content, &item, 1).is_ok() {
             self.save.set_flag(&k, 1);
             out.push(SessionEvent::Notice(Notice::Item {
@@ -646,7 +646,7 @@ impl Session {
         let mut changed = false;
         for o in self.map.adventure.objects.clone() {
             if let ObjectKind::Door { size, open_if } = &o.kind {
-                let k = key("tuer", &self.map_name, &o.id);
+                let k = key("door", &self.map_name, &o.id);
                 if self.save.flag(&k) == 0 && self.save.holds(&self.content, open_if) {
                     self.save.set_flag(&k, 1);
                     for (tx, ty) in tile_range(o.pos, *size) {
@@ -765,7 +765,7 @@ impl Session {
             .iter()
             .chain(&self.map.decor_back)
             .any(|d| {
-                d.art == elora_map::Art::Builtin("leuchtpilze".into())
+                d.art == elora_map::Art::Builtin("glow_mushrooms".into())
                     && (d.pos.x - pos.x).abs() < MUSHROOM_RANGE.x
                     && (d.pos.y - pos.y).abs() < MUSHROOM_RANGE.y
             });
@@ -797,7 +797,7 @@ impl Session {
     /// half.
     fn chill(&mut self, world: &mut World, pos: Vec2) {
         let fire = self.map.adventure.objects.iter().any(|o| {
-            o.id.starts_with("feuer")
+            o.id.starts_with("fire")
                 && matches!(o.kind, ObjectKind::Zone { size } if inside(pos, o.pos, size))
         });
         let roof = (1..=SHADE_TILES).any(|k| {
@@ -856,10 +856,10 @@ impl Session {
         self.in_sun = false;
         if !self.hot() {
             self.heat = 0.0;
-        } else if zone("oase") {
+        } else if zone("oasis") {
             self.heat -= step(HEAT_OASIS_MS);
         } else if roof
-            || zone("schatten")
+            || zone("shade")
             // sand hides the sun (R2-W1)
             || self.map.weather.kind == elora_map::WeatherKind::Sandstorm
         {
@@ -899,7 +899,7 @@ impl Session {
             if let Some(cid) = self.followers.remove(&id) {
                 world.creatures.retain(|c| c.id != cid);
             }
-            self.save.set_flag(&format!("{id}.daheim"), 1);
+            self.save.set_flag(&format!("{id}.home"), 1);
             out.extend(outcomes(self.save.update_quests(&self.content)));
         }
         out
@@ -1043,7 +1043,7 @@ impl Session {
                 let prompt = match &o.kind {
                     ObjectKind::Npc { character, .. } if self.present(character) => Prompt::Talk,
                     ObjectKind::Chest { .. }
-                        if self.save.flag(&key("truhe", &self.map_name, &o.id)) == 0 =>
+                        if self.save.flag(&key("chest", &self.map_name, &o.id)) == 0 =>
                     {
                         Prompt::Open
                     }
@@ -1086,7 +1086,7 @@ impl Session {
                 if !lock.is_empty() && !self.save.holds(&self.content, lock) {
                     return vec![SessionEvent::Locked { object: o.id }];
                 }
-                self.save.set_flag(&key("truhe", &self.map_name, &o.id), 1);
+                self.save.set_flag(&key("chest", &self.map_name, &o.id), 1);
                 let mut out = vec![SessionEvent::ChestOpened { pos: o.pos }];
                 let max_ammo = world.tuning.max_ammo;
                 for (item, n) in contents {
@@ -1239,10 +1239,10 @@ impl Session {
         };
         let m = &self.map_name;
         match &o.kind {
-            ObjectKind::Chest { .. } => self.save.flag(&key("truhe", m, id)) != 0,
-            ObjectKind::Collectible { .. } => self.save.flag(&key("fund", m, id)) != 0,
+            ObjectKind::Chest { .. } => self.save.flag(&key("chest", m, id)) != 0,
+            ObjectKind::Collectible { .. } => self.save.flag(&key("find", m, id)) != 0,
             ObjectKind::Switch { flag, .. } => self.save.flag(flag) != 0,
-            ObjectKind::Door { .. } => self.save.flag(&key("tuer", m, id)) != 0,
+            ObjectKind::Door { .. } => self.save.flag(&key("door", m, id)) != 0,
             ObjectKind::HealPlant { .. } => self.plants_used.contains(id),
             _ => false,
         }
@@ -1250,7 +1250,7 @@ impl Session {
 }
 
 /// Flag: number of freed springs (0–5).
-pub const SPRINGS_FREED: &str = "quellen_befreit";
+pub const SPRINGS_FREED: &str = "springs_freed";
 
 /// Faded decor (`…-blass`) gets part of its colour back with every freed spring
 /// (`…-bunt`, E-277): each piece fixed by its position, everything after five springs.
@@ -1285,25 +1285,25 @@ pub fn weather_env(w: elora_map::Weather) -> Option<elora_sim::WeatherEnv> {
 }
 
 /// Flag of a festival in the village: decor `…-fest` (garlands, lanterns) only hangs then (E-301).
-pub const PARTY: &str = "fest";
+pub const PARTY: &str = "party";
 
 /// Decor by world state: faded flowers become colourful (E-277), withered springs bloom
-/// after `befreit.<name>` (`…-verdorrt` → `…-befreit`), festival decorations only during the
-/// festival.
+/// after `freed.<spring>` (`…-withered` → `…-freed`; decor names use `-`, the spring id `_`),
+/// festival decorations only during the festival.
 fn adapt_decor(map: &mut Map, save: &SaveGame) {
     use elora_map::Art;
     recolor(map, save.flag(SPRINGS_FREED));
     let party = save.flag(PARTY) != 0;
     let keep =
-        |d: &elora_map::Decor| party || !matches!(&d.art, Art::Builtin(n) if n.ends_with("-fest"));
+        |d: &elora_map::Decor| party || !matches!(&d.art, Art::Builtin(n) if n.ends_with("-party"));
     map.decor_back.retain(keep);
     map.decor_front.retain(keep);
     for d in map.decor_back.iter_mut().chain(map.decor_front.iter_mut()) {
         if let Art::Builtin(name) = &d.art
-            && let Some(stem) = name.strip_suffix("-verdorrt")
-            && save.flag(&format!("befreit.{stem}")) != 0
+            && let Some(stem) = name.strip_suffix("-withered")
+            && save.flag(&format!("freed.{}", stem.replace('-', "_"))) != 0
         {
-            d.art = Art::Builtin(format!("{stem}-befreit"));
+            d.art = Art::Builtin(format!("{stem}-freed"));
         }
     }
 }
@@ -1312,12 +1312,12 @@ fn recolor(map: &mut Map, freed: i64) {
     use elora_map::Art;
     let mut fix = |d: &mut elora_map::Decor| {
         if let Art::Builtin(name) = &d.art
-            && let Some(stem) = name.strip_suffix("-blass")
+            && let Some(stem) = name.strip_suffix("-pale")
         {
             #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
             let h = (d.pos.x as i64 * 31 + d.pos.y as i64 * 17).rem_euclid(5);
             if h < freed {
-                d.art = Art::Builtin(format!("{stem}-bunt"));
+                d.art = Art::Builtin(format!("{stem}-colourful"));
             }
         }
     };
@@ -1350,17 +1350,17 @@ mod tests {
     fn characters_appear_when_their_condition_holds() {
         let mut s = Session::new_game(crate::Content::builtin());
         assert!(s.present("oma"));
-        assert!(!s.present("hummel"), "only after the fight");
-        s.save.set_flag("besiegt.brummbaer", 1);
-        assert!(s.present("hummel"));
+        assert!(!s.present("bumblebee"), "only after the fight");
+        s.save.set_flag("defeated.bumblebear", 1);
+        assert!(s.present("bumblebee"));
     }
 
     #[test]
     fn party_decor_and_freed_spring_follow_the_flags() {
         let mut m = Map::new("t", 4, 4);
         m.decor_back = vec![
-            Decor::new(Art::Builtin("girlande-fest".into()), Vec2::ZERO),
-            Decor::new(Art::Builtin("bluetenquelle-verdorrt".into()), Vec2::ZERO),
+            Decor::new(Art::Builtin("garland-party".into()), Vec2::ZERO),
+            Decor::new(Art::Builtin("blossom-spring-withered".into()), Vec2::ZERO),
         ];
         let mut save = Session::new_game(crate::Content::builtin()).save;
         let mut a = m.clone();
@@ -1368,15 +1368,15 @@ mod tests {
         assert_eq!(a.decor_back.len(), 1, "no decoration without the festival");
         assert_eq!(
             a.decor_back[0].art,
-            Art::Builtin("bluetenquelle-verdorrt".into())
+            Art::Builtin("blossom-spring-withered".into())
         );
         save.set_flag(PARTY, 1);
-        save.set_flag("befreit.bluetenquelle", 1);
+        save.set_flag("freed.blossom_spring", 1);
         adapt_decor(&mut m, &save);
         assert_eq!(m.decor_back.len(), 2);
         assert_eq!(
             m.decor_back[1].art,
-            Art::Builtin("bluetenquelle-befreit".into())
+            Art::Builtin("blossom-spring-freed".into())
         );
     }
 
@@ -1386,16 +1386,16 @@ mod tests {
         m.decor_front = (0..20)
             .map(|k| {
                 Decor::new(
-                    Art::Builtin("beet-blass".into()),
+                    Art::Builtin("flower-bed-pale".into()),
                     Vec2::new(k as f32 * 32.0, 0.0),
                 )
             })
             .collect();
-        m.decor_back = vec![Decor::new(Art::Builtin("haus-oma".into()), Vec2::ZERO)];
+        m.decor_back = vec![Decor::new(Art::Builtin("house-oma".into()), Vec2::ZERO)];
         let colourful = |m: &Map| {
             m.decor_front
                 .iter()
-                .filter(|d| d.art == Art::Builtin("beet-bunt".into()))
+                .filter(|d| d.art == Art::Builtin("flower-bed-colourful".into()))
                 .count()
         };
         let mut none = m.clone();
@@ -1406,6 +1406,6 @@ mod tests {
         assert!(colourful(&some) > 0 && colourful(&some) < 20);
         recolor(&mut m, 5);
         assert_eq!(colourful(&m), 20, "all five springs");
-        assert_eq!(m.decor_back[0].art, Art::Builtin("haus-oma".into()));
+        assert_eq!(m.decor_back[0].art, Art::Builtin("house-oma".into()));
     }
 }

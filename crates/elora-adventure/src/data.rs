@@ -72,7 +72,6 @@ pub enum Bonus {
     /// Once per map, carry on with this much health instead of dying.
     SecondChance(i32),
     /// Hook jerk cooldown (ms, negative = shorter, A-02).
-    #[serde(rename = "ruck_cooldown_ms")]
     JerkCooldownMs(i32),
     HookLengthPct(f32),
     /// Shock wave of the stomp (units, A-05).
@@ -109,7 +108,6 @@ pub enum Effect {
     /// Refill health.
     Heal(i32),
     /// Hook jerk without cooldown for this many seconds.
-    #[serde(rename = "tau")]
     Dew(u32),
     /// Refill health and empty the heat bar (cactus fruit, E-320).
     Cool(i32),
@@ -199,7 +197,6 @@ pub struct Upgrade {
     pub name: Text,
     #[serde(default)]
     pub desc: Text,
-    #[serde(rename = "glanztropfen")]
     pub gleam_drops: u32,
     #[serde(default)]
     pub materials: Vec<Cost>,
@@ -324,7 +321,7 @@ impl Area {
     pub fn freed(&self, save: &crate::SaveGame) -> bool {
         self.spring
             .as_ref()
-            .is_some_and(|s| save.flag(&format!("befreit.{s}")) != 0)
+            .is_some_and(|s| save.flag(&format!("freed.{s}")) != 0)
     }
 }
 
@@ -378,57 +375,57 @@ const DIALOG_FILES: &[(&str, &str)] = dialogs!(
     "lotte",
     "klonk",
     "pip",
-    "schild-start",
-    "schild-hecke",
-    "schild-plattform",
-    "schild-hook",
-    "schild-hammer",
-    "schild-brunnen",
-    "schild-ostpfad",
-    "schild-wiese",
+    "sign-start",
+    "sign-hedge",
+    "sign-platform",
+    "sign-hook",
+    "sign-hammer",
+    "sign-well",
+    "sign-east-path",
+    "sign-meadow",
     "wabe",
-    "hummel",
-    "schild-wurzeln",
-    "schild-ruck",
+    "bumblebee",
+    "sign-roots",
+    "sign-jerk",
     "plumm",
-    "pilzkind",
-    "pilzkind_froh",
-    "pilzmama",
-    "waechter",
-    "schild-westhang",
-    "schild-wald",
-    "schild-pilzring",
-    "schild-zug",
+    "mushroom_child",
+    "mushroom_child_happy",
+    "mushroom_mama",
+    "warden",
+    "sign-west-slope",
+    "sign-forest",
+    "sign-mushroom-ring",
+    "sign-pull",
     "sirup",
     "palma",
-    "schlange",
-    "tafel-1",
-    "tafel-2",
-    "tafel-kammer",
-    "ruinenquelle",
-    "giessstelle-1",
-    "giessstelle-2",
-    "giessstelle-3",
-    "oase-bluete",
-    "schild-wueste",
-    "schild-treibsand",
-    "schild-hitze",
-    "schild-kammer",
-    "schild-stampf",
+    "serpent",
+    "tablet-1",
+    "tablet-2",
+    "tablet-chamber",
+    "ruin_spring",
+    "watering-spot-1",
+    "watering-spot-2",
+    "watering-spot-3",
+    "oasis-blossom",
+    "sign-desert",
+    "sign-quicksand",
+    "sign-heat",
+    "sign-chamber",
+    "sign-stomp",
     "flocke",
     "bolle",
     "kiesel",
     "wicke",
-    "bolle-huette",
-    "kiesel-huette",
-    "wicke-huette",
+    "bolle-hut",
+    "kiesel-hut",
+    "wicke-hut",
     "kristella",
-    "graue-stelle",
-    "schild-bergsteig",
-    "schild-kaelte",
-    "schild-eis",
-    "schild-lawine",
-    "schild-kamin",
+    "grey-spot",
+    "sign-mountain-path",
+    "sign-cold",
+    "sign-ice",
+    "sign-avalanche",
+    "sign-chimney",
 );
 
 /// Sources of the content files.
@@ -482,7 +479,7 @@ pub struct Content {
 }
 
 /// Id of the currency.
-pub const GLEAM_DROPS: &str = "glanztropfen";
+pub const GLEAM_DROPS: &str = "gleam_drops";
 
 fn parse<T: serde::de::DeserializeOwned>(file: &'static str, src: &str) -> Result<T, ContentError> {
     toml::from_str(src).map_err(|e| ContentError::Parse {

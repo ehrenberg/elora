@@ -1,4 +1,4 @@
-//! Playthrough of the prologue (A1.9/A1.10) on the bundled maps `maps/abenteuer/`:
+//! Playthrough of the prologue (A1.9/A1.10) on the bundled maps `maps/adventure/`:
 //! dialogs, quests, transitions, collecting, saving and continuing.
 
 use elora_adventure::quest::QuestStatus;
@@ -8,7 +8,7 @@ use elora_sim::{Event, PlayerInput, Tuning, Vec2, World};
 
 fn load(name: &str) -> Map {
     let path = format!(
-        "{}/../../maps/abenteuer/{name}.emap",
+        "{}/../../maps/adventure/{name}.emap",
         env!("CARGO_MANIFEST_DIR")
     );
     elora_map::decode(&std::fs::read(path).unwrap()).unwrap()
@@ -88,34 +88,34 @@ fn prologue_from_start_to_the_meadow_edge_and_back() {
     let mut w = s.enter("tauwinkel", load("tauwinkel"), "start", &tuning);
 
     // Pip wakes Elora, Oma gives the main quest
-    assert_eq!(talk(&mut s, &mut w, "pip")[0], "wecken");
+    assert_eq!(talk(&mut s, &mut w, "pip")[0], "wake");
     talk(&mut s, &mut w, "oma");
-    assert!(holds(&s, "quest brunnen schritt tueftel"));
+    assert!(holds(&s, "quest well step tueftel"));
     // read the signpost
-    talk(&mut s, &mut w, "schild-start");
+    talk(&mut s, &mut w, "sign-start");
     // Tüftel, Klonk, Lotte
-    assert_eq!(talk(&mut s, &mut w, "tueftel")[0], "rat");
-    assert_eq!(talk(&mut s, &mut w, "klonk")[0], "uebung");
-    assert!(holds(&s, "quest brunnen schritt wiese"));
-    assert_eq!(talk(&mut s, &mut w, "lotte")[0], "erster");
-    assert_eq!(s.save.count("heiltrank"), 1);
+    assert_eq!(talk(&mut s, &mut w, "tueftel")[0], "advice");
+    assert_eq!(talk(&mut s, &mut w, "klonk")[0], "practice");
+    assert!(holds(&s, "quest well step meadow"));
+    assert_eq!(talk(&mut s, &mut w, "lotte")[0], "first");
+    assert_eq!(s.save.count("healing_potion"), 1);
     // Pip's side quest
     talk(&mut s, &mut w, "pip");
-    assert!(holds(&s, "quest pips_stein aktiv"));
+    assert!(holds(&s, "quest pips_stone active"));
 
     // east path: transition when walking in
-    go_to(&mut s, &mut w, "ost", 0.0);
+    go_to(&mut s, &mut w, "east", 0.0);
     let (map, spawn) = walk_until_travel(&mut s, &mut w, 1);
-    assert_eq!((map.as_str(), spawn.as_str()), ("wiese-1", "west"));
+    assert_eq!((map.as_str(), spawn.as_str()), ("meadow-1", "west"));
     let mut w = s.enter(&map, load(&map), &spawn, &tuning);
-    assert!(holds(&s, "quest brunnen schritt kaefer"));
+    assert!(holds(&s, "quest well step beetle"));
 
     // three spike beetles
     let content = s.content.clone();
     let kind = content
         .creatures
         .iter()
-        .position(|k| k.name == "stachelkaefer")
+        .position(|k| k.name == "spike_beetle")
         .unwrap();
     for id in 0..3 {
         let e = Event::CreatureDeath {
@@ -126,27 +126,27 @@ fn prologue_from_start_to_the_meadow_edge_and_back() {
         };
         s.save.on_event(&content, &content.creatures, s.player, &e);
     }
-    assert!(holds(&s, "quest brunnen schritt wiesenrand"));
+    assert!(holds(&s, "quest well step meadow_edge"));
 
     // glitter stone on the plateau
-    go_to(&mut s, &mut w, "glitzerstein", 0.0);
-    assert_eq!(s.save.count("glitzerstein"), 1);
-    assert!(holds(&s, "quest pips_stein schritt bringen"));
+    go_to(&mut s, &mut w, "glitter_stone", 0.0);
+    assert_eq!(s.save.count("glitter_stone"), 1);
+    assert!(holds(&s, "quest pips_stone step bring"));
 
     // Wiesenrand: quest done, chapter 1 starts
-    go_to(&mut s, &mut w, "wiesenrand", 0.0);
-    assert_eq!(s.save.quest("brunnen").unwrap().status, QuestStatus::Done);
-    assert!(holds(&s, "quest bluetenquelle aktiv"));
+    go_to(&mut s, &mut w, "meadow_edge", 0.0);
+    assert_eq!(s.save.quest("well").unwrap().status, QuestStatus::Done);
+    assert!(holds(&s, "quest blossom_spring active"));
 
     // spring stone: save, check the save game and continue
-    go_to(&mut s, &mut w, "quellstein", -36.0);
+    go_to(&mut s, &mut w, "spring_stone", -36.0);
     let ev = step(&mut s, &mut w, PlayerInput::default(), true);
     assert!(ev.contains(&SessionEvent::Save), "{ev:?}");
     let file = save::encode(&s.save);
     let loaded = save::decode(&file).unwrap();
     assert_eq!(loaded, s.save);
-    assert_eq!(loaded.location.map, "wiese-1");
-    assert_eq!(loaded.location.spawn, "quellstein");
+    assert_eq!(loaded.location.map, "meadow-1");
+    assert_eq!(loaded.location.spawn, "spring_stone");
 
     let mut s = Session::new(Content::builtin(), loaded);
     let loc = s.save.location.clone();
@@ -156,10 +156,10 @@ fn prologue_from_start_to_the_meadow_edge_and_back() {
     // back to Tauwinkel and bring Pip the stone
     go_to(&mut s, &mut w, "west", 0.0);
     let (map, spawn) = walk_until_travel(&mut s, &mut w, -1);
-    assert_eq!((map.as_str(), spawn.as_str()), ("tauwinkel", "ost"));
+    assert_eq!((map.as_str(), spawn.as_str()), ("tauwinkel", "east"));
     let mut w = s.enter(&map, load(&map), &spawn, &tuning);
-    assert_eq!(talk(&mut s, &mut w, "pip")[0], "stein_da");
-    assert!(holds(&s, "quest pips_stein erledigt"));
+    assert_eq!(talk(&mut s, &mut w, "pip")[0], "stone_here");
+    assert!(holds(&s, "quest pips_stone done"));
 }
 
 /// Flip pull switches with a real hook shot from below (R2-M2.2): in `wald-3` and at
@@ -167,16 +167,16 @@ fn prologue_from_start_to_the_meadow_edge_and_back() {
 #[test]
 fn pull_levers_flip_with_a_real_hook_shot() {
     for (map, spawn, lever, flag) in [
-        ("wald-3", "ost", "zug", "zug.wald3"),
-        ("tauwinkel", "start", "hof-zug", "hof.zugtor"),
-        ("wiese-1", "west", "wiese1-zug", "wiese1.zug"),
-        ("wiese-2", "west", "wiese2-zug", "wiese2.zug"),
+        ("forest-3", "east", "pull", "pull.forest3"),
+        ("tauwinkel", "start", "yard-pull", "yard.pull_gate"),
+        ("meadow-1", "west", "meadow1-pull", "meadow1.pull"),
+        ("meadow-2", "west", "meadow2-pull", "meadow2.pull"),
     ] {
         let tuning = Tuning::default();
         let mut s = Session::new_game(Content::builtin());
         let mut w = s.enter(map, load(map), spawn, &tuning);
         s.save
-            .run(&s.content.clone(), &["faehigkeit heranhooken".into()]);
+            .run(&s.content.clone(), &["ability pull_hook".into()]);
         s.sync_world(&mut w);
         let at = s.map.adventure.object(lever).unwrap().pos;
         // let Elora drop onto the ground below it
@@ -214,39 +214,38 @@ fn chapter_three_from_the_sunken_path_to_the_spring_and_home() {
     let tuning = Tuning::default();
     // before chapter 3 the sunken path is closed
     let mut s = Session::new_game(Content::builtin());
-    let mut w = s.enter("tauwinkel", load("tauwinkel"), "hohlweg", &tuning);
+    let mut w = s.enter("tauwinkel", load("tauwinkel"), "sunken_path", &tuning);
     step(&mut s, &mut w, PlayerInput::default(), false);
-    let lid = s.map.adventure.object("hohlweg-deckel").unwrap().pos;
+    let lid = s.map.adventure.object("sunken-path-lid").unwrap().pos;
     assert!(w.collision.tile_at(lid + Vec2::new(16.0, 16.0)).is_solid());
 
     let mut s = Session::new_game(Content::builtin());
     s.save
         .run(&s.content.clone(), &["quest glutsand start".into()]);
-    let mut w = s.enter("tauwinkel", load("tauwinkel"), "hohlweg", &tuning);
+    let mut w = s.enter("tauwinkel", load("tauwinkel"), "sunken_path", &tuning);
     step(&mut s, &mut w, PlayerInput::default(), false);
     assert!(!w.collision.tile_at(lid + Vec2::new(16.0, 16.0)).is_solid());
     let (map, spawn) = walk_until_travel(&mut s, &mut w, 1);
-    assert_eq!((map.as_str(), spawn.as_str()), ("wueste-1", "nord"));
+    assert_eq!((map.as_str(), spawn.as_str()), ("desert-1", "north"));
     let mut w = s.enter(&map, load(&map), &spawn, &tuning);
-    assert!(holds(&s, "quest glutsand schritt sirup"));
+    assert!(holds(&s, "quest glutsand step sirup"));
     assert!(s.hot());
 
     // caravan camp: Sirup and Palma
-    let mut w = travel(&mut s, &mut w, "ost", 1);
-    assert_eq!(s.map_name, "wueste-2");
-    assert_eq!(talk(&mut s, &mut w, "sirup")[0], "begruessung");
-    assert!(holds(&s, "quest glutsand schritt ruinen"));
+    let mut w = travel(&mut s, &mut w, "east", 1);
+    assert_eq!(s.map_name, "desert-2");
+    assert_eq!(talk(&mut s, &mut w, "sirup")[0], "greeting");
+    assert!(holds(&s, "quest glutsand step ruins"));
     talk(&mut s, &mut w, "palma");
-    assert!(holds(&s, "quest oase aktiv"));
+    assert!(holds(&s, "quest oasis active"));
 
     // ruins: fetch water, stomp into the chamber
-    let mut w = travel(&mut s, &mut w, "ost", 1);
-    assert_eq!(s.map_name, "wueste-3");
-    assert!(holds(&s, "quest glutsand schritt quelle"));
-    talk(&mut s, &mut w, "ruinenquelle");
-    assert_eq!(s.save.count("wasser"), 3);
-    s.save
-        .run(&s.content.clone(), &["quest ruine start".into()]);
+    let mut w = travel(&mut s, &mut w, "east", 1);
+    assert_eq!(s.map_name, "desert-3");
+    assert!(holds(&s, "quest glutsand step spring"));
+    talk(&mut s, &mut w, "ruin_spring");
+    assert_eq!(s.save.count("water"), 3);
+    s.save.run(&s.content.clone(), &["quest ruin start".into()]);
     w.set_abilities(
         s.player,
         elora_sim::Abilities::NONE.with(elora_sim::Ability::Stomp),
@@ -261,7 +260,7 @@ fn chapter_three_from_the_sunken_path_to_the_spring_and_home() {
     for _ in 0..20 {
         step(&mut s, &mut w, PlayerInput::default(), false);
     }
-    assert!(holds(&s, "quest ruine schritt kammer"), "the floor holds");
+    assert!(holds(&s, "quest ruin step chamber"), "the floor holds");
     let down = PlayerInput {
         down: true,
         ..PlayerInput::default()
@@ -285,32 +284,32 @@ fn chapter_three_from_the_sunken_path_to_the_spring_and_home() {
         step(&mut s, &mut w, PlayerInput::default(), false);
     }
     assert!(
-        holds(&s, "quest ruine schritt tafel"),
+        holds(&s, "quest ruin step tablet"),
         "stomped through the floor"
     );
-    talk(&mut s, &mut w, "tafel-kammer");
-    assert!(holds(&s, "quest ruine schritt bericht"));
+    talk(&mut s, &mut w, "tablet-chamber");
+    assert!(holds(&s, "quest ruin step report"));
 
     // back to the oasis and water it
     let mut w = travel(&mut s, &mut w, "west", -1);
-    assert_eq!(s.map_name, "wueste-2");
+    assert_eq!(s.map_name, "desert-2");
     for n in 1..=3 {
         assert_eq!(
-            talk(&mut s, &mut w, &format!("giessstelle-{n}"))[0],
-            "giessen"
+            talk(&mut s, &mut w, &format!("watering-spot-{n}"))[0],
+            "water"
         );
     }
-    assert!(holds(&s, "quest oase schritt danke"));
+    assert!(holds(&s, "quest oasis step thanks"));
     // the blossom is standing there now
-    assert!(s.npcs(&w).iter().any(|n| n.id == "bluete-1"));
-    assert!(!s.npcs(&w).iter().any(|n| n.id == "giessstelle-1"));
+    assert!(s.npcs(&w).iter().any(|n| n.id == "blossom-1"));
+    assert!(!s.npcs(&w).iter().any(|n| n.id == "watering-spot-1"));
     talk(&mut s, &mut w, "palma");
-    assert!(holds(&s, "quest oase erledigt"));
+    assert!(holds(&s, "quest oasis done"));
 
     // ember spring: in the shadow of the cauldron, fight, gate opens
-    let mut w = s.enter("wueste-arena", load("wueste-arena"), "west", &tuning);
-    assert!(holds(&s, "quest glutsand schritt hueter"));
-    go_to(&mut s, &mut w, "sandschlange", -200.0);
+    let mut w = s.enter("desert-arena", load("desert-arena"), "west", &tuning);
+    assert!(holds(&s, "quest glutsand step guardian"));
+    go_to(&mut s, &mut w, "sand_serpent", -200.0);
     assert!(!s.in_sun, "the basin lies in the shade");
     // dazed on the ground, one hammer blow calms her
     assert_eq!(w.creatures.len(), 1, "only the sand snake in the basin");
@@ -340,17 +339,17 @@ fn chapter_three_from_the_sunken_path_to_the_spring_and_home() {
         }),
         "victory screen after the guardian"
     );
-    assert_eq!(s.save.flag("besiegt.sandschlange"), 1);
-    assert!(s.save.count("quellfunke") >= 1, "spark collected");
-    assert!(holds(&s, "quest glutsand schritt funke"));
-    let gate = s.map.adventure.object("tor").unwrap().pos;
+    assert_eq!(s.save.flag("defeated.sand_serpent"), 1);
+    assert!(s.save.count("spring_spark") >= 1, "spark collected");
+    assert!(holds(&s, "quest glutsand step spark"));
+    let gate = s.map.adventure.object("gate").unwrap().pos;
     assert!(!w.collision.tile_at(gate + Vec2::new(16.0, 16.0)).is_solid());
-    assert_eq!(talk(&mut s, &mut w, "schlange")[0], "erwacht");
+    assert_eq!(talk(&mut s, &mut w, "serpent")[0], "awake");
     let (map, spawn) = {
-        go_to(&mut s, &mut w, "ost", 0.0);
+        go_to(&mut s, &mut w, "east", 0.0);
         walk_until_travel(&mut s, &mut w, 1)
     };
-    assert_eq!((map.as_str(), spawn.as_str()), ("tauwinkel", "hohlweg"));
+    assert_eq!((map.as_str(), spawn.as_str()), ("tauwinkel", "sunken_path"));
 }
 
 /// Stomp chambers (R2-M2.3, M2.3.6): the crumble floor holds until Elora jumps onto it with
@@ -360,17 +359,17 @@ fn chapter_three_from_the_sunken_path_to_the_spring_and_home() {
 fn stomp_vaults_open_only_with_a_stomp() {
     let tuning = Tuning::default();
     for (map, spawn, id) in [
-        ("tauwinkel", "start", "stampf"),
-        ("wiese-2", "west", "wiese2-stampf"),
-        ("wald-1", "ost", "wald1-stampf"),
-        ("wald-3", "ost", "wald3-stampf"),
+        ("tauwinkel", "start", "stomp"),
+        ("meadow-2", "west", "meadow2-stomp"),
+        ("forest-1", "east", "forest1-stomp"),
+        ("forest-3", "east", "forest3-stomp"),
     ] {
         let mut s = Session::new_game(Content::builtin());
         let mut w = s.enter(map, load(map), spawn, &tuning);
         let chest = s
             .map
             .adventure
-            .object(&format!("{id}-truhe"))
+            .object(&format!("{id}-chest"))
             .unwrap_or_else(|| panic!("{map}: chest missing"))
             .pos;
         // crumble floor next to the chest: centre and top edge
@@ -464,7 +463,7 @@ fn chapter_four_from_the_mountain_path_to_the_ice_hall_and_home() {
     let mut s = Session::new_game(Content::builtin());
     s.save
         .run(&s.content.clone(), &["quest frostspitzen start".into()]);
-    let mut w = s.enter("tauwinkel", load("tauwinkel"), "bergsteig", &tuning);
+    let mut w = s.enter("tauwinkel", load("tauwinkel"), "mountain_path", &tuning);
     // ice lid (columns 343–345, rows 32–33): holds without stomp
     let lid = Vec2::new(344.5 * 32.0, 32.0 * 32.0 - 20.0);
     w.spawn_character(s.player, lid);
@@ -498,48 +497,48 @@ fn chapter_four_from_the_mountain_path_to_the_ice_hall_and_home() {
             .is_some_and(|b| b.contains(&(344, 32)))
     );
     let mut w = s.enter(&map, load(&map), &spawn, &tuning);
-    assert!(holds(&s, "quest frostspitzen schritt flocke"));
+    assert!(holds(&s, "quest frostspitzen step flocke"));
     assert!(s.chilly());
     // a fire burns at the entrance: it stays warm there
     s.cold = 0.8;
-    go_to(&mut s, &mut w, "feuer-eingang", 0.0);
+    go_to(&mut s, &mut w, "fire-entrance", 0.0);
     assert!(s.cold < 0.8, "warmer at the fire: {}", s.cold);
 
     // mountain village: Flocke, rope from the cellar, climbing claws
-    let mut w = travel(&mut s, &mut w, "ost", 1);
+    let mut w = travel(&mut s, &mut w, "east", 1);
     assert_eq!(s.map_name, "frost-2");
-    assert_eq!(talk(&mut s, &mut w, "flocke")[0], "begruessung");
-    assert!(holds(&s, "quest frostspitzen schritt seil"));
-    go_to(&mut s, &mut w, "truhe-seil", -30.0);
+    assert_eq!(talk(&mut s, &mut w, "flocke")[0], "greeting");
+    assert!(holds(&s, "quest frostspitzen step rope"));
+    go_to(&mut s, &mut w, "chest-rope", -30.0);
     step(&mut s, &mut w, PlayerInput::default(), true);
     for _ in 0..40 {
         step(&mut s, &mut w, PlayerInput::default(), false);
     }
-    assert_eq!(s.save.count("seil"), 1, "rope from the chest in the cellar");
-    assert_eq!(talk(&mut s, &mut w, "flocke")[0], "seil_zurueck");
+    assert_eq!(s.save.count("rope"), 1, "rope from the chest in the cellar");
+    assert_eq!(talk(&mut s, &mut w, "flocke")[0], "rope_back");
     assert!(s.save.abilities().has(elora_sim::Ability::Grip));
-    assert!(holds(&s, "quest kletterer aktiv"));
+    assert!(holds(&s, "quest climbers active"));
     talk(&mut s, &mut w, "kiesel");
-    assert_eq!(s.save.flag("kletterer.gefunden"), 1);
+    assert_eq!(s.save.flag("climbers.found"), 1);
     // Kiesel now sits in the hut
-    assert!(s.npcs(&w).iter().any(|n| n.id == "kiesel-huette"));
+    assert!(s.npcs(&w).iter().any(|n| n.id == "kiesel-hut"));
     assert!(!s.npcs(&w).iter().any(|n| n.id == "kiesel"));
 
     // summit ridge: always in the blizzard, the grey spot
-    let mut w = travel(&mut s, &mut w, "ost", 1);
+    let mut w = travel(&mut s, &mut w, "east", 1);
     assert_eq!(s.map_name, "frost-3");
-    assert!(holds(&s, "quest frostspitzen schritt quelle"));
+    assert!(holds(&s, "quest frostspitzen step spring"));
     assert_eq!(s.map.weather.kind, elora_map::WeatherKind::Blizzard);
-    talk(&mut s, &mut w, "graue-stelle");
-    assert_eq!(s.save.flag("duerrer.grat"), 1);
+    talk(&mut s, &mut w, "grey-spot");
+    assert_eq!(s.save.flag("withered_one.ridge"), 1);
     talk(&mut s, &mut w, "wicke");
 
     // ice hall: fight, gate opens
-    let mut w = travel(&mut s, &mut w, "ost", 1);
+    let mut w = travel(&mut s, &mut w, "east", 1);
     assert_eq!(s.map_name, "frost-arena");
     assert!(s.map.weather.is_clear(), "the hall stays fair");
-    assert!(holds(&s, "quest frostspitzen schritt hueter"));
-    go_to(&mut s, &mut w, "eiskoenigin", -150.0);
+    assert!(holds(&s, "quest frostspitzen step guardian"));
+    go_to(&mut s, &mut w, "ice_queen", -150.0);
     let kind = w.creature_kind("kristella").expect("kind");
     let queen = w
         .creatures
@@ -571,17 +570,20 @@ fn chapter_four_from_the_mountain_path_to_the_ice_hall_and_home() {
         }),
         "victory screen after the guardian"
     );
-    assert_eq!(s.save.flag("besiegt.kristella"), 1);
-    assert!(s.save.count("quellfunke") >= 1, "spark collected");
-    let gate = s.map.adventure.object("tor").unwrap().pos;
+    assert_eq!(s.save.flag("defeated.kristella"), 1);
+    assert!(s.save.count("spring_spark") >= 1, "spark collected");
+    let gate = s.map.adventure.object("gate").unwrap().pos;
     assert!(!w.collision.tile_at(gate + Vec2::new(16.0, 16.0)).is_solid());
-    assert_eq!(talk(&mut s, &mut w, "kristella")[0], "erwacht");
-    assert_eq!(s.save.flag("befreit.frostquelle"), 1);
+    assert_eq!(talk(&mut s, &mut w, "kristella")[0], "awake");
+    assert_eq!(s.save.flag("freed.frost_spring"), 1);
     let (map, spawn) = {
-        go_to(&mut s, &mut w, "ost", 0.0);
+        go_to(&mut s, &mut w, "east", 0.0);
         walk_until_travel(&mut s, &mut w, 1)
     };
-    assert_eq!((map.as_str(), spawn.as_str()), ("tauwinkel", "bergsteig"));
+    assert_eq!(
+        (map.as_str(), spawn.as_str()),
+        ("tauwinkel", "mountain_path")
+    );
 }
 
 /// Climbing spots for the return (R2-M2.4, M2.4.7): you walk through under the hanging
@@ -591,9 +593,9 @@ fn chapter_four_from_the_mountain_path_to_the_ice_hall_and_home() {
 fn climb_vaults_need_the_grip() {
     let tuning = Tuning::default();
     for (map, spawn, id) in [
-        ("wiese-2", "west", "wiese2-kletter"),
-        ("wald-1", "ost", "wald1-kletter"),
-        ("wueste-2", "west", "wueste2-kletter"),
+        ("meadow-2", "west", "meadow2-climb"),
+        ("forest-1", "east", "forest1-climb"),
+        ("desert-2", "west", "desert2-climb"),
     ] {
         let highest = |abilities: elora_sim::Abilities| {
             let mut s = Session::new_game(Content::builtin());
@@ -603,7 +605,7 @@ fn climb_vaults_need_the_grip() {
             let chest = s
                 .map
                 .adventure
-                .object(&format!("{id}-truhe"))
+                .object(&format!("{id}-chest"))
                 .unwrap_or_else(|| panic!("{map}: chest missing"))
                 .pos;
             // under the chimney: five columns next to the chest is the middle between the walls
@@ -703,11 +705,10 @@ fn hammer_comes_from_klonk() {
         "no swing without a hammer"
     );
     // Tüftel sends Elora to Klonk, Klonk gives the hammer
-    s.save
-        .run(&s.content.clone(), &["quest brunnen start".into()]);
+    s.save.run(&s.content.clone(), &["quest well start".into()]);
     talk(&mut s, &mut w, "tueftel");
-    assert!(holds(&s, "quest brunnen schritt klonk"));
-    assert_eq!(talk(&mut s, &mut w, "klonk")[0], "uebung");
+    assert!(holds(&s, "quest well step klonk"));
+    assert_eq!(talk(&mut s, &mut w, "klonk")[0], "practice");
     s.sync_world(&mut w);
     assert!(w.character(s.player).unwrap().arsenal.has(hammer));
     assert_eq!(w.character(s.player).unwrap().arsenal.active, hammer);

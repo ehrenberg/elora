@@ -1,29 +1,31 @@
-//! Conditions (`if`) and effects (`do`) in dialogs and quests (A1.4, E-248).
+//! Conditions (`if`) and effects (`do`) in dialogs and quests (A1.4, E-248, RF-11).
 //!
-//! Short German sentences, checked when loading:
+//! Short English phrases, checked when loading. The German keywords of 0.9.x (`merker`,
+//! `quest … schritt`, `gib`, `nimm`, `faehigkeit` …) are still accepted for one release
+//! (D-RF-02): they are translated with the id dictionary before parsing.
 //!
 //! | Condition | Meaning |
 //! |---|---|
-//! | `stufe >= 3`, `glanz < 50` | level, gleam drops (comparisons `= != < <= > >=`) |
-//! | `quest brunnen neu/aktiv/erledigt/gescheitert` | state of a quest |
-//! | `quest brunnen schritt bruecke` | current step |
-//! | `merker oma.frech`, `merker tor >= 2` | world state (without comparison: not 0) |
-//! | `zuneigung lotte >= 5` | affection of a character |
-//! | `hat bernstein 3` | item (without number: at least 1) |
-//! | `faehigkeit gleiten` | area ability |
-//! | `waffe hammer` | Elora owns the weapon (E-354) |
+//! | `level >= 3`, `gleam < 50` | level, gleam drops (comparisons `= != < <= > >=`) |
+//! | `quest well new/active/done/failed` | state of a quest |
+//! | `quest well step bridge` | current step |
+//! | `flag oma.cheeky`, `flag gate >= 2` | world state (without comparison: not 0) |
+//! | `affection lotte >= 5` | affection of a character |
+//! | `has amber 3` | item (without number: at least 1) |
+//! | `ability glide` | area ability: `hook-jerk`, `pull_hook`, `stomp`, `ice_grip`, `glide` |
+//! | `weapon hammer` | Elora owns the weapon (E-354) |
 //!
-//! Several conditions with ` und `, negation with `nicht ` in front.
+//! Several conditions with ` and `, negation with `not ` in front.
 //!
 //! | Effect | Meaning |
 //! |---|---|
-//! | `quest brunnen start/weiter/fertig/scheitern` | control a quest (`weiter` = current step done) |
-//! | `zuneigung oma +1` | change affection |
-//! | `merker oma.frech = 1`, `merker tor +1` | set or change world state |
-//! | `gib heiltrank 2`, `nimm bernstein 3` | give an item to Elora or take it away |
-//! | `erfahrung 50`, `punkte 1` | experience, dewdrop points |
-//! | `faehigkeit hook-ruck`, `waffe granate` | unlock an ability or weapon |
-//! | `laden lotte`, `schmied`, `baum` | open shop, smithy, skill tree |
+//! | `quest well start/advance/finish/fail` | control a quest (`advance` = current step done) |
+//! | `affection oma +1` | change affection |
+//! | `flag oma.cheeky = 1`, `flag gate +1` | set or change world state |
+//! | `give healing_potion 2`, `take amber 3` | give an item to Elora or take it away |
+//! | `xp 50`, `points 1` | experience, dewdrop points |
+//! | `ability hook-jerk`, `weapon grenade` | unlock an ability or weapon |
+//! | `shop lotte`, `forge`, `skills` | open shop, smithy, skill tree |
 
 use std::fmt;
 
@@ -139,14 +141,14 @@ fn int(src: &str, s: &str) -> Result<i64, ScriptError> {
     s.parse().or_else(|_| err(src, "number expected"))
 }
 
-/// Area ability by German name.
+/// Area ability by its name in the condition language.
 pub fn ability_by_name(s: &str) -> Option<Ability> {
     Some(match s {
-        "hook-ruck" => Ability::HookJerk,
-        "heranhooken" => Ability::Pull,
-        "stampfen" => Ability::Stomp,
-        "eisgriff" => Ability::Grip,
-        "gleiten" => Ability::Glide,
+        "hook-jerk" => Ability::HookJerk,
+        "pull_hook" => Ability::Pull,
+        "stomp" => Ability::Stomp,
+        "ice_grip" => Ability::Grip,
+        "glide" => Ability::Glide,
         _ => return None,
     })
 }
@@ -154,7 +156,7 @@ pub fn ability_by_name(s: &str) -> Option<Ability> {
 fn weapon_by_name(s: &str) -> Option<Weapon> {
     Some(match s {
         "hammer" => Weapon::Hammer,
-        "granate" | "granatwerfer" => Weapon::Grenade,
+        "grenade" | "grenade_launcher" => Weapon::Grenade,
         "laser" => Weapon::Laser,
         _ => return None,
     })
@@ -164,51 +166,56 @@ impl Cond {
     /// # Errors
     /// On unknown words or missing values.
     pub fn parse(src: &str) -> Result<Self, ScriptError> {
-        let parts: Vec<&str> = src.split(" und ").map(str::trim).collect();
+        let english = elora_map::rename::translate_script(src.trim());
+        Self::parse_english(&english).map_err(|e| ScriptError(e.0.replace(&english, src)))
+    }
+
+    fn parse_english(src: &str) -> Result<Self, ScriptError> {
+        let parts: Vec<&str> = src.split(" and ").map(str::trim).collect();
         if parts.len() > 1 {
             return parts
                 .iter()
-                .map(|p| Self::parse(p))
+                .map(|p| Self::parse_english(p))
                 .collect::<Result<Vec<_>, _>>()
                 .map(Self::All);
         }
         let s = src.trim();
-        if let Some(rest) = s.strip_prefix("nicht ") {
-            return Ok(Self::Not(Box::new(Self::parse(rest)?)));
+        if let Some(rest) = s.strip_prefix("not ") {
+            return Ok(Self::Not(Box::new(Self::parse_english(rest)?)));
         }
         let t: Vec<&str> = s.split_whitespace().collect();
         let cmp = |op: &str| {
             Cmp::parse(op).ok_or_else(|| ScriptError(format!("`{src}`: comparison expected")))
         };
         Ok(match t.as_slice() {
-            ["stufe", op, n] => Self::Level(cmp(op)?, int(src, n)?),
-            ["glanz", op, n] => Self::Gleam(cmp(op)?, int(src, n)?),
+            ["level", op, n] => Self::Level(cmp(op)?, int(src, n)?),
+            ["gleam", op, n] => Self::Gleam(cmp(op)?, int(src, n)?),
             ["quest", id, state] => Self::Quest(
                 (*id).to_owned(),
                 match *state {
-                    "neu" => QuestCheck::New,
-                    "aktiv" => QuestCheck::Active,
-                    "erledigt" => QuestCheck::Done,
-                    "gescheitert" => QuestCheck::Failed,
-                    _ => return err(src, "expected neu, aktiv, erledigt or gescheitert"),
+                    "new" => QuestCheck::New,
+                    "active" => QuestCheck::Active,
+                    "done" => QuestCheck::Done,
+                    "failed" => QuestCheck::Failed,
+                    _ => return err(src, "expected new, active, done or failed"),
                 },
             ),
-            ["quest", id, "schritt", step] => {
+            ["quest", id, "step", step] => {
                 Self::Quest((*id).to_owned(), QuestCheck::Step((*step).to_owned()))
             }
-            ["merker", name] => Self::Flag((*name).to_owned(), Cmp::Ne, 0),
-            ["merker", name, op, n] => Self::Flag((*name).to_owned(), cmp(op)?, int(src, n)?),
-            ["zuneigung", who, op, n] => Self::Affection((*who).to_owned(), cmp(op)?, int(src, n)?),
-            ["hat", item] => Self::Has((*item).to_owned(), 1),
-            ["hat", item, n] => Self::Has(
+            ["flag", name] => Self::Flag((*name).to_owned(), Cmp::Ne, 0),
+            ["flag", name, op, n] => Self::Flag((*name).to_owned(), cmp(op)?, int(src, n)?),
+            ["affection", who, op, n] => Self::Affection((*who).to_owned(), cmp(op)?, int(src, n)?),
+            ["has", item] => Self::Has((*item).to_owned(), 1),
+            ["has", item, n] => Self::Has(
                 (*item).to_owned(),
                 u32::try_from(int(src, n)?).or_else(|_| err(src, "count must be 0 or more"))?,
             ),
-            ["faehigkeit", name] => Self::Ability(
+            ["ability", name] => Self::Ability(
                 ability_by_name(name)
                     .ok_or_else(|| ScriptError(format!("`{src}`: unknown ability `{name}`")))?,
             ),
-            ["waffe", name] => Self::Weapon(
+            ["weapon", name] => Self::Weapon(
                 weapon_by_name(name)
                     .ok_or_else(|| ScriptError(format!("`{src}`: unknown weapon `{name}`")))?,
             ),
@@ -221,6 +228,11 @@ impl Action {
     /// # Errors
     /// On unknown words or missing values.
     pub fn parse(src: &str) -> Result<Self, ScriptError> {
+        let english = elora_map::rename::translate_script(src.trim());
+        Self::parse_english(&english).map_err(|e| ScriptError(e.0.replace(&english, src)))
+    }
+
+    fn parse_english(src: &str) -> Result<Self, ScriptError> {
         let t: Vec<&str> = src.split_whitespace().collect();
         let count = |n: Option<&&str>| -> Result<u32, ScriptError> {
             n.map_or(Ok(1), |n| {
@@ -234,39 +246,39 @@ impl Action {
                 (*id).to_owned(),
                 match *op {
                     "start" => QuestOp::Start,
-                    "weiter" => QuestOp::Advance,
-                    "fertig" => QuestOp::Finish,
-                    "scheitern" => QuestOp::Fail,
-                    _ => return err(src, "expected start, weiter, fertig or scheitern"),
+                    "advance" => QuestOp::Advance,
+                    "finish" => QuestOp::Finish,
+                    "fail" => QuestOp::Fail,
+                    _ => return err(src, "expected start, advance, finish or fail"),
                 },
             ),
-            ["zuneigung", who, n] => Self::Affection(
+            ["affection", who, n] => Self::Affection(
                 (*who).to_owned(),
                 i32::try_from(signed(n)?).or_else(|_| err(src, "number too large"))?,
             ),
-            ["merker", name, "=", n] => Self::SetFlag((*name).to_owned(), int(src, n)?),
-            ["merker", name, n] if n.starts_with(['+', '-']) => {
+            ["flag", name, "=", n] => Self::SetFlag((*name).to_owned(), int(src, n)?),
+            ["flag", name, n] if n.starts_with(['+', '-']) => {
                 Self::AddFlag((*name).to_owned(), signed(n)?)
             }
-            ["gib", item, rest @ ..] if rest.len() <= 1 => {
+            ["give", item, rest @ ..] if rest.len() <= 1 => {
                 Self::Give((*item).to_owned(), count(rest.first())?)
             }
-            ["nimm", item, rest @ ..] if rest.len() <= 1 => {
+            ["take", item, rest @ ..] if rest.len() <= 1 => {
                 Self::Take((*item).to_owned(), count(rest.first())?)
             }
-            ["erfahrung", n] => Self::Xp(count(Some(n))?),
-            ["punkte", n] => Self::Points(count(Some(n))?),
-            ["faehigkeit", name] => Self::Ability(
+            ["xp", n] => Self::Xp(count(Some(n))?),
+            ["points", n] => Self::Points(count(Some(n))?),
+            ["ability", name] => Self::Ability(
                 ability_by_name(name)
                     .ok_or_else(|| ScriptError(format!("`{src}`: unknown ability `{name}`")))?,
             ),
-            ["waffe", name] => Self::Weapon(
+            ["weapon", name] => Self::Weapon(
                 weapon_by_name(name)
                     .ok_or_else(|| ScriptError(format!("`{src}`: unknown weapon `{name}`")))?,
             ),
-            ["laden", id] => Self::Open(Open::Shop((*id).to_owned())),
-            ["schmied"] => Self::Open(Open::Forge),
-            ["baum"] => Self::Open(Open::Skills),
+            ["shop", id] => Self::Open(Open::Shop((*id).to_owned())),
+            ["forge"] => Self::Open(Open::Forge),
+            ["skills"] => Self::Open(Open::Skills),
             _ => return err(src, "unknown action"),
         })
     }
@@ -278,69 +290,100 @@ mod tests {
 
     #[test]
     fn conditions_parse() {
-        assert_eq!(Cond::parse("stufe >= 3"), Ok(Cond::Level(Cmp::Ge, 3)));
+        assert_eq!(Cond::parse("level >= 3"), Ok(Cond::Level(Cmp::Ge, 3)));
         assert_eq!(
-            Cond::parse("nicht merker oma.frech und hat bernstein 2"),
+            Cond::parse("not flag oma.cheeky and has amber 2"),
             Ok(Cond::All(vec![
-                Cond::Not(Box::new(Cond::Flag("oma.frech".into(), Cmp::Ne, 0))),
-                Cond::Has("bernstein".into(), 2),
+                Cond::Not(Box::new(Cond::Flag("oma.cheeky".into(), Cmp::Ne, 0))),
+                Cond::Has("amber".into(), 2),
             ]))
         );
         assert_eq!(
-            Cond::parse("quest brunnen schritt bruecke"),
+            Cond::parse("quest well step bridge"),
             Ok(Cond::Quest(
-                "brunnen".into(),
-                QuestCheck::Step("bruecke".into())
+                "well".into(),
+                QuestCheck::Step("bridge".into())
             ))
         );
         assert_eq!(
-            Cond::parse("faehigkeit gleiten"),
+            Cond::parse("ability glide"),
             Ok(Cond::Ability(Ability::Glide))
         );
         assert_eq!(
-            Cond::parse("waffe hammer"),
+            Cond::parse("weapon hammer"),
             Ok(Cond::Weapon(Weapon::Hammer))
         );
         assert!(Cond::parse("stufe ungefähr 3").is_err());
-        assert!(Cond::parse("quest brunnen bald").is_err());
+        assert!(Cond::parse("quest well bald").is_err());
         assert!(Cond::parse("wetter schön").is_err());
     }
 
     #[test]
     fn actions_parse() {
         assert_eq!(
-            Action::parse("quest brunnen start"),
-            Ok(Action::Quest("brunnen".into(), QuestOp::Start))
+            Action::parse("quest well start"),
+            Ok(Action::Quest("well".into(), QuestOp::Start))
         );
         assert_eq!(
-            Action::parse("zuneigung oma +1"),
+            Action::parse("affection oma +1"),
             Ok(Action::Affection("oma".into(), 1))
         );
         assert_eq!(
-            Action::parse("zuneigung pip -2"),
+            Action::parse("affection pip -2"),
             Ok(Action::Affection("pip".into(), -2))
         );
         assert_eq!(
-            Action::parse("merker tor = 2"),
-            Ok(Action::SetFlag("tor".into(), 2))
+            Action::parse("flag gate = 2"),
+            Ok(Action::SetFlag("gate".into(), 2))
         );
         assert_eq!(
-            Action::parse("merker tor +1"),
-            Ok(Action::AddFlag("tor".into(), 1))
+            Action::parse("flag gate +1"),
+            Ok(Action::AddFlag("gate".into(), 1))
         );
         assert_eq!(
-            Action::parse("gib heiltrank"),
-            Ok(Action::Give("heiltrank".into(), 1))
+            Action::parse("give healing_potion"),
+            Ok(Action::Give("healing_potion".into(), 1))
         );
         assert_eq!(
-            Action::parse("waffe granate"),
+            Action::parse("weapon grenade"),
             Ok(Action::Weapon(Weapon::Grenade))
         );
         assert_eq!(
-            Action::parse("laden lotte"),
+            Action::parse("shop lotte"),
             Ok(Action::Open(Open::Shop("lotte".into())))
         );
         assert!(Action::parse("gib").is_err());
-        assert!(Action::parse("fliegen").is_err());
+        assert!(Action::parse("fly").is_err());
+    }
+
+    /// The German words of 0.9.x still work for one release (D-RF-02).
+    #[test]
+    fn german_keywords_are_still_accepted() {
+        assert_eq!(
+            Cond::parse("nicht merker oma.frech und hat bernstein 2"),
+            Cond::parse("not flag oma.cheeky and has amber 2")
+        );
+        assert_eq!(
+            Cond::parse("quest brunnen schritt bruecke"),
+            Cond::parse("quest well step bridge")
+        );
+        assert_eq!(
+            Cond::parse("faehigkeit hook-ruck"),
+            Ok(Cond::Ability(Ability::HookJerk))
+        );
+        assert_eq!(
+            Action::parse("gib heiltrank 2"),
+            Action::parse("give healing_potion 2")
+        );
+        assert_eq!(
+            Action::parse("quest brunnen weiter"),
+            Action::parse("quest well advance")
+        );
+        assert_eq!(Action::parse("baum"), Ok(Action::Open(Open::Skills)));
+        let e = Cond::parse("merker").unwrap_err();
+        assert!(
+            e.0.contains("`merker`"),
+            "error names the original text: {e}"
+        );
     }
 }

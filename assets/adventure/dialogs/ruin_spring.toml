@@ -1,0 +1,26 @@
+# Small spring in the ruins: fill the water skin (E-319, E-322)
+speaker = "ruin_spring"
+
+[[start]]
+if = "has water"
+node = "full"
+
+[[start]]
+if = "has waterskin"
+node = "fill"
+
+[[start]]
+node = "empty"
+
+[[node]]
+id = "empty"
+text = { de = "Klares Wasser sprudelt zwischen den Steinen. Wenn man nur etwas hätte, um es mitzunehmen …", en = "Clear water bubbles between the stones. If only you had something to carry it in …" }
+
+[[node]]
+id = "fill"
+text = { de = "Du füllst den Wasserschlauch bis zum Rand.", en = "You fill the water skin to the brim." }
+do = ["give water 3"]
+
+[[node]]
+id = "full"
+text = { de = "Der Schlauch ist schon voll.", en = "The skin is already full." }

@@ -1,0 +1,10 @@
+# Ruin tablet of the ember people: a grey figure bends over a spring (E-325)
+speaker = "tablet-2"
+
+[[start]]
+node = "text"
+
+[[node]]
+id = "text"
+text = { de = "Eine graue Gestalt beugt sich über eine Quelle. „Einst kam ein Grauer in der Nacht. Wo er trank, wurde der Sand blass. Wir fürchteten ihn und verschlossen die Kammer.“", en = "A grey figure bends over a spring. “Once a grey one came in the night. Where he drank, the sand turned pale. We feared him and sealed the chamber.”" }
+do = ["flag withered_one.tablet = 1"]

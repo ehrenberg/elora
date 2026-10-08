@@ -1,4 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-60 -80 120 90">
-  <!-- tafel (A1.7, aus tools/design/abenteuer_assets.py). Ursprung = Boden, Blick nach rechts. -->
-  <g id="figure"><g transform="scale(0.49999999999999994)"><path d="M -40,0 L -36,-90 Q 0,-104 36,-90 L 40,0 Z" fill="#c8b49a" stroke="#2b2b2b" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><path d="M -28,-74 H 28 M -28,-60 H 16 M -28,-46 H 24" stroke="#9a8468" stroke-width="3"/><path d="M -10,-34 q -6,-10 0,-16 q 4,8 10,0 q 6,6 0,16 Z" fill="#8a8a88" stroke="#5a5a58" stroke-width="2"/><path d="M -36,-10 l 10,-6 l 8,8" fill="none" stroke="#9a8468" stroke-width="2.5"/></g></g>
-</svg>

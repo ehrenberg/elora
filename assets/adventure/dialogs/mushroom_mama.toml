@@ -1,0 +1,33 @@
+# Mama Morel (R2-M2.2)
+speaker = "mushroom_mama"
+
+[[start]]
+if = "quest mushroom_child done"
+node = "after"
+
+[[start]]
+if = "flag mushroom_child.home"
+node = "thanks"
+
+[[start]]
+node = "worry"
+
+[[node]]
+id = "worry"
+text = { de = "Hast du meinen Krümel gesehen? So groß, roter Hut, weint schnell. Er ist seit dem Morgen fort.", en = "Have you seen my Crumb? This big, red hat, cries easily. He's been gone since morning." }
+
+[[node]]
+id = "thanks"
+text = { de = "Krümel! Da bist du ja! Danke, liebes Tropfenkind. Hier, nimm das – und komm jederzeit auf eine Suppe vorbei.", en = "Crumb! There you are! Thank you, dear drop child. Here, take this – and come by for soup any time." }
+do = ["affection mushroom_mama +2"]
+
+[[node]]
+id = "after"
+text = { de = "Die Suppe ist noch warm. Moos?", en = "The soup is still warm. Moss?" }
+
+[[bark]]
+if = "not flag mushroom_child.home"
+text = { de = "Krümel? Krüüümel!", en = "Crumb? Cruuumb!" }
+
+[[bark]]
+text = { de = "Pilzsuppe für alle!", en = "Mushroom soup for everyone!" }

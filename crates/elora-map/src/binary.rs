@@ -19,7 +19,8 @@ use crate::{Entity, EntityKind, MAX_SIZE, Map};
 /// Identifier at the start of the file.
 pub const MAGIC: [u8; 4] = *b"EMAP";
 /// Supported version of the binary format.
-pub const FORMAT_VERSION: u16 = 1;
+/// Version 2 (R2-RF, RF-13): English ids; version 1 maps are converted when they are read.
+pub const FORMAT_VERSION: u16 = 2;
 
 /// At most this many bytes are decompressed (protection against zip bombs).
 pub const MAX_PAYLOAD: usize = 32 << 20;
@@ -628,7 +629,7 @@ pub fn decode_draft(data: &[u8]) -> Result<Map> {
         return Err(MapError::BadMagic);
     }
     let version = head.u16()?;
-    if version != FORMAT_VERSION {
+    if version != FORMAT_VERSION && version != 1 {
         return Err(MapError::UnsupportedFormat { found: version });
     }
     let payload = miniz_oxide::inflate::decompress_to_vec_zlib_with_limit(head.0, MAX_PAYLOAD)
@@ -688,6 +689,9 @@ pub fn decode_draft(data: &[u8]) -> Result<Map> {
             .map_err(MapError::Adventure)?;
     }
     check_references(&map)?;
+    if version == 1 {
+        crate::rename::migrate_map(&mut map);
+    }
     Ok(map)
 }
 
@@ -968,22 +972,22 @@ mod tests {
             kind,
         };
         m.adventure.objects = vec![
-            o("eingang", 48.0, 80.0, ObjectKind::Spawn),
+            o("entrance", 48.0, 80.0, ObjectKind::Spawn),
             o(
-                "kaefer-1",
+                "beetle-1",
                 100.0,
                 80.0,
                 ObjectKind::Creature {
-                    kind: "stachelkaefer".into(),
+                    kind: "spike_beetle".into(),
                     persistent: false,
                 },
             ),
             o(
-                "hummel",
+                "bumblebee",
                 140.0,
                 60.0,
                 ObjectKind::Creature {
-                    kind: "hummel".into(),
+                    kind: "bumblebee".into(),
                     persistent: true,
                 },
             ),
@@ -999,56 +1003,56 @@ mod tests {
                 },
             ),
             o(
-                "truhe-1",
+                "chest-1",
                 200.0,
                 80.0,
                 ObjectKind::Chest {
-                    contents: vec![("glanztropfen".into(), 20), ("tauumhang".into(), 1)],
-                    lock: "hat schluessel".into(),
+                    contents: vec![("gleam_drops".into(), 20), ("dew_cape".into(), 1)],
+                    lock: "has key".into(),
                 },
             ),
             o(
-                "hebel",
+                "lever",
                 220.0,
                 80.0,
                 ObjectKind::Switch {
-                    flag: "tor.wiese".into(),
+                    flag: "gate.meadow".into(),
                     once: false,
                     trigger: SwitchTrigger::Hammer,
                 },
             ),
             o(
-                "tor",
+                "gate",
                 256.0,
                 32.0,
                 ObjectKind::Door {
                     size: (1, 2),
-                    open_if: "merker tor.wiese".into(),
+                    open_if: "flag gate.meadow".into(),
                 },
             ),
             o(
-                "stein",
+                "stone",
                 120.0,
                 70.0,
                 ObjectKind::Collectible {
-                    item: "glitzerstein".into(),
+                    item: "glitter_stone".into(),
                 },
             ),
-            o("quellstein", 160.0, 80.0, ObjectKind::SavePoint),
-            o("blume", 180.0, 84.0, ObjectKind::HealPlant { heal: 2 }),
+            o("spring_stone", 160.0, 80.0, ObjectKind::SavePoint),
+            o("flower", 180.0, 84.0, ObjectKind::HealPlant { heal: 2 }),
             o(
-                "weg-ost",
+                "path-east",
                 288.0,
                 32.0,
                 ObjectKind::Exit {
                     size: Vec2::new(32.0, 64.0),
-                    map: "wiese-2".into(),
+                    map: "meadow-2".into(),
                     spawn: "west".into(),
                     on_touch: true,
                 },
             ),
             o(
-                "bruecke",
+                "bridge",
                 64.0,
                 32.0,
                 ObjectKind::Zone {
@@ -1099,7 +1103,7 @@ mod tests {
         type Breaker = fn(&mut Map);
         let cases: [(Breaker, &str); 5] = [
             (
-                |m| m.adventure.objects[1].id = "eingang".into(),
+                |m| m.adventure.objects[1].id = "entrance".into(),
                 "duplicate id",
             ),
             (
@@ -1142,7 +1146,7 @@ mod tests {
             MapError::Truncated
         );
         let mut bad = w.0.clone();
-        bad[4 + 4 + 7 + 8] = 99; // kind of the first object
+        bad[4 + 4 + 8 + 8] = 99; // kind of the first object (after the id `entrance`)
         assert!(get_adventure(&mut Reader(&bad)).is_err());
     }
 
@@ -1198,7 +1202,7 @@ mod tests {
             },
         ];
         m.images = vec![Image {
-            name: "eigen".into(),
+            name: "own".into(),
             svg: b"<svg xmlns='http://www.w3.org/2000/svg'/>".to_vec(),
         }];
         m

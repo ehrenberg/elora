@@ -40,27 +40,27 @@ pub const DECOR_FILES: &[(&str, &[u8])] = assets!("decor":
     "rock-1", "rock-2", "mushroom-red", "mushroom-brown", "tree-round", "tree-pine", "fence",
     "sign-arrow", "sign-board",
     // thaw angle (A1.9, E-278); flowers, beds, flags faded and colored (E-277)
-    "haus-elora", "haus-oma", "brunnen", "werkstatt", "schmiede", "laden", "baumhaus",
-    "anschlagbrett", "wegweiser", "blumenkasten-blass", "blumenkasten-bunt", "beet-blass",
-    "beet-bunt", "kraeuterbeet-blass", "kraeuterbeet-bunt", "fahne-blass", "fahne-bunt",
+    "house-elora", "house-oma", "well", "workshop", "smithy", "shop", "treehouse",
+    "notice_board", "signpost", "window-box-pale", "window-box-colourful", "flower-bed-pale",
+    "flower-bed-colourful", "herb-bed-pale", "herb-bed-colourful", "banner-pale", "banner-colourful",
     // props and thorns (playtest A1.9, E-283)
-    "dornen", "bank", "laterne", "faesser", "holzstapel", "karren", "waescheleine", "heuballen",
-    "mauer", "giesskanne", "vogelhaus", "briefkasten", "korb", "kuerbisse", "katze", "vogel",
-    "schmetterling", "rauch", "baumstumpf", "farn", "beerenbusch", "loewenzahn", "trittsteine",
-    "blumentopf-blass", "blumentopf-bunt",
+    "thorns", "bench", "lantern", "barrels", "woodpile", "cart", "clothesline", "hay_bale",
+    "wall", "watering_can", "birdhouse", "mailbox", "basket", "pumpkins", "cat", "bird",
+    "butterfly", "smoke", "tree_stump", "fern", "berry_bush", "dandelion", "stepping_stones",
+    "flower-pot-pale", "flower-pot-colourful",
     // chapter 1 (R2-M2.1)
-    "bienenstock", "beutenstapel", "honigstand", "riesenblume-rosa", "riesenblume-gelb",
-    "riesenblume-lila", "girlande-fest", "festlaterne-fest", "festlaterne-gelb-fest",
-    "bluetenquelle-verdorrt", "bluetenquelle-befreit",
+    "beehive", "hive_stack", "honey_stand", "giant-flower-pink", "giant-flower-yellow",
+    "giant-flower-lilac", "garland-party", "party-lantern-party", "party-lantern-yellow-party",
+    "blossom-spring-withered", "blossom-spring-freed",
     // chapter 2 (R2-M2.2)
-    "waldbaum", "waldhaus", "haengebruecke", "leuchtpilze", "wurzelbogen", "pilzring",
-    "waldquelle-verdorrt", "waldquelle-befreit",
+    "forest_tree", "forest_house", "hanging_bridge", "glow_mushrooms", "root_arch", "mushroom_ring",
+    "moss-spring-withered", "moss-spring-freed",
     // chapter 3 (R2-M2.3)
-    "duene", "felsbogen", "saeule", "saeule-bruch", "ruinentor", "kaktus", "palme", "oase", "zelt",
-    "kamel", "glutquelle-verdorrt", "glutquelle-befreit", "grauspur",
+    "dune", "rock_arch", "pillar", "pillar-broken", "ruin_gate", "cactus", "palm", "oasis", "tent",
+    "camel", "ember-spring-withered", "ember-spring-freed", "grey_trail",
     // chapter 4 (R2-M2.4)
-    "gipfel", "tanne-schnee", "berghuette", "seilbruecke", "schneewehe", "gletscher", "feuerstelle",
-    "eisblock", "frostquelle-verdorrt", "frostquelle-befreit", "grauspur-eis",
+    "peak", "fir-snow", "mountain_hut", "rope_bridge", "snowdrift", "glacier", "fireplace",
+    "ice_block", "frost-spring-withered", "frost-spring-freed", "grey-trail-ice",
 );
 
 /// Built-in background graphic (also used via [`Art::Builtin`]).

@@ -603,13 +603,13 @@ mod tests {
         let creatures = crate::creatures::CreatureArt::load();
         let favorites = vec!["127.0.0.1:8303".to_owned(), "192.168.0.20:8303".to_owned()];
         let maps: Vec<String> = [
-            "ctf-nacht",
+            "ctf-night",
             "ctf-test",
-            "ctf-wald",
-            "dm-wiese",
+            "ctf-forest",
+            "dm-meadow",
             "dm-winter",
-            "dm-wueste",
-            "faehigkeiten-test",
+            "dm-desert",
+            "abilities-test",
             "look-test",
             "sandbox",
             "tiles-test",
@@ -618,13 +618,13 @@ mod tests {
         .map(str::to_owned)
         .to_vec();
         for (name, page) in [
-            ("spielen", Page::Play),
-            ("abenteuer", Page::Adventure),
-            ("erstellen", Page::Create),
-            ("einstellungen", Page::Settings),
+            ("play", Page::Play),
+            ("adventure", Page::Adventure),
+            ("create", Page::Create),
+            ("settings", Page::Settings),
             ("grafik", Page::Settings),
-            ("ueber", Page::Settings),
-            ("steuerung", Page::Settings),
+            ("about", Page::Settings),
+            ("controls", Page::Settings),
             ("pause", Page::Play),
         ] {
             let mut browser = crate::browser::Browser::default();
@@ -706,8 +706,8 @@ mod tests {
                 browser_loaded: Some(crate::browser::Tab::Favorites),
                 settings_tab: match name {
                     "grafik" => 2,
-                    "ueber" => 5,
-                    "steuerung" => 1,
+                    "about" => 5,
+                    "controls" => 1,
                     _ => 0,
                 },
                 address: "127.0.0.1:8303".into(),
@@ -726,7 +726,7 @@ mod tests {
                 slots: &[
                     crate::app_adventure::SlotView::Saved {
                         level: 4,
-                        map: "wiese-1".into(),
+                        map: "meadow-1".into(),
                         play_secs: 4520,
                         gleam: 128,
                     },

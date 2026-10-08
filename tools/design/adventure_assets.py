@@ -51,44 +51,44 @@ def signpost_npc():
 
 # Name: (box height, scale, {part: drawing})
 CREATURES = {
-    'stachelkaefer': (26, 0.36, {'idle': spike_beetle()}),
-    'pollenblaeser': (60, 0.42, {'idle': pollen_blower(shots=False)}),
-    'grashuepfer': (28, 0.36, {'idle': grasshopper(), 'air': grasshopper(True, arc=False)}),
-    'strohpuppe': (40, 0.5, {'idle': straw_dummy()}),
+    'spike_beetle': (26, 0.36, {'idle': spike_beetle()}),
+    'pollen_blower': (60, 0.42, {'idle': pollen_blower(shots=False)}),
+    'grasshopper': (28, 0.36, {'idle': grasshopper(), 'air': grasshopper(True, arc=False)}),
+    'straw_dummy': (40, 0.5, {'idle': straw_dummy()}),
     # Chapter 1 (R2-M2.1): warden with flight, dive and dazed pose, confused bee
-    'brummbaer': (120, 0.62, {'idle': f'<g transform="translate(0,-26)">{bumblebee("flug")}</g>',
+    'bumblebear': (120, 0.62, {'idle': f'<g transform="translate(0,-26)">{bumblebee("flug")}</g>',
                               'dive': f'<g transform="translate(0,-40)">{bumblebee("sturz")}</g>',
                               'stunned': bumblebee('benommen')}),
-    'wirrbiene': (24, 0.5, {'idle': f'<g transform="translate(0,-6)">{bee(1.0, 0, 0, angry=True)}</g>'}),
+    'dizzy_bee': (24, 0.5, {'idle': f'<g transform="translate(0,-6)">{bee(1.0, 0, 0, angry=True)}</g>'}),
     # Chapter 2 (R2-M2.2): root snake outside / hidden, squirrel pirate, mushroom imp, mushroom child
-    'wurzelschlange': (110, 0.72, {'idle': root_snake(True), 'hidden': root_snake(False)}),
-    'eichhornpirat': (52, 0.4, {'idle': squirrel_pirate()}),
-    'pilzwicht': (40, 0.4, {'idle': mushroom_imp()}),
-    'pilzkind': (34, 0.21, {'idle': mushroom_child(False)}),
+    'root_snake': (110, 0.72, {'idle': root_snake(True), 'hidden': root_snake(False)}),
+    'squirrel_pirate': (52, 0.4, {'idle': squirrel_pirate()}),
+    'mushroom_imp': (40, 0.4, {'idle': mushroom_imp()}),
+    'mushroom_child': (34, 0.21, {'idle': mushroom_child(False)}),
     # Warden: parts per state m0 sleeps, m2 root attack, m3 core pulled (creature::warden)
-    'wurzelwaechter': (280, 0.45, {'idle': root_warden('wach'), 'm0': root_warden('schlaf'),
+    'root_warden': (280, 0.45, {'idle': root_warden('wach'), 'm0': root_warden('schlaf'),
                                    'm2': root_warden('angriff_ohne'), 'm3': root_warden('offen')}),
     # Chapter 3 (R2-M2.3): sand crab; dune worm under the sand (hidden = state 0), m1 warning,
     # otherwise mid-leap; spark moth
-    'sandkrabbe': (30, 0.36, {'idle': sand_crab()}),
-    'duenenwurm': (36, 0.42, {'idle': f'<g transform="translate(0,-6)">{dune_worm("flug")}</g>',
+    'sand_crab': (30, 0.36, {'idle': sand_crab()}),
+    'dune_worm': (36, 0.42, {'idle': f'<g transform="translate(0,-6)">{dune_worm("flug")}</g>',
                               'hidden': dune_worm('spur'), 'm1': dune_worm('warnung')}),
-    'funkenmotte': (32, 0.36, {'idle': f'<g transform="translate(0,4)">{spark_moth(False)}</g>'}),
+    'spark_moth': (32, 0.36, {'idle': f'<g transform="translate(0,4)">{spark_moth(False)}</g>'}),
     # Warden: m0 sleeps, m1 sand trail, m2 sand quakes, m3 arc (idle), m4 dazed (creature::serpent)
-    'sandschlange': (70, 0.42, {'idle': f'<g transform="translate(20,-60)">{sand_serpent("flug")}</g>',
+    'sand_serpent': (70, 0.42, {'idle': f'<g transform="translate(20,-60)">{sand_serpent("flug")}</g>',
                                 'm0': sand_serpent('spur'), 'm1': sand_serpent('spur'),
                                 'm2': sand_serpent('beben'),
                                 'm4': f'<g transform="translate(-60,0)">{sand_serpent("benommen")}</g>'}),
     # Chapter 4 (R2-M2.4): icicle (tip down; trembles and falls in the same pose),
     # snow boulder of the avalanches (rolls, the client rotates it)
-    'eiszapfen': (48, 0.5, {'idle': icicle_enemy()}),
-    'schneebrocken': (36, 0.62, {'idle': f'<g transform="translate(0,1)">{snow_boulder(False)}</g>'}),
+    'icicle': (48, 0.5, {'idle': icicle_enemy()}),
+    'snow_chunk': (36, 0.62, {'idle': f'<g transform="translate(0,1)">{snow_boulder(False)}</g>'}),
     # Enemies: seal slides (idle) and throws upright (m1 = creature::seal::THROW);
     # bat flies (idle) and sleeps upside down (m0 = creature::bat::HANG); frost ghost
-    'schneeballrobbe': (28, 0.4, {'idle': seal('rutschen'), 'm1': seal('werfen')}),
-    'fledermaus': (36, 0.4, {'idle': f'<g transform="translate(0,26)">{bat("sturz")}</g>',
+    'snowball_seal': (28, 0.4, {'idle': seal('rutschen'), 'm1': seal('werfen')}),
+    'bat': (36, 0.4, {'idle': f'<g transform="translate(0,26)">{bat("sturz")}</g>',
                              'm0': f'<g transform="translate(0,-86)">{bat("haengt", bar=False)}</g>'}),
-    'frostgeist': (52, 0.42, {'idle': frost_ghost()}),
+    'frost_ghost': (52, 0.42, {'idle': frost_ghost()}),
     # Warden (female): m0 sleeps (calm), idle floats, m2 frost breath, m3 exhausted (creature::queen)
     'kristella': (110, 0.36, {'idle': kristella('schwebend', False), 'm0': kristella('ruhig', False),
                               'm2': kristella('hauch', False), 'm3': kristella('erschoepft', False)}),
@@ -103,32 +103,32 @@ CHARACTERS = {
     'tueftel': (1.0, tueftel()),
     'pip': (0.7, pip()),
     # decoration scale (world units: 1 / 0.36), about twice as high as the decoration (E-354)
-    'wegweiser': (1 / 0.36 * 0.75, signpost_npc()),
+    'signpost': (1 / 0.36 * 0.75, signpost_npc()),
     # Chapter 1 (R2-M2.1): beekeeper Wabe, bumblebee as speaker after the fight
     'wabe': (1.0, wabe()),
-    'hummel': (0.6, f'<g transform="translate(0,-60)">{bumblebee("ruhig")}</g>'),
+    'bumblebee': (0.6, f'<g transform="translate(0,-60)">{bumblebee("ruhig")}</g>'),
     # Chapter 2 (R2-M2.2)
     'plumm': (1.0, plumm()),
-    'pilzkind': (0.6, mushroom_child(True)),
-    'pilzkind_froh': (0.6, mushroom_child(False)),
-    'pilzmama': (0.85, mushroom_mama()),
+    'mushroom_child': (0.6, mushroom_child(True)),
+    'mushroom_child_happy': (0.6, mushroom_child(False)),
+    'mushroom_mama': (0.85, mushroom_mama()),
     # friendly after the fight (conversation figure), same size as the warden
-    'waechter': (1.25, root_warden('ruhig')),
+    'warden': (1.25, root_warden('ruhig')),
     # Chapter 3 (R2-M2.3); fixed things at decoration size (1 / 0.36 × scale)
     'sirup': (1.0, sirup()),
     'palma': (1.0, palma()),
-    'schlange': (1.1, f'<g transform="translate(-20,0)">{sand_serpent("ruhig")}</g>'),
-    'tafel': (1 / 0.36 * 0.5, stone_tablet()),
-    'ruinenquelle': (1 / 0.36 * 0.5, ruin_spring()),
-    'giessstelle': (1 / 0.36 * 0.55, watering_spot(False)),
-    'giessstelle_bluete': (1 / 0.36 * 0.55, watering_spot(True)),
+    'serpent': (1.1, f'<g transform="translate(-20,0)">{sand_serpent("ruhig")}</g>'),
+    'tablet': (1 / 0.36 * 0.5, stone_tablet()),
+    'ruin_spring': (1 / 0.36 * 0.5, ruin_spring()),
+    'watering_spot': (1 / 0.36 * 0.55, watering_spot(False)),
+    'watering_spot_blossom': (1 / 0.36 * 0.55, watering_spot(True)),
     # Chapter 4 (R2-M2.4): Flocke, three climbers, Kristella after the fight (size of the warden)
     'flocke': (1.0, flocke()),
     'bolle': (0.85, climber('f2a65a', 'c97f3a', '#f2c14e')),
     'kiesel': (0.85, climber('8fd06a', '5fa03a', '#e8685a')),
     'wicke': (0.85, climber('c8a0e8', '9a70c0', '#5fc8e8')),
     'kristella': (1.0, kristella('ruhig', False)),
-    'graue_stelle': (1 / 0.36 * 0.5, grey_trail_ice()),
+    'grey_spot': (1 / 0.36 * 0.5, grey_trail_ice()),
 }
 
 
@@ -158,10 +158,10 @@ def withered_plant():
 
 # Objects: origin on the ground, (scale, {part: drawing})
 OBJECTS = {
-    'truhe': (0.45, {'closed': chest(), 'open': chest(True)}),
-    'quellstein': (0.45, {'off': spring_stone(False), 'on': spring_stone(True)}),
-    'schalter': (0.5, {'off': switch(False), 'on': switch(True)}),
-    'heilpflanze': (0.3, {'fresh': healing_plant(), 'used': withered_plant()}),
+    'chest': (0.45, {'closed': chest(), 'open': chest(True)}),
+    'spring_stone': (0.45, {'off': spring_stone(False), 'on': spring_stone(True)}),
+    'switch': (0.5, {'off': switch(False), 'on': switch(True)}),
+    'healing_plant': (0.3, {'fresh': healing_plant(), 'used': withered_plant()}),
 }
 
 
@@ -197,16 +197,16 @@ def main():
                         f'  {body}\n</svg>\n')
     items = 'assets/adventure/items'
     os.makedirs(items, exist_ok=True)
-    for name, art, scale in (('glanztropfen', gleam_drop(), 0.5), ('item', glitter_stone(), 0.4),
+    for name, art, scale in (('gleam_drops', gleam_drop(), 0.5), ('item', glitter_stone(), 0.4),
                              # own images per item (R2-M2.1), otherwise `item` applies
                              # same size as the other icons (about 22 units)
-                             ('biene', bee(1.0, 0, 0), 0.31), ('quellfunke', spring_spark(), 0.33),
-                             ('wabenhut', honeycomb_hat(), 0.25), ('rune', rune(True), 0.32),
+                             ('bee', bee(1.0, 0, 0), 0.31), ('spring_spark', spring_spark(), 0.33),
+                             ('honeycomb_hat', honeycomb_hat(), 0.25), ('rune', rune(True), 0.32),
                              # Chapter 3: empty and full waterskin
-                             ('wasserschlauch', water_skin(False), 0.32), ('wasser', water_skin(True), 0.32)):
+                             ('waterskin', water_skin(False), 0.32), ('water', water_skin(True), 0.32)):
         with open(f'{items}/{name}.svg', 'w') as f:
-            dy = {'item': 8, 'glanztropfen': 3, 'biene': 5.5, 'quellfunke': 10, 'wabenhut': 4, 'rune': 12,
-                  'wasserschlauch': 10, 'wasser': 10}.get(name, 0)
+            dy = {'item': 8, 'gleam_drops': 3, 'bee': 5.5, 'spring_spark': 10, 'honeycomb_hat': 4, 'rune': 12,
+                  'waterskin': 10, 'water': 10}.get(name, 0)
             f.write(svg({'': f'<g transform="translate(0,{dy}) scale({scale})">{art}</g>'},
                         f'Beute „{name}“ (A1.2). Ursprung = Mitte.'))
 

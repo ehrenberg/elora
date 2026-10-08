@@ -2,9 +2,9 @@
 speaker = "wicke"
 
 [[start]]
-node = "gefunden"
+node = "found"
 
 [[node]]
-id = "gefunden"
+id = "found"
 text = { de = "Vierhundertzwölf … vierhundertdreizehn … oh! Ein Tropfen! Ich zähle Schneeflocken, damit ich keine Angst habe. Du hast mich verzählen lassen. Danke. Ich geh lieber runter.", en = "Four hundred and twelve … four hundred and thirteen … oh! A drop! I count snowflakes so I'm not scared. You made me lose count. Thank you. I'd better go down." }
-do = ["merker kletterer.wicke = 1", "merker kletterer.gefunden +1"]
+do = ["flag climbers.wicke = 1", "flag climbers.found +1"]

@@ -4,48 +4,48 @@
 
 # Movement
 [[node]]
-id = "schneller_ruck"
+id = "quick_jerk"
 branch = "movement"
 ranks = 3
-ability = "HookRuck"
-per_rank = [{ ruck_cooldown_ms = -150 }]
+ability = "HookJerk"
+per_rank = [{ jerk_cooldown_ms = -150 }]
 name = { de = "Schneller Ruck", en = "Quick jerk" }
 desc = { de = "Hook-Ruck lädt schneller nach.", en = "Hook jerk recharges faster." }
 
 [[node]]
-id = "weiter_hook"
+id = "far_hook"
 branch = "movement"
 ranks = 2
-requires = "schneller_ruck"
+requires = "quick_jerk"
 per_rank = [{ hook_length_pct = 5.0 }]
 name = { de = "Weiter Hook", en = "Long hook" }
 desc = { de = "Der Hook reicht weiter.", en = "The hook reaches further." }
 
 [[node]]
-id = "starkes_stampfen"
+id = "strong_stomp"
 branch = "movement"
 ranks = 3
-requires = "weiter_hook"
+requires = "far_hook"
 ability = "Stomp"
 per_rank = [{ stomp_radius = 16.0 }, { stomp_damage = 1 }]
 name = { de = "Starkes Stampfen", en = "Heavy stomp" }
 desc = { de = "Größere, stärkere Stoßwelle.", en = "Bigger, stronger shockwave." }
 
 [[node]]
-id = "fester_griff"
+id = "firm_grip"
 branch = "movement"
 ranks = 2
-requires = "starkes_stampfen"
+requires = "strong_stomp"
 ability = "Grip"
 per_rank = [{ grip_ms = 400 }]
 name = { de = "Fester Griff", en = "Firm grip" }
 desc = { de = "Länger an Kletterwänden haften.", en = "Cling to climbing walls longer." }
 
 [[node]]
-id = "weites_gleiten"
+id = "wide_glide"
 branch = "movement"
 ranks = 2
-requires = "fester_griff"
+requires = "firm_grip"
 ability = "Glide"
 per_rank = [{ glide_fall = -0.4 }]
 name = { de = "Weites Gleiten", en = "Far glide" }
@@ -53,7 +53,7 @@ desc = { de = "Beim Gleiten langsamer fallen.", en = "Fall more slowly while gli
 
 # Combat
 [[node]]
-id = "kraft"
+id = "power"
 branch = "combat"
 ranks = 3
 per_rank = [{ damage_pct = 10.0 }]
@@ -61,44 +61,44 @@ name = { de = "Kraft", en = "Strength" }
 desc = { de = "Alle Waffen treffen härter.", en = "All weapons hit harder." }
 
 [[node]]
-id = "schnelle_hand"
+id = "quick_hand"
 branch = "combat"
 ranks = 3
-requires = "kraft"
+requires = "power"
 per_rank = [{ fire_delay_pct = -8.0 }]
 name = { de = "Schnelle Hand", en = "Quick hand" }
 desc = { de = "Schneller feuern.", en = "Fire faster." }
 
 [[node]]
-id = "wucht"
+id = "force"
 branch = "combat"
 ranks = 2
-requires = "schnelle_hand"
+requires = "quick_hand"
 per_rank = [{ knockback_pct = 25.0 }]
 name = { de = "Wucht", en = "Impact" }
 desc = { de = "Gegner fliegen weiter.", en = "Enemies are knocked back further." }
 
 [[node]]
-id = "munitionstasche"
+id = "ammo_pouch"
 branch = "combat"
 ranks = 2
-requires = "wucht"
+requires = "force"
 per_rank = [{ ammo = 2 }]
 name = { de = "Munitionstasche", en = "Ammo pouch" }
 desc = { de = "Mehr Munition.", en = "More ammo." }
 
 [[node]]
-id = "betaeubender_hammer"
+id = "stunning_hammer"
 branch = "combat"
 ranks = 1
-requires = "munitionstasche"
+requires = "ammo_pouch"
 per_rank = [{ hammer_stun_ms = 500 }]
 name = { de = "Betäubender Hammer", en = "Stunning hammer" }
 desc = { de = "Der Hammer betäubt Gegner kurz.", en = "The hammer briefly stuns enemies." }
 
 # Spring
 [[node]]
-id = "mehr_leben"
+id = "more_life"
 branch = "spring"
 ranks = 3
 per_rank = [{ max_health = 1 }]
@@ -106,46 +106,46 @@ name = { de = "Mehr Leben", en = "More health" }
 desc = { de = "+1 Leben je Rang.", en = "+1 health per rank." }
 
 [[node]]
-id = "tropfen_magnet"
+id = "drop_magnet"
 branch = "spring"
 ranks = 2
-requires = "mehr_leben"
+requires = "more_life"
 per_rank = [{ magnet = 48.0 }]
 name = { de = "Tropfen-Magnet", en = "Drop magnet" }
 desc = { de = "Beute fliegt von weiter her zu Elora.", en = "Loot flies to Elora from further away." }
 
 [[node]]
-id = "glanz_fund"
+id = "gleam_find"
 branch = "spring"
 ranks = 2
-requires = "tropfen_magnet"
+requires = "drop_magnet"
 per_rank = [{ drops_pct = 10.0 }]
 name = { de = "Glanz-Fund", en = "Gleam finder" }
 desc = { de = "Mehr Glanztropfen.", en = "More gleam drops." }
 
 [[node]]
-id = "langer_schutz"
+id = "long_protection"
 branch = "spring"
 ranks = 2
-requires = "glanz_fund"
+requires = "gleam_find"
 per_rank = [{ invulnerable_ms = 250 }]
 name = { de = "Langer Schutz", en = "Long shelter" }
 desc = { de = "Länger geschützt nach einem Treffer.", en = "Protected longer after a hit." }
 
 [[node]]
-id = "heilblumen"
+id = "healing_flowers"
 branch = "spring"
 ranks = 2
-requires = "langer_schutz"
+requires = "long_protection"
 per_rank = [{ heal_bonus = 1 }]
 name = { de = "Heilblumen", en = "Healing blossoms" }
 desc = { de = "Heilpflanzen heilen mehr.", en = "Healing plants heal more." }
 
 [[node]]
-id = "zweite_chance"
+id = "second_chance"
 branch = "spring"
 ranks = 1
-requires = "heilblumen"
+requires = "healing_flowers"
 per_rank = [{ second_chance = 3 }]
 name = { de = "Zweite Chance", en = "Second chance" }
 desc = { de = "Einmal je Karte mit 3 Leben weitermachen statt zu sterben.", en = "Once per map, carry on with 3 health instead of dying." }

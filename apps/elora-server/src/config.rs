@@ -54,7 +54,7 @@ impl Default for ServerConfig {
             name: "Elora-Server".into(),
             bind: "::".into(),
             port: DEFAULT_PORT,
-            map: PathBuf::from("maps/dm-wiese.emap"),
+            map: PathBuf::from("maps/dm-meadow.emap"),
             max_clients: 8,
             high_bandwidth: false,
             key_file: PathBuf::from("server_key.toml"),
@@ -69,6 +69,26 @@ impl Default for ServerConfig {
 }
 
 impl ServerConfig {
+    /// Map names of 0.9.x configs (`dm-wiese`, R2-RF): a missing map file and the rotation
+    /// fall back to the English names (`dm-meadow`).
+    pub fn migrate_map_names(&mut self) {
+        if !self.map.exists()
+            && let Some(stem) = self.map.file_stem().and_then(|s| s.to_str())
+        {
+            let new = self.map.with_file_name(format!(
+                "{}.{}",
+                elora_map::rename::translate_id(stem),
+                elora_map::EXTENSION
+            ));
+            if new.exists() {
+                self.map = new;
+            }
+        }
+        for name in &mut self.rotation {
+            *name = elora_map::rename::translate_id(name).into_owned();
+        }
+    }
+
     /// Loads the configuration from a TOML file.
     ///
     /// # Errors

@@ -1,0 +1,18 @@
+# Signpost (E-273, R2-M2.4)
+speaker = "signpost"
+
+[[start]]
+if = "ability ice_grip"
+node = "text"
+
+[[start]]
+node = "later"
+
+[[node]]
+id = "text"
+text = { de = "Kletterkamin. Nur mit Steigkrallen.", en = "Climbing chimney. Climbing claws only." }
+
+# before Elora can use it (E-354)
+[[node]]
+id = "later"
+text = { de = "Kletterkamin. Ohne Steigkrallen kommst du hier nicht hinauf – vielleicht weiß jemand im Bergdorf Rat.", en = "Climbing chimney. Without climbing claws you will not get up here – maybe someone in the mountain village can help." }

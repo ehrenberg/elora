@@ -398,7 +398,7 @@ pub(crate) fn samples() -> Vec<Message> {
         Message::MatchWon(WinnerName::Team(Team::Red)),
         Message::SuddenDeath,
         Message::MapChanged {
-            map: "dm-wiese".into(),
+            map: "dm-meadow".into(),
         },
         Message::ModeChanged {
             mode: "iTDM".into(),
@@ -408,7 +408,7 @@ pub(crate) fn samples() -> Vec<Message> {
             subject: VoteSubject::Kick("B".into()),
         },
         Message::VoteFailed(s()),
-        Message::VotePassed(VoteSubject::Map("ctf-wald".into())),
+        Message::VotePassed(VoteSubject::Map("ctf-forest".into())),
         Message::VoteCancelled,
         Message::VotesDisabled,
         Message::VoteRunning,
@@ -445,9 +445,9 @@ mod tests {
             reason::key(reason::BANNED).as_deref(),
             Some("reason.banned")
         );
-        assert_eq!(reason::key("irgendwas"), None);
+        assert_eq!(reason::key("anything"), None);
         assert_eq!(reason::key("#unbekannt"), None);
         assert_eq!(reason::english(reason::SERVER_FULL), "Server is full");
-        assert_eq!(reason::english("frei"), "frei");
+        assert_eq!(reason::english("free"), "free");
     }
 }

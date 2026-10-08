@@ -3,91 +3,91 @@ speaker = "klonk"
 
 # weapons first (playtest: the resin conversation had pushed the grenade aside)
 [[start]]
-if = "quest bluetenquelle erledigt und nicht merker klonk.granate"
-node = "granate"
+if = "quest blossom_spring done and not flag klonk.grenade"
+node = "grenade"
 
 [[start]]
-if = "quest glutsand erledigt und nicht merker klonk.laser"
+if = "quest glutsand done and not flag klonk.laser"
 node = "laser"
 
 [[start]]
-if = "quest murmelwald erledigt und nicht merker klonk.harz"
-node = "harz"
+if = "quest murmelwald done and not flag klonk.resin"
+node = "resin"
 
 [[start]]
-if = "quest klarkristalle schritt bringen und hat klarkristall 8"
-node = "kristalle_da"
+if = "quest clear_crystals step bring and has clear_crystal 8"
+node = "crystals_here"
 
 [[start]]
-if = "quest frostspitzen aktiv und quest klarkristalle neu"
-node = "kristalle"
+if = "quest frostspitzen active and quest clear_crystals new"
+node = "crystals"
 
 [[start]]
-if = "quest klarkristalle aktiv"
-node = "kristalle_erinnerung"
+if = "quest clear_crystals active"
+node = "crystals_memory"
 
 [[start]]
-if = "quest brunnen schritt klonk"
-node = "uebung"
+if = "quest well step klonk"
+node = "practice"
 
 # no hammer yet and not sent by Tüftel (E-354)
 [[start]]
-if = "nicht waffe hammer und nicht quest brunnen schritt klonk"
-node = "erst_tueftel"
+if = "not weapon hammer and not quest well step klonk"
+node = "first_tueftel"
 
 [[start]]
-node = "schmiede"
+node = "smithy"
 
 [[node]]
-id = "uebung"
+id = "practice"
 text = { de = "Da bist du ja. Ohne Hammer gehst du mir nicht in die Wiesen. Hau mal auf die Strohpuppen da drüben – mit {taste:fire}. Feste! Die halten das aus.", en = "There you are. You're not going into the meadows without a hammer. Go and hit the straw dummies over there – with {taste:fire}. Hard! They can take it." }
-do = ["waffe hammer"]
+do = ["weapon hammer"]
 
 [[node.choice]]
-tone = "freundlich"
+tone = "friendly"
 text = { de = "Mach ich, Klonk.", en = "Will do, Klonk." }
-do = ["zuneigung klonk +1"]
+do = ["affection klonk +1"]
 
 [[node.choice]]
-tone = "frech"
+tone = "cheeky"
 text = { de = "Dein Bart ist größer als dein Hammer.", en = "Your beard is bigger than your hammer." }
-next = "bart"
-do = ["zuneigung klonk -1"]
+next = "beard"
+do = ["affection klonk -1"]
 
 [[node]]
-id = "erst_tueftel"
+id = "first_tueftel"
 text = { de = "Hmpf. Erst zu Tüftel. Dann reden wir über Hämmer.", en = "Hmph. Tüftel first. Then we'll talk hammers." }
 
 [[node]]
-id = "bart"
+id = "beard"
 text = { de = "Hmpf. Mein Bart hat auch schon mehr erlebt als du.", en = "Hmph. My beard has seen more than you have." }
 
 [[node]]
-id = "schmiede"
+id = "smithy"
 text = { de = "Hammer kaputt? Zeig her. Hmpf. Das wird was.", en = "Hammer broken? Show me. Hmph. That'll do." }
 
 [[node.choice]]
-tone = "freundlich"
+tone = "friendly"
 text = { de = "Kannst du meine Waffen verbessern?", en = "Can you improve my weapons?" }
-do = ["schmied"]
+do = ["forge"]
 
 [[node.choice]]
 text = { de = "Nur mal schauen.", en = "Just looking." }
 
 [[node]]
-id = "granate"
+id = "grenade"
 text = { de = "Hmpf. Die Hummel beruhigt, ja? Dann bist du so weit. Hier, mein alter Granatwerfer. Mit {taste:grenade} nimmst du ihn in die Hand. Pass auf Omas Beete auf.", en = "Hmph. Calmed the bumblebee, did you? Then you're ready. Here, my old grenade launcher. Press {taste:grenade} to pick it up. Mind Oma's flowerbeds." }
-do = ["waffe granate", "gib munition_granate 1", "merker klonk.granate = 1"]
+do = ["weapon grenade", "give ammo_grenade 1", "flag klonk.grenade = 1"]
 
 [[node]]
-id = "harz"
+id = "resin"
 text = { de = "Harz aus dem Murmelwald, hm? Gutes Zeug. Bring mir genug davon, dann bekommt dein Hammer mehr Reichweite – und deine Granaten mehr Wumms.", en = "Resin from the Murmelwald, hm? Good stuff. Bring me enough and your hammer gets more reach – and your grenades more boom." }
-do = ["merker klonk.harz = 1"]
+do = ["flag klonk.resin = 1"]
 
 [[node.choice]]
-tone = "neugierig"
+tone = "curious"
 text = { de = "Zeig mal, was geht.", en = "Show me what you can do." }
-do = ["schmied"]
+do = ["forge"]
 
 [[node.choice]]
 text = { de = "Später.", en = "Later." }
@@ -95,69 +95,69 @@ text = { de = "Später.", en = "Later." }
 [[node]]
 id = "laser"
 text = { de = "Hmpf. Du kommst aus der Wüste und hast nicht mal Sand in den Ohren. Respekt. Hier. Hab ich aus Glutstein und einer alten Linse gebaut. Ein Laser. Mit {taste:laser} nimmst du ihn in die Hand. Zeig damit auf nichts, was du magst.", en = "Hmph. You come back from the desert without even sand in your ears. Respect. Here. Built it from ember stone and an old lens. A laser. Press {taste:laser} to pick it up. Don't point it at anything you like." }
-do = ["waffe laser", "gib munition_laser 1", "merker klonk.laser = 1", "zuneigung klonk +1"]
+do = ["weapon laser", "give ammo_laser 1", "flag klonk.laser = 1", "affection klonk +1"]
 
 [[node.choice]]
-tone = "neugierig"
+tone = "curious"
 text = { de = "Und mit Glutstein geht noch mehr?", en = "And with ember stone there's more?" }
-next = "glutstein"
+next = "ember_stone"
 
 [[node.choice]]
 text = { de = "Danke, Klonk.", en = "Thanks, Klonk." }
 
 [[node]]
-id = "glutstein"
+id = "ember_stone"
 text = { de = "Hmpf. Bring mir Glutstein, dann springt der Strahl von Wänden ab und geht durch zwei Gegner auf einmal. Sirup verkauft welchen. Zu teuer, aber das sag ich ihm nicht.", en = "Hmph. Bring me ember stone and the beam bounces off walls and goes through two enemies at once. Sirup sells some. Too expensive, but I won't tell him that." }
 
 [[node.choice]]
-tone = "freundlich"
+tone = "friendly"
 text = { de = "Zeig mal, was geht.", en = "Show me what you can do." }
-do = ["schmied"]
+do = ["forge"]
 
 [[node.choice]]
 text = { de = "Später.", en = "Later." }
 
 [[node]]
-id = "kristalle"
+id = "crystals"
 text = { de = "Eiskristalle schmelzen nicht. Weißt du, was nicht mal *die* können? So klar sein wie Klarkristalle. Acht Stück, irgendwo in den Bergen. Bring sie mir, und ich schleif dir was Hübsches. Hübsch und nützlich. Hübsch ist mir egal.", en = "Ice crystals don't melt. You know what even *they* can't do? Be as clear as clear crystals. Eight of them, somewhere in the mountains. Bring them to me and I'll cut you something pretty. Pretty and useful. I don't care about pretty." }
-do = ["quest klarkristalle start"]
-next = "schmiede"
+do = ["quest clear_crystals start"]
+next = "smithy"
 
 [[node]]
-id = "kristalle_erinnerung"
+id = "crystals_memory"
 text = { de = "Acht. Nicht sieben. Ich zähle nach.", en = "Eight. Not seven. I'll count." }
-next = "schmiede"
+next = "smithy"
 
 [[node]]
-id = "kristalle_da"
+id = "crystals_here"
 text = { de = "Acht. Ich hab nachgezählt. Zweimal. Was soll's werden?", en = "Eight. I counted. Twice. What'll it be?" }
 
 [[node.choice]]
-tone = "frech"
+tone = "cheeky"
 text = { de = "Etwas für den Hammer.", en = "Something for the hammer." }
-next = "kristalle_fertig"
-do = ["gib wuchtkristall 1"]
+next = "crystals_done"
+do = ["give force_crystal 1"]
 
 [[node.choice]]
-tone = "neugierig"
+tone = "curious"
 text = { de = "Etwas für die Granaten.", en = "Something for the grenades." }
-next = "kristalle_fertig"
-do = ["gib sprengkristall 1"]
+next = "crystals_done"
+do = ["give blast_crystal 1"]
 
 [[node.choice]]
-tone = "freundlich"
+tone = "friendly"
 text = { de = "Etwas für den Laser.", en = "Something for the laser." }
-next = "kristalle_fertig"
-do = ["gib lichtkristall 1"]
+next = "crystals_done"
+do = ["give light_crystal 1"]
 
 [[node]]
-id = "kristalle_fertig"
+id = "crystals_done"
 text = { de = "Trag ihn mit Würde. Oder wenigstens ohne ihn zu verlieren.", en = "Wear it with dignity. Or at least without losing it." }
-do = ["zuneigung klonk +1"]
-next = "schmiede"
+do = ["affection klonk +1"]
+next = "smithy"
 
 [[bark]]
-if = "merker fest"
+if = "flag party"
 text = { de = "*klong* … Festlaternen schmieden ist auch Arbeit.", en = "*clang* … forging party lanterns is work too." }
 
 [[bark]]

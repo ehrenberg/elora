@@ -2,83 +2,83 @@
 speaker = "plumm"
 
 [[start]]
-if = "quest runen erledigt"
-node = "danach"
+if = "quest runes done"
+node = "after"
 
 [[start]]
-if = "quest runen schritt bringen"
-node = "runen_da"
+if = "quest runes step bring"
+node = "runes_here"
 
 [[start]]
-if = "quest runen aktiv"
-node = "erinnerung"
+if = "quest runes active"
+node = "memory"
 
 [[start]]
-node = "begruessung"
+node = "greeting"
 
 [[node]]
-id = "begruessung"
+id = "greeting"
 text = { de = "Huhu! Ein Tropfen im Wald, wie selten. Ich bin Plumm und sammle Geschichten. Die Wurzeln flüstern seit Tagen nur noch Unsinn – seit der Wächter so grimmig ist.", en = "Hoo-hoo! A drop in the forest, how rare. I'm Plumm and I collect stories. The roots have been whispering nonsense for days – ever since the warden turned so grim." }
 
 [[node.choice]]
-tone = "neugierig"
+tone = "curious"
 text = { de = "Welche Geschichten erzählen die Wurzeln?", en = "What stories do the roots tell?" }
-next = "runen"
+next = "runes"
 
 [[node.choice]]
-tone = "freundlich"
+tone = "friendly"
 text = { de = "Ich will die Waldquelle wieder zum Singen bringen.", en = "I want to make the Forest Spring sing again." }
-next = "quelle"
+next = "spring"
 
 [[node.choice]]
-tone = "frech"
+tone = "cheeky"
 text = { de = "Sammelst du auch Mäuse?", en = "Do you collect mice too?" }
-next = "maeuse"
-do = ["zuneigung plumm -1"]
+next = "mice"
+do = ["affection plumm -1"]
 
 [[node]]
-id = "maeuse"
+id = "mice"
 text = { de = "Hm! Nur Geschichten. Und Brillenputztücher.", en = "Hm! Only stories. And spectacle cloths." }
-next = "runen"
+next = "runes"
 
 [[node]]
-id = "quelle"
+id = "spring"
 text = { de = "Dann musst du hinab in die Wurzelhöhlen. Der Wächter schläft auf der Quelle. Wecke ihn vorsichtig.", en = "Then you must go down into the root caves. The warden sleeps on the spring. Wake him carefully." }
-next = "runen"
+next = "runes"
 
 [[node]]
-id = "runen"
+id = "runes"
 text = { de = "Im Wald liegen fünf alte Runen. Jede trägt ein Stück einer Geschichte, die keiner mehr kennt. Bringst du sie mir, lese ich sie dir vor. Manche liegen gut versteckt. Die findest du vielleicht erst später.", en = "Five old runes lie in the forest. Each carries a piece of a story nobody knows anymore. If you bring them to me, I'll read them to you. Some are well hidden. You may only find those later." }
 
 [[node.choice]]
-tone = "freundlich"
+tone = "friendly"
 text = { de = "Ich halte die Augen offen.", en = "I'll keep my eyes open." }
-do = ["quest runen start", "zuneigung plumm +1"]
+do = ["quest runes start", "affection plumm +1"]
 
 [[node.choice]]
 text = { de = "Vielleicht später.", en = "Maybe later." }
 
 [[node]]
-id = "erinnerung"
+id = "memory"
 text = { de = "Hast du schon Runen gefunden? Zeig her, ich lese dir vor, was draufsteht.", en = "Have you found any runes yet? Show me, I'll read you what's on them." }
 
 [[node.choice]]
-if = "hat rune 1"
+if = "has rune 1"
 text = { de = "Die erste Rune.", en = "The first rune." }
 next = "rune1"
 
 [[node.choice]]
-if = "hat rune 2"
+if = "has rune 2"
 text = { de = "Die zweite Rune.", en = "The second rune." }
 next = "rune2"
 
 [[node.choice]]
-if = "hat rune 3"
+if = "has rune 3"
 text = { de = "Die dritte Rune.", en = "The third rune." }
 next = "rune3"
 
 [[node.choice]]
-if = "hat rune 4"
+if = "has rune 4"
 text = { de = "Die vierte Rune.", en = "The fourth rune." }
 next = "rune4"
 
@@ -102,26 +102,26 @@ id = "rune4"
 text = { de = "„Ihr Hüter war einsam, denn niemand hörte sein Lied.“", en = "“Its keeper was lonely, for no one heard its song.”" }
 
 [[node]]
-id = "runen_da"
+id = "runes_here"
 text = { de = "Alle fünf! Hör zu: „Fünf Lieder sangen die Quellen, doch unter allen lag ein sechstes, leises Lied. Die Ursprungsquelle gab den anderen ihren Tau. Ihr Hüter war einsam, denn niemand hörte sein Lied. Wo der älteste Brunnen steht, schläft die sechste Quelle.“", en = "All five! Listen: “Five songs the springs did sing, yet beneath them all lay a sixth, quiet song. The Origin Spring gave the others their dew. Its keeper was lonely, for no one heard its song. Where the oldest well stands, the sixth spring sleeps.”" }
-next = "brunnen"
-do = ["merker sechste_quelle = 1"]
+next = "well"
+do = ["flag sixth_spring = 1"]
 
 [[node]]
-id = "brunnen"
+id = "well"
 text = { de = "Der älteste Brunnen … das ist doch der in Tauwinkel! Nimm diese Feder, Kind. Und frag Oma Pfütze nach dem alten Lied.", en = "The oldest well … that's the one in Tauwinkel! Take this feather, child. And ask Oma Pfütze about the old song." }
-do = ["zuneigung plumm +2"]
+do = ["affection plumm +2"]
 
 [[node]]
-id = "danach"
+id = "after"
 text = { de = "Huhu! Neue Geschichten? Ich bin ganz Ohr. Na ja, ganz Federohr.", en = "Hoo-hoo! New stories? I'm all ears. Well, all feather-ears." }
 
 [[bark]]
-if = "quest runen aktiv und faehigkeit heranhooken"
+if = "quest runes active and ability pull_hook"
 text = { de = "Huhu! Mit deinem neuen Hook kommst du an die letzten Runen.", en = "Hoo-hoo! With your new hook you can reach the last runes." }
 
 [[bark]]
-if = "quest runen aktiv"
+if = "quest runes active"
 text = { de = "Huhu, Runen gefunden?", en = "Hoo-hoo, found any runes?" }
 
 [[bark]]

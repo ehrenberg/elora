@@ -2,134 +2,134 @@
 speaker = "pip"
 
 [[start]]
-if = "quest pips_stein gescheitert"
-node = "beleidigt"
+if = "quest pips_stone failed"
+node = "offended"
 
 [[start]]
-if = "quest pips_stein aktiv und hat glitzerstein"
-node = "stein_da"
+if = "quest pips_stone active and has glitter_stone"
+node = "stone_here"
 
 [[start]]
-if = "quest pips_stein aktiv"
-node = "erinnerung"
+if = "quest pips_stone active"
+node = "memory"
 
 [[start]]
-if = "quest pips_stein erledigt"
-node = "danke"
+if = "quest pips_stone done"
+node = "thanks"
 
 [[start]]
-if = "quest brunnen neu"
-node = "wecken"
+if = "quest well new"
+node = "wake"
 
 [[start]]
-node = "baumhaus"
+node = "treehouse"
 
 [[node]]
-id = "wecken"
+id = "wake"
 text = { de = "Elora! Elora, wach auf! Die Blumen am Brunnen sind ganz grau! Und Oma Pfütze guckt so komisch.", en = "Elora! Elora, wake up! The flowers by the well have gone all grey! And Oma Pfütze looks so strange." }
 
 [[node.choice]]
-tone = "freundlich"
+tone = "friendly"
 text = { de = "Ich sehe gleich nach, Pip.", en = "I'll go and look right away, Pip." }
-next = "geh"
-do = ["zuneigung pip +1"]
+next = "go"
+do = ["affection pip +1"]
 
 [[node.choice]]
-tone = "neugierig"
+tone = "curious"
 text = { de = "Grau? Wie grau?", en = "Grey? How grey?" }
-next = "grau"
+next = "grey"
 
 [[node.choice]]
-tone = "frech"
+tone = "cheeky"
 text = { de = "Hast du sie wieder mit Asche bestreut?", en = "Did you sprinkle them with ashes again?" }
-next = "frech"
-do = ["zuneigung pip -1"]
+next = "cheeky"
+do = ["affection pip -1"]
 
 [[node]]
-id = "geh"
+id = "go"
 text = { de = "Oma wartet am Brunnen. Beeil dich!", en = "Oma is waiting by the well. Hurry!" }
 
 [[node]]
-id = "grau"
+id = "grey"
 text = { de = "So grau wie Klonks Bart! Oma wartet am Brunnen.", en = "As grey as Klonk's beard! Oma is waiting by the well." }
 
 [[node]]
-id = "frech"
+id = "cheeky"
 text = { de = "Hab ich NICHT! … Frag doch Oma, die weiß bestimmt, was los ist.", en = "I did NOT! … Ask Oma, she's sure to know what's going on." }
 
 [[node]]
-id = "baumhaus"
+id = "treehouse"
 text = { de = "Du gehst in die Blütenwiesen? Da hab ich mal einen Glitzerstein gesehen! Holst du ihn mir? Biiitte?", en = "You're going to the Blütenwiesen? I saw a glitter stone there once! Will you get it for me? Pleeease?" }
 
 [[node.choice]]
-tone = "freundlich"
+tone = "friendly"
 text = { de = "Klar, ich halte die Augen offen.", en = "Sure, I'll keep my eyes open." }
-next = "juhu"
-do = ["quest pips_stein start", "zuneigung pip +1"]
+next = "hooray"
+do = ["quest pips_stone start", "affection pip +1"]
 
 [[node.choice]]
-tone = "frech"
+tone = "cheeky"
 text = { de = "Und was bekomme ich dafür?", en = "And what do I get for it?" }
-next = "handel"
+next = "trade"
 
 [[node.choice]]
 text = { de = "Später, Pip.", en = "Later, Pip." }
 
 [[node]]
-id = "juhu"
+id = "hooray"
 text = { de = "Juhu! Er liegt hoch oben, wo man nur mit dem Hook hinkommt.", en = "Yay! It's high up, where you can only get with the hook." }
 
 [[node]]
-id = "handel"
+id = "trade"
 text = { de = "Ich zeig dir mein geheimes Klettereck im Baumhaus! Das kennt sonst keiner. Also: Holst du ihn?", en = "I'll show you my secret climbing spot in the tree house! Nobody else knows it. So: will you get it?" }
 
 [[node.choice]]
-tone = "freundlich"
+tone = "friendly"
 text = { de = "Abgemacht.", en = "Deal." }
-next = "juhu"
-do = ["quest pips_stein start"]
+next = "hooray"
+do = ["quest pips_stone start"]
 
 [[node.choice]]
 text = { de = "Mal sehen.", en = "We'll see." }
 
 [[node]]
-id = "erinnerung"
+id = "memory"
 text = { de = "Hast du meinen Glitzerstein schon? Er liegt irgendwo hoch oben in den Blütenwiesen.", en = "Have you got my glitter stone yet? It's somewhere high up in the Blütenwiesen." }
 
 [[node]]
-id = "stein_da"
+id = "stone_here"
 text = { de = "Ist das … mein Glitzerstein?! Du bist die Beste! Hier, den Heiltrank hab ich mir aufgespart.", en = "Is that … my glitter stone?! You're the best! Here, I saved this healing potion." }
 
 [[node]]
-id = "danke"
+id = "thanks"
 text = { de = "Mein Glitzerstein funkelt jeden Morgen. Danke, Elora!", en = "My glitter stone sparkles every morning. Thank you, Elora!" }
 
 [[node]]
-id = "beleidigt"
+id = "offended"
 text = { de = "Du hast mich bei Oma verpetzt. Ich rede nicht mit dir. … Na gut, ein bisschen. Aber nur ein bisschen.", en = "You told on me to Oma. I'm not talking to you. … Oh, all right, a little. But only a little." }
 
 [[bark]]
-if = "merker besiegt.kristella"
+if = "flag defeated.kristella"
 text = { de = "Hast du Kristella gesehen? Ist sie wirklich aus Eis? Ganz?", en = "Did you see Kristella? Is she really made of ice? All of her?" }
 
 [[bark]]
-if = "merker besiegt.sandschlange"
+if = "flag defeated.sand_serpent"
 text = { de = "Eine Schlange so lang wie die Hauptstraße? Und du hast sie gestreichelt?!", en = "A snake as long as the main street? And you petted it?!" }
 
 [[bark]]
-if = "merker sechste_quelle"
+if = "flag sixth_spring"
 text = { de = "Eine sechste Quelle? Unter unserem Brunnen? Ich hab's immer gewusst!", en = "A sixth spring? Under our well? I always knew it!" }
 
 [[bark]]
-if = "merker besiegt.wurzelwaechter"
+if = "flag defeated.root_warden"
 text = { de = "Ein Riesenbaum, der läuft?! Nimm mich nächstes Mal mit!", en = "A giant tree that walks?! Take me with you next time!" }
 
 [[bark]]
-if = "merker besiegt.brummbaer"
+if = "flag defeated.bumblebear"
 text = { de = "Du hast die Riesenhummel geschafft? Wahnsinn!", en = "You beat the giant bumblebee? Amazing!" }
 
 [[bark]]
-if = "quest brunnen neu"
+if = "quest well new"
 text = { de = "Elora! Komm schnell!", en = "Elora! Come quick!" }
 
 [[bark]]

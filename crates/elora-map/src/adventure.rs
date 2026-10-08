@@ -86,18 +86,18 @@ impl ObjectKind {
     /// Identifier for the editor and error messages.
     pub fn name(&self) -> &'static str {
         match self {
-            Self::Creature { .. } => "gegner",
+            Self::Creature { .. } => "enemy",
             Self::Npc { .. } => "npc",
-            Self::Chest { .. } => "truhe",
-            Self::Switch { .. } => "schalter",
-            Self::Door { .. } => "tuer",
-            Self::Collectible { .. } => "sammelstueck",
-            Self::SavePoint => "speicherpunkt",
-            Self::HealPlant { .. } => "heilpflanze",
-            Self::Spawn => "eingang",
-            Self::Exit { .. } => "uebergang",
+            Self::Chest { .. } => "chest",
+            Self::Switch { .. } => "switch",
+            Self::Door { .. } => "door",
+            Self::Collectible { .. } => "collectible",
+            Self::SavePoint => "save_point",
+            Self::HealPlant { .. } => "healing_plant",
+            Self::Spawn => "entrance",
+            Self::Exit { .. } => "transition",
             Self::Zone { .. } => "zone",
-            Self::Camera { .. } => "kamera",
+            Self::Camera { .. } => "camera",
         }
     }
 

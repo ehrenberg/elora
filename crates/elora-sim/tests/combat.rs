@@ -52,7 +52,7 @@ fn run(w: &mut World, inputs: &[PlayerInput], ticks: u32) {
 }
 
 fn health(w: &World, i: usize) -> i32 {
-    w.character(i).expect("lebt").health
+    w.character(i).expect("alive").health
 }
 
 fn give(w: &mut World, i: usize, weapon: Weapon) {

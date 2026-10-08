@@ -2,9 +2,9 @@
 speaker = "kiesel"
 
 [[start]]
-node = "gefunden"
+node = "found"
 
 [[node]]
-id = "gefunden"
+id = "found"
 text = { de = "Sag Flocke nichts! Ich bin nicht reingefallen, ich … erkunde die Spalte. Gründlich. Ja, ich komme ja schon mit raus.", en = "Don't tell Flocke! I didn't fall in, I'm … exploring the crevasse. Thoroughly. Yes, all right, I'm coming out." }
-do = ["merker kletterer.kiesel = 1", "merker kletterer.gefunden +1"]
+do = ["flag climbers.kiesel = 1", "flag climbers.found +1"]

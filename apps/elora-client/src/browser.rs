@@ -265,7 +265,7 @@ impl Browser<UdpSocket> {
                 let url = master_url.trim().to_owned();
                 let (tx, rx) = std::sync::mpsc::channel();
                 let spawned = std::thread::Builder::new()
-                    .name("master-liste".into())
+                    .name("master-list".into())
                     .spawn(move || {
                         let _ = tx.send(elora_master::client::fetch(&url));
                     });
@@ -417,7 +417,7 @@ mod tests {
     #[test]
     fn resolve_addresses() {
         assert_eq!(
-            resolve(&["127.0.0.1:8303".into(), "kein-port".into()]),
+            resolve(&["127.0.0.1:8303".into(), "none-port".into()]),
             vec![addr(8303)]
         );
     }

@@ -1,0 +1,51 @@
+# Root Warden after the fight (R2-M2.2, E-307)
+speaker = "warden"
+
+[[start]]
+if = "flag warden.talked"
+node = "later"
+
+[[start]]
+node = "awake"
+
+[[node]]
+id = "awake"
+text = { de = "Hrrrm … wie lange … habe ich geschlafen? Etwas Graues kam … und trank … und ich wurde … müde. So müde.", en = "Hrrrm … how long … have I slept? Something grey came … and drank … and I became … tired. So tired." }
+
+[[node.choice]]
+tone = "friendly"
+text = { de = "Jetzt bist du wach. Die Quelle singt wieder.", en = "You're awake now. The spring is singing again." }
+next = "thanks"
+
+[[node.choice]]
+tone = "curious"
+text = { de = "Was war das Graue?", en = "What was the grey thing?" }
+next = "grey"
+
+[[node.choice]]
+tone = "cheeky"
+text = { de = "Du hast mich mit Wurzeln gepiekst!", en = "You poked me with roots!" }
+next = "poke"
+
+[[node]]
+id = "grey"
+text = { de = "Dünn … und still … Es summte ein Lied … das ich kannte … von ganz … unten.", en = "Thin … and quiet … It hummed a song … I knew … from far … below." }
+next = "thanks"
+do = ["flag withered_one.seen = 1"]
+
+[[node]]
+id = "poke"
+text = { de = "Hrrm. Verzeih. Bäume … sind langsam … im Denken.", en = "Hrrm. Forgive me. Trees … are slow … at thinking." }
+next = "thanks"
+
+[[node]]
+id = "thanks"
+text = { de = "Nimm den Funken … kleiner Tropfen. Er gehört … zu den Menschen … im Tal.", en = "Take the spark … little drop. It belongs … to the folk … in the valley." }
+do = ["flag warden.talked = 1", "flag freed.moss_spring = 1"]
+
+[[node]]
+id = "later"
+text = { de = "Hrrrm … die Wurzeln … flüstern wieder … Gutes.", en = "Hrrrm … the roots … whisper … good things again." }
+
+[[bark]]
+text = { de = "Hrrrm …", en = "Hrrrm …" }

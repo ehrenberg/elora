@@ -395,17 +395,17 @@ def export():
 # Decoration for the chapter 1 maps (E-303): name: (drawing, viewBox), origin at the bottom centre.
 # `-fest` only hangs during the festival, `-verdorrt` becomes `-befreit` after `befreit.<name>` (session).
 DECOR = {
-    'bienenstock': (beehive(), '-40 -84 80 86'),
-    'beutenstapel': (hive_stack(), '-40 -88 80 90'),
-    'honigstand': (honey_stand(), '-70 -126 140 128'),
-    'riesenblume-rosa': (giant_flower(PINK), '-110 -310 220 312'),
-    'riesenblume-gelb': (giant_flower('#f2c14e'), '-110 -310 220 312'),
-    'riesenblume-lila': (giant_flower('#a77be0'), '-110 -310 220 312'),
-    'girlande-fest': (garland(), '-116 -156 232 158'),
-    'festlaterne-fest': (festival_lantern(), '-36 -124 72 86'),
-    'festlaterne-gelb-fest': (festival_lantern('#f2c14e'), '-36 -124 72 86'),
-    'bluetenquelle-verdorrt': (blossom_spring(False), '-150 -180 300 182'),
-    'bluetenquelle-befreit': (blossom_spring(True), '-150 -180 300 182'),
+    'beehive': (beehive(), '-40 -84 80 86'),
+    'hive_stack': (hive_stack(), '-40 -88 80 90'),
+    'honey_stand': (honey_stand(), '-70 -126 140 128'),
+    'giant-flower-pink': (giant_flower(PINK), '-110 -310 220 312'),
+    'giant-flower-yellow': (giant_flower('#f2c14e'), '-110 -310 220 312'),
+    'giant-flower-lilac': (giant_flower('#a77be0'), '-110 -310 220 312'),
+    'garland-party': (garland(), '-116 -156 232 158'),
+    'party-lantern-party': (festival_lantern(), '-36 -124 72 86'),
+    'party-lantern-yellow-party': (festival_lantern('#f2c14e'), '-36 -124 72 86'),
+    'blossom-spring-withered': (blossom_spring(False), '-150 -180 300 182'),
+    'blossom-spring-freed': (blossom_spring(True), '-150 -180 300 182'),
 }
 
 

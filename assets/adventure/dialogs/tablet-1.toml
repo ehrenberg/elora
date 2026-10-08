@@ -1,0 +1,9 @@
+# Ruin tablet of the ember people (R2-M2.3, E-325)
+speaker = "tablet-1"
+
+[[start]]
+node = "text"
+
+[[node]]
+id = "text"
+text = { de = "„Wir, das Glutvolk, hüten das goldene Wasser. Seine Wärme gehört allen, die frieren.“", en = "“We, the Ember Folk, guard the golden water. Its warmth belongs to all who are cold.”" }

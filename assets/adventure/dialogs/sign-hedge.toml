@@ -1,0 +1,9 @@
+# Signpost (E-273, A1.9)
+speaker = "signpost"
+
+[[start]]
+node = "text"
+
+[[node]]
+id = "text"
+text = { de = "Zu hoch? Spring und drück in der Luft noch einmal {taste:jump} – das ist der Doppelsprung.", en = "Too high? Jump and press {taste:jump} again in mid-air – that's the double jump." }

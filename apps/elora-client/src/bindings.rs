@@ -420,7 +420,7 @@ mod tests {
             ("jump".to_owned(), "gibt_es_nicht".to_owned()),
             ("fire".to_owned(), "f1".to_owned()),
             ("left".to_owned(), "q".to_owned()),
-            ("unbekannt".to_owned(), "a".to_owned()),
+            ("unknown".to_owned(), "a".to_owned()),
         ]
         .into_iter()
         .collect();

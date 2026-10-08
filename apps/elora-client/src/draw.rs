@@ -290,16 +290,16 @@ fn draw_objects(
                 }
             }
             ObjectLook::Chest { open } => {
-                creatures.draw_object(batch, "truhe", ground(p, 26.0), *open);
+                creatures.draw_object(batch, "chest", ground(p, 26.0), *open);
             }
             ObjectLook::Switch { on } => {
-                creatures.draw_object(batch, "schalter", ground(p, 30.0), *on);
+                creatures.draw_object(batch, "switch", ground(p, 30.0), *on);
             }
             ObjectLook::SavePoint { active } => {
-                creatures.draw_object(batch, "quellstein", ground(p, 40.0), *active);
+                creatures.draw_object(batch, "spring_stone", ground(p, 40.0), *active);
             }
             ObjectLook::HealPlant { used } => {
-                creatures.draw_object(batch, "heilpflanze", ground(p, 16.0), *used);
+                creatures.draw_object(batch, "healing_plant", ground(p, 16.0), *used);
             }
             ObjectLook::Collectible { item } => creatures.draw_loot(batch, item, p, time),
         }

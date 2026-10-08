@@ -1,0 +1,12 @@
+# Wicke in Flocke's hut (R2-M2.4)
+speaker = "wicke-hut"
+
+[[start]]
+node = "oven"
+
+[[node]]
+id = "oven"
+text = { de = "Hier drin schneit es nicht. Ich hab nachgezählt.", en = "It doesn't snow in here. I counted." }
+
+[[bark]]
+text = { de = "Hier drin schneit es nicht. Ich hab nachgezählt.", en = "It doesn't snow in here. I counted." }

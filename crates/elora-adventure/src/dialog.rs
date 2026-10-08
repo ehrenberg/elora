@@ -14,11 +14,8 @@ use crate::state::SaveGame;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Tone {
-    #[serde(rename = "freundlich")]
     Friendly,
-    #[serde(rename = "neugierig")]
     Curious,
-    #[serde(rename = "frech")]
     Cheeky,
 }
 

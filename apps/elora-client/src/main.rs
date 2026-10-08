@@ -127,6 +127,7 @@ fn run() -> anyhow::Result<()> {
         );
     }
     let map_path = elora_server::paths::resolve(&map_path);
+    settings::migrate_user_maps();
     let file = TuningFile::load(&tuning_path())?;
     let settings = Settings::load(&settings::settings_path()).unwrap_or_else(|e| {
         tracing::warn!("{e:#} – Standard-Einstellungen");
@@ -735,7 +736,7 @@ impl App {
                 .adventure
                 .objects
                 .iter()
-                .filter(|o| o.id.starts_with("feuer"))
+                .filter(|o| o.id.starts_with("fire"))
                 .filter_map(|o| o.kind.area().map(|s| o.pos + s * 0.5))
                 .map(|c| c.distance(camera.center))
                 .fold(f32::MAX, f32::min)
@@ -787,7 +788,7 @@ impl App {
                 .decor_front
                 .iter()
                 .chain(&self.sandbox.map.decor_back)
-                .filter(|d| d.art == elora_map::Art::Builtin("leuchtpilze".into()))
+                .filter(|d| d.art == elora_map::Art::Builtin("glow_mushrooms".into()))
                 .map(|d| d.pos)
                 .filter(|p| p.distance(scene.camera) < 1100.0)
                 .collect();

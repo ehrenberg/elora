@@ -49,18 +49,18 @@ impl Kind {
     /// Language key (`editor.adv_<…>`), equal to the name in the map.
     pub fn key(self) -> &'static str {
         match self {
-            Self::Creature => "editor.adv_gegner",
+            Self::Creature => "editor.adv_enemy",
             Self::Npc => "editor.adv_npc",
-            Self::Chest => "editor.adv_truhe",
-            Self::Switch => "editor.adv_schalter",
-            Self::Door => "editor.adv_tuer",
-            Self::Collectible => "editor.adv_sammelstueck",
-            Self::SavePoint => "editor.adv_speicherpunkt",
-            Self::HealPlant => "editor.adv_heilpflanze",
-            Self::Spawn => "editor.adv_eingang",
-            Self::Exit => "editor.adv_uebergang",
+            Self::Chest => "editor.adv_chest",
+            Self::Switch => "editor.adv_switch",
+            Self::Door => "editor.adv_door",
+            Self::Collectible => "editor.adv_collectible",
+            Self::SavePoint => "editor.adv_save_point",
+            Self::HealPlant => "editor.adv_healing_plant",
+            Self::Spawn => "editor.adv_entrance",
+            Self::Exit => "editor.adv_transition",
             Self::Zone => "editor.adv_zone",
-            Self::Camera => "editor.adv_kamera",
+            Self::Camera => "editor.adv_camera",
         }
     }
 
@@ -122,11 +122,11 @@ pub fn new_kind(kind: Kind, d: &Defaults, size: Vec2) -> ObjectKind {
             walk: 0.0,
         },
         Kind::Chest => ObjectKind::Chest {
-            contents: vec![("glanztropfen".into(), 10)],
+            contents: vec![("gleam_drops".into(), 10)],
             lock: String::new(),
         },
         Kind::Switch => ObjectKind::Switch {
-            flag: "schalter".into(),
+            flag: "switch".into(),
             once: false,
             trigger: SwitchTrigger::Interact,
         },
@@ -136,7 +136,7 @@ pub fn new_kind(kind: Kind, d: &Defaults, size: Vec2) -> ObjectKind {
             let tiles = |v: f32| (v / ts).round().clamp(1.0, 255.0) as u8;
             ObjectKind::Door {
                 size: (tiles(size.x), tiles(size.y)),
-                open_if: "merker schalter".into(),
+                open_if: "flag switch".into(),
             }
         }
         Kind::Collectible => ObjectKind::Collectible {
@@ -345,9 +345,9 @@ mod tests {
         )
         .unwrap();
         e.adventure.defaults = Defaults {
-            creature: "stachelkaefer".into(),
+            creature: "spike_beetle".into(),
             character: "oma".into(),
-            item: "glitzerstein".into(),
+            item: "glitter_stone".into(),
         };
         e
     }
@@ -361,11 +361,11 @@ mod tests {
         e.place_object(5, 2, |_| None, now);
         let objs = &e.map.adventure.objects;
         assert_eq!(objs.len(), 2);
-        assert_eq!(objs[0].id, "truhe-1");
-        assert_eq!(objs[1].id, "truhe-2");
+        assert_eq!(objs[0].id, "chest-1");
+        assert_eq!(objs[1].id, "chest-2");
         // ground in row 4: top edge 128, chest 26 high
         assert!((objs[0].pos.y - (128.0 - 13.0 - 1.0)).abs() < 0.01);
-        assert_eq!(e.adventure.selected.as_deref(), Some("truhe-2"));
+        assert_eq!(e.adventure.selected.as_deref(), Some("chest-2"));
         e.undo();
         assert_eq!(e.map.adventure.objects.len(), 1);
     }
@@ -381,7 +381,7 @@ mod tests {
             door.kind,
             ObjectKind::Door {
                 size: (1, 3),
-                open_if: "merker schalter".into()
+                open_if: "flag switch".into()
             }
         );
         assert_eq!(
@@ -394,9 +394,9 @@ mod tests {
             door.pos + Vec2::new(32.0, 0.0),
             "snapped to tiles"
         );
-        assert!(e.rename_object("tor", now));
+        assert!(e.rename_object("gate", now));
         assert!(!e.rename_object("a:b", now));
-        e.remove_object("tor", now);
+        e.remove_object("gate", now);
         assert!(e.map.adventure.objects.is_empty() && e.adventure.selected.is_none());
         // map stays valid for saving
         e.adventure.kind = Kind::Spawn;

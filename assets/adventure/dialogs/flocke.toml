@@ -2,131 +2,131 @@
 speaker = "flocke"
 
 [[start]]
-if = "quest kletterer schritt bericht"
-node = "bericht"
+if = "quest climbers step report"
+node = "report"
 
 [[start]]
-if = "quest frostspitzen schritt seil und hat seil"
-node = "seil_zurueck"
+if = "quest frostspitzen step rope and has rope"
+node = "rope_back"
 
 [[start]]
-if = "quest frostspitzen schritt seil"
-node = "erinnerung"
+if = "quest frostspitzen step rope"
+node = "memory"
 
 [[start]]
-if = "nicht merker flocke.kennt"
-node = "begruessung"
+if = "not flag flocke.knows"
+node = "greeting"
 
 [[start]]
-node = "danach"
+node = "after"
 
 [[node]]
-id = "begruessung"
+id = "greeting"
 text = { de = "Ha! Endlich mal jemand, der nicht vor dem bisschen Schnee wegläuft! Ich bin Flocke, Bergführerin. Na ja – Bergführerin ohne Berg, seit der Gipfel zugefroren ist. Und ohne Seil. Das ist das eigentliche Problem.", en = "Ha! Finally someone who doesn't run away from a little snow! I'm Flocke, mountain guide. Well – mountain guide without a mountain, since the summit froze over. And without a rope. That's the real problem." }
-do = ["merker flocke.kennt = 1"]
+do = ["flag flocke.knows = 1"]
 
 [[node.choice]]
-tone = "neugierig"
+tone = "curious"
 text = { de = "Was ist mit deinem Seil?", en = "What happened to your rope?" }
-next = "seil"
+next = "rope"
 
 [[node.choice]]
-tone = "freundlich"
+tone = "friendly"
 text = { de = "Warum ist das Dorf so leer?", en = "Why is the village so empty?" }
-next = "dorf"
+next = "village"
 
 [[node.choice]]
-tone = "frech"
+tone = "cheeky"
 text = { de = "Bergführerin ohne Berg? Und ohne Seil?", en = "A mountain guide without a mountain? And without a rope?" }
-next = "frech"
-do = ["zuneigung flocke +1"]
+next = "cheeky"
+do = ["affection flocke +1"]
 
 [[node]]
-id = "dorf"
+id = "village"
 text = { de = "Die Leute sind ins Tal gezogen, als es kälter und kälter wurde. Kälter als normal, meine ich. Seit da oben etwas Graues herumstapft, friert sogar das Feuer.", en = "Everyone moved down to the valley when it got colder and colder. Colder than normal, I mean. Since something grey has been stomping around up there, even the fire freezes." }
-next = "seil"
-do = ["merker duerrer.berge = 1"]
+next = "rope"
+do = ["flag withered_one.mountains = 1"]
 
 [[node]]
-id = "frech"
+id = "cheeky"
 text = { de = "HA! Frech! Gefällt mir.", en = "HA! Cheeky! I like that." }
-next = "seil"
+next = "rope"
 
 [[node]]
-id = "seil"
+id = "rope"
 text = { de = "Mein Seil liegt im Keller unter der alten Käserei. Ich wollte es holen, aber da unten hängen Fledermäuse mit Eiszapfen an den Flügeln. Ich mag Fledermäuse. Nur nicht, wenn sie mir ins Gesicht fliegen. Holst du es mir? Der Boden dort ist dünnes Eis – nicht trödeln!", en = "My rope is in the cellar under the old cheese dairy. I wanted to fetch it, but bats with icicles on their wings hang down there. I like bats. Just not when they fly into my face. Will you get it for me? The floor there is thin ice – don't dawdle!" }
 
 [[node.choice]]
-tone = "freundlich"
+tone = "friendly"
 text = { de = "Ich hole es.", en = "I'll get it." }
 
 [[node.choice]]
-tone = "neugierig"
+tone = "curious"
 text = { de = "Und dann?", en = "And then?" }
-next = "dann"
+next = "then"
 
 [[node]]
-id = "dann"
+id = "then"
 text = { de = "Dann gehen wir auf den Gipfel! Also, du. Ich halte das Seil.", en = "Then we climb the summit! Well, you do. I'll hold the rope." }
 
 [[node]]
-id = "erinnerung"
+id = "memory"
 text = { de = "Der Keller unter der Käserei. Dünnes Eis! Nicht stehen bleiben!", en = "The cellar under the cheese dairy. Thin ice! Don't stand still!" }
 
 [[node]]
-id = "seil_zurueck"
+id = "rope_back"
 text = { de = "Mein Seil! Glück, Mut und Abendbrot – alle drei Knoten noch dran! Hier, nimm dafür meine Steigkrallen. Damit hältst du dich an den Kletterwänden fest – an den rauen, gestreiften Felsen. Spring dagegen, halt dich fest, und dann: abspringen! Ganz einfach. Na ja. Fast.", en = "My rope! Luck, courage and supper – all three knots still there! Here, take my climbing claws for it. With them you can hold on to climbing walls – the rough, striped rocks. Jump at one, hold on, and then: jump off! Easy. Well. Almost." }
-do = ["faehigkeit eisgriff", "zuneigung flocke +1"]
+do = ["ability ice_grip", "affection flocke +1"]
 
 [[node.choice]]
-tone = "freundlich"
+tone = "friendly"
 text = { de = "Danke, Flocke!", en = "Thank you, Flocke!" }
-next = "kletterer"
+next = "climbers"
 
 [[node.choice]]
-tone = "neugierig"
+tone = "curious"
 text = { de = "Wohin jetzt?", en = "Where to now?" }
-next = "wohin"
+next = "where_to"
 
 [[node]]
-id = "wohin"
+id = "where_to"
 text = { de = "Hoch! Durch den Kamin hinter meiner Hütte. Oben am Grat wird's stürmisch.", en = "Up! Through the chimney behind my hut. Up on the ridge it gets stormy." }
-next = "kletterer"
+next = "climbers"
 
 [[node]]
-id = "kletterer"
+id = "climbers"
 text = { de = "Ach, und … drei meiner Kletterer sind nicht zurückgekommen. Bolle, Kiesel und Wicke. Die drei sind gut, wirklich! Aber der Sturm … Wenn du sie siehst, schick sie heim. Ich mache Tee.", en = "Oh, and … three of my climbers haven't come back. Bolle, Kiesel and Wicke. They're good, really! But the storm … If you see them, send them home. I'll make tea." }
 
 [[node.choice]]
-tone = "freundlich"
+tone = "friendly"
 text = { de = "Ich halte die Augen offen.", en = "I'll keep my eyes open." }
-do = ["quest kletterer start", "zuneigung flocke +1"]
+do = ["quest climbers start", "affection flocke +1"]
 
 [[node.choice]]
 text = { de = "Vielleicht später.", en = "Maybe later." }
 
 [[node]]
-id = "danach"
+id = "after"
 text = { de = "Na, kleiner Tropfen? Tee ist fertig – oder brauchst du was für unterwegs?", en = "Well, little drop? Tea is ready – or do you need something for the road?" }
 
 [[node.choice]]
-tone = "freundlich"
+tone = "friendly"
 text = { de = "Zeig mir deinen Vorrat.", en = "Show me your supplies." }
-do = ["laden flocke"]
+do = ["shop flocke"]
 
 [[node.choice]]
-tone = "neugierig"
-if = "quest kletterer neu und faehigkeit eisgriff"
+tone = "curious"
+if = "quest climbers new and ability ice_grip"
 text = { de = "Was war mit deinen Kletterern?", en = "What about your climbers?" }
-next = "kletterer"
+next = "climbers"
 
 [[node.choice]]
 text = { de = "Bis bald, Flocke.", en = "See you, Flocke." }
 
 [[node]]
-id = "bericht"
+id = "report"
 text = { de = "Alle drei sitzen an meinem Ofen und streiten, wer am längsten durchgehalten hat. Danke, kleiner Tropfen. Hier – meine alte Bommelmütze. Damit friert dir nicht mal die Laune ein.", en = "All three are sitting at my stove arguing about who held out the longest. Thank you, little drop. Here – my old bobble hat. With it, not even your mood will freeze." }
-do = ["zuneigung flocke +2"]
+do = ["affection flocke +2"]
 
 [[bark]]
 text = { de = "Tee ist fertig!", en = "Tea is ready!" }

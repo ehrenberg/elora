@@ -68,7 +68,7 @@ fn hall() -> World {
             })),
         ),
         kind(
-            "eiszapfen",
+            "icicle",
             [20.0, 48.0],
             1,
             Behavior::Icicle {

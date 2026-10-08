@@ -98,16 +98,16 @@ fn slots() -> Slots {
     Slots::new(saves_dir())
 }
 
-/// Adventure map `name`: first from the user folder `maps/abenteuer/` (E-271), otherwise the
+/// Adventure map `name`: first from the user folder `maps/adventure/` (E-271), otherwise the
 /// bundled one (E-262).
 fn load_map(name: &str) -> anyhow::Result<Map> {
     let file = format!("{name}.emap");
-    if let Some(own) = crate::settings::user_maps_dir().map(|d| d.join("abenteuer").join(&file))
+    if let Some(own) = crate::settings::user_maps_dir().map(|d| d.join("adventure").join(&file))
         && own.is_file()
     {
         return Map::load(&own);
     }
-    Map::load(&elora_server::paths::resolve(Path::new("maps/abenteuer")).join(file))
+    Map::load(&elora_server::paths::resolve(Path::new("maps/adventure")).join(file))
 }
 
 /// Overview of all slots.
@@ -262,11 +262,11 @@ impl App {
             // at the mouse: temporary entrance
             let pos = editor.mouse_world.unwrap_or(Vec2::new(64.0, 64.0));
             map.adventure.objects.push(elora_map::Object {
-                id: "editor-maus".into(),
+                id: "editor-mouse".into(),
                 pos,
                 kind: ObjectKind::Spawn,
             });
-            "editor-maus".to_owned()
+            "editor-mouse".to_owned()
         };
         let save = editor.adventure_test.save(&content, &id, &spawn);
         self.online = None;
@@ -377,7 +377,7 @@ impl App {
     /// Q: drink a healing potion (E-265).
     pub(crate) fn quick_heal(&mut self) {
         let Some(a) = &mut self.adventure else { return };
-        if a.session.save.count("heiltrank") == 0 {
+        if a.session.save.count("healing_potion") == 0 {
             return;
         }
         let full = self
@@ -386,7 +386,9 @@ impl App {
             .character(a.session.player)
             .is_none_or(|c| c.health >= a.session.save.max_health(&a.session.content));
         if !full {
-            let _ = a.session.use_item(&mut self.sandbox.world, "heiltrank");
+            let _ = a
+                .session
+                .use_item(&mut self.sandbox.world, "healing_potion");
         }
     }
 

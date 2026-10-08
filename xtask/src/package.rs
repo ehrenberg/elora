@@ -25,11 +25,11 @@ use std::process::Command;
 pub const SHIPPED_MAPS: [&str; 7] = [
     // the client starts with the training map (0.9.1 shipped without it and did not start)
     "training",
-    "dm-wiese",
-    "dm-wueste",
+    "dm-meadow",
+    "dm-desert",
     "dm-winter",
-    "ctf-wald",
-    "ctf-nacht",
+    "ctf-forest",
+    "ctf-night",
     "sandbox",
 ];
 
@@ -154,8 +154,8 @@ fn fill(target: &Target, dir: &Path, bin_dir: &Path, data_dir: &Path) -> Result<
     })?;
     // adventure maps (E-262)
     copy_dir(
-        Path::new("maps/abenteuer"),
-        &data_dir.join("maps/abenteuer"),
+        Path::new("maps/adventure"),
+        &data_dir.join("maps/adventure"),
         &|p| p.extension().is_some_and(|e| e == "emap"),
     )?;
     for dir in ["assets/music", "assets/ambience", "assets/intro"] {

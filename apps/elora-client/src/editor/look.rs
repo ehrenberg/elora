@@ -566,7 +566,7 @@ mod tests {
     #[test]
     fn layers_stay_in_view_on_tall_maps() {
         let mut e = editor();
-        e.map = elora_map::Map::new("hoch", 100, 90);
+        e.map = elora_map::Map::new("high", 100, 90);
         e.apply_preset(Preset::Day, Instant::now());
         let ground = 88.0 * TILE_SIZE as f32;
         for bg in e.map.backgrounds.iter().filter(|b| b.name != "Wolken") {
@@ -659,9 +659,9 @@ mod tests {
     fn images_are_checked_and_removal_cleans_up() {
         let mut e = editor();
         let t = Instant::now();
-        assert!(e.embed_image("kaputt", b"<svg".to_vec(), t).is_err());
+        assert!(e.embed_image("broken", b"<svg".to_vec(), t).is_err());
         assert!(
-            e.embed_image("riesig", vec![b' '; MAX_IMAGE_BYTES + 1], t)
+            e.embed_image("giant", vec![b' '; MAX_IMAGE_BYTES + 1], t)
                 .is_err()
         );
         let svg = br#"<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 10 10"><rect width="10" height="10" fill="red"/></svg>"#;

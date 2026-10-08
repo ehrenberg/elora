@@ -1,9 +1,0 @@
-# Signpost (E-273, A1.9)
-speaker = "wegweiser"
-
-[[start]]
-node = "text"
-
-[[node]]
-id = "text"
-text = { de = "Tüftels Hof: Halt {taste:hook} und schwing dich an Decken über Gruben und hinauf. An Stein rutscht der Hook ab, Bröckelboden trägt nicht lange. Ganz oben wartet eine Belohnung.", en = "Tüftel's yard: hold {taste:hook} to swing from ceilings over pits and up high. The hook slips off stone, and crumbling ground won't hold for long. A reward waits at the very top." }

@@ -10,7 +10,11 @@ use blake2::Digest as _;
 use crate::state::SaveGame;
 
 const MAGIC: &[u8; 4] = b"ESAV";
-const VERSION: u16 = 1;
+/// Version 2 (R2-RF, RF-12): English ids. Version 1 saves (0.9.x) are converted when they are
+/// read; [`Slots`] writes them back in the new format at once (E-358, no backup).
+const VERSION: u16 = 2;
+/// File name of a slot in 0.9.x (`platz-<n>.esav`).
+const OLD_FILE: &str = "platz";
 /// Upper limit of the unpacked content (protection against tampered files).
 const MAX_PAYLOAD: usize = 4 * 1024 * 1024;
 /// Number of slots (E-219).
@@ -58,7 +62,7 @@ pub fn decode(data: &[u8]) -> Result<SaveGame, SaveError> {
         return Err(SaveError::NotASave);
     }
     let version = u16::from_le_bytes([data[4], data[5]]);
-    if version != VERSION {
+    if version != VERSION && version != 1 {
         return Err(SaveError::Version(version));
     }
     let (sum, packed) = data[6..].split_at(32);
@@ -68,7 +72,34 @@ pub fn decode(data: &[u8]) -> Result<SaveGame, SaveError> {
     let raw = miniz_oxide::inflate::decompress_to_vec_zlib_with_limit(packed, MAX_PAYLOAD)
         .map_err(|e| SaveError::Content(format!("{e:?}")))?;
     let text = std::str::from_utf8(&raw).map_err(|e| SaveError::Content(e.to_string()))?;
+    if version == 1 {
+        let mut value: toml::Value =
+            toml::from_str(text).map_err(|e| SaveError::Content(e.to_string()))?;
+        migrate(&mut value);
+        return value
+            .try_into()
+            .map_err(|e: toml::de::Error| SaveError::Content(e.to_string()));
+    }
     toml::from_str(text).map_err(|e| SaveError::Content(e.to_string()))
+}
+
+/// Translates every key and every text value of a version 1 save to the English ids (items,
+/// flags, quests, skills, places, defeated enemies …; RF-12). Numbers and the weapon names
+/// (`Hammer`, already English) stay.
+fn migrate(value: &mut toml::Value) {
+    use elora_map::rename::translate_id;
+    match value {
+        toml::Value::String(s) => *s = translate_id(s).into_owned(),
+        toml::Value::Array(items) => items.iter_mut().for_each(migrate),
+        toml::Value::Table(table) => {
+            let old = std::mem::take(table);
+            for (key, mut v) in old {
+                migrate(&mut v);
+                table.insert(translate_id(&key).into_owned(), v);
+            }
+        }
+        _ => {}
+    }
 }
 
 /// State of a slot.
@@ -91,7 +122,7 @@ impl Slots {
     }
 
     pub fn path(&self, slot: usize) -> PathBuf {
-        self.dir.join(format!("platz-{}.esav", slot + 1))
+        self.dir.join(format!("slot-{}.esav", slot + 1))
     }
 
     /// # Errors
@@ -100,7 +131,15 @@ impl Slots {
         if slot >= SLOTS {
             return Err(SaveError::NoSlot(slot));
         }
-        Ok(match std::fs::read(self.path(slot)) {
+        let mut file = self.path(slot);
+        if !file.exists() {
+            self.convert_old(slot);
+            if !file.exists() && self.old_path(slot).exists() {
+                // could not be converted: show it as damaged, never overwrite it silently
+                file = self.old_path(slot);
+            }
+        }
+        Ok(match std::fs::read(file) {
             Err(e) if e.kind() == std::io::ErrorKind::NotFound => SlotState::Empty,
             Err(e) => SlotState::Damaged(e.into()),
             Ok(data) => match decode(&data) {
@@ -108,6 +147,27 @@ impl Slots {
                 Err(e) => SlotState::Damaged(e),
             },
         })
+    }
+
+    /// Slot file of 0.9.x; converted to [`Slots::path`] when it is first read.
+    fn old_path(&self, slot: usize) -> PathBuf {
+        self.dir.join(format!("{OLD_FILE}-{}.esav", slot + 1))
+    }
+
+    /// Converts a 0.9.x slot file: read (and translate), write in the new format under the
+    /// new name, remove the old file. A damaged old file stays where it is.
+    fn convert_old(&self, slot: usize) {
+        let old = self.old_path(slot);
+        let Ok(data) = std::fs::read(&old) else {
+            return;
+        };
+        let Ok(game) = decode(&data) else {
+            return;
+        };
+        let path = self.path(slot);
+        if std::fs::write(&path, encode(&game)).is_ok() {
+            let _ = std::fs::remove_file(&old);
+        }
     }
 
     /// All slots.
@@ -177,15 +237,18 @@ mod tests {
             &c,
             Location {
                 map: "tauwinkel".into(),
-                spawn: "brunnen".into(),
+                spawn: "well".into(),
             },
         );
         g.add_xp(&c, 300);
-        g.add_item(&c, "glanztropfen", 77).unwrap();
-        g.add_item(&c, "bernstein", 2).unwrap();
-        g.set_flag("tuer.wiese-1.tor", 1);
-        g.broken.entry("wiese-1".into()).or_default().insert((4, 9));
-        g.defeated.insert("wiese-3:hummel".into());
+        g.add_item(&c, "gleam_drops", 77).unwrap();
+        g.add_item(&c, "amber", 2).unwrap();
+        g.set_flag("door.meadow-1.gate", 1);
+        g.broken
+            .entry("meadow-1".into())
+            .or_default()
+            .insert((4, 9));
+        g.defeated.insert("meadow-3:bumblebee".into());
         g.give_weapon(elora_sim::Weapon::Grenade);
         g
     }
@@ -207,7 +270,7 @@ mod tests {
         let n = data.len();
         data[n - 3] ^= 0x55;
         assert!(matches!(decode(&data), Err(SaveError::Checksum)));
-        assert!(matches!(decode(b"nichts"), Err(SaveError::NotASave)));
+        assert!(matches!(decode(b"nothing"), Err(SaveError::NotASave)));
         let mut v2 = encode(&sample());
         v2[4] = 9;
         assert!(matches!(decode(&v2), Err(SaveError::Version(9))));
@@ -222,7 +285,7 @@ mod tests {
         let g = sample();
         slots.save(1, &g, false).unwrap();
         assert_eq!(slots.load(1).unwrap(), Some(g.clone()));
-        std::fs::write(slots.path(2), b"kaputt").unwrap();
+        std::fs::write(slots.path(2), b"broken").unwrap();
         assert!(matches!(slots.list()[2], SlotState::Damaged(_)));
         assert!(matches!(
             slots.save(2, &g, false),

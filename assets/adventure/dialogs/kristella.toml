@@ -2,27 +2,27 @@
 speaker = "kristella"
 
 [[start]]
-if = "merker kristella.gesprochen"
-node = "spaeter"
+if = "flag kristella.talked"
+node = "later"
 
 [[start]]
-node = "erwacht"
+node = "awake"
 
 [[node]]
-id = "erwacht"
+id = "awake"
 text = { de = "Genug. Du bist zäher als du aussiehst, kleiner Tropfen. Ich … war nicht ich selbst. Der Graue kam in einer klaren Nacht und trank von meiner Quelle. Danach hörte ich nur noch Sturm in meinem Kopf.", en = "Enough. You are tougher than you look, little drop. I … was not myself. The grey one came on a clear night and drank from my spring. After that I heard nothing but storm in my head." }
-next = "traenen"
+next = "tears"
 
 [[node]]
-id = "traenen"
+id = "tears"
 text = { de = "Doch ich habe ihn gesehen, als er ging. Er weinte. Er ist einsam, nicht böse. Er sucht etwas, das ihm jemand genommen hat – und er weiß nicht mehr, wer.", en = "But I saw him as he left. He was weeping. He is lonely, not wicked. He is looking for something someone took from him – and he no longer knows who." }
-next = "osten"
+next = "east"
 
 [[node]]
-id = "osten"
+id = "east"
 text = { de = "Er zog nach Osten, zur Sternschlucht. Noch ist der Weg dorthin verschlossen – doch eines Tages öffnet er sich. Nimm den Funken. Und wenn du ihn findest … hör ihm zu.", en = "He went east, to the Sternschlucht. The way there is still closed – but one day it will open. Take the spark. And if you find him … listen to him." }
-do = ["merker kristella.gesprochen = 1", "merker befreit.frostquelle = 1", "merker duerrer.osten = 1"]
+do = ["flag kristella.talked = 1", "flag freed.frost_spring = 1", "flag withered_one.east = 1"]
 
 [[node]]
-id = "spaeter"
+id = "later"
 text = { de = "Geh nur, kleiner Tropfen. Und wenn du ihn findest … hör ihm zu.", en = "Go on, little drop. And if you find him … listen to him." }

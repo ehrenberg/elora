@@ -51,7 +51,7 @@ pub fn safe_name(name: &str) -> String {
         })
         .take(64)
         .collect();
-    if s.is_empty() { "karte".into() } else { s }
+    if s.is_empty() { "map".into() } else { s }
 }
 
 fn hex(checksum: &MapChecksum) -> String {
@@ -105,7 +105,7 @@ mod tests {
     fn names_cannot_escape_the_folder() {
         assert_eq!(safe_name("../../etc/passwd"), "______etc_passwd");
         assert_eq!(safe_name("ctf-test"), "ctf-test");
-        assert_eq!(safe_name(""), "karte");
+        assert_eq!(safe_name(""), "map");
         assert_eq!(safe_name("ä/b"), "__b");
         assert_eq!(safe_name(&"x".repeat(200)).len(), 64);
     }
@@ -125,9 +125,9 @@ mod tests {
         assert_eq!(store.find("arena", &sum), Some(data.clone()));
         // an own map in maps/ with the same content is found as well, others are not
         std::fs::create_dir_all(&store.maps_dirs[0]).unwrap();
-        std::fs::write(store.maps_dirs[0].join("eigen.emap"), &data).unwrap();
-        assert!(store.find("eigen", &sum).is_some());
-        assert!(store.find("eigen", &[0; 32]).is_none());
+        std::fs::write(store.maps_dirs[0].join("own.emap"), &data).unwrap();
+        assert!(store.find("own", &sum).is_some());
+        assert!(store.find("own", &[0; 32]).is_none());
         let _ = std::fs::remove_dir_all(&dir);
     }
 }

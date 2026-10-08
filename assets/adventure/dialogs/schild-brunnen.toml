@@ -1,9 +1,0 @@
-# Signpost (E-273, A1.9)
-speaker = "wegweiser"
-
-[[start]]
-node = "text"
-
-[[node]]
-id = "text"
-text = { de = "Am Quellstein rastest du, und das Abenteuer wird gespeichert. {taste:scoreboard}: Inventar, Fähigkeiten, Aufgaben und Karte.", en = "At the spring stone you rest and the adventure is saved. {taste:scoreboard}: inventory, skills, quests and map." }

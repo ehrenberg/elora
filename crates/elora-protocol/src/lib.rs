@@ -17,4 +17,4 @@ pub use snapshot::{GameView, Snapshot};
 pub use text::{Message, VoteSubject, WinnerName, reason};
 
 /// Version of the game protocol; client and server must match.
-pub const PROTOCOL_VERSION: u32 = 6;
+pub const PROTOCOL_VERSION: u32 = 7;

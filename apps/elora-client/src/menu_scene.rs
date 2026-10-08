@@ -178,7 +178,7 @@ type Window = (f32, f32, f32, f32);
 
 const WINDOWS: [(&str, [Window; 3]); 4] = [
     (
-        "haus-elora",
+        "house-elora",
         [
             (0.0, -186.0, 22.0, 24.0),
             (34.0, -86.0, 28.0, 34.0),
@@ -186,7 +186,7 @@ const WINDOWS: [(&str, [Window; 3]); 4] = [
         ],
     ),
     (
-        "haus-oma",
+        "house-oma",
         [
             (-38.0, -68.0, 30.0, 34.0),
             (0.0, 0.0, 0.0, 0.0),
@@ -194,7 +194,7 @@ const WINDOWS: [(&str, [Window; 3]); 4] = [
         ],
     ),
     (
-        "laden",
+        "shop",
         [
             (0.0, -192.0, 22.0, 24.0),
             (-28.0, -67.0, 96.0, 58.0),
@@ -202,7 +202,7 @@ const WINDOWS: [(&str, [Window; 3]); 4] = [
         ],
     ),
     (
-        "werkstatt",
+        "workshop",
         [
             (44.0, -48.0, 30.0, 30.0),
             (-40.0, -132.0, 26.0, 24.0),
@@ -325,29 +325,29 @@ pub fn draw(
         ("tree-pine", 0.205, 1.0, false),
         ("tree-round", 0.53, 1.0, true),
         ("tree-pine", 0.995, 1.1, true),
-        ("haus-elora", 0.10, 1.0, false),
-        ("brunnen", 0.255, 1.0, false),
-        ("haus-oma", 0.38, 1.0, false),
-        ("laden", 0.65, 1.0, false),
-        ("werkstatt", 0.93, 1.0, true),
+        ("house-elora", 0.10, 1.0, false),
+        ("well", 0.255, 1.0, false),
+        ("house-oma", 0.38, 1.0, false),
+        ("shop", 0.65, 1.0, false),
+        ("workshop", 0.93, 1.0, true),
         ("fence", 0.175, 1.0, false),
-        ("laterne", 0.205, 1.0, false),
-        ("bank", 0.31, 1.0, false),
-        ("karren", 0.47, 1.0, true),
-        ("laterne", 0.565, 1.0, false),
-        ("faesser", 0.72, 1.0, false),
-        ("heuballen", 0.785, 1.0, false),
-        ("holzstapel", 0.875, 1.0, false),
+        ("lantern", 0.205, 1.0, false),
+        ("bench", 0.31, 1.0, false),
+        ("cart", 0.47, 1.0, true),
+        ("lantern", 0.565, 1.0, false),
+        ("barrels", 0.72, 1.0, false),
+        ("hay_bale", 0.785, 1.0, false),
+        ("woodpile", 0.875, 1.0, false),
     ] {
         sc.decor(name, frac, size, flip);
     }
     // windows glow at night
     if m.night > 0.05 {
         for (name, frac, flip) in [
-            ("haus-elora", 0.10, false),
-            ("haus-oma", 0.38, false),
-            ("laden", 0.65, false),
-            ("werkstatt", 0.93, true),
+            ("house-elora", 0.10, false),
+            ("house-oma", 0.38, false),
+            ("shop", 0.65, false),
+            ("workshop", 0.93, true),
         ] {
             let windows = WINDOWS
                 .iter()
@@ -383,17 +383,17 @@ pub fn draw(
     }
     // beds and flag
     for (name, frac) in [
-        ("beet-bunt", 0.055),
-        ("blumenkasten-bunt", 0.115),
-        ("kraeuterbeet-bunt", 0.41),
-        ("blumentopf-bunt", 0.62),
-        ("beet-bunt", 0.69),
+        ("flower-bed-colourful", 0.055),
+        ("window-box-colourful", 0.115),
+        ("herb-bed-colourful", 0.41),
+        ("flower-pot-colourful", 0.62),
+        ("flower-bed-colourful", 0.69),
     ] {
         sc.decor(name, frac, 1.0, false);
     }
     let wave = (t * 1.6).sin() * 2.0;
     let at = Vec2::new(sc.x(0.455), ground);
-    sc.decor_at("fahne-bunt", at, 1.0, false, wave);
+    sc.decor_at("banner-colourful", at, 1.0, false, wave);
     // smoke from the chimneys
     for (i, (frac, dx, dy)) in [(0.10, 48.0, -240.0), (0.65, -48.0, -246.0)]
         .into_iter()
@@ -414,7 +414,7 @@ pub fn draw(
                 )),
                 ..Tint::default()
             };
-            if let Some(mesh) = map.builtin("rauch") {
+            if let Some(mesh) = map.builtin("smoke") {
                 let size = k * (0.8 + age);
                 sc.mesh(mesh, p, size, false, 0.0, &tint);
             }
@@ -431,7 +431,7 @@ pub fn draw(
     sc.character("tueftel", x, f);
     // enemies: a beetle crawls, a hopper jumps now and then
     let (x, f) = sc.stroll(0.27, 0.36, 0.5, 2.0);
-    sc.creature("stachelkaefer", x, 0.0, 13.0, f);
+    sc.creature("spike_beetle", x, 0.0, 13.0, f);
     let cycle = (t / 2.6).fract();
     let hop = if cycle < 0.3 {
         (cycle / 0.3 * std::f32::consts::PI).sin() * 60.0
@@ -439,7 +439,7 @@ pub fn draw(
         0.0
     };
     let (x, f) = sc.stroll(0.02, 0.08, 0.18, 0.4);
-    sc.creature("grashuepfer", x, hop, 14.0, f);
+    sc.creature("grasshopper", x, hop, 14.0, f);
 
     // butterflies by day, fireflies at night
     for i in 0..6 {
@@ -455,7 +455,7 @@ pub fn draw(
             );
         if m.night < 0.5 {
             let flap = 1.0 - 0.35 * (t * 14.0 + fi).sin().abs();
-            if let Some(mesh) = map.builtin("schmetterling") {
+            if let Some(mesh) = map.builtin("butterfly") {
                 let tint = sc.light.clone();
                 let t2 = Affine::translate(p).then(Affine::scale(k * 1.2 * flap, k * 1.2));
                 sc.batch.draw_mesh(mesh, &t2, &tint);
@@ -481,7 +481,7 @@ pub fn draw(
             let x = (t * speed * s + i as f32 * span * 0.5).rem_euclid(span) - 100.0 * s;
             let bob = (t * 3.0 + i as f32).sin() * 6.0 * s;
             let at = Vec2::new(x, h * y + bob);
-            sc.decor_at("vogel", at, 1.3, false, (t * 3.0).sin() * 8.0);
+            sc.decor_at("bird", at, 1.3, false, (t * 3.0).sin() * 8.0);
         }
     }
     m
@@ -512,10 +512,10 @@ mod tests {
         let (map, creatures) = (MapArt::load(), CreatureArt::load());
         let screen = Vec2::new(1280.0, 720.0);
         for (name, hour) in [
-            ("morgen", 8.0),
+            ("morning", 8.0),
             ("tag", 13.0),
-            ("abend", 19.0),
-            ("nacht", 23.0),
+            ("evening", 19.0),
+            ("night", 23.0),
         ] {
             let mut batch = ShapeBatch::default();
             draw(&mut batch, &map, &creatures, screen, 1.0, 3.0, hour);

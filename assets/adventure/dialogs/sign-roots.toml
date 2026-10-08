@@ -1,0 +1,9 @@
+# Signpost (E-273, R2-M2.1)
+speaker = "signpost"
+
+[[start]]
+node = "text"
+
+[[node]]
+id = "text"
+text = { de = "Unter den Wurzeln: Haltet euch mit {taste:hook} an den hängenden Wurzeln fest. Bröckelboden trägt nicht lange!", en = "Beneath the roots: hold on to the hanging roots with {taste:hook}. Crumbling ground won't hold for long!" }

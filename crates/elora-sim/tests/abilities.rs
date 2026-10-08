@@ -52,7 +52,7 @@ fn run(w: &mut World, i: PlayerInput, ticks: u32) {
 }
 
 fn core(w: &World) -> &elora_sim::CharacterCore {
-    w.core(0).expect("lebt")
+    w.core(0).expect("alive")
 }
 
 fn spawn(w: &mut World, at: Vec2, abilities: Abilities) {
@@ -436,7 +436,7 @@ fn jerk_gate_try(jerk: bool, release: u32, jerk_at: u32, jump_at: u32, right_at:
         w.step(&[PlayerInput::default()]);
     }
     for t in 0..160u32 {
-        let c = &w.character(i).expect("lebt").core;
+        let c = &w.character(i).expect("alive").core;
         // stands (feet above the edge) above the ledge
         if c.pos.y < ledge_top - 14.0 && c.pos.x > 13.0 * 32.0 + 8.0 && c.pos.x < 20.0 * 32.0 {
             return true;
@@ -542,7 +542,7 @@ fn strong_grip_pulls_elora_up_the_wall() {
                 highest = highest.min(core(&w).pos.y);
             }
         }
-        (gripped_at.expect("haftet"), highest)
+        (gripped_at.expect("sticks"), highest)
     };
     let (start, end) = height_after(1.6);
     assert!(end < start - 100.0, "pulls itself up: {start} → {end}");

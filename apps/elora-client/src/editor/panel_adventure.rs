@@ -151,8 +151,8 @@ fn adventure_maps(editor: &Editor) -> Vec<(String, Map)> {
     let dirs = editor
         .user_dir
         .iter()
-        .map(|d| d.join("abenteuer"))
-        .chain(std::iter::once(editor.bundled_dir.join("abenteuer")));
+        .map(|d| d.join("adventure"))
+        .chain(std::iter::once(editor.bundled_dir.join("adventure")));
     for dir in dirs {
         let Ok(rd) = std::fs::read_dir(dir) else {
             continue;
@@ -267,11 +267,11 @@ fn combo(ui: &mut Ui, id: &str, label: &str, value: &mut String, options: &[Stri
 
 fn ability_name(a: Ability) -> &'static str {
     match a {
-        Ability::HookJerk => "hook-ruck",
-        Ability::Pull => "heranhooken",
-        Ability::Stomp => "stampfen",
-        Ability::Grip => "eisgriff",
-        Ability::Glide => "gleiten",
+        Ability::HookJerk => "hook-jerk",
+        Ability::Pull => "pull_hook",
+        Ability::Stomp => "stomp",
+        Ability::Grip => "ice_grip",
+        Ability::Glide => "glide",
     }
 }
 
@@ -419,7 +419,7 @@ fn properties(ui: &mut Ui, editor: &mut Editor, lang: &Lang, now: Instant) {
                 changed = true;
             }
             if ui.small_button(lang.t("editor.adv_add_item")).clicked() {
-                contents.push(("glanztropfen".into(), 1));
+                contents.push(("gleam_drops".into(), 1));
                 changed = true;
             }
             ui.label(lang.t("editor.adv_lock"));
@@ -866,10 +866,10 @@ pub fn draw(
                     batch.stroke_circle(o.pos, 30.0, 2.0 * z, Color::hex(0xe8685a));
                 }
             }
-            ObjectKind::Chest { .. } => art.draw_object(batch, "truhe", ground, false),
-            ObjectKind::Switch { .. } => art.draw_object(batch, "schalter", ground, false),
-            ObjectKind::SavePoint => art.draw_object(batch, "quellstein", ground, true),
-            ObjectKind::HealPlant { .. } => art.draw_object(batch, "heilpflanze", ground, false),
+            ObjectKind::Chest { .. } => art.draw_object(batch, "chest", ground, false),
+            ObjectKind::Switch { .. } => art.draw_object(batch, "switch", ground, false),
+            ObjectKind::SavePoint => art.draw_object(batch, "spring_stone", ground, true),
+            ObjectKind::HealPlant { .. } => art.draw_object(batch, "healing_plant", ground, false),
             ObjectKind::Collectible { item } => art.draw_loot_icon(batch, item, o.pos, 1.0),
             ObjectKind::Spawn => {
                 batch.stroke_circle(o.pos, 13.0, 3.0, Color::hex(0xf2c14e));
@@ -936,7 +936,7 @@ mod tests {
             abilities: elora_sim::Abilities::NONE.with(Ability::Glide),
             grenade: true,
             laser: false,
-            flags: "tor.dorf=2, oma.frech".into(),
+            flags: "gate.village=2, oma.cheeky".into(),
             start: None,
         };
         let g = t.save(&c, "tauwinkel", "start");
@@ -945,7 +945,7 @@ mod tests {
         assert!(
             g.weapons.contains_key(&Weapon::Grenade) && !g.weapons.contains_key(&Weapon::Laser)
         );
-        assert_eq!((g.flag("tor.dorf"), g.flag("oma.frech")), (2, 1));
+        assert_eq!((g.flag("gate.village"), g.flag("oma.cheeky")), (2, 1));
         assert_eq!(g.health, g.max_health(&c));
     }
 
@@ -956,10 +956,10 @@ mod tests {
         use crate::editor::view;
         let mut editor = Editor::new(None, std::path::PathBuf::from("maps"));
         editor.map =
-            elora_map::decode(include_bytes!("../../../../maps/abenteuer/tauwinkel.emap")).unwrap();
+            elora_map::decode(include_bytes!("../../../../maps/adventure/tauwinkel.emap")).unwrap();
         editor.adventure_id = "tauwinkel".into();
         editor.tool = super::super::tools::Tool::Adventure;
-        editor.adventure.selected = Some("tor".into());
+        editor.adventure.selected = Some("gate".into());
         editor.center = Vec2::new(30.0 * 32.0, 14.0 * 32.0);
         editor.zoom = 1.4;
         let window = Vec2::new(1600.0, 900.0);
@@ -985,7 +985,7 @@ mod tests {
         std::fs::write(
             concat!(
                 env!("CARGO_MANIFEST_DIR"),
-                "/../../target/abenteuer-editor.svg"
+                "/../../target/adventure-editor.svg"
             ),
             svg,
         )

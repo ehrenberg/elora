@@ -685,7 +685,7 @@ mod tests {
     #[test]
     fn fit_shortens_long_text() {
         let font = Font::new(include_bytes!("../../../assets/fonts/Inter-Regular.ttf")).unwrap();
-        assert_eq!(fit(&font, "kurz", 14.0, 200.0), "kurz");
+        assert_eq!(fit(&font, "short", 14.0, 200.0), "short");
         let long = fit(&font, &"sehr lange Nachricht ".repeat(10), 14.0, 120.0);
         assert!(long.ends_with('…'));
         assert!(font.width(&long, 14.0) <= 120.0);

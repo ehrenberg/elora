@@ -1,0 +1,26 @@
+# Sand Serpent after the fight (R2-M2.3, E-316)
+speaker = "serpent"
+
+[[start]]
+if = "flag serpent.talked"
+node = "later"
+
+[[start]]
+node = "awake"
+
+[[node]]
+id = "awake"
+text = { de = "Sssso … kühl … endlich. Verzeih, kleiner Tropfen. Etwas Graues hat aus meiner Quelle getrunken. Danach war mir so kalt, so schrecklich kalt, dass ich jeden angefaucht habe, der näher kam.", en = "Ssso … cool … at last. Forgive me, little drop. Something grey drank from my spring. Afterwards I was so cold, so terribly cold, that I hissed at anyone who came near." }
+next = "north"
+
+[[node]]
+id = "north"
+text = { de = "Es ging nach Norden. Zu den Bergen, wo der Schnee nie schmilzt. Nimm den Funken. Und wenn du ihn findest … sei sanft. Er hat sehr kalt geklungen. Kälter als ich.", en = "It went north. To the mountains where the snow never melts. Take the spark. And if you find him … be gentle. He sounded very cold. Colder than me." }
+do = ["flag serpent.talked = 1", "flag freed.ember_spring = 1", "flag withered_one.north = 1"]
+
+[[node]]
+id = "later"
+text = { de = "Sssso warm … Die Quelle summt wieder. Danke.", en = "Ssso warm … The spring is humming again. Thank you." }
+
+[[bark]]
+text = { de = "Ssss …", en = "Ssss …" }

@@ -569,7 +569,7 @@ fn use_tool(
             info.preview = Preview::Cells(cells);
             if down {
                 let stroke = editor.stroke.unwrap_or_else(|| editor.start_stroke());
-                let kind = format!("strich-{stroke}");
+                let kind = format!("line-{stroke}");
                 match editor.tool {
                     Tool::Material if primary => {
                         let m = editor.solid_material.clone();

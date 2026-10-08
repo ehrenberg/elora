@@ -2,104 +2,104 @@
 speaker = "tueftel"
 
 [[start]]
-if = "quest frostspitzen schritt funke"
-node = "funke4"
+if = "quest frostspitzen step spark"
+node = "spark4"
 
 [[start]]
-if = "quest glutsand schritt funke"
-node = "funke3"
+if = "quest glutsand step spark"
+node = "spark3"
 
 [[start]]
-if = "quest murmelwald schritt funke"
-node = "funke2"
+if = "quest murmelwald step spark"
+node = "spark2"
 
 [[start]]
-if = "quest bluetenquelle schritt funke"
-node = "funke"
+if = "quest blossom_spring step spark"
+node = "spark"
 
 [[start]]
-if = "quest brunnen schritt tueftel"
-node = "rat"
+if = "quest well step tueftel"
+node = "advice"
 
 [[start]]
-node = "werkstatt"
+node = "workshop"
 
 [[node]]
-id = "rat"
+id = "advice"
 text = { de = "Zur Quelle? Wenn man den Hook … nein, warte … ja! Halt {taste:hook} gedrückt, dann greift er an Erde und Holz. An Stein rutscht er ab, das merk dir. Probier's an meinem Übungsplatz hinter der Werkstatt!", en = "To the spring? If you take the hook … no, wait … yes! Hold {taste:hook} and it grabs earth and wood. It slips off stone, remember that. Try it at my practice ground behind the workshop!" }
 
 [[node.choice]]
-tone = "neugierig"
+tone = "curious"
 text = { de = "Und was ist das da auf deinem Kopf?", en = "And what's that on your head?" }
-next = "birne"
+next = "pear"
 
 [[node.choice]]
-tone = "freundlich"
+tone = "friendly"
 text = { de = "Danke, Tüftel!", en = "Thanks, Tüftel!" }
 next = "klonk"
 
 [[node]]
-id = "birne"
+id = "pear"
 text = { de = "Meine Ideen-Birne! Leuchtet, wenn … na, du weißt schon.", en = "My idea bulb! It lights up when … well, you know." }
 next = "klonk"
-do = ["zuneigung tueftel +1"]
+do = ["affection tueftel +1"]
 
 [[node]]
 id = "klonk"
 text = { de = "Ach, und Klonk wollte dich auch noch sehen. Wegen … Hammer. Oder Hummel. Hammer, glaube ich.", en = "Oh, and Klonk wanted to see you too. About … hammer. Or bumblebee. Hammer, I think." }
 
 [[node]]
-id = "werkstatt"
+id = "workshop"
 text = { de = "Wenn ich nur … hmm. Bring mir einen Quellfunken, dann baue ich dir etwas Großartiges!", en = "If only I … hmm. Bring me a spring spark and I'll build you something marvellous!" }
 
 [[node.choice]]
-if = "stufe >= 2"
+if = "level >= 2"
 text = { de = "Zeig mir den Fähigkeitenbaum.", en = "Show me the skill tree." }
-do = ["baum"]
+do = ["skills"]
 
 [[node.choice]]
 text = { de = "Bis später!", en = "See you later!" }
 
 [[node]]
-id = "funke"
+id = "spark"
 text = { de = "Ein Quellfunke! Wenn man den … und dann … ja! Fertig! Dein Hook hat jetzt einen Ruck: Hängt er fest, drück {taste:ability}, und du schnellst hin.", en = "A spring spark! If you take it … and then … yes! Done! Your hook now has a jolt: once it's attached, press {taste:ability} and you shoot towards it." }
-next = "hof"
-do = ["faehigkeit hook-ruck", "merker quellen_befreit = 1", "merker befreit.bluetenquelle = 1", "merker fest = 1", "merker hof.ruck = 1", "zuneigung tueftel +1"]
+next = "yard"
+do = ["ability hook-jerk", "flag springs_freed = 1", "flag freed.blossom_spring = 1", "flag party = 1", "flag yard.jerk = 1", "affection tueftel +1"]
 
 [[node]]
-id = "hof"
+id = "yard"
 text = { de = "Hinten in meinem Hof hab ich was aufgemacht. Eine Strecke, die schafft man nur mit Ruck. Probier's aus! Und dann – ab zu Oma, die will feiern.", en = "I've opened something at the back of my yard. A course you can only manage with a jolt. Give it a try! And then – off to Oma, she wants to celebrate." }
 
 [[node]]
-id = "funke2"
+id = "spark2"
 text = { de = "Noch ein Quellfunke! Wenn ich den hier … und das da … umdrehe … Fertig! Dein Hook zieht jetzt Dinge zu dir: Schalter, Fundstücke, Beute. Einfach anhooken.", en = "Another spring spark! If I turn this … and that … around … Done! Your hook now pulls things to you: switches, finds, loot. Just hook them." }
-next = "hof2"
-do = ["faehigkeit heranhooken", "merker quellen_befreit = 2", "merker befreit.waldquelle = 1", "merker fest = 1", "merker hof.zug = 1", "zuneigung tueftel +1"]
+next = "yard2"
+do = ["ability pull_hook", "flag springs_freed = 2", "flag freed.moss_spring = 1", "flag party = 1", "flag yard.pull = 1", "affection tueftel +1"]
 
 [[node]]
-id = "hof2"
+id = "yard2"
 text = { de = "Im Hof hängt jetzt ein Zugschalter hoch oben. Hol ihn dir! Und dann – du weißt schon – Oma.", en = "There's a pull lever high up in the yard now. Go get it! And then – you know – Oma." }
 
 [[node]]
-id = "funke3"
+id = "spark3"
 text = { de = "Ein goldener Funke! Warm wie … nein, wärmer! Halt das mal. Und das. Und – stell dich da hin. Jetzt spring. Und jetzt RUNTER! Siehst du? Stampfen! Damit brichst du mürbe Böden und haust Gegner um. Probier's auf dem Übungsplatz, da hab ich dir was Bröseliges hingelegt.", en = "A golden spark! Warm as … no, warmer! Hold this. And this. And – stand over there. Now jump. And now DOWN! See? Stomp! It breaks crumbly floors and knocks enemies over. Try it at the practice ground, I've put something crumbly there for you." }
-do = ["faehigkeit stampfen", "merker quellen_befreit = 3", "merker befreit.glutquelle = 1", "merker fest = 1", "merker hof.stampf = 1", "zuneigung tueftel +1"]
+do = ["ability stomp", "flag springs_freed = 3", "flag freed.ember_spring = 1", "flag party = 1", "flag yard.stomp = 1", "affection tueftel +1"]
 
 [[node]]
-id = "funke4"
+id = "spark4"
 text = { de = "Blau! Eisblau! Und so kühl, dass meine Brille beschlägt. Gib mal deine Steigkrallen … *klirr* … *zisch* … So! Jetzt halten sie doppelt so lange, und wenn du an der Wand nach oben drückst, ziehst du dich sogar ein Stück hinauf. Kletterwände überall im Tauland – jetzt gehören sie dir!", en = "Blue! Ice blue! And so cool my glasses fog up. Give me your climbing claws … *clink* … *hiss* … There! Now they hold twice as long, and if you push up against the wall you even pull yourself up a bit. Climbing walls all over the Tauland – now they're yours!" }
-do = ["merker eisgriff.stark = 1", "merker quellen_befreit = 4", "merker befreit.frostquelle = 1", "merker fest = 1", "zuneigung tueftel +1"]
+do = ["flag ice_grip.strong = 1", "flag springs_freed = 4", "flag freed.frost_spring = 1", "flag party = 1", "affection tueftel +1"]
 
 [[bark]]
-if = "merker eisgriff.stark"
+if = "flag ice_grip.strong"
 text = { de = "Steigkrallen-Version zwei. Bald drei.", en = "Climbing claws, version two. Three coming soon." }
 
 [[bark]]
-if = "merker hof.stampf"
+if = "flag yard.stomp"
 text = { de = "Die Stampfplatte! Hast du sie schon … krawumm?", en = "The stomp plate! Have you … ka-boom'd it yet?" }
 
 [[bark]]
-if = "merker hof.ruck"
+if = "flag yard.jerk"
 text = { de = "Hast du den Ruck schon ausprobiert?", en = "Have you tried the jolt yet?" }
 
 [[bark]]

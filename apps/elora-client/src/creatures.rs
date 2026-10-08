@@ -58,62 +58,62 @@ macro_rules! adventure_svgs {
 /// the pose does not rotate along (sand snake and dune worm in the jump, E-328).
 fn flight_tilt(c: &SceneCreature) -> Option<f32> {
     match (c.kind.as_str(), c.mode) {
-        ("sandschlange", elora_sim::creature::serpent::LEAP) => Some(-0.45),
-        ("duenenwurm", elora_sim::creature::leaper::LEAP) => Some(0.0),
+        ("sand_serpent", elora_sim::creature::serpent::LEAP) => Some(-0.45),
+        ("dune_worm", elora_sim::creature::leaper::LEAP) => Some(0.0),
         _ => None,
     }
 }
 
-const CHARACTER_FILES: &[(&str, &[u8])] = adventure_svgs!("characters": "oma", "klonk", "lotte", "tueftel", "pip", "wegweiser", "wabe", "hummel", "plumm", "pilzkind", "pilzkind_froh", "pilzmama", "waechter", "sirup", "palma", "schlange", "ruinenquelle", "flocke", "bolle", "kiesel", "wicke", "kristella");
+const CHARACTER_FILES: &[(&str, &[u8])] = adventure_svgs!("characters": "oma", "klonk", "lotte", "tueftel", "pip", "signpost", "wabe", "bumblebee", "plumm", "mushroom_child", "mushroom_child_happy", "mushroom_mama", "warden", "sirup", "palma", "serpent", "ruin_spring", "flocke", "bolle", "kiesel", "wicke", "kristella");
 /// Figures that share an image (boards, spots of the oasis, R2-M2.3).
 const SHARED_CHARACTER_FILES: &[(&str, &[u8])] = {
-    const TABLET: &[u8] = include_bytes!("../../../assets/adventure/characters/tafel.svg");
-    const DRY: &[u8] = include_bytes!("../../../assets/adventure/characters/giessstelle.svg");
+    const TABLET: &[u8] = include_bytes!("../../../assets/adventure/characters/tablet.svg");
+    const DRY: &[u8] = include_bytes!("../../../assets/adventure/characters/watering_spot.svg");
     const BLOOM: &[u8] =
-        include_bytes!("../../../assets/adventure/characters/giessstelle_bluete.svg");
+        include_bytes!("../../../assets/adventure/characters/watering_spot_blossom.svg");
     const BOLLE: &[u8] = include_bytes!("../../../assets/adventure/characters/bolle.svg");
     const KIESEL: &[u8] = include_bytes!("../../../assets/adventure/characters/kiesel.svg");
     const WICKE: &[u8] = include_bytes!("../../../assets/adventure/characters/wicke.svg");
-    const GREY: &[u8] = include_bytes!("../../../assets/adventure/characters/graue_stelle.svg");
+    const GREY: &[u8] = include_bytes!("../../../assets/adventure/characters/grey_spot.svg");
     &[
-        ("tafel-1", TABLET),
-        ("tafel-2", TABLET),
-        ("tafel-kammer", TABLET),
-        ("giessstelle-1", DRY),
-        ("giessstelle-2", DRY),
-        ("giessstelle-3", DRY),
-        ("bluete-1", BLOOM),
-        ("bluete-2", BLOOM),
-        ("bluete-3", BLOOM),
-        ("bolle-huette", BOLLE),
-        ("kiesel-huette", KIESEL),
-        ("wicke-huette", WICKE),
-        ("graue-stelle", GREY),
+        ("tablet-1", TABLET),
+        ("tablet-2", TABLET),
+        ("tablet-chamber", TABLET),
+        ("watering-spot-1", DRY),
+        ("watering-spot-2", DRY),
+        ("watering-spot-3", DRY),
+        ("blossom-1", BLOOM),
+        ("blossom-2", BLOOM),
+        ("blossom-3", BLOOM),
+        ("bolle-hut", BOLLE),
+        ("kiesel-hut", KIESEL),
+        ("wicke-hut", WICKE),
+        ("grey-spot", GREY),
     ]
 };
 /// Items with their own image (R2-M2.1); all others show `item.svg`.
 const ITEM_FILES: &[(&str, &[u8])] =
-    adventure_svgs!("items": "biene", "quellfunke", "wabenhut", "rune", "wasserschlauch", "wasser");
+    adventure_svgs!("items": "bee", "spring_spark", "honeycomb_hat", "rune", "waterskin", "water");
 /// Object and the names of its two parts (off, on).
 const OBJECT_FILES: &[(&str, &[u8], [&str; 2])] = &[
     (
-        "truhe",
-        include_bytes!("../../../assets/adventure/objects/truhe.svg"),
+        "chest",
+        include_bytes!("../../../assets/adventure/objects/chest.svg"),
         ["closed", "open"],
     ),
     (
-        "quellstein",
-        include_bytes!("../../../assets/adventure/objects/quellstein.svg"),
+        "spring_stone",
+        include_bytes!("../../../assets/adventure/objects/spring_stone.svg"),
         ["off", "on"],
     ),
     (
-        "schalter",
-        include_bytes!("../../../assets/adventure/objects/schalter.svg"),
+        "switch",
+        include_bytes!("../../../assets/adventure/objects/switch.svg"),
         ["off", "on"],
     ),
     (
-        "heilpflanze",
-        include_bytes!("../../../assets/adventure/objects/heilpflanze.svg"),
+        "healing_plant",
+        include_bytes!("../../../assets/adventure/objects/healing_plant.svg"),
         ["fresh", "used"],
     ),
 ];
@@ -129,26 +129,26 @@ macro_rules! creatures {
 }
 
 const CREATURE_FILES: &[(&str, &[u8])] = creatures!(
-    "stachelkaefer",
-    "pollenblaeser",
-    "grashuepfer",
-    "strohpuppe",
-    "brummbaer",
-    "wirrbiene",
-    "wurzelschlange",
-    "eichhornpirat",
-    "pilzwicht",
-    "pilzkind",
-    "wurzelwaechter",
-    "sandkrabbe",
-    "duenenwurm",
-    "funkenmotte",
-    "sandschlange",
-    "eiszapfen",
-    "schneebrocken",
-    "schneeballrobbe",
-    "fledermaus",
-    "frostgeist",
+    "spike_beetle",
+    "pollen_blower",
+    "grasshopper",
+    "straw_dummy",
+    "bumblebear",
+    "dizzy_bee",
+    "root_snake",
+    "squirrel_pirate",
+    "mushroom_imp",
+    "mushroom_child",
+    "root_warden",
+    "sand_crab",
+    "dune_worm",
+    "spark_moth",
+    "sand_serpent",
+    "icicle",
+    "snow_chunk",
+    "snowball_seal",
+    "bat",
+    "frost_ghost",
     "kristella"
 );
 
@@ -214,8 +214,8 @@ impl CreatureArt {
             characters,
             objects,
             gleam_drops: whole(
-                include_bytes!("../../../assets/adventure/items/glanztropfen.svg"),
-                "items/glanztropfen.svg",
+                include_bytes!("../../../assets/adventure/items/gleam_drops.svg"),
+                "items/gleam_drops.svg",
             ),
             items: ITEM_FILES
                 .iter()
@@ -267,9 +267,9 @@ impl CreatureArt {
             let h = mesh.bounds().map_or(0.0, |(_, max)| max.y);
             // hidden in the ground or sand: still
             let hidden = look.hidden.as_ref().is_some_and(|m| std::ptr::eq(m, mesh))
-                || (c.kind == "sandschlange" && c.mode <= 2)
-                || (c.kind == "duenenwurm" && c.mode <= 1);
-            let t = if c.kind == "eiszapfen" {
+                || (c.kind == "sand_serpent" && c.mode <= 2)
+                || (c.kind == "dune_worm" && c.mode <= 1);
+            let t = if c.kind == "icicle" {
                 // hangs still, trembles before the fall (R2-M2.4)
                 let shake = if c.mode == elora_sim::creature::icicle::SHAKE {
                     (time * 70.0).sin() * 1.6
@@ -277,10 +277,10 @@ impl CreatureArt {
                     0.0
                 };
                 Affine::translate(c.pos + Vec2::new(shake, 0.0))
-            } else if c.kind == "fledermaus" && c.mode == elora_sim::creature::bat::HANG {
+            } else if c.kind == "bat" && c.mode == elora_sim::creature::bat::HANG {
                 // sleeps upside down: no hovering
                 Affine::translate(c.pos).then(Affine::scale(flip, 1.0))
-            } else if c.kind == "schneebrocken" {
+            } else if c.kind == "snow_chunk" {
                 // rolls: rotates with the distance travelled
                 Affine::translate(c.pos).then(Affine::rotate(c.pos.x / 18.0))
             } else if c.grow < 1.0 {
@@ -346,12 +346,12 @@ impl CreatureArt {
     /// Inanimate figures (signs, boards, springs, plants): do not breathe, cast no shadow.
     pub fn is_still(id: &str) -> bool {
         [
-            "wegweiser",
-            "tafel",
-            "ruinenquelle",
-            "giessstelle",
-            "bluete",
-            "graue-stelle",
+            "signpost",
+            "tablet",
+            "ruin_spring",
+            "watering_spot",
+            "blossom",
+            "grey-spot",
         ]
         .iter()
         .any(|p| id.starts_with(p))
@@ -360,9 +360,9 @@ impl CreatureArt {
     /// Does the enemy cast a shadow? Not while it is stuck in the ground or sand.
     pub fn casts_shadow(c: &SceneCreature) -> bool {
         !match c.kind.as_str() {
-            "wurzelschlange" => c.mode == elora_sim::creature::burrow::HIDDEN,
-            "duenenwurm" => c.mode <= elora_sim::creature::leaper::WARN,
-            "sandschlange" => c.mode <= elora_sim::creature::serpent::WARN,
+            "root_snake" => c.mode == elora_sim::creature::burrow::HIDDEN,
+            "dune_worm" => c.mode <= elora_sim::creature::leaper::WARN,
+            "sand_serpent" => c.mode <= elora_sim::creature::serpent::WARN,
             _ => false,
         }
     }
@@ -462,7 +462,7 @@ impl CreatureArt {
     /// Icon of an item (HUD, menus), center `pos`, `scale` 1 = game size.
     /// Image of an item (its own, gleam drop or the generic one).
     fn item_mesh(&self, item: &str) -> &Mesh {
-        if item == "glanztropfen" {
+        if item == "gleam_drops" {
             &self.gleam_drops
         } else {
             self.items.get(item).unwrap_or(&self.item)
@@ -562,7 +562,7 @@ mod tests {
                 k.name
             );
         }
-        assert!(art.looks["grashuepfer"].air.is_some());
+        assert!(art.looks["grasshopper"].air.is_some());
         for c in elora_adventure::Content::builtin().characters.keys() {
             assert!(
                 art.characters.contains_key(c.as_str()),
@@ -629,42 +629,42 @@ mod tests {
                 art.draw(&mut batch, &c, 0.3);
                 x += k.size[0].max(60.0) + 40.0;
             };
-        put("stachelkaefer", false, false, None, 1, 0);
-        put("stachelkaefer", false, true, Some(20), -1, 0);
-        put("pollenblaeser", false, false, None, 1, 0);
-        put("grashuepfer", false, false, None, 1, 0);
-        put("grashuepfer", true, false, None, 1, 0);
-        put("wirrbiene", true, false, None, 1, 0);
-        put("brummbaer", true, false, None, 1, diver::CIRCLE);
-        put("brummbaer", true, false, None, 1, diver::DIVE);
-        put("brummbaer", false, false, Some(10), -1, diver::STUNNED);
-        put("wurzelschlange", false, false, None, 1, 0);
-        put("wurzelschlange", false, false, None, -1, 1);
-        put("eichhornpirat", false, false, None, -1, 0);
-        put("pilzwicht", false, false, None, 1, 0);
-        put("pilzkind", false, false, None, 1, 0);
-        put("wurzelwaechter", false, false, None, -1, 0);
-        put("wurzelwaechter", false, false, None, -1, 1);
-        put("wurzelwaechter", false, false, None, -1, 2);
-        put("wurzelwaechter", false, false, Some(10), -1, 3);
-        put("sandkrabbe", false, false, None, 1, 0);
-        put("duenenwurm", false, false, None, 1, 0);
-        put("duenenwurm", false, false, None, 1, 1);
-        put("duenenwurm", true, false, None, 1, 2);
-        put("funkenmotte", true, false, None, 1, 0);
+        put("spike_beetle", false, false, None, 1, 0);
+        put("spike_beetle", false, true, Some(20), -1, 0);
+        put("pollen_blower", false, false, None, 1, 0);
+        put("grasshopper", false, false, None, 1, 0);
+        put("grasshopper", true, false, None, 1, 0);
+        put("dizzy_bee", true, false, None, 1, 0);
+        put("bumblebear", true, false, None, 1, diver::CIRCLE);
+        put("bumblebear", true, false, None, 1, diver::DIVE);
+        put("bumblebear", false, false, Some(10), -1, diver::STUNNED);
+        put("root_snake", false, false, None, 1, 0);
+        put("root_snake", false, false, None, -1, 1);
+        put("squirrel_pirate", false, false, None, -1, 0);
+        put("mushroom_imp", false, false, None, 1, 0);
+        put("mushroom_child", false, false, None, 1, 0);
+        put("root_warden", false, false, None, -1, 0);
+        put("root_warden", false, false, None, -1, 1);
+        put("root_warden", false, false, None, -1, 2);
+        put("root_warden", false, false, Some(10), -1, 3);
+        put("sand_crab", false, false, None, 1, 0);
+        put("dune_worm", false, false, None, 1, 0);
+        put("dune_worm", false, false, None, 1, 1);
+        put("dune_worm", true, false, None, 1, 2);
+        put("spark_moth", true, false, None, 1, 0);
         for mode in [1, 2, 3, 4] {
-            put("sandschlange", mode == 3, false, None, 1, mode);
+            put("sand_serpent", mode == 3, false, None, 1, mode);
         }
-        put("eiszapfen", false, false, None, 1, 0);
-        put("schneeballrobbe", false, false, None, 1, 0);
-        put("schneeballrobbe", false, false, None, -1, 1);
-        put("fledermaus", true, false, None, 1, 0);
-        put("fledermaus", true, false, None, 1, 1);
-        put("frostgeist", true, false, None, 1, 0);
+        put("icicle", false, false, None, 1, 0);
+        put("snowball_seal", false, false, None, 1, 0);
+        put("snowball_seal", false, false, None, -1, 1);
+        put("bat", true, false, None, 1, 0);
+        put("bat", true, false, None, 1, 1);
+        put("frost_ghost", true, false, None, 1, 0);
         for mode in [0, 1, 2, 3] {
             put("kristella", mode != 3, false, None, 1, mode);
         }
-        put("schneebrocken", false, false, None, 1, 0);
+        put("snow_chunk", false, false, None, 1, 0);
         // Elora for size comparison (box 28)
         batch.fill_circle(Vec2::new(x, ground - 14.0), 14.0, Color::hex(0xf2c14e));
         CreatureArt::draw_shot(&mut batch, Vec2::new(x + 80.0, ground - 60.0), None, 0.0);
@@ -682,16 +682,11 @@ mod tests {
         );
         art.draw_loot(
             &mut batch,
-            "glanztropfen",
+            "gleam_drops",
             Vec2::new(x + 140.0, ground - 8.0),
             0.0,
         );
-        art.draw_loot(
-            &mut batch,
-            "bernstein",
-            Vec2::new(x + 180.0, ground - 8.0),
-            0.0,
-        );
+        art.draw_loot(&mut batch, "amber", Vec2::new(x + 180.0, ground - 8.0), 0.0);
         // NPCs and objects (A1.7) on a second ground line
         let ground2 = 420.0;
         batch.fill_rect(
@@ -709,14 +704,14 @@ mod tests {
         }
         batch.fill_circle(Vec2::new(420.0, ground2 - 14.0), 14.0, Color::hex(0xf2c14e));
         for (i, (name, on)) in [
-            ("truhe", false),
-            ("truhe", true),
-            ("quellstein", false),
-            ("quellstein", true),
-            ("schalter", false),
-            ("schalter", true),
-            ("heilpflanze", false),
-            ("heilpflanze", true),
+            ("chest", false),
+            ("chest", true),
+            ("spring_stone", false),
+            ("spring_stone", true),
+            ("switch", false),
+            ("switch", true),
+            ("healing_plant", false),
+            ("healing_plant", true),
         ]
         .iter()
         .enumerate()

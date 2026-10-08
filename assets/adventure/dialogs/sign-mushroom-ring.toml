@@ -1,0 +1,9 @@
+# Signpost (E-273, R2-M2.2)
+speaker = "signpost"
+
+[[start]]
+node = "text"
+
+[[node]]
+id = "text"
+text = { de = "Pilzring – Zuhause der Familie Morchel. Bitte nicht auf die Hüte treten.", en = "Mushroom ring – home of the Morel family. Please do not step on the hats." }

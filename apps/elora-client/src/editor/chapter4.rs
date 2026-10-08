@@ -5,7 +5,7 @@
 //! are built from left to right.
 //!
 //! `cargo test -p elora-client --bin elora write_chapter4_maps -- --ignored` writes
-//! `maps/abenteuer/*.emap`.
+//! `maps/adventure/*.emap`.
 
 #![allow(
     clippy::cast_precision_loss,
@@ -25,7 +25,7 @@ use super::release::{self, Theme};
 
 /// Mountains: theme „Winter“ of the release maps, snowy firs in the back.
 const WINTER: Theme = Theme {
-    back: &[("tanne-schnee", 6), ("rock-2", 1)],
+    back: &[("fir-snow", 6), ("rock-2", 1)],
     front: &["rock-1"],
     front_density: 9,
     back_spacing: 11,
@@ -48,7 +48,7 @@ fn crystal(id: &str, tx: usize, ty: usize) -> Object {
         id,
         at(tx, ty, 24.0),
         ObjectKind::Collectible {
-            item: "klarkristall".into(),
+            item: "clear_crystal".into(),
         },
     )
 }
@@ -58,7 +58,7 @@ fn fire(m: &mut Map, id: &str, tx: usize, ty: usize) {
     m.adventure
         .objects
         .push(zone(id, (tx - 3, tx + 3), (ty - 5, ty - 1)));
-    m.decor_back.push(big("feuerstelle", tx as f32, ty, 0.8));
+    m.decor_back.push(big("fireplace", tx as f32, ty, 0.8));
 }
 
 /// Something hanging under the ceiling (bottom edge of the ceiling = top edge of row `ty`).
@@ -74,26 +74,26 @@ fn hanging(id: &str, kind: &str, tx: usize, ty: usize, h: f32) -> Object {
 }
 
 fn icicle(id: &str, tx: usize, ty: usize) -> Object {
-    hanging(id, "eiszapfen", tx, ty, 48.0)
+    hanging(id, "icicle", tx, ty, 48.0)
 }
 
 fn bat(id: &str, tx: usize, ty: usize) -> Object {
-    hanging(id, "fledermaus", tx, ty, 36.0)
+    hanging(id, "bat", tx, ty, 36.0)
 }
 
 fn seal(id: &str, tx: usize, ty: usize) -> Object {
-    creature(id, "schneeballrobbe", tx, ty, 28.0)
+    creature(id, "snowball_seal", tx, ty, 28.0)
 }
 
 /// Frost spirit `rows` tiles above the ground.
 fn ghost(id: &str, tx: usize, ty: usize, rows: usize) -> Object {
-    creature(id, "frostgeist", tx, ty - rows, 52.0)
+    creature(id, "frost_ghost", tx, ty - rows, 52.0)
 }
 
 /// Gray spots in the ice: traces of the Withering (chapter 4).
 fn traces(m: &mut Map, spots: &[(f32, usize)]) {
     for &(tx, ty) in spots {
-        m.decor_front.push(big("grauspur-eis", tx, ty, 0.7));
+        m.decor_front.push(big("grey-trail-ice", tx, ty, 0.7));
     }
 }
 
@@ -145,48 +145,48 @@ pub fn frost_1() -> Map {
     g.ground(221, w - 1, 30);
     let mut m = g.map("Gletscherfuß");
     m.adventure.objects = vec![
-        edge_exit("weg-dorf", 0, h, "tauwinkel", "bergsteig"),
+        edge_exit("path-village", 0, h, "tauwinkel", "mountain_path"),
         o("west", at(5, 40, 28.0), ObjectKind::Spawn),
-        sign("schild-kaelte", 8, 40),
+        sign("sign-cold", 8, 40),
         chest(
-            "truhe-munition",
+            "chest-ammo",
             20,
             38,
-            &[("munition_granate", 1), ("munition_laser", 1)],
+            &[("ammo_grenade", 1), ("ammo_laser", 1)],
         ),
-        seal("robbe-1", 46, 34),
-        icicle("zapfen-1", 67, 34),
-        icicle("zapfen-2", 75, 34),
-        icicle("zapfen-3", 83, 34),
-        crystal("kristall-1", 88, 38),
-        sign("schild-eis", 98, 38),
-        crystal("kristall-2", 114, 41),
-        o("gletscher-rast", at(130, 39, 40.0), ObjectKind::SavePoint),
-        plant("blume-1", 134, 39),
-        crystal("kristall-3", 143, 29),
-        seal("robbe-2", 150, 39),
+        seal("seal-1", 46, 34),
+        icicle("icicle-1", 67, 34),
+        icicle("icicle-2", 75, 34),
+        icicle("icicle-3", 83, 34),
+        crystal("crystal-1", 88, 38),
+        sign("sign-ice", 98, 38),
+        crystal("crystal-2", 114, 41),
+        o("glacier-rest", at(130, 39, 40.0), ObjectKind::SavePoint),
+        plant("flower-1", 134, 39),
+        crystal("crystal-3", 143, 29),
+        seal("seal-2", 150, 39),
         npc("bolle", 164, 22, -1, 0.0),
-        ghost("geist-1", 185, 37, 4),
-        seal("robbe-3", 195, 37),
-        zone("lawine-gletscher", (200, 225), (16, 35)),
-        zone("lawine-gletscher-tritt", (203, 205), (32, 35)),
-        o("ost", at(233, 30, 28.0), ObjectKind::Spawn),
-        edge_exit("weg-bergdorf", w - 2, h, "frost-2", "west"),
+        ghost("ghost-1", 185, 37, 4),
+        seal("seal-3", 195, 37),
+        zone("avalanche-glacier", (200, 225), (16, 35)),
+        zone("avalanche-glacier-step", (203, 205), (32, 35)),
+        o("east", at(233, 30, 28.0), ObjectKind::Spawn),
+        edge_exit("path-mountain-village", w - 2, h, "frost-2", "west"),
     ];
-    fire(&mut m, "feuer-eingang", 12, 40);
-    fire(&mut m, "feuer-rast", 137, 39);
+    fire(&mut m, "fire-entrance", 12, 40);
+    fire(&mut m, "fire-rest", 137, 39);
     m.decor_back.extend([
-        big("gipfel", 30.0, 36, 1.2),
-        big("gletscher", 56.0, 36, 0.9),
-        big("schneewehe", 95.0, 38, 0.8),
-        big("gipfel", 150.0, 39, 1.4),
-        big("gletscher", 190.0, 37, 1.0),
-        big("tanne-schnee", 232.0, 30, 0.9),
+        big("peak", 30.0, 36, 1.2),
+        big("glacier", 56.0, 36, 0.9),
+        big("snowdrift", 95.0, 38, 0.8),
+        big("peak", 150.0, 39, 1.4),
+        big("glacier", 190.0, 37, 1.0),
+        big("fir-snow", 232.0, 30, 0.9),
     ]);
     m.decor_front.extend([
-        big("schneewehe", 3.0, 40, 0.5),
-        big("schneewehe", 128.0, 39, 0.5),
-        big("schneewehe", 226.0, 30, 0.6),
+        big("snowdrift", 3.0, 40, 0.5),
+        big("snowdrift", 128.0, 39, 0.5),
+        big("snowdrift", 226.0, 30, 0.6),
     ]);
     traces(&mut m, &[(53.0, 36), (122.0, 41), (178.0, 37)]);
     winter(m)
@@ -218,46 +218,46 @@ pub fn frost_2() -> Map {
     g.fill((238, 240), (4, 10), '#');
     let mut m = g.map("Verlassenes Bergdorf");
     m.adventure.objects = vec![
-        edge_exit("weg-gletscher", 0, h, "frost-1", "ost"),
+        edge_exit("path-glacier", 0, h, "frost-1", "east"),
         o("west", at(4, 38, 28.0), ObjectKind::Spawn),
-        seal("robbe-1", 30, 38),
-        bat("fledermaus-1", 56, 39),
-        bat("fledermaus-2", 64, 39),
-        chest("truhe-seil", 72, 44, &[("seil", 1)]),
-        o("dorfbrunnen", at(82, 38, 40.0), ObjectKind::SavePoint),
-        npc("bolle-huette", 92, 38, 1, 0.0),
-        npc("kiesel-huette", 94, 38, 1, 0.0),
+        seal("seal-1", 30, 38),
+        bat("bat-1", 56, 39),
+        bat("bat-2", 64, 39),
+        chest("chest-rope", 72, 44, &[("rope", 1)]),
+        o("village_well", at(82, 38, 40.0), ObjectKind::SavePoint),
+        npc("bolle-hut", 92, 38, 1, 0.0),
+        npc("kiesel-hut", 94, 38, 1, 0.0),
         npc("flocke", 97, 38, -1, 0.0),
-        npc("wicke-huette", 101, 38, -1, 0.0),
-        sign("schild-kamin", 109, 38),
-        o("kamin-oben", at(125, 11, 40.0), ObjectKind::SavePoint),
-        plant("blume-1", 130, 11),
-        ghost("geist-1", 145, 11, 3),
+        npc("wicke-hut", 101, 38, -1, 0.0),
+        sign("sign-chimney", 109, 38),
+        o("chimney-top", at(125, 11, 40.0), ObjectKind::SavePoint),
+        plant("flower-1", 130, 11),
+        ghost("ghost-1", 145, 11, 3),
         npc("kiesel", 164, 30, 1, 0.0),
-        crystal("kristall-4", 165, 30),
-        seal("robbe-2", 185, 11),
-        ghost("geist-2", 205, 11, 4),
-        crystal("kristall-5", 239, 4),
-        o("ost", at(254, 11, 28.0), ObjectKind::Spawn),
-        edge_exit("weg-grat", w - 2, h, "frost-3", "west"),
+        crystal("crystal-4", 165, 30),
+        seal("seal-2", 185, 11),
+        ghost("ghost-2", 205, 11, 4),
+        crystal("crystal-5", 239, 4),
+        o("east", at(254, 11, 28.0), ObjectKind::Spawn),
+        edge_exit("path-ridge", w - 2, h, "frost-3", "west"),
     ];
-    fire(&mut m, "feuer-huette", 97, 38);
-    fire(&mut m, "feuer-hochebene", 220, 11);
+    fire(&mut m, "fire-hut", 97, 38);
+    fire(&mut m, "fire-plateau", 220, 11);
     m.decor_back.extend([
-        big("berghuette", 20.0, 38, 0.9),
-        big("berghuette", 55.0, 38, 1.3),
-        big("berghuette", 97.0, 38, 1.0),
-        big("tanne-schnee", 80.0, 38, 1.0),
-        big("gipfel", 150.0, 11, 1.2),
-        big("gletscher", 195.0, 11, 1.0),
-        big("tanne-schnee", 228.0, 11, 0.9),
-        big("gipfel", 250.0, 11, 1.0),
+        big("mountain_hut", 20.0, 38, 0.9),
+        big("mountain_hut", 55.0, 38, 1.3),
+        big("mountain_hut", 97.0, 38, 1.0),
+        big("fir-snow", 80.0, 38, 1.0),
+        big("peak", 150.0, 11, 1.2),
+        big("glacier", 195.0, 11, 1.0),
+        big("fir-snow", 228.0, 11, 0.9),
+        big("peak", 250.0, 11, 1.0),
     ]);
     m.decor_front.extend([
-        decor("faesser", 34.0, 38),
-        decor("holzstapel", 86.0, 38),
-        big("schneewehe", 106.0, 38, 0.5),
-        big("schneewehe", 140.0, 11, 0.6),
+        decor("barrels", 34.0, 38),
+        decor("woodpile", 86.0, 38),
+        big("snowdrift", 106.0, 38, 0.5),
+        big("snowdrift", 140.0, 11, 0.6),
     ]);
     traces(&mut m, &[(40.0, 38), (175.0, 11), (230.0, 11)]);
     winter(m)
@@ -299,44 +299,44 @@ pub fn frost_3() -> Map {
         wind: 0.5,
     };
     m.adventure.objects = vec![
-        edge_exit("weg-bergdorf", 0, h, "frost-2", "ost"),
+        edge_exit("path-mountain-village", 0, h, "frost-2", "east"),
         o("west", at(4, 20, 28.0), ObjectKind::Spawn),
-        sign("schild-lawine", 18, 20),
-        zone("lawine-grat-1", (21, 60), (0, 17)),
-        zone("lawine-grat-1-tritt", (24, 26), (14, 17)),
-        seal("robbe-1", 62, 12),
+        sign("sign-avalanche", 18, 20),
+        zone("avalanche-ridge-1", (21, 60), (0, 17)),
+        zone("avalanche-ridge-1-step", (24, 26), (14, 17)),
+        seal("seal-1", 62, 12),
         npc("wicke", 86, 10, -1, 0.0),
-        crystal("kristall-6", 84, 10),
-        bat("fledermaus-1", 102, 17),
-        bat("fledermaus-2", 106, 17),
-        ghost("geist-1", 95, 26, 4),
-        npc("graue-stelle", 135, 14, 1, 0.0),
-        seal("robbe-2", 150, 14),
-        zone("lawine-grat-2", (161, 200), (0, 11)),
-        zone("lawine-grat-2-tritt", (163, 165), (8, 11)),
-        crystal("kristall-7", 198, 6),
-        ghost("geist-2", 210, 10, 4),
-        o("vor-der-halle", at(215, 10, 40.0), ObjectKind::SavePoint),
-        plant("blume-1", 218, 10),
-        crystal("kristall-8", 228, 2),
-        o("ost", at(274, 10, 28.0), ObjectKind::Spawn),
-        edge_exit("weg-halle", w - 2, h, "frost-arena", "west"),
+        crystal("crystal-6", 84, 10),
+        bat("bat-1", 102, 17),
+        bat("bat-2", 106, 17),
+        ghost("ghost-1", 95, 26, 4),
+        npc("grey-spot", 135, 14, 1, 0.0),
+        seal("seal-2", 150, 14),
+        zone("avalanche-ridge-2", (161, 200), (0, 11)),
+        zone("avalanche-ridge-2-step", (163, 165), (8, 11)),
+        crystal("crystal-7", 198, 6),
+        ghost("ghost-2", 210, 10, 4),
+        o("before-the-hall", at(215, 10, 40.0), ObjectKind::SavePoint),
+        plant("flower-1", 218, 10),
+        crystal("crystal-8", 228, 2),
+        o("east", at(274, 10, 28.0), ObjectKind::Spawn),
+        edge_exit("path-hall", w - 2, h, "frost-arena", "west"),
     ];
-    fire(&mut m, "feuer-start", 10, 20);
-    fire(&mut m, "feuer-tal", 92, 26);
-    fire(&mut m, "feuer-halle", 206, 10);
+    fire(&mut m, "fire-start", 10, 20);
+    fire(&mut m, "fire-valley", 92, 26);
+    fire(&mut m, "fire-hall", 206, 10);
     m.decor_back.extend([
-        big("gipfel", 45.0, 14, 1.3),
-        big("gletscher", 90.0, 26, 1.0),
-        big("gipfel", 140.0, 14, 1.4),
-        big("gipfel", 240.0, 10, 1.2),
-        big("tanne-schnee", 260.0, 10, 0.9),
+        big("peak", 45.0, 14, 1.3),
+        big("glacier", 90.0, 26, 1.0),
+        big("peak", 140.0, 14, 1.4),
+        big("peak", 240.0, 10, 1.2),
+        big("fir-snow", 260.0, 10, 0.9),
     ]);
-    m.decor_back.push(big("grauspur-eis", 135.0, 14, 1.0));
+    m.decor_back.push(big("grey-trail-ice", 135.0, 14, 1.0));
     m.decor_front.extend([
-        big("schneewehe", 66.0, 12, 0.6),
-        big("schneewehe", 155.0, 14, 0.6),
-        big("schneewehe", 250.0, 10, 0.6),
+        big("snowdrift", 66.0, 12, 0.6),
+        big("snowdrift", 155.0, 14, 0.6),
+        big("snowdrift", 250.0, 10, 0.6),
     ]);
     traces(&mut m, &[(140.0, 14), (225.0, 10), (268.0, 10)]);
     winter(m)
@@ -362,15 +362,15 @@ pub fn frost_arena() -> Map {
     let mut m = g.map("Eishalle");
     m.adventure.objects = vec![
         o("west", at(5, 28, 28.0), ObjectKind::Spawn),
-        o("vor-der-quelle", at(11, 28, 40.0), ObjectKind::SavePoint),
+        o("before-the-spring", at(11, 28, 40.0), ObjectKind::SavePoint),
         chest(
-            "truhe-munition",
+            "chest-ammo",
             15,
             28,
-            &[("munition_granate", 1), ("munition_laser", 1)],
+            &[("ammo_grenade", 1), ("ammo_laser", 1)],
         ),
         o(
-            "eiskoenigin",
+            "ice_queen",
             Vec2::new(43.5 * T, 44.0 * T - 300.0),
             ObjectKind::Creature {
                 kind: "kristella".into(),
@@ -379,33 +379,33 @@ pub fn frost_arena() -> Map {
         ),
         npc("kristella", 43, 44, -1, 0.0),
         o(
-            "tor",
+            "gate",
             corner(61, 40),
             ObjectKind::Door {
                 size: (1, 4),
-                open_if: "merker besiegt.kristella".into(),
+                open_if: "flag defeated.kristella".into(),
             },
         ),
         o(
-            "halle",
+            "hall",
             corner(25, 16),
             ObjectKind::Camera {
                 size: Vec2::new(37.0 * T, 30.0 * T),
                 mode: CameraMode::Bounds,
             },
         ),
-        o("ost", at(94, 44, 28.0), ObjectKind::Spawn),
-        edge_exit("weg-heim", w - 2, h, "tauwinkel", "bergsteig"),
+        o("east", at(94, 44, 28.0), ObjectKind::Spawn),
+        edge_exit("path-home", w - 2, h, "tauwinkel", "mountain_path"),
     ];
     m.decor_back = vec![
-        big("frostquelle-verdorrt", 43.0, 44, 1.6),
-        big("gipfel", 8.0, 28, 0.9),
-        big("tanne-schnee", 20.0, 28, 0.8),
-        big("gletscher", 80.0, 44, 1.0),
+        big("frost-spring-withered", 43.0, 44, 1.6),
+        big("peak", 8.0, 28, 0.9),
+        big("fir-snow", 20.0, 28, 0.8),
+        big("glacier", 80.0, 44, 1.0),
     ];
     m.decor_front = vec![
-        big("schneewehe", 3.0, 28, 0.5),
-        big("schneewehe", 90.0, 44, 0.5),
+        big("snowdrift", 3.0, 28, 0.5),
+        big("snowdrift", 90.0, 44, 0.5),
     ];
     traces(&mut m, &[(70.0, 44), (85.0, 44)]);
     winter(m)
@@ -434,7 +434,7 @@ mod tests {
 
     fn shipped(name: &str) -> String {
         format!(
-            "{}/../../maps/abenteuer/{name}.{}",
+            "{}/../../maps/adventure/{name}.{}",
             env!("CARGO_MANIFEST_DIR"),
             elora_map::EXTENSION
         )
@@ -466,26 +466,26 @@ mod tests {
             "bolle",
             "kiesel",
             "wicke",
-            "bolle-huette",
-            "kiesel-huette",
-            "wicke-huette",
-            "graue-stelle",
-            "truhe-seil",
+            "bolle-hut",
+            "kiesel-hut",
+            "wicke-hut",
+            "grey-spot",
+            "chest-rope",
             "kristella",
-            "eiskoenigin",
-            "tor",
+            "ice_queen",
+            "gate",
         ] {
             assert!(objects.iter().any(|o| o.id == id), "{id} missing");
         }
         let crystals = objects
             .iter()
             .filter(
-                |o| matches!(&o.kind, ObjectKind::Collectible { item } if item == "klarkristall"),
+                |o| matches!(&o.kind, ObjectKind::Collectible { item } if item == "clear_crystal"),
             )
             .count();
         assert_eq!(crystals, 8, "eight clear crystals (D-M24-09)");
         assert!(
-            objects.iter().filter(|o| o.id.starts_with("feuer")).count() >= 6,
+            objects.iter().filter(|o| o.id.starts_with("fire")).count() >= 6,
             "enough fireplaces against the cold"
         );
     }
@@ -539,7 +539,7 @@ mod tests {
             Tile::Climb,
             "wall with gate on the right"
         );
-        let o = m.adventure.object("eiskoenigin").unwrap();
+        let o = m.adventure.object("ice_queen").unwrap();
         assert!((o.pos.x - HALL_MID).abs() < 1.0);
     }
 
@@ -556,7 +556,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "writes maps/abenteuer/*.emap"]
+    #[ignore = "writes maps/adventure/*.emap"]
     fn write_chapter4_maps() {
         for (name, map) in maps() {
             map.save(std::path::Path::new(&shipped(name))).unwrap();

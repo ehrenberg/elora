@@ -67,7 +67,7 @@ fn write_map() {
     map.author = Some("Elora".into());
     let path = concat!(
         env!("CARGO_MANIFEST_DIR"),
-        "/../../maps/faehigkeiten-test.emap"
+        "/../../maps/abilities-test.emap"
     );
     std::fs::write(path, elora_map::encode(&map)).expect("write");
 }

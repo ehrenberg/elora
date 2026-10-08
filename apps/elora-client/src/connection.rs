@@ -54,7 +54,7 @@ impl Connection {
         let stats = Arc::new(Mutex::new(None));
         let shared = stats.clone();
         std::thread::Builder::new()
-            .name("netz".into())
+            .name("net".into())
             .spawn(move || {
                 let mut ep = ClientEndpoint::connect(socket, server, expected_key, Instant::now());
                 loop {

@@ -3,7 +3,7 @@
 //! (flower spring with the Brummbär bumblebee).
 //!
 //! `cargo test -p elora-client --bin elora write_chapter1_maps -- --ignored` writes
-//! `maps/abenteuer/*.emap`.
+//! `maps/adventure/*.emap`.
 
 #![allow(
     clippy::cast_precision_loss,
@@ -46,9 +46,7 @@ fn bee(id: &str, tx: usize, ty: usize) -> elora_map::Object {
     o(
         id,
         at(tx, ty, 24.0),
-        ObjectKind::Collectible {
-            item: "biene".into(),
-        },
+        ObjectKind::Collectible { item: "bee".into() },
     )
 }
 
@@ -56,7 +54,7 @@ fn bee(id: &str, tx: usize, ty: usize) -> elora_map::Object {
 fn thorn_decor(m: &mut Map, y: usize, x0: usize, x1: usize) {
     let mut x = x0;
     while x < x1 {
-        m.decor_front.push(decor("dornen", x as f32 + 0.5, y + 1));
+        m.decor_front.push(decor("thorns", x as f32 + 0.5, y + 1));
         x += 2;
     }
 }
@@ -104,19 +102,19 @@ pub fn meadow_2() -> Map {
     // pull chest for the return with the pull hook (M2.2.6)
     let pull = pull_vault(
         &mut g,
-        "wiese2",
+        "meadow2",
         244,
         40,
-        "wiese2.zug",
-        &[("glanztropfen", 50), ("heiltrank", 2)],
+        "meadow2.pull",
+        &[("gleam_drops", 50), ("healing_potion", 2)],
     );
     // stomp chamber for the return with stomp (M2.3.6)
     let stomp = stomp_vault(
         &mut g,
-        "wiese2-stampf",
+        "meadow2-stomp",
         101,
         44,
-        &[("glanztropfen", 60), ("bernstein", 2)],
+        &[("gleam_drops", 60), ("amber", 2)],
     );
     // hills, spring stone and path to wiese-3
     g.ground(231, 250, 40);
@@ -124,69 +122,64 @@ pub fn meadow_2() -> Map {
     // climbing spot for the return with the ice grip (M2.4.7)
     let climb = climb_vault(
         &mut g,
-        "wiese2-kletter",
+        "meadow2-climb",
         252,
         42,
-        &[("glanztropfen", 60), ("bernstein", 2)],
+        &[("gleam_drops", 60), ("amber", 2)],
     );
     let mut m = g.map("Blütenwiesen 2");
     m.adventure.objects = vec![
-        edge_exit("weg-wiese-1", 0, h, "wiese-1", "ost"),
+        edge_exit("path-meadow-1", 0, h, "meadow-1", "east"),
         o("west", at(5, 44, 28.0), ObjectKind::Spawn),
-        o("rast", at(12, 44, 40.0), ObjectKind::SavePoint),
+        o("rest", at(12, 44, 40.0), ObjectKind::SavePoint),
         npc("wabe", 30, 42, -1, 0.0),
-        bee("biene-1", 85, 16),
-        plant("blume-1", 49, 44),
-        creature("kaefer-1", "stachelkaefer", 60, 44, 26.0),
-        creature("blaeser-1", "pollenblaeser", 75, 44, 60.0),
-        creature("huepfer-1", "grashuepfer", 94, 44, 28.0),
-        chest(
-            "truhe-krone",
-            87,
-            16,
-            &[("glanztropfen", 25), ("bernstein", 1)],
-        ),
-        creature("kaefer-2", "stachelkaefer", 112, 49, 26.0),
-        creature("kaefer-3", "stachelkaefer", 145, 49, 26.0),
-        plant("blume-2", 152, 44),
-        creature("blaeser-2", "pollenblaeser", 220, 44, 60.0),
-        bee("biene-4", 285, jerk_top),
-        plant("blume-3", 228, 44),
-        creature("huepfer-2", "grashuepfer", 236, 40, 28.0),
-        creature("kaefer-4", "stachelkaefer", 262, 42, 26.0),
-        o("quellstein", at(266, 42, 40.0), ObjectKind::SavePoint),
-        o("ost", at(292, 42, 28.0), ObjectKind::Spawn),
-        edge_exit("weg-wiese-3", w - 2, h, "wiese-3", "west"),
+        bee("bee-1", 85, 16),
+        plant("flower-1", 49, 44),
+        creature("beetle-1", "spike_beetle", 60, 44, 26.0),
+        creature("blower-1", "pollen_blower", 75, 44, 60.0),
+        creature("hopper-1", "grasshopper", 94, 44, 28.0),
+        chest("chest-crown", 87, 16, &[("gleam_drops", 25), ("amber", 1)]),
+        creature("beetle-2", "spike_beetle", 112, 49, 26.0),
+        creature("beetle-3", "spike_beetle", 145, 49, 26.0),
+        plant("flower-2", 152, 44),
+        creature("blower-2", "pollen_blower", 220, 44, 60.0),
+        bee("bee-4", 285, jerk_top),
+        plant("flower-3", 228, 44),
+        creature("hopper-2", "grasshopper", 236, 40, 28.0),
+        creature("beetle-4", "spike_beetle", 262, 42, 26.0),
+        o("spring_stone", at(266, 42, 40.0), ObjectKind::SavePoint),
+        o("east", at(292, 42, 28.0), ObjectKind::Spawn),
+        edge_exit("path-meadow-3", w - 2, h, "meadow-3", "west"),
     ];
     m.adventure.objects.extend(pull);
     m.adventure.objects.push(stomp);
     m.adventure.objects.push(climb);
     m.decor_back = vec![
-        decor("honigstand", 24.0, 42),
-        decor("bienenstock", 34.0, 42),
-        decor("bienenstock", 37.5, 42),
-        decor("beutenstapel", 41.5, 42),
+        decor("honey_stand", 24.0, 42),
+        decor("beehive", 34.0, 42),
+        decor("beehive", 37.5, 42),
+        decor("hive_stack", 41.5, 42),
         decor("fence", 45.0, 42),
-        big("riesenblume-rosa", 54.0, 44, 2.0),
-        big("riesenblume-gelb", 66.0, 44, 2.0),
-        big("riesenblume-lila", 80.0, 44, 2.0),
-        big("riesenblume-rosa", 92.0, 44, 2.0),
-        big("riesenblume-gelb", 101.0, 44, 2.0),
+        big("giant-flower-pink", 54.0, 44, 2.0),
+        big("giant-flower-yellow", 66.0, 44, 2.0),
+        big("giant-flower-lilac", 80.0, 44, 2.0),
+        big("giant-flower-pink", 92.0, 44, 2.0),
+        big("giant-flower-yellow", 101.0, 44, 2.0),
         decor("tree-round", 108.0, 44),
         decor("tree-round", 152.0, 44),
-        big("riesenblume-lila", 222.0, 44, 1.6),
+        big("giant-flower-lilac", 222.0, 44, 1.6),
         decor("tree-round", 246.0, 40),
-        big("riesenblume-rosa", 272.0, 42, 1.4),
+        big("giant-flower-pink", 272.0, 42, 1.4),
     ];
     m.decor_front = vec![
-        decor("blumentopf-bunt", 20.0, 42),
-        decor("korb", 27.0, 42),
-        decor("trittsteine", 129.0, 51),
-        decor("farn", 116.0, 49),
-        decor("farn", 144.0, 49),
-        decor("loewenzahn", 236.0, 40),
-        decor("beerenbusch", 256.0, 42),
-        decor("farn", 292.0, 42),
+        decor("flower-pot-colourful", 20.0, 42),
+        decor("basket", 27.0, 42),
+        decor("stepping_stones", 129.0, 51),
+        decor("fern", 116.0, 49),
+        decor("fern", 144.0, 49),
+        decor("dandelion", 236.0, 40),
+        decor("berry_bush", 256.0, 42),
+        decor("fern", 292.0, 42),
     ];
     thorn_decor(&mut m, 55, 158, 214);
     for (tx, ty) in [
@@ -198,7 +191,7 @@ pub fn meadow_2() -> Map {
         (240, 34),
         (276, 36),
     ] {
-        m.decor_front.push(decor("schmetterling", tx as f32, ty));
+        m.decor_front.push(decor("butterfly", tx as f32, ty));
     }
     let mut map = finish(m, &release::THEMES[0]);
     animate(&mut map, &[]);
@@ -241,48 +234,48 @@ pub fn meadow_3() -> Map {
     g.ground(200, w - 1, 24);
     let mut m = g.map("Blütenwiesen 3");
     m.adventure.objects = vec![
-        edge_exit("weg-wiese-2", 0, h, "wiese-2", "ost"),
+        edge_exit("path-meadow-2", 0, h, "meadow-2", "east"),
         o("west", at(5, 30, 28.0), ObjectKind::Spawn),
-        sign("schild-wurzeln", 22, 30),
-        creature("kaefer-1", "stachelkaefer", 45, 57, 26.0),
-        plant("blume-1", 36, 57),
-        creature("huepfer-1", "grashuepfer", 85, 55, 28.0),
-        creature("blaeser-1", "pollenblaeser", 95, 55, 60.0),
-        o("hoehle", at(112, 57, 40.0), ObjectKind::SavePoint),
-        bee("biene-2", 120, 41),
+        sign("sign-roots", 22, 30),
+        creature("beetle-1", "spike_beetle", 45, 57, 26.0),
+        plant("flower-1", 36, 57),
+        creature("hopper-1", "grasshopper", 85, 55, 28.0),
+        creature("blower-1", "pollen_blower", 95, 55, 60.0),
+        o("cave", at(112, 57, 40.0), ObjectKind::SavePoint),
+        bee("bee-2", 120, 41),
         chest(
-            "truhe-nische",
+            "chest-niche",
             124,
             41,
-            &[("glanztropfen", 30), ("heiltrank", 1)],
+            &[("gleam_drops", 30), ("healing_potion", 1)],
         ),
-        creature("kaefer-2", "stachelkaefer", 132, 57, 26.0),
-        bee("biene-3", 160, 52),
-        creature("huepfer-2", "grashuepfer", 168, 52, 28.0),
-        plant("blume-2", 162, 52),
-        creature("kaefer-3", "stachelkaefer", 205, 24, 26.0),
-        o("ost", at(214, 24, 28.0), ObjectKind::Spawn),
-        edge_exit("weg-arena", w - 2, h, "wiese-arena", "west"),
+        creature("beetle-2", "spike_beetle", 132, 57, 26.0),
+        bee("bee-3", 160, 52),
+        creature("hopper-2", "grasshopper", 168, 52, 28.0),
+        plant("flower-2", 162, 52),
+        creature("beetle-3", "spike_beetle", 205, 24, 26.0),
+        o("east", at(214, 24, 28.0), ObjectKind::Spawn),
+        edge_exit("path-arena", w - 2, h, "meadow-arena", "west"),
     ];
     m.decor_back = vec![
         decor("tree-round", 8.0, 30),
-        big("riesenblume-lila", 16.0, 30, 1.6),
+        big("giant-flower-lilac", 16.0, 30, 1.6),
         decor("tree-round", 60.0, 30),
         decor("tree-round", 110.0, 30),
         decor("tree-pine", 150.0, 30),
         decor("tree-pine", 190.0, 26),
-        big("riesenblume-gelb", 208.0, 24, 1.6),
+        big("giant-flower-yellow", 208.0, 24, 1.6),
     ];
     m.decor_front = vec![
-        decor("farn", 33.0, 57),
-        decor("baumstumpf", 79.0, 55),
-        decor("farn", 112.0, 57),
-        decor("beerenbusch", 128.0, 57),
-        decor("farn", 165.0, 52),
-        decor("loewenzahn", 203.0, 24),
-        decor("farn", 40.0, 30),
-        decor("beerenbusch", 90.0, 30),
-        decor("loewenzahn", 130.0, 30),
+        decor("fern", 33.0, 57),
+        decor("tree_stump", 79.0, 55),
+        decor("fern", 112.0, 57),
+        decor("berry_bush", 128.0, 57),
+        decor("fern", 165.0, 52),
+        decor("dandelion", 203.0, 24),
+        decor("fern", 40.0, 30),
+        decor("berry_bush", 90.0, 30),
+        decor("dandelion", 130.0, 30),
     ];
     thorn_decor(&mut m, 60, 61, 72);
     thorn_decor(&mut m, 60, 101, 108);
@@ -314,22 +307,22 @@ pub fn meadow_arena() -> Map {
     let mut m = g.map("Blütenquelle");
     m.adventure.objects = vec![
         o("west", at(5, 26, 28.0), ObjectKind::Spawn),
-        o("vor-der-quelle", at(11, 26, 40.0), ObjectKind::SavePoint),
+        o("before-the-spring", at(11, 26, 40.0), ObjectKind::SavePoint),
         o(
-            "brummbaer",
+            "bumblebear",
             at(45, 30, 120.0),
             ObjectKind::Creature {
-                kind: "brummbaer".into(),
+                kind: "bumblebear".into(),
                 persistent: true,
             },
         ),
-        npc("hummel", 52, 44, -1, 0.0),
+        npc("bumblebee", 52, 44, -1, 0.0),
         o(
-            "tor",
+            "gate",
             corner(70, 36),
             ObjectKind::Door {
                 size: (2, 8),
-                open_if: "merker besiegt.brummbaer".into(),
+                open_if: "flag defeated.bumblebear".into(),
             },
         ),
         o(
@@ -340,18 +333,18 @@ pub fn meadow_arena() -> Map {
                 mode: CameraMode::Bounds,
             },
         ),
-        o("ost", at(84, 44, 28.0), ObjectKind::Spawn),
-        edge_exit("weg-heim", w - 2, h, "wiese-1", "ost"),
+        o("east", at(84, 44, 28.0), ObjectKind::Spawn),
+        edge_exit("path-home", w - 2, h, "meadow-1", "east"),
     ];
     m.decor_back = vec![
-        big("bluetenquelle-verdorrt", 45.0, 44, 1.5),
-        big("riesenblume-rosa", 4.0, 26, 1.4),
-        big("riesenblume-lila", 13.5, 26, 1.6),
-        big("riesenblume-gelb", 21.5, 44, 1.5),
-        big("riesenblume-rosa", 67.0, 44, 1.5),
+        big("blossom-spring-withered", 45.0, 44, 1.5),
+        big("giant-flower-pink", 4.0, 26, 1.4),
+        big("giant-flower-lilac", 13.5, 26, 1.6),
+        big("giant-flower-yellow", 21.5, 44, 1.5),
+        big("giant-flower-pink", 67.0, 44, 1.5),
         decor("tree-round", 80.0, 44),
     ];
-    m.decor_front = vec![decor("farn", 30.0, 44), decor("farn", 60.0, 44)];
+    m.decor_front = vec![decor("fern", 30.0, 44), decor("fern", 60.0, 44)];
     let mut map = finish(m, &release::THEMES[0]);
     animate(&mut map, &[]);
     map
@@ -361,10 +354,10 @@ pub fn meadow_arena() -> Map {
 pub fn all_maps() -> Vec<(&'static str, Map)> {
     vec![
         ("tauwinkel", super::prologue::tauwinkel()),
-        ("wiese-1", super::prologue::meadow()),
-        ("wiese-2", meadow_2()),
-        ("wiese-3", meadow_3()),
-        ("wiese-arena", meadow_arena()),
+        ("meadow-1", super::prologue::meadow()),
+        ("meadow-2", meadow_2()),
+        ("meadow-3", meadow_3()),
+        ("meadow-arena", meadow_arena()),
     ]
 }
 
@@ -376,7 +369,7 @@ mod tests {
 
     fn shipped(name: &str) -> String {
         format!(
-            "{}/../../maps/abenteuer/{name}.{}",
+            "{}/../../maps/adventure/{name}.{}",
             env!("CARGO_MANIFEST_DIR"),
             elora_map::EXTENSION
         )
@@ -407,7 +400,7 @@ mod tests {
                     .objects
                     .iter()
                     .filter(
-                        |o| matches!(&o.kind, ObjectKind::Collectible { item } if item == "biene"),
+                        |o| matches!(&o.kind, ObjectKind::Collectible { item } if item == "bee"),
                     )
                     .count()
             })
@@ -418,9 +411,9 @@ mod tests {
     #[test]
     fn shipped_chapter_maps_are_current() {
         for (name, map) in [
-            ("wiese-2", meadow_2()),
-            ("wiese-3", meadow_3()),
-            ("wiese-arena", meadow_arena()),
+            ("meadow-2", meadow_2()),
+            ("meadow-3", meadow_3()),
+            ("meadow-arena", meadow_arena()),
         ] {
             let file = std::fs::read(shipped(name)).expect("map present");
             assert_eq!(
@@ -432,7 +425,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "writes maps/abenteuer/*.emap"]
+    #[ignore = "writes maps/adventure/*.emap"]
     fn write_chapter1_maps() {
         for (name, map) in all_maps() {
             map.save(std::path::Path::new(&shipped(name))).unwrap();

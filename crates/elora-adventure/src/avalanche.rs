@@ -10,10 +10,10 @@ use elora_sim::tuning::ms_to_ticks;
 use elora_sim::{Event, TILE_SIZE, Vec2, World};
 
 /// Name of the enemy kind for the boulders (`creatures.toml`).
-pub const ROCK: &str = "schneebrocken";
+pub const ROCK: &str = "snow_chunk";
 /// Start of the zone names; `-tritt` at the end makes the zone a trigger spot.
-const PREFIX: &str = "lawine";
-const STEP: &str = "-tritt";
+const PREFIX: &str = "avalanche";
+const STEP: &str = "-step";
 
 /// Running and resting avalanches of the map.
 #[derive(Debug, Clone, Default)]

@@ -3,7 +3,7 @@
 //! roofs, in front of and behind the playfield.
 //!
 //! `cargo test -p elora-client --bin elora write_weather_test_map -- --ignored` writes
-//! `maps/wetter-test.emap`.
+//! `maps/weather-test.emap`.
 
 #![allow(clippy::cast_precision_loss)]
 
@@ -35,7 +35,7 @@ pub fn weather_test() -> Map {
     m.decor_back = vec![
         decor("tree-round", 12.0, 38),
         decor("tree-pine", 40.0, 36),
-        decor("haus-oma", 63.0, 40),
+        decor("house-oma", 63.0, 40),
         decor("tree-round", 100.0, 38),
         decor("fence", 120.0, 34),
     ];
@@ -56,7 +56,7 @@ mod tests {
 
     fn shipped() -> String {
         format!(
-            "{}/../../maps/wetter-test.{}",
+            "{}/../../maps/weather-test.{}",
             env!("CARGO_MANIFEST_DIR"),
             elora_map::EXTENSION
         )
@@ -96,7 +96,7 @@ mod tests {
     }
 
     #[test]
-    #[ignore = "writes maps/wetter-test.emap"]
+    #[ignore = "writes maps/weather-test.emap"]
     fn write_weather_test_map() {
         weather_test()
             .save(std::path::Path::new(&shipped()))

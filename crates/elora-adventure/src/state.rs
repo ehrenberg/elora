@@ -10,7 +10,7 @@ use crate::data::{Branch, Content, Effect, GLEAM_DROPS, ItemKind, Slot};
 use crate::stats::Stats;
 
 /// Flag after Tüftel's work with the spring spark of the frost spring (D-M24-03).
-pub const STRONG_GRIP: &str = "eisgriff.stark";
+pub const STRONG_GRIP: &str = "ice_grip.strong";
 /// Pulling up on the climbing wall with strengthened ice grip (A-42, units/tick).
 pub const STRONG_GRIP_CLIMB: f32 = 1.6;
 
@@ -28,10 +28,8 @@ pub struct SaveGame {
     /// Experience within the current level.
     pub xp: u32,
     pub health: i32,
-    #[serde(rename = "glanztropfen")]
     pub gleam_drops: u32,
     /// Collected since the last save point (lost on death, E-220).
-    #[serde(rename = "glanz_since_save")]
     pub gleam_since_save: u32,
     /// Additional dewdrop points from quests.
     pub bonus_points: u32,
@@ -578,19 +576,16 @@ mod tests {
     #[test]
     fn skill_tree_needs_points_order_and_ability() {
         let (c, mut g) = game();
-        assert_eq!(g.can_learn(&c, "kraft"), Err(Refusal::NoPoints));
+        assert_eq!(g.can_learn(&c, "power"), Err(Refusal::NoPoints));
         g.add_xp(&c, 100_000);
-        assert_eq!(g.can_learn(&c, "schnelle_hand"), Err(Refusal::Locked));
-        assert_eq!(
-            g.can_learn(&c, "schneller_ruck"),
-            Err(Refusal::NeedsAbility)
-        );
+        assert_eq!(g.can_learn(&c, "quick_hand"), Err(Refusal::Locked));
+        assert_eq!(g.can_learn(&c, "quick_jerk"), Err(Refusal::NeedsAbility));
         g.grant_ability(Ability::HookJerk);
-        assert_eq!(g.learn(&c, "schneller_ruck"), Ok(1));
+        assert_eq!(g.learn(&c, "quick_jerk"), Ok(1));
         for _ in 0..3 {
-            g.learn(&c, "kraft").unwrap();
+            g.learn(&c, "power").unwrap();
         }
-        assert_eq!(g.learn(&c, "kraft"), Err(Refusal::MaxRank));
+        assert_eq!(g.learn(&c, "power"), Err(Refusal::MaxRank));
         let t = g.tuning(&c, &Tuning::default());
         assert_eq!(t.jerk_cooldown, 650);
         assert!(t.hammer_damage >= 4);
@@ -604,32 +599,35 @@ mod tests {
         let (c, mut g) = game();
         g.gleam_drops = 1000;
         let stock = g.stock(&c, "lotte");
-        assert!(stock.contains(&"heiltrank") && !stock.contains(&"tautrank"));
-        assert!(!stock.contains(&"kraeutertee"));
-        assert_eq!(g.buy(&c, "lotte", "tautrank"), Err(Refusal::Unknown));
-        g.run(&c, &["faehigkeit hook-ruck".into()]);
-        assert!(g.stock(&c, "lotte").contains(&"tautrank"));
-        assert_eq!(g.buy(&c, "lotte", "tautrank"), Ok(()));
+        assert!(stock.contains(&"healing_potion") && !stock.contains(&"dew_potion"));
+        assert!(!stock.contains(&"herbal_tea"));
+        assert_eq!(g.buy(&c, "lotte", "dew_potion"), Err(Refusal::Unknown));
+        g.run(&c, &["ability hook-jerk".into()]);
+        assert!(g.stock(&c, "lotte").contains(&"dew_potion"));
+        assert_eq!(g.buy(&c, "lotte", "dew_potion"), Ok(()));
     }
 
     #[test]
     fn items_shop_and_equipment() {
         let (c, mut g) = game();
-        assert_eq!(g.buy(&c, "lotte", "heiltrank"), Err(Refusal::TooExpensive));
+        assert_eq!(
+            g.buy(&c, "lotte", "healing_potion"),
+            Err(Refusal::TooExpensive)
+        );
         g.add_item(&c, GLEAM_DROPS, 300).unwrap();
-        g.buy(&c, "lotte", "strohhut").unwrap();
+        g.buy(&c, "lotte", "straw_hat").unwrap();
         assert_eq!(g.gleam_drops, 100);
-        g.equip(&c, "strohhut").unwrap();
+        g.equip(&c, "straw_hat").unwrap();
         assert_eq!(g.max_health(&c), 11);
-        assert_eq!(g.count("strohhut"), 0);
+        assert_eq!(g.count("straw_hat"), 0);
         g.unequip(&c, Slot::Hat);
-        assert_eq!(g.sell(&c, "strohhut"), Ok(80), "40 % of 200");
+        assert_eq!(g.sell(&c, "straw_hat"), Ok(80), "40 % of 200");
         for _ in 0..5 {
-            g.buy(&c, "lotte", "heiltrank").unwrap();
+            g.buy(&c, "lotte", "healing_potion").unwrap();
         }
-        assert_eq!(g.buy(&c, "lotte", "heiltrank"), Err(Refusal::Full));
+        assert_eq!(g.buy(&c, "lotte", "healing_potion"), Err(Refusal::Full));
         g.health = 2;
-        assert_eq!(g.use_item(&c, "heiltrank"), Ok(Effect::Heal(5)));
+        assert_eq!(g.use_item(&c, "healing_potion"), Ok(Effect::Heal(5)));
         assert_eq!(g.health, 7);
     }
 
@@ -645,9 +643,9 @@ mod tests {
         g.weapons.insert(Weapon::Hammer, 0);
         g.add_item(&c, GLEAM_DROPS, 50).unwrap();
         assert_eq!(g.upgrade(&c, Weapon::Hammer), Err(Refusal::MissingMaterial));
-        g.add_item(&c, "bernstein", 3).unwrap();
+        g.add_item(&c, "amber", 3).unwrap();
         assert_eq!(g.upgrade(&c, Weapon::Hammer), Ok(1));
-        assert_eq!((g.gleam_drops, g.count("bernstein")), (10, 0));
+        assert_eq!((g.gleam_drops, g.count("amber")), (10, 0));
         assert_eq!(g.tuning(&c, &Tuning::default()).hammer_damage, 4);
     }
 
@@ -666,10 +664,7 @@ mod tests {
     fn world_events_give_xp_and_loot() {
         let (c, mut g) = game();
         let kinds = &c.creatures;
-        let k = kinds
-            .iter()
-            .position(|k| k.name == "stachelkaefer")
-            .unwrap();
+        let k = kinds.iter().position(|k| k.name == "spike_beetle").unwrap();
         let death = Event::CreatureDeath {
             id: 1,
             kind: k,
@@ -684,11 +679,11 @@ mod tests {
         );
         let loot = Event::LootCollect {
             player: 0,
-            item: "bernstein".into(),
+            item: "amber".into(),
             count: 2,
             pos: elora_sim::Vec2::ZERO,
         };
         g.on_event(&c, kinds, 0, &loot);
-        assert_eq!(g.count("bernstein"), 2);
+        assert_eq!(g.count("amber"), 2);
     }
 }

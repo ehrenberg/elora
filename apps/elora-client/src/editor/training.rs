@@ -93,37 +93,37 @@ pub fn training() -> Map {
     let mut m = Map::from_rows("Training", &r).expect("layout valid");
     // enemy practice ground (in training they come back after a while)
     m.adventure.objects = vec![
-        creature("kaefer", "stachelkaefer", 111, f, 26.0),
-        creature("huepfer", "grashuepfer", 114, f, 28.0),
-        creature("blaeser", "pollenblaeser", 113, 26, 60.0),
-        creature("puppe-1", "strohpuppe", 92, f, 40.0),
-        creature("puppe-2", "strohpuppe", 94, f, 40.0),
+        creature("beetle", "spike_beetle", 111, f, 26.0),
+        creature("hopper", "grasshopper", 114, f, 28.0),
+        creature("blower", "pollen_blower", 113, 26, 60.0),
+        creature("dummy-1", "straw_dummy", 92, f, 40.0),
+        creature("dummy-2", "straw_dummy", 94, f, 40.0),
     ];
     m.decor_back = vec![
-        decor("werkstatt", 10.0, f),
-        decor("fahne-bunt", 18.0, f),
-        decor("anschlagbrett", 37.5, f),
-        decor("fahne-bunt", 39.0, f),
-        decor("fahne-bunt", 59.0, f),
-        decor("fahne-bunt", 75.0, f),
-        decor("fahne-bunt", 92.5, 34),
-        decor("faesser", 118.0, f),
-        decor("holzstapel", 2.0, f),
+        decor("workshop", 10.0, f),
+        decor("banner-colourful", 18.0, f),
+        decor("notice_board", 37.5, f),
+        decor("banner-colourful", 39.0, f),
+        decor("banner-colourful", 59.0, f),
+        decor("banner-colourful", 75.0, f),
+        decor("banner-colourful", 92.5, 34),
+        decor("barrels", 118.0, f),
+        decor("woodpile", 2.0, f),
     ];
     m.decor_front = vec![
-        decor("heuballen", 48.0, 38),
-        decor("bank", 16.5, f),
-        decor("beet-bunt", 5.5, f),
-        decor("blumentopf-bunt", 13.5, f),
-        decor("kuerbisse", 72.0, 38),
-        decor("korb", 106.0, 28),
-        decor("schmetterling", 8.0, 26),
-        decor("schmetterling", 31.0, 15),
-        decor("schmetterling", 68.0, 14),
-        decor("schmetterling", 102.0, 22),
+        decor("hay_bale", 48.0, 38),
+        decor("bench", 16.5, f),
+        decor("flower-bed-colourful", 5.5, f),
+        decor("flower-pot-colourful", 13.5, f),
+        decor("pumpkins", 72.0, 38),
+        decor("basket", 106.0, 28),
+        decor("butterfly", 8.0, 26),
+        decor("butterfly", 31.0, 15),
+        decor("butterfly", 68.0, 14),
+        decor("butterfly", 102.0, 22),
     ];
     for x in (41..56).step_by(2) {
-        m.decor_front.push(decor("dornen", x as f32 + 0.5, 38));
+        m.decor_front.push(decor("thorns", x as f32 + 0.5, 38));
     }
     m.decor_back.extend([
         decor("tree-round", 23.0, 30),

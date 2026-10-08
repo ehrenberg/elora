@@ -1,0 +1,18 @@
+# Signpost (E-273, R2-M2.4)
+speaker = "signpost"
+
+[[start]]
+if = "ability stomp"
+node = "text"
+
+[[start]]
+node = "later"
+
+[[node]]
+id = "text"
+text = { de = "↑ Frostspitzen – Bergsteig. Warm anziehen!", en = "↑ Frostspitzen – mountain path. Dress warmly!" }
+
+# before Elora can use it (E-354)
+[[node]]
+id = "later"
+text = { de = "↑ Frostspitzen – Bergsteig. Der Weg ist unter einer dicken Eisdecke verschlossen. Wer kräftig aufstampfen kann, bricht sie auf.", en = "↑ Frostspitzen – mountain path. The way is sealed under a thick lid of ice. Whoever can stomp hard enough will break it open." }

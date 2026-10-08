@@ -52,15 +52,15 @@ impl WeatherKind {
     /// Key for data and translation (`assets/adventure/worldmap.toml`, `weather.<key>`).
     pub fn key(self) -> &'static str {
         match self {
-            Self::Clear => "schoen",
-            Self::Rain => "regen",
-            Self::Storm => "gewitter",
-            Self::Fog => "nebel",
-            Self::Leaves => "blaetter",
-            Self::Petals => "blueten",
-            Self::Sandstorm => "sandsturm",
-            Self::Snow => "schnee",
-            Self::Blizzard => "schneesturm",
+            Self::Clear => "clear",
+            Self::Rain => "rain",
+            Self::Storm => "storm",
+            Self::Fog => "fog",
+            Self::Leaves => "leaves",
+            Self::Petals => "blossoms",
+            Self::Sandstorm => "sandstorm",
+            Self::Snow => "snow",
+            Self::Blizzard => "blizzard",
         }
     }
 

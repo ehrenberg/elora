@@ -20,7 +20,7 @@ fn kinds() -> Vec<CreatureKind> {
         boss: false,
         xp: 5,
         loot: vec![LootEntry {
-            item: "glanztropfen".into(),
+            item: "gleam_drops".into(),
             min: 3,
             max: 3,
             chance: 1.0,
@@ -201,7 +201,7 @@ fn hammer_kills_creature_and_loot_flies_to_elora() {
                 ..
             }
         )),
-        "besiegt"
+        "defeated"
     );
     assert!(w.creatures.is_empty());
     let more = run(&mut w, PlayerInput::default(), 120);
@@ -209,7 +209,7 @@ fn hammer_kills_creature_and_loot_flies_to_elora() {
         .iter()
         .chain(&more)
         .filter_map(|e| match e {
-            Event::LootCollect { item, count, .. } if item == "glanztropfen" => Some(*count),
+            Event::LootCollect { item, count, .. } if item == "gleam_drops" => Some(*count),
             _ => None,
         })
         .sum();
@@ -616,7 +616,7 @@ fn diver_def() -> elora_sim::DiverDef {
 fn boss_world() -> (World, u32) {
     let mut w = world(|_| {});
     let mut k = w.creature_kinds[0].clone();
-    k.name = "hueter".into();
+    k.name = "guardian".into();
     k.size = [120.0, 100.0];
     k.health = 30;
     k.boss = true;
@@ -631,7 +631,7 @@ fn boss_world() -> (World, u32) {
 }
 
 fn boss(w: &World, id: u32) -> &elora_sim::Creature {
-    w.creatures.iter().find(|c| c.id == id).expect("lebt")
+    w.creatures.iter().find(|c| c.id == id).expect("alive")
 }
 
 #[test]
@@ -711,7 +711,7 @@ fn hook_flowers_wilt_while_the_diver_is_angry() {
     assert_eq!(w.collision.hook_wilt, None, "not angry yet");
     w.creatures.iter_mut().find(|c| c.id == id).unwrap().health = 10;
     run(&mut w, PlayerInput::default(), 1);
-    let first = w.collision.hook_wilt.expect("welkt");
+    let first = w.collision.hook_wilt.expect("wilts");
     run(&mut w, PlayerInput::default(), 125);
     assert_eq!(w.collision.hook_wilt, Some(!first), "the other half");
     w.creatures.clear();
@@ -735,7 +735,7 @@ fn burrower_hides_until_elora_comes_and_only_then_is_dangerous() {
     let mut w = world(|_| {});
     let kind = add_kind(
         &mut w,
-        "schlange",
+        "serpent",
         Behavior::Burrower {
             sight: 150.0,
             out_ms: 1000,
@@ -771,7 +771,7 @@ fn lobbed_nuts_fly_in_an_arc() {
     let mut w = world(|_| {});
     let kind = add_kind(
         &mut w,
-        "pirat",
+        "pirate",
         Behavior::Turret {
             interval_ms: 400,
             range: 600.0,
@@ -798,7 +798,7 @@ fn lobbed_nuts_fly_in_an_arc() {
 fn mushroom_touch_dazes_and_slows_elora() {
     let mut w = world(|_| {});
     let mut k = kinds()[0].clone();
-    k.name = "pilzwicht".into();
+    k.name = "mushroom_imp".into();
     k.daze_ms = 2000;
     k.touch_damage = 0;
     k.behavior = Behavior::Walker {
@@ -839,7 +839,7 @@ fn follower_follows_waits_at_gaps_and_never_hurts() {
     });
     let kind = add_kind(
         &mut w,
-        "pilzkind",
+        "mushroom_child",
         Behavior::Follower {
             speed: 4.0,
             jump: 9.0,
@@ -850,7 +850,7 @@ fn follower_follows_waits_at_gaps_and_never_hurts() {
     run(&mut w, PlayerInput::default(), 150);
     let c = w.creatures.iter().find(|c| c.id == id).unwrap();
     assert!(c.pos.x > 20.0 * 32.0, "follows: {}", c.pos.x);
-    assert_eq!(health(&w), 10, "harmlos");
+    assert_eq!(health(&w), 10, "harmless");
     // Elora on the other side of the gap: the child waits at the edge
     w.spawn_character(0, on_floor(40, 28.0));
     run(&mut w, PlayerInput::default(), 200);
@@ -884,7 +884,7 @@ fn warden_def() -> elora_sim::creature::WardenDef {
 fn warden_world() -> (World, u32, usize) {
     let mut w = world(|_| {});
     let mut k = kinds()[0].clone();
-    k.name = "waechter".into();
+    k.name = "warden".into();
     k.size = [80.0, 200.0];
     k.health = 12;
     k.boss = true;
@@ -997,7 +997,7 @@ fn armored_crab_only_takes_hits_from_above() {
     let mut w = world(|_| {});
     let kind = add_kind(
         &mut w,
-        "krabbe",
+        "crab",
         Behavior::Walker {
             speed: 0.0,
             turn_at_edges: true,
@@ -1038,7 +1038,7 @@ fn armored_crab_only_takes_hits_from_above() {
 fn worm(w: &mut World) -> usize {
     add_kind(
         w,
-        "wurm",
+        "worm",
         Behavior::Leaper {
             sight: 400.0,
             speed: 2.0,
@@ -1120,7 +1120,7 @@ fn spark_moth_hovers_above_elora_and_sparks_glow_on_the_ground() {
     let mut w = world(|_| {});
     let kind = add_kind(
         &mut w,
-        "motte",
+        "moth",
         Behavior::Flyer {
             speed: 3.0,
             sight: 500.0,
@@ -1238,7 +1238,7 @@ fn sinking_deep_hurts_a_little_and_puts_elora_back_at_the_edge() {
         }
     }
     assert!(hurt, "fully sunk in");
-    let ch = w.character(0).expect("lebt");
+    let ch = w.character(0).expect("alive");
     assert_eq!(ch.health, 10 - Tuning::default().quicksand_damage);
     assert!(
         ch.core.pos.x < 20.0 * 32.0,
@@ -1297,7 +1297,7 @@ fn serpent_def() -> elora_sim::SerpentDef {
 fn serpent_world() -> (World, usize) {
     let mut w = world(|t| (0..W).for_each(|x| set(t, x, FLOOR - 1, Tile::Solid)));
     let mut k = kinds()[0].clone();
-    k.name = "sandschlange".into();
+    k.name = "sand_serpent".into();
     k.size = [90.0, 60.0];
     k.health = 20;
     k.boss = true;
@@ -1548,7 +1548,7 @@ fn angry_serpent_aims_at_elora_and_its_landing_hurts() {
             break;
         }
     }
-    let x = landed_at.expect("gelandet");
+    let x = landed_at.expect("landed");
     assert!(
         (x - side.x).abs() < 60.0,
         "lands at Elora: {x} instead of {}",

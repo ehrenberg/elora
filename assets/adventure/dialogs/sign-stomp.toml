@@ -1,0 +1,18 @@
+# Signpost (E-273, R2-M2.3, M2.3.6)
+speaker = "signpost"
+
+[[start]]
+if = "ability stomp"
+node = "text"
+
+[[start]]
+node = "later"
+
+[[node]]
+id = "text"
+text = { de = "Tüftels Stampfplatte: Spring hoch und drück in der Luft {taste:down}. Mürber Boden bricht dann.", en = "Tüftel's stomp plate: jump up and press {taste:down} in mid-air. Crumbly ground will break." }
+
+# before Elora can use it (E-354)
+[[node]]
+id = "later"
+text = { de = "Tüftels Stampfplatte. Noch ist der Boden hier zu fest für dich – Tüftel hat schon eine Idee. Schau später wieder vorbei!", en = "Tüftel's stomp plate. The ground here is still too firm for you – Tüftel already has an idea. Come back later!" }

@@ -35,9 +35,9 @@ voice = 1.45
 
 # Readable signs (E-273)
 [[character]]
-id = "wegweiser"
+id = "signpost"
 name = { de = "Wegweiser", en = "Signpost" }
-portrait = "wegweiser"
+portrait = "signpost"
 fixed = true
 voice = 0.0
 
@@ -50,11 +50,11 @@ voice = 1.05
 
 # only visible after the fight at the Blossom Spring (show_if)
 [[character]]
-id = "hummel"
+id = "bumblebee"
 name = { de = "Brummbär-Hummel", en = "Bumblebear" }
-portrait = "hummel"
+portrait = "bumblebee"
 voice = 0.55
-show_if = "merker besiegt.brummbaer"
+show_if = "flag defeated.bumblebear"
 
 # Chapter 2 (R2-M2.2)
 [[character]]
@@ -65,35 +65,35 @@ voice = 0.75
 
 # lost in the forest; follows Elora home (companion, E-308)
 [[character]]
-id = "pilzkind"
+id = "mushroom_child"
 name = { de = "Pilzkind", en = "Mushroom child" }
-portrait = "pilzkind"
+portrait = "mushroom_child"
 voice = 1.6
-show_if = "nicht merker pilzkind.unterwegs"
-follower = "pilzkind"
-follow_if = "merker pilzkind.unterwegs und nicht merker pilzkind.daheim"
-home_zone = "pilzring"
+show_if = "not flag mushroom_child.on_the_way"
+follower = "mushroom_child"
+follow_if = "flag mushroom_child.on_the_way and not flag mushroom_child.home"
+home_zone = "mushroom_ring"
 
 [[character]]
-id = "pilzkind_froh"
+id = "mushroom_child_happy"
 name = { de = "Pilzkind", en = "Mushroom child" }
-portrait = "pilzkind_froh"
+portrait = "mushroom_child_happy"
 voice = 1.6
-show_if = "merker pilzkind.daheim"
+show_if = "flag mushroom_child.home"
 
 [[character]]
-id = "pilzmama"
+id = "mushroom_mama"
 name = { de = "Mama Morchel", en = "Mama Morel" }
-portrait = "pilzmama"
+portrait = "mushroom_mama"
 voice = 1.0
 
 # after the fight at the Forest Spring
 [[character]]
-id = "waechter"
+id = "warden"
 name = { de = "Wurzelwächter", en = "Root Warden" }
-portrait = "waechter"
+portrait = "warden"
 voice = 0.45
-show_if = "merker besiegt.wurzelwaechter"
+show_if = "flag defeated.root_warden"
 
 # Chapter 3 (R2-M2.3, docs/release-2/m2-3-content.md)
 [[character]]
@@ -110,89 +110,89 @@ voice = 1.15
 
 # after the fight at the Ember Spring
 [[character]]
-id = "schlange"
+id = "serpent"
 name = { de = "Sandschlange", en = "Sand Serpent" }
-portrait = "schlange"
+portrait = "serpent"
 voice = 0.5
-show_if = "merker besiegt.sandschlange"
+show_if = "flag defeated.sand_serpent"
 
 # stone tablets of the ember people (fixed, mute)
 [[character]]
-id = "tafel-1"
+id = "tablet-1"
 name = { de = "Ruinentafel", en = "Ruin tablet" }
-portrait = "tafel-1"
+portrait = "tablet-1"
 fixed = true
 voice = 0.0
 
 [[character]]
-id = "tafel-2"
+id = "tablet-2"
 name = { de = "Ruinentafel", en = "Ruin tablet" }
-portrait = "tafel-2"
+portrait = "tablet-2"
 fixed = true
 voice = 0.0
 
 [[character]]
-id = "tafel-kammer"
+id = "tablet-chamber"
 name = { de = "Ruinentafel", en = "Ruin tablet" }
-portrait = "tafel-kammer"
+portrait = "tablet-chamber"
 fixed = true
 voice = 0.0
 
 [[character]]
-id = "ruinenquelle"
+id = "ruin_spring"
 name = { de = "Ruinenquelle", en = "Ruin spring" }
-portrait = "ruinenquelle"
+portrait = "ruin_spring"
 fixed = true
 voice = 0.0
 
 # three withered patches of the oasis; after watering, a blossom blooms there (E-319)
 [[character]]
-id = "giessstelle-1"
+id = "watering-spot-1"
 name = { de = "Verdorrte Stelle", en = "Withered patch" }
-portrait = "giessstelle-1"
+portrait = "watering-spot-1"
 fixed = true
 voice = 0.0
-show_if = "nicht merker befreit.giessstelle-1"
+show_if = "not flag freed.watering-spot-1"
 
 [[character]]
-id = "giessstelle-2"
+id = "watering-spot-2"
 name = { de = "Verdorrte Stelle", en = "Withered patch" }
-portrait = "giessstelle-2"
+portrait = "watering-spot-2"
 fixed = true
 voice = 0.0
-show_if = "nicht merker befreit.giessstelle-2"
+show_if = "not flag freed.watering-spot-2"
 
 [[character]]
-id = "giessstelle-3"
+id = "watering-spot-3"
 name = { de = "Verdorrte Stelle", en = "Withered patch" }
-portrait = "giessstelle-3"
+portrait = "watering-spot-3"
 fixed = true
 voice = 0.0
-show_if = "nicht merker befreit.giessstelle-3"
+show_if = "not flag freed.watering-spot-3"
 
 [[character]]
-id = "bluete-1"
+id = "blossom-1"
 name = { de = "Oasenblüte", en = "Oasis blossom" }
-portrait = "bluete-1"
+portrait = "blossom-1"
 fixed = true
 voice = 0.0
-show_if = "merker befreit.giessstelle-1"
+show_if = "flag freed.watering-spot-1"
 
 [[character]]
-id = "bluete-2"
+id = "blossom-2"
 name = { de = "Oasenblüte", en = "Oasis blossom" }
-portrait = "bluete-2"
+portrait = "blossom-2"
 fixed = true
 voice = 0.0
-show_if = "merker befreit.giessstelle-2"
+show_if = "flag freed.watering-spot-2"
 
 [[character]]
-id = "bluete-3"
+id = "blossom-3"
 name = { de = "Oasenblüte", en = "Oasis blossom" }
-portrait = "bluete-3"
+portrait = "blossom-3"
 fixed = true
 voice = 0.0
-show_if = "merker befreit.giessstelle-3"
+show_if = "flag freed.watering-spot-3"
 
 # Chapter 4 – Frostspitzen (R2-M2.4, docs/release-2/m2-4-content.md)
 [[character]]
@@ -207,42 +207,42 @@ id = "bolle"
 name = { de = "Kletterer Bolle", en = "Bolle the climber" }
 portrait = "bolle"
 voice = 0.9
-show_if = "nicht merker kletterer.bolle"
+show_if = "not flag climbers.bolle"
 
 [[character]]
 id = "kiesel"
 name = { de = "Kletterin Kiesel", en = "Kiesel the climber" }
 portrait = "kiesel"
 voice = 1.2
-show_if = "nicht merker kletterer.kiesel"
+show_if = "not flag climbers.kiesel"
 
 [[character]]
 id = "wicke"
 name = { de = "Kletterer Wicke", en = "Wicke the climber" }
 portrait = "wicke"
 voice = 1.1
-show_if = "nicht merker kletterer.wicke"
+show_if = "not flag climbers.wicke"
 
 [[character]]
-id = "bolle-huette"
+id = "bolle-hut"
 name = { de = "Kletterer Bolle", en = "Bolle the climber" }
-portrait = "bolle-huette"
+portrait = "bolle-hut"
 voice = 0.9
-show_if = "merker kletterer.bolle"
+show_if = "flag climbers.bolle"
 
 [[character]]
-id = "kiesel-huette"
+id = "kiesel-hut"
 name = { de = "Kletterin Kiesel", en = "Kiesel the climber" }
-portrait = "kiesel-huette"
+portrait = "kiesel-hut"
 voice = 1.2
-show_if = "merker kletterer.kiesel"
+show_if = "flag climbers.kiesel"
 
 [[character]]
-id = "wicke-huette"
+id = "wicke-hut"
 name = { de = "Kletterer Wicke", en = "Wicke the climber" }
-portrait = "wicke-huette"
+portrait = "wicke-hut"
 voice = 1.1
-show_if = "merker kletterer.wicke"
+show_if = "flag climbers.wicke"
 
 # after the fight in the ice hall
 [[character]]
@@ -250,12 +250,12 @@ id = "kristella"
 name = { de = "Eiskönigin Kristella", en = "Ice Queen Kristella" }
 portrait = "kristella"
 voice = 0.8
-show_if = "merker besiegt.kristella"
+show_if = "flag defeated.kristella"
 
 # where the Withered One drank (fixed, mute)
 [[character]]
-id = "graue-stelle"
+id = "grey-spot"
 name = { de = "Graue Stelle", en = "Grey patch" }
-portrait = "graue-stelle"
+portrait = "grey-spot"
 fixed = true
 voice = 0.0

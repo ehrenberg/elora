@@ -356,19 +356,19 @@ def grey_trail():
 
 # Decoration for the maps (world units, origin at the bottom centre): name → (drawing, viewBox)
 DECOR = {
-    'duene': (dune(), '-210 -130 420 134'),
-    'felsbogen': (rock_arch(), '-140 -190 280 194'),
-    'saeule': (pillar(), '-36 -222 72 226'),
-    'saeule-bruch': (pillar(True), '-36 -160 72 164'),
-    'ruinentor': (ruin_gate(), '-124 -250 248 254'),
-    'kaktus': (cactus(), '-50 -146 100 150'),
-    'palme': (palm_tree(), '-110 -300 260 304'),
-    'oase': (oasis(), '-160 -76 320 80'),
-    'zelt': (tent(), '-116 -156 232 160'),
-    'kamel': (camel(), '-80 -184 232 188'),
-    'glutquelle-verdorrt': (ember_spring(False), '-120 -60 240 64'),
-    'glutquelle-befreit': (ember_spring(True), '-160 -136 320 140'),
-    'grauspur': (grey_trail(), '-74 -10 156 14'),
+    'dune': (dune(), '-210 -130 420 134'),
+    'rock_arch': (rock_arch(), '-140 -190 280 194'),
+    'pillar': (pillar(), '-36 -222 72 226'),
+    'pillar-broken': (pillar(True), '-36 -160 72 164'),
+    'ruin_gate': (ruin_gate(), '-124 -250 248 254'),
+    'cactus': (cactus(), '-50 -146 100 150'),
+    'palm': (palm_tree(), '-110 -300 260 304'),
+    'oasis': (oasis(), '-160 -76 320 80'),
+    'tent': (tent(), '-116 -156 232 160'),
+    'camel': (camel(), '-80 -184 232 188'),
+    'ember-spring-withered': (ember_spring(False), '-120 -60 240 64'),
+    'ember-spring-freed': (ember_spring(True), '-160 -136 320 140'),
+    'grey_trail': (grey_trail(), '-74 -10 156 14'),
 }
 
 

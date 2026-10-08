@@ -318,7 +318,7 @@ mod tests {
         editor.fill_cells(
             super::super::tools::Cells::span((0, h - 2), (w - 1, h - 1)),
             elora_sim::Tile::Solid,
-            "boden",
+            "ground",
             t,
         );
         editor.apply_preset(super::super::look::Preset::Day, t);

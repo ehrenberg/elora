@@ -124,6 +124,64 @@ pub fn translate_script(src: &str) -> String {
     out.join(" ")
 }
 
+/// Converts a map of format version 1 (0.9.x, German ids) in place: decoration, background
+/// and material names and every id and condition of the adventure objects (RF-13).
+pub fn migrate_map(map: &mut crate::Map) {
+    use crate::adventure::ObjectKind;
+    use crate::look::Art;
+    fn id(s: &mut String) {
+        if let Cow::Owned(new) = translate_id(s) {
+            *s = new;
+        }
+    }
+    fn script(s: &mut String) {
+        if !s.is_empty() {
+            *s = translate_script(s);
+        }
+    }
+    let decor = map
+        .decor_back
+        .iter_mut()
+        .chain(map.decor_front.iter_mut())
+        .chain(map.backgrounds.iter_mut().flat_map(|b| b.items.iter_mut()));
+    for d in decor {
+        if let Art::Builtin(name) = &mut d.art {
+            id(name);
+        }
+    }
+    map.materials.iter_mut().for_each(id);
+    for o in &mut map.adventure.objects {
+        id(&mut o.id);
+        match &mut o.kind {
+            ObjectKind::Creature { kind, .. } => id(kind),
+            ObjectKind::Npc {
+                character, dialog, ..
+            } => {
+                id(character);
+                id(dialog);
+            }
+            ObjectKind::Chest { contents, lock } => {
+                for (item, _) in contents.iter_mut() {
+                    id(item);
+                }
+                script(lock);
+            }
+            ObjectKind::Switch { flag, .. } => id(flag),
+            ObjectKind::Door { open_if, .. } => script(open_if),
+            ObjectKind::Collectible { item } => id(item),
+            ObjectKind::Exit { map, spawn, .. } => {
+                id(map);
+                id(spawn);
+            }
+            ObjectKind::SavePoint
+            | ObjectKind::HealPlant { .. }
+            | ObjectKind::Spawn
+            | ObjectKind::Zone { .. }
+            | ObjectKind::Camera { .. } => {}
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

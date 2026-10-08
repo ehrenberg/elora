@@ -488,17 +488,17 @@ def grey_trail_ice():
 
 
 DECOR = {
-    'gipfel': (summit(), '-226 -266 452 270'),
-    'tanne-schnee': (snowy_fir(), '-76 -210 152 214'),
-    'berghuette': (mountain_hut(), '-122 -210 244 214'),
-    'seilbruecke': (rope_bridge(), '-158 -66 316 82'),
-    'schneewehe': (snowdrift(), '-126 -66 252 70'),
-    'gletscher': (glacier(), '-166 -126 332 130'),
-    'feuerstelle': (fireplace(True), '-76 -104 152 108'),
-    'eisblock': (ice_block(), '-70 -102 140 106'),
-    'frostquelle-verdorrt': (frost_spring(False), '-120 -62 240 66'),
-    'frostquelle-befreit': (frost_spring(True), '-150 -156 300 160'),
-    'grauspur-eis': (grey_trail_ice(), '-86 -64 262 68'),
+    'peak': (summit(), '-226 -266 452 270'),
+    'fir-snow': (snowy_fir(), '-76 -210 152 214'),
+    'mountain_hut': (mountain_hut(), '-122 -210 244 214'),
+    'rope_bridge': (rope_bridge(), '-158 -66 316 82'),
+    'snowdrift': (snowdrift(), '-126 -66 252 70'),
+    'glacier': (glacier(), '-166 -126 332 130'),
+    'fireplace': (fireplace(True), '-76 -104 152 108'),
+    'ice_block': (ice_block(), '-70 -102 140 106'),
+    'frost-spring-withered': (frost_spring(False), '-120 -62 240 66'),
+    'frost-spring-freed': (frost_spring(True), '-150 -156 300 160'),
+    'grey-trail-ice': (grey_trail_ice(), '-86 -64 262 68'),
 }
 
 

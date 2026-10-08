@@ -1,4 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="-116 -156 232 160">
-  <!-- Kapitel 3: zelt (R2-M2.3, aus tools/design/kapitel3_entwuerfe.py). Ursprung unten in der Mitte. -->
-  <path d="M -110,0 L 0,-120 L 110,0 Z" fill="#e8d0a0" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/><path d="M -110,0 L 0,-120 L -40,0 Z" fill="#c8483a" stroke="#2b2b2b" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><path d="M -20,0 L 0,-80 L 20,0 Z" fill="#5e4430" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><path d="M 0,-120 V -150" stroke="#2b2b2b" stroke-width="4"/><path d="M 0,-150 l 24,6 l -24,6 Z" fill="#3fa38f" stroke="#2b2b2b" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M -70,-44 L 70,-44" stroke="#c8b08a" stroke-width="3"/>
-</svg>
