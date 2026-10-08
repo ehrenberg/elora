@@ -268,15 +268,15 @@ impl Collision {
     }
 
     /// Does a box with bottom edge `prev → new` (downwards) land on a platform?
-    /// It must have been on or above the top edge before (passable from below).
+    /// It must have been above the platform row before (passable from below). Rows are
+    /// found by rounding like [`Collision::test_box`], so the box rests at the same height
+    /// as on solid ground and can walk on onto a solid tile next to the platform.
     fn lands_on_platform(&self, x: f32, half_w: f32, prev_bottom: f32, new_bottom: f32) -> bool {
         if new_bottom <= prev_bottom {
             return false;
         }
         let ty = round_to_int(new_bottom).div_euclid(TILE_SIZE);
-        #[allow(clippy::cast_precision_loss)]
-        let top = (ty * TILE_SIZE) as f32;
-        if prev_bottom > top + 0.01 || new_bottom <= top {
+        if round_to_int(prev_bottom).div_euclid(TILE_SIZE) >= ty {
             return false;
         }
         [x - half_w, x + half_w]

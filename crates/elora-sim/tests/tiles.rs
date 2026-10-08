@@ -218,3 +218,37 @@ fn old_tiles_unchanged_and_chars_roundtrip() {
     assert!(!Tile::Platform.is_solid());
     assert!(Tile::Ice.is_solid() && Tile::JumpPad(JumpDir::Up).is_solid());
 }
+
+/// Playtest 2026-10-08: from a platform onto a solid tile at the same height the figure
+/// used to stop at the edge (it stood 1 unit lower on platforms).
+#[test]
+fn walks_from_platform_onto_ground_at_the_same_height() {
+    for dir in [1i8, -1] {
+        let mut w = world(|t| {
+            for x in 10..20 {
+                set(t, x, 20, Tile::Platform);
+            }
+            for x in 20..30 {
+                set(t, x, 20, Tile::Solid);
+            }
+        });
+        spawn(
+            &mut w,
+            if dir > 0 {
+                standing(14, 20)
+            } else {
+                standing(25, 20)
+            },
+        );
+        run(&mut w, input(0, false, false), 20);
+        let start = pos(&w);
+        run(&mut w, input(dir, false, false), 35);
+        let moved = (pos(&w).x - start.x) * f32::from(dir);
+        assert!(moved > 250.0, "direction {dir}: only {moved} units");
+        assert!(
+            (pos(&w).y - start.y).abs() < 0.5,
+            "same height: {:?}",
+            pos(&w)
+        );
+    }
+}

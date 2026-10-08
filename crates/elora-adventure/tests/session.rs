@@ -353,8 +353,9 @@ fn heat_fills_in_the_sun_and_cools_in_shade_and_at_the_oasis() {
     });
     let mut s = Session::new_game(Content::builtin());
     let mut w = s.enter("wueste-1", map, "west", &Tuning::default());
-    // without a rolled sandstorm (it hides the sun, R2-W1)
+    // without a rolled sandstorm (it hides the sun, R2-W1) and without the beetles
     s.map.weather = elora_map::Weather::CLEAR;
+    w.creatures.clear();
     assert!(s.hot());
     let sky_above = (1..=10).all(|k| {
         #[allow(clippy::cast_precision_loss)]
@@ -410,8 +411,9 @@ fn cactus_fruit_cools_elora_down() {
     let map = load("wiese-1");
     let mut s = Session::new_game(Content::builtin());
     let mut w = s.enter("wueste-1", map, "west", &Tuning::default());
-    // without a rolled sandstorm (it hides the sun, R2-W1)
+    // without a rolled sandstorm (it hides the sun, R2-W1) and without the beetles
     s.map.weather = elora_map::Weather::CLEAR;
+    w.creatures.clear();
     for _ in 0..1100 {
         step(&mut s, &mut w, PlayerInput::default(), false);
     }
@@ -444,9 +446,14 @@ fn weather_follows_the_springs() {
         }
         seen
     };
+    // mostly dry and grey, sometimes rain or a thunderstorm (E-353)
     let gloomy = kinds(false, "wiese-1");
     assert!(
-        gloomy.iter().all(|k| ["regen", "gewitter"].contains(k)),
+        gloomy
+            .iter()
+            .all(|k| ["schoen", "regen", "gewitter"].contains(k))
+            && gloomy.contains("schoen")
+            && gloomy.contains("regen"),
         "{gloomy:?}"
     );
     let bright = kinds(true, "wiese-1");
@@ -480,8 +487,14 @@ fn weather_follows_the_springs() {
 fn tauwinkel_clears_after_the_first_spring() {
     use elora_map::WeatherKind;
     let (mut s, _w) = start();
-    assert_eq!(s.map.weather.kind, WeatherKind::Rain, "drizzle");
-    assert!(s.map.weather.intensity < 0.5);
+    // gloomy: dry, drizzle or a light thunderstorm (E-353)
+    let w = s.map.weather;
+    assert!(
+        w.kind == WeatherKind::Clear
+            || w.kind == WeatherKind::Storm
+            || (w.kind == WeatherKind::Rain && w.intensity < 0.5),
+        "{w:?}"
+    );
     s.save.set_flag("quellen_befreit", 1);
     s.refresh_decor();
     assert!(
@@ -577,6 +590,8 @@ fn cold_fills_outside_faster_in_blizzards_and_warms_at_fire_and_roofs() {
     let mut s = Session::new_game(Content::builtin());
     let mut w = s.enter("frost-1", map, "west", &Tuning::default());
     s.map.weather = Weather::CLEAR;
+    // the beetles would walk over the bridge and interrupt the measurement
+    w.creatures.clear();
     assert!(s.chilly() && !s.hot());
     let run = |s: &mut Session, w: &mut World, ticks: u32| {
         for _ in 0..ticks {
