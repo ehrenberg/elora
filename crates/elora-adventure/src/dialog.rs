@@ -1,7 +1,7 @@
-//! Gespräche (A1.4, E-213, E-218, E-222, E-246 bis E-248): Knoten mit Text in beiden
-//! Sprachen, Auswahl mit Ton, Bedingungen und Folgen; dazu kurze Zurufe (Sprechblasen).
+//! Dialogs (A1.4, E-213, E-218, E-222, E-246 to E-248): nodes with text in both languages,
+//! choices with tone, conditions and effects; plus short calls (speech bubbles).
 //!
-//! Eine Datei je Gespräch unter `assets/adventure/dialogs/<id>.toml`; Figuren (Name, Bild)
+//! One file per dialog under `assets/adventure/dialogs/<id>.toml`; characters (name, picture)
 //! in `assets/adventure/characters.toml`.
 
 use serde::{Deserialize, Serialize};
@@ -10,7 +10,7 @@ use crate::data::{Content, Text};
 use crate::quest::Outcome;
 use crate::state::SaveGame;
 
-/// Ton einer Antwort (Weltbuch §6).
+/// Tone of an answer (world book §6).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Tone {
@@ -19,30 +19,30 @@ pub enum Tone {
     Frech,
 }
 
-/// Eine Figur, die spricht.
+/// A character that speaks.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CharacterDef {
     pub id: String,
     pub name: Text,
-    /// Bild der Figur im Gesprächsfeld (Grafikname).
+    /// Picture of the character in the dialog panel (graphic name).
     #[serde(default)]
     pub portrait: Option<String>,
-    /// Dreht sich nicht zu Elora (Schilder).
+    /// Does not turn towards Elora (signs).
     #[serde(default)]
     pub fixed: bool,
-    /// Figur ist nur zu sehen, solange die Bedingung gilt (z. B. erst nach einem Kampf).
+    /// Character is only visible while the condition holds (e.g. only after a fight).
     #[serde(default)]
     pub show_if: Option<String>,
-    /// Begleiter (E-308): Gegnerart, die Elora folgt, solange `follow_if` gilt – auch über
-    /// Kartenwechsel. Erreicht der Begleiter die Zone `home_zone`, gilt der Merker
-    /// `<id>.daheim` und er bleibt dort.
+    /// Companion (E-308): enemy kind that follows Elora while `follow_if` holds – also across
+    /// map changes. When the companion reaches the zone `home_zone`, the flag `<id>.daheim` is
+    /// set and it stays there.
     #[serde(default)]
     pub follower: Option<String>,
     #[serde(default)]
     pub follow_if: Option<String>,
     #[serde(default)]
     pub home_zone: Option<String>,
-    /// Tonhöhe der Plapperlaute (E-286): 1 = mittel, kleiner = tiefer; 0 = stumm (Schilder).
+    /// Pitch of the babble sounds (E-286): 1 = medium, smaller = lower; 0 = mute (signs).
     #[serde(default = "default_voice")]
     pub voice: f32,
 }
@@ -65,7 +65,7 @@ pub struct Choice {
     #[serde(default, rename = "if")]
     pub cond: Option<String>,
     pub text: Text,
-    /// Nächster Knoten; ohne Angabe endet das Gespräch.
+    /// Next node; if missing, the dialog ends.
     #[serde(default)]
     pub next: Option<String>,
     #[serde(default, rename = "do")]
@@ -75,21 +75,21 @@ pub struct Choice {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Node {
     pub id: String,
-    /// Sprecher; ohne Angabe der des Gesprächs, `elora` für Elora selbst.
+    /// Speaker; if missing, the dialog's speaker, `elora` for Elora herself.
     #[serde(default)]
     pub speaker: Option<String>,
     pub text: Text,
-    /// Nächster Knoten ohne Auswahl; ohne Angabe (und ohne Auswahl) endet das Gespräch.
+    /// Next node without a choice; if missing (and without choices), the dialog ends.
     #[serde(default)]
     pub next: Option<String>,
-    /// Folgen beim Erreichen des Knotens.
+    /// Effects when reaching the node.
     #[serde(default, rename = "do")]
     pub actions: Vec<String>,
     #[serde(default)]
     pub choice: Vec<Choice>,
 }
 
-/// Kurzer Zuruf als Sprechblase (E-222).
+/// Short call as a speech bubble (E-222).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Bark {
     #[serde(default, rename = "if")]
@@ -99,12 +99,12 @@ pub struct Bark {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Dialog {
-    /// Aus dem Dateinamen.
+    /// From the file name.
     #[serde(skip)]
     pub id: String,
-    /// Standard-Sprecher der Knoten.
+    /// Default speaker of the nodes.
     pub speaker: String,
-    /// Einstiege: der erste, dessen Bedingung gilt.
+    /// Entries: the first whose condition holds.
     pub start: Vec<Start>,
     pub node: Vec<Node>,
     #[serde(default)]
@@ -121,17 +121,17 @@ impl Dialog {
     }
 }
 
-/// Ein laufendes Gespräch.
+/// A running dialog.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Conversation {
     pub dialog: String,
     pub node: String,
 }
 
-/// Was ein Schritt im Gespräch bewirkt.
+/// What a step in the dialog causes.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Turn {
-    /// `false`: Gespräch ist zu Ende.
+    /// `false`: the dialog is over.
     pub open: bool,
     pub outcomes: Vec<Outcome>,
 }
@@ -141,8 +141,8 @@ fn cond_ok(save: &SaveGame, content: &Content, cond: Option<&String>) -> bool {
 }
 
 impl Conversation {
-    /// Beginnt das Gespräch `dialog`: erster passender Einstieg, Sprechen-Ziele der Aufgaben,
-    /// Folgen des ersten Knotens. `None`, wenn kein Einstieg passt.
+    /// Starts the dialog `dialog`: first matching entry, talk goals of the quests, effects of
+    /// the first node. `None` if no entry matches.
     pub fn start(content: &Content, save: &mut SaveGame, dialog: &str) -> Option<(Self, Turn)> {
         let d = content.dialog(dialog)?;
         let entry = d
@@ -184,7 +184,7 @@ impl Conversation {
         Some((d, d.node(&self.node)?))
     }
 
-    /// Sichtbare Antworten (Index in `node.choice`).
+    /// Visible answers (index into `node.choice`).
     pub fn choices(&self, content: &Content, save: &SaveGame) -> Vec<usize> {
         self.current(content).map_or_else(Vec::new, |(_, n)| {
             n.choice
@@ -196,7 +196,7 @@ impl Conversation {
         })
     }
 
-    /// Weiter ohne Auswahl (Knoten ohne sichtbare Antworten).
+    /// Continue without a choice (node without visible answers).
     pub fn advance(&mut self, content: &Content, save: &mut SaveGame) -> Turn {
         let next = self.current(content).and_then(|(_, n)| n.next.clone());
         match next {
@@ -208,7 +208,7 @@ impl Conversation {
         }
     }
 
-    /// Antwort `index` (aus [`Self::choices`]) wählen.
+    /// Choose answer `index` (from [`Self::choices`]).
     pub fn choose(&mut self, content: &Content, save: &mut SaveGame, index: usize) -> Turn {
         if !self.choices(content, save).contains(&index) {
             return Turn {
@@ -239,7 +239,7 @@ impl Conversation {
     }
 }
 
-/// Zuruf einer Figur (erster passender aus ihrem Gespräch).
+/// Call of a character (first matching one from its dialog).
 pub fn bark<'c>(content: &'c Content, save: &SaveGame, dialog: &str) -> Option<&'c Text> {
     content
         .dialog(dialog)?

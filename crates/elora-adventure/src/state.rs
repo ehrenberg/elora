@@ -1,5 +1,5 @@
-//! Spielstand und seine Regeln: Stufen, Fähigkeitenbaum, Inventar, Ausrüstung, Waffen,
-//! Läden, Tod und Speichern (E-219, E-220, E-241 bis E-244).
+//! Save game and its rules: levels, skill tree, inventory, equipment, weapons, shops,
+//! death and saving (E-219, E-220, E-241 to E-244).
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -9,58 +9,58 @@ use serde::{Deserialize, Serialize};
 use crate::data::{Branch, Content, Effect, GLANZTROPFEN, ItemKind, Slot};
 use crate::stats::Stats;
 
-/// Merker nach Tüftels Arbeit mit dem Quellfunken der Frostquelle (D-M24-03).
+/// Flag after Tüftel's work with the spring spark of the frost spring (D-M24-03).
 pub const STRONG_GRIP: &str = "eisgriff.stark";
-/// Hochziehen an der Kletterwand mit gestärktem Eisgriff (A-42, Einheiten/Tick).
+/// Pulling up on the climbing wall with strengthened ice grip (A-42, units/tick).
 pub const STRONG_GRIP_CLIMB: f32 = 1.6;
 
-/// Ort im Abenteuer: Karte und Speicherpunkt bzw. Eingang.
+/// Place in the adventure: map and save point or entrance.
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct Location {
     pub map: String,
     pub spawn: String,
 }
 
-/// Alles, was ein Spielstand enthält (P-33).
+/// Everything a save game contains (P-33).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SaveGame {
     pub level: u32,
-    /// Erfahrung innerhalb der aktuellen Stufe.
+    /// Experience within the current level.
     pub xp: u32,
     pub health: i32,
     pub glanztropfen: u32,
-    /// Seit dem letzten Speicherpunkt gesammelt (Verlust beim Tod, E-220).
+    /// Collected since the last save point (lost on death, E-220).
     pub glanz_since_save: u32,
-    /// Zusätzliche Tautropfen-Punkte aus Aufgaben.
+    /// Additional dewdrop points from quests.
     pub bonus_points: u32,
-    /// Gelernte Knoten mit Rang.
+    /// Learned nodes with rank.
     pub skills: BTreeMap<String, u8>,
     pub inventory: BTreeMap<String, u32>,
     pub equipped: BTreeMap<Slot, String>,
-    /// Besessene Waffen mit Ausbaustufe (0 = ohne Ausbau).
+    /// Owned weapons with upgrade level (0 = not upgraded).
     pub weapons: BTreeMap<Weapon, u8>,
-    /// Gebietsfähigkeiten (Bits von [`Abilities`]).
+    /// Area abilities (bits of [`Abilities`]).
     pub abilities: u8,
-    /// Weltzustand: Schalter, Türen, Truhen, Aufgaben, Folgen aus Gesprächen …
+    /// World state: switches, doors, chests, quests, effects from dialogs …
     pub flags: BTreeMap<String, i64>,
-    /// Zerbrochener Bröckelboden je Karte (E-230).
+    /// Broken crumble floor per map (E-230).
     pub broken: BTreeMap<String, BTreeSet<(i32, i32)>>,
-    /// Besiegte Bosse und besondere Gegner (E-235), z. B. `wiese-3:hummel`.
+    /// Defeated bosses and special enemies (E-235), e.g. `wiese-3:hummel`.
     pub defeated: BTreeSet<String>,
     pub location: Location,
     pub play_time_secs: u64,
-    /// Begonnene Aufgaben (A1.4).
+    /// Started quests (A1.4).
     #[serde(default)]
     pub quests: BTreeMap<String, crate::quest::QuestState>,
-    /// Zuneigung je Figur (E-248).
+    /// Affection per character (E-248).
     #[serde(default)]
     pub affection: BTreeMap<String, i32>,
-    /// Munition der Waffen (E-243).
+    /// Ammunition of the weapons (E-243).
     #[serde(default)]
     pub ammo: BTreeMap<Weapon, i32>,
 }
 
-/// Was der Spieler sehen soll (Anzeige, Sound).
+/// What the player should see (display, sound).
 #[derive(Debug, Clone, PartialEq)]
 pub enum Notice {
     LevelUp { level: u32 },
@@ -72,7 +72,7 @@ pub enum Notice {
     QuestFailed(String),
 }
 
-/// Warum etwas nicht geht.
+/// Why something is not possible.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
 pub enum Refusal {
     #[error("unbekannt")]
@@ -157,15 +157,15 @@ impl SaveGame {
         }
     }
 
-    // ------------------------------------------------------------ Stufen
+    // ------------------------------------------------------------ Levels
 
-    /// Freie Tautropfen-Punkte.
+    /// Free dewdrop points.
     pub fn free_points(&self) -> u32 {
         let spent: u32 = self.skills.values().map(|&r| u32::from(r)).sum();
         (self.level - 1 + self.bonus_points).saturating_sub(spent)
     }
 
-    /// Erfahrung gutschreiben; liefert Stufenaufstiege. Auf der Höchststufe bleibt sie stehen.
+    /// Credit experience; returns level-ups. At the maximum level it stops.
     pub fn add_xp(&mut self, content: &Content, amount: u32) -> Vec<Notice> {
         let mut out = vec![Notice::Xp(amount)];
         self.xp += amount;
@@ -185,7 +185,7 @@ impl SaveGame {
         out
     }
 
-    /// Alle Werte aus Baum, Ausrüstung und Waffen-Ausbau.
+    /// All values from tree, equipment and weapon upgrades.
     pub fn stats(&self, content: &Content) -> Stats {
         let mut s = Stats::default();
         for (id, &rank) in &self.skills {
@@ -216,19 +216,19 @@ impl SaveGame {
         s
     }
 
-    /// Höchste Leben: Grundwert + alle `health_every` Stufen eins + Boni (E-241).
+    /// Maximum health: base value + one every `health_every` levels + bonuses (E-241).
     pub fn max_health(&self, content: &Content) -> i32 {
         let p = &content.progression;
         let from_level = i32::try_from((self.level - 1) / p.health_every.max(1)).unwrap_or(0);
         p.base_health + from_level + self.stats(content).max_health
     }
 
-    /// Tuning der Simulation für diesen Spielstand.
+    /// Simulation tuning for this save game.
     pub fn tuning(&self, content: &Content, base: &Tuning) -> Tuning {
         let mut t = self.stats(content).apply(base);
         t.max_health = self.max_health(content);
-        // Quellfunke der Frostquelle (D-M24-03): Steigkrallen halten doppelt so lange und
-        // ziehen Elora an der Wand hinauf
+        // Spring spark of the frost spring (D-M24-03): climbing claws hold twice as long and
+        // pull Elora up the wall
         if self.flag(STRONG_GRIP) != 0 {
             t.grip_time = t.grip_time.saturating_mul(2);
             t.grip_climb = STRONG_GRIP_CLIMB;
@@ -236,12 +236,12 @@ impl SaveGame {
         t
     }
 
-    // ------------------------------------------------------------ Fähigkeitenbaum
+    // ------------------------------------------------------------ Skill tree
 
-    /// Kann der Knoten um einen Rang wachsen?
+    /// Can the node grow by one rank?
     ///
     /// # Errors
-    /// Mit dem Grund, warum nicht.
+    /// With the reason why not.
     pub fn can_learn(&self, content: &Content, id: &str) -> Result<(), Refusal> {
         let n = content.skill(id).ok_or(Refusal::Unknown)?;
         let rank = self.skills.get(id).copied().unwrap_or(0);
@@ -265,7 +265,7 @@ impl SaveGame {
     }
 
     /// # Errors
-    /// Siehe [`Self::can_learn`].
+    /// See [`Self::can_learn`].
     pub fn learn(&mut self, content: &Content, id: &str) -> Result<u8, Refusal> {
         self.can_learn(content, id)?;
         let r = self.skills.entry(id.to_owned()).or_insert(0);
@@ -273,7 +273,7 @@ impl SaveGame {
         Ok(*r)
     }
 
-    /// Knoten eines Zweigs in Baum-Reihenfolge.
+    /// Nodes of a branch in tree order.
     pub fn branch(
         content: &Content,
         branch: Branch,
@@ -281,12 +281,12 @@ impl SaveGame {
         content.skills.iter().filter(move |n| n.branch == branch)
     }
 
-    // ------------------------------------------------------------ Inventar
+    // ------------------------------------------------------------ Inventory
 
-    /// Gegenstand hinzufügen; Verbrauch höchstens `consumable_max` (P-25).
+    /// Add an item; consumables at most `consumable_max` (P-25).
     ///
     /// # Errors
-    /// Unbekannter Gegenstand oder volle Tasche bei Verbrauchsgegenständen.
+    /// Unknown item or full bag for consumables.
     pub fn add_item(&mut self, content: &Content, id: &str, count: u32) -> Result<(), Refusal> {
         let def = content.item(id).ok_or(Refusal::Unknown)?;
         match def.kind {
@@ -294,7 +294,7 @@ impl SaveGame {
                 self.glanztropfen += count;
                 self.glanz_since_save += count;
             }
-            // Munition füllt die Waffe in der Welt auf (Sitzung), nicht das Inventar
+            // Ammunition refills the weapon in the world (session), not the inventory
             ItemKind::Ammo { .. } => {}
             ItemKind::Consumable { .. } => {
                 let max = content.progression.consumable_max;
@@ -310,7 +310,7 @@ impl SaveGame {
     }
 
     /// # Errors
-    /// Wenn nicht genug vorhanden ist.
+    /// If not enough is available.
     pub fn remove_item(&mut self, id: &str, count: u32) -> Result<(), Refusal> {
         if id == GLANZTROPFEN {
             self.glanztropfen = self
@@ -327,10 +327,10 @@ impl SaveGame {
         Ok(())
     }
 
-    /// Verbrauchsgegenstand benutzen; die Wirkung setzt der Aufrufer um (Heilen in der Welt).
+    /// Use a consumable; the caller applies the effect (healing in the world).
     ///
     /// # Errors
-    /// Nicht vorhanden oder kein Verbrauchsgegenstand.
+    /// Not available or not a consumable.
     pub fn use_item(&mut self, content: &Content, id: &str) -> Result<Effect, Refusal> {
         let Some(ItemKind::Consumable { effect }) = content.item(id).map(|i| &i.kind) else {
             return Err(Refusal::WrongKind);
@@ -343,10 +343,10 @@ impl SaveGame {
         Ok(effect)
     }
 
-    /// Ausrüstung anlegen; ein vorher getragenes Stück geht zurück ins Inventar.
+    /// Put on equipment; a piece worn before goes back into the inventory.
     ///
     /// # Errors
-    /// Nicht vorhanden oder keine Ausrüstung.
+    /// Not available or not equipment.
     pub fn equip(&mut self, content: &Content, id: &str) -> Result<(), Refusal> {
         let Some(ItemKind::Equipment { slot, .. }) = content.item(id).map(|i| &i.kind) else {
             return Err(Refusal::WrongKind);
@@ -367,10 +367,10 @@ impl SaveGame {
         self.health = self.health.min(self.max_health(content));
     }
 
-    // ------------------------------------------------------------ Läden und Ausbau
+    // ------------------------------------------------------------ Shops and upgrades
 
     /// # Errors
-    /// Unbekannter Laden oder Gegenstand, zu teuer, Tasche voll.
+    /// Unknown shop or item, too expensive, bag full.
     pub fn buy(&mut self, content: &Content, shop: &str, id: &str) -> Result<(), Refusal> {
         let s = content.shops.get(shop).ok_or(Refusal::Unknown)?;
         if !s.stock.iter().any(|i| i == id) {
@@ -385,7 +385,7 @@ impl SaveGame {
         Ok(())
     }
 
-    /// Kaufpreis mit Rabatt nach Zuneigung zur Besitzerin (E-248).
+    /// Purchase price with discount based on affection to the owner (E-248).
     pub fn price(&self, content: &Content, shop: &str, id: &str) -> Option<u32> {
         let s = content.shops.get(shop)?;
         let base = content.item(id)?.price;
@@ -401,7 +401,7 @@ impl SaveGame {
         Some(base - base * pct.min(100) / 100)
     }
 
-    /// Verkaufspreis (P-26); Schlüssel und Währung sind unverkäuflich.
+    /// Selling price (P-26); keys and currency cannot be sold.
     pub fn sell_price(content: &Content, id: &str) -> Option<u32> {
         let d = content.item(id)?;
         if matches!(
@@ -414,7 +414,7 @@ impl SaveGame {
     }
 
     /// # Errors
-    /// Unverkäuflich oder nicht vorhanden.
+    /// Not sellable or not available.
     pub fn sell(&mut self, content: &Content, id: &str) -> Result<u32, Refusal> {
         let price = Self::sell_price(content, id).ok_or(Refusal::WrongKind)?;
         self.remove_item(id, 1)?;
@@ -426,10 +426,10 @@ impl SaveGame {
         self.weapons.entry(w).or_insert(0);
     }
 
-    /// Nächste Ausbaustufe bei Klonk (P-12, P-13).
+    /// Next upgrade level at Klonk (P-12, P-13).
     ///
     /// # Errors
-    /// Waffe fehlt, höchste Stufe, zu teuer, Material fehlt.
+    /// Weapon missing, highest level, too expensive, material missing.
     pub fn upgrade(&mut self, content: &Content, w: Weapon) -> Result<u8, Refusal> {
         let level = *self.weapons.get(&w).ok_or(Refusal::NoWeapon)?;
         let u = content.upgrade(w, level + 1).ok_or(Refusal::MaxLevel)?;
@@ -447,10 +447,10 @@ impl SaveGame {
         Ok(level + 1)
     }
 
-    // ------------------------------------------------------------ Tod und Speichern
+    // ------------------------------------------------------------ Death and saving
 
-    /// Tod (E-220, P-30): Verlust eines Teils der seit dem Speichern gesammelten
-    /// Glanztropfen; liefert den Verlust. Zurück geht es zum letzten Speicherpunkt.
+    /// Death (E-220, P-30): loses part of the gleam drops collected since saving; returns
+    /// the loss. Elora goes back to the last save point.
     pub fn die(&mut self, content: &Content) -> u32 {
         let lost = (self.glanz_since_save * content.progression.death_loss_pct / 100)
             .min(self.glanztropfen);
@@ -460,17 +460,17 @@ impl SaveGame {
         lost
     }
 
-    /// Speicherpunkt (P-31): Leben auffüllen, Ort merken.
+    /// Save point (P-31): refill health, remember the place.
     pub fn rest(&mut self, content: &Content, at: Location) {
         self.health = self.max_health(content);
         self.glanz_since_save = 0;
         self.location = at;
     }
 
-    // ------------------------------------------------------------ Ereignisse der Welt
+    // ------------------------------------------------------------ World events
 
-    /// Ereignis der Simulation für die eigene Figur `me` auswerten: Erfahrung aus besiegten
-    /// Gegnern, Beute (mit Glanz-Fund).
+    /// Evaluate a simulation event for the own character `me`: experience from defeated
+    /// enemies, loot (with gleam find).
     pub fn on_event(
         &mut self,
         content: &Content,

@@ -1,5 +1,5 @@
-//! Aufgaben (A1.4, E-249 bis E-251): Schritte mit Zielen, Belohnung, Scheitern – und das
-//! Auswerten von Bedingungen und Folgen auf dem Spielstand.
+//! Quests (A1.4, E-249 to E-251): steps with goals, reward, failure – and the evaluation of
+//! conditions and effects on the save game.
 
 use serde::{Deserialize, Serialize};
 
@@ -7,7 +7,7 @@ use crate::data::{Content, Cost, GLANZTROPFEN, Text};
 use crate::script::{Action, Cond, Open, QuestCheck, QuestOp};
 use crate::state::{Notice, SaveGame};
 
-/// Haupt- oder Nebenaufgabe.
+/// Main or side quest.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum QuestKind {
@@ -16,40 +16,40 @@ pub enum QuestKind {
     Side,
 }
 
-/// Ziel eines Schritts (E-249).
+/// Goal of a step (E-249).
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum Goal {
-    /// Mit einer Figur sprechen.
+    /// Talk to a character.
     Talk { who: String },
-    /// Karte (und optional eine Zone darin) erreichen.
+    /// Reach a map (and optionally a zone in it).
     Reach {
         map: String,
         #[serde(default)]
         zone: Option<String>,
     },
-    /// Gegner einer Art besiegen, optional nur auf einer Karte.
+    /// Defeat enemies of a kind, optionally only on one map.
     Defeat {
         kind: String,
         count: u32,
         #[serde(default)]
         map: Option<String>,
     },
-    /// Gegenstände haben.
+    /// Have items.
     Collect { item: String, count: u32 },
-    /// Gegenstände bei einer Figur abgeben.
+    /// Hand over items to a character.
     Bring {
         item: String,
         count: u32,
         to: String,
     },
-    /// Merker im Weltzustand (Schalter, Truhe, Tür …).
+    /// Flag in the world state (switch, chest, door …).
     Flag {
         flag: String,
         #[serde(default = "one")]
         value: i64,
     },
-    /// Nur über Gespräche (`quest x weiter`).
+    /// Only via dialogs (`quest x weiter`).
     Manual,
 }
 
@@ -72,7 +72,7 @@ pub struct Reward {
     pub glanztropfen: u32,
     #[serde(default)]
     pub items: Vec<Cost>,
-    /// Tautropfen-Punkte.
+    /// Dewdrop points.
     #[serde(default)]
     pub points: u32,
 }
@@ -82,7 +82,7 @@ pub struct QuestDef {
     pub id: String,
     #[serde(default)]
     pub kind: QuestKind,
-    /// Wer die Aufgabe vergibt (Anzeige im Aufgabenbuch).
+    /// Who gives the quest (shown in the quest book).
     #[serde(default)]
     pub giver: Option<String>,
     pub name: Text,
@@ -91,15 +91,15 @@ pub struct QuestDef {
     pub step: Vec<Step>,
     #[serde(default)]
     pub reward: Reward,
-    /// Scheitert, sobald diese Bedingung gilt (E-250).
+    /// Fails as soon as this condition holds (E-250).
     #[serde(default)]
     pub fail_if: Option<String>,
-    /// Diese Aufgabe beginnt, sobald diese erledigt ist (Kapitel-Übergänge).
+    /// This quest starts as soon as that one is done (chapter transitions).
     #[serde(default)]
     pub next: Option<String>,
 }
 
-/// Zustand einer begonnenen Aufgabe.
+/// State of a started quest.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum QuestStatus {
@@ -111,13 +111,13 @@ pub enum QuestStatus {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct QuestState {
     pub status: QuestStatus,
-    /// Index des aktuellen Schritts.
+    /// Index of the current step.
     pub step: usize,
-    /// Fortschritt im Schritt (z. B. besiegte Gegner).
+    /// Progress in the step (e.g. defeated enemies).
     pub progress: u32,
 }
 
-/// Ergebnis einer Folge für die Oberfläche.
+/// Result of an effect for the UI.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Outcome {
     Notice(Notice),
@@ -133,8 +133,8 @@ impl SaveGame {
         self.affection.get(who).copied().unwrap_or(0)
     }
 
-    /// Gilt die Bedingung (Text siehe [`crate::script`])? Ungültige Bedingungen gelten nie
-    /// (die Inhalte werden beim Laden geprüft).
+    /// Does the condition hold (text see [`crate::script`])? Invalid conditions never hold
+    /// (the content is checked when loading).
     pub fn holds(&self, content: &Content, src: &str) -> bool {
         Cond::parse(src).is_ok_and(|c| self.check(content, &c))
     }
@@ -168,7 +168,7 @@ impl SaveGame {
         }
     }
 
-    /// Folgen ausführen (Texte siehe [`crate::script`]); ungültige werden übersprungen.
+    /// Run effects (texts see [`crate::script`]); invalid ones are skipped.
     pub fn run(&mut self, content: &Content, actions: &[String]) -> Vec<Outcome> {
         let mut out = Vec::new();
         for a in actions {
@@ -234,7 +234,7 @@ impl SaveGame {
         }
     }
 
-    // ------------------------------------------------------------ Aufgaben steuern
+    // ------------------------------------------------------------ Controlling quests
 
     fn start_quest(&mut self, content: &Content, id: &str) -> Vec<Outcome> {
         if self.quests.contains_key(id) || content.quest(id).is_none() {
@@ -251,7 +251,7 @@ impl SaveGame {
         vec![Outcome::Notice(Notice::QuestStarted(id.to_owned()))]
     }
 
-    /// Aktueller Schritt erledigt; nach dem letzten ist die Aufgabe fertig.
+    /// Current step done; after the last one the quest is finished.
     fn advance_quest(&mut self, content: &Content, id: &str) -> Vec<Outcome> {
         let Some(def) = content.quest(id) else {
             return Vec::new();
@@ -326,7 +326,7 @@ impl SaveGame {
         }
     }
 
-    /// Aktive Aufgaben mit ihrem aktuellen Schritt.
+    /// Active quests with their current step.
     fn active_steps<'c>(&self, content: &'c Content) -> Vec<(String, &'c Step)> {
         self.quests
             .iter()
@@ -335,10 +335,10 @@ impl SaveGame {
             .collect()
     }
 
-    /// Selbsttätige Ziele (Sammeln, Merker) und Scheitern prüfen; nach jeder Änderung.
+    /// Check automatic goals (collecting, flags) and failure; after every change.
     pub fn update_quests(&mut self, content: &Content) -> Vec<Outcome> {
         let mut out = Vec::new();
-        // Mehrere Schritte können nacheinander erfüllt sein
+        // Several steps can be fulfilled in a row
         for _ in 0..16 {
             let mut changed = false;
             for (id, step) in self.active_steps(content) {
@@ -368,7 +368,7 @@ impl SaveGame {
         out
     }
 
-    /// Gespräch mit `who` begonnen: Sprechen- und Bringen-Ziele.
+    /// Dialog with `who` started: talk and deliver goals.
     pub fn on_talk(&mut self, content: &Content, who: &str) -> Vec<Outcome> {
         let mut out = Vec::new();
         for (id, step) in self.active_steps(content) {
@@ -385,7 +385,7 @@ impl SaveGame {
         out
     }
 
-    /// Karte oder Zone erreicht.
+    /// Map or zone reached.
     pub fn on_reach(&mut self, content: &Content, map: &str, zone: Option<&str>) -> Vec<Outcome> {
         let mut out = Vec::new();
         for (id, step) in self.active_steps(content) {
@@ -400,7 +400,7 @@ impl SaveGame {
         out
     }
 
-    /// Gegner der Art `kind` auf Karte `map` besiegt.
+    /// Enemy of kind `kind` defeated on map `map`.
     pub fn on_defeat(&mut self, content: &Content, kind: &str, map: &str) -> Vec<Outcome> {
         let mut out = Vec::new();
         for (id, step) in self.active_steps(content) {
@@ -424,6 +424,6 @@ impl SaveGame {
     }
 }
 
-/// Zuneigung je Figur von −10 bis 10 (E-248).
+/// Affection per character from −10 to 10 (E-248).
 pub const AFFECTION_MIN: i32 = -10;
 pub const AFFECTION_MAX: i32 = 10;

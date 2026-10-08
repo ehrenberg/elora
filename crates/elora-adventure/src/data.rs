@@ -1,5 +1,5 @@
-//! Inhalte als Daten (`assets/adventure/*.toml`): Gegenstände, Fähigkeitenbaum, Waffen-Ausbau,
-//! Läden und Fortschrittswerte ([`docs/release-2/progression.md`]).
+//! Content as data (`assets/adventure/*.toml`): items, skill tree, weapon upgrades, shops and
+//! progression values ([`docs/release-2/progression.md`]).
 
 use std::collections::BTreeMap;
 
@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use crate::dialog::{CharacterDef, Dialog};
 use crate::quest::QuestDef;
 
-/// Text in beiden Sprachen (E-217).
+/// Text in both languages (E-217).
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct Text {
     pub de: String,
@@ -17,13 +17,13 @@ pub struct Text {
 }
 
 impl Text {
-    /// Text für ein Sprachkürzel (`de`, sonst Englisch).
+    /// Text for a language code (`de`, otherwise English).
     pub fn get(&self, lang: &str) -> &str {
         if lang == "de" { &self.de } else { &self.en }
     }
 }
 
-/// Platz für Ausrüstung (P-20).
+/// Equipment slot (P-20).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Slot {
@@ -37,7 +37,7 @@ impl Slot {
     pub const ALL: [Self; 4] = [Self::Hat, Self::Cape, Self::Boots, Self::Pendant];
 }
 
-/// Seltenheit (P-22).
+/// Rarity (P-22).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Rarity {
@@ -47,79 +47,79 @@ pub enum Rarity {
     Guardian,
 }
 
-/// Ein Bonus aus Fähigkeitenbaum, Ausrüstung oder Waffen-Ausbau. Nie Tempo, Sprung oder
-/// Hook-Zug (E-212, P-21).
+/// A bonus from skill tree, equipment or weapon upgrades. Never speed, jump or hook pull
+/// (E-212, P-21).
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Bonus {
     MaxHealth(i32),
     Armor(i32),
-    /// Schaden aller Waffen in Prozent.
+    /// Damage of all weapons in percent.
     DamagePct(f32),
-    /// Feuerverzögerung in Prozent (negativ = schneller).
+    /// Fire delay in percent (negative = faster).
     FireDelayPct(f32),
-    /// Rückstoß auf Gegner in Prozent.
+    /// Knockback on enemies in percent.
     KnockbackPct(f32),
     Ammo(i32),
-    /// Beute-Magnet (Einheiten, A-15).
+    /// Loot magnet (units, A-15).
     Magnet(f32),
-    /// Mehr Glanztropfen in Prozent.
+    /// More gleam drops in percent.
     DropsPct(f32),
-    /// Schutz nach Treffer (ms, A-11).
+    /// Protection after a hit (ms, A-11).
     InvulnerableMs(i32),
-    /// Heilpflanzen heilen mehr.
+    /// Healing plants heal more.
     HealBonus(i32),
-    /// Einmal je Karte mit so viel Leben weitermachen statt zu sterben.
+    /// Once per map, carry on with this much health instead of dying.
     SecondChance(i32),
-    /// Abklingzeit Hook-Ruck (ms, negativ = kürzer, A-02).
+    /// Hook jerk cooldown (ms, negative = shorter, A-02).
     RuckCooldownMs(i32),
     HookLengthPct(f32),
-    /// Stoßwelle des Stampfens (Einheiten, A-05).
+    /// Shock wave of the stomp (units, A-05).
     StompRadius(f32),
     StompDamage(i32),
-    /// Haftdauer Eisgriff (ms, A-06).
+    /// Ice grip hold time (ms, A-06).
     GripMs(i32),
-    /// Fallen beim Gleiten (Einheiten/Tick, negativ = langsamer, A-09).
+    /// Falling while gliding (units/tick, negative = slower, A-09).
     GlideFall(f32),
-    /// Hammer betäubt Gegner (ms).
+    /// Hammer stuns enemies (ms).
     HammerStunMs(i32),
     HammerDamage(i32),
     HammerReachPct(f32),
-    /// Hammer trifft alle Gegner um Elora.
+    /// Hammer hits all enemies around Elora.
     HammerShockwave(i32),
     ExplosionPct(f32),
-    /// Kleine Nach-Explosionen der Granate.
+    /// Small after-explosions of the grenade.
     GrenadeShards(i32),
     LaserBounces(i32),
-    /// Laser trifft bis zu so viele Gegner zusätzlich.
+    /// Laser hits up to this many additional enemies.
     LaserPierce(i32),
-    /// Ladezeit des Lasers in Prozent.
+    /// Laser charge time in percent.
     LaserDelayPct(f32),
-    /// Füllen der Hitze-Leiste in Prozent (negativ = langsamer, E-320).
+    /// Filling of the heat bar in percent (negative = slower, E-320).
     HeatPct(f32),
-    /// Füllen der Kälte-Leiste in Prozent (negativ = langsamer, E-342).
+    /// Filling of the cold bar in percent (negative = slower, E-342).
     ColdPct(f32),
 }
 
-/// Verbrauchsgegenstand (P-25).
+/// Consumable (P-25).
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Effect {
-    /// Leben auffüllen.
+    /// Refill health.
     Heal(i32),
-    /// Hook-Ruck ohne Abklingzeit für so viele Sekunden.
+    /// Hook jerk without cooldown for this many seconds.
     Tau(u32),
-    /// Leben auffüllen und die Hitze-Leiste leeren (Kaktusfrucht, E-320).
+    /// Refill health and empty the heat bar (cactus fruit, E-320).
     Cool(i32),
-    /// Leben auffüllen und die Kälte-Leiste leeren (Kräutertee, E-342).
+    /// Refill health and empty the cold bar (herbal tea, E-342).
     Warm(i32),
 }
 
-/// Art eines Gegenstands (Reiter im Inventar, P-24).
+/// Kind of an item (tab in the inventory, P-24).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum ItemKind {
-    /// Die Währung Glanztropfen.
+    /// The currency gleam drops.
     Currency,
     Equipment {
         slot: Slot,
@@ -131,11 +131,11 @@ pub enum ItemKind {
         effect: Effect,
     },
     Material,
-    /// Schlüssel und Aufgabengegenstände: nicht verkaufbar.
+    /// Keys and quest items: not sellable.
     Key,
-    /// Sammelstück (Glitzerstein, Erinnerungsrune …): nicht verkaufbar, wird gezählt.
+    /// Collectible (glitter stone, memory rune …): not sellable, gets counted.
     Collectible,
-    /// Munition aus Truhen (E-243): füllt die Waffe auf, kommt nicht ins Inventar.
+    /// Ammunition from chests (E-243): refills the weapon, does not go into the inventory.
     Ammo {
         weapon: Weapon,
     },
@@ -147,14 +147,14 @@ pub struct ItemDef {
     pub name: Text,
     #[serde(default)]
     pub desc: Text,
-    /// Kaufpreis in Glanztropfen (0 = nicht im Laden).
+    /// Purchase price in gleam drops (0 = not in the shop).
     #[serde(default)]
     pub price: u32,
     #[serde(flatten)]
     pub kind: ItemKind,
 }
 
-/// Zweig des Fähigkeitenbaums.
+/// Branch of the skill tree.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Branch {
@@ -163,7 +163,7 @@ pub enum Branch {
     Spring,
 }
 
-/// Knoten des Fähigkeitenbaums (E-242).
+/// Node of the skill tree (E-242).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SkillNode {
     pub id: String,
@@ -172,24 +172,24 @@ pub struct SkillNode {
     #[serde(default)]
     pub desc: Text,
     pub ranks: u8,
-    /// Knoten darüber (mindestens Rang 1 nötig).
+    /// Node above (requires at least rank 1).
     #[serde(default)]
     pub requires: Option<String>,
-    /// Nötige Gebietsfähigkeit (Bewegungs-Zweig).
+    /// Required area ability (movement branch).
     #[serde(default)]
     pub ability: Option<Ability>,
-    /// Wirkung je Rang.
+    /// Effect per rank.
     pub per_rank: Vec<Bonus>,
 }
 
-/// Menge eines Materials.
+/// Amount of a material.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Cost {
     pub item: String,
     pub count: u32,
 }
 
-/// Ausbaustufe einer Waffe bei Klonk (P-12, P-13).
+/// Upgrade level of a weapon at Klonk (P-12, P-13).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Upgrade {
     pub weapon: Weapon,
@@ -203,18 +203,18 @@ pub struct Upgrade {
     pub bonuses: Vec<Bonus>,
 }
 
-/// Rabatt ab einer Zuneigung zur Ladenbesitzerin (E-248).
+/// Discount from a certain affection to the shop owner (E-248).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Discount {
     pub affection: i32,
     pub pct: u32,
 }
 
-/// Laden (z. B. Lotte).
+/// Shop (e.g. Lotte).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Shop {
     pub id: String,
-    /// Figur, deren Zuneigung den Rabatt bestimmt.
+    /// Character whose affection determines the discount.
     #[serde(default)]
     pub owner: Option<String>,
     #[serde(default)]
@@ -222,14 +222,14 @@ pub struct Shop {
     pub stock: Vec<String>,
 }
 
-/// Fortschrittswerte (P-01, P-02, P-05, P-25, P-26, P-30).
+/// Progression values (P-01, P-02, P-05, P-25, P-26, P-30).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Progression {
     pub max_level: u32,
     pub xp_base: u32,
     pub xp_per_level: u32,
     pub base_health: i32,
-    /// Alle so viele Stufen +1 Leben.
+    /// +1 health every this many levels.
     pub health_every: u32,
     pub consumable_max: u32,
     pub sell_pct: u32,
@@ -238,37 +238,37 @@ pub struct Progression {
     pub start_spawn: String,
 }
 
-/// Gebiet auf der Weltkarte (E-264).
+/// Area on the world map (E-264).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Area {
     pub id: String,
     pub name: Text,
-    /// Lage auf der Karte (0..1, links oben = 0, 0).
+    /// Position on the map (0..1, top left = 0, 0).
     pub pos: [f32; 2],
-    /// Farbe als `#rrggbb`.
+    /// Colour as `#rrggbb`.
     pub color: String,
-    /// Karten dieses Gebiets beginnen so (`wiese-` → `wiese-1`, `wiese-2` …).
+    /// Maps of this area start like this (`wiese-` → `wiese-1`, `wiese-2` …).
     pub maps: String,
-    /// Hintergrundmusik: `assets/music/<music>.ogg` (E-285).
+    /// Background music: `assets/music/<music>.ogg` (E-285).
     #[serde(default)]
     pub music: Option<String>,
-    /// Musik während eines Fests (Merker `fest`, E-301).
+    /// Music during a festival (flag `fest`, E-301).
     #[serde(default)]
     pub party_music: Option<String>,
-    /// Kampfmusik, solange ein Hüter wach ist (sonst `boss`).
+    /// Battle music while a guardian is awake (otherwise `boss`).
     #[serde(default)]
     pub boss_music: Option<String>,
-    /// Quelle des Gebiets: befreit, sobald der Merker `befreit.<spring>` gesetzt ist.
+    /// Spring of the area: freed as soon as the flag `befreit.<spring>` is set.
     #[serde(default)]
     pub spring: Option<String>,
-    /// Heißes Gebiet (Wüste, E-320): Hitze-Leiste und Flimmern.
+    /// Hot area (desert, E-320): heat bar and shimmer.
     #[serde(default)]
     pub hot: bool,
-    /// Kaltes Gebiet (Frostspitzen, E-342): Kälte-Leiste und Frostrand.
+    /// Cold area (Frostspitzen, E-342): cold bar and frost border.
     #[serde(default)]
     pub cold: bool,
-    /// Kapitel des Gebiets und sein Hüter (Art aus `creatures.toml`): Sieg über ihn zeigt den
-    /// Gewinn-Bildschirm mit `victory` und dem Ehrentitel `honor`.
+    /// Chapter of the area and its guardian (kind from `creatures.toml`): defeating it shows
+    /// the victory screen with `victory` and the title of honour `honor`.
     #[serde(default)]
     pub chapter: Option<u32>,
     #[serde(default)]
@@ -277,17 +277,17 @@ pub struct Area {
     pub victory: Option<Text>,
     #[serde(default)]
     pub honor: Option<Text>,
-    /// Wetter beim Betreten (R2-W1, E-331): trüb, solange die Quelle schweigt, sonst `weather`.
+    /// Weather on entering (R2-W1, E-331): gloomy while the spring is silent, otherwise `weather`.
     #[serde(default)]
     pub weather: Vec<WeatherChance>,
     #[serde(default)]
     pub weather_gloomy: Vec<WeatherChance>,
-    /// Ohne eigene Quelle (Tauwinkel): trüb, bis so viele Quellen befreit sind.
+    /// Without its own spring (Tauwinkel): gloomy until this many springs are freed.
     #[serde(default)]
     pub clears_after_springs: Option<i64>,
 }
 
-/// Ein mögliches Wetter mit Gewicht und Spannen für Stärke und Wind (R2-W1).
+/// A possible weather with weight and ranges for strength and wind (R2-W1).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct WeatherChance {
     /// `schoen`, `regen`, `gewitter`, `nebel`, `blaetter`, `blueten`, `sandsturm`, `schnee`,
@@ -314,7 +314,7 @@ fn default_wind() -> [f32; 2] {
 }
 
 impl Area {
-    /// Ist die Quelle dieses Gebiets befreit?
+    /// Is the spring of this area freed?
     pub fn freed(&self, save: &crate::SaveGame) -> bool {
         self.spring
             .as_ref()
@@ -322,7 +322,7 @@ impl Area {
     }
 }
 
-/// Fehler in den Inhaltsdateien.
+/// Error in the content files.
 #[derive(Debug, thiserror::Error)]
 pub enum ContentError {
     #[error("{file}: {msg}")]
@@ -360,7 +360,7 @@ struct CharactersFile {
     character: Vec<CharacterDef>,
 }
 
-/// Mitgelieferte Gespräche (`assets/adventure/dialogs/<id>.toml`).
+/// Bundled dialogs (`assets/adventure/dialogs/<id>.toml`).
 macro_rules! dialogs {
     ($($name:literal),* $(,)?) => {
         &[$(($name, include_str!(concat!("../../../assets/adventure/dialogs/", $name, ".toml")))),*]
@@ -425,7 +425,7 @@ const DIALOG_FILES: &[(&str, &str)] = dialogs!(
     "schild-kamin",
 );
 
-/// Quelltexte der Inhaltsdateien.
+/// Sources of the content files.
 #[derive(Debug, Clone, Copy)]
 pub struct Sources<'a> {
     pub items: &'a str,
@@ -436,13 +436,13 @@ pub struct Sources<'a> {
     pub creatures: &'a str,
     pub quests: &'a str,
     pub characters: &'a str,
-    /// Gespräche: Id und Inhalt.
+    /// Dialogs: id and content.
     pub dialogs: &'a [(&'a str, &'a str)],
     pub world_map: &'a str,
 }
 
 impl Sources<'static> {
-    /// Die mitgelieferten Inhalte.
+    /// The bundled content.
     pub fn builtin() -> Self {
         Self {
             items: include_str!("../../../assets/adventure/items.toml"),
@@ -459,7 +459,7 @@ impl Sources<'static> {
     }
 }
 
-/// Alle Inhalte des Abenteuers.
+/// All content of the adventure.
 #[derive(Debug, Clone)]
 pub struct Content {
     pub items: BTreeMap<String, ItemDef>,
@@ -471,11 +471,11 @@ pub struct Content {
     pub quests: Vec<QuestDef>,
     pub characters: BTreeMap<String, CharacterDef>,
     pub dialogs: BTreeMap<String, Dialog>,
-    /// Gebiete der Weltkarte (E-264).
+    /// Areas of the world map (E-264).
     pub areas: Vec<Area>,
 }
 
-/// Id der Währung.
+/// Id of the currency.
 pub const GLANZTROPFEN: &str = "glanztropfen";
 
 fn parse<T: serde::de::DeserializeOwned>(file: &'static str, src: &str) -> Result<T, ContentError> {
@@ -486,19 +486,19 @@ fn parse<T: serde::de::DeserializeOwned>(file: &'static str, src: &str) -> Resul
 }
 
 impl Content {
-    /// Die mitgelieferten Inhalte.
+    /// The bundled content.
     ///
     /// # Panics
-    /// Wenn die eingebetteten Dateien fehlerhaft sind (wird von Tests abgedeckt).
+    /// If the embedded files are faulty (covered by tests).
     pub fn builtin() -> Self {
         Self::load(&Sources::builtin()).unwrap_or_else(|e| panic!("assets/adventure: {e}"))
     }
 
-    /// Inhalte aus einem Ordner (`assets/adventure`) lesen – für den Editor (Neu laden ohne
-    /// Neustart, E-270). Gespräche: alle `dialogs/*.toml`.
+    /// Read content from a folder (`assets/adventure`) – for the editor (reload without
+    /// restart, E-270). Dialogs: all `dialogs/*.toml`.
     ///
     /// # Errors
-    /// Fehlende oder ungültige Dateien.
+    /// Missing or invalid files.
     pub fn from_dir(dir: &std::path::Path) -> Result<Self, ContentError> {
         let read = |name: &str| {
             std::fs::read_to_string(dir.join(name))
@@ -545,10 +545,10 @@ impl Content {
         })
     }
 
-    /// Liest und prüft die Inhalte.
+    /// Reads and checks the content.
     ///
     /// # Errors
-    /// Bei ungültigem TOML oder Verweisen auf Unbekanntes.
+    /// On invalid TOML or references to unknown things.
     pub fn load(src: &Sources<'_>) -> Result<Self, ContentError> {
         let items: ItemsFile = parse("items.toml", src.items)?;
         let skills: SkillsFile = parse("skills.toml", src.skills)?;
@@ -689,7 +689,7 @@ impl Content {
         Ok(())
     }
 
-    /// Gebiet, zu dem eine Karte gehört.
+    /// Area a map belongs to.
     pub fn area_of(&self, map: &str) -> Option<&Area> {
         self.areas.iter().find(|a| map.starts_with(&a.maps))
     }
@@ -716,7 +716,7 @@ impl Content {
             .find(|u| u.weapon == weapon && u.level == level)
     }
 
-    /// Erfahrung von Stufe `level` zur nächsten (P-02).
+    /// Experience from level `level` to the next (P-02).
     pub fn xp_to_next(&self, level: u32) -> u32 {
         self.progression.xp_base + self.progression.xp_per_level * level
     }

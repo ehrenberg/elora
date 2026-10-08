@@ -1,5 +1,5 @@
-//! Abenteuer-Sitzung (A1.6) auf den Test-Karten (`fixture`): Truhen, Schalter und Türen, Speicherpunkt,
-//! Übergänge, Zonen, Tod.
+//! Adventure session (A1.6) on the test maps (`fixture`): chests, switches and doors, save
+//! point, transitions, zones, death.
 
 use elora_adventure::session::Prompt;
 use elora_adventure::state::Notice;
@@ -22,7 +22,7 @@ fn step(s: &mut Session, w: &mut World, input: PlayerInput, interact: bool) -> V
     s.tick(w, interact)
 }
 
-/// Elora an ein Objekt stellen und ein paar Ticks stehen lassen.
+/// Put Elora at an object and let her stand there for a few ticks.
 fn go_to(s: &mut Session, w: &mut World, id: &str) {
     let pos = s.map.adventure.object(id).unwrap().pos;
     let target = s
@@ -46,7 +46,7 @@ fn new_game_starts_in_tauwinkel() {
     let ch = w.character(s.player).unwrap();
     assert_eq!(ch.health, 10);
     assert!(w.adventure && !w.creature_kinds.is_empty());
-    // Tor ist zu
+    // gate is closed
     let door = s.map.adventure.object("tor").unwrap().pos;
     assert_eq!(
         w.collision.tile_at(door + Vec2::new(16.0, 16.0)),
@@ -73,7 +73,7 @@ fn chest_switch_and_door() {
     assert!(ev.contains(&SessionEvent::ChestOpened { pos: at }));
     assert_eq!(s.save.glanztropfen, 20);
     assert!(s.object_done("truhe-1"));
-    // zweites Öffnen nicht möglich
+    // opening a second time is not possible
     assert!(step(&mut s, &mut w, PlayerInput::default(), true).is_empty());
 
     go_to(&mut s, &mut w, "hebel");
@@ -84,7 +84,7 @@ fn chest_switch_and_door() {
     );
     let door = s.map.adventure.object("tor").unwrap().pos;
     assert_eq!(w.collision.tile_at(door + Vec2::new(16.0, 16.0)), Tile::Air);
-    // Hebel zurück: Tor bleibt offen (E-254)
+    // lever back: gate stays open (E-254)
     step(&mut s, &mut w, PlayerInput::default(), true);
     assert_eq!(s.save.flag("tor.dorf"), 0);
     assert_eq!(w.collision.tile_at(door + Vec2::new(16.0, 16.0)), Tile::Air);
@@ -138,7 +138,7 @@ fn walking_into_the_exit_travels_and_zones_count() {
     assert!(s.save.holds(&s.content, "quest brunnen schritt kaefer"));
     s.save
         .run(&s.content.clone(), &["quest brunnen weiter".into()]);
-    // Zone „Wiesenrand“ erreichen: Aufgabe fertig, die nächste beginnt
+    // reach zone „Wiesenrand“: quest done, the next one starts
     let zone = s.map.adventure.object("wiesenrand").unwrap().pos;
     w.spawn_character(s.player, zone + Vec2::new(100.0, 200.0));
     let mut notes = Vec::new();
@@ -227,7 +227,7 @@ fn unlocks_from_dialogs_reach_the_running_world() {
     assert!(ch.arsenal.has(elora_sim::Weapon::Grenade));
 }
 
-/// Heranhooken (R2-M2.2): Sammelstücke am Hook werden eingesammelt, Beute fliegt zu Elora.
+/// Pull hook (R2-M2.2): collectibles on the hook are collected, loot flies to Elora.
 #[test]
 fn pulling_hook_grabs_collectibles_and_loot() {
     let mut s = Session::new_game(Content::builtin());
@@ -238,18 +238,18 @@ fn pulling_hook_grabs_collectibles_and_loot() {
         ch.core.hook_state = elora_sim::HookState::Flying;
         ch.core.hook_pos = at;
     };
-    // ohne Heranhooken: nichts
+    // without pull hook: nothing
     hook_at(&mut w, &s, stone);
     s.tick(&mut w, false);
     assert_eq!(s.save.count("glitzerstein"), 0);
-    // mit Heranhooken: eingesammelt
+    // with pull hook: collected
     s.save
         .run(&s.content.clone(), &["faehigkeit heranhooken".into()]);
     s.sync_world(&mut w);
     hook_at(&mut w, &s, stone);
     s.tick(&mut w, false);
     assert_eq!(s.save.count("glitzerstein"), 1);
-    // Beute am Hook landet bei Elora
+    // loot on the hook ends up with Elora
     let far = Vec2::new(40.0 * 32.0, 10.0 * 32.0);
     w.loot.push(elora_sim::creature::Loot {
         id: 999,
@@ -273,7 +273,7 @@ fn pulling_hook_grabs_collectibles_and_loot() {
     );
 }
 
-/// Begleiter (E-308): erscheint, folgt über Kartenwechsel und bleibt in seiner Heimat-Zone.
+/// Companion (E-308): appears, follows across map changes and stays in its home zone.
 #[test]
 fn follower_appears_follows_and_stays_home() {
     use elora_map::{Object, ObjectKind};
@@ -296,7 +296,7 @@ fn follower_appears_follows_and_stays_home() {
             .map(|c| c.pos)
     };
     assert!(kid(&w).is_some(), "folgt");
-    // neue Karte mit Pilzring: das Kind kommt mit
+    // new map with mushroom ring: the child comes along
     let mut home = load("wiese-1");
     let spawn = home.adventure.object("west").unwrap().pos;
     home.adventure.objects.push(Object {
@@ -316,7 +316,7 @@ fn follower_appears_follows_and_stays_home() {
     assert!(kid(&w).is_none(), "bleibt daheim");
 }
 
-/// 1,2 s in Leuchtpilzen: bunter Rausch (E-311).
+/// 1.2 s in glow mushrooms: colourful daze (E-311).
 #[test]
 fn standing_in_glowing_mushrooms_dazes() {
     let mut map = load("wiese-1");
@@ -337,11 +337,11 @@ fn standing_in_glowing_mushrooms_dazes() {
     assert!(w.character(s.player).unwrap().core.dazed > 0);
 }
 
-/// Hitze-Leiste (E-320): Sonne füllt, voll = langsamer; Oase kühlt; Dach spendet Schatten.
+/// Heat bar (E-320): sun fills it, full = slower; oasis cools; roof gives shade.
 #[test]
 fn heat_fills_in_the_sun_and_cools_in_shade_and_at_the_oasis() {
     use elora_map::ObjectKind;
-    // eine Karte der Wiese, aber als Wüste
+    // a meadow map, but as desert
     let mut map = load("wiese-1");
     let spawn = map.adventure.object("west").unwrap().pos;
     map.adventure.objects.push(elora_map::Object {
@@ -353,7 +353,7 @@ fn heat_fills_in_the_sun_and_cools_in_shade_and_at_the_oasis() {
     });
     let mut s = Session::new_game(Content::builtin());
     let mut w = s.enter("wueste-1", map, "west", &Tuning::default());
-    // ohne gewürfelten Sandsturm (er verdeckt die Sonne, R2-W1)
+    // without a rolled sandstorm (it hides the sun, R2-W1)
     s.map.weather = elora_map::Weather::CLEAR;
     assert!(s.hot());
     let sky_above = (1..=10).all(|k| {
@@ -374,7 +374,7 @@ fn heat_fills_in_the_sun_and_cools_in_shade_and_at_the_oasis() {
         step(&mut s, &mut w, PlayerInput::default(), false);
     }
     assert!(s.overheated && w.character(s.player).unwrap().core.overheated);
-    // Dach über Elora: Schatten kühlt
+    // roof above Elora: shade cools
     let pos = w.character(s.player).unwrap().core.pos;
     #[allow(clippy::cast_possible_truncation)]
     let (tx, ty) = ((pos.x / 32.0) as i32, (pos.y / 32.0) as i32 - 4);
@@ -384,7 +384,7 @@ fn heat_fills_in_the_sun_and_cools_in_shade_and_at_the_oasis() {
     }
     assert!(!s.in_sun && s.heat < 0.9, "kühlt im Schatten: {}", s.heat);
     assert!(s.overheated, "bleibt langsam, bis die Hälfte erreicht ist");
-    // Oase kühlt schnell
+    // oasis cools fast
     w.collision.set_tile(tx, ty, Tile::Air);
     s.map.adventure.objects.last_mut().unwrap().pos = pos - Vec2::new(20.0, 20.0);
     for _ in 0..50 {
@@ -404,13 +404,13 @@ fn no_heat_outside_the_desert() {
     assert!(s.heat == 0.0 && !s.in_sun);
 }
 
-/// Kaktusfrucht (E-320): heilt und leert die Hitze-Leiste, Elora ist wieder schnell.
+/// Cactus fruit (E-320): heals and empties the heat bar, Elora is fast again.
 #[test]
 fn cactus_fruit_cools_elora_down() {
     let map = load("wiese-1");
     let mut s = Session::new_game(Content::builtin());
     let mut w = s.enter("wueste-1", map, "west", &Tuning::default());
-    // ohne gewürfelten Sandsturm (er verdeckt die Sonne, R2-W1)
+    // without a rolled sandstorm (it hides the sun, R2-W1)
     s.map.weather = elora_map::Weather::CLEAR;
     for _ in 0..1100 {
         step(&mut s, &mut w, PlayerInput::default(), false);
@@ -424,8 +424,8 @@ fn cactus_fruit_cools_elora_down() {
     assert!(!w.character(s.player).unwrap().core.overheated);
 }
 
-/// Wetter beim Betreten (R2-W1, E-331): Trüb, solange die Quelle schweigt; danach die
-/// bunteren Wetter des Gebiets; Arenen schön; eigenes Kartenwetter geht vor.
+/// Weather on entering (R2-W1, E-331): gloomy while the spring is silent; afterwards the
+/// more colourful weather of the area; arenas fair; the map's own weather comes first.
 #[test]
 fn weather_follows_the_springs() {
     use elora_map::{Weather, WeatherKind};
@@ -462,7 +462,7 @@ fn weather_follows_the_springs() {
         ["schoen"],
         "Arena"
     );
-    // eigenes Wetter der Karte (Editor) geht vor
+    // the map's own weather (editor) comes first
     let mut map = load("wiese-1");
     map.weather = Weather {
         kind: WeatherKind::Fog,
@@ -474,8 +474,8 @@ fn weather_follows_the_springs() {
     assert_eq!(s.map.weather.kind, WeatherKind::Fog);
 }
 
-/// Tauwinkel nieselt bis zur ersten Quelle; wird sie befreit, klart es auf, ohne die Karte zu
-/// verlassen (nach dem Gespräch mit Tüftel).
+/// Tauwinkel drizzles until the first spring; once it is freed, the sky clears without
+/// leaving the map (after the dialog with Tüftel).
 #[test]
 fn tauwinkel_clears_after_the_first_spring() {
     use elora_map::WeatherKind;
@@ -499,7 +499,7 @@ fn tauwinkel_clears_after_the_first_spring() {
     );
 }
 
-/// Sand verdeckt die Sonne: im Sandsturm füllt sich die Hitze-Leiste nicht (R2-W1, E-320).
+/// Sand hides the sun: in a sandstorm the heat bar does not fill (R2-W1, E-320).
 #[test]
 fn sandstorm_hides_the_sun() {
     let mut map = load("wiese-1");
@@ -526,7 +526,7 @@ fn avalanche_rolls_rocks_then_rests() {
         pos,
         kind: ObjectKind::Zone { size },
     };
-    // Hang weit weg, die Auslöse-Stelle genau am Eingang
+    // slope far away, the trigger spot right at the entrance
     map.adventure.objects.push(zone(
         "lawine-test",
         spawn + Vec2::new(900.0, -600.0),
@@ -551,7 +551,7 @@ fn avalanche_rolls_rocks_then_rests() {
     let t = Tuning::default();
     let rocks = usize::try_from(t.avalanche_rocks).unwrap();
     assert_eq!(count_after(&mut s, &mut w, 200), rocks, "eine Lawine");
-    // Elora steht weiter auf der Auslöse-Stelle: der Hang ruht erst
+    // Elora keeps standing on the trigger spot: the slope rests first
     assert_eq!(count_after(&mut s, &mut w, 100), rocks, "Ruhe nach A-41");
     let rest = elora_sim::tuning::ms_to_ticks(t.avalanche_rest);
     assert_eq!(
@@ -564,7 +564,7 @@ fn avalanche_rolls_rocks_then_rests() {
 #[test]
 fn cold_fills_outside_faster_in_blizzards_and_warms_at_fire_and_roofs() {
     use elora_map::{ObjectKind, Weather, WeatherKind};
-    // eine Karte der Wiese, aber in den Frostspitzen
+    // a meadow map, but in the Frostspitzen
     let mut map = load("wiese-1");
     let spawn = map.adventure.object("west").unwrap().pos;
     map.adventure.objects.push(elora_map::Object {
@@ -583,10 +583,10 @@ fn cold_fills_outside_faster_in_blizzards_and_warms_at_fire_and_roofs() {
             step(s, w, PlayerInput::default(), false);
         }
     };
-    // draußen: etwa 60 s bis voll
+    // outside: about 60 s until full
     run(&mut s, &mut w, 1500);
     assert!(s.cold > 0.45 && s.cold < 0.55, "halb voll: {}", s.cold);
-    // im Schneesturm doppelt so schnell
+    // twice as fast in a blizzard
     s.map.weather = Weather {
         kind: WeatherKind::Blizzard,
         intensity: 1.0,
@@ -594,7 +594,7 @@ fn cold_fills_outside_faster_in_blizzards_and_warms_at_fire_and_roofs() {
     };
     run(&mut s, &mut w, 760);
     assert!(s.frozen && w.character(s.player).unwrap().core.overheated);
-    // Dach über Elora wärmt langsam
+    // roof above Elora warms slowly
     s.map.weather = Weather::CLEAR;
     let pos = w.character(s.player).unwrap().core.pos;
     #[allow(clippy::cast_possible_truncation)]
@@ -606,7 +606,7 @@ fn cold_fills_outside_faster_in_blizzards_and_warms_at_fire_and_roofs() {
         "wärmt unter dem Dach: {}",
         s.cold
     );
-    // am Feuer schnell warm
+    // warm quickly at the fire
     w.collision.set_tile(tx, ty, Tile::Air);
     s.map.adventure.objects.last_mut().unwrap().pos = pos - Vec2::new(20.0, 20.0);
     run(&mut s, &mut w, 100);
@@ -634,7 +634,7 @@ fn kristellas_storm_fills_the_hall_until_she_is_calmed() {
     let me = w.character(s.player).unwrap().core.pos;
     let queen = w.creature_kind("kristella").expect("in creatures.toml");
     let id = w.add_creature(queen, me - Vec2::new(0.0, 200.0)).unwrap();
-    // im letzten Viertel
+    // in the last quarter
     w.creatures.iter_mut().find(|c| c.id == id).unwrap().health = 8;
     for _ in 0..5 {
         step(&mut s, &mut w, PlayerInput::default(), false);
@@ -644,7 +644,7 @@ fn kristellas_storm_fills_the_hall_until_she_is_calmed() {
         w.weather.is_some_and(|e| e.wind.abs() > 0.5),
         "Wind in der Halle"
     );
-    // beruhigt: der Sturm legt sich
+    // calmed: the storm settles
     let c = w.creatures.iter_mut().find(|c| c.id == id).unwrap();
     c.mode = elora_sim::creature::queen::TIRED;
     w.hurt_creature(id, 8);

@@ -1,34 +1,34 @@
-//! Bedingungen (`if`) und Folgen (`do`) in Gesprächen und Aufgaben (A1.4, E-248).
+//! Conditions (`if`) and effects (`do`) in dialogs and quests (A1.4, E-248).
 //!
-//! Kurze deutsche Sätze, beim Laden geprüft:
+//! Short German sentences, checked when loading:
 //!
-//! | Bedingung | Bedeutung |
+//! | Condition | Meaning |
 //! |---|---|
-//! | `stufe >= 3`, `glanz < 50` | Stufe, Glanztropfen (Vergleiche `= != < <= > >=`) |
-//! | `quest brunnen neu/aktiv/erledigt/gescheitert` | Zustand einer Aufgabe |
-//! | `quest brunnen schritt bruecke` | aktueller Schritt |
-//! | `merker oma.frech`, `merker tor >= 2` | Weltzustand (ohne Vergleich: nicht 0) |
-//! | `zuneigung lotte >= 5` | Zuneigung einer Figur |
-//! | `hat bernstein 3` | Gegenstand (ohne Zahl: mindestens 1) |
-//! | `faehigkeit gleiten` | Gebietsfähigkeit |
+//! | `stufe >= 3`, `glanz < 50` | level, gleam drops (comparisons `= != < <= > >=`) |
+//! | `quest brunnen neu/aktiv/erledigt/gescheitert` | state of a quest |
+//! | `quest brunnen schritt bruecke` | current step |
+//! | `merker oma.frech`, `merker tor >= 2` | world state (without comparison: not 0) |
+//! | `zuneigung lotte >= 5` | affection of a character |
+//! | `hat bernstein 3` | item (without number: at least 1) |
+//! | `faehigkeit gleiten` | area ability |
 //!
-//! Mehrere Bedingungen mit ` und `, Verneinung mit `nicht ` davor.
+//! Several conditions with ` und `, negation with `nicht ` in front.
 //!
-//! | Folge | Bedeutung |
+//! | Effect | Meaning |
 //! |---|---|
-//! | `quest brunnen start/weiter/fertig/scheitern` | Aufgabe steuern (`weiter` = aktueller Schritt erledigt) |
-//! | `zuneigung oma +1` | Zuneigung ändern |
-//! | `merker oma.frech = 1`, `merker tor +1` | Weltzustand setzen oder ändern |
-//! | `gib heiltrank 2`, `nimm bernstein 3` | Gegenstand an Elora geben bzw. abnehmen |
-//! | `erfahrung 50`, `punkte 1` | Erfahrung, Tautropfen-Punkte |
-//! | `faehigkeit hook-ruck`, `waffe granate` | Fähigkeit oder Waffe freischalten |
-//! | `laden lotte`, `schmied`, `baum` | Laden, Schmiede, Fähigkeitenbaum öffnen |
+//! | `quest brunnen start/weiter/fertig/scheitern` | control a quest (`weiter` = current step done) |
+//! | `zuneigung oma +1` | change affection |
+//! | `merker oma.frech = 1`, `merker tor +1` | set or change world state |
+//! | `gib heiltrank 2`, `nimm bernstein 3` | give an item to Elora or take it away |
+//! | `erfahrung 50`, `punkte 1` | experience, dewdrop points |
+//! | `faehigkeit hook-ruck`, `waffe granate` | unlock an ability or weapon |
+//! | `laden lotte`, `schmied`, `baum` | open shop, smithy, skill tree |
 
 use std::fmt;
 
 use elora_sim::{Ability, Weapon};
 
-/// Vergleich.
+/// Comparison.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Cmp {
     Eq,
@@ -64,7 +64,7 @@ impl Cmp {
     }
 }
 
-/// Zustand einer Aufgabe in Bedingungen.
+/// State of a quest in conditions.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum QuestCheck {
     New,
@@ -87,7 +87,7 @@ pub enum Cond {
     All(Vec<Cond>),
 }
 
-/// Steuerung einer Aufgabe.
+/// Control of a quest.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum QuestOp {
     Start,
@@ -96,7 +96,7 @@ pub enum QuestOp {
     Fail,
 }
 
-/// Was die Oberfläche öffnen soll.
+/// What the UI should open.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Open {
     Shop(String),
@@ -119,7 +119,7 @@ pub enum Action {
     Open(Open),
 }
 
-/// Fehler beim Lesen einer Bedingung oder Folge.
+/// Error when reading a condition or effect.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ScriptError(pub String);
 
@@ -137,7 +137,7 @@ fn int(src: &str, s: &str) -> Result<i64, ScriptError> {
     s.parse().or_else(|_| err(src, "Zahl erwartet"))
 }
 
-/// Gebietsfähigkeit nach deutschem Namen.
+/// Area ability by German name.
 pub fn ability_by_name(s: &str) -> Option<Ability> {
     Some(match s {
         "hook-ruck" => Ability::HookRuck,
@@ -160,7 +160,7 @@ fn weapon_by_name(s: &str) -> Option<Weapon> {
 
 impl Cond {
     /// # Errors
-    /// Bei unbekannten Wörtern oder fehlenden Werten.
+    /// On unknown words or missing values.
     pub fn parse(src: &str) -> Result<Self, ScriptError> {
         let parts: Vec<&str> = src.split(" und ").map(str::trim).collect();
         if parts.len() > 1 {
@@ -214,7 +214,7 @@ impl Cond {
 
 impl Action {
     /// # Errors
-    /// Bei unbekannten Wörtern oder fehlenden Werten.
+    /// On unknown words or missing values.
     pub fn parse(src: &str) -> Result<Self, ScriptError> {
         let t: Vec<&str> = src.split_whitespace().collect();
         let count = |n: Option<&&str>| -> Result<u32, ScriptError> {

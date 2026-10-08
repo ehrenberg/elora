@@ -1,5 +1,5 @@
-//! Schlichte Test-Karten der Sitzung (A1.6), unabhängig von den Prolog-Karten (A1.9):
-//! `tauwinkel` und `wiese-1` mit Truhe, Hebel und Tor, Übergang, Zonen und Gegnern.
+//! Simple test maps for the session (A1.6), independent of the prologue maps (A1.9):
+//! `tauwinkel` and `wiese-1` with chest, lever and gate, transition, zones and enemies.
 
 #![allow(clippy::many_single_char_names, dead_code)]
 
@@ -21,15 +21,15 @@ fn grid(w: usize, h: usize, floor: usize) -> Vec<Vec<char>> {
     g
 }
 
-/// Zeilen für `Map::from_rows`; das `S` dort braucht nur das Textformat, die Karte
-/// nutzt Eingänge (Entities werden danach entfernt).
+/// Rows for `Map::from_rows`; the `S` there is only needed by the text format, the map
+/// uses entrances (entities are removed afterwards).
 fn rows(g: &[Vec<char>]) -> Vec<String> {
     let mut g = g.to_vec();
     g[1][1] = 'S';
     g.iter().map(|r| r.iter().collect()).collect()
 }
 
-/// Mitte über dem Boden in Spalte `tx` für ein Objekt der Höhe `h`.
+/// Centre above the ground in column `tx` for an object of height `h`.
 #[allow(clippy::cast_precision_loss)]
 fn at(tx: usize, floor: usize, h: f32) -> Vec2 {
     Vec2::new(tx as f32 * T + T / 2.0, floor as f32 * T - h / 2.0 - 1.0)
@@ -51,7 +51,7 @@ fn o(id: &str, pos: Vec2, kind: ObjectKind) -> Object {
 pub fn tauwinkel() -> Map {
     let (w, h, floor) = (70, 24, 20);
     let mut g = grid(w, h, floor);
-    // Tor: Durchgang in Spalte 46, darüber eine Decke, damit man nicht drüberspringt
+    // gate: passage in column 46, a ceiling above it so you can't jump over it
     for row in g.iter_mut().take(17).skip(1) {
         row[46] = '%';
     }
@@ -150,7 +150,7 @@ pub fn tauwinkel() -> Map {
 pub fn wiese() -> Map {
     let (w, h, floor) = (90, 26, 22);
     let mut g = grid(w, h, floor);
-    // Brücke über eine Senke
+    // bridge over a dip
     for row in g.iter_mut().take(floor + 2).skip(floor) {
         for c in &mut row[26..34] {
             *c = '.';
@@ -159,7 +159,7 @@ pub fn wiese() -> Map {
     for c in &mut g[floor][26..34] {
         *c = '=';
     }
-    // Sims mit Glitzerstein und Bröckelboden darunter
+    // ledge with glitter stone and crumble floor below
     for c in &mut g[16][60..68] {
         *c = '#';
     }
@@ -244,7 +244,7 @@ pub fn wiese() -> Map {
     m
 }
 
-/// Test-Karte nach Name.
+/// Test map by name.
 pub fn load(name: &str) -> Map {
     match name {
         "tauwinkel" => tauwinkel(),

@@ -1,8 +1,7 @@
-//! Spielstände (E-219, E-245): drei Plätze, gepackt mit Prüfsumme – keine lesbaren Dateien.
+//! Save games (E-219, E-245): three slots, packed with checksum – no readable files.
 //!
-//! Aufbau: `ESAV`, Formatversion (u16, little endian), BLAKE2s-256 des gepackten Inhalts,
-//! zlib-gepackter Inhalt. Ein beschädigter Platz wird gemeldet und nie stillschweigend
-//! überschrieben (P-32).
+//! Layout: `ESAV`, format version (u16, little endian), BLAKE2s-256 of the packed content,
+//! zlib-packed content. A damaged slot is reported and never silently overwritten (P-32).
 
 use std::path::{Path, PathBuf};
 
@@ -12,9 +11,9 @@ use crate::state::SaveGame;
 
 const MAGIC: &[u8; 4] = b"ESAV";
 const VERSION: u16 = 1;
-/// Obergrenze des entpackten Inhalts (Schutz vor manipulierten Dateien).
+/// Upper limit of the unpacked content (protection against tampered files).
 const MAX_PAYLOAD: usize = 4 * 1024 * 1024;
-/// Anzahl der Plätze (E-219).
+/// Number of slots (E-219).
 pub const SLOTS: usize = 3;
 
 #[derive(Debug, thiserror::Error)]
@@ -35,10 +34,10 @@ pub enum SaveError {
     Io(#[from] std::io::Error),
 }
 
-/// Packt einen Spielstand.
+/// Packs a save game.
 ///
 /// # Panics
-/// Nie bei gültigen Spielständen (Serialisierung kann nicht fehlschlagen).
+/// Never for valid save games (serialization cannot fail).
 pub fn encode(game: &SaveGame) -> Vec<u8> {
     let text = toml::to_string(game).expect("Spielstand serialisierbar");
     let packed = miniz_oxide::deflate::compress_to_vec_zlib(text.as_bytes(), 9);
@@ -50,10 +49,10 @@ pub fn encode(game: &SaveGame) -> Vec<u8> {
     out
 }
 
-/// Entpackt und prüft einen Spielstand.
+/// Unpacks and checks a save game.
 ///
 /// # Errors
-/// Falsche Kennung, unbekannte Version, Prüfsumme falsch, Inhalt ungültig.
+/// Wrong magic, unknown version, wrong checksum, invalid content.
 pub fn decode(data: &[u8]) -> Result<SaveGame, SaveError> {
     if data.len() < 38 || &data[..4] != MAGIC {
         return Err(SaveError::NotASave);
@@ -72,7 +71,7 @@ pub fn decode(data: &[u8]) -> Result<SaveGame, SaveError> {
     toml::from_str(text).map_err(|e| SaveError::Content(e.to_string()))
 }
 
-/// Zustand eines Platzes.
+/// State of a slot.
 #[derive(Debug)]
 pub enum SlotState {
     Empty,
@@ -80,7 +79,7 @@ pub enum SlotState {
     Damaged(SaveError),
 }
 
-/// Die Spielstand-Plätze in einem Verzeichnis (`<Benutzerverzeichnis>/saves`).
+/// The save game slots in a directory (`<Benutzerverzeichnis>/saves`).
 #[derive(Debug, Clone)]
 pub struct Slots {
     dir: PathBuf,
@@ -96,7 +95,7 @@ impl Slots {
     }
 
     /// # Errors
-    /// Wenn es den Platz nicht gibt.
+    /// If the slot does not exist.
     pub fn state(&self, slot: usize) -> Result<SlotState, SaveError> {
         if slot >= SLOTS {
             return Err(SaveError::NoSlot(slot));
@@ -111,7 +110,7 @@ impl Slots {
         })
     }
 
-    /// Alle Plätze.
+    /// All slots.
     pub fn list(&self) -> Vec<SlotState> {
         (0..SLOTS)
             .map(|s| self.state(s).unwrap_or(SlotState::Empty))
@@ -119,7 +118,7 @@ impl Slots {
     }
 
     /// # Errors
-    /// Platz fehlt, leer oder beschädigt.
+    /// Slot missing, empty or damaged.
     pub fn load(&self, slot: usize) -> Result<Option<SaveGame>, SaveError> {
         match self.state(slot)? {
             SlotState::Empty => Ok(None),
@@ -128,11 +127,11 @@ impl Slots {
         }
     }
 
-    /// Speichert über eine temporäre Datei (kein halber Spielstand bei Absturz). Ein
-    /// beschädigter Platz wird nur mit `overwrite_damaged` ersetzt.
+    /// Saves via a temporary file (no half save game on a crash). A damaged slot is only
+    /// replaced with `overwrite_damaged`.
     ///
     /// # Errors
-    /// Beschädigter Platz oder Schreibfehler.
+    /// Damaged slot or write error.
     pub fn save(
         &self,
         slot: usize,
@@ -153,7 +152,7 @@ impl Slots {
     }
 
     /// # Errors
-    /// Löschfehler (ein leerer Platz ist kein Fehler).
+    /// Delete error (an empty slot is not an error).
     pub fn delete(&self, slot: usize) -> Result<(), SaveError> {
         match std::fs::remove_file(self.path(slot)) {
             Err(e) if e.kind() != std::io::ErrorKind::NotFound => Err(e.into()),

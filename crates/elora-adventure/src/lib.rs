@@ -1,9 +1,9 @@
-//! Abenteuer von Elora (R2-M1): Inhalte als Daten, Spielstand mit Stufen, Fähigkeitenbaum,
-//! Inventar, Ausrüstung, Läden, Waffen-Ausbau, Tod und Speichern.
+//! Elora's adventure (R2-M1): content as data, save game with levels, skill tree,
+//! inventory, equipment, shops, weapon upgrades, death and saving.
 //!
-//! Reine Logik ohne Fenster, Grafik oder Netz – wie `elora-game` für die Mehrspieler-Regeln.
-//! Die Simulation (`elora-sim`) bekommt daraus ein Tuning, die Fähigkeiten und den Stand der
-//! Figur; Ereignisse der Welt fließen über [`SaveGame::on_event`] zurück.
+//! Pure logic without window, graphics or network – like `elora-game` for the multiplayer rules.
+//! The simulation (`elora-sim`) gets a tuning, the abilities and the state of the character from
+//! it; world events flow back via [`SaveGame::on_event`].
 
 pub mod avalanche;
 pub mod check;

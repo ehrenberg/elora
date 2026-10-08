@@ -1,5 +1,5 @@
-//! Durchlauf des Prologs (A1.9/A1.10) auf den mitgelieferten Karten `maps/abenteuer/`:
-//! Gespräche, Aufgaben, Übergänge, Sammeln, Speichern und Fortsetzen.
+//! Playthrough of the prologue (A1.9/A1.10) on the bundled maps `maps/abenteuer/`:
+//! dialogs, quests, transitions, collecting, saving and continuing.
 
 use elora_adventure::quest::QuestStatus;
 use elora_adventure::{Content, Conversation, Session, SessionEvent, save};
@@ -19,7 +19,7 @@ fn step(s: &mut Session, w: &mut World, input: PlayerInput, interact: bool) -> V
     s.tick(w, interact)
 }
 
-/// Elora neben ein Objekt stellen und kurz landen lassen.
+/// Put Elora next to an object and let her land briefly.
 fn go_to(s: &mut Session, w: &mut World, id: &str, dx: f32) {
     let o = s
         .map
@@ -33,10 +33,10 @@ fn go_to(s: &mut Session, w: &mut World, id: &str, dx: f32) {
     }
 }
 
-/// Mit einer Figur sprechen und immer die erste Antwort wählen; liefert die Knoten.
+/// Talk to a character and always choose the first answer; returns the nodes.
 fn talk(s: &mut Session, w: &mut World, npc: &str) -> Vec<String> {
     go_to(s, w, npc, -36.0);
-    // Figuren mit Laufweg: an ihre aktuelle Stelle
+    // characters with a walking path: to their current spot
     let at = s.anchor(npc).unwrap();
     w.spawn_character(s.player, at + Vec2::new(-20.0, -4.0));
     let ev = step(s, w, PlayerInput::default(), true);
@@ -87,11 +87,11 @@ fn prologue_from_start_to_the_meadow_edge_and_back() {
     let mut s = Session::new_game(Content::builtin());
     let mut w = s.enter("tauwinkel", load("tauwinkel"), "start", &tuning);
 
-    // Pip weckt Elora, Oma gibt die Hauptaufgabe
+    // Pip wakes Elora, Oma gives the main quest
     assert_eq!(talk(&mut s, &mut w, "pip")[0], "wecken");
     talk(&mut s, &mut w, "oma");
     assert!(holds(&s, "quest brunnen schritt tueftel"));
-    // Wegweiser lesen
+    // read the signpost
     talk(&mut s, &mut w, "schild-start");
     // Tüftel, Klonk, Lotte
     assert_eq!(talk(&mut s, &mut w, "tueftel")[0], "rat");
@@ -99,18 +99,18 @@ fn prologue_from_start_to_the_meadow_edge_and_back() {
     assert!(holds(&s, "quest brunnen schritt wiese"));
     assert_eq!(talk(&mut s, &mut w, "lotte")[0], "erster");
     assert_eq!(s.save.count("heiltrank"), 1);
-    // Pips Nebenaufgabe
+    // Pip's side quest
     talk(&mut s, &mut w, "pip");
     assert!(holds(&s, "quest pips_stein aktiv"));
 
-    // Ostpfad: Übergang beim Hineinlaufen
+    // east path: transition when walking in
     go_to(&mut s, &mut w, "ost", 0.0);
     let (map, spawn) = walk_until_travel(&mut s, &mut w, 1);
     assert_eq!((map.as_str(), spawn.as_str()), ("wiese-1", "west"));
     let mut w = s.enter(&map, load(&map), &spawn, &tuning);
     assert!(holds(&s, "quest brunnen schritt kaefer"));
 
-    // drei Stachelkäfer
+    // three spike beetles
     let content = s.content.clone();
     let kind = content
         .creatures
@@ -128,17 +128,17 @@ fn prologue_from_start_to_the_meadow_edge_and_back() {
     }
     assert!(holds(&s, "quest brunnen schritt wiesenrand"));
 
-    // Glitzerstein auf dem Plateau
+    // glitter stone on the plateau
     go_to(&mut s, &mut w, "glitzerstein", 0.0);
     assert_eq!(s.save.count("glitzerstein"), 1);
     assert!(holds(&s, "quest pips_stein schritt bringen"));
 
-    // Wiesenrand: Aufgabe fertig, Kapitel 1 beginnt
+    // Wiesenrand: quest done, chapter 1 starts
     go_to(&mut s, &mut w, "wiesenrand", 0.0);
     assert_eq!(s.save.quest("brunnen").unwrap().status, QuestStatus::Done);
     assert!(holds(&s, "quest bluetenquelle aktiv"));
 
-    // Quellstein: speichern, Spielstand prüfen und fortsetzen
+    // spring stone: save, check the save game and continue
     go_to(&mut s, &mut w, "quellstein", -36.0);
     let ev = step(&mut s, &mut w, PlayerInput::default(), true);
     assert!(ev.contains(&SessionEvent::Save), "{ev:?}");
@@ -153,7 +153,7 @@ fn prologue_from_start_to_the_meadow_edge_and_back() {
     let mut w = s.enter(&loc.map, load(&loc.map), &loc.spawn, &tuning);
     assert!(w.character(s.player).is_some());
 
-    // zurück nach Tauwinkel und Pip den Stein bringen
+    // back to Tauwinkel and bring Pip the stone
     go_to(&mut s, &mut w, "west", 0.0);
     let (map, spawn) = walk_until_travel(&mut s, &mut w, -1);
     assert_eq!((map.as_str(), spawn.as_str()), ("tauwinkel", "ost"));
@@ -162,8 +162,8 @@ fn prologue_from_start_to_the_meadow_edge_and_back() {
     assert!(holds(&s, "quest pips_stein erledigt"));
 }
 
-/// Zugschalter mit einem echten Hook-Schuss von unten umlegen (R2-M2.2): in `wald-3` und an
-/// den Zugtruhen in Tüftels Hof, `wiese-1` und `wiese-2`.
+/// Flip pull switches with a real hook shot from below (R2-M2.2): in `wald-3` and at
+/// the pull chests in Tüftel's yard, `wiese-1` and `wiese-2`.
 #[test]
 fn pull_levers_flip_with_a_real_hook_shot() {
     for (map, spawn, lever, flag) in [
@@ -179,7 +179,7 @@ fn pull_levers_flip_with_a_real_hook_shot() {
             .run(&s.content.clone(), &["faehigkeit heranhooken".into()]);
         s.sync_world(&mut w);
         let at = s.map.adventure.object(lever).unwrap().pos;
-        // Elora darunter auf den Boden fallen lassen
+        // let Elora drop onto the ground below it
         w.spawn_character(s.player, Vec2::new(at.x - 40.0, at.y + 120.0));
         for _ in 0..60 {
             step(&mut s, &mut w, PlayerInput::default(), false);
@@ -205,14 +205,14 @@ fn travel(s: &mut Session, w: &mut World, from: &str, direction: i8) -> World {
     s.enter(&map, load(&map), &spawn, &Tuning::default())
 }
 
-/// Durchlauf von Kapitel 3 (R2-M2.3) auf den mitgelieferten Karten: Hohlweg am Ostpfad,
-/// Karawane, Oase mit Wasser aus den Ruinen, Kammer unter dem Bröckelboden (Stampfen),
-/// Kampf an der Glutquelle, Tor und Weg zurück nach Tauwinkel.
+/// Playthrough of chapter 3 (R2-M2.3) on the bundled maps: sunken path at the east path,
+/// caravan, oasis with water from the ruins, chamber under the crumble floor (stomp), fight
+/// at the ember spring, gate and way back to Tauwinkel.
 #[test]
-#[allow(clippy::too_many_lines)] // ein Durchlauf in der Reihenfolge des Kapitels
+#[allow(clippy::too_many_lines)] // a playthrough in the order of the chapter
 fn chapter_three_from_the_sunken_path_to_the_spring_and_home() {
     let tuning = Tuning::default();
-    // vor Kapitel 3 ist der Hohlweg zu
+    // before chapter 3 the sunken path is closed
     let mut s = Session::new_game(Content::builtin());
     let mut w = s.enter("tauwinkel", load("tauwinkel"), "hohlweg", &tuning);
     step(&mut s, &mut w, PlayerInput::default(), false);
@@ -231,7 +231,7 @@ fn chapter_three_from_the_sunken_path_to_the_spring_and_home() {
     assert!(holds(&s, "quest glutsand schritt sirup"));
     assert!(s.hot());
 
-    // Karawanenlager: Sirup und Palma
+    // caravan camp: Sirup and Palma
     let mut w = travel(&mut s, &mut w, "ost", 1);
     assert_eq!(s.map_name, "wueste-2");
     assert_eq!(talk(&mut s, &mut w, "sirup")[0], "begruessung");
@@ -239,7 +239,7 @@ fn chapter_three_from_the_sunken_path_to_the_spring_and_home() {
     talk(&mut s, &mut w, "palma");
     assert!(holds(&s, "quest oase aktiv"));
 
-    // Ruinen: Wasser holen, mit Stampfen in die Kammer
+    // ruins: fetch water, stomp into the chamber
     let mut w = travel(&mut s, &mut w, "ost", 1);
     assert_eq!(s.map_name, "wueste-3");
     assert!(holds(&s, "quest glutsand schritt quelle"));
@@ -251,7 +251,7 @@ fn chapter_three_from_the_sunken_path_to_the_spring_and_home() {
         s.player,
         elora_sim::Abilities::NONE.with(elora_sim::Ability::Stomp),
     );
-    // mitten auf dem Bröckelboden (Spalten 175 bis 179, Oberkante Zeile 46)
+    // in the middle of the crumble floor (columns 175 to 179, top edge row 46)
     let top = Vec2::new(177.5 * 32.0, 46.0 * 32.0 - 20.0);
     w.spawn_character(s.player, top);
     w.set_abilities(
@@ -291,7 +291,7 @@ fn chapter_three_from_the_sunken_path_to_the_spring_and_home() {
     talk(&mut s, &mut w, "tafel-kammer");
     assert!(holds(&s, "quest ruine schritt bericht"));
 
-    // zurück zur Oase und gießen
+    // back to the oasis and water it
     let mut w = travel(&mut s, &mut w, "west", -1);
     assert_eq!(s.map_name, "wueste-2");
     for n in 1..=3 {
@@ -301,18 +301,18 @@ fn chapter_three_from_the_sunken_path_to_the_spring_and_home() {
         );
     }
     assert!(holds(&s, "quest oase schritt danke"));
-    // die Blüte steht jetzt dort
+    // the blossom is standing there now
     assert!(s.npcs(&w).iter().any(|n| n.id == "bluete-1"));
     assert!(!s.npcs(&w).iter().any(|n| n.id == "giessstelle-1"));
     talk(&mut s, &mut w, "palma");
     assert!(holds(&s, "quest oase erledigt"));
 
-    // Glutquelle: im Schatten des Kessels, Kampf, Tor geht auf
+    // ember spring: in the shadow of the cauldron, fight, gate opens
     let mut w = s.enter("wueste-arena", load("wueste-arena"), "west", &tuning);
     assert!(holds(&s, "quest glutsand schritt hueter"));
     go_to(&mut s, &mut w, "sandschlange", -200.0);
     assert!(!s.in_sun, "Kessel liegt im Schatten");
-    // benommen am Boden, ein Hammerschlag beruhigt sie
+    // dazed on the ground, one hammer blow calms her
     assert_eq!(w.creatures.len(), 1, "nur die Sandschlange im Kessel");
     let snake = &mut w.creatures[0];
     snake.mode = elora_sim::creature::serpent::STUNNED;
@@ -353,9 +353,9 @@ fn chapter_three_from_the_sunken_path_to_the_spring_and_home() {
     assert_eq!((map.as_str(), spawn.as_str()), ("tauwinkel", "hohlweg"));
 }
 
-/// Stampfkammern (R2-M2.3, M2.3.6): Der Bröckelboden trägt, bis Elora mit Stampfen
-/// daraufspringt; dann fällt sie in die Kammer zur Truhe. Übung in Tüftels Hof und
-/// Belohnungen für die Rückkehr nach Kapitel 1 und 2.
+/// Stomp chambers (R2-M2.3, M2.3.6): the crumble floor holds until Elora jumps onto it with
+/// a stomp; then she falls into the chamber to the chest. Practice in Tüftel's yard and
+/// rewards for returning to chapters 1 and 2.
 #[test]
 fn stomp_vaults_open_only_with_a_stomp() {
     let tuning = Tuning::default();
@@ -373,7 +373,7 @@ fn stomp_vaults_open_only_with_a_stomp() {
             .object(&format!("{id}-truhe"))
             .unwrap_or_else(|| panic!("{map}: Truhe fehlt"))
             .pos;
-        // Bröckelboden neben der Truhe: Mitte und Oberkante
+        // crumble floor next to the chest: centre and top edge
         let crumbs: Vec<(i32, i32)> = (-6..=6)
             .flat_map(|dx| (-8..=0).map(move |dy| (dx, dy)))
             .map(|(dx, dy)| {
@@ -402,7 +402,7 @@ fn stomp_vaults_open_only_with_a_stomp() {
             down: true,
             ..PlayerInput::default()
         };
-        // ohne Stampfen trägt der Boden
+        // without stomp the floor holds
         w.spawn_character(s.player, above);
         w.set_abilities(s.player, elora_sim::Abilities::NONE);
         run(&mut s, &mut w, PlayerInput::default(), 20);
@@ -413,7 +413,7 @@ fn stomp_vaults_open_only_with_a_stomp() {
         let surface = top as f32 * 32.0;
         let y = w.character(s.player).unwrap().core.pos.y;
         assert!(y < surface, "{map}: ohne Stampfen nicht hinein ({y})");
-        // mit Stampfen bricht er
+        // with stomp it breaks
         w.spawn_character(s.player, above);
         w.set_abilities(
             s.player,
@@ -427,7 +427,7 @@ fn stomp_vaults_open_only_with_a_stomp() {
         let p = w.character(s.player).unwrap().core.pos;
         assert!(p.y > surface + 64.0, "{map}: in der Kammer ({p:?})");
         assert!((p.y - chest.y).abs() < 24.0, "{map}: unten bei der Truhe");
-        // ein Sprung (mit Doppelsprung) führt wieder hinaus
+        // a jump (with double jump) leads back out
         run(&mut s, &mut w, jump, 1);
         run(&mut s, &mut w, PlayerInput::default(), 14);
         run(&mut s, &mut w, jump, 1);
@@ -440,12 +440,12 @@ fn stomp_vaults_open_only_with_a_stomp() {
     }
 }
 
-/// Durchlauf von Kapitel 4 (R2-M2.4) auf den mitgelieferten Karten: Eisdeckel am Bergsteig
-/// (Stampfen), Gletscherfuß mit Kälte und Feuer, Bergdorf mit Flocke, Keller und Seil,
-/// Steigkrallen, Kletterer, Gipfelgrat im Schneesturm, Kampf in der Eishalle, Tor und Weg
-/// zurück nach Tauwinkel.
+/// Playthrough of chapter 4 (R2-M2.4) on the bundled maps: ice lid at the mountain trail
+/// (stomp), glacier foot with cold and fire, mountain village with Flocke, cellar and rope,
+/// climbing claws, climber, summit ridge in the blizzard, fight in the ice hall, gate and way
+/// back to Tauwinkel.
 #[test]
-#[allow(clippy::too_many_lines)] // ein Durchlauf in der Reihenfolge des Kapitels
+#[allow(clippy::too_many_lines)] // a playthrough in the order of the chapter
 fn chapter_four_from_the_mountain_path_to_the_ice_hall_and_home() {
     let tuning = Tuning::default();
     let run = |s: &mut Session, w: &mut World, input: PlayerInput, n: usize| {
@@ -465,7 +465,7 @@ fn chapter_four_from_the_mountain_path_to_the_ice_hall_and_home() {
     s.save
         .run(&s.content.clone(), &["quest frostspitzen start".into()]);
     let mut w = s.enter("tauwinkel", load("tauwinkel"), "bergsteig", &tuning);
-    // Eisdeckel (Spalten 343–345, Zeilen 32–33): trägt ohne Stampfen
+    // ice lid (columns 343–345, rows 32–33): holds without stomp
     let lid = Vec2::new(344.5 * 32.0, 32.0 * 32.0 - 20.0);
     w.spawn_character(s.player, lid);
     w.set_abilities(s.player, elora_sim::Abilities::NONE);
@@ -477,7 +477,7 @@ fn chapter_four_from_the_mountain_path_to_the_ice_hall_and_home() {
         w.collision.tile(344, 32) == elora_sim::Tile::Crumble,
         "Deckel hält"
     );
-    // mit Stampfen bricht er, Elora fällt in den Gang und kommt zum Übergang
+    // with stomp it breaks, Elora falls into the passage and reaches the transition
     w.spawn_character(s.player, lid);
     w.set_abilities(
         s.player,
@@ -490,7 +490,7 @@ fn chapter_four_from_the_mountain_path_to_the_ice_hall_and_home() {
     assert!(!w.collision.tile_at(lid + Vec2::new(0.0, 40.0)).is_solid());
     let (map, spawn) = walk_until_travel(&mut s, &mut w, 1);
     assert_eq!((map.as_str(), spawn.as_str()), ("frost-1", "west"));
-    // der Deckel bleibt offen
+    // the lid stays open
     assert!(
         s.save
             .broken
@@ -500,12 +500,12 @@ fn chapter_four_from_the_mountain_path_to_the_ice_hall_and_home() {
     let mut w = s.enter(&map, load(&map), &spawn, &tuning);
     assert!(holds(&s, "quest frostspitzen schritt flocke"));
     assert!(s.chilly());
-    // am Eingang brennt ein Feuer: dort bleibt es warm
+    // a fire burns at the entrance: it stays warm there
     s.cold = 0.8;
     go_to(&mut s, &mut w, "feuer-eingang", 0.0);
     assert!(s.cold < 0.8, "am Feuer wärmer: {}", s.cold);
 
-    // Bergdorf: Flocke, Seil aus dem Keller, Steigkrallen
+    // mountain village: Flocke, rope from the cellar, climbing claws
     let mut w = travel(&mut s, &mut w, "ost", 1);
     assert_eq!(s.map_name, "frost-2");
     assert_eq!(talk(&mut s, &mut w, "flocke")[0], "begruessung");
@@ -521,11 +521,11 @@ fn chapter_four_from_the_mountain_path_to_the_ice_hall_and_home() {
     assert!(holds(&s, "quest kletterer aktiv"));
     talk(&mut s, &mut w, "kiesel");
     assert_eq!(s.save.flag("kletterer.gefunden"), 1);
-    // Kiesel sitzt jetzt in der Hütte
+    // Kiesel now sits in the hut
     assert!(s.npcs(&w).iter().any(|n| n.id == "kiesel-huette"));
     assert!(!s.npcs(&w).iter().any(|n| n.id == "kiesel"));
 
-    // Gipfelgrat: immer im Schneesturm, die graue Stelle
+    // summit ridge: always in the blizzard, the grey spot
     let mut w = travel(&mut s, &mut w, "ost", 1);
     assert_eq!(s.map_name, "frost-3");
     assert!(holds(&s, "quest frostspitzen schritt quelle"));
@@ -534,7 +534,7 @@ fn chapter_four_from_the_mountain_path_to_the_ice_hall_and_home() {
     assert_eq!(s.save.flag("duerrer.grat"), 1);
     talk(&mut s, &mut w, "wicke");
 
-    // Eishalle: Kampf, Tor geht auf
+    // ice hall: fight, gate opens
     let mut w = travel(&mut s, &mut w, "ost", 1);
     assert_eq!(s.map_name, "frost-arena");
     assert!(s.map.weather.is_clear(), "die Halle bleibt schön");
@@ -584,9 +584,9 @@ fn chapter_four_from_the_mountain_path_to_the_ice_hall_and_home() {
     assert_eq!((map.as_str(), spawn.as_str()), ("tauwinkel", "bergsteig"));
 }
 
-/// Kletterstellen für die Rückkehr (R2-M2.4, M2.4.7): Unter dem hängenden Kamin läuft man
-/// durch; mit dem Eisgriff klettert Elora (nur mit Eingaben) bis auf das Sims mit der Truhe,
-/// ohne ihn nicht.
+/// Climbing spots for the return (R2-M2.4, M2.4.7): you walk through under the hanging
+/// chimney; with ice grip Elora climbs (only with inputs) up to the ledge with the chest,
+/// without it she can't.
 #[test]
 fn climb_vaults_need_the_grip() {
     let tuning = Tuning::default();
@@ -598,7 +598,7 @@ fn climb_vaults_need_the_grip() {
         let highest = |abilities: elora_sim::Abilities| {
             let mut s = Session::new_game(Content::builtin());
             let mut w = s.enter(map, load(map), spawn, &tuning);
-            // nur das Klettern zählt: Gegner in der Nähe stören den Bot
+            // only the climbing counts: enemies nearby disturb the bot
             w.creatures.clear();
             let chest = s
                 .map
@@ -606,8 +606,8 @@ fn climb_vaults_need_the_grip() {
                 .object(&format!("{id}-truhe"))
                 .unwrap_or_else(|| panic!("{map}: Truhe fehlt"))
                 .pos;
-            // unter dem Kamin: fünf Spalten neben der Truhe ist die Mitte zwischen den Wänden
-            // (die Wald-Karten sind gespiegelt: dort liegt das Sims links)
+            // under the chimney: five columns next to the chest is the middle between the walls
+            // (the forest maps are mirrored: there the ledge is on the left)
             let floor = chest.y + 19.0 * 32.0 + 13.0;
             let wall = |x: f32| {
                 w.collision.tile_at(Vec2::new(x, floor - 10.0 * 32.0)) == elora_sim::Tile::Climb
@@ -629,7 +629,7 @@ fn climb_vaults_need_the_grip() {
             let mut toward: i8 = 1;
             let mut held = false;
             let mut best = f32::MAX;
-            // vom Boden gerade hochspringen und erst oben zur Wand lenken
+            // jump straight up from the ground and only steer to the wall at the top
             let mut rising = false;
             for _ in 0..1500 {
                 let c = w.character(s.player).unwrap().core.clone();
@@ -646,7 +646,7 @@ fn climb_vaults_need_the_grip() {
                     rising = true;
                 }
                 held = jump;
-                // oben angekommen: nach rechts aufs Sims
+                // arrived at the top: to the right onto the ledge
                 let dir = if c.pos.y < chest.y + 20.0 {
                     to_ledge
                 } else if rising && c.vel.y < -3.0 {

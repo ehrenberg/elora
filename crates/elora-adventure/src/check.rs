@@ -1,5 +1,5 @@
-//! Prüfung von Gesprächen, Aufgaben und Figuren beim Laden (A1.4): Verweise, Bedingungen,
-//! Folgen und Übersetzungen (E-247). Fehler nennen Datei und Stelle.
+//! Checks of dialogs, quests and characters when loading (A1.4): references, conditions,
+//! effects and translations (E-247). Errors name the file and location.
 
 use std::collections::BTreeSet;
 
@@ -7,10 +7,10 @@ use crate::data::{Content, Text};
 use crate::quest::Goal;
 use crate::script::{Action, Cond, Open, QuestCheck};
 
-/// Eloras eigene Zeilen brauchen keinen Eintrag in `characters.toml`.
+/// Elora's own lines need no entry in `characters.toml`.
 pub const ELORA: &str = "elora";
 
-/// Pflichttext: beide Sprachen gefüllt.
+/// Required text: both languages filled.
 fn text(t: &Text, at: &str) -> Result<(), String> {
     match (t.de.trim().is_empty(), t.en.trim().is_empty()) {
         (false, false) => Ok(()),
@@ -20,7 +20,7 @@ fn text(t: &Text, at: &str) -> Result<(), String> {
     }
 }
 
-/// Freiwilliger Text: leer oder in beiden Sprachen.
+/// Optional text: empty or in both languages.
 fn optional(t: &Text, at: &str) -> Result<(), String> {
     if t.de.trim().is_empty() && t.en.trim().is_empty() {
         Ok(())
@@ -89,10 +89,10 @@ fn actions(c: &Content, list: &[String], at: &str) -> Result<(), String> {
     Ok(())
 }
 
-/// Alles prüfen.
+/// Check everything.
 ///
 /// # Errors
-/// Erster gefundener Fehler mit Ort.
+/// First error found, with location.
 pub fn story(c: &Content) -> Result<(), String> {
     for ch in c.characters.values() {
         text(&ch.name, &format!("characters.toml `{}`", ch.id))?;
@@ -245,8 +245,8 @@ fn quests(c: &Content) -> Result<(), String> {
     Ok(())
 }
 
-/// Abenteuer-Objekte einer Karte gegen die Inhalte prüfen: Gegnerarten, Figuren,
-/// Gespräche, Gegenstände, Bedingungen. Liefert alle Fehler (für den Editor, A1.8).
+/// Check a map's adventure objects against the content: enemy kinds, characters,
+/// dialogs, items, conditions. Returns all errors (for the editor, A1.8).
 pub fn map_objects(c: &Content, map: &elora_map::Map) -> Vec<String> {
     use elora_map::ObjectKind as K;
     let mut errors = Vec::new();
@@ -299,7 +299,7 @@ pub fn map_objects(c: &Content, map: &elora_map::Map) -> Vec<String> {
     errors
 }
 
-/// Übergänge zwischen Karten prüfen: Zielkarte und Ziel-Eingang müssen existieren.
+/// Check transitions between maps: target map and target entrance must exist.
 pub fn map_links(maps: &[(&str, &elora_map::Map)]) -> Vec<String> {
     let mut errors = Vec::new();
     for (name, m) in maps {

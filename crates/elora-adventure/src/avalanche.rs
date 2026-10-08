@@ -1,7 +1,7 @@
-//! Lawinen (R2-M2.4, E-343, D-M24-06): Zonen `lawine…` in der Karte sind Lawinenhänge. Stampfen
-//! oder eine Granate im Hang – oder ein Schritt in die Zone `<hang>-tritt` – lässt Schnee
-//! abgehen: A-39 Schneebrocken rollen im Abstand A-40 vom oberen Ende hangabwärts; danach
-//! ruht der Hang A-41 lang.
+//! Avalanches (R2-M2.4, E-343, D-M24-06): zones `lawine…` in the map are avalanche slopes. A
+//! stomp or a grenade on the slope – or a step into the zone `<hang>-tritt` – sets off the snow:
+//! A-39 snow boulders roll downhill from the top end at interval A-40; afterwards the slope
+//! rests for A-41.
 
 use std::collections::BTreeMap;
 
@@ -9,24 +9,24 @@ use elora_map::{Map, ObjectKind};
 use elora_sim::tuning::ms_to_ticks;
 use elora_sim::{Event, TILE_SIZE, Vec2, World};
 
-/// Name der Gegnerart für die Brocken (`creatures.toml`).
+/// Name of the enemy kind for the boulders (`creatures.toml`).
 pub const ROCK: &str = "schneebrocken";
-/// Anfang der Zonen-Namen; `-tritt` am Ende macht die Zone zur Auslöse-Stelle.
+/// Start of the zone names; `-tritt` at the end makes the zone a trigger spot.
 const PREFIX: &str = "lawine";
 const STEP: &str = "-tritt";
 
-/// Laufende und ruhende Lawinen der Karte.
+/// Running and resting avalanches of the map.
 #[derive(Debug, Clone, Default)]
 pub struct Avalanches {
-    /// Hang → laufende Lawine.
+    /// Slope → running avalanche.
     running: BTreeMap<String, Run>,
-    /// Hang → Tick, bis zu dem er ruht.
+    /// Slope → tick until which it rests.
     rest: BTreeMap<String, u64>,
 }
 
 #[derive(Debug, Clone)]
 struct Run {
-    /// Start der Brocken (oberes Ende des Hangs) und Richtung hangabwärts.
+    /// Start of the boulders (top end of the slope) and downhill direction.
     from: Vec2,
     dir: i8,
     left: u32,
@@ -37,7 +37,7 @@ fn inside(p: Vec2, at: Vec2, size: Vec2) -> bool {
     p.x >= at.x && p.y >= at.y && p.x <= at.x + size.x && p.y <= at.y + size.y
 }
 
-/// Oberkante des Bodens unter `x` innerhalb der Zone (sonst ihre Unterkante).
+/// Top edge of the ground below `x` inside the zone (otherwise its bottom edge).
 fn ground(world: &World, x: f32, top: f32, bottom: f32) -> f32 {
     let ts = TILE_SIZE as f32;
     let mut y = top;
@@ -51,7 +51,7 @@ fn ground(world: &World, x: f32, top: f32, bottom: f32) -> f32 {
 }
 
 impl Avalanches {
-    /// Nach dem Tick der Welt: Auslöser prüfen, Brocken losschicken. `me` = Elora.
+    /// After the world tick: check triggers, send off boulders. `me` = Elora.
     pub fn tick(&mut self, map: &Map, world: &mut World, me: Option<Vec2>) {
         let now = world.tick;
         let blasts: Vec<Vec2> = world
@@ -89,7 +89,7 @@ impl Avalanches {
                     ground(world, left, o.pos.y, bottom),
                     ground(world, right, o.pos.y, bottom),
                 );
-                // oben ist, wo der Boden höher liegt
+                // the top is where the ground is higher
                 let (x, dir) = if gl <= gr { (left, 1) } else { (right, -1) };
                 self.running.insert(
                     o.id.clone(),
@@ -113,7 +113,7 @@ impl Avalanches {
             if now < run.next {
                 continue;
             }
-            // leicht versetzt, damit die Brocken nicht aufeinander liegen
+            // slightly offset so the boulders don't lie on top of each other
             #[allow(clippy::cast_precision_loss)]
             let jitter = ((run.left * 37) % 5) as f32 * 6.0 - 12.0;
             let pos = run.from + Vec2::new(jitter, 0.0);
@@ -121,7 +121,7 @@ impl Avalanches {
                 && let Some(c) = world.creatures.iter_mut().find(|c| c.id == cid)
             {
                 c.facing = run.dir;
-                // der erste Brocken: die Lawine geht ab (Grollen)
+                // the first boulder: the avalanche goes off (rumble)
                 if run.left == world.tuning.avalanche_rocks {
                     world.events.push(Event::CreatureAct {
                         id: cid,

@@ -1,11 +1,11 @@
-//! Werte aus Fähigkeitenbaum, Ausrüstung und Waffen-Ausbau – zusammengezählt und als
-//! Tuning der Simulation.
+//! Values from skill tree, equipment and weapon upgrades – summed up and turned into
+//! simulation tuning.
 
 use elora_sim::Tuning;
 
 use crate::data::Bonus;
 
-/// Summe aller Boni.
+/// Sum of all bonuses.
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct Stats {
     pub max_health: i32,
@@ -72,8 +72,8 @@ impl Stats {
         }
     }
 
-    /// Tuning des Abenteuers aus dem Grund-Tuning und diesen Werten. Lauftempo, Sprung und
-    /// Hook-Zug bleiben unberührt (E-212). `max_health` setzt der Aufrufer.
+    /// Adventure tuning from the base tuning and these values. Run speed, jump and hook
+    /// pull stay untouched (E-212). `max_health` is set by the caller.
     pub fn apply(&self, base: &Tuning) -> Tuning {
         let mut t = base.clone();
         let pct = |v: f32| 1.0 + v / 100.0;
@@ -129,7 +129,7 @@ mod tests {
     }
 
     #[test]
-    #[allow(clippy::float_cmp)] // Werte werden unverändert übernommen
+    #[allow(clippy::float_cmp)] // values are taken over unchanged
     fn bonuses_change_only_combat_values() {
         let base = Tuning::default();
         let mut s = Stats::default();
@@ -148,7 +148,7 @@ mod tests {
         assert!(t.hammer_fire_delay < base.hammer_fire_delay);
         assert_eq!(t.ruck_cooldown, 100, "nie unter 100 ms");
         assert!((t.glide_fall_speed - 0.3).abs() < 1e-6);
-        // Bewegungsgefühl bleibt (E-212)
+        // movement feel stays (E-212)
         assert_eq!(t.ground_control_speed, base.ground_control_speed);
         assert_eq!(t.ground_jump_impulse, base.ground_jump_impulse);
         assert_eq!(t.hook_drag_accel, base.hook_drag_accel);

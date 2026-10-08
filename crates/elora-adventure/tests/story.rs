@@ -1,4 +1,4 @@
-//! Gespräche und Aufgaben (A1.4) an den mitgelieferten Entwürfen und an kaputten Inhalten.
+//! Dialogs and quests (A1.4) on the bundled drafts and on broken content.
 
 use elora_adventure::data::Sources;
 use elora_adventure::dialog::bark;
@@ -37,7 +37,7 @@ fn oma_starts_the_well_quest_with_a_choice() {
     );
     assert_eq!(g.affection("oma"), 1);
     assert!(!conv.advance(&c, &mut g).open, "Ende nach der Zusage");
-    // nächstes Gespräch: Erinnerung statt Begrüßung
+    // next dialog: reminder instead of greeting
     let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
     assert_eq!(conv.node, "erinnerung");
     assert_eq!(bark(&c, &g, "oma").unwrap().de, "Pass auf dich auf!");
@@ -76,23 +76,23 @@ fn well_quest_runs_through_all_goal_types() {
     let (c, mut g) = game();
     let (mut conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
     conv.choose(&c, &mut g, 0);
-    // Sprechen: Tüftel
+    // talk: Tüftel
     let (conv, turn) = Conversation::start(&c, &mut g, "tueftel").unwrap();
-    // Einstieg wird vor dem Sprechen-Ziel gewählt: Tüftel gibt seinen Rat, der Schritt ist erledigt
+    // the entry is chosen before the talk goal: Tüftel gives his advice, the step is done
     assert_eq!(conv.node, "rat");
     assert!(
         turn.outcomes
             .contains(&Outcome::Notice(Notice::QuestStep("brunnen".into())))
     );
-    // Sprechen: Klonk mit der Hammer-Übung
+    // talk: Klonk with the hammer practice
     let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
     assert_eq!(conv.node, "uebung");
     assert!(g.holds(&c, "quest brunnen schritt wiese"));
-    // Karte erreichen
+    // reach a map
     assert!(g.on_reach(&c, "tauwinkel", None).is_empty());
     g.on_reach(&c, "wiese-1", None);
     assert!(g.holds(&c, "quest brunnen schritt kaefer"));
-    // Gegner besiegen (über Ereignisse der Welt)
+    // defeat enemies (via world events)
     g.location.map = "wiese-1".into();
     let kind = c
         .creatures
@@ -169,7 +169,7 @@ fn affection_gives_discount() {
     assert_eq!(g.price(&c, "lotte", "strohhut"), Some(160));
 }
 
-/// Mitgelieferte Inhalte mit einem ausgetauschten Gespräch laden.
+/// Load the bundled content with one dialog replaced.
 fn load_with_dialog(src: &'static str) -> Result<Content, String> {
     let dialogs: &'static [(&'static str, &'static str)] = Box::leak(Box::new([("test", src)]));
     let s = Sources {
@@ -222,7 +222,7 @@ fn broken_dialogs_are_reported() {
     assert!(load_with_dialog(ok).is_ok());
 }
 
-// ---------------------------------------------------------------- Karten (A1.5)
+// ---------------------------------------------------------------- Maps (A1.5)
 
 use elora_adventure::check::{map_links, map_objects};
 use elora_map::{Map, Object, ObjectKind};
@@ -357,14 +357,15 @@ fn exits_must_lead_to_existing_entrances() {
     assert!(errors[0].contains("Zielkarte `wiese-1` fehlt"));
 }
 
-/// Kapitel 1 (R2-M2.1): Wabe, Hummel, Quellfunke bei Tüftel, Fest bei Oma, Granatwerfer.
+/// Chapter 1 (R2-M2.1): honeycomb, bumblebee, spring spark at Tüftel, festival at Oma,
+/// grenade launcher.
 #[test]
 fn chapter_one_runs_from_wabe_to_the_party() {
     let (c, mut g) = game();
     g.run(&c, &["quest bluetenquelle start".into()]);
     g.on_reach(&c, "wiese-2", None);
     assert!(g.holds(&c, "quest bluetenquelle schritt wabe"));
-    // Wabe: Hauptaufgabe weiter, Nebenaufgabe beginnt
+    // honeycomb: main quest continues, side quest starts
     let (mut conv, _) = Conversation::start(&c, &mut g, "wabe").unwrap();
     assert_eq!(conv.node, "begruessung");
     conv.choose(&c, &mut g, 0);
@@ -373,7 +374,7 @@ fn chapter_one_runs_from_wabe_to_the_party() {
     g.on_reach(&c, "wiese-3", None);
     g.on_reach(&c, "wiese-arena", None);
     assert!(g.holds(&c, "quest bluetenquelle schritt hueter"));
-    // Hüter besiegt (Merker setzt die Sitzung), Quellfunke als Beute
+    // guardian defeated (the session sets the flag), spring spark as loot
     g.location.map = "wiese-arena".into();
     g.set_flag("besiegt.brummbaer", 1);
     let kind = c
@@ -394,11 +395,11 @@ fn chapter_one_runs_from_wabe_to_the_party() {
     );
     g.add_item(&c, "quellfunke", 1).unwrap();
     assert!(g.holds(&c, "quest bluetenquelle schritt funke"));
-    // die Hummel spricht und deutet auf den Dürren
+    // the bumblebee speaks and points to the Dürrer
     let (mut conv, _) = Conversation::start(&c, &mut g, "hummel").unwrap();
     conv.choose(&c, &mut g, 1);
     assert_eq!(g.flag("duerrer.gesehen"), 1);
-    // Tüftel baut den Hook-Ruck
+    // Tüftel builds the hook jerk
     let (conv, _) = Conversation::start(&c, &mut g, "tueftel").unwrap();
     assert_eq!(conv.node, "funke");
     assert!(g.abilities().has(elora_sim::Ability::HookRuck));
@@ -406,12 +407,12 @@ fn chapter_one_runs_from_wabe_to_the_party() {
     assert_eq!(g.flag("quellen_befreit"), 1);
     assert_eq!(g.flag("fest"), 1);
     assert!(g.holds(&c, "quest bluetenquelle schritt fest"));
-    // Fest bei Oma: Kapitel fertig, Kapitel 2 angekündigt
+    // festival at Oma: chapter done, chapter 2 announced
     let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
     assert_eq!(conv.node, "fest");
     assert!(g.holds(&c, "quest bluetenquelle erledigt"));
     assert!(g.holds(&c, "quest murmelwald aktiv"));
-    // Klonk gibt den Granatwerfer (E-243), nur einmal
+    // Klonk gives the grenade launcher (E-243), only once
     let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
     assert_eq!(conv.node, "granate");
     assert!(g.weapons.contains_key(&elora_sim::Weapon::Grenade));
@@ -435,7 +436,7 @@ fn wabes_bees_give_the_honeycomb_hat() {
     assert_eq!(g.count("biene"), 0);
 }
 
-/// Kapitel 2 (R2-M2.2): Westhang, Plumm, Wächter, Heranhooken bei Tüftel, Fest, Runen.
+/// Chapter 2 (R2-M2.2): west slope, Plumm, warden, pull hook at Tüftel, festival, runes.
 #[test]
 fn chapter_two_runs_from_the_slope_to_the_party() {
     let (c, mut g) = game();
@@ -484,13 +485,13 @@ fn chapter_two_runs_from_the_slope_to_the_party() {
     assert!(g.holds(&c, "quest murmelwald erledigt"));
     assert!(g.holds(&c, "quest glutsand aktiv"));
     assert_eq!(g.flag("befreit.waldquelle"), 1, "Weltkarte: Quelle befreit");
-    // Dorf nach Kapitel 2: Lotte schenkt Pilzsuppe, Klonk spricht vom Harz
+    // village after chapter 2: Lotte gives mushroom soup, Klonk talks about the resin
     let (conv, _) = Conversation::start(&c, &mut g, "lotte").unwrap();
     assert_eq!(conv.node, "wald");
     assert_eq!(g.count("pilzsuppe"), 1);
     let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
     assert_eq!(conv.node, "harz");
-    // Runen: Plumm liest vor, Feder und Tautropfen-Punkt (E-309)
+    // runes: Plumm reads aloud, feather and dewdrop point (E-309)
     let points = g.bonus_points;
     g.add_item(&c, "rune", 5).unwrap();
     g.update_quests(&c);
@@ -509,7 +510,7 @@ fn mushroom_child_quest_ends_with_mama() {
     conv.choose(&c, &mut g, 0);
     assert!(g.holds(&c, "quest pilzkind aktiv"));
     assert_eq!(g.flag("pilzkind.unterwegs"), 1);
-    // die Sitzung setzt den Merker, sobald der Begleiter daheim ist
+    // the session sets the flag as soon as the companion is home
     g.set_flag("pilzkind.daheim", 1);
     g.update_quests(&c);
     assert!(g.holds(&c, "quest pilzkind schritt danke"));
@@ -528,7 +529,7 @@ fn chapter_three_runs_from_the_desert_to_the_party() {
     assert!(g.holds(&c, "quest glutsand schritt sirup"));
     let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
     assert_eq!(conv.node, "unterwegs");
-    // Sirup erzählt vom grauen Wanderer und kennt die Kammer
+    // Sirup tells about the grey wanderer and knows the chamber
     let (mut conv, _) = Conversation::start(&c, &mut g, "sirup").unwrap();
     assert_eq!(conv.node, "begruessung");
     assert!(g.holds(&c, "quest glutsand schritt ruinen"));
@@ -580,19 +581,19 @@ fn chapter_three_runs_from_the_desert_to_the_party() {
     assert_eq!(conv.node, "fest3_lied");
     assert!(g.holds(&c, "quest glutsand erledigt"));
     assert!(g.holds(&c, "quest frostspitzen aktiv"));
-    // Klonk gibt den Laser (E-243)
+    // Klonk gives the laser (E-243)
     let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
     assert_eq!(conv.node, "laser");
     assert!(g.weapons.contains_key(&elora_sim::Weapon::Laser));
     let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
     assert_ne!(conv.node, "laser", "nur einmal");
-    // Dorf nach Kapitel 3: Lotte schenkt Kaktusfrüchte von Sirup, Pip staunt
+    // village after chapter 3: Lotte gives cactus fruits from Sirup, Pip is amazed
     let fruit = g.count("kaktusfrucht");
     let (conv, _) = Conversation::start(&c, &mut g, "lotte").unwrap();
     assert_eq!(conv.node, "wueste");
     assert_eq!(g.count("kaktusfrucht"), fruit + 2);
     assert!(bark(&c, &g, "pip").unwrap().de.contains("Schlange"));
-    // Kammer der Ruine: Tafel lesen, Sirup berichten
+    // chamber of the ruin: read the tablet, report to Sirup
     g.on_reach(&c, "wueste-3", Some("ruinenkammer"));
     assert!(g.holds(&c, "quest ruine schritt tafel"));
     Conversation::start(&c, &mut g, "tafel-kammer").unwrap();
@@ -614,7 +615,7 @@ fn oasis_quest_fills_the_skin_once_and_waters_three_patches() {
     conv.choose(&c, &mut g, 0);
     assert!(g.holds(&c, "quest oase aktiv"));
     assert_eq!(g.count("wasserschlauch"), 1);
-    // ohne Wasser bleibt die Stelle trocken
+    // without water the spot stays dry
     let (conv, _) = Conversation::start(&c, &mut g, "giessstelle-1").unwrap();
     assert_eq!(conv.node, "trocken");
     let (conv, _) = Conversation::start(&c, &mut g, "ruinenquelle").unwrap();
@@ -655,8 +656,8 @@ fn cactus_fruit_heals_and_sun_veil_slows_the_heat() {
     assert!(c.shops["sirup"].stock.contains(&"kaktusfrucht".to_owned()));
 }
 
-/// Playtest 2026-10-06: Wer nach Kapitel 1 nicht bei Klonk war, bekam nach Kapitel 2 nur das
-/// Harz-Gespräch und nie den Granatwerfer. Waffen kommen jetzt zuerst.
+/// Playtest 2026-10-06: whoever had not visited Klonk after chapter 1 only got the resin
+/// dialog after chapter 2 and never the grenade launcher. Weapons now come first.
 #[test]
 fn klonk_hands_out_weapons_before_talking_about_resin() {
     let (c, mut g) = game();
@@ -689,7 +690,7 @@ fn chapter_four_runs_from_the_mountain_path_to_the_party() {
     assert!(g.holds(&c, "quest frostspitzen schritt flocke"));
     let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
     assert_eq!(conv.node, "unterwegs4");
-    // Flocke: Begrüßung, dann das Seil
+    // Flocke: greeting, then the rope
     let (mut conv, _) = Conversation::start(&c, &mut g, "flocke").unwrap();
     assert_eq!(conv.node, "begruessung");
     assert!(g.holds(&c, "quest frostspitzen schritt seil"));
@@ -697,7 +698,7 @@ fn chapter_four_runs_from_the_mountain_path_to_the_party() {
     assert_eq!(conv.node, "seil");
     let (conv, _) = Conversation::start(&c, &mut g, "flocke").unwrap();
     assert_eq!(conv.node, "erinnerung");
-    // Seil aus dem Keller: Steigkrallen (Eisgriff) mitten im Kapitel (E-340)
+    // rope from the cellar: climbing claws (ice grip) in the middle of the chapter (E-340)
     g.add_item(&c, "seil", 1).unwrap();
     let (mut conv, _) = Conversation::start(&c, &mut g, "flocke").unwrap();
     assert_eq!(conv.node, "seil_zurueck");
@@ -750,7 +751,7 @@ fn chapter_four_runs_from_the_mountain_path_to_the_party() {
     assert!(g.holds(&c, "quest sternschlucht aktiv"));
     let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
     assert_eq!(conv.node, "stern");
-    // Dorf nach Kapitel 4: Zurufe, Kräutertee bei Lotte, gestärkter Eisgriff (D-M24-03)
+    // village after chapter 4: calls, herbal tea at Lotte, strengthened ice grip (D-M24-03)
     assert!(bark(&c, &g, "pip").unwrap().de.contains("Kristella"));
     assert!(bark(&c, &g, "lotte").unwrap().de.contains("Kräutertee"));
     assert!(bark(&c, &g, "tueftel").unwrap().de.contains("Steigkrallen"));

@@ -1,8 +1,8 @@
-//! Laufendes Abenteuer auf einer Karte (A1.6): baut die Welt aus Karte und Spielstand und
-//! wertet nach jedem Tick aus – Beute, Gegner, Türen, Truhen, Schalter, Heilpflanzen,
-//! Sammelstücke, Zonen, Übergänge, Speicherpunkte, Tod (E-219, E-220, E-252 bis E-261).
+//! Running adventure on one map (A1.6): builds the world from map and save game and
+//! evaluates after every tick – loot, enemies, doors, chests, switches, healing plants,
+//! collectibles, zones, transitions, save points, death (E-219, E-220, E-252 to E-261).
 //!
-//! Reine Logik: Laden der Karten und Schreiben der Spielstände macht der Aufrufer
+//! Pure logic: loading the maps and writing the save games is done by the caller
 //! ([`SessionEvent::Travel`], [`SessionEvent::Save`]).
 
 use std::collections::{BTreeMap, BTreeSet};
@@ -16,54 +16,54 @@ use crate::quest::Outcome;
 use crate::script::Open;
 use crate::state::{Location, Notice, SaveGame};
 
-/// Reichweite der Aktionstaste (Einheiten).
+/// Reach of the action key (units).
 pub const INTERACT_RANGE: f32 = 48.0;
-/// Ab dieser Nähe ruft eine Figur ihren Zuruf (einmal je Besuch).
+/// From this distance on, a character calls out its call (once per visit).
 pub const BARK_RANGE: f32 = 160.0;
-/// Berührung von Heilpflanzen und Sammelstücken.
+/// Touching healing plants and collectibles.
 const TOUCH_RANGE: f32 = PHYS_SIZE;
-/// Abstand des Hooks zu einem Hook-Schalter.
+/// Distance of the hook to a hook switch.
 const HOOK_SWITCH_RANGE: f32 = 36.0;
-/// Leuchtpilze: so nah (halbe Breite, halbe Höhe um ihren Fuß) und so lange der Rausch.
+/// Glow mushrooms: this close (half width, half height around their base) and this long the daze.
 const MUSHROOM_RANGE: Vec2 = Vec2::new(40.0, 40.0);
 const MUSHROOM_DAZE_MS: u32 = 5500;
-/// So lange muss Elora in den Pilzen stehen.
+/// This long Elora has to stand in the mushrooms.
 const MUSHROOM_DELAY_MS: u32 = 1200;
-/// Hitze-Leiste (E-320): so lange in der Sonne bis voll, im Schatten und an der Oase bis leer.
+/// Heat bar (E-320): this long in the sun until full, in the shade and at the oasis until empty.
 const HEAT_FILL_MS: u32 = 20_000;
 const HEAT_SHADE_MS: u32 = 8_000;
 const HEAT_OASIS_MS: u32 = 2_500;
-/// Ist sie voll, bleibt Elora langsamer, bis die Leiste wieder unter diesen Anteil fällt.
+/// When it is full, Elora stays slower until the bar drops below this fraction again.
 const HEAT_RECOVER: f32 = 0.5;
-/// Kälte-Leiste (E-342, D-M24-04): so lange draußen bis voll (im Schneesturm halb so lange),
-/// unter einem Dach und am Feuer bis leer.
+/// Cold bar (E-342, D-M24-04): this long outside until full (half as long in a blizzard),
+/// under a roof and at the fire until empty.
 const COLD_FILL_MS: u32 = 60_000;
 const COLD_ROOF_MS: u32 = 10_000;
 const COLD_FIRE_MS: u32 = 3_000;
-/// Ein Dach (festes Tile oder Plattform) so viele Tiles über Elora spendet Schatten.
+/// A roof (solid tile or platform) this many tiles above Elora gives shade.
 const SHADE_TILES: i32 = 10;
-/// So nah muss der Hook an einem Sammelstück oder an Beute sein (Heranhooken).
+/// This close the hook has to be to a collectible or loot (pull hook).
 const HOOK_PICK_RANGE: f32 = 28.0;
-/// Leben nach „Zweite Chance“ (Knoten, P-xx).
+/// Health after „Zweite Chance“ (node, P-xx).
 const SECOND_CHANCE_HEALTH: i32 = 3;
 
-/// Was der Aufrufer tun oder zeigen soll.
+/// What the caller should do or show.
 #[derive(Debug, Clone, PartialEq)]
 pub enum SessionEvent {
     Notice(Notice),
-    /// Laden, Schmiede oder Baum öffnen.
+    /// Open shop, smithy or tree.
     Open(Open),
-    /// Gespräch beginnen (der Aufrufer führt [`crate::Conversation`]).
+    /// Start a dialog (the caller runs [`crate::Conversation`]).
     Talk {
         npc: String,
         dialog: String,
     },
-    /// Zuruf als Sprechblase über der Figur.
+    /// Call as a speech bubble above the character.
     Bark {
         npc: String,
         text: Text,
     },
-    /// Truhe ist verschlossen.
+    /// Chest is locked.
     Locked {
         object: String,
     },
@@ -71,26 +71,26 @@ pub enum SessionEvent {
     ChestOpened {
         pos: Vec2,
     },
-    /// Andere Karte betreten (der Aufrufer lädt sie und ruft [`Session::enter`]).
+    /// Enter another map (the caller loads it and calls [`Session::enter`]).
     Travel {
         map: String,
         spawn: String,
     },
-    /// Spielstand jetzt schreiben (Speicherpunkt).
+    /// Write the save game now (save point).
     Save,
-    /// Elora ist erschöpft (E-261); `lost` Glanztropfen (E-220).
+    /// Elora is exhausted (E-261); `lost` gleam drops (E-220).
     Died {
         lost: u32,
     },
-    /// Tiles der Welt haben sich geändert (Tür, Bröckelboden) – Grafik nachziehen.
+    /// Tiles of the world have changed (door, crumble floor) – update the graphics.
     TilesChanged,
-    /// Hüter eines Kapitels beruhigt: Gewinn-Bildschirm für das Gebiet `area`.
+    /// Guardian of a chapter calmed: victory screen for the area `area`.
     ChapterDone {
         area: String,
     },
 }
 
-/// Wobei die Aktionstaste hilft (Anzeige „E …“).
+/// What the action key helps with (display „E …“).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Prompt {
     Talk,
@@ -100,7 +100,7 @@ pub enum Prompt {
     Rest,
 }
 
-/// Eine Figur zum Zeichnen.
+/// A character to draw.
 #[derive(Debug, Clone, PartialEq)]
 pub struct NpcView {
     pub id: String,
@@ -109,42 +109,42 @@ pub struct NpcView {
     pub facing: i8,
 }
 
-/// Das laufende Abenteuer.
+/// The running adventure.
 #[derive(Debug, Clone)]
-#[allow(clippy::struct_excessive_bools)] // unabhängige Zustände der Sitzung
+#[allow(clippy::struct_excessive_bools)] // independent states of the session
 pub struct Session {
     pub content: Content,
-    /// Arbeitsstand; geschrieben wird er nur bei [`SessionEvent::Save`] und Kartenwechsel.
+    /// Working state; it is only written on [`SessionEvent::Save`] and map changes.
     pub save: SaveGame,
     pub map_name: String,
-    /// Karte mit dem aktuellen Zustand von Türen und Bröckelboden.
+    /// Map with the current state of doors and crumble floor.
     pub map: Map,
-    /// Hook-Spitze im letzten Tick (Heranhooken prüft die ganze Flugstrecke).
+    /// Hook tip in the last tick (pull hook checks the whole flight path).
     last_hook: Option<Vec2>,
-    /// So viele Ticks steht Elora schon in Leuchtpilzen (bunter Rausch nach 1,2 s).
+    /// Elora has been standing in glow mushrooms for this many ticks (colourful daze after 1.2 s).
     in_mushrooms: u32,
-    /// Hitze-Leiste 0..1 (E-320); nur in heißen Gebieten.
+    /// Heat bar 0..1 (E-320); only in hot areas.
     pub heat: f32,
-    /// Leiste war voll: Elora ist langsamer, bis sie sich abgekühlt hat.
+    /// Bar was full: Elora is slower until she has cooled down.
     pub overheated: bool,
-    /// Elora steht gerade in der prallen Sonne (Flimmern stärker).
+    /// Elora is standing in the blazing sun right now (stronger shimmer).
     pub in_sun: bool,
-    /// Kälte-Leiste 0..1 (E-342); nur in kalten Gebieten.
+    /// Cold bar 0..1 (E-342); only in cold areas.
     pub cold: f32,
-    /// Leiste war voll: Elora ist langsamer, bis sie sich aufgewärmt hat.
+    /// Bar was full: Elora is slower until she has warmed up.
     pub frozen: bool,
-    /// Begleiter in der Welt: Figur → Gegner-Id (E-308).
+    /// Companions in the world: character → enemy id (E-308).
     followers: BTreeMap<String, u32>,
-    /// Deko der Karte, wie sie in der Datei steht (für [`Self::refresh_decor`]).
+    /// Decor of the map as it is in the file (for [`Self::refresh_decor`]).
     base_decor: (Vec<elora_map::Decor>, Vec<elora_map::Decor>),
-    /// Wetter, wie es in der Kartendatei steht (Editor), und ob das Gebiet beim letzten
-    /// Würfeln noch trüb war (R2-W1).
+    /// Weather as it is in the map file (editor), and whether the area was still gloomy at
+    /// the last roll (R2-W1).
     base_weather: elora_map::Weather,
     gloomy: bool,
-    /// Lawinenhänge der Karte (R2-M2.4).
+    /// Avalanche slopes of the map (R2-M2.4).
     avalanches: crate::avalanche::Avalanches,
     pub player: usize,
-    /// Gegner-Id der Welt → Objekt-Id der Karte.
+    /// Enemy id of the world → object id of the map.
     creatures: BTreeMap<u32, String>,
     plants_used: BTreeSet<String>,
     barked: BTreeSet<String>,
@@ -153,7 +153,7 @@ pub struct Session {
     tau_until: u64,
     hook_armed: bool,
     ticks: u64,
-    /// Aktuelle Lage der NPCs (Laufweg), Id → Position.
+    /// Current position of the NPCs (walking path), id → position.
     npc_pos: BTreeMap<String, Vec2>,
     pending: Vec<SessionEvent>,
     pub dead: bool,
@@ -187,7 +187,7 @@ fn inside(p: Vec2, at: Vec2, size: Vec2) -> bool {
 }
 
 impl Session {
-    /// Sitzung für einen Spielstand; danach [`Self::enter`] mit `save.location`.
+    /// Session for a save game; afterwards [`Self::enter`] with `save.location`.
     pub fn new(content: Content, save: SaveGame) -> Self {
         Self {
             content,
@@ -221,7 +221,7 @@ impl Session {
         }
     }
 
-    /// Neues Spiel am Start aus `progression.toml`.
+    /// New game at the start from `progression.toml`.
     pub fn new_game(content: Content) -> Self {
         let p = &content.progression;
         let start = Location {
@@ -232,11 +232,11 @@ impl Session {
         Self::new(content, save)
     }
 
-    /// Karte `name` betreten, Elora an Objekt `spawn` (Eingang oder Speicherpunkt). Liefert
-    /// die Welt; Gegner und Heilpflanzen sind frisch (E-235, E-258), Bosse bleiben besiegt.
+    /// Enter map `name`, Elora at object `spawn` (entrance or save point). Returns the
+    /// world; enemies and healing plants are fresh (E-235, E-258), bosses stay defeated.
     pub fn enter(&mut self, name: &str, mut map: Map, spawn: &str, base: &Tuning) -> World {
         let c = &self.content;
-        // Weltzustand: Bröckelboden und Türen
+        // world state: crumble floor and doors
         for &(tx, ty) in self.save.broken.get(name).into_iter().flatten() {
             set_map_tile(&mut map, tx, ty, Tile::Air);
         }
@@ -253,7 +253,7 @@ impl Session {
                 }
             }
         }
-        // das Fest dauert, bis Elora das Dorf verlässt (E-301)
+        // the festival lasts until Elora leaves the village (E-301)
         let hub = c.areas.first().map(|a| a.id.as_str());
         if self.save.flag(PARTY) != 0 && c.area_of(name).map(|a| a.id.as_str()) != hub {
             self.save.set_flag(PARTY, 0);
@@ -328,7 +328,7 @@ impl Session {
             map: name.to_owned(),
             spawn: spawn.to_owned(),
         };
-        // für die Weltkarte (E-264)
+        // for the world map (E-264)
         self.save.set_flag(&format!("besucht:{name}"), 1);
         let reached = self.save.on_reach(&self.content, name, None);
         self.push_outcomes(reached);
@@ -345,7 +345,7 @@ impl Session {
         }
     }
 
-    /// Ids der Zonen und Übergänge, in denen `p` liegt.
+    /// Ids of the zones and transitions that contain `p`.
     fn areas_at(map: &Map, p: Vec2) -> BTreeSet<String> {
         map.adventure
             .objects
@@ -356,12 +356,12 @@ impl Session {
             .collect()
     }
 
-    /// Nach jedem Tick der Welt; `interact` = Aktionstaste in diesem Tick gedrückt.
+    /// After every world tick; `interact` = action key pressed in this tick.
     #[allow(clippy::too_many_lines)]
     pub fn tick(&mut self, world: &mut World, interact: bool) -> Vec<SessionEvent> {
         let mut out = std::mem::take(&mut self.pending);
         self.ticks += 1;
-        // Wetter der Karte wirkt aufs Spiel (R2-W1); ändert sich, wenn eine Quelle frei wird
+        // the map's weather affects the game (R2-W1); changes when a spring is freed
         world.weather = weather_env(self.map.weather);
         if self
             .ticks
@@ -391,13 +391,13 @@ impl Session {
                                 .insert(key("gegner", &self.map_name, &obj));
                         }
                     }
-                    // Hüter besiegt: Merker für Türen, Gespräche und Aufgaben (R2-M2.1)
+                    // guardian defeated: flag for doors, dialogs and quests (R2-M2.1)
                     if let Some(k) = world.creature_kinds.get(*kind).filter(|k| k.boss) {
-                        // ein Sturm des Hüters legt sich (Kristella, R2-M2.4)
+                        // a storm of the guardian calms down (Kristella, R2-M2.4)
                         self.map.weather = self.pick_weather(&self.map_name.clone());
                         self.save.set_flag(&format!("besiegt.{}", k.name), 1);
                         out.extend(outcomes(self.save.update_quests(&self.content)));
-                        // Kapitel geschafft: Gewinn-Bildschirm
+                        // chapter done: victory screen
                         if let Some(a) = self
                             .content
                             .areas
@@ -412,7 +412,7 @@ impl Session {
                         .on_event(&self.content, &world.creature_kinds, me, e);
                     out.extend(n.into_iter().map(SessionEvent::Notice));
                 }
-                // Kristella ruft einen Schneesturm in die Halle (E-341)
+                // Kristella calls a blizzard into the hall (E-341)
                 Event::CreatureAct {
                     act: elora_sim::CreatureAct::Storm,
                     ..
@@ -443,7 +443,7 @@ impl Session {
                     set_map_tile(&mut self.map, *tx, *ty, Tile::Air);
                     out.push(SessionEvent::TilesChanged);
                 }
-                // Wurzelwände: nur zeitweise, nicht im Spielstand
+                // root walls: only temporary, not in the save game
                 Event::TileSet { tx, ty, tile } => {
                     set_map_tile(&mut self.map, *tx, *ty, *tile);
                     out.push(SessionEvent::TilesChanged);
@@ -489,12 +489,12 @@ impl Session {
             ch.core.ruck_cooldown = 0;
         }
 
-        // Heranhooken (R2-M2.2): Zugschalter einmal je Schuss, Sammelstücke und Beute am Hook
-        // Fähigkeiten der Figur (Spielstand, im Testspiel auch über F1 eingeschaltet)
+        // pull hook (R2-M2.2): pull switch once per shot, collectibles and loot on the hook
+        // abilities of the character (save game, in the test game also switched on via F1)
         let pull = world
             .character(me)
             .is_some_and(|c| c.core.abilities.has(elora_sim::Ability::Pull));
-        // Strecke der Hook-Spitze seit dem letzten Tick (sie fliegt 80 Einheiten je Tick)
+        // path of the hook tip since the last tick (it flies 80 units per tick)
         let hooking = matches!(hook_state, HookState::Flying | HookState::Grabbed);
         let from = self.last_hook.filter(|_| hooking).unwrap_or(hook_pos);
         self.last_hook = hooking.then_some(hook_pos);
@@ -529,12 +529,12 @@ impl Session {
         if interact && let Some((id, _)) = self.interactable(pos) {
             out.extend(self.interact(world, &id));
         }
-        // nach Schaltern und Truhen, damit Türen im selben Tick aufgehen
+        // after switches and chests, so doors open in the same tick
         out.extend(self.update_doors(world));
         out
     }
 
-    /// Heranhooken: Sammelstücke am Hook werden eingesammelt, Beute fliegt zu Elora.
+    /// Pull hook: collectibles on the hook are collected, loot flies to Elora.
     fn hook_pickups(
         &mut self,
         world: &mut World,
@@ -565,7 +565,7 @@ impl Session {
         out
     }
 
-    /// Sammelstück `id` einsammeln (einmalig je Spielstand).
+    /// Collect collectible `id` (once per save game).
     fn collect(&mut self, id: &str) -> Vec<SessionEvent> {
         let mut out = Vec::new();
         let Some(ObjectKind::Collectible { item }) =
@@ -586,7 +586,7 @@ impl Session {
         out
     }
 
-    /// Heilpflanzen und Sammelstücke bei Berührung.
+    /// Healing plants and collectibles on touch.
     fn touch(&mut self, world: &mut World, pos: Vec2) -> Vec<SessionEvent> {
         let mut out = Vec::new();
         let heal_bonus = self.save.stats(&self.content).heal_bonus;
@@ -612,7 +612,7 @@ impl Session {
         out
     }
 
-    /// Zonen („Ort erreichen“) und Übergänge beim Hineinlaufen.
+    /// Zones („reach a place“) and transitions when walking into them.
     fn areas(&mut self, pos: Vec2) -> Vec<SessionEvent> {
         let now = Self::areas_at(&self.map, pos);
         let mut out = Vec::new();
@@ -641,7 +641,7 @@ impl Session {
         out
     }
 
-    /// Türen öffnen sich, sobald ihre Bedingung gilt, und bleiben offen (E-254).
+    /// Doors open as soon as their condition holds, and stay open (E-254).
     fn update_doors(&mut self, world: &mut World) -> Vec<SessionEvent> {
         let mut changed = false;
         for o in self.map.adventure.objects.clone() {
@@ -686,7 +686,7 @@ impl Session {
         out
     }
 
-    /// Schalter einer Art nahe `at` umlegen.
+    /// Flip switches of a kind near `at`.
     fn switches_at(&mut self, at: Vec2, trigger: SwitchTrigger, range: f32) -> Vec<SessionEvent> {
         let ids: Vec<String> = self
             .map
@@ -700,7 +700,7 @@ impl Session {
         ids.iter().flat_map(|id| self.toggle(id)).collect()
     }
 
-    /// Zugschalter auf der Strecke der Hook-Spitze.
+    /// Pull switches on the path of the hook tip.
     fn switches_along(&mut self, from: Vec2, to: Vec2, range: f32) -> Vec<SessionEvent> {
         let ids: Vec<String> = self
             .map
@@ -730,7 +730,7 @@ impl Session {
         outcomes(self.save.update_quests(&self.content))
     }
 
-    /// Begleiter erscheinen neben Elora, sobald ihre Bedingung gilt, und gehen, wenn nicht.
+    /// Companions appear next to Elora as soon as their condition holds, and leave when not.
     fn sync_followers(&mut self, world: &mut World) {
         let Some(elora) = world.character(self.player).map(|c| c.core.pos) else {
             return;
@@ -757,7 +757,7 @@ impl Session {
         }
     }
 
-    /// Wer 1,2 s in Leuchtpilzen steht, bekommt den bunten Rausch (E-311).
+    /// Whoever stands in glow mushrooms for 1.2 s gets the colourful daze (E-311).
     fn mushroom_daze(&mut self, world: &mut World, pos: Vec2) {
         let inside = self
             .map
@@ -781,20 +781,20 @@ impl Session {
         }
     }
 
-    /// Ist die Karte ein heißes Gebiet (Wüste, E-320)?
+    /// Is the map a hot area (desert, E-320)?
     pub fn hot(&self) -> bool {
         self.content.area_of(&self.map_name).is_some_and(|a| a.hot)
     }
 
-    /// Ist die Karte ein kaltes Gebiet (Frostspitzen, E-342)?
+    /// Is the map a cold area (Frostspitzen, E-342)?
     pub fn chilly(&self) -> bool {
         self.content.area_of(&self.map_name).is_some_and(|a| a.cold)
     }
 
-    /// Kälte-Leiste (E-342): draußen füllt sie sich (im Schneesturm doppelt so schnell,
-    /// Ausrüstung `cold_pct` verlangsamt), unter einem Dach und am Feuer (Zonen `feuer…`) wärmt
-    /// Elora sich auf; in den Arenen der Hüter ruht sie (wärmt langsam). Voll = langsamer, bis
-    /// sie unter die Hälfte gefallen ist.
+    /// Cold bar (E-342): outside it fills up (twice as fast in a blizzard, equipment
+    /// `cold_pct` slows it down), under a roof and at the fire (zones `feuer…`) Elora warms up;
+    /// in the guardians' arenas it rests (warms slowly). Full = slower until it has dropped below
+    /// half.
     fn chill(&mut self, world: &mut World, pos: Vec2) {
         let fire = self.map.adventure.objects.iter().any(|o| {
             o.id.starts_with("feuer")
@@ -829,14 +829,15 @@ impl Session {
         } else if self.cold < HEAT_RECOVER {
             self.frozen = false;
         }
-        // Hitze und Kälte bremsen gleich (A-27)
+        // heat and cold slow down equally (A-27)
         if let Some(ch) = world.character_mut(self.player) {
             ch.core.overheated = self.overheated || self.frozen;
         }
     }
 
-    /// Hitze-Leiste (E-320): Sonne füllt (Ausrüstung `heat_pct` verlangsamt); Schatten (Dach über Elora, Zonen `schatten…`) und
-    /// Oase (Zonen `oase…`) kühlen. Voll = Elora wird langsamer, bis sie abgekühlt ist.
+    /// Heat bar (E-320): sun fills it (equipment `heat_pct` slows it down); shade (roof above
+    /// Elora, zones `schatten…`) and oasis (zones `oase…`) cool. Full = Elora gets slower until
+    /// she has cooled down.
     fn heat(&mut self, world: &mut World, pos: Vec2) {
         let zone = |prefix: &str| {
             self.map.adventure.objects.iter().any(|o| {
@@ -859,13 +860,13 @@ impl Session {
             self.heat -= step(HEAT_OASIS_MS);
         } else if roof
             || zone("schatten")
-            // Sand verdeckt die Sonne (R2-W1)
+            // sand hides the sun (R2-W1)
             || self.map.weather.kind == elora_map::WeatherKind::Sandstorm
         {
             self.heat -= step(HEAT_SHADE_MS);
         } else {
             self.in_sun = true;
-            // Sonnenschleier: füllt sich langsamer
+            // sun veil: fills more slowly
             let pct = self.save.stats(&self.content).heat_pct;
             self.heat += step(HEAT_FILL_MS) * (1.0 + pct / 100.0).max(0.1);
         }
@@ -880,7 +881,7 @@ impl Session {
         }
     }
 
-    /// Begleiter in ihrer Heimat-Zone: Merker `<id>.daheim`, der Begleiter bleibt dort.
+    /// Companions in their home zone: flag `<id>.daheim`, the companion stays there.
     fn followers_home(&mut self, world: &mut World) -> Vec<SessionEvent> {
         let mut out = Vec::new();
         let arrived: Vec<String> = self
@@ -904,17 +905,17 @@ impl Session {
         out
     }
 
-    /// Fähigkeiten und Waffen aus dem Spielstand in die laufende Welt übernehmen (nach
-    /// Gesprächen, die etwas freischalten: Hook-Ruck bei Tüftel, Granatwerfer bei Klonk),
-    /// Begleiter erscheinen lassen.
+    /// Take over abilities and weapons from the save game into the running world (after
+    /// dialogs that unlock something: hook jerk at Tüftel, grenade launcher at Klonk), let
+    /// companions appear.
     pub fn sync_world(&mut self, world: &mut World) {
         self.sync_followers(world);
-        // dazu, was schon in der Welt gilt (im Testspiel über F1 eingeschaltet)
+        // in addition to what already applies in the world (in the test game switched on via F1)
         let current = world
             .player(self.player)
             .map_or(elora_sim::Abilities::NONE, |p| p.abilities);
         world.set_abilities(self.player, self.save.abilities().union(current));
-        // gestärkter Eisgriff (D-M24-03) gilt sofort nach Tüftels Arbeit
+        // strengthened ice grip (D-M24-03) applies right after Tüftel's work
         let t = self.save.tuning(&self.content, &Tuning::default());
         world.tuning.grip_time = t.grip_time;
         world.tuning.grip_climb = t.grip_climb;
@@ -931,8 +932,8 @@ impl Session {
         }
     }
 
-    /// Deko neu nach dem Weltzustand richten (nach Gesprächen, die Merker setzen);
-    /// `true`, wenn sie sich geändert hat.
+    /// Rearrange the decor according to the world state (after dialogs that set flags);
+    /// `true` if it changed.
     pub fn refresh_decor(&mut self) -> bool {
         let before = (self.map.decor_front.clone(), self.map.decor_back.clone());
         self.map.decor_back.clone_from(&self.base_decor.0);
@@ -942,8 +943,8 @@ impl Session {
         weather || before.0 != self.map.decor_front || before.1 != self.map.decor_back
     }
 
-    /// Ist das Gebiet noch trüb? Solange seine Quelle schweigt; ohne eigene Quelle bis
-    /// `clears_after_springs` Quellen befreit sind (E-331).
+    /// Is the area still gloomy? As long as its spring is silent; without its own spring until
+    /// `clears_after_springs` springs are freed (E-331).
     fn gloomy(&self, area: &crate::data::Area) -> bool {
         match area.clears_after_springs {
             Some(n) => self.save.flag(SPRINGS_FREED) < n,
@@ -951,9 +952,9 @@ impl Session {
         }
     }
 
-    /// Wetter für die Karte `name` (R2-W1): eigenes Wetter aus dem Editor geht vor, Arenen der
-    /// Hüter bleiben schön (D-W1-01), sonst gewürfelt aus den Listen des Gebiets – fest aus
-    /// Karte und Spielzeit, damit es sich beim Laden nicht ändert.
+    /// Weather for the map `name` (R2-W1): own weather from the editor comes first, guardians'
+    /// arenas stay fair (D-W1-01), otherwise rolled from the area's lists – fixed by map and
+    /// play time, so it does not change when loading.
     pub fn pick_weather(&self, name: &str) -> elora_map::Weather {
         use elora_map::{Weather, WeatherKind};
         if !self.base_weather.is_clear() {
@@ -1007,7 +1008,7 @@ impl Session {
         }
     }
 
-    /// Wird das Gebiet heller (Quelle befreit, während Elora dort ist)? Dann neu würfeln.
+    /// Does the area get brighter (spring freed while Elora is there)? Then roll again.
     fn refresh_weather(&mut self) -> bool {
         let Some(area) = self.content.area_of(&self.map_name) else {
             return false;
@@ -1023,7 +1024,7 @@ impl Session {
         changed
     }
 
-    /// Ist die Figur gerade zu sehen (`show_if` in `characters.toml`)?
+    /// Is the character visible right now (`show_if` in `characters.toml`)?
     pub fn present(&self, character: &str) -> bool {
         self.content
             .characters
@@ -1032,7 +1033,7 @@ impl Session {
             .is_none_or(|s| self.save.holds(&self.content, s))
     }
 
-    /// Nächstes Objekt in Reichweite der Aktionstaste mit Hinweis.
+    /// Next object within reach of the action key, with hint.
     pub fn interactable(&self, pos: Vec2) -> Option<(String, Prompt)> {
         self.map
             .adventure
@@ -1121,7 +1122,7 @@ impl Session {
         }
     }
 
-    /// Am Quellstein rasten (P-31): Leben und Rüstung auffüllen, Ort merken.
+    /// Rest at the spring stone (P-31): refill health and armour, remember the place.
     fn rest(&mut self, world: &mut World, id: &str) {
         let at = Location {
             map: self.map_name.clone(),
@@ -1137,10 +1138,10 @@ impl Session {
         self.save.health = max;
     }
 
-    /// Verbrauchsgegenstand benutzen (Inventar, A1.7): Heilen in der Welt, Tautrank.
+    /// Use a consumable (inventory, A1.7): healing in the world, dew potion.
     ///
     /// # Errors
-    /// Siehe [`SaveGame::use_item`].
+    /// See [`SaveGame::use_item`].
     pub fn use_item(&mut self, world: &mut World, id: &str) -> Result<(), crate::Refusal> {
         let effect = self.save.use_item(&self.content, id)?;
         match effect {
@@ -1172,7 +1173,7 @@ impl Session {
         Ok(())
     }
 
-    /// Figuren mit Blickrichtung zu Elora und kurzem Laufweg (E-257).
+    /// Characters facing Elora and with a short walking path (E-257).
     pub fn npcs(&self, world: &World) -> Vec<NpcView> {
         let elora = world.character(self.player).map(|c| c.core.pos);
         #[allow(clippy::cast_precision_loss)]
@@ -1221,8 +1222,8 @@ impl Session {
             .collect()
     }
 
-    /// Wo der Hinweis zur Aktionstaste steht: über NPCs (auf ihrem Laufweg) und Objekten,
-    /// bei Bereichen über der Mitte der Oberkante.
+    /// Where the action key hint is shown: above NPCs (on their walking path) and objects,
+    /// for areas above the middle of the top edge.
     pub fn anchor(&self, id: &str) -> Option<Vec2> {
         let o = self.map.adventure.object(id)?;
         Some(match o.kind.area() {
@@ -1231,7 +1232,7 @@ impl Session {
         })
     }
 
-    /// Ist die Truhe schon offen, der Schalter umgelegt, das Sammelstück gefunden …?
+    /// Is the chest already open, the switch flipped, the collectible found …?
     pub fn object_done(&self, id: &str) -> bool {
         let Some(o) = self.map.adventure.object(id) else {
             return false;
@@ -1248,13 +1249,13 @@ impl Session {
     }
 }
 
-/// Merker: Anzahl befreiter Quellen (0–5).
+/// Flag: number of freed springs (0–5).
 pub const SPRINGS_FREED: &str = "quellen_befreit";
 
-/// Verblasste Deko (`…-blass`) bekommt mit jeder befreiten Quelle zum Teil ihre Farbe zurück
-/// (`…-bunt`, E-277): je Stück fest über seine Lage verteilt, nach fünf Quellen alles.
-/// Wie die Simulation das Wetter spürt (R2-W1, E-330): Wind (Sand- und Schneesturm wehen
-/// immer), Böen, Nässe bei Regen und Schnee, Blitze im Gewitter.
+/// Faded decor (`…-blass`) gets part of its colour back with every freed spring
+/// (`…-bunt`, E-277): each piece fixed by its position, everything after five springs.
+/// How the simulation feels the weather (R2-W1, E-330): wind (sandstorm and blizzard always
+/// blow), gusts, wetness in rain and snow, lightning in thunderstorms.
 pub fn weather_env(w: elora_map::Weather) -> Option<elora_sim::WeatherEnv> {
     use elora_map::WeatherKind as K;
     if w.is_clear() {
@@ -1283,11 +1284,12 @@ pub fn weather_env(w: elora_map::Weather) -> Option<elora_sim::WeatherEnv> {
     })
 }
 
-/// Merker eines Fests im Dorf: Deko `…-fest` (Girlanden, Laternen) hängt nur dann (E-301).
+/// Flag of a festival in the village: decor `…-fest` (garlands, lanterns) only hangs then (E-301).
 pub const PARTY: &str = "fest";
 
-/// Deko nach dem Weltzustand: verblasste Blumen werden bunt (E-277), verdorrte Quellen
-/// blühen nach `befreit.<name>` (`…-verdorrt` → `…-befreit`), Festschmuck nur beim Fest.
+/// Decor by world state: faded flowers become colourful (E-277), withered springs bloom
+/// after `befreit.<name>` (`…-verdorrt` → `…-befreit`), festival decorations only during the
+/// festival.
 fn adapt_decor(map: &mut Map, save: &SaveGame) {
     use elora_map::Art;
     recolor(map, save.flag(SPRINGS_FREED));
