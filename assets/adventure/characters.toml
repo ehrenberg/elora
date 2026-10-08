@@ -1,7 +1,7 @@
-# Figuren, die sprechen (A1.4). Eloras eigene Zeilen: speaker = "elora" (ohne Eintrag hier).
-# portrait = Grafik im Gesprächsfeld; fixed = dreht sich nicht zu Elora (Schilder);
-# voice = Tonhöhe der Plapperlaute (1 = mittel, 0 = stumm, E-286). Elora spricht mit 1,25.
-# show_if = Figur nur zu sehen, solange die Bedingung gilt.
+# Characters who speak (A1.4). Elora's own lines: speaker = "elora" (no entry here).
+# portrait = image in the dialogue box; fixed = does not turn towards Elora (signs);
+# voice = pitch of the babble sounds (1 = medium, 0 = mute, E-286). Elora speaks at 1.25.
+# show_if = character only visible while the condition holds.
 
 [[character]]
 id = "oma"
@@ -33,7 +33,7 @@ name = { de = "Pip", en = "Pip" }
 portrait = "pip"
 voice = 1.45
 
-# Lesbare Schilder (E-273)
+# Readable signs (E-273)
 [[character]]
 id = "wegweiser"
 name = { de = "Wegweiser", en = "Signpost" }
@@ -41,14 +41,14 @@ portrait = "wegweiser"
 fixed = true
 voice = 0.0
 
-# Kapitel 1 (R2-M2.1)
+# Chapter 1 (R2-M2.1)
 [[character]]
 id = "wabe"
 name = { de = "Imkerin Wabe", en = "Beekeeper Wabe" }
 portrait = "wabe"
 voice = 1.05
 
-# erst nach dem Kampf an der Blütenquelle zu sehen (show_if)
+# only visible after the fight at the Blossom Spring (show_if)
 [[character]]
 id = "hummel"
 name = { de = "Brummbär-Hummel", en = "Bumblebear" }
@@ -56,14 +56,14 @@ portrait = "hummel"
 voice = 0.55
 show_if = "merker besiegt.brummbaer"
 
-# Kapitel 2 (R2-M2.2)
+# Chapter 2 (R2-M2.2)
 [[character]]
 id = "plumm"
 name = { de = "Uhu Plumm", en = "Plumm the Owl" }
 portrait = "plumm"
 voice = 0.75
 
-# verirrt im Wald; folgt Elora nach Hause (Begleiter, E-308)
+# lost in the forest; follows Elora home (companion, E-308)
 [[character]]
 id = "pilzkind"
 name = { de = "Pilzkind", en = "Mushroom child" }
@@ -87,7 +87,7 @@ name = { de = "Mama Morchel", en = "Mama Morel" }
 portrait = "pilzmama"
 voice = 1.0
 
-# nach dem Kampf an der Waldquelle
+# after the fight at the Forest Spring
 [[character]]
 id = "waechter"
 name = { de = "Wurzelwächter", en = "Root Warden" }
@@ -95,7 +95,7 @@ portrait = "waechter"
 voice = 0.45
 show_if = "merker besiegt.wurzelwaechter"
 
-# Kapitel 3 (R2-M2.3, docs/release-2/m2-3-content.md)
+# Chapter 3 (R2-M2.3, docs/release-2/m2-3-content.md)
 [[character]]
 id = "sirup"
 name = { de = "Karawanenführer Sirup", en = "Sirup the caravan leader" }
@@ -108,7 +108,7 @@ name = { de = "Oasen-Hüterin Palma", en = "Palma, keeper of the oasis" }
 portrait = "palma"
 voice = 1.15
 
-# nach dem Kampf an der Glutquelle
+# after the fight at the Ember Spring
 [[character]]
 id = "schlange"
 name = { de = "Sandschlange", en = "Sand Serpent" }
@@ -116,7 +116,7 @@ portrait = "schlange"
 voice = 0.5
 show_if = "merker besiegt.sandschlange"
 
-# Steintafeln des Glutvolks (fest, stumm)
+# stone tablets of the ember people (fixed, mute)
 [[character]]
 id = "tafel-1"
 name = { de = "Ruinentafel", en = "Ruin tablet" }
@@ -145,7 +145,7 @@ portrait = "ruinenquelle"
 fixed = true
 voice = 0.0
 
-# drei verdorrte Stellen der Oase; nach dem Gießen blüht dort eine Blüte (E-319)
+# three withered patches of the oasis; after watering, a blossom blooms there (E-319)
 [[character]]
 id = "giessstelle-1"
 name = { de = "Verdorrte Stelle", en = "Withered patch" }
@@ -194,14 +194,14 @@ fixed = true
 voice = 0.0
 show_if = "merker befreit.giessstelle-3"
 
-# Kapitel 4 – Frostspitzen (R2-M2.4, docs/release-2/m2-4-content.md)
+# Chapter 4 – Frostspitzen (R2-M2.4, docs/release-2/m2-4-content.md)
 [[character]]
 id = "flocke"
 name = { de = "Bergführerin Flocke", en = "Flocke the mountain guide" }
 portrait = "flocke"
 voice = 1.05
 
-# drei verschollene Kletterer: draußen, bis Elora sie findet, danach in Flockes Hütte
+# three missing climbers: outside until Elora finds them, then in Flocke's hut
 [[character]]
 id = "bolle"
 name = { de = "Kletterer Bolle", en = "Bolle the climber" }
@@ -244,7 +244,7 @@ portrait = "wicke-huette"
 voice = 1.1
 show_if = "merker kletterer.wicke"
 
-# nach dem Kampf in der Eishalle
+# after the fight in the ice hall
 [[character]]
 id = "kristella"
 name = { de = "Eiskönigin Kristella", en = "Ice Queen Kristella" }
@@ -252,7 +252,7 @@ portrait = "kristella"
 voice = 0.8
 show_if = "merker besiegt.kristella"
 
-# wo der Dürre getrunken hat (fest, stumm)
+# where the Withered One drank (fixed, mute)
 [[character]]
 id = "graue-stelle"
 name = { de = "Graue Stelle", en = "Grey patch" }

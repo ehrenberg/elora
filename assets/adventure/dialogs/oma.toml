@@ -1,4 +1,4 @@
-# Oma Pfütze (A1.9, Prolog)
+# Oma Pfütze (A1.9, prologue)
 speaker = "oma"
 
 [[start]]
@@ -234,7 +234,7 @@ text = { de = "Die Glutquelle, Kind. Sie hat mir als Mädchen die Hände gewärm
 id = "unterwegs"
 text = { de = "Die Wüste wird dich nicht beißen. Nur die Krabben.", en = "The desert won't bite you. Only the crabs will." }
 
-# Fest nach Kapitel 3 (R2-M2.3)
+# party after chapter 3 (R2-M2.3)
 [[node]]
 id = "fest3"
 text = { de = "Gold! Die Häuser leuchten wie Honig in der Abendsonne. Und du, mein mutiger Tropfen …", en = "Gold! The houses glow like honey in the evening sun. And you, my brave little drop …" }

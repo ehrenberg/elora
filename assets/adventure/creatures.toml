@@ -1,25 +1,25 @@
-# Gegnerarten des Abenteuers (R2-M1, A1.2). Startwerte zum Anspielen.
+# Enemy kinds of the adventure (R2-M1, A1.2). Starting values for playtesting.
 #
-# size          Kollisionsbox (Breite, Höhe) in Einheiten (Elora: 28 × 28)
-# health        Leben (Hammer 3, Granate bis 6, Laser 5, Stampfen 3)
-# touch_damage  Schaden bei Berührung (E-232)
-# small         mit Heranhooken zu Elora ziehbar (E-233)
-# boss          bleibt besiegt (E-235)
-# xp            Erfahrung beim Besiegen
-# loot          Beute: item, min, max, chance (0–1, Standard 1)
-# behavior      type = walker | hopper | turret | flyer | diver und seine Werte
-#               diver (Hüter aus der Luft, R2-M2.1): sight, circle = [halbe Breite, halbe Höhe],
+# size          collision box (width, height) in units (Elora: 28 × 28)
+# health        health (hammer 3, grenade up to 6, laser 5, stomp 3)
+# touch_damage  damage on contact (E-232)
+# small         can be pulled to Elora with the pull hook (E-233)
+# boss          stays defeated (E-235)
+# xp            experience for defeating it
+# loot          loot: item, min, max, chance (0–1, default 1)
+# behavior      type = walker | hopper | turret | flyer | diver and its values
+#               diver (guardian from the air, R2-M2.1): sight, circle = [half width, half height],
 #               speed, circle_ms, aim_ms, dive_speed, stun_ms, drop_ms/drop_speed/drop_damage
-#               (fallende Geschosse), enrage_at, summon_at/summon/summon_max/summon_ms (Anteil des Lebens)
-#               – verwundbar nur benommen am Boden (E-299)
-#               flyer: speed, sight; hover (Höhe über Elora), drop_ms/drop_damage/glow_ms (Funken)
-#               leaper (Dünenwurm, R2-M2.3): sight, speed, warn_ms, jump_x, jump_y, rest_ms
-#               serpent (Sandschlange): sight, speed, trail_ms, warn_ms, jump_x, jump_y, stun_ms,
-#               enrage_at, double_at, sand_every_ms/sand_ms/sand_width (Treibsand im Kessel),
-#               open_hits (taucht nach so vielen Treffern ab), land_damage/land_radius (Landung)
-# armor         Panzer: nur Treffer von oben und Stampfen wirken (E-317)
-# Grafik: assets/adventure/creatures/<name>.svg (Teile `idle`, beim Hüpfer zusätzlich `air`;
-#         Hüter zusätzlich `dive` und `stunned`)
+#               (falling projectiles), enrage_at, summon_at/summon/summon_max/summon_ms (share of health)
+#               – vulnerable only while stunned on the ground (E-299)
+#               flyer: speed, sight; hover (height above Elora), drop_ms/drop_damage/glow_ms (sparks)
+#               leaper (dune worm, R2-M2.3): sight, speed, warn_ms, jump_x, jump_y, rest_ms
+#               serpent (Sand Serpent): sight, speed, trail_ms, warn_ms, jump_x, jump_y, stun_ms,
+#               enrage_at, double_at, sand_every_ms/sand_ms/sand_width (quicksand in the basin),
+#               open_hits (dives down after this many hits), land_damage/land_radius (landing)
+# armor         shell: only hits from above and stomp work (E-317)
+# Graphics: assets/adventure/creatures/<name>.svg (parts `idle`, for the hopper also `air`;
+#         guardians also `dive` and `stunned`)
 
 [[creature]]
 name = "stachelkaefer"
@@ -53,7 +53,7 @@ xp = 6
 loot = [{ item = "glanztropfen", min = 2, max = 3 }]
 behavior = { type = "hopper", wait_ms = 900, jump_x = 6.0, jump_y = 11.0, sight = 320.0 }
 
-# Übungspuppe bei Klonk (A1.9): steht fest, wehrt sich nicht
+# training dummy at Klonk's (A1.9): stands still, does not fight back
 [[creature]]
 name = "strohpuppe"
 size = [36.0, 40.0]
@@ -61,7 +61,7 @@ health = 6
 xp = 2
 behavior = { type = "turret", interval_ms = 1000000, range = 0.0, shot_speed = 1.0, shot_damage = 0 }
 
-# Kapitel 1 (R2-M2.1, E-298): Hüter der Blütenquelle und seine verwirrten Bienen
+# Chapter 1 (R2-M2.1, E-298): guardian of the Blossom Spring and its confused bees
 [[creature]]
 name = "brummbaer"
 size = [150.0, 120.0]
@@ -85,7 +85,7 @@ small = true
 xp = 2
 behavior = { type = "flyer", speed = 2.6, sight = 600.0 }
 
-# Kapitel 2 – Murmelwald (R2-M2.2)
+# Chapter 2 – Murmelwald (R2-M2.2)
 [[creature]]
 name = "wurzelschlange"
 size = [40.0, 110.0]
@@ -104,7 +104,7 @@ xp = 7
 loot = [{ item = "glanztropfen", min = 3, max = 5 }]
 behavior = { type = "turret", interval_ms = 1700, range = 480.0, shot_speed = 5.0, shot_damage = 1, lob = true }
 
-# bunter Rausch statt Schaden (E-311)
+# colourful frenzy instead of damage (E-311)
 [[creature]]
 name = "pilzwicht"
 size = [36.0, 40.0]
@@ -114,14 +114,14 @@ xp = 5
 loot = [{ item = "glanztropfen", min = 2, max = 3 }]
 behavior = { type = "walker", speed = 1.2, turn_at_edges = true }
 
-# Begleiter: das verirrte Pilzkind folgt Elora nach Hause (E-308)
+# companion: the lost mushroom child follows Elora home (E-308)
 [[creature]]
 name = "pilzkind"
 size = [26.0, 34.0]
 health = 99
 behavior = { type = "follower", speed = 4.5, jump = 10.5 }
 
-# Hüter des Murmelwalds (E-307): Wurzeln aus dem Boden, Kerne per Tauziehen, Wurzelwände
+# guardian of the Murmelwald (E-307): roots from the ground, cores by tug-of-war, root walls
 [[creature]]
 name = "wurzelwaechter"
 size = [110.0, 280.0]
@@ -136,8 +136,8 @@ loot = [
 ]
 behavior = { type = "warden", sight = 640.0, attack_ms = 2600, warn_ms = 900, spike_width = 70.0, spike_height = 110.0, spike_damage = 2, pull_ms = 800, open_ms = 3500, cores = 3, enrage_at = 0.5, wall_every_ms = 4500, wall_ms = 3500, wall_height = 5 }
 
-# Kapitel 3 – Glutsandwüste (R2-M2.3)
-# Panzer: nur Treffer von oben und Stampfen wirken (E-317)
+# Chapter 3 – Glutsandwüste (R2-M2.3)
+# shell: only hits from above and stomp work (E-317)
 [[creature]]
 name = "sandkrabbe"
 size = [48.0, 30.0]
@@ -148,7 +148,7 @@ xp = 8
 loot = [{ item = "glanztropfen", min = 3, max = 5 }, { item = "glutstein", min = 1, max = 1, chance = 0.25 }]
 behavior = { type = "walker", speed = 1.1, turn_at_edges = true }
 
-# wandert unter dem Sand heran, bebt kurz und springt im Bogen (nur dann verwundbar)
+# approaches under the sand, trembles briefly and leaps in an arc (only then vulnerable)
 [[creature]]
 name = "duenenwurm"
 size = [36.0, 36.0]
@@ -158,7 +158,7 @@ xp = 8
 loot = [{ item = "glanztropfen", min = 2, max = 4 }, { item = "glutstein", min = 1, max = 1, chance = 0.25 }]
 behavior = { type = "leaper", sight = 380.0, speed = 2.2, warn_ms = 700, jump_x = 7.0, jump_y = 11.5, rest_ms = 1400 }
 
-# schwebt über Elora und lässt Funken fallen, die kurz am Boden glühen
+# hovers above Elora and drops sparks that glow briefly on the ground
 [[creature]]
 name = "funkenmotte"
 size = [40.0, 32.0]
@@ -169,9 +169,9 @@ xp = 6
 loot = [{ item = "glanztropfen", min = 2, max = 3 }, { item = "glutstein", min = 1, max = 1, chance = 0.25 }]
 behavior = { type = "flyer", speed = 2.4, sight = 480.0, hover = 150.0, drop_ms = 1600, drop_damage = 1, glow_ms = 1800 }
 
-# Hüter der Glutsandwüste (E-316): Sandspur, Beben, Bogen; verwundbar nur im Bogen und benommen,
-# nach 4 Treffern taucht sie ab; die Landung schleudert Sand; wütend Treibsand im Kessel und
-# Sprünge auf Elora, im letzten Viertel zwei Bögen; Stampfen trifft doppelt (Playtest: schwerer)
+# guardian of the Glutsandwüste (E-316): sand trail, trembling, arc; vulnerable only in the arc and stunned,
+# after 4 hits she dives down; the landing hurls sand; enraged: quicksand in the basin and
+# leaps at Elora, in the last quarter two arcs; stomp hits twice (playtest: harder)
 [[creature]]
 name = "sandschlange"
 size = [110.0, 70.0]
@@ -186,7 +186,7 @@ loot = [
 ]
 behavior = { type = "serpent", sight = 600.0, speed = 3.6, trail_ms = 1200, warn_ms = 650, jump_x = 5.0, jump_y = 14.0, stun_ms = 1600, enrage_at = 0.5, double_at = 0.25, sand_every_ms = 3000, sand_ms = 3000, sand_width = 3, open_hits = 4, land_damage = 2, land_radius = 90.0 }
 
-# Kapitel 4 (R2-M2.4): rutscht auf dem Bauch heran und wirft Schneebälle im Bogen
+# Chapter 4 (R2-M2.4): slides over on its belly and throws snowballs in an arc
 [[creature]]
 name = "schneeballrobbe"
 size = [48.0, 28.0]
@@ -196,7 +196,7 @@ xp = 8
 loot = [{ item = "glanztropfen", min = 2, max = 4 }, { item = "eiskristall", min = 1, max = 1, chance = 0.25 }]
 behavior = { type = "seal", sight = 520.0, speed = 3.2, range = 300.0, interval_ms = 1500, shot_speed = 5.5, shot_damage = 1 }
 
-# schläft kopfüber an der Decke, stürzt auf Elora herab und flattert zurück
+# sleeps upside down on the ceiling, dives down at Elora and flutters back
 [[creature]]
 name = "fledermaus"
 size = [32.0, 36.0]
@@ -207,7 +207,7 @@ xp = 6
 loot = [{ item = "glanztropfen", min = 1, max = 3 }, { item = "eiskristall", min = 1, max = 1, chance = 0.2 }]
 behavior = { type = "bat", sight = 90.0, reach = 380.0, speed = 6.5 }
 
-# schwebt durch Wände; Berührung lässt Elora kurz erstarren, danach weicht er zurück (D-M24-07)
+# floats through walls; contact makes Elora freeze briefly, then it backs off (D-M24-07)
 [[creature]]
 name = "frostgeist"
 size = [40.0, 52.0]
@@ -218,10 +218,10 @@ xp = 9
 loot = [{ item = "glanztropfen", min = 2, max = 4 }, { item = "eiskristall", min = 1, max = 1, chance = 0.3 }]
 behavior = { type = "ghost", sight = 460.0, speed = 1.6, flee_ms = 1800 }
 
-# Hüterin der Frostspitzen (E-341): schwebt über der Eishalle, Frostwellen über den Boden
-# (an Kletterwänden oder im Sprung sicher); nach drei Wellen erschöpft und verwundbar;
-# ab 60 % Wellen von beiden Seiten und Eiszapfen, ab 30 % Schneesturm; nach 4 Treffern in einer
-# Erschöpfung steigt sie wieder auf (Playtest: deutlich schwerer)
+# guardian of the Frostspitzen (E-341): floats above the ice hall, frost waves across the ground
+# (safe on climbing walls or in a jump); exhausted and vulnerable after three waves;
+# from 60 % waves from both sides and icicles, from 30 % snowstorm; after 4 hits in one
+# exhaustion she rises again (playtest: much harder)
 [[creature]]
 name = "kristella"
 size = [90.0, 110.0]
@@ -236,8 +236,8 @@ loot = [
 ]
 behavior = { type = "queen", sight = 640.0, width = 1100.0, hover_ms = 2100, waves = 3, wave_speed = 7.0, fresh_len = 170.0, wave_damage = 2, stun_ms = 3000, enrage_at = 0.6, icicles = 4, storm_at = 0.3, open_hits = 4 }
 
-# Kapitel 4 (R2-M2.4, E-343): Gelände als „Gegner“ – keine Erfahrung, keine Beute.
-# Eiszapfen an der Decke: zittert, sobald Elora darunter ist, fällt und zerschellt
+# Chapter 4 (R2-M2.4, E-343): terrain as an "enemy" – no experience, no loot.
+# icicle on the ceiling: trembles as soon as Elora is below it, falls and shatters
 [[creature]]
 name = "eiszapfen"
 size = [20.0, 48.0]
@@ -245,7 +245,7 @@ health = 1
 touch_damage = 3
 behavior = { type = "icicle", sight = 48.0, reach = 420.0, warn_ms = 450 }
 
-# Schneebrocken einer Lawine: rollt hangabwärts und zerplatzt an Wand oder Elora
+# snow chunk of an avalanche: rolls downhill and bursts against a wall or Elora
 [[creature]]
 name = "schneebrocken"
 size = [36.0, 36.0]

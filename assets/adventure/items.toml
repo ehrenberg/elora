@@ -1,6 +1,6 @@
-# Gegenstände des Abenteuers (Eigennamen wie Tauwinkel bleiben auch auf Englisch, E-212)
-# (P-20 bis P-26). type = currency | equipment | consumable | material | key
-# Boni siehe crates/elora-adventure/src/data.rs (Bonus), z. B. { max_health = 1 } oder { damage_pct = 10.0 }
+# Items of the adventure (proper names like Tauwinkel stay the same in English too, E-212)
+# (P-20 to P-26). type = currency | equipment | consumable | material | key
+# bonuses see crates/elora-adventure/src/data.rs (Bonus), e.g. { max_health = 1 } or { damage_pct = 10.0 }
 
 [[item]]
 id = "glanztropfen"
@@ -8,7 +8,7 @@ type = "currency"
 name = { de = "Glanztropfen", en = "Gleam drops" }
 desc = { de = "Die Währung von Tauwinkel.", en = "The currency of Tauwinkel." }
 
-# Materialien je Gebiet (P-13)
+# materials per region (P-13)
 [[item]]
 id = "bernstein"
 type = "material"
@@ -41,7 +41,7 @@ type = "material"
 name = { de = "Sternsplitter", en = "Star shard" }
 desc = { de = "Leuchtet leise, aus der Sternschlucht.", en = "Glows softly, from the Sternschlucht." }
 
-# Verbrauch (P-25)
+# consumables (P-25)
 [[item]]
 id = "heiltrank"
 type = "consumable"
@@ -65,7 +65,7 @@ price = 25
 name = { de = "Tautrank", en = "Dew potion" }
 desc = { de = "10 Sekunden Hook-Ruck ohne Abklingzeit.", en = "Hook jerk without cooldown for 10 seconds." }
 
-# Ausrüstung (Beispiele aus dem Entwurf)
+# equipment (examples from the draft)
 [[item]]
 id = "strohhut"
 type = "equipment"
@@ -118,7 +118,7 @@ bonuses = [{ magnet = 48.0 }]
 name = { de = "Eulenfeder", en = "Owl feather" }
 desc = { de = "Von Plumm. Beute fliegt dir von weiter her zu.", en = "From Plumm. Loot flies to you from further away." }
 
-# Sammelstücke (Weltbuch §8)
+# collectibles (world book §8)
 [[item]]
 id = "quellfunke"
 type = "key"
@@ -143,7 +143,7 @@ type = "collectible"
 name = { de = "Glitzerstein", en = "Glitter stone" }
 desc = { de = "Pip sammelt sie.", en = "Pip collects them." }
 
-# Munition aus Truhen (E-243): füllt die Waffe auf
+# ammunition from chests (E-243): refills the weapon
 [[item]]
 id = "munition_granate"
 type = "ammo"
@@ -156,7 +156,7 @@ type = "ammo"
 weapon = "Laser"
 name = { de = "Laser-Ladung", en = "Laser charge" }
 
-# Kapitel 3 – Glutsandwüste (R2-M2.3, docs/release-2/m2-3-content.md)
+# Chapter 3 – Glutsandwüste (R2-M2.3, docs/release-2/m2-3-content.md)
 [[item]]
 id = "kaktusfrucht"
 type = "consumable"
@@ -195,7 +195,7 @@ type = "key"
 name = { de = "Schluck Wasser", en = "Sip of water" }
 desc = { de = "Klar und kühl, aus der Ruinenquelle.", en = "Clear and cool, from the ruin spring." }
 
-# Kapitel 4 – Frostspitzen (R2-M2.4, docs/release-2/m2-4-content.md)
+# Chapter 4 – Frostspitzen (R2-M2.4, docs/release-2/m2-4-content.md)
 [[item]]
 id = "seil"
 type = "key"
@@ -234,7 +234,7 @@ bonuses = [{ cold_pct = -20.0 }, { armor = 1 }]
 name = { de = "Fellstiefel", en = "Fur boots" }
 desc = { de = "Warm und fest. Die Kälte-Leiste füllt sich etwas langsamer.", en = "Warm and sturdy. The cold bar fills a little more slowly." }
 
-# Klonks Anhänger aus Klarkristallen (zur Wahl)
+# Klonk's pendants made of clear crystals (to choose from)
 [[item]]
 id = "wuchtkristall"
 type = "equipment"

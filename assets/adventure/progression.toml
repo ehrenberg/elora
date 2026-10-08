@@ -1,14 +1,14 @@
-# Fortschrittswerte des Abenteuers (docs/release-2/progression.md, E-241 bis E-244)
+# Progression values of the adventure (docs/release-2/progression.md, E-241 to E-244)
 
 max_level = 30        # P-01
-xp_base = 15          # P-02: Erfahrung bis zur nächsten Stufe = xp_base + xp_per_level × Stufe
+xp_base = 15          # P-02: experience to the next level = xp_base + xp_per_level × level
 xp_per_level = 10
 base_health = 10      # E-239
-health_every = 2      # P-05: alle 2 Stufen +1 Leben (E-241)
+health_every = 2      # P-05: +1 health every 2 levels (E-241)
 consumable_max = 5    # P-25
 sell_pct = 40         # P-26
 death_loss_pct = 25   # P-30
 
-# Start eines neuen Spiels (A1.6): Karte unter maps/abenteuer/ und Eingang darin
+# start of a new game (A1.6): map under maps/abenteuer/ and the entrance in it
 start_map = "tauwinkel"
 start_spawn = "start"

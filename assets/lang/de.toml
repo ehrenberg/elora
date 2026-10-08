@@ -1,5 +1,5 @@
-# Elora – deutsche Texte (E-114). Schlüssel je Abschnitt; Platzhalter in {geschweiften Klammern}.
-# Jede Sprache muss dieselben Schlüssel und Platzhalter haben (Test in lang.rs).
+# Elora – German texts (E-114). Keys per section; placeholders in {curly braces}.
+# Every language must have the same keys and placeholders (test in lang.rs).
 
 [hud]
 dead = "Tot – Feuertaste zum Respawn (sonst automatisch nach 3 s)"

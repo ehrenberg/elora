@@ -1,6 +1,6 @@
-# Aufgaben (A1.4, E-249 bis E-251). Bedingungen und Folgen: docs/handbook/adventure-content.md
+# Quests (A1.4, E-249 to E-251). Conditions and effects: docs/handbook/adventure-content.md
 # goal.type = talk | reach | defeat | collect | bring | flag | manual
-# Prolog (A1.9, docs/release-2/prolog.md)
+# Prologue (A1.9, docs/release-2/prolog.md)
 
 [[quest]]
 id = "brunnen"
@@ -36,7 +36,7 @@ id = "wiesenrand"
 text = { de = "Den Quellstein am Wiesenrand erreichen", en = "Reach the spring stone at the edge of the meadow" }
 goal = { type = "reach", map = "wiese-1", zone = "wiesenrand" }
 
-# Kapitel 1 – Blütenwiesen (R2-M2.1, docs/release-2/m2-1-plan.md)
+# Chapter 1 – Blütenwiesen (R2-M2.1, docs/release-2/m2-1-plan.md)
 [[quest]]
 id = "bluetenquelle"
 kind = "main"
@@ -81,7 +81,7 @@ id = "fest"
 text = { de = "Mit Oma Pfütze am Brunnen feiern", en = "Celebrate with Oma Pfütze at the well" }
 goal = { type = "talk", who = "oma" }
 
-# Kapitel 2 – Murmelwald (R2-M2.2, docs/release-2/m2-2-plan.md)
+# Chapter 2 – Murmelwald (R2-M2.2, docs/release-2/m2-2-plan.md)
 [[quest]]
 id = "murmelwald"
 kind = "main"
@@ -126,7 +126,7 @@ id = "fest"
 text = { de = "Mit Oma Pfütze am Brunnen feiern", en = "Celebrate with Oma Pfütze at the well" }
 goal = { type = "talk", who = "oma" }
 
-# Kapitel 3 – Glutsandwüste (R2-M2.3, docs/release-2/m2-3-content.md)
+# Chapter 3 – Glutsandwüste (R2-M2.3, docs/release-2/m2-3-content.md)
 [[quest]]
 id = "glutsand"
 kind = "main"
@@ -171,7 +171,7 @@ id = "fest"
 text = { de = "Mit Oma Pfütze am Brunnen feiern", en = "Celebrate with Oma Pfütze at the well" }
 goal = { type = "talk", who = "oma" }
 
-# Kapitel 4 – Frostspitzen (R2-M2.4, docs/release-2/m2-4-content.md)
+# Chapter 4 – Frostspitzen (R2-M2.4, docs/release-2/m2-4-content.md)
 [[quest]]
 id = "frostspitzen"
 kind = "main"
@@ -221,7 +221,7 @@ id = "fest"
 text = { de = "Mit Oma Pfütze am Brunnen feiern", en = "Celebrate with Oma Pfütze at the well" }
 goal = { type = "talk", who = "oma" }
 
-# Kapitel 5 – Ankündigung, Fortsetzung mit R2-M2.5
+# Chapter 5 – announcement, continued with R2-M2.5
 [[quest]]
 id = "sternschlucht"
 kind = "main"
@@ -235,7 +235,7 @@ id = "aufbruch"
 text = { de = "In die Sternschlucht aufbrechen (bald)", en = "Set out for the Sternschlucht (soon)" }
 goal = { type = "manual" }
 
-# Nebenaufgaben in Kapitel 4 (D-M24-08, D-M24-09)
+# side quests in chapter 4 (D-M24-08, D-M24-09)
 [[quest]]
 id = "kletterer"
 kind = "side"
@@ -272,7 +272,7 @@ id = "bringen"
 text = { de = "Klonk die Kristalle bringen", en = "Bring Klonk the crystals" }
 goal = { type = "bring", item = "klarkristall", count = 8, to = "klonk" }
 
-# Nebenaufgaben in Kapitel 3 (E-319, E-322, E-323)
+# side quests in chapter 3 (E-319, E-322, E-323)
 [[quest]]
 id = "oase"
 kind = "side"
@@ -319,7 +319,7 @@ id = "bericht"
 text = { de = "Sirup von der Kammer erzählen", en = "Tell Sirup about the chamber" }
 goal = { type = "talk", who = "sirup" }
 
-# Nebenaufgaben in Kapitel 2 (E-308, E-309)
+# side quests in chapter 2 (E-308, E-309)
 [[quest]]
 id = "runen"
 kind = "side"
@@ -356,7 +356,7 @@ id = "danke"
 text = { de = "Mit Mama Morchel sprechen", en = "Talk to Mama Morel" }
 goal = { type = "talk", who = "pilzmama" }
 
-# Nebenaufgabe in Kapitel 1 (E-300)
+# side quest in chapter 1 (E-300)
 [[quest]]
 id = "wabes_bienen"
 kind = "side"
@@ -375,7 +375,7 @@ id = "bringen"
 text = { de = "Wabe die Bienen bringen", en = "Bring Wabe the bees" }
 goal = { type = "bring", item = "biene", count = 5, to = "wabe" }
 
-# Nebenaufgabe, die scheitern kann (E-250)
+# side quest that can fail (E-250)
 [[quest]]
 id = "pips_stein"
 kind = "side"

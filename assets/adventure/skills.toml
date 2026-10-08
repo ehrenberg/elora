@@ -1,8 +1,8 @@
-# Fähigkeitenbaum bei Tüftel (E-242, docs/release-2/progression.md §2).
-# branch = movement | combat | spring; requires = Knoten darüber; ability = nötige Gebietsfähigkeit
-# per_rank = Wirkung je Rang
+# Skill tree at Tüftel's (E-242, docs/release-2/progression.md §2).
+# branch = movement | combat | spring; requires = node above; ability = required region ability
+# per_rank = effect per rank
 
-# Bewegung
+# Movement
 [[node]]
 id = "schneller_ruck"
 branch = "movement"
@@ -51,7 +51,7 @@ per_rank = [{ glide_fall = -0.4 }]
 name = { de = "Weites Gleiten", en = "Far glide" }
 desc = { de = "Beim Gleiten langsamer fallen.", en = "Fall more slowly while gliding." }
 
-# Kampf
+# Combat
 [[node]]
 id = "kraft"
 branch = "combat"
@@ -96,7 +96,7 @@ per_rank = [{ hammer_stun_ms = 500 }]
 name = { de = "Betäubender Hammer", en = "Stunning hammer" }
 desc = { de = "Der Hammer betäubt Gegner kurz.", en = "The hammer briefly stuns enemies." }
 
-# Quelle
+# Spring
 [[node]]
 id = "mehr_leben"
 branch = "spring"

@@ -1,7 +1,7 @@
-# Klonk (A1.9, Prolog)
+# Klonk (A1.9, prologue)
 speaker = "klonk"
 
-# Waffen zuerst (Playtest: das Harz-Gespräch hatte die Granate verdrängt)
+# weapons first (playtest: the resin conversation had pushed the grenade aside)
 [[start]]
 if = "quest bluetenquelle erledigt und nicht merker klonk.granate"
 node = "granate"

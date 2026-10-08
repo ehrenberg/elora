@@ -1,12 +1,12 @@
-# Weltkarte des Taulands (E-264, Weltbuch §2). pos: Lage 0..1; maps: Kartennamen beginnen so;
-# music: Hintergrundmusik assets/music/<name>.ogg (E-285); party_music: beim Fest (Merker fest);
-# spring: Quelle des Gebiets, befreit mit Merker befreit.<spring>; boss_music: Kampfmusik (sonst boss).
-# hot: heißes Gebiet mit Hitze-Leiste (E-320); Schatten unter Dächern und in Zonen schatten…, Oase in Zonen oase….
-# cold: kaltes Gebiet mit Kälte-Leiste (E-342); Dächer, Hüter-Arenen und Zonen feuer… wärmen.
-# chapter/guardian: Kapitel und Hüter – nach dem Sieg Gewinn-Bildschirm mit victory und dem Ehrentitel honor.
-# weather_gloomy / weather: Wetter beim Betreten (R2-W1) – trüb, solange die Quelle schweigt (ohne Quelle:
-# bis clears_after_springs Quellen befreit sind), sonst weather; kind, weight, intensity = [von, bis], wind = [von, bis].
-# Arenen der Hüter (…-arena) bleiben schön; eine Karte mit eigenem Wetter aus dem Editor geht vor.
+# World map of the Tauland (E-264, world book §2). pos: position 0..1; maps: map names start like this;
+# music: background music assets/music/<name>.ogg (E-285); party_music: at the party (merker fest);
+# spring: the region's spring, freed with merker befreit.<spring>; boss_music: battle music (otherwise boss).
+# hot: hot region with heat bar (E-320); shade under roofs and in zones schatten…, oasis in zones oase….
+# cold: cold region with cold bar (E-342); roofs, guardian arenas and zones feuer… give warmth.
+# chapter/guardian: chapter and guardian – after the victory a win screen with victory and the honorary title honor.
+# weather_gloomy / weather: weather on entering (R2-W1) – gloomy while the spring is silent (without a spring:
+# until clears_after_springs springs are freed), otherwise weather; kind, weight, intensity = [from, to], wind = [from, to].
+# guardian arenas (…-arena) stay fair; a map with its own weather from the editor takes precedence.
 
 [[area]]
 id = "tauwinkel"
