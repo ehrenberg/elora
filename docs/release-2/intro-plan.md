@@ -1,6 +1,6 @@
 # Adventure intro video – plan
 
-Status: **draft, waiting for approval** · Decisions: E-355 (real video, skippable, exception to E-295), E-356 (AV1 via `rav1d`, `unsafe` only in `elora-video`)
+Status: **accepted** (E-357) · Decisions: E-355 (real video, skippable, exception to E-295), E-356 (AV1 via `rav1d`, `unsafe` only in `elora-video`)
 
 ## Goal
 
@@ -12,8 +12,7 @@ Enter or a click. Afterwards the game starts in Tauwinkel as today.
 
 - **The video has no text and no voice.** Narration appears as subtitles drawn by the game from
   `assets/lang` (de/en), so one video serves both languages and the font matches the game.
-- **Sound:** the video file carries no audio track; the game plays the intro music (the existing
-  `tauwinkel` track, or a CC0 track chosen later) and fades it into the map music.
+- **Sound:** the video file carries no audio track; the game plays the existing `tauwinkel` track and fades it into the map music.
 - **Format:** AV1 in an IVF container (`assets/intro/intro.ivf`), 1280×720, 24 fps, about
   8–15 MB. Subtitle timing lives in `assets/intro/intro.toml`.
 - **Who makes what:** the owner creates the video with an external AI tool from the storyboard
@@ -51,8 +50,7 @@ chapter drafts in `docs/release-2/design/` as reference images).
 
 The secret of the sixth spring and the Withered One are deliberately not shown.
 
-## Open questions
+## Decided (E-357)
 
-- Intro music: the existing `tauwinkel` track or a separate CC0 track?
-- Should the intro also play when a player starts the **first** adventure only, or for every new
-  adventure? (Proposal: every new adventure, always skippable.)
+- Intro music: the existing `tauwinkel` track.
+- The intro plays at every new adventure, always skippable.

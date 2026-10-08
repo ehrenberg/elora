@@ -1,0 +1,17 @@
+[package]
+name = "elora-video"
+description = "AV1 video playback for Elora's adventure intro (IVF container, rav1d decoder)"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+license.workspace = true
+publish.workspace = true
+
+[dependencies]
+# pure-Rust dav1d port (BSD-2); no asm, so no nasm is needed for (cross) builds (E-356)
+rav1d = { version = "1.1.0", default-features = false, features = ["bitdepth_8"] }
+libc = "0.2"
+thiserror.workspace = true
+
+[lints]
+workspace = true
