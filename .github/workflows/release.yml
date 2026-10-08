@@ -1,6 +1,6 @@
-# Release-Pakete bei einem Versions-Tag `v*` (M8.3, E-163):
-# Linux (tar.gz + AppImage), Windows (ZIP), macOS (DMG, unsigniert – E-167).
-# Das GitHub-Release entsteht als Entwurf; veröffentlicht wird es von Hand (M8.8).
+# Release packages on a version tag `v*` (M8.3, E-163):
+# Linux (tar.gz + AppImage), Windows (ZIP), macOS (DMG, unsigned – E-167).
+# The GitHub release is created as a draft; it is published by hand (M8.8).
 name: Release
 
 on:
@@ -18,7 +18,7 @@ jobs:
         include:
           - os: ubuntu-22.04
           - os: windows-latest
-          - os: macos-14   # Apple Silicon (Intel-Macs: offen, O-50)
+          - os: macos-14   # Apple Silicon (Intel Macs: open, O-50)
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v7

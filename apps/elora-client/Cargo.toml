@@ -38,7 +38,7 @@ elora-net.workspace = true
 elora-server = { path = "../elora-server" }
 elora-game.workspace = true
 elora-master = { workspace = true, features = ["client"] }
-# Ortszeit für die Tageszeit im Hauptmenü (E-291)
+# local time for the time of day in the main menu (E-291)
 chrono.workspace = true
 
 [lints]

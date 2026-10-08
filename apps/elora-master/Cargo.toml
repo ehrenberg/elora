@@ -18,9 +18,9 @@ required-features = ["server"]
 
 [features]
 default = ["server"]
-# HTTPS-Client für Spiel-Client und Spiel-Server (Anmelden, Liste holen, E-127)
+# HTTPS client for game client and game server (registering, fetching the list, E-127)
 client = ["dep:ureq"]
-# Der Master-Dienst selbst
+# The master service itself
 server = ["dep:tiny_http", "dep:tracing-subscriber"]
 
 [dependencies]

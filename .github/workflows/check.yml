@@ -1,4 +1,4 @@
-# Prüfung bei jedem Push und Pull Request (M8.3): fmt, clippy, Tests, Lizenzen.
+# Check on every push and pull request (M8.3): fmt, clippy, tests, licenses.
 name: Prüfung
 
 on:
@@ -13,7 +13,7 @@ jobs:
       - uses: actions/checkout@v7
       - name: Systempakete (Fenster, Ton)
         run: sudo apt-get update && sudo apt-get install -y libasound2-dev libudev-dev libwayland-dev libxkbcommon-dev
-      # Toolchain kommt aus rust-toolchain.toml
+      # Toolchain comes from rust-toolchain.toml
       - uses: Swatinem/rust-cache@v2
       - uses: taiki-e/install-action@v2
         with:
