@@ -1,9 +1,9 @@
-//! Spielregeln von Elora (M4): Modi, Punkte, Runden, Siegbedingungen, Teams.
+//! Game rules of Elora (M4): modes, scores, rounds, win conditions, teams.
 //!
-//! Läuft oberhalb der Simulation: `Rules::update` wertet nach jedem `World::step`
-//! die Ereignisse aus und steuert Spielzustand, Respawn und Pause der Welt.
-//! Referenz: Teeworlds 0.7 `gamecontroller.cpp` und `gamemodes/*` (Analyse §8),
-//! mit den Abweichungen E-066 bis E-079.
+//! Runs on top of the simulation: `Rules::update` evaluates the events after every
+//! `World::step` and controls game state, respawn and pause of the world.
+//! Reference: Teeworlds 0.7 `gamecontroller.cpp` and `gamemodes/*` (analysis §8),
+//! with the deviations E-066 to E-079.
 
 use std::collections::BTreeMap;
 
@@ -11,7 +11,7 @@ use elora_sim::entities::Flag;
 use elora_sim::{Controller, DeathCause, Event, TICKS_PER_SECOND, Team, Tuning, Weapon, World};
 use serde::{Deserialize, Serialize};
 
-/// Spielmodus (E-014).
+/// Game mode (E-014).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
 #[serde(rename_all = "lowercase")]
 pub enum Mode {
@@ -30,7 +30,7 @@ impl Mode {
         matches!(self, Self::Tdm | Self::Ctf | Self::Lts)
     }
 
-    /// Kein Respawn während einer Runde.
+    /// No respawn during a round.
     pub fn survival(self) -> bool {
         matches!(self, Self::Lms | Self::Lts)
     }
@@ -55,7 +55,7 @@ impl Mode {
             .find(|m| m.name().eq_ignore_ascii_case(s))
     }
 
-    /// Standard-Siegbedingung (E-066, E-067): CTF 5 Eroberungen, sonst 20 Punkte.
+    /// Default win condition (E-066, E-067): CTF 5 captures, otherwise 20 points.
     pub fn default_score_limit(self) -> u32 {
         if self == Self::Ctf { 5 } else { 20 }
     }
@@ -69,30 +69,30 @@ impl Mode {
     }
 }
 
-/// Einstellungen der Regeln (Server-Konfiguration, Abstimmungen, Konsole).
+/// Settings of the rules (server configuration, votes, console).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct RulesConfig {
     pub mode: Mode,
-    /// Nur Laser, ein Treffer tötet, keine Pickups (E-026, E-076).
+    /// Laser only, one hit kills, no pickups (E-026, E-076).
     pub instagib: bool,
-    /// `None` = Standard des Modus; `Some(0)` = kein Limit.
+    /// `None` = default of the mode; `Some(0)` = no limit.
     pub score_limit: Option<u32>,
-    /// Minuten, 0 = kein Zeitlimit.
+    /// Minutes, 0 = no time limit.
     pub time_limit: u32,
-    /// Aufwärmen nach Kartenwechsel (E-068).
+    /// Warmup after a map change (E-068).
     pub warmup_secs: u32,
-    /// Countdown vor jedem Match / jeder Runde (E-068).
+    /// Countdown before every match / every round (E-068).
     pub countdown_secs: u32,
-    /// Schaden an Teammitgliedern (E-069).
+    /// Damage to team members (E-069).
     pub friendly_fire: bool,
-    /// Mindestzeit bis zum Respawn in TDM (E-070).
+    /// Minimum time until respawn in TDM (E-070).
     pub tdm_respawn_secs: u32,
-    /// Ausgleich unausgewogener Teams nach so vielen Sekunden (E-073).
+    /// Balance unbalanced teams after this many seconds (E-073).
     pub team_balance_secs: u32,
-    /// Teams nach jedem Match tauschen (E-074).
+    /// Swap teams after every match (E-074).
     pub match_swap: bool,
-    /// Matches pro Karte, danach nächste Karte (E-074).
+    /// Matches per map, then the next map (E-074).
     pub matches_per_map: u32,
 }
 
@@ -120,7 +120,7 @@ impl RulesConfig {
             .unwrap_or_else(|| self.mode.default_score_limit())
     }
 
-    /// Anzeigename, z. B. „iCTF“.
+    /// Display name, e.g. "iCTF".
     pub fn title(&self) -> String {
         format!(
             "{}{}",
@@ -130,14 +130,14 @@ impl RulesConfig {
     }
 }
 
-/// Spielzustand.
+/// Game state.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Phase {
-    /// Aufwärmen; `until = None`: warten auf genug Spieler.
+    /// Warmup; `until = None`: waiting for enough players.
     Warmup {
         until: Option<u64>,
     },
-    /// Welt eingefroren bis `until`.
+    /// World frozen until `until`.
     Countdown {
         until: u64,
     },
@@ -151,7 +151,7 @@ pub enum Phase {
 }
 
 impl Phase {
-    /// Tick, an dem der Zustand endet (für den Timer in der Anzeige).
+    /// Tick at which the state ends (for the timer in the display).
     pub fn until(self) -> Option<u64> {
         match self {
             Self::Warmup { until } => until,
@@ -162,13 +162,13 @@ impl Phase {
         }
     }
 
-    /// Zählen Punkte gerade?
+    /// Do points count right now?
     pub fn scoring(self) -> bool {
         self == Self::Running
     }
 }
 
-/// Punkte eines Spielers.
+/// Score of a player.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct Stats {
     pub score: i32,
@@ -176,7 +176,7 @@ pub struct Stats {
     pub deaths: u32,
 }
 
-/// Sieger einer Runde oder eines Matches.
+/// Winner of a round or a match.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Winner {
     Player(usize),
@@ -184,7 +184,7 @@ pub enum Winner {
     Draw,
 }
 
-/// Ereignisse der Regeln (für Anzeige und Server).
+/// Events of the rules (for display and server).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum GameEvent {
     MatchStarted,
@@ -192,12 +192,12 @@ pub enum GameEvent {
     RoundOver(Winner),
     MatchOver(Winner),
     SuddenDeath,
-    /// Spieler wurde zum Ausgleich ins andere Team verschoben.
+    /// Player was moved to the other team for balancing.
     TeamChanged {
         player: usize,
         team: Team,
     },
-    /// Rotation: nächste Karte laden (Server).
+    /// Rotation: load the next map (server).
     NextMap,
 }
 
@@ -213,7 +213,7 @@ pub struct Rules {
     pub cfg: RulesConfig,
     pub phase: Phase,
     pub stats: BTreeMap<usize, Stats>,
-    /// Teampunkte (Rot, Blau); in CTF Eroberungen (E-067).
+    /// Team scores (red, blue); in CTF captures (E-067).
     pub team_score: [i32; 2],
     pub sudden_death: bool,
     pub match_start_tick: u64,
@@ -224,7 +224,7 @@ pub struct Rules {
 }
 
 impl Rules {
-    /// Regeln für eine Welt; `fresh_map`: nach Kartenwechsel mit Aufwärmen (E-068).
+    /// Rules for a world; `fresh_map`: after a map change with warmup (E-068).
     pub fn new(cfg: RulesConfig, world: &mut World, fresh_map: bool) -> Self {
         let mut r = Self {
             cfg,
@@ -260,13 +260,13 @@ impl Rules {
         r
     }
 
-    /// Welt-Einstellungen aus der Konfiguration.
+    /// World settings from the configuration.
     fn apply_to_world(&self, world: &mut World) {
         world.friendly_fire = self.cfg.friendly_fire;
         world.pickups_enabled = !self.cfg.instagib;
         world.tuning = self.base_tuning.clone();
         if self.cfg.instagib {
-            // ein Treffer tötet (mehr als Leben + Rüstung)
+            // one hit kills (more than health + armor)
             world.tuning.laser_damage = world.tuning.max_health + world.tuning.max_armor + 1;
         }
         world.flags.clear();
@@ -278,7 +278,7 @@ impl Rules {
         world.paused = false;
     }
 
-    /// Ereignisse seit dem letzten Abholen.
+    /// Events since the last fetch.
     pub fn take_events(&mut self) -> Vec<GameEvent> {
         std::mem::take(&mut self.events)
     }
@@ -293,7 +293,7 @@ impl Rules {
         n
     }
 
-    /// Team beim Beitritt: ins kleinere Team (Rot bei Gleichstand, wie im Original).
+    /// Team on joining: into the smaller team (red on a tie, as in the original).
     fn assign_team(&self, world: &mut World, i: usize) {
         let sizes = Self::team_sizes(world);
         let Some(p) = world.players.get_mut(i).and_then(Option::as_mut) else {
@@ -315,11 +315,11 @@ impl Rules {
         };
     }
 
-    /// Neuer Spieler (oder Dummy).
+    /// New player (or dummy).
     pub fn on_join(&mut self, world: &mut World, i: usize) {
         self.assign_team(world, i);
         self.stats.insert(i, Stats::default());
-        // Survival: wer mitten in der Runde kommt, wartet auf die nächste
+        // Survival: whoever joins in the middle of a round waits for the next one
         if self.cfg.mode.survival()
             && self.phase == Phase::Running
             && let Some(p) = world.players.get_mut(i).and_then(Option::as_mut)
@@ -333,7 +333,7 @@ impl Rules {
         self.stats.remove(&i);
     }
 
-    /// Team wechseln oder zuschauen (E-073). Die Figur wird ohne Wertung entfernt.
+    /// Change team or spectate (E-073). The character is removed without scoring.
     pub fn set_team(&mut self, world: &mut World, i: usize, team: Team) {
         let team = match team {
             Team::Spectator => Team::Spectator,
@@ -356,7 +356,7 @@ impl Rules {
         }
     }
 
-    /// `kill`-Befehl (E-055, E-078): nur während das Spiel läuft oder aufgewärmt wird.
+    /// `kill` command (E-055, E-078): only while the game is running or during warmup.
     pub fn kill(&self, world: &mut World, i: usize) {
         if matches!(self.phase, Phase::Running | Phase::Warmup { .. }) {
             world.kill(i);
@@ -382,7 +382,7 @@ impl Rules {
         }
     }
 
-    /// Nach jedem `World::step` aufrufen.
+    /// Call after every `World::step`.
     pub fn update(&mut self, world: &mut World) {
         let events = world.events.clone();
         for e in &events {
@@ -437,7 +437,7 @@ impl Rules {
                         {
                             self.team_score[t] += if teamkill { -1 } else { 1 };
                         }
-                        // CTF: Flaggenträger getötet
+                        // CTF: flag carrier killed
                         let had_flag = all.iter().any(
                             |e| matches!(e, Event::FlagDrop { player: p, .. } if *p == player),
                         );
@@ -446,7 +446,7 @@ impl Rules {
                         }
                     }
                     _ => {
-                        // Selbstmord oder Todes-Tile
+                        // Suicide or death tile
                         self.stat(player).score -= 1;
                         if self.cfg.mode == Mode::Tdm
                             && let Some(t) = victim_team.index()
@@ -471,7 +471,8 @@ impl Rules {
         }
     }
 
-    /// Startausrüstung: normal nur Hammer (E-025, E-071); Instagib nur Laser (E-076).
+    /// Starting equipment: normally only the hammer (E-025, E-071); Instagib only the laser
+    /// (E-076).
     fn loadout(&self, world: &mut World, i: usize) {
         if !self.cfg.instagib {
             return;
@@ -596,7 +597,7 @@ impl Rules {
         self.events.push(GameEvent::MatchOver(winner));
     }
 
-    /// Siegbedingung (DM/TDM/CTF): Score- oder Zeitlimit, Sudden Death bei Gleichstand.
+    /// Win condition (DM/TDM/CTF): score or time limit, sudden death on a tie.
     fn check_match(&mut self, world: &World) {
         let limit = i64::from(self.cfg.score_limit());
         let reached_by = |score: i32| limit > 0 && i64::from(score) >= limit;
@@ -638,7 +639,7 @@ impl Rules {
         }
     }
 
-    /// Rundensieg (LMS/LTS): letzter Spieler bzw. letztes Team.
+    /// Round win (LMS/LTS): last player or last team.
     fn check_round(&mut self, world: &World) {
         let alive: Vec<(usize, Team)> = world
             .players
@@ -686,7 +687,7 @@ impl Rules {
             }
         };
         let Some(winner) = winner else { return };
-        // Match vorbei?
+        // Match over?
         let limit = i64::from(self.cfg.score_limit());
         let match_winner = if self.cfg.mode.teams() {
             let [red, blue] = self.team_score;
@@ -719,7 +720,7 @@ impl Rules {
         }
     }
 
-    /// Automatischer Team-Ausgleich (E-073, nicht in Survival-Modi).
+    /// Automatic team balancing (E-073, not in survival modes).
     fn balance(&mut self, world: &mut World) {
         if !self.cfg.mode.teams() || self.cfg.mode.survival() || self.phase != Phase::Running {
             self.unbalanced_since = None;
@@ -740,7 +741,7 @@ impl Rules {
             (Team::Blue, Team::Red)
         };
         let carriers: Vec<usize> = world.flags.iter().filter_map(|f| f.carrier).collect();
-        // Spieler mit den wenigsten Punkten wechselt (kein Flaggenträger)
+        // Player with the fewest points switches (no flag carrier)
         let candidate = world
             .players
             .iter()

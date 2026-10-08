@@ -2,8 +2,8 @@ use elora_sim::{Collision, DeathCause, PlayerInput, Tile, Tuning, Vec2, Weapon};
 
 use super::*;
 
-/// Offene Arena 60×20 Tiles mit Boden in Zeile 18, Spawns links (Rot) und rechts (Blau),
-/// Flaggenstände an beiden Enden.
+/// Open arena 60×20 tiles with a floor in row 18, spawns on the left (red) and right (blue),
+/// flag stands at both ends.
 fn arena() -> World {
     let (w, h) = (60, 20);
     let mut tiles = vec![Tile::Air; w * h];
@@ -32,7 +32,7 @@ fn cfg(mode: Mode) -> RulesConfig {
     }
 }
 
-/// Welt mit `n` Spielern und laufenden Regeln (Countdown übersprungen).
+/// World with `n` players and running rules (countdown skipped).
 fn game(mode: Mode, n: usize) -> (World, Rules) {
     let mut w = arena();
     for _ in 0..n {
@@ -51,7 +51,7 @@ fn run(w: &mut World, r: &mut Rules, ticks: u32) {
     }
 }
 
-/// Tod mit anschließender Auswertung (wie nach einem Tick).
+/// Death with subsequent evaluation (as after a tick).
 fn kill(w: &mut World, r: &mut Rules, victim: usize, killer: Option<usize>) {
     w.events.clear();
     w.die(victim, killer, DeathCause::Weapon(Weapon::Laser));
@@ -153,10 +153,10 @@ fn tdm_teams_scores_friendly_fire_and_respawn_delay() {
     );
     kill(&mut w, &mut r, 1, Some(0));
     assert_eq!((score(&r, 0), r.team_score), (1, [1, 0]));
-    // Teamkill (Friendly Fire an, E-069)
+    // Team kill (friendly fire on, E-069)
     kill(&mut w, &mut r, 2, Some(0));
     assert_eq!((score(&r, 0), r.team_score), (0, [0, 0]));
-    // Respawn frühestens nach 3 s (E-070)
+    // Respawn after 3 s at the earliest (E-070)
     run(&mut w, &mut r, 100);
     let fire = PlayerInput {
         fire: 1,
@@ -187,7 +187,7 @@ fn friendly_fire_off_keeps_knockback_only() {
             false,
         );
         run(&mut w, &mut r, 160);
-        // 0 und 2 sind beide Rot; nebeneinander stellen
+        // 0 and 2 are both red; place them next to each other
         assert!(w.team(0).is_mate(w.team(2)));
         let p = Vec2::new(20.0 * 32.0, 18.0 * 32.0 - 15.0);
         w.character_mut(0).unwrap().core.pos = p;
@@ -214,13 +214,13 @@ fn ctf_grab_capture_drop_return() {
     assert_eq!(w.flags.len(), 2);
     let (red, blue) = (0, 1);
     assert_eq!((w.team(red), w.team(blue)), (Team::Red, Team::Blue));
-    // Rot holt die blaue Flagge …
+    // Red takes the blue flag …
     let blue_stand = w.flags[1].stand;
     w.character_mut(red).unwrap().core.pos = blue_stand;
     run(&mut w, &mut r, 1);
     assert_eq!(w.flags[1].carrier, Some(red));
     assert_eq!(score(&r, red), 1, "Aufnehmen +1");
-    // … und bringt sie zur eigenen Flagge
+    // … and brings it to its own flag
     let red_stand = w.flags[0].stand;
     w.character_mut(red).unwrap().core.pos = red_stand;
     run(&mut w, &mut r, 2);
@@ -228,7 +228,7 @@ fn ctf_grab_capture_drop_return() {
     assert_eq!(score(&r, red), 1 + 5);
     assert!(w.flags[1].at_stand);
 
-    // Blau holt die rote Flagge, stirbt → Flagge fällt, Mörder +1
+    // Blue takes the red flag, dies → flag drops, killer +1
     w.character_mut(blue).unwrap().core.pos = red_stand;
     run(&mut w, &mut r, 1);
     assert_eq!(w.flags[0].carrier, Some(blue));
@@ -238,7 +238,7 @@ fn ctf_grab_capture_drop_return() {
     kill(&mut w, &mut r, blue, Some(red));
     assert_eq!(w.flags[0].carrier, None);
     assert_eq!(score(&r, red), before + 2, "Kill +1, Flaggenträger +1");
-    // Rot bringt die eigene Flagge zurück
+    // Red returns its own flag
     let dropped = w.flags[0].pos;
     w.character_mut(red).unwrap().core.pos = dropped;
     run(&mut w, &mut r, 2);
@@ -285,7 +285,7 @@ fn lms_no_respawn_and_round_winner() {
 #[test]
 fn lts_team_elimination() {
     let (mut w, mut r) = game(Mode::Lts, 3);
-    // Blau hat nur Spieler 1
+    // Blue only has player 1
     kill(&mut w, &mut r, 1, Some(0));
     run(&mut w, &mut r, 1);
     assert_eq!(r.team_score, [1, 0]);
@@ -338,11 +338,11 @@ fn balance_moves_player_after_a_minute() {
     let (mut w, mut r) = game(Mode::Tdm, 4);
     r.set_team(&mut w, 1, Team::Red);
     r.set_team(&mut w, 3, Team::Red);
-    // 3 : 1 ist unausgewogen … aber Blau hat noch Spieler? nein → 4 Rot, 0 Blau
+    // 3 : 1 is unbalanced … but does Blue still have players? no → 4 red, 0 blue
     r.set_team(&mut w, 2, Team::Red);
     r.set_team(&mut w, 0, Team::Blue);
     run(&mut w, &mut r, 10);
-    // jetzt 3 Rot, 1 Blau
+    // now 3 red, 1 blue
     run(&mut w, &mut r, 61 * 50);
     let sizes = Rules::team_sizes(&w);
     assert_eq!(sizes, [2, 2], "nach 1 min ausgeglichen");
