@@ -1,5 +1,5 @@
 """Generates the key frames and reference images for the adventure intro video (E-355, E-357):
-start/end frames of the four 8-second shots and reference sheets for Elora, Oma Pfütze and the
+start images of the four 8-second shots (grey square → sunrise) and reference sheets for Elora, Oma Pfütze and the
 style of Tauwinkel. Everything is composed from the game's own SVG assets.
 
 Usage: python3 tools/design/intro_keyframes.py
@@ -127,7 +127,7 @@ def square(grey):
     return s
 
 
-def sunrise():
+def sunrise(elora=True):
     """Elora on a hilltop at sunrise, the colourful hills ahead (end of the intro)."""
     s = '<circle cx="1500" cy="250" r="130" fill="#ffd36b"/>'
     s += '<circle cx="1500" cy="250" r="240" fill="#ffe9a8" opacity="0.35"/>'
@@ -139,7 +139,8 @@ def sunrise():
     s += band('assets/map/backgrounds/hills-near.svg', 1080, 1.8)
     s += place('assets/map/decor/riesenblume-gelb.svg', 260, 1000, 1.0)
     s += place('assets/map/decor/riesenblume-rosa.svg', 1700, 1020, 0.9)
-    s += place('assets/elora/elora.svg', 640, 905, 0.9)
+    if elora:
+        s += place('assets/elora/elora.svg', 640, 905, 0.9)
     return s
 
 
@@ -155,10 +156,8 @@ def sheet(items, title_color='#2b2b2b'):
 def main():
     os.makedirs(OUT, exist_ok=True)
     files = {
-        'shot1-start.svg': frame(landscape(False), '#8fc8f0', '#ffe2b8'),
-        'shot2-start.svg': frame(square(False), '#8fc8f0', '#ffe2b8'),
-        'shot3-end.svg': frame(landscape(True), '#a9b2ba', '#d8d6d2'),
-        'shot4-start.svg': frame(square(True), '#aab3bb', '#dcdad6'),
+        'shot1-start.svg': frame(square(True), '#aab3bb', '#dcdad6'),
+        'shot4-start.svg': frame(sunrise(elora=False), '#7fb8e8', '#ffd9a0'),
         'shot4-end.svg': frame(sunrise(), '#7fb8e8', '#ffd9a0'),
         'ref-elora.svg': sheet([
             ('assets/elora/elora.svg', 480, 900, 4.2, False),

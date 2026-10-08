@@ -52,26 +52,27 @@ The secret of the sixth spring and the Withered One are deliberately not shown.
 
 ## Making the video with Veo (four shots of 8 s)
 
-Veo in Google AI Studio makes 8-second clips, so the intro is **four shots of 8 s (≈ 32 s)**,
-joined by `cargo xtask intro-import`. Each shot starts from a **start image** (image to video),
-so style and characters stay the same across the cuts. The subtitles in
-`assets/intro/intro.toml` follow these four shots (one line per shot).
+The intro tells only the second half of the storyboard (shots 4–6): the grey village, Oma
+Pfütze and Elora, Elora sets out (owner's choice, 2026-10-08). Veo in Google AI Studio makes
+8-second clips, so it is **four shots of 8 s (≈ 32 s)**, joined by `cargo xtask intro-import`.
+Each shot starts from a **start image** (image to video); shots 2 and 3 start from the last
+frame of the shot before, so there is no jump at the cuts. The subtitles in
+`assets/intro/intro.toml` follow the four shots.
 
-Images in `docs/release-2/design/intro/` (made from the game's assets with
-`tools/design/intro_keyframes.py`):
-
-| Shot | Start image | Content | Subtitle |
+| Shot | Start image | Content | Subtitle (de) |
 |---|---|---|---|
-| 1 (0–8 s) | `shot1-start.png` | the colourful Tauland at dawn, five glowing springs | „Im Tauland singen fünf Quellen …“ |
-| 2 (8–16 s) | `shot2-start.png` | the colourful well square, Oma Pfütze and Elora, drops hop around | „In Tauwinkel … fröhlich und bunt.“ |
-| 3 (16–24 s) | last frame of shot 2 (see below) | the springs fall silent, the colour drains from the square | „Doch eines Morgens verstummt …“ |
-| 4 (24–32 s) | `shot4-start.png` | grey square; Elora decides and swings off with her hook into the sunrise (`shot4-end.png` shows the goal) | „Elora will nicht warten …“ |
+| 1 (0–8 s) | `shot1-start.png` | the grey well square, Oma Pfütze and Elora, sad | „Im Tauland verstummen die Quellen …“ |
+| 2 (8–16 s) | last frame of shot 1 | Oma remembers, Elora listens and turns to the hills | „Als ich so klein war wie du …“ |
+| 3 (16–24 s) | last frame of shot 2 | Elora hops off and swings out of the village with her hook | „Elora will nicht warten …“ |
+| 4 (24–32 s) | `shot4-start.png` | sunrise over the green hills; Elora swings in and lands on the hilltop (`shot4-end.png`) | „Sie macht sich auf …“ |
 
-`ref-elora.png`, `ref-oma.png`, `ref-tauwinkel.png`: reference images, if the tool accepts them.
+Images in `docs/release-2/design/intro/` (from the game's assets, `tools/design/intro_keyframes.py`);
+`ref-elora.png`, `ref-oma.png`, `ref-tauwinkel.png` are reference images if the tool accepts them.
 
-**Last frame of shot 2 as the start image of shot 3** (the square turns grey without a jump):
+**Last frame of a clip as the next start image:**
 
 ```sh
+ffmpeg -sseof -0.05 -i shot1.mp4 -frames:v 1 shot2-start.png
 ffmpeg -sseof -0.05 -i shot2.mp4 -frames:v 1 shot3-start.png
 ```
 
@@ -88,39 +89,38 @@ feet, no arms, no hands, no talking mouths.
 **Shot 1** (start `shot1-start.png`): style block +
 
 ```text
-Dawn over a peaceful fantasy valley. The camera drifts slowly from left to right over the
-snowy mountains, the forest and the soft hills. The five magical springs glow and sparkle in
-green, brown-gold, golden orange, ice blue and violet; tiny light particles rise from them
-like a quiet song. A few birds glide past. Calm, warm, magical mood.
+A grey, colourless village square with a stone cottage, an old wooden well and a workshop;
+the sky is overcast, a few grey leaves drift down. The lilac grandmother drop with bobble hat,
+round glasses, red scarf and walking stick looks sadly at the grey houses. Beside the well
+stands Elora, a small yellow drop with big eyes and orange feet, looking down. The camera
+pushes in very slowly. Quiet, melancholic mood.
 ```
 
-**Shot 2** (start `shot2-start.png`): style block +
+**Shot 2** (start: last frame of shot 1): style block +
 
 ```text
-A cosy colourful village square with a thatched cottage, an old wooden well and a workshop.
-The lilac grandmother drop with bobble hat, glasses, red scarf and walking stick smiles and
-sways gently; the small yellow drop Elora hops happily beside the well. Two or three other
-small colourful drop creatures hop past in the background. Butterflies, flowers in the
-window box. Cheerful, sunny mood. The camera pushes in very slowly.
+The grandmother drop closes her eyes and sways gently, as if remembering an old song; for a
+moment faint colourful sparkles of memory float around her. Elora listens, then slowly turns
+her head towards the hills behind the village. Close-up on Elora: her eyes become determined.
+Gentle, thoughtful mood turning brave.
 ```
 
 **Shot 3** (start: last frame of shot 2): style block +
 
 ```text
-The same village square. Suddenly the light changes: a grey shimmer creeps in from the edges
-of the image, and the colours slowly drain from the houses, the trees, the flowers and the
-sky until everything is pale grey. The grandmother drop and Elora stop and look up worried.
-The background drop creatures hide. The camera stays still. Quiet, sad mood.
+Elora gives a determined little hop and hops quickly towards the edge of the village; the
+grandmother drop nods and smiles. At the edge Elora jumps, a small grappling hook on a thin
+chain shoots from her body, catches a tree branch and she swings in a big arc out of the grey
+village towards the hills. The camera follows her. Brave, energetic mood.
 ```
 
 **Shot 4** (start `shot4-start.png`): style block +
 
 ```text
-The grey village square. Elora, the small yellow drop, turns towards the hills, takes a deep
-breath and gives a determined little hop; the grandmother drop nods. Elora hops out of the
-square, a small grappling hook on a thin chain shoots from her body, catches a branch and she
-swings in a big arc towards the green hills while the sun rises and warm colour returns to
-the land around her. The camera follows her. Hopeful, brave mood.
+Sunrise over soft green hills with giant flowers; warm golden light spreads and colour flows
+back into the land. From the left, Elora, the small yellow drop, swings in on her grappling
+hook, lets go and lands softly on the hilltop in the foreground, then looks into the distance
+towards the sun. The camera rises slowly. Hopeful, triumphant mood.
 ```
 
 ### Afterwards
@@ -129,7 +129,7 @@ the land around her. The camera follows her. Hopeful, brave mood.
   `cargo xtask intro-import shot1.mp4 shot2.mp4 shot3.mp4 shot4.mp4` – it joins them in
   order, drops the sound and checks the result with the game's decoder.
 - If a shot is not exactly 8 s, tell Claude the lengths; the subtitle times are adjusted.
-- Try two or three generations per shot and keep the best; the start image keeps the look.
+- Try two or three generations per shot and keep the best.
 - Check Google's terms for the generated video (use in a GPL/CC-BY-SA game, watermark,
   SynthID) and note the tool in `assets/SOURCES.md`.
 
