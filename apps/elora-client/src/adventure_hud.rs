@@ -105,7 +105,7 @@ pub fn status(
         1.1 * s,
     );
     ui.label(
-        &save.glanztropfen.to_string(),
+        &save.gleam_drops.to_string(),
         Vec2::new(pill.min.x + 38.0 * s, pill.center().y),
         14.0,
         WHITE,
@@ -547,9 +547,9 @@ pub struct DialogView<'a> {
 
 fn tone_color(t: Option<Tone>) -> Color {
     match t {
-        Some(Tone::Freundlich) => TONE_FRIENDLY,
-        Some(Tone::Neugierig) => TONE_CURIOUS,
-        Some(Tone::Frech) => TONE_CHEEKY,
+        Some(Tone::Friendly) => TONE_FRIENDLY,
+        Some(Tone::Curious) => TONE_CURIOUS,
+        Some(Tone::Cheeky) => TONE_CHEEKY,
         None => Color::hex(0xc8bca8),
     }
 }
@@ -651,9 +651,9 @@ pub fn dialog(
         );
         if let Some(t) = c.tone {
             let key = match t {
-                Tone::Freundlich => "adventure.tone_friendly",
-                Tone::Neugierig => "adventure.tone_curious",
-                Tone::Frech => "adventure.tone_cheeky",
+                Tone::Friendly => "adventure.tone_friendly",
+                Tone::Curious => "adventure.tone_curious",
+                Tone::Cheeky => "adventure.tone_cheeky",
             };
             ui.label(
                 lang.t(key),

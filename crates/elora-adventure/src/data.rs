@@ -72,7 +72,8 @@ pub enum Bonus {
     /// Once per map, carry on with this much health instead of dying.
     SecondChance(i32),
     /// Hook jerk cooldown (ms, negative = shorter, A-02).
-    RuckCooldownMs(i32),
+    #[serde(rename = "ruck_cooldown_ms")]
+    JerkCooldownMs(i32),
     HookLengthPct(f32),
     /// Shock wave of the stomp (units, A-05).
     StompRadius(f32),
@@ -108,7 +109,8 @@ pub enum Effect {
     /// Refill health.
     Heal(i32),
     /// Hook jerk without cooldown for this many seconds.
-    Tau(u32),
+    #[serde(rename = "tau")]
+    Dew(u32),
     /// Refill health and empty the heat bar (cactus fruit, E-320).
     Cool(i32),
     /// Refill health and empty the cold bar (herbal tea, E-342).
@@ -197,7 +199,8 @@ pub struct Upgrade {
     pub name: Text,
     #[serde(default)]
     pub desc: Text,
-    pub glanztropfen: u32,
+    #[serde(rename = "glanztropfen")]
+    pub gleam_drops: u32,
     #[serde(default)]
     pub materials: Vec<Cost>,
     pub bonuses: Vec<Bonus>,
@@ -476,7 +479,7 @@ pub struct Content {
 }
 
 /// Id of the currency.
-pub const GLANZTROPFEN: &str = "glanztropfen";
+pub const GLEAM_DROPS: &str = "glanztropfen";
 
 fn parse<T: serde::de::DeserializeOwned>(file: &'static str, src: &str) -> Result<T, ContentError> {
     toml::from_str(src).map_err(|e| ContentError::Parse {
@@ -604,10 +607,10 @@ impl Content {
     fn validate(&self) -> Result<(), ContentError> {
         let bad = |m: String| Err(ContentError::Invalid(m));
         if !matches!(
-            self.items.get(GLANZTROPFEN).map(|i| &i.kind),
+            self.items.get(GLEAM_DROPS).map(|i| &i.kind),
             Some(ItemKind::Currency)
         ) {
-            return bad(format!("`{GLANZTROPFEN}` fehlt oder ist keine Währung"));
+            return bad(format!("`{GLEAM_DROPS}` fehlt oder ist keine Währung"));
         }
         let mut ids = std::collections::BTreeSet::new();
         for n in &self.skills {

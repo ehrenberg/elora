@@ -726,7 +726,7 @@ mod tests {
                         level: 4,
                         map: "wiese-1".into(),
                         play_secs: 4520,
-                        glanz: 128,
+                        gleam: 128,
                     },
                     crate::app_adventure::SlotView::Empty,
                     crate::app_adventure::SlotView::Damaged("Prüfsumme".into()),

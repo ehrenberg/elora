@@ -147,7 +147,7 @@ pub fn tauwinkel() -> Map {
     m
 }
 
-pub fn wiese() -> Map {
+pub fn meadow() -> Map {
     let (w, h, floor) = (90, 26, 22);
     let mut g = grid(w, h, floor);
     // bridge over a dip
@@ -248,7 +248,7 @@ pub fn wiese() -> Map {
 pub fn load(name: &str) -> Map {
     match name {
         "tauwinkel" => tauwinkel(),
-        "wiese-1" => wiese(),
+        "wiese-1" => meadow(),
         _ => panic!("keine Test-Karte {name}"),
     }
 }
@@ -256,7 +256,7 @@ pub fn load(name: &str) -> Map {
 #[test]
 fn test_maps_match_content_and_link_up() {
     let c = elora_adventure::Content::builtin();
-    let (a, b) = (tauwinkel(), wiese());
+    let (a, b) = (tauwinkel(), meadow());
     for m in [&a, &b] {
         let back = elora_map::decode(&elora_map::encode(m)).expect("Karte gültig");
         let errors = elora_adventure::check::map_objects(&c, &back);

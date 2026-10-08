@@ -4,7 +4,7 @@
 //! trail starts at the top of Tauwinkel's upper village under an ice lid (D-M24-01); the maps
 //! are built from left to right.
 //!
-//! `cargo test -p elora-client --bin elora write_kapitel4_maps -- --ignored` writes
+//! `cargo test -p elora-client --bin elora write_chapter4_maps -- --ignored` writes
 //! `maps/abenteuer/*.emap`.
 
 #![allow(
@@ -17,8 +17,8 @@ use elora_map::adventure::CameraMode;
 use elora_map::{Map, Object, ObjectKind, Weather, WeatherKind};
 use elora_sim::{TILE_SIZE, Vec2};
 
-use super::kapitel3::{big, edge_exit, zone};
-use super::prolog::{
+use super::chapter3::{big, edge_exit, zone};
+use super::prologue::{
     Grid, T, animate, at, chest, corner, creature, decor, finish, npc, o, plant, sign,
 };
 use super::release::{self, Theme};
@@ -443,9 +443,9 @@ mod tests {
     #[test]
     fn mountain_maps_match_content_and_link_up() {
         let c = Content::builtin();
-        let mut all = super::super::kapitel1::all_maps();
-        all.extend(super::super::kapitel2::maps());
-        all.extend(super::super::kapitel3::maps());
+        let mut all = super::super::chapter1::all_maps();
+        all.extend(super::super::chapter2::maps());
+        all.extend(super::super::chapter3::maps());
         all.extend(maps());
         for (name, m) in &all {
             let back = elora_map::decode(&elora_map::encode(m)).expect("Karte gültig");
@@ -550,23 +550,23 @@ mod tests {
             assert_eq!(
                 elora_map::decode(&file).expect("gültig"),
                 map,
-                "{name} veraltet – write_kapitel4_maps -- --ignored"
+                "{name} veraltet – write_chapter4_maps -- --ignored"
             );
         }
     }
 
     #[test]
     #[ignore = "schreibt maps/abenteuer/*.emap"]
-    fn write_kapitel4_maps() {
+    fn write_chapter4_maps() {
         for (name, map) in maps() {
             map.save(std::path::Path::new(&shipped(name))).unwrap();
         }
     }
 
-    /// Overview: `… kapitel4_sheets -- --ignored` → `target/kapitel4-<karte>.svg`.
+    /// Overview: `… chapter4_sheets -- --ignored` → `target/chapter4-<karte>.svg`.
     #[test]
     #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
-    fn kapitel4_sheets() {
+    fn chapter4_sheets() {
         use crate::editor::panel::Preview;
         use crate::editor::view;
         for (name, map) in maps() {
@@ -592,7 +592,7 @@ mod tests {
             let tl = cam.top_left();
             let svg = batch.debug_svg(tl, tl + cam.size, view::OUTSIDE);
             let path = format!(
-                "{}/../../target/kapitel4-{name}.svg",
+                "{}/../../target/chapter4-{name}.svg",
                 env!("CARGO_MANIFEST_DIR")
             );
             std::fs::write(path, svg).unwrap();

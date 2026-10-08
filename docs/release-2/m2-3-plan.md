@@ -71,4 +71,4 @@ Chapter 3 is playable from start to finish: from Tauwinkel into the Glutsandwüs
 - New behaviours and the guardian in the simulation (deterministic), values as data in `creatures.toml`.
 - **Quicksand** as a new tile in collision, map and editor (like ice and boosters), graphics as a material.
 - Sand crab armour: hits evaluate the direction (strike from above, shockwave), otherwise they bounce off as with the guardian.
-- Maps from a generator `editor/kapitel3.rs`; playthrough test extended with chapter 3.
+- Maps from a generator `editor/chapter3.rs`; playthrough test extended with chapter 3.

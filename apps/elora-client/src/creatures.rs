@@ -38,7 +38,7 @@ struct Look {
 #[derive(Debug)]
 pub struct CreatureArt {
     looks: HashMap<&'static str, Look>,
-    glanztropfen: Mesh,
+    gleam_drops: Mesh,
     item: Mesh,
     /// Own images of individual items.
     items: HashMap<&'static str, Mesh>,
@@ -67,7 +67,7 @@ fn flight_tilt(c: &SceneCreature) -> Option<f32> {
 const CHARACTER_FILES: &[(&str, &[u8])] = adventure_svgs!("characters": "oma", "klonk", "lotte", "tueftel", "pip", "wegweiser", "wabe", "hummel", "plumm", "pilzkind", "pilzkind_froh", "pilzmama", "waechter", "sirup", "palma", "schlange", "ruinenquelle", "flocke", "bolle", "kiesel", "wicke", "kristella");
 /// Figures that share an image (boards, spots of the oasis, R2-M2.3).
 const SHARED_CHARACTER_FILES: &[(&str, &[u8])] = {
-    const TAFEL: &[u8] = include_bytes!("../../../assets/adventure/characters/tafel.svg");
+    const TABLET: &[u8] = include_bytes!("../../../assets/adventure/characters/tafel.svg");
     const DRY: &[u8] = include_bytes!("../../../assets/adventure/characters/giessstelle.svg");
     const BLOOM: &[u8] =
         include_bytes!("../../../assets/adventure/characters/giessstelle_bluete.svg");
@@ -76,9 +76,9 @@ const SHARED_CHARACTER_FILES: &[(&str, &[u8])] = {
     const WICKE: &[u8] = include_bytes!("../../../assets/adventure/characters/wicke.svg");
     const GREY: &[u8] = include_bytes!("../../../assets/adventure/characters/graue_stelle.svg");
     &[
-        ("tafel-1", TAFEL),
-        ("tafel-2", TAFEL),
-        ("tafel-kammer", TAFEL),
+        ("tafel-1", TABLET),
+        ("tafel-2", TABLET),
+        ("tafel-kammer", TABLET),
         ("giessstelle-1", DRY),
         ("giessstelle-2", DRY),
         ("giessstelle-3", DRY),
@@ -213,7 +213,7 @@ impl CreatureArt {
             looks,
             characters,
             objects,
-            glanztropfen: whole(
+            gleam_drops: whole(
                 include_bytes!("../../../assets/adventure/items/glanztropfen.svg"),
                 "items/glanztropfen.svg",
             ),
@@ -463,7 +463,7 @@ impl CreatureArt {
     /// Image of an item (its own, gleam drop or the generic one).
     fn item_mesh(&self, item: &str) -> &Mesh {
         if item == "glanztropfen" {
-            &self.glanztropfen
+            &self.gleam_drops
         } else {
             self.items.get(item).unwrap_or(&self.item)
         }

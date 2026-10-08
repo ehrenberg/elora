@@ -3,7 +3,7 @@
 //! root guardian). The forest lies west of Tauwinkel: the maps are built from left (village)
 //! to right (deeper in the forest) and then mirrored.
 //!
-//! `cargo test -p elora-client --bin elora write_kapitel2_maps -- --ignored` writes
+//! `cargo test -p elora-client --bin elora write_chapter2_maps -- --ignored` writes
 //! `maps/abenteuer/*.emap`.
 
 #![allow(
@@ -16,9 +16,9 @@ use elora_map::adventure::CameraMode;
 use elora_map::{Decor, Map, Object, ObjectKind};
 use elora_sim::{TILE_SIZE, Vec2};
 
-use super::prolog::{
-    Grid, T, animate, at, chest, climb_vault, corner, creature, decor, finish, npc, o, plant,
-    ruck_gate, sign, stomp_vault,
+use super::prologue::{
+    Grid, T, animate, at, chest, climb_vault, corner, creature, decor, finish, jerk_gate, npc, o,
+    plant, sign, stomp_vault,
 };
 use super::release;
 
@@ -95,7 +95,7 @@ fn forest(mut m: Map) -> Map {
 /// Murmelwald 1, 220 × 60: forest edge with the mushroom ring near Tauwinkel, gentle hills (the
 /// path on the ground has no gaps – the mushroom child comes along), crown ledges as the upper
 /// path, stone pillar with a rune (only with the pull hook).
-pub fn wald_1() -> Map {
+pub fn forest_1() -> Map {
     let (w, h, f) = (220, 60, 44);
     let mut g = Grid::new(w, h, f);
     g.ground(34, 45, 42);
@@ -118,7 +118,7 @@ pub fn wald_1() -> Map {
     // the path
     g.fill((186, 188), (20, 30), '%');
     // climbing spot for the return with the ice grip (M2.4.7)
-    let kletter = climb_vault(
+    let climb = climb_vault(
         &mut g,
         "wald1-kletter",
         152,
@@ -126,7 +126,7 @@ pub fn wald_1() -> Map {
         &[("glanztropfen", 60), ("harz", 2)],
     );
     // stomp chamber for the return with stomp (M2.3.6)
-    let stampf = stomp_vault(
+    let stomp = stomp_vault(
         &mut g,
         "wald1-stampf",
         140,
@@ -168,8 +168,8 @@ pub fn wald_1() -> Map {
         plant("blume-2", 196, 38),
         o("west", at(214, 40, 28.0), ObjectKind::Spawn),
         edge_exit("weg-wald-2", w - 2, h, "wald-2", "ost"),
-        stampf,
-        kletter,
+        stomp,
+        climb,
     ];
     m.decor_back = vec![
         big("waldbaum", 4.0, 44, 0.8),
@@ -198,7 +198,7 @@ pub fn wald_1() -> Map {
 
 /// Murmelwald 2, 200 × 90: tall trees, ledges and suspension bridges in the crowns, tree houses,
 /// Plumm at the very top; the mushroom child on the ground by the glowing mushrooms.
-pub fn wald_2() -> Map {
+pub fn forest_2() -> Map {
     let (w, h, f) = (200, 90, 80);
     let mut g = Grid::new(w, h, f);
     g.ground(30, 59, 78);
@@ -270,7 +270,7 @@ pub fn wald_2() -> Map {
 /// Murmelwald 3, 200 × 70: down into the root caves, thorns, crumbling floor, hanging
 /// roots; pull switch chamber with a rune (only with the pull hook), hook jerk spot with a rune,
 /// at the end up to the forest spring.
-pub fn wald_3() -> Map {
+pub fn forest_3() -> Map {
     let (w, h) = (200, 70);
     let mut g = Grid::new(w, h, 30);
     // cave under the roots: passage from row 40 to 60
@@ -301,9 +301,9 @@ pub fn wald_3() -> Map {
     }
     g.ground(161, w - 1, 26);
     // hook jerk spot at the top with rune 4
-    let ruck_top = ruck_gate(&mut g, 170, 26);
+    let jerk_top = jerk_gate(&mut g, 170, 26);
     // stomp chamber in the cave floor (M2.3.6)
-    let stampf = stomp_vault(
+    let stomp = stomp_vault(
         &mut g,
         "wald3-stampf",
         26,
@@ -351,10 +351,10 @@ pub fn wald_3() -> Map {
         creature("schlange-2", "wurzelschlange", 120, 57, 110.0),
         creature("wicht-2", "pilzwicht", 150, 52, 40.0),
         plant("blume-1", 148, 52),
-        rune("rune-4", 179, ruck_top),
+        rune("rune-4", 179, jerk_top),
         o("west", at(194, 26, 28.0), ObjectKind::Spawn),
         edge_exit("weg-arena", w - 2, h, "wald-arena", "ost"),
-        stampf,
+        stomp,
     ];
     m.decor_back = vec![
         big("waldbaum", 8.0, 30, 1.0),
@@ -379,7 +379,7 @@ pub fn wald_3() -> Map {
 
 /// Forest spring, 100 × 50: from the ledge down into the arena, hook flowers to dodge
 /// the root walls, gate after the victory, root path back to Tauwinkel.
-pub fn wald_arena() -> Map {
+pub fn forest_arena() -> Map {
     let (w, h) = (100, 50);
     let mut g = Grid::new(w, h, 44);
     g.ground(0, 17, 26);
@@ -440,10 +440,10 @@ pub fn wald_arena() -> Map {
 /// Maps of chapter 2 with their names.
 pub fn maps() -> Vec<(&'static str, Map)> {
     vec![
-        ("wald-1", wald_1()),
-        ("wald-2", wald_2()),
-        ("wald-3", wald_3()),
-        ("wald-arena", wald_arena()),
+        ("wald-1", forest_1()),
+        ("wald-2", forest_2()),
+        ("wald-3", forest_3()),
+        ("wald-arena", forest_arena()),
     ]
 }
 
@@ -464,10 +464,10 @@ mod tests {
     #[test]
     fn forest_maps_match_content_and_link_up() {
         let c = Content::builtin();
-        let mut all = super::super::kapitel1::all_maps();
+        let mut all = super::super::chapter1::all_maps();
         all.extend(maps());
-        all.extend(super::super::kapitel3::maps());
-        all.extend(super::super::kapitel4::maps());
+        all.extend(super::super::chapter3::maps());
+        all.extend(super::super::chapter4::maps());
         for (name, m) in &all {
             let back = elora_map::decode(&elora_map::encode(m)).expect("Karte gültig");
             let errors = map_objects(&c, &back);
@@ -498,23 +498,23 @@ mod tests {
             assert_eq!(
                 elora_map::decode(&file).expect("gültig"),
                 map,
-                "{name} veraltet – write_kapitel2_maps -- --ignored"
+                "{name} veraltet – write_chapter2_maps -- --ignored"
             );
         }
     }
 
     #[test]
     #[ignore = "schreibt maps/abenteuer/*.emap"]
-    fn write_kapitel2_maps() {
+    fn write_chapter2_maps() {
         for (name, map) in maps() {
             map.save(std::path::Path::new(&shipped(name))).unwrap();
         }
     }
 
-    /// Overview: `… kapitel2_sheets -- --ignored` → `target/kapitel2-<karte>.svg`.
+    /// Overview: `… chapter2_sheets -- --ignored` → `target/chapter2-<karte>.svg`.
     #[test]
     #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
-    fn kapitel2_sheets() {
+    fn chapter2_sheets() {
         use crate::editor::panel::Preview;
         use crate::editor::view;
         for (name, map) in maps() {
@@ -540,7 +540,7 @@ mod tests {
             let tl = cam.top_left();
             let svg = batch.debug_svg(tl, tl + cam.size, view::OUTSIDE);
             let path = format!(
-                "{}/../../target/kapitel2-{name}.svg",
+                "{}/../../target/chapter2-{name}.svg",
                 env!("CARGO_MANIFEST_DIR")
             );
             std::fs::write(path, svg).unwrap();

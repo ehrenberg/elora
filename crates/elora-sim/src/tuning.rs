@@ -108,11 +108,14 @@ pub struct Tuning {
 
     // Abilities in the adventure and in the spring battle (R2-M1, A-01 ff.)
     /// A-01: speed of the hook jerk towards the hook point (units/tick)
-    pub ruck_speed: f32,
+    #[cfg_attr(feature = "serde", serde(rename = "ruck_speed"))]
+    pub jerk_speed: f32,
     /// A-02: cooldown of the hook jerk (ms)
-    pub ruck_cooldown: u32,
-    /// A-28: for this long the jerk pulls straight to the hook point at `ruck_speed` (ms)
-    pub ruck_time: u32,
+    #[cfg_attr(feature = "serde", serde(rename = "ruck_cooldown"))]
+    pub jerk_cooldown: u32,
+    /// A-28: for this long the jerk pulls straight to the hook point at `jerk_speed` (ms)
+    #[cfg_attr(feature = "serde", serde(rename = "ruck_time"))]
+    pub jerk_time: u32,
     /// A-04: fall speed while stomping (units/tick)
     pub stomp_speed: f32,
     /// A-05: radius of the shockwave on impact (units)
@@ -251,9 +254,9 @@ impl Default for Tuning {
             ice_accel: 0.35,
             jump_pad_force: 20.0,
             conveyor_speed: 4.0,
-            ruck_speed: 26.0,
-            ruck_cooldown: 800,
-            ruck_time: 320,
+            jerk_speed: 26.0,
+            jerk_cooldown: 800,
+            jerk_time: 320,
             stomp_speed: 22.0,
             stomp_radius: 64.0,
             grip_time: 1000,

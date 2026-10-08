@@ -187,7 +187,7 @@ For web hosting without your own service there is a PHP version of the master an
 
 - **Format:** [`docs/handbook/map-format.md`](docs/handbook/map-format.md); view with `cargo xtask map-dump`.
 - **Release maps** (M6.10): `dm-wiese` (64×36, 4–8 players), `dm-wueste` (96×48, 8–12), `dm-winter` (128×64, 12–16), `ctf-wald` (150×48, 8–12), `ctf-nacht` (190×64, 12–16). Layouts are built and checked in `tools/design/release_maps/` (`python3 tools/design/release_maps/export.py`); the files are written by `cargo test -p elora-client --bin elora write_release_maps -- --ignored`.
-- **Adventure maps** (`maps/abenteuer/`) come from generators in `apps/elora-client/src/editor/` (`prolog.rs`, `kapitel1.rs` to `kapitel3.rs`) and are written with `write_prolog_maps`, `write_kapitel1_maps` etc. (`cargo test -p elora-client --bin elora <name> -- --ignored`). A test checks that the shipped files are up to date.
+- **Adventure maps** (`maps/abenteuer/`) come from generators in `apps/elora-client/src/editor/` (`prologue.rs`, `chapter1.rs` to `chapter4.rs`) and are written with `write_prologue_maps`, `write_chapter1_maps` etc. (`cargo test -p elora-client --bin elora <name> -- --ignored`). A test checks that the shipped files are up to date.
 - **Adventure content** (characters, dialogs, quests, enemies, items) lives as TOML in `assets/adventure/`: [`docs/handbook/adventure-content.md`](docs/handbook/adventure-content.md).
 - **Graphics** are made with Python scripts in `tools/design/` (no AI services, E-295).
 

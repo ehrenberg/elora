@@ -93,7 +93,7 @@ fn hook_ceiling(abilities: Abilities) -> World {
     w
 }
 
-fn ruck(w: &mut World) -> PlayerInput {
+fn jerk(w: &mut World) -> PlayerInput {
     let i = PlayerInput {
         hook: true,
         ability: true,
@@ -106,11 +106,11 @@ fn ruck(w: &mut World) -> PlayerInput {
 }
 
 #[test]
-fn hook_ruck_pulls_hard_with_cooldown() {
-    let mut w = hook_ceiling(with(Ability::HookRuck));
-    let held = ruck(&mut w);
+fn hook_jerk_pulls_hard_with_cooldown() {
+    let mut w = hook_ceiling(with(Ability::HookJerk));
+    let held = jerk(&mut w);
     let c = core(&w);
-    assert!(c.triggered_events & events::HOOK_RUCK != 0);
+    assert!(c.triggered_events & events::HOOK_JERK != 0);
     assert!(
         c.vel.y < -Tuning::default().hook_drag_speed,
         "schneller als normaler Hook-Zug: {:?}",
@@ -118,7 +118,7 @@ fn hook_ruck_pulls_hard_with_cooldown() {
     );
     // holding the key does not trigger again, a new press only after the cooldown
     w.step(&[held]);
-    assert_eq!(core(&w).triggered_events & events::HOOK_RUCK, 0);
+    assert_eq!(core(&w).triggered_events & events::HOOK_JERK, 0);
     let released = PlayerInput {
         ability: false,
         ..held
@@ -126,7 +126,7 @@ fn hook_ruck_pulls_hard_with_cooldown() {
     w.step(&[released]);
     w.step(&[held]);
     assert_eq!(
-        core(&w).triggered_events & events::HOOK_RUCK,
+        core(&w).triggered_events & events::HOOK_JERK,
         0,
         "Abklingzeit"
     );
@@ -135,9 +135,9 @@ fn hook_ruck_pulls_hard_with_cooldown() {
 /// The jerk pulls noticeably faster than the normal hook (playtest 2026-10-06, A-28):
 /// same distance to the ceiling in clearly fewer ticks.
 #[test]
-fn hook_ruck_reaches_the_hook_point_much_faster() {
+fn hook_jerk_reaches_the_hook_point_much_faster() {
     let ticks_to_ceiling = |press: bool| {
-        let mut w = hook_ceiling(with(Ability::HookRuck));
+        let mut w = hook_ceiling(with(Ability::HookJerk));
         let start = core(&w).pos.y;
         let hold = PlayerInput {
             hook: true,
@@ -153,18 +153,18 @@ fn hook_ruck_reaches_the_hook_point_much_faster() {
             })
             .expect("kommt oben an")
     };
-    let (normal, ruck) = (ticks_to_ceiling(false), ticks_to_ceiling(true));
+    let (normal, jerk) = (ticks_to_ceiling(false), ticks_to_ceiling(true));
     assert!(
-        ruck * 3 <= normal * 2,
-        "Ruck {ruck} Ticks statt {normal} – mindestens ein Drittel schneller"
+        jerk * 3 <= normal * 2,
+        "Ruck {jerk} Ticks statt {normal} – mindestens ein Drittel schneller"
     );
 }
 
 #[test]
-fn hook_ruck_needs_ability() {
+fn hook_jerk_needs_ability() {
     let mut w = hook_ceiling(Abilities::NONE);
     let before = hook_ceiling(Abilities::NONE);
-    ruck(&mut w);
+    jerk(&mut w);
     let mut plain = before;
     plain.step(&[PlayerInput {
         hook: true,
@@ -395,8 +395,8 @@ fn hook_grabs_hook_point_and_passes_through_it_otherwise() {
 /// floor and close to the right wall, on the right a stone tower 9 tiles above the blossom
 /// (with a passage at the bottom).
 /// Without the hook jerk Elora cannot get up, with it she can. The maps build the spot
-/// the same way (`apps/elora-client/src/editor/kapitel1.rs`, `ruck_gate`).
-fn ruck_gate_world() -> (elora_sim::World, f32) {
+/// the same way (`apps/elora-client/src/editor/chapter1.rs`, `jerk_gate`).
+fn jerk_gate_world() -> (elora_sim::World, f32) {
     use elora_sim::{Collision, Tile, Tuning, World};
     let (w, h) = (24, 40);
     let floor = h - 2;
@@ -424,12 +424,12 @@ fn ruck_gate_world() -> (elora_sim::World, f32) {
 }
 
 /// Does Elora reach the ledge with these timings?
-fn ruck_gate_try(ruck: bool, release: u32, ruck_at: u32, jump_at: u32, right_at: u32) -> bool {
+fn jerk_gate_try(jerk: bool, release: u32, jerk_at: u32, jump_at: u32, right_at: u32) -> bool {
     use elora_sim::{Abilities, PlayerInput, Vec2};
-    let (mut w, ledge_top) = ruck_gate_world();
+    let (mut w, ledge_top) = jerk_gate_world();
     let i = w.join();
     w.spawn_character(i, Vec2::new(10.0 * 32.0 + 16.0, 38.0 * 32.0 - 15.0));
-    if ruck {
+    if jerk {
         w.set_abilities(i, Abilities::ALL);
     }
     for _ in 0..10 {
@@ -445,7 +445,7 @@ fn ruck_gate_try(ruck: bool, release: u32, ruck_at: u32, jump_at: u32, right_at:
             target_x: 60,
             target_y: -300,
             hook: t < release,
-            ability: ruck && t == ruck_at,
+            ability: jerk && t == jerk_at,
             jump: t == jump_at || t == 0,
             direction: i8::from(t >= right_at),
             ..PlayerInput::default()
@@ -456,19 +456,19 @@ fn ruck_gate_try(ruck: bool, release: u32, ruck_at: u32, jump_at: u32, right_at:
 }
 
 #[test]
-fn ruck_gate_needs_the_hook_ruck() {
-    let reach = |ruck: bool| {
+fn jerk_gate_needs_the_hook_jerk() {
+    let reach = |jerk: bool| {
         (5..60).any(|release| {
-            let rucks: Vec<u32> = if ruck {
+            let jerks: Vec<u32> = if jerk {
                 (1..release).step_by(2).collect()
             } else {
                 vec![0]
             };
-            rucks.into_iter().any(|ruck_at| {
+            jerks.into_iter().any(|jerk_at| {
                 (10..100).step_by(3).any(|jump_at| {
                     (0..110)
                         .step_by(6)
-                        .any(|right_at| ruck_gate_try(ruck, release, ruck_at, jump_at, right_at))
+                        .any(|right_at| jerk_gate_try(jerk, release, jerk_at, jump_at, right_at))
                 })
             })
         })

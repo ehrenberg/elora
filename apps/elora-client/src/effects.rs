@@ -394,7 +394,7 @@ impl Effects {
             if bits & events::GROUND_JUMP != 0 {
                 self.burst(feet(c.pos()), DUST, &GROUND_JUMP);
             }
-            if bits & (events::WALL_JUMP | events::HOOK_RUCK) != 0 {
+            if bits & (events::WALL_JUMP | events::HOOK_JERK) != 0 {
                 self.burst(c.pos(), SMOKE, &GROUND_JUMP);
             }
             if bits & events::AIR_JUMP != 0 {

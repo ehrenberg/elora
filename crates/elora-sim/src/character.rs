@@ -25,7 +25,7 @@ pub mod events {
     /// Launched by a jump pad (M6.1).
     pub const JUMP_PAD: u16 = 1 << 5;
     /// Hook jerk triggered (E-226).
-    pub const HOOK_RUCK: u16 = 1 << 6;
+    pub const HOOK_JERK: u16 = 1 << 6;
     /// Stomp started (E-227).
     pub const STOMP: u16 = 1 << 7;
     /// Stomp landed – the world evaluates the shockwave.
@@ -83,11 +83,11 @@ pub struct CharacterCore {
     /// Ability key held in the last tick (edge detection for the hook jerk).
     pub ability_held: bool,
     /// Ticks until the next hook jerk (A-02).
-    pub ruck_cooldown: u32,
+    pub jerk_cooldown: u32,
     /// Ability key pressed while the hook was still flying: jerk as soon as it grabs.
-    pub ruck_queued: bool,
+    pub jerk_queued: bool,
     /// Ticks the jerk keeps pulling (A-28).
-    pub ruck_ticks: u32,
+    pub jerk_ticks: u32,
     /// Currently stomping (until impact).
     pub stomping: bool,
     /// Clinging to a climbing wall: -1 left, 1 right, 0 not.
@@ -422,7 +422,7 @@ impl CharacterCore {
         self.hooked_player = None;
         self.hooked_creature = None;
         self.pulling = false;
-        self.ruck_ticks = 0;
+        self.jerk_ticks = 0;
         self.hook_state = state;
         self.hook_pos = self.pos;
     }
@@ -532,13 +532,13 @@ impl CharacterCore {
         }
 
         // hook jerk: pulls straight to the hook point at full force for a while (E-226, A-28)
-        if self.ruck_ticks > 0 {
-            self.ruck_ticks -= 1;
+        if self.jerk_ticks > 0 {
+            self.jerk_ticks -= 1;
             let to = self.hook_pos - self.pos;
             if self.hooked_player.is_none() && !self.pulling && to.length() > PHYS_SIZE {
-                self.vel = to.normalize() * tuning.ruck_speed;
+                self.vel = to.normalize() * tuning.jerk_speed;
             } else {
-                self.ruck_ticks = 0;
+                self.jerk_ticks = 0;
             }
         }
         // wall hook (or creature without pull hook) pulls the character
@@ -605,29 +605,29 @@ impl CharacterCore {
         let a = self.abilities;
         let ability_pressed = input.ability && !self.ability_held;
         self.ability_held = input.ability;
-        self.ruck_cooldown = self.ruck_cooldown.saturating_sub(1);
+        self.jerk_cooldown = self.jerk_cooldown.saturating_sub(1);
 
         // hook jerk (E-226): only on a wall, not on players; pressed early (hook still
         // flying) counts as soon as it grabs
         if ability_pressed && self.hook_state == HookState::Flying {
-            self.ruck_queued = true;
+            self.jerk_queued = true;
         }
         if !matches!(self.hook_state, HookState::Flying | HookState::Grabbed) {
-            self.ruck_queued = false;
+            self.jerk_queued = false;
         }
-        if a.has(Ability::HookRuck)
-            && (ability_pressed || self.ruck_queued)
-            && self.ruck_cooldown == 0
+        if a.has(Ability::HookJerk)
+            && (ability_pressed || self.jerk_queued)
+            && self.jerk_cooldown == 0
             && self.hook_state == HookState::Grabbed
             && self.hooked_player.is_none()
             && !self.pulling
             && self.hook_pos.distance(self.pos) > HOOK_MIN_DRAG_DISTANCE
         {
-            self.vel = (self.hook_pos - self.pos).normalize() * tuning.ruck_speed;
-            self.ruck_ticks = ms_to_ticks(tuning.ruck_time);
-            self.ruck_cooldown = ms_to_ticks(tuning.ruck_cooldown);
-            self.ruck_queued = false;
-            self.triggered_events |= events::HOOK_RUCK;
+            self.vel = (self.hook_pos - self.pos).normalize() * tuning.jerk_speed;
+            self.jerk_ticks = ms_to_ticks(tuning.jerk_time);
+            self.jerk_cooldown = ms_to_ticks(tuning.jerk_cooldown);
+            self.jerk_queued = false;
+            self.triggered_events |= events::HOOK_JERK;
         }
 
         // stomp (E-227): "down" in the air; the hook lets go

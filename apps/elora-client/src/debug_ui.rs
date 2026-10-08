@@ -720,7 +720,7 @@ fn abilities(ui: &mut egui::Ui, s: &mut Sandbox) {
             let before = a;
             for (ability, label) in [
                 (
-                    Ability::HookRuck,
+                    Ability::HookJerk,
                     "Hook-Ruck (Fähigkeit-Taste bei hängendem Hook)",
                 ),
                 (
@@ -1117,13 +1117,13 @@ fn tiles(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
 
 fn ability_values(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
     ui.label("Hook-Ruck");
-    slider(ui, "Tempo", &mut t.ruck_speed, 1.0..=40.0, d.ruck_speed);
+    slider(ui, "Tempo", &mut t.jerk_speed, 1.0..=40.0, d.jerk_speed);
     int(
         ui,
         "Abklingzeit ms",
-        &mut t.ruck_cooldown,
+        &mut t.jerk_cooldown,
         0..=5000,
-        d.ruck_cooldown,
+        d.jerk_cooldown,
     );
     ui.label("Stampfen");
     slider(ui, "Tempo", &mut t.stomp_speed, 1.0..=60.0, d.stomp_speed);

@@ -91,7 +91,7 @@ pub enum Sound {
     /// Elora gets into quicksand (E-318).
     Quicksand,
     /// Hook jerk: whoosh while snapping over (E-226).
-    HookRuck,
+    HookJerk,
     /// Thin ice cracks (R2-M2.4).
     IceCrack,
     /// Thin ice breaks.
@@ -167,7 +167,7 @@ impl Sound {
         Self::ShellClack,
         Self::SnakeHiss,
         Self::Quicksand,
-        Self::HookRuck,
+        Self::HookJerk,
         Self::IceCrack,
         Self::IceBreak,
         Self::IcicleShatter,
@@ -235,7 +235,7 @@ impl Sound {
             Self::ShellClack => "shell_clack",
             Self::SnakeHiss => "snake_hiss",
             Self::Quicksand => "quicksand",
-            Self::HookRuck => "hook_ruck",
+            Self::HookJerk => "hook_ruck",
             Self::IceCrack => "ice_crack",
             Self::IceBreak => "ice_break",
             Self::IcicleShatter => "icicle_shatter",
@@ -481,7 +481,7 @@ pub fn for_character(pos: Vec2, triggered: u16, prev_hook: HookState, hook: Hook
         (bits::HOOK_ATTACH_GROUND, Sound::HookAttachGround),
         (bits::HOOK_ATTACH_PLAYER, Sound::HookAttachPlayer),
         (bits::HOOK_HIT_UNHOOKABLE, Sound::HookNoAttach),
-        (bits::HOOK_RUCK, Sound::HookRuck),
+        (bits::HOOK_JERK, Sound::HookJerk),
     ];
     for (bit, sound) in table {
         if triggered & bit != 0 {

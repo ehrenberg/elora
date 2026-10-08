@@ -16,7 +16,7 @@ pub mod session;
 pub mod state;
 pub mod stats;
 
-pub use data::{Content, GLANZTROPFEN};
+pub use data::{Content, GLEAM_DROPS};
 pub use dialog::{Conversation, Turn};
 pub use quest::Outcome;
 pub use session::{Session, SessionEvent};

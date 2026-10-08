@@ -50,7 +50,7 @@ pub enum SlotView {
         level: u32,
         map: String,
         play_secs: u64,
-        glanz: u32,
+        gleam: u32,
     },
     Damaged(String),
 }
@@ -121,7 +121,7 @@ pub fn slot_views() -> Vec<SlotView> {
                 level: g.level,
                 map: g.location.map.clone(),
                 play_secs: g.play_time_secs,
-                glanz: g.glanztropfen,
+                gleam: g.gleam_drops,
             },
             SlotState::Damaged(e) => SlotView::Damaged(e.to_string()),
         })

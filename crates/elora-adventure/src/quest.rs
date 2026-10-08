@@ -3,7 +3,7 @@
 
 use serde::{Deserialize, Serialize};
 
-use crate::data::{Content, Cost, GLANZTROPFEN, Text};
+use crate::data::{Content, Cost, GLEAM_DROPS, Text};
 use crate::script::{Action, Cond, Open, QuestCheck, QuestOp};
 use crate::state::{Notice, SaveGame};
 
@@ -68,8 +68,8 @@ pub struct Step {
 pub struct Reward {
     #[serde(default)]
     pub xp: u32,
-    #[serde(default)]
-    pub glanztropfen: u32,
+    #[serde(default, rename = "glanztropfen")]
+    pub gleam_drops: u32,
     #[serde(default)]
     pub items: Vec<Cost>,
     /// Dewdrop points.
@@ -142,7 +142,7 @@ impl SaveGame {
     pub fn check(&self, content: &Content, c: &Cond) -> bool {
         match c {
             Cond::Level(op, n) => op.holds(i64::from(self.level), *n),
-            Cond::Glanz(op, n) => op.holds(i64::from(self.glanztropfen), *n),
+            Cond::Gleam(op, n) => op.holds(i64::from(self.gleam_drops), *n),
             Cond::Quest(id, q) => {
                 let st = self.quests.get(id);
                 match q {
@@ -292,10 +292,10 @@ impl SaveGame {
         );
         let mut out = vec![Outcome::Notice(Notice::QuestDone(id.to_owned()))];
         let r = def.reward.clone();
-        if r.glanztropfen > 0 && self.add_item(content, GLANZTROPFEN, r.glanztropfen).is_ok() {
+        if r.gleam_drops > 0 && self.add_item(content, GLEAM_DROPS, r.gleam_drops).is_ok() {
             out.push(Outcome::Notice(Notice::Item {
-                id: GLANZTROPFEN.into(),
-                count: r.glanztropfen,
+                id: GLEAM_DROPS.into(),
+                count: r.gleam_drops,
             }));
         }
         for c in &r.items {

@@ -1,7 +1,7 @@
 //! Maps of the prologue (A1.9, `docs/release-2/prolog.md`): Tauwinkel and Blütenwiesen 1 –
 //! terrain, adventure objects and decoration (buildings E-278, faded flowers E-277).
 //!
-//! `cargo test -p elora-client --bin elora write_prolog_maps -- --ignored` writes
+//! `cargo test -p elora-client --bin elora write_prologue_maps -- --ignored` writes
 //! `maps/abenteuer/*.emap`.
 
 #![allow(
@@ -71,10 +71,10 @@ impl Grid {
 /// Hook jerk spot (M2.1.5): stone wall on the left, shaft 5 tiles wide,
 /// hook flower 12 tiles above the ground on the right side, on the right a stone tower 7 tiles wide
 /// whose top edge lies 9 tiles above the flower – only reachable with the hook jerk. Checked in
-/// `crates/elora-sim/tests/abilities.rs` (`ruck_gate_needs_the_hook_ruck`). At the bottom a
+/// `crates/elora-sim/tests/abilities.rs` (`jerk_gate_needs_the_hook_jerk`). At the bottom a
 /// passage (3 tiles high) leads through wall and tower so the path stays free. Returns the row
 /// of the tower's top edge.
-pub(super) fn ruck_gate(g: &mut Grid, x0: usize, floor: usize) -> usize {
+pub(super) fn jerk_gate(g: &mut Grid, x0: usize, floor: usize) -> usize {
     let top = floor - 21;
     g.fill((x0, x0), (top, floor - 4), '%');
     g.fill((x0 + 1, x0 + 5), (top, floor - 1), '.');
@@ -427,9 +427,9 @@ pub fn tauwinkel() -> Map {
     // crumbling bridge, block and high seat under an overhang
     g.ground(181, 252, 38);
     // hook jerk route behind the workshop: the gate opens once Tüftel has built the hook jerk
-    let ruck_top = ruck_gate(&mut g, 170, 38);
+    let jerk_top = jerk_gate(&mut g, 170, 38);
     // Tüftel's pull chest: practice for the pull hook (M2.2.6)
-    let zug = pull_vault(
+    let pull = pull_vault(
         &mut g,
         "hof",
         238,
@@ -438,7 +438,7 @@ pub fn tauwinkel() -> Map {
         &[("glanztropfen", 50), ("tautrank", 1)],
     );
     // stomp plate (M2.3.6): practice for stomp, Tüftel builds it after chapter 3
-    let stampf = stomp_vault(
+    let stomp = stomp_vault(
         &mut g,
         "stampf",
         228,
@@ -501,11 +501,11 @@ pub fn tauwinkel() -> Map {
         sign("schild-ruck", 172, 38),
         sign("schild-zug", 236, 38),
         sign("schild-stampf", 226, 38),
-        stampf,
+        stomp,
         chest(
             "truhe-ruck",
             179,
-            ruck_top,
+            jerk_top,
             &[("glanztropfen", 40), ("tautrank", 1)],
         ),
         chest(
@@ -565,16 +565,16 @@ pub fn tauwinkel() -> Map {
             },
         ),
     ];
-    m.adventure.objects.extend(zug);
-    let mut baumhaus = decor("baumhaus", 42.0, 40);
-    baumhaus.pos.y += 8.0;
+    m.adventure.objects.extend(pull);
+    let mut treehouse = decor("baumhaus", 42.0, 40);
+    treehouse.pos.y += 8.0;
     m.decor_back = vec![
         decor("tree-pine", 5.0, 21),
         decor("tree-round", 8.0, 29),
         decor("tree-round", 11.0, 40),
         decor("haus-elora", 18.0, 40),
         decor("waescheleine", 31.0, 40),
-        baumhaus,
+        treehouse,
         decor("fence", 48.0, 40),
         decor("tree-round", 62.0, 40),
         decor("fence", 69.0, 38),
@@ -706,7 +706,7 @@ pub fn tauwinkel() -> Map {
 /// Blütenwiesen 1, 300 × 60 (E-282): hills, valley with a thorn pit and a hook ceiling above,
 /// bridge over a thorn gorge (spike beetles), hill ridge with pollen blower, crumbling floor,
 /// hook rocks to the high plateau with the glitter stone, spring stone at the meadow edge.
-pub fn wiese() -> Map {
+pub fn meadow() -> Map {
     let (w, h) = (300, 60);
     let mut g = Grid::new(w, h, 44);
     // hills
@@ -742,9 +742,9 @@ pub fn wiese() -> Map {
     g.ground(241, 250, 43);
     g.ground(251, w - 1, 40);
     // hook jerk spot with bee 5 (return after chapter 1)
-    let ruck_top = ruck_gate(&mut g, 252, 40);
+    let jerk_top = jerk_gate(&mut g, 252, 40);
     // pull chest for the return with the pull hook (M2.2.6)
-    let zug = pull_vault(
+    let pull = pull_vault(
         &mut g,
         "wiese1",
         241,
@@ -819,7 +819,7 @@ pub fn wiese() -> Map {
         o("ost", at(292, 40, 28.0), ObjectKind::Spawn),
         o(
             "biene-5",
-            at(261, ruck_top, 24.0),
+            at(261, jerk_top, 24.0),
             ObjectKind::Collectible {
                 item: "biene".into(),
             },
@@ -835,7 +835,7 @@ pub fn wiese() -> Map {
             },
         ),
     ];
-    m.adventure.objects.extend(zug);
+    m.adventure.objects.extend(pull);
     m.decor_back = vec![
         decor("tree-round", 15.0, 44),
         decor("tree-round", 64.0, 50),
@@ -915,21 +915,21 @@ mod tests {
     }
 
     #[test]
-    fn prolog_maps_match_content_and_link_up() {
+    fn prologue_maps_match_content_and_link_up() {
         let c = Content::builtin();
-        let (a, b) = (tauwinkel(), wiese());
+        let (a, b) = (tauwinkel(), meadow());
         for m in [&a, &b] {
             let back = elora_map::decode(&elora_map::encode(m)).expect("Karte gültig");
             let errors = map_objects(&c, &back);
             assert!(errors.is_empty(), "{}: {errors:?}", m.name);
             assert!(!back.decor_back.is_empty() && !back.backgrounds.is_empty());
         }
-        // transitions are checked by kapitel1::tests across all adventure maps
+        // transitions are checked by chapter1::tests across all adventure maps
         let _ = map_links;
         assert!(a.adventure.object(&c.progression.start_spawn).is_some());
         // zones and enemies of the main quest
         assert!(b.adventure.object("wiesenrand").is_some());
-        let kaefer = b
+        let beetle = b
             .adventure
             .objects
             .iter()
@@ -937,36 +937,36 @@ mod tests {
                 |o| matches!(&o.kind, ObjectKind::Creature { kind, .. } if kind == "stachelkaefer"),
             )
             .count();
-        assert!(kaefer >= 3);
+        assert!(beetle >= 3);
     }
 
     #[test]
-    fn shipped_prolog_maps_are_current() {
-        for (name, map) in [("tauwinkel", tauwinkel()), ("wiese-1", wiese())] {
+    fn shipped_prologue_maps_are_current() {
+        for (name, map) in [("tauwinkel", tauwinkel()), ("wiese-1", meadow())] {
             let file = std::fs::read(shipped(name)).expect("Karte vorhanden");
             assert_eq!(
                 elora_map::decode(&file).expect("gültig"),
                 map,
-                "{name} veraltet – write_prolog_maps -- --ignored"
+                "{name} veraltet – write_prologue_maps -- --ignored"
             );
         }
     }
 
     #[test]
     #[ignore = "schreibt maps/abenteuer/*.emap"]
-    fn write_prolog_maps() {
-        for (name, map) in [("tauwinkel", tauwinkel()), ("wiese-1", wiese())] {
+    fn write_prologue_maps() {
+        for (name, map) in [("tauwinkel", tauwinkel()), ("wiese-1", meadow())] {
             map.save(std::path::Path::new(&shipped(name))).unwrap();
         }
     }
 
-    /// Overview: `… prolog_sheets -- --ignored` → `target/prolog-<karte>.svg`.
+    /// Overview: `… prologue_sheets -- --ignored` → `target/prolog-<karte>.svg`.
     #[test]
     #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
-    fn prolog_sheets() {
+    fn prologue_sheets() {
         use crate::editor::panel::Preview;
         use crate::editor::view;
-        for (name, map) in [("tauwinkel", tauwinkel()), ("wiese-1", wiese())] {
+        for (name, map) in [("tauwinkel", tauwinkel()), ("wiese-1", meadow())] {
             let mut editor = Editor::new(None, std::path::PathBuf::from("maps"));
             editor.map = map;
             editor.center_view();

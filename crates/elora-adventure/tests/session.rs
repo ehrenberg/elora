@@ -71,7 +71,7 @@ fn chest_switch_and_door() {
     // sparkles and sound at the chest (playtest)
     let at = s.map.adventure.object("truhe-1").unwrap().pos;
     assert!(ev.contains(&SessionEvent::ChestOpened { pos: at }));
-    assert_eq!(s.save.glanztropfen, 20);
+    assert_eq!(s.save.gleam_drops, 20);
     assert!(s.object_done("truhe-1"));
     // opening a second time is not possible
     assert!(step(&mut s, &mut w, PlayerInput::default(), true).is_empty());
@@ -153,7 +153,7 @@ fn walking_into_the_exit_travels_and_zones_count() {
 }
 
 #[test]
-fn death_loses_some_glanz_and_marks_dead() {
+fn death_loses_some_gleam_and_marks_dead() {
     let (mut s, mut w) = start();
     let c = s.content.clone();
     s.save.add_item(&c, "glanztropfen", 40).unwrap();
@@ -167,7 +167,7 @@ fn death_loses_some_glanz_and_marks_dead() {
     let ev = s.tick(&mut w, false);
     assert!(ev.contains(&SessionEvent::Died { lost: 10 }), "{ev:?}");
     assert!(s.dead);
-    assert_eq!(s.save.glanztropfen, 30);
+    assert_eq!(s.save.gleam_drops, 30);
 }
 
 #[test]
@@ -218,12 +218,12 @@ fn unlocks_from_dialogs_reach_the_running_world() {
         .run(&c, &["faehigkeit hook-ruck".into(), "waffe granate".into()]);
     let ch = w.character(s.player).unwrap();
     assert!(
-        !ch.core.abilities.has(elora_sim::Ability::HookRuck),
+        !ch.core.abilities.has(elora_sim::Ability::HookJerk),
         "noch nicht"
     );
     s.sync_world(&mut w);
     let ch = w.character(s.player).unwrap();
-    assert!(ch.core.abilities.has(elora_sim::Ability::HookRuck));
+    assert!(ch.core.abilities.has(elora_sim::Ability::HookJerk));
     assert!(ch.arsenal.has(elora_sim::Weapon::Grenade));
 }
 

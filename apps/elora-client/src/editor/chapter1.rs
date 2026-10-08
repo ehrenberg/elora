@@ -2,7 +2,7 @@
 //! hard hook route), `wiese-3` (caves under the roots) and `wiese-arena`
 //! (flower spring with the Brummbär bumblebee).
 //!
-//! `cargo test -p elora-client --bin elora write_kapitel1_maps -- --ignored` writes
+//! `cargo test -p elora-client --bin elora write_chapter1_maps -- --ignored` writes
 //! `maps/abenteuer/*.emap`.
 
 #![allow(
@@ -15,9 +15,9 @@ use elora_map::adventure::CameraMode;
 use elora_map::{Map, ObjectKind};
 use elora_sim::Vec2;
 
-use super::prolog::{
-    Grid, T, animate, at, chest, climb_vault, corner, creature, decor, finish, npc, o, plant,
-    pull_vault, ruck_gate, sign, stomp_vault,
+use super::prologue::{
+    Grid, T, animate, at, chest, climb_vault, corner, creature, decor, finish, jerk_gate, npc, o,
+    plant, pull_vault, sign, stomp_vault,
 };
 use super::release;
 
@@ -63,7 +63,7 @@ fn thorn_decor(m: &mut Map, y: usize, x0: usize, x1: usize) {
 
 /// Blütenwiesen 2, 300 × 60: apiary with honeycomb, giant flower forest with leaf ledges,
 /// brook with stepping stones, first hard hook route over a thorn hollow.
-pub fn wiese_2() -> Map {
+pub fn meadow_2() -> Map {
     let (w, h) = (300, 60);
     let mut g = Grid::new(w, h, 44);
     // apiary on a small hill
@@ -100,9 +100,9 @@ pub fn wiese_2() -> Map {
     }
     g.ground(215, 230, 44);
     // old stone tower at the end: hook jerk spot with bee 4 (M2.1.5)
-    let ruck_top = ruck_gate(&mut g, 276, 42);
+    let jerk_top = jerk_gate(&mut g, 276, 42);
     // pull chest for the return with the pull hook (M2.2.6)
-    let zug = pull_vault(
+    let pull = pull_vault(
         &mut g,
         "wiese2",
         244,
@@ -111,7 +111,7 @@ pub fn wiese_2() -> Map {
         &[("glanztropfen", 50), ("heiltrank", 2)],
     );
     // stomp chamber for the return with stomp (M2.3.6)
-    let stampf = stomp_vault(
+    let stomp = stomp_vault(
         &mut g,
         "wiese2-stampf",
         101,
@@ -122,7 +122,7 @@ pub fn wiese_2() -> Map {
     g.ground(231, 250, 40);
     g.ground(251, w - 1, 42);
     // climbing spot for the return with the ice grip (M2.4.7)
-    let kletter = climb_vault(
+    let climb = climb_vault(
         &mut g,
         "wiese2-kletter",
         252,
@@ -150,7 +150,7 @@ pub fn wiese_2() -> Map {
         creature("kaefer-3", "stachelkaefer", 145, 49, 26.0),
         plant("blume-2", 152, 44),
         creature("blaeser-2", "pollenblaeser", 220, 44, 60.0),
-        bee("biene-4", 285, ruck_top),
+        bee("biene-4", 285, jerk_top),
         plant("blume-3", 228, 44),
         creature("huepfer-2", "grashuepfer", 236, 40, 28.0),
         creature("kaefer-4", "stachelkaefer", 262, 42, 26.0),
@@ -158,9 +158,9 @@ pub fn wiese_2() -> Map {
         o("ost", at(292, 42, 28.0), ObjectKind::Spawn),
         edge_exit("weg-wiese-3", w - 2, h, "wiese-3", "west"),
     ];
-    m.adventure.objects.extend(zug);
-    m.adventure.objects.push(stampf);
-    m.adventure.objects.push(kletter);
+    m.adventure.objects.extend(pull);
+    m.adventure.objects.push(stomp);
+    m.adventure.objects.push(climb);
     m.decor_back = vec![
         decor("honigstand", 24.0, 42),
         decor("bienenstock", 34.0, 42),
@@ -207,7 +207,7 @@ pub fn wiese_2() -> Map {
 
 /// Blütenwiesen 3, 220 × 70: down into the caves under the roots, thorns and
 /// crumbling floor, hidden niche (bee 2), ascent along root ceilings to the flower spring.
-pub fn wiese_3() -> Map {
+pub fn meadow_3() -> Map {
     let (w, h) = (220, 70);
     let mut g = Grid::new(w, h, 30);
     // cave under the roots: 10 tiles of earth above, passage from row 41 to 60
@@ -294,7 +294,7 @@ pub fn wiese_3() -> Map {
 
 /// The flower spring, 90 × 50: from the ledge with the spring stone down into the arena,
 /// hook flowers above the ground, the exit opens after the victory (E-254).
-pub fn wiese_arena() -> Map {
+pub fn meadow_arena() -> Map {
     let (w, h) = (90, 50);
     let mut g = Grid::new(w, h, 44);
     // entry ledge on the left (too high to jump back)
@@ -360,11 +360,11 @@ pub fn wiese_arena() -> Map {
 /// All adventure maps (prologue and chapter 1) with their names.
 pub fn all_maps() -> Vec<(&'static str, Map)> {
     vec![
-        ("tauwinkel", super::prolog::tauwinkel()),
-        ("wiese-1", super::prolog::wiese()),
-        ("wiese-2", wiese_2()),
-        ("wiese-3", wiese_3()),
-        ("wiese-arena", wiese_arena()),
+        ("tauwinkel", super::prologue::tauwinkel()),
+        ("wiese-1", super::prologue::meadow()),
+        ("wiese-2", meadow_2()),
+        ("wiese-3", meadow_3()),
+        ("wiese-arena", meadow_arena()),
     ]
 }
 
@@ -393,9 +393,9 @@ mod tests {
         }
         // transitions across all adventure maps (including chapter 2)
         let mut linked = all_maps();
-        linked.extend(super::super::kapitel2::maps());
-        linked.extend(super::super::kapitel3::maps());
-        linked.extend(super::super::kapitel4::maps());
+        linked.extend(super::super::chapter2::maps());
+        linked.extend(super::super::chapter3::maps());
+        linked.extend(super::super::chapter4::maps());
         let refs: Vec<(&str, &Map)> = linked.iter().map(|(n, m)| (*n, m)).collect();
         let errors = map_links(&refs);
         assert!(errors.is_empty(), "{errors:?}");
@@ -418,31 +418,31 @@ mod tests {
     #[test]
     fn shipped_chapter_maps_are_current() {
         for (name, map) in [
-            ("wiese-2", wiese_2()),
-            ("wiese-3", wiese_3()),
-            ("wiese-arena", wiese_arena()),
+            ("wiese-2", meadow_2()),
+            ("wiese-3", meadow_3()),
+            ("wiese-arena", meadow_arena()),
         ] {
             let file = std::fs::read(shipped(name)).expect("Karte vorhanden");
             assert_eq!(
                 elora_map::decode(&file).expect("gültig"),
                 map,
-                "{name} veraltet – write_kapitel1_maps -- --ignored"
+                "{name} veraltet – write_chapter1_maps -- --ignored"
             );
         }
     }
 
     #[test]
     #[ignore = "schreibt maps/abenteuer/*.emap"]
-    fn write_kapitel1_maps() {
+    fn write_chapter1_maps() {
         for (name, map) in all_maps() {
             map.save(std::path::Path::new(&shipped(name))).unwrap();
         }
     }
 
-    /// Overview: `… kapitel1_sheets -- --ignored` → `target/kapitel1-<karte>.svg`.
+    /// Overview: `… chapter1_sheets -- --ignored` → `target/chapter1-<karte>.svg`.
     #[test]
     #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
-    fn kapitel1_sheets() {
+    fn chapter1_sheets() {
         use crate::editor::panel::Preview;
         use crate::editor::view;
         use elora_sim::TILE_SIZE;
@@ -469,7 +469,7 @@ mod tests {
             let tl = cam.top_left();
             let svg = batch.debug_svg(tl, tl + cam.size, view::OUTSIDE);
             let path = format!(
-                "{}/../../target/kapitel1-{name}.svg",
+                "{}/../../target/chapter1-{name}.svg",
                 env!("CARGO_MANIFEST_DIR")
             );
             std::fs::write(path, svg).unwrap();

@@ -10,7 +10,7 @@
 use elora_adventure::data::{Bonus, Branch, ItemKind, Rarity, Slot};
 use elora_adventure::quest::{QuestKind, QuestStatus};
 use elora_adventure::state::Refusal;
-use elora_adventure::{Content, GLANZTROPFEN, SaveGame};
+use elora_adventure::{Content, GLEAM_DROPS, SaveGame};
 use elora_render::{Align, Color, Tint};
 use elora_sim::{Vec2, Weapon};
 
@@ -103,7 +103,7 @@ pub fn bonus_text(lang: &Lang, b: Bonus) -> String {
         Bonus::InvulnerableMs(v) => ("bonus.invulnerable_ms", format!("{v:+}")),
         Bonus::HealBonus(v) => ("bonus.heal_bonus", format!("{v:+}")),
         Bonus::SecondChance(v) => ("bonus.second_chance", v.to_string()),
-        Bonus::RuckCooldownMs(v) => ("bonus.ruck_cooldown_ms", format!("{v:+}")),
+        Bonus::JerkCooldownMs(v) => ("bonus.ruck_cooldown_ms", format!("{v:+}")),
         Bonus::HookLengthPct(v) => ("bonus.hook_length_pct", format!("{v:+}")),
         Bonus::StompRadius(v) => ("bonus.stomp_radius", format!("{v:+}")),
         Bonus::StompDamage(v) => ("bonus.stomp_damage", format!("{v:+}")),
@@ -148,7 +148,7 @@ pub fn item_icon(
         Some(ItemKind::Consumable { effect }) => {
             let color = match effect {
                 elora_adventure::data::Effect::Heal(_) => Color::hex(0xe05a7a),
-                elora_adventure::data::Effect::Tau(_) => Color::hex(0x5aaee8),
+                elora_adventure::data::Effect::Dew(_) => Color::hex(0x5aaee8),
                 elora_adventure::data::Effect::Cool(_) => Color::hex(0x7fd99a),
                 elora_adventure::data::Effect::Warm(_) => Color::hex(0xe8a35a),
             };
@@ -299,9 +299,9 @@ fn slot_key(s: Slot) -> &'static str {
 fn purse(ui: &mut Ui<'_>, d: &MenuData<'_>, card: Rect) {
     let s = ui.s;
     let p = Vec2::new(card.max.x - 160.0 * s, card.min.y + 30.0 * s);
-    d.art.draw_loot_icon(ui.batch, GLANZTROPFEN, p, 1.0 * s);
+    d.art.draw_loot_icon(ui.batch, GLEAM_DROPS, p, 1.0 * s);
     ui.label(
-        &d.save.glanztropfen.to_string(),
+        &d.save.gleam_drops.to_string(),
         p + Vec2::new(14.0 * s, 0.0),
         13.0,
         ui::TEXT,
@@ -858,8 +858,8 @@ fn quests(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState, area: Rect) -> 
     if r.xp > 0 {
         parts.push(lang.f("adventure.xp", &[("n", &r.xp)]));
     }
-    if r.glanztropfen > 0 {
-        parts.push(lang.f("adventure.glanz", &[("n", &r.glanztropfen)]));
+    if r.gleam_drops > 0 {
+        parts.push(lang.f("adventure.glanz", &[("n", &r.gleam_drops)]));
     }
     for c in &r.items {
         let name = d
@@ -1092,7 +1092,7 @@ fn shop(
             ui::TEXT_DIM,
             Align::Left,
         );
-        let affordable = st.selling || d.save.glanztropfen >= *price;
+        let affordable = st.selling || d.save.gleam_drops >= *price;
         let pc = Vec2::new(r.max.x - 150.0 * s, r.center().y);
         ui.label(
             &price.to_string(),
@@ -1103,7 +1103,7 @@ fn shop(
         );
         d.art.draw_loot_icon(
             ui.batch,
-            GLANZTROPFEN,
+            GLEAM_DROPS,
             pc + Vec2::new(12.0 * s, 0.0),
             0.8 * s,
         );
@@ -1198,11 +1198,11 @@ fn forge(ui: &mut Ui<'_>, d: &MenuData<'_>, area: Rect) -> Option<Command> {
         // costs: gleam drops and material with stock
         let mut cx = x;
         let y = r.min.y + 72.0 * s;
-        let enough = d.save.glanztropfen >= u.glanztropfen;
+        let enough = d.save.gleam_drops >= u.gleam_drops;
         d.art
-            .draw_loot_icon(ui.batch, GLANZTROPFEN, Vec2::new(cx + 6.0 * s, y), 0.8 * s);
+            .draw_loot_icon(ui.batch, GLEAM_DROPS, Vec2::new(cx + 6.0 * s, y), 0.8 * s);
         ui.label(
-            &u.glanztropfen.to_string(),
+            &u.gleam_drops.to_string(),
             Vec2::new(cx + 16.0 * s, y),
             11.0,
             if enough { ui::TEXT } else { PRICE_BAD },
@@ -1263,7 +1263,7 @@ mod tests {
             },
         );
         save.add_xp(&c, 400);
-        save.grant_ability(elora_sim::Ability::HookRuck);
+        save.grant_ability(elora_sim::Ability::HookJerk);
         save.learn(&c, "schneller_ruck").unwrap();
         save.learn(&c, "kraft").unwrap();
         save.learn(&c, "kraft").unwrap();

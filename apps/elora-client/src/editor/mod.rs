@@ -6,19 +6,19 @@
 
 pub mod adventure;
 #[cfg(test)]
-mod kapitel1;
+mod chapter1;
 #[cfg(test)]
-mod kapitel2;
+mod chapter2;
 #[cfg(test)]
-mod kapitel3;
+mod chapter3;
 #[cfg(test)]
-mod kapitel4;
+mod chapter4;
 pub mod look;
 pub mod panel;
 pub mod panel_adventure;
 pub mod panel_look;
 #[cfg(test)]
-mod prolog;
+mod prologue;
 #[cfg(test)]
 mod release;
 #[cfg(test)]
@@ -28,7 +28,7 @@ pub mod tools;
 mod training;
 pub mod view;
 #[cfg(test)]
-mod wetter;
+mod weather;
 
 use std::path::{Path, PathBuf};
 use std::time::{Duration, Instant};

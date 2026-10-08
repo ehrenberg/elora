@@ -3,7 +3,7 @@
 //! (ember spring in the sand basin with the sand snake). The desert lies south of Tauwinkel:
 //! the sunken path at the east path leads down, the maps are built from left to right.
 //!
-//! `cargo test -p elora-client --bin elora write_kapitel3_maps -- --ignored` writes
+//! `cargo test -p elora-client --bin elora write_chapter3_maps -- --ignored` writes
 //! `maps/abenteuer/*.emap`.
 
 #![allow(
@@ -16,9 +16,9 @@ use elora_map::adventure::CameraMode;
 use elora_map::{Decor, Map, Object, ObjectKind};
 use elora_sim::{TILE_SIZE, Vec2};
 
-use super::prolog::{
-    Grid, T, animate, at, chest, climb_vault, corner, creature, decor, finish, npc, o, plant,
-    pull_vault, ruck_gate, sign,
+use super::prologue::{
+    Grid, T, animate, at, chest, climb_vault, corner, creature, decor, finish, jerk_gate, npc, o,
+    plant, pull_vault, sign,
 };
 use super::release::{self, Theme};
 
@@ -96,7 +96,7 @@ fn desert(m: Map) -> Map {
 
 /// Glutsandwüste 1, 240 × 60: from the sunken path down onto the dune edge, a rock roof as
 /// shade, first quicksand pits, sand crabs and dune worms.
-pub fn wueste_1() -> Map {
+pub fn desert_1() -> Map {
     let (w, h) = (240, 60);
     let mut g = Grid::new(w, h, 50);
     // down from the sunken path
@@ -179,7 +179,7 @@ pub fn wueste_1() -> Map {
 
 /// Glutsandwüste 2, 220 × 50: caravan camp with Sirup (tent roofs give shade) and
 /// Palma's oasis in a hollow with three withered spots (E-319).
-pub fn wueste_2() -> Map {
+pub fn desert_2() -> Map {
     let (w, h) = (220, 50);
     let mut g = Grid::new(w, h, 44);
     g.ground(0, 80, 40);
@@ -192,7 +192,7 @@ pub fn wueste_2() -> Map {
     g.ground(141, 150, 42);
     g.ground(151, w - 1, 40);
     // climbing spot for the return with the ice grip (M2.4.7)
-    let kletter = climb_vault(
+    let climb = climb_vault(
         &mut g,
         "wueste2-kletter",
         16,
@@ -200,7 +200,7 @@ pub fn wueste_2() -> Map {
         &[("glanztropfen", 60), ("glutstein", 2)],
     );
     let mut m = g.map("Karawanenlager");
-    let bluete = |n: usize, tx: usize| {
+    let blossom = |n: usize, tx: usize| {
         o(
             &format!("bluete-{n}"),
             at(tx, 45, 28.0),
@@ -226,11 +226,11 @@ pub fn wueste_2() -> Map {
         crab("krabbe-1", 90, 42),
         npc("palma", 104, 45, 1, 0.0),
         npc("giessstelle-1", 100, 45, 1, 0.0),
-        bluete(1, 100),
+        blossom(1, 100),
         npc("giessstelle-2", 109, 45, 1, 0.0),
-        bluete(2, 109),
+        blossom(2, 109),
         npc("giessstelle-3", 133, 45, 1, 0.0),
-        bluete(3, 133),
+        blossom(3, 133),
         zone("oase-1", (96, 140), (33, 44)),
         plant("blume-1", 138, 45),
         moth("motte-1", 160, 40, 9),
@@ -240,7 +240,7 @@ pub fn wueste_2() -> Map {
         crab("krabbe-3", 202, 40),
         o("ost", at(214, 40, 28.0), ObjectKind::Spawn),
         edge_exit("weg-ruinen", w - 2, h, "wueste-3", "west"),
-        kletter,
+        climb,
     ];
     m.decor_back = vec![
         big("duene", 12.0, 40, 1.4),
@@ -276,7 +276,7 @@ pub fn wueste_2() -> Map {
 /// Glutsandwüste 3, 240 × 70: ruins of the ember folk – tablets, spike pit, quicksand, the
 /// courtyard with the ruin spring under a stone roof, pull chest, hook jerk spot and the
 /// buried chamber under crumbling floor (only with stomp, E-323).
-pub fn wueste_3() -> Map {
+pub fn desert_3() -> Map {
     let (w, h) = (240, 70);
     let mut g = Grid::new(w, h, 50);
     g.ground(0, 100, 46);
@@ -302,7 +302,7 @@ pub fn wueste_3() -> Map {
         "ruine.zugtor",
         &[("glanztropfen", 45), ("glutstein", 2)],
     );
-    let ruck_top = ruck_gate(&mut g, 148, 46);
+    let jerk_top = jerk_gate(&mut g, 148, 46);
     // buried chamber: crumbling floor (two rows), below it a room with a ledge
     g.fill((171, 185), (46, 56), '#');
     g.fill((172, 184), (48, 55), '.');
@@ -332,7 +332,7 @@ pub fn wueste_3() -> Map {
         chest(
             "truhe-ruck",
             155,
-            ruck_top,
+            jerk_top,
             &[("glanztropfen", 50), ("tautrank", 1)],
         ),
         worm("wurm-2", 165, 46),
@@ -386,7 +386,7 @@ pub fn wueste_3() -> Map {
 /// Ember spring, 110 × 50: from the ledge down into the sand basin; the basin lies in the shade
 /// of the rock walls (no heat in the fight). Ground three tiles thick (quicksand of the angry
 /// sand snake), two ledges to dodge; gate after the victory, path back to Tauwinkel.
-pub fn wueste_arena() -> Map {
+pub fn desert_arena() -> Map {
     let (w, h) = (110, 50);
     let mut g = Grid::new(w, h, 44);
     g.ground(0, 17, 28);
@@ -450,10 +450,10 @@ pub fn wueste_arena() -> Map {
 /// Maps of chapter 3 with their names.
 pub fn maps() -> Vec<(&'static str, Map)> {
     vec![
-        ("wueste-1", wueste_1()),
-        ("wueste-2", wueste_2()),
-        ("wueste-3", wueste_3()),
-        ("wueste-arena", wueste_arena()),
+        ("wueste-1", desert_1()),
+        ("wueste-2", desert_2()),
+        ("wueste-3", desert_3()),
+        ("wueste-arena", desert_arena()),
     ]
 }
 
@@ -474,10 +474,10 @@ mod tests {
     #[test]
     fn desert_maps_match_content_and_link_up() {
         let c = Content::builtin();
-        let mut all = super::super::kapitel1::all_maps();
-        all.extend(super::super::kapitel2::maps());
+        let mut all = super::super::chapter1::all_maps();
+        all.extend(super::super::chapter2::maps());
         all.extend(maps());
-        all.extend(super::super::kapitel4::maps());
+        all.extend(super::super::chapter4::maps());
         for (name, m) in &all {
             let back = elora_map::decode(&elora_map::encode(m)).expect("Karte gültig");
             let errors = map_objects(&c, &back);
@@ -523,7 +523,7 @@ mod tests {
                 }
             }
         }
-        let arena = wueste_arena();
+        let arena = desert_arena();
         for y in 44..47 {
             assert!(arena.tiles[y * arena.width + 50].is_solid());
         }
@@ -536,23 +536,23 @@ mod tests {
             assert_eq!(
                 elora_map::decode(&file).expect("gültig"),
                 map,
-                "{name} veraltet – write_kapitel3_maps -- --ignored"
+                "{name} veraltet – write_chapter3_maps -- --ignored"
             );
         }
     }
 
     #[test]
     #[ignore = "schreibt maps/abenteuer/*.emap"]
-    fn write_kapitel3_maps() {
+    fn write_chapter3_maps() {
         for (name, map) in maps() {
             map.save(std::path::Path::new(&shipped(name))).unwrap();
         }
     }
 
-    /// Overview: `… kapitel3_sheets -- --ignored` → `target/kapitel3-<karte>.svg`.
+    /// Overview: `… chapter3_sheets -- --ignored` → `target/chapter3-<karte>.svg`.
     #[test]
     #[ignore = "erzeugt nur Dateien zur Sichtprüfung"]
-    fn kapitel3_sheets() {
+    fn chapter3_sheets() {
         use crate::editor::panel::Preview;
         use crate::editor::view;
         for (name, map) in maps() {
@@ -578,7 +578,7 @@ mod tests {
             let tl = cam.top_left();
             let svg = batch.debug_svg(tl, tl + cam.size, view::OUTSIDE);
             let path = format!(
-                "{}/../../target/kapitel3-{name}.svg",
+                "{}/../../target/chapter3-{name}.svg",
                 env!("CARGO_MANIFEST_DIR")
             );
             std::fs::write(path, svg).unwrap();

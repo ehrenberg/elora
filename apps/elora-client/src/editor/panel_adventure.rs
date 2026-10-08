@@ -267,7 +267,7 @@ fn combo(ui: &mut Ui, id: &str, label: &str, value: &mut String, options: &[Stri
 
 fn ability_name(a: Ability) -> &'static str {
     match a {
-        Ability::HookRuck => "hook-ruck",
+        Ability::HookJerk => "hook-ruck",
         Ability::Pull => "heranhooken",
         Ability::Stomp => "stampfen",
         Ability::Grip => "eisgriff",
@@ -775,10 +775,10 @@ fn changes(a: &SaveGame, b: &SaveGame) -> Vec<String> {
             out.push(format!("{k}: {before} → {v}"));
         }
     }
-    if a.glanztropfen != b.glanztropfen {
+    if a.gleam_drops != b.gleam_drops {
         out.push(format!(
             "glanztropfen: {} → {}",
-            a.glanztropfen, b.glanztropfen
+            a.gleam_drops, b.gleam_drops
         ));
     }
     if a.level != b.level || a.xp != b.xp {

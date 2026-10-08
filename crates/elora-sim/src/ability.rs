@@ -12,7 +12,8 @@ pub struct Abilities(u8);
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Ability {
     /// "Ability" key while the hook is attached: jerk towards the hook point (E-226).
-    HookRuck,
+    #[cfg_attr(feature = "serde", serde(rename = "HookRuck"))]
+    HookJerk,
     /// The hook pulls items and small enemies closer (comes with the creatures, A1.2).
     Pull,
     /// "Down" in the air: thrust downwards, breaks crumbling floor (E-227, E-230).
@@ -25,7 +26,7 @@ pub enum Ability {
 
 impl Ability {
     pub const ALL: [Self; 5] = [
-        Self::HookRuck,
+        Self::HookJerk,
         Self::Pull,
         Self::Stomp,
         Self::Grip,

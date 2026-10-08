@@ -41,7 +41,7 @@ pub const THEMES: [Theme; 5] = [
     Theme {
         file: "dm-wiese",
         name: "Wiese",
-        rows: layouts::WIESE,
+        rows: layouts::MEADOW,
         material: None,
         preset: Preset::Day,
         sky: None,
@@ -68,7 +68,7 @@ pub const THEMES: [Theme; 5] = [
     Theme {
         file: "dm-wueste",
         name: "Wüste",
-        rows: layouts::WUESTE,
+        rows: layouts::DESERT,
         material: Some("sand"),
         preset: Preset::Day,
         sky: Some(Sky {
@@ -104,7 +104,7 @@ pub const THEMES: [Theme; 5] = [
     Theme {
         file: "ctf-wald",
         name: "Wald",
-        rows: layouts::WALD,
+        rows: layouts::FOREST,
         material: None,
         preset: Preset::Day,
         sky: None,
@@ -131,7 +131,7 @@ pub const THEMES: [Theme; 5] = [
     Theme {
         file: "ctf-nacht",
         name: "Nacht",
-        rows: layouts::NACHT,
+        rows: layouts::NIGHT,
         material: None,
         preset: Preset::Night,
         sky: None,

@@ -9,7 +9,7 @@
 
 use elora_map::{Map, ObjectKind};
 
-use super::prolog::{Grid, animate, creature, decor, finish};
+use super::prologue::{Grid, animate, creature, decor, finish};
 use super::release;
 
 /// Set characters (tiles as in the text format, entities as letters).

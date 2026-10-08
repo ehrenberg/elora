@@ -77,7 +77,7 @@ pub enum QuestCheck {
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Cond {
     Level(Cmp, i64),
-    Glanz(Cmp, i64),
+    Gleam(Cmp, i64),
     Quest(String, QuestCheck),
     Flag(String, Cmp, i64),
     Affection(String, Cmp, i64),
@@ -140,7 +140,7 @@ fn int(src: &str, s: &str) -> Result<i64, ScriptError> {
 /// Area ability by German name.
 pub fn ability_by_name(s: &str) -> Option<Ability> {
     Some(match s {
-        "hook-ruck" => Ability::HookRuck,
+        "hook-ruck" => Ability::HookJerk,
         "heranhooken" => Ability::Pull,
         "stampfen" => Ability::Stomp,
         "eisgriff" => Ability::Grip,
@@ -180,7 +180,7 @@ impl Cond {
         };
         Ok(match t.as_slice() {
             ["stufe", op, n] => Self::Level(cmp(op)?, int(src, n)?),
-            ["glanz", op, n] => Self::Glanz(cmp(op)?, int(src, n)?),
+            ["glanz", op, n] => Self::Gleam(cmp(op)?, int(src, n)?),
             ["quest", id, state] => Self::Quest(
                 (*id).to_owned(),
                 match *state {

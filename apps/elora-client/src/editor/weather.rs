@@ -9,7 +9,7 @@
 
 use elora_map::{Map, Weather, WeatherKind};
 
-use super::prolog::{Grid, decor, finish};
+use super::prologue::{Grid, decor, finish};
 use super::release;
 
 /// 140 × 50, start on the left; weather: rain.

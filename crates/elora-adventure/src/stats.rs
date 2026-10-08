@@ -19,7 +19,7 @@ pub struct Stats {
     pub invulnerable_ms: i32,
     pub heal_bonus: i32,
     pub second_chance: i32,
-    pub ruck_cooldown_ms: i32,
+    pub jerk_cooldown_ms: i32,
     pub hook_length_pct: f32,
     pub stomp_radius: f32,
     pub stomp_damage: i32,
@@ -52,7 +52,7 @@ impl Stats {
             Bonus::InvulnerableMs(v) => self.invulnerable_ms += v,
             Bonus::HealBonus(v) => self.heal_bonus += v,
             Bonus::SecondChance(v) => self.second_chance = self.second_chance.max(v),
-            Bonus::RuckCooldownMs(v) => self.ruck_cooldown_ms += v,
+            Bonus::JerkCooldownMs(v) => self.jerk_cooldown_ms += v,
             Bonus::HookLengthPct(v) => self.hook_length_pct += v,
             Bonus::StompRadius(v) => self.stomp_radius += v,
             Bonus::StompDamage(v) => self.stomp_damage += v,
@@ -96,7 +96,7 @@ impl Stats {
         t.max_ammo = base.max_ammo + self.ammo;
         t.loot_magnet = base.loot_magnet + self.magnet;
         t.hit_invulnerable = add_ms(base.hit_invulnerable, self.invulnerable_ms, 0);
-        t.ruck_cooldown = add_ms(base.ruck_cooldown, self.ruck_cooldown_ms, 100);
+        t.jerk_cooldown = add_ms(base.jerk_cooldown, self.jerk_cooldown_ms, 100);
         t.hook_length = base.hook_length * pct(self.hook_length_pct);
         t.stomp_radius = base.stomp_radius + self.stomp_radius;
         t.stomp_damage = base.stomp_damage + self.stomp_damage;
@@ -137,7 +137,7 @@ mod tests {
             Bonus::DamagePct(10.0),
             Bonus::HammerDamage(1),
             Bonus::FireDelayPct(-8.0),
-            Bonus::RuckCooldownMs(-2000),
+            Bonus::JerkCooldownMs(-2000),
             Bonus::GlideFall(-5.0),
         ] {
             s.add(&b);
@@ -146,7 +146,7 @@ mod tests {
         assert_eq!(t.hammer_damage, 4, "(3 + 1) × 1,1 gerundet");
         assert_eq!(t.grenade_damage, 7);
         assert!(t.hammer_fire_delay < base.hammer_fire_delay);
-        assert_eq!(t.ruck_cooldown, 100, "nie unter 100 ms");
+        assert_eq!(t.jerk_cooldown, 100, "nie unter 100 ms");
         assert!((t.glide_fall_speed - 0.3).abs() < 1e-6);
         // movement feel stays (E-212)
         assert_eq!(t.ground_control_speed, base.ground_control_speed);

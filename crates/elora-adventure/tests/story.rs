@@ -113,7 +113,7 @@ fn well_quest_runs_through_all_goal_types() {
     let out = g.on_reach(&c, "wiese-1", Some("wiesenrand"));
     assert!(out.contains(&Outcome::Notice(Notice::QuestDone("brunnen".into()))));
     assert_eq!(g.quest("brunnen").unwrap().status, QuestStatus::Done);
-    assert!(g.glanztropfen >= 30, "Belohnung");
+    assert!(g.gleam_drops >= 30, "Belohnung");
     assert!(
         g.holds(&c, "quest bluetenquelle aktiv"),
         "Kapitel 1 beginnt"
@@ -402,7 +402,7 @@ fn chapter_one_runs_from_wabe_to_the_party() {
     // Tüftel builds the hook jerk
     let (conv, _) = Conversation::start(&c, &mut g, "tueftel").unwrap();
     assert_eq!(conv.node, "funke");
-    assert!(g.abilities().has(elora_sim::Ability::HookRuck));
+    assert!(g.abilities().has(elora_sim::Ability::HookJerk));
     assert_eq!(g.count("quellfunke"), 0, "abgegeben");
     assert_eq!(g.flag("quellen_befreit"), 1);
     assert_eq!(g.flag("fest"), 1);
@@ -598,11 +598,11 @@ fn chapter_three_runs_from_the_desert_to_the_party() {
     assert!(g.holds(&c, "quest ruine schritt tafel"));
     Conversation::start(&c, &mut g, "tafel-kammer").unwrap();
     assert!(g.holds(&c, "quest ruine schritt bericht"));
-    let glanz = g.glanztropfen;
+    let gleam = g.gleam_drops;
     let (conv, _) = Conversation::start(&c, &mut g, "sirup").unwrap();
     assert_eq!(conv.node, "bericht");
     assert!(g.holds(&c, "quest ruine erledigt"));
-    assert_eq!(g.glanztropfen, glanz + 60);
+    assert_eq!(g.gleam_drops, gleam + 60);
 }
 
 #[test]

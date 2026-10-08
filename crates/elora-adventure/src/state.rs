@@ -6,7 +6,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use elora_sim::{Abilities, Ability, Event, Tuning, Weapon};
 use serde::{Deserialize, Serialize};
 
-use crate::data::{Branch, Content, Effect, GLANZTROPFEN, ItemKind, Slot};
+use crate::data::{Branch, Content, Effect, GLEAM_DROPS, ItemKind, Slot};
 use crate::stats::Stats;
 
 /// Flag after Tüftel's work with the spring spark of the frost spring (D-M24-03).
@@ -28,9 +28,11 @@ pub struct SaveGame {
     /// Experience within the current level.
     pub xp: u32,
     pub health: i32,
-    pub glanztropfen: u32,
+    #[serde(rename = "glanztropfen")]
+    pub gleam_drops: u32,
     /// Collected since the last save point (lost on death, E-220).
-    pub glanz_since_save: u32,
+    #[serde(rename = "glanz_since_save")]
+    pub gleam_since_save: u32,
     /// Additional dewdrop points from quests.
     pub bonus_points: u32,
     /// Learned nodes with rank.
@@ -108,8 +110,8 @@ impl SaveGame {
             level: 1,
             xp: 0,
             health: content.progression.base_health,
-            glanztropfen: 0,
-            glanz_since_save: 0,
+            gleam_drops: 0,
+            gleam_since_save: 0,
             bonus_points: 0,
             skills: BTreeMap::new(),
             inventory: BTreeMap::new(),
@@ -150,8 +152,8 @@ impl SaveGame {
     }
 
     pub fn count(&self, item: &str) -> u32 {
-        if item == GLANZTROPFEN {
-            self.glanztropfen
+        if item == GLEAM_DROPS {
+            self.gleam_drops
         } else {
             self.inventory.get(item).copied().unwrap_or(0)
         }
@@ -291,8 +293,8 @@ impl SaveGame {
         let def = content.item(id).ok_or(Refusal::Unknown)?;
         match def.kind {
             ItemKind::Currency => {
-                self.glanztropfen += count;
-                self.glanz_since_save += count;
+                self.gleam_drops += count;
+                self.gleam_since_save += count;
             }
             // Ammunition refills the weapon in the world (session), not the inventory
             ItemKind::Ammo { .. } => {}
@@ -312,9 +314,9 @@ impl SaveGame {
     /// # Errors
     /// If not enough is available.
     pub fn remove_item(&mut self, id: &str, count: u32) -> Result<(), Refusal> {
-        if id == GLANZTROPFEN {
-            self.glanztropfen = self
-                .glanztropfen
+        if id == GLEAM_DROPS {
+            self.gleam_drops = self
+                .gleam_drops
                 .checked_sub(count)
                 .ok_or(Refusal::TooExpensive)?;
             return Ok(());
@@ -377,11 +379,11 @@ impl SaveGame {
             return Err(Refusal::Unknown);
         }
         let price = self.price(content, shop, id).ok_or(Refusal::Unknown)?;
-        if self.glanztropfen < price {
+        if self.gleam_drops < price {
             return Err(Refusal::TooExpensive);
         }
         self.add_item(content, id, 1)?;
-        self.glanztropfen -= price;
+        self.gleam_drops -= price;
         Ok(())
     }
 
@@ -418,7 +420,7 @@ impl SaveGame {
     pub fn sell(&mut self, content: &Content, id: &str) -> Result<u32, Refusal> {
         let price = Self::sell_price(content, id).ok_or(Refusal::WrongKind)?;
         self.remove_item(id, 1)?;
-        self.glanztropfen += price;
+        self.gleam_drops += price;
         Ok(price)
     }
 
@@ -433,13 +435,13 @@ impl SaveGame {
     pub fn upgrade(&mut self, content: &Content, w: Weapon) -> Result<u8, Refusal> {
         let level = *self.weapons.get(&w).ok_or(Refusal::NoWeapon)?;
         let u = content.upgrade(w, level + 1).ok_or(Refusal::MaxLevel)?;
-        if self.glanztropfen < u.glanztropfen {
+        if self.gleam_drops < u.gleam_drops {
             return Err(Refusal::TooExpensive);
         }
         if u.materials.iter().any(|m| self.count(&m.item) < m.count) {
             return Err(Refusal::MissingMaterial);
         }
-        self.glanztropfen -= u.glanztropfen;
+        self.gleam_drops -= u.gleam_drops;
         for m in &u.materials {
             self.remove_item(&m.item, m.count)?;
         }
@@ -452,10 +454,10 @@ impl SaveGame {
     /// Death (E-220, P-30): loses part of the gleam drops collected since saving; returns
     /// the loss. Elora goes back to the last save point.
     pub fn die(&mut self, content: &Content) -> u32 {
-        let lost = (self.glanz_since_save * content.progression.death_loss_pct / 100)
-            .min(self.glanztropfen);
-        self.glanztropfen -= lost;
-        self.glanz_since_save = 0;
+        let lost = (self.gleam_since_save * content.progression.death_loss_pct / 100)
+            .min(self.gleam_drops);
+        self.gleam_drops -= lost;
+        self.gleam_since_save = 0;
         self.health = self.max_health(content);
         lost
     }
@@ -463,7 +465,7 @@ impl SaveGame {
     /// Save point (P-31): refill health, remember the place.
     pub fn rest(&mut self, content: &Content, at: Location) {
         self.health = self.max_health(content);
-        self.glanz_since_save = 0;
+        self.gleam_since_save = 0;
         self.location = at;
     }
 
@@ -507,7 +509,7 @@ impl SaveGame {
                 ..
             } if *player == me => {
                 let mut count = *count;
-                if item == GLANZTROPFEN {
+                if item == GLEAM_DROPS {
                     let pct = self.stats(content).drops_pct;
                     #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
                     let extra = (count as f32 * pct / 100.0).round().max(0.0) as u32;
@@ -572,14 +574,14 @@ mod tests {
             g.can_learn(&c, "schneller_ruck"),
             Err(Refusal::NeedsAbility)
         );
-        g.grant_ability(Ability::HookRuck);
+        g.grant_ability(Ability::HookJerk);
         assert_eq!(g.learn(&c, "schneller_ruck"), Ok(1));
         for _ in 0..3 {
             g.learn(&c, "kraft").unwrap();
         }
         assert_eq!(g.learn(&c, "kraft"), Err(Refusal::MaxRank));
         let t = g.tuning(&c, &Tuning::default());
-        assert_eq!(t.ruck_cooldown, 650);
+        assert_eq!(t.jerk_cooldown, 650);
         assert!(t.hammer_damage >= 4);
         let total: u32 = c.skills.iter().map(|n| u32::from(n.ranks)).sum();
         assert!(total > 29 + 2, "nicht alles erreichbar (E-242): {total}");
@@ -589,9 +591,9 @@ mod tests {
     fn items_shop_and_equipment() {
         let (c, mut g) = game();
         assert_eq!(g.buy(&c, "lotte", "heiltrank"), Err(Refusal::TooExpensive));
-        g.add_item(&c, GLANZTROPFEN, 300).unwrap();
+        g.add_item(&c, GLEAM_DROPS, 300).unwrap();
         g.buy(&c, "lotte", "strohhut").unwrap();
-        assert_eq!(g.glanztropfen, 100);
+        assert_eq!(g.gleam_drops, 100);
         g.equip(&c, "strohhut").unwrap();
         assert_eq!(g.max_health(&c), 11);
         assert_eq!(g.count("strohhut"), 0);
@@ -607,7 +609,7 @@ mod tests {
     }
 
     #[test]
-    fn weapon_upgrades_cost_glanz_and_material() {
+    fn weapon_upgrades_cost_gleam_and_material() {
         let (c, mut g) = game();
         assert_eq!(g.upgrade(&c, Weapon::Laser), Err(Refusal::NoWeapon));
         assert_eq!(
@@ -616,22 +618,22 @@ mod tests {
             "before Klonk"
         );
         g.weapons.insert(Weapon::Hammer, 0);
-        g.add_item(&c, GLANZTROPFEN, 50).unwrap();
+        g.add_item(&c, GLEAM_DROPS, 50).unwrap();
         assert_eq!(g.upgrade(&c, Weapon::Hammer), Err(Refusal::MissingMaterial));
         g.add_item(&c, "bernstein", 3).unwrap();
         assert_eq!(g.upgrade(&c, Weapon::Hammer), Ok(1));
-        assert_eq!((g.glanztropfen, g.count("bernstein")), (10, 0));
+        assert_eq!((g.gleam_drops, g.count("bernstein")), (10, 0));
         assert_eq!(g.tuning(&c, &Tuning::default()).hammer_damage, 4);
     }
 
     #[test]
     fn death_loses_a_quarter_since_last_save() {
         let (c, mut g) = game();
-        g.add_item(&c, GLANZTROPFEN, 100).unwrap();
+        g.add_item(&c, GLEAM_DROPS, 100).unwrap();
         g.rest(&c, Location::default());
-        g.add_item(&c, GLANZTROPFEN, 40).unwrap();
+        g.add_item(&c, GLEAM_DROPS, 40).unwrap();
         assert_eq!(g.die(&c), 10);
-        assert_eq!(g.glanztropfen, 130);
+        assert_eq!(g.gleam_drops, 130);
         assert_eq!(g.die(&c), 0, "nichts mehr seit dem Speichern");
     }
 

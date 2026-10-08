@@ -150,7 +150,7 @@ pub struct Session {
     barked: BTreeSet<String>,
     inside: BTreeSet<String>,
     second_chance_used: bool,
-    tau_until: u64,
+    dew_until: u64,
     hook_armed: bool,
     ticks: u64,
     /// Current position of the NPCs (walking path), id → position.
@@ -200,7 +200,7 @@ impl Session {
             barked: BTreeSet::new(),
             inside: BTreeSet::new(),
             second_chance_used: false,
-            tau_until: 0,
+            dew_until: 0,
             hook_armed: true,
             ticks: 0,
             npc_pos: BTreeMap::new(),
@@ -483,10 +483,10 @@ impl Session {
                 self.save.ammo.insert(w, a);
             }
         }
-        if world.tick < self.tau_until
+        if world.tick < self.dew_until
             && let Some(ch) = world.character_mut(me)
         {
-            ch.core.ruck_cooldown = 0;
+            ch.core.jerk_cooldown = 0;
         }
 
         // pull hook (R2-M2.2): pull switch once per shot, collectibles and loot on the hook
@@ -1166,8 +1166,8 @@ impl Session {
                     ch.core.overheated = self.overheated;
                 }
             }
-            crate::data::Effect::Tau(secs) => {
-                self.tau_until = world.tick + u64::from(secs * elora_sim::TICKS_PER_SECOND);
+            crate::data::Effect::Dew(secs) => {
+                self.dew_until = world.tick + u64::from(secs * elora_sim::TICKS_PER_SECOND);
             }
         }
         Ok(())
@@ -1392,7 +1392,7 @@ mod tests {
             })
             .collect();
         m.decor_back = vec![Decor::new(Art::Builtin("haus-oma".into()), Vec2::ZERO)];
-        let bunt = |m: &Map| {
+        let colourful = |m: &Map| {
             m.decor_front
                 .iter()
                 .filter(|d| d.art == Art::Builtin("beet-bunt".into()))
@@ -1400,12 +1400,12 @@ mod tests {
         };
         let mut none = m.clone();
         recolor(&mut none, 0);
-        assert_eq!(bunt(&none), 0);
+        assert_eq!(colourful(&none), 0);
         let mut some = m.clone();
         recolor(&mut some, 2);
-        assert!(bunt(&some) > 0 && bunt(&some) < 20);
+        assert!(colourful(&some) > 0 && colourful(&some) < 20);
         recolor(&mut m, 5);
-        assert_eq!(bunt(&m), 20, "alle fünf Quellen");
+        assert_eq!(colourful(&m), 20, "alle fünf Quellen");
         assert_eq!(m.decor_back[0].art, Art::Builtin("haus-oma".into()));
     }
 }
