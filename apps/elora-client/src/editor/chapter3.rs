@@ -13,12 +13,12 @@
 )]
 
 use elora_map::adventure::CameraMode;
-use elora_map::{Decor, Map, Object, ObjectKind};
-use elora_sim::{TILE_SIZE, Vec2};
+use elora_map::{Map, Object, ObjectKind};
+use elora_sim::Vec2;
 
-use super::prologue::{
-    Grid, T, animate, at, chest, climb_vault, corner, creature, decor, finish, jerk_gate, npc, o,
-    plant, pull_vault, sign,
+use super::mapgen::{
+    Grid, T, animate, at, big, chest, climb_vault, corner, creature, decor, edge_exit, finish,
+    jerk_gate, npc, o, plant, pull_vault, sign, zone,
 };
 use super::release::{self, Theme};
 
@@ -30,36 +30,6 @@ const DESERT: Theme = Theme {
     back_spacing: 13,
     ..release::THEMES[1]
 };
-
-/// Transition over the full map height at the edge (E-279).
-pub(super) fn edge_exit(id: &str, x: usize, h: usize, map: &str, spawn: &str) -> Object {
-    o(
-        id,
-        corner(x, 0),
-        ObjectKind::Exit {
-            size: Vec2::new(2.0 * T, h as f32 * T),
-            map: map.into(),
-            spawn: spawn.into(),
-            on_touch: true,
-        },
-    )
-}
-
-pub(super) fn big(name: &str, tx: f32, ty: usize, scale: f32) -> Decor {
-    let mut d = decor(name, tx, ty);
-    d.scale = scale;
-    d
-}
-
-pub(super) fn zone(id: &str, x: (usize, usize), y: (usize, usize)) -> Object {
-    o(
-        id,
-        corner(x.0, y.0),
-        ObjectKind::Zone {
-            size: Vec2::new((x.1 - x.0 + 1) as f32 * T, (y.1 - y.0 + 1) as f32 * T),
-        },
-    )
-}
 
 fn crab(id: &str, tx: usize, ty: usize) -> Object {
     creature(id, "sand_crab", tx, ty, 30.0)
@@ -460,16 +430,9 @@ pub fn maps() -> Vec<(&'static str, Map)> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::editor::mapgen::{ADVENTURE, assert_current, write_maps, write_sheet};
     use elora_adventure::Content;
     use elora_adventure::check::{map_links, map_objects};
-
-    fn shipped(name: &str) -> String {
-        format!(
-            "{}/../../maps/adventure/{name}.{}",
-            env!("CARGO_MANIFEST_DIR"),
-            elora_map::EXTENSION
-        )
-    }
 
     #[test]
     fn desert_maps_match_content_and_link_up() {
@@ -531,57 +494,21 @@ mod tests {
 
     #[test]
     fn shipped_desert_maps_are_current() {
-        for (name, map) in maps() {
-            let file = std::fs::read(shipped(name)).expect("map present");
-            assert_eq!(
-                elora_map::decode(&file).expect("valid"),
-                map,
-                "{name} outdated – write_chapter3_maps -- --ignored"
-            );
-        }
+        assert_current(ADVENTURE, maps(), "write_chapter3_maps");
     }
 
     #[test]
     #[ignore = "writes maps/adventure/*.emap"]
     fn write_chapter3_maps() {
-        for (name, map) in maps() {
-            map.save(std::path::Path::new(&shipped(name))).unwrap();
-        }
+        write_maps(ADVENTURE, maps());
     }
 
     /// Overview: `… chapter3_sheets -- --ignored` → `target/chapter3-<karte>.svg`.
     #[test]
     #[ignore = "only writes files for visual inspection"]
     fn chapter3_sheets() {
-        use crate::editor::panel::Preview;
-        use crate::editor::view;
         for (name, map) in maps() {
-            let mut editor = super::super::Editor::new(None, std::path::PathBuf::from("maps"));
-            editor.map = map;
-            editor.center_view();
-            editor.visible.grid = false;
-            let size =
-                Vec2::new(editor.map.width as f32, editor.map.height as f32) * TILE_SIZE as f32;
-            let window = Vec2::new(2400.0, 2400.0 * size.y / size.x);
-            editor.zoom = size.x / window.x;
-            let cam = view::camera(&editor, window, window * 0.5);
-            let mut batch = elora_render::ShapeBatch::default();
-            view::draw(
-                &mut batch,
-                &editor,
-                &mut crate::map_view::MapView::default(),
-                &crate::items::ItemArt::load(),
-                &cam,
-                0.0,
-                Preview::None,
-            );
-            let tl = cam.top_left();
-            let svg = batch.debug_svg(tl, tl + cam.size, view::OUTSIDE);
-            let path = format!(
-                "{}/../../target/chapter3-{name}.svg",
-                env!("CARGO_MANIFEST_DIR")
-            );
-            std::fs::write(path, svg).unwrap();
+            write_sheet(map, 2400.0, &format!("chapter3-{name}"));
         }
     }
 }

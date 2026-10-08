@@ -9,7 +9,7 @@
 
 use elora_map::{Map, ObjectKind};
 
-use super::prologue::{Grid, animate, creature, decor, finish};
+use super::mapgen::{Grid, animate, creature, decor, finish};
 use super::release;
 
 /// Set characters (tiles as in the text format, entities as letters).
@@ -148,15 +148,8 @@ pub fn creature_count(map: &Map) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::editor::mapgen::{assert_current, write_maps, write_sheet};
     use elora_sim::{BeltDir, JumpDir, Tile};
-
-    fn shipped() -> String {
-        format!(
-            "{}/../../maps/training.{}",
-            env!("CARGO_MANIFEST_DIR"),
-            elora_map::EXTENSION
-        )
-    }
 
     #[test]
     fn training_map_has_every_area() {
@@ -186,48 +179,19 @@ mod tests {
 
     #[test]
     fn shipped_training_map_is_current() {
-        let file = std::fs::read(shipped()).expect("map present");
-        assert_eq!(
-            elora_map::decode(&file).unwrap(),
-            training(),
-            "outdated – write_training_map -- --ignored"
-        );
+        assert_current("", [("training", training())], "write_training_map");
     }
 
     #[test]
     #[ignore = "writes maps/training.emap"]
     fn write_training_map() {
-        training().save(std::path::Path::new(&shipped())).unwrap();
+        write_maps("", [("training", training())]);
     }
 
     /// Overview: `… training_sheet -- --ignored` → `target/training.svg`.
     #[test]
     #[ignore = "only writes a file for visual inspection"]
     fn training_sheet() {
-        use crate::editor::panel::Preview;
-        use crate::editor::view;
-        use elora_sim::{TILE_SIZE, Vec2};
-        let mut editor = super::super::Editor::new(None, std::path::PathBuf::from("maps"));
-        editor.map = training();
-        editor.center_view();
-        editor.visible.grid = false;
-        let size = Vec2::new(editor.map.width as f32, editor.map.height as f32) * TILE_SIZE as f32;
-        let window = Vec2::new(2400.0, 2400.0 * size.y / size.x);
-        editor.zoom = size.x / window.x;
-        let cam = view::camera(&editor, window, window * 0.5);
-        let mut batch = elora_render::ShapeBatch::default();
-        view::draw(
-            &mut batch,
-            &editor,
-            &mut crate::map_view::MapView::default(),
-            &crate::items::ItemArt::load(),
-            &cam,
-            0.0,
-            Preview::None,
-        );
-        let tl = cam.top_left();
-        let svg = batch.debug_svg(tl, tl + cam.size, view::OUTSIDE);
-        let path = format!("{}/../../target/training.svg", env!("CARGO_MANIFEST_DIR"));
-        std::fs::write(path, svg).unwrap();
+        write_sheet(training(), 2400.0, "training");
     }
 }

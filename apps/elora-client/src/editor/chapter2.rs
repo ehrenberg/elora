@@ -13,74 +13,21 @@
 )]
 
 use elora_map::adventure::CameraMode;
-use elora_map::{Decor, Map, Object, ObjectKind};
-use elora_sim::{TILE_SIZE, Vec2};
+use elora_map::{Map, Object, ObjectKind};
+use elora_sim::Vec2;
 
-use super::prologue::{
-    Grid, T, animate, at, chest, climb_vault, corner, creature, decor, finish, jerk_gate, npc, o,
-    plant, sign, stomp_vault,
+use super::mapgen::{
+    Grid, T, animate, at, big, chest, climb_vault, collectible, corner, creature, decor, edge_exit,
+    finish, jerk_gate, mirror, npc, o, plant, sign, stomp_vault, thorn_decor,
 };
 use super::release;
 
-/// Transition over the full map height at the edge (E-279).
-fn edge_exit(id: &str, x: usize, h: usize, map: &str, spawn: &str) -> Object {
-    o(
-        id,
-        corner(x, 0),
-        ObjectKind::Exit {
-            size: Vec2::new(2.0 * T, h as f32 * T),
-            map: map.into(),
-            spawn: spawn.into(),
-            on_touch: true,
-        },
-    )
-}
-
 fn rune(id: &str, tx: usize, ty: usize) -> Object {
-    o(
-        id,
-        at(tx, ty, 24.0),
-        ObjectKind::Collectible {
-            item: "rune".into(),
-        },
-    )
+    collectible(id, "rune", tx, ty)
 }
 
-fn big(name: &str, tx: f32, ty: usize, scale: f32) -> Decor {
-    let mut d = decor(name, tx, ty);
-    d.scale = scale;
-    d
-}
-
-fn thorn_decor(m: &mut Map, y: usize, x0: usize, x1: usize) {
-    let mut x = x0;
-    while x < x1 {
-        m.decor_front.push(decor("thorns", x as f32 + 0.5, y + 1));
-        x += 2;
-    }
-}
-
-/// Mirror horizontally: tiles, objects (areas at their left edge) and decoration.
-fn mirror(m: &mut Map) {
-    let (w, h) = (m.width, m.height);
-    for y in 0..h {
-        m.tiles[y * w..(y + 1) * w].reverse();
-    }
-    let full = w as f32 * T;
-    for ob in &mut m.adventure.objects {
-        let width = ob.kind.area().map_or(0.0, |a| a.x);
-        ob.pos.x = full - ob.pos.x - width;
-        if let ObjectKind::Npc { facing, .. } = &mut ob.kind {
-            *facing = -*facing;
-        }
-    }
-    for d in m.decor_back.iter_mut().chain(m.decor_front.iter_mut()) {
-        d.pos.x = full - d.pos.x;
-        d.flip_x = !d.flip_x;
-    }
-}
-
-/// Forest look: theme „Wald“ of the release maps, a somewhat shadier sky.
+/// Forest look: mirrored (village on the right, see [`mirror`]), theme „Wald“ of the release
+/// maps, a somewhat shadier sky.
 fn forest(mut m: Map) -> Map {
     mirror(&mut m);
     let mut map = finish(m, &release::THEMES[3]);
@@ -450,16 +397,9 @@ pub fn maps() -> Vec<(&'static str, Map)> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::editor::mapgen::{ADVENTURE, assert_current, write_maps, write_sheet};
     use elora_adventure::Content;
     use elora_adventure::check::{map_links, map_objects};
-
-    fn shipped(name: &str) -> String {
-        format!(
-            "{}/../../maps/adventure/{name}.{}",
-            env!("CARGO_MANIFEST_DIR"),
-            elora_map::EXTENSION
-        )
-    }
 
     #[test]
     fn forest_maps_match_content_and_link_up() {
@@ -493,57 +433,21 @@ mod tests {
 
     #[test]
     fn shipped_forest_maps_are_current() {
-        for (name, map) in maps() {
-            let file = std::fs::read(shipped(name)).expect("map present");
-            assert_eq!(
-                elora_map::decode(&file).expect("valid"),
-                map,
-                "{name} outdated – write_chapter2_maps -- --ignored"
-            );
-        }
+        assert_current(ADVENTURE, maps(), "write_chapter2_maps");
     }
 
     #[test]
     #[ignore = "writes maps/adventure/*.emap"]
     fn write_chapter2_maps() {
-        for (name, map) in maps() {
-            map.save(std::path::Path::new(&shipped(name))).unwrap();
-        }
+        write_maps(ADVENTURE, maps());
     }
 
     /// Overview: `… chapter2_sheets -- --ignored` → `target/chapter2-<karte>.svg`.
     #[test]
     #[ignore = "only writes files for visual inspection"]
     fn chapter2_sheets() {
-        use crate::editor::panel::Preview;
-        use crate::editor::view;
         for (name, map) in maps() {
-            let mut editor = super::super::Editor::new(None, std::path::PathBuf::from("maps"));
-            editor.map = map;
-            editor.center_view();
-            editor.visible.grid = false;
-            let size =
-                Vec2::new(editor.map.width as f32, editor.map.height as f32) * TILE_SIZE as f32;
-            let window = Vec2::new(2400.0, 2400.0 * size.y / size.x);
-            editor.zoom = size.x / window.x;
-            let cam = view::camera(&editor, window, window * 0.5);
-            let mut batch = elora_render::ShapeBatch::default();
-            view::draw(
-                &mut batch,
-                &editor,
-                &mut crate::map_view::MapView::default(),
-                &crate::items::ItemArt::load(),
-                &cam,
-                0.0,
-                Preview::None,
-            );
-            let tl = cam.top_left();
-            let svg = batch.debug_svg(tl, tl + cam.size, view::OUTSIDE);
-            let path = format!(
-                "{}/../../target/chapter2-{name}.svg",
-                env!("CARGO_MANIFEST_DIR")
-            );
-            std::fs::write(path, svg).unwrap();
+            write_sheet(map, 2400.0, &format!("chapter2-{name}"));
         }
     }
 }

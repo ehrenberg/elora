@@ -15,48 +15,14 @@ use elora_map::adventure::CameraMode;
 use elora_map::{Map, ObjectKind};
 use elora_sim::Vec2;
 
-use super::prologue::{
-    Grid, T, animate, at, chest, climb_vault, corner, creature, decor, finish, jerk_gate, npc, o,
-    plant, pull_vault, sign, stomp_vault,
+use super::mapgen::{
+    Grid, T, animate, at, big, chest, climb_vault, collectible, corner, creature, decor, edge_exit,
+    finish, jerk_gate, npc, o, plant, pull_vault, sign, stomp_vault, thorn_decor,
 };
 use super::release;
 
-/// Transition over the full map height at the edge (E-279).
-fn edge_exit(id: &str, x: usize, h: usize, map: &str, spawn: &str) -> elora_map::Object {
-    o(
-        id,
-        corner(x, 0),
-        ObjectKind::Exit {
-            size: Vec2::new(2.0 * T, h as f32 * T),
-            map: map.into(),
-            spawn: spawn.into(),
-            on_touch: true,
-        },
-    )
-}
-
-/// Decoration in a different size (giant flowers, spring).
-fn big(name: &str, tx: f32, ty: usize, scale: f32) -> elora_map::Decor {
-    let mut d = decor(name, tx, ty);
-    d.scale = scale;
-    d
-}
-
 fn bee(id: &str, tx: usize, ty: usize) -> elora_map::Object {
-    o(
-        id,
-        at(tx, ty, 24.0),
-        ObjectKind::Collectible { item: "bee".into() },
-    )
-}
-
-/// Thorn vines above a row of thorns (row `y` = top edge of the thorns).
-fn thorn_decor(m: &mut Map, y: usize, x0: usize, x1: usize) {
-    let mut x = x0;
-    while x < x1 {
-        m.decor_front.push(decor("thorns", x as f32 + 0.5, y + 1));
-        x += 2;
-    }
+    collectible(id, "bee", tx, ty)
 }
 
 /// Blütenwiesen 2, 300 × 60: apiary with honeycomb, giant flower forest with leaf ledges,
@@ -364,16 +330,9 @@ pub fn all_maps() -> Vec<(&'static str, Map)> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::editor::mapgen::{ADVENTURE, assert_current, write_maps, write_sheet};
     use elora_adventure::Content;
     use elora_adventure::check::{map_links, map_objects};
-
-    fn shipped(name: &str) -> String {
-        format!(
-            "{}/../../maps/adventure/{name}.{}",
-            env!("CARGO_MANIFEST_DIR"),
-            elora_map::EXTENSION
-        )
-    }
 
     #[test]
     fn adventure_maps_match_content_and_link_up() {
@@ -410,62 +369,25 @@ mod tests {
 
     #[test]
     fn shipped_chapter_maps_are_current() {
-        for (name, map) in [
-            ("meadow-2", meadow_2()),
-            ("meadow-3", meadow_3()),
-            ("meadow-arena", meadow_arena()),
-        ] {
-            let file = std::fs::read(shipped(name)).expect("map present");
-            assert_eq!(
-                elora_map::decode(&file).expect("valid"),
-                map,
-                "{name} outdated – write_chapter1_maps -- --ignored"
-            );
-        }
+        assert_current(
+            ADVENTURE,
+            all_maps().into_iter().skip(2),
+            "write_chapter1_maps",
+        );
     }
 
     #[test]
     #[ignore = "writes maps/adventure/*.emap"]
     fn write_chapter1_maps() {
-        for (name, map) in all_maps() {
-            map.save(std::path::Path::new(&shipped(name))).unwrap();
-        }
+        write_maps(ADVENTURE, all_maps());
     }
 
     /// Overview: `… chapter1_sheets -- --ignored` → `target/chapter1-<karte>.svg`.
     #[test]
     #[ignore = "only writes files for visual inspection"]
     fn chapter1_sheets() {
-        use crate::editor::panel::Preview;
-        use crate::editor::view;
-        use elora_sim::TILE_SIZE;
         for (name, map) in all_maps().into_iter().skip(2) {
-            let mut editor = super::super::Editor::new(None, std::path::PathBuf::from("maps"));
-            editor.map = map;
-            editor.center_view();
-            editor.visible.grid = false;
-            let size =
-                Vec2::new(editor.map.width as f32, editor.map.height as f32) * TILE_SIZE as f32;
-            let window = Vec2::new(2400.0, 2400.0 * size.y / size.x);
-            editor.zoom = size.x / window.x;
-            let cam = view::camera(&editor, window, window * 0.5);
-            let mut batch = elora_render::ShapeBatch::default();
-            view::draw(
-                &mut batch,
-                &editor,
-                &mut crate::map_view::MapView::default(),
-                &crate::items::ItemArt::load(),
-                &cam,
-                0.0,
-                Preview::None,
-            );
-            let tl = cam.top_left();
-            let svg = batch.debug_svg(tl, tl + cam.size, view::OUTSIDE);
-            let path = format!(
-                "{}/../../target/chapter1-{name}.svg",
-                env!("CARGO_MANIFEST_DIR")
-            );
-            std::fs::write(path, svg).unwrap();
+            write_sheet(map, 2400.0, &format!("chapter1-{name}"));
         }
     }
 }

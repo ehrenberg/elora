@@ -17,9 +17,9 @@ use elora_map::adventure::CameraMode;
 use elora_map::{Map, Object, ObjectKind, Weather, WeatherKind};
 use elora_sim::{TILE_SIZE, Vec2};
 
-use super::chapter3::{big, edge_exit, zone};
-use super::prologue::{
-    Grid, T, animate, at, chest, corner, creature, decor, finish, npc, o, plant, sign,
+use super::mapgen::{
+    Grid, T, animate, at, big, chest, chimney, collectible, corner, creature, decor, edge_exit,
+    finish, npc, o, plant, sign, zone,
 };
 use super::release::{self, Theme};
 
@@ -44,13 +44,7 @@ fn winter(m: Map) -> Map {
 
 /// Clear crystal (collectible for Klonk, D-M24-09) on the ground of row `ty`.
 fn crystal(id: &str, tx: usize, ty: usize) -> Object {
-    o(
-        id,
-        at(tx, ty, 24.0),
-        ObjectKind::Collectible {
-            item: "clear_crystal".into(),
-        },
-    )
+    collectible(id, "clear_crystal", tx, ty)
 }
 
 /// Fireplace (decoration) with warmth zone `feuer…` (E-342) on the ground of row `ty`.
@@ -95,14 +89,6 @@ fn traces(m: &mut Map, spots: &[(f32, usize)]) {
     for &(tx, ty) in spots {
         m.decor_front.push(big("grey-trail-ice", tx, ty, 0.7));
     }
-}
-
-/// Climbing chimney as on the abilities test map: two climbing walls in the columns `x0` and
-/// `x0 + 4` (three tiles of air between them) from row `top` to `bottom`.
-fn chimney(g: &mut Grid, x0: usize, top: usize, bottom: usize) {
-    g.fill((x0, x0), (top, bottom), '|');
-    g.fill((x0 + 1, x0 + 3), (top, bottom), '.');
-    g.fill((x0 + 4, x0 + 4), (top, bottom), '|');
 }
 
 /// Glacier foot, 240 × 60: from the passage under the mountain trail onto the first slopes,
@@ -428,17 +414,10 @@ const HALL_MID: f32 = 43.5 * TILE_SIZE as f32;
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::editor::mapgen::{ADVENTURE, assert_current, write_maps, write_sheet};
     use elora_adventure::Content;
     use elora_adventure::check::{map_links, map_objects};
     use elora_sim::Tile;
-
-    fn shipped(name: &str) -> String {
-        format!(
-            "{}/../../maps/adventure/{name}.{}",
-            env!("CARGO_MANIFEST_DIR"),
-            elora_map::EXTENSION
-        )
-    }
 
     #[test]
     fn mountain_maps_match_content_and_link_up() {
@@ -545,57 +524,21 @@ mod tests {
 
     #[test]
     fn shipped_mountain_maps_are_current() {
-        for (name, map) in maps() {
-            let file = std::fs::read(shipped(name)).expect("map present");
-            assert_eq!(
-                elora_map::decode(&file).expect("valid"),
-                map,
-                "{name} outdated – write_chapter4_maps -- --ignored"
-            );
-        }
+        assert_current(ADVENTURE, maps(), "write_chapter4_maps");
     }
 
     #[test]
     #[ignore = "writes maps/adventure/*.emap"]
     fn write_chapter4_maps() {
-        for (name, map) in maps() {
-            map.save(std::path::Path::new(&shipped(name))).unwrap();
-        }
+        write_maps(ADVENTURE, maps());
     }
 
     /// Overview: `… chapter4_sheets -- --ignored` → `target/chapter4-<karte>.svg`.
     #[test]
     #[ignore = "only writes files for visual inspection"]
     fn chapter4_sheets() {
-        use crate::editor::panel::Preview;
-        use crate::editor::view;
         for (name, map) in maps() {
-            let mut editor = super::super::Editor::new(None, std::path::PathBuf::from("maps"));
-            editor.map = map;
-            editor.center_view();
-            editor.visible.grid = false;
-            let size =
-                Vec2::new(editor.map.width as f32, editor.map.height as f32) * TILE_SIZE as f32;
-            let window = Vec2::new(2400.0, 2400.0 * size.y / size.x);
-            editor.zoom = size.x / window.x;
-            let cam = view::camera(&editor, window, window * 0.5);
-            let mut batch = elora_render::ShapeBatch::default();
-            view::draw(
-                &mut batch,
-                &editor,
-                &mut crate::map_view::MapView::default(),
-                &crate::items::ItemArt::load(),
-                &cam,
-                0.0,
-                Preview::None,
-            );
-            let tl = cam.top_left();
-            let svg = batch.debug_svg(tl, tl + cam.size, view::OUTSIDE);
-            let path = format!(
-                "{}/../../target/chapter4-{name}.svg",
-                env!("CARGO_MANIFEST_DIR")
-            );
-            std::fs::write(path, svg).unwrap();
+            write_sheet(map, 2400.0, &format!("chapter4-{name}"));
         }
     }
 }

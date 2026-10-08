@@ -14,6 +14,8 @@ mod chapter3;
 #[cfg(test)]
 mod chapter4;
 pub mod look;
+#[cfg(test)]
+mod mapgen;
 pub mod panel;
 pub mod panel_adventure;
 pub mod panel_look;

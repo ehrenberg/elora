@@ -10,352 +10,15 @@
     clippy::too_many_lines
 )]
 
-use std::time::Instant;
+use elora_map::{Art, Decor, Map, ObjectKind};
+use elora_sim::Vec2;
 
-use elora_map::look::{Curve, EnvKind, EnvPoint, EnvRef, Envelope};
-use elora_map::{Art, Decor, Map, Object, ObjectKind};
-use elora_sim::{TILE_SIZE, Vec2};
-
-use super::Editor;
 use super::look::Preset;
+use super::mapgen::{
+    Grid, T, animate, at, chest, corner, creature, decor, decor_px, finish, jerk_gate, npc, o,
+    plant, pull_vault, sign, stomp_vault,
+};
 use super::release::{self, Theme};
-
-pub(super) const T: f32 = TILE_SIZE as f32;
-
-/// Character grid of the map; ground from `floor` downwards, open at the sides (E-279).
-pub(super) struct Grid(pub(super) Vec<Vec<char>>);
-
-impl Grid {
-    pub(super) fn new(w: usize, h: usize, floor: usize) -> Self {
-        let mut g = vec![vec!['.'; w]; h];
-        for (y, row) in g.iter_mut().enumerate() {
-            for c in row.iter_mut() {
-                if y >= floor {
-                    *c = '#';
-                }
-            }
-        }
-        Self(g)
-    }
-
-    /// Fill a rectangle (columns `x`, rows `y`, each inclusive).
-    pub(super) fn fill(&mut self, x: (usize, usize), y: (usize, usize), c: char) {
-        for row in &mut self.0[y.0..=y.1] {
-            for cell in &mut row[x.0..=x.1] {
-                *cell = c;
-            }
-        }
-    }
-
-    /// Set the ground of columns `x0..=x1` at row `top` (air above).
-    pub(super) fn ground(&mut self, x0: usize, x1: usize, top: usize) {
-        for (y, row) in self.0.iter_mut().enumerate() {
-            for cell in &mut row[x0..=x1] {
-                *cell = if y >= top { '#' } else { '.' };
-            }
-        }
-    }
-
-    /// Map from the grid; the `S` is only needed by the text format, the map uses entrances.
-    pub(super) fn map(&self, name: &str) -> Map {
-        let mut g = self.0.clone();
-        g[0][1] = 'S';
-        let rows: Vec<String> = g.iter().map(|r| r.iter().collect()).collect();
-        let r: Vec<&str> = rows.iter().map(String::as_str).collect();
-        let mut m = Map::from_rows(name, &r).expect("layout valid");
-        m.entities.clear();
-        m
-    }
-}
-
-/// Hook jerk spot (M2.1.5): stone wall on the left, shaft 5 tiles wide,
-/// hook flower 12 tiles above the ground on the right side, on the right a stone tower 7 tiles wide
-/// whose top edge lies 9 tiles above the flower – only reachable with the hook jerk. Checked in
-/// `crates/elora-sim/tests/abilities.rs` (`jerk_gate_needs_the_hook_jerk`). At the bottom a
-/// passage (3 tiles high) leads through wall and tower so the path stays free. Returns the row
-/// of the tower's top edge.
-pub(super) fn jerk_gate(g: &mut Grid, x0: usize, floor: usize) -> usize {
-    let top = floor - 21;
-    g.fill((x0, x0), (top, floor - 4), '%');
-    g.fill((x0 + 1, x0 + 5), (top, floor - 1), '.');
-    g.fill((x0 + 5, x0 + 5), (floor - 12, floor - 12), '*');
-    g.fill((x0 + 6, x0 + 12), (top, floor - 4), '%');
-    top
-}
-
-/// Pull chest (R2-M2.2, M2.2.6): small stone hut (columns `x0..x0+4`) with a gate on the left and
-/// a chest inside; 10 tiles above the ground hangs a root with a pull switch (`merker <flag>`).
-/// Can only be opened with the pull hook. Returns switch, gate and chest.
-pub(super) fn pull_vault(
-    g: &mut Grid,
-    id: &str,
-    x0: usize,
-    floor: usize,
-    flag: &str,
-    contents: &[(&str, u32)],
-) -> Vec<Object> {
-    g.fill((x0, x0 + 4), (floor - 4, floor - 4), '%');
-    g.fill((x0 + 4, x0 + 4), (floor - 4, floor - 1), '%');
-    g.fill((x0 + 1, x0 + 3), (floor - 3, floor - 1), '.');
-    g.fill((x0 + 2, x0 + 2), (floor - 12, floor - 11), '#');
-    vec![
-        o(
-            &format!("{id}-pull"),
-            Vec2::new((x0 as f32 + 2.5) * T, (floor - 10) as f32 * T + 14.0),
-            ObjectKind::Switch {
-                flag: flag.into(),
-                once: true,
-                trigger: elora_map::adventure::SwitchTrigger::Hook,
-            },
-        ),
-        o(
-            &format!("{id}-gate"),
-            corner(x0, floor - 3),
-            ObjectKind::Door {
-                size: (1, 3),
-                open_if: format!("flag {flag}"),
-            },
-        ),
-        chest(&format!("{id}-chest"), x0 + 2, floor, contents),
-    ]
-}
-
-/// Stomp chamber (R2-M2.3, M2.3.6): crumbling floor (three tiles wide, two rows) above a
-/// small chamber (five tiles wide, three high) with a chest – can only be opened with stomp. From
-/// the chamber floor to the surface there are five rows, a jump leads out again.
-/// `x0` is the left wall, `floor` the top edge of the ground. Returns the chest `<id>-truhe`.
-pub(super) fn stomp_vault(
-    g: &mut Grid,
-    id: &str,
-    x0: usize,
-    floor: usize,
-    contents: &[(&str, u32)],
-) -> Object {
-    g.fill((x0, x0 + 6), (floor, floor + 5), '#');
-    g.fill((x0 + 1, x0 + 5), (floor + 2, floor + 4), '.');
-    g.fill((x0 + 2, x0 + 4), (floor, floor + 1), ':');
-    chest(&format!("{id}-chest"), x0 + 5, floor + 5, contents)
-}
-
-/// Climbing spot (R2-M2.4, M2.4.7): a hanging chimney of two climbing walls (columns `x0`
-/// and `x0 + 4`, three tiles of air between them) that end four rows above the ground – you walk
-/// through underneath, a jump reaches the walls. At the top right an unhookable
-/// ledge 19 rows above the ground with a chest: only reachable with the ice grip.
-/// `floor` is the top edge of the ground. Returns the chest `<id>-truhe`.
-pub(super) fn climb_vault(
-    g: &mut Grid,
-    id: &str,
-    x0: usize,
-    floor: usize,
-    contents: &[(&str, u32)],
-) -> Object {
-    g.fill((x0, x0), (floor - 18, floor - 5), '|');
-    g.fill((x0 + 4, x0 + 4), (floor - 18, floor - 5), '|');
-    g.fill((x0 + 5, x0 + 8), (floor - 19, floor - 19), '%');
-    chest(&format!("{id}-chest"), x0 + 7, floor - 19, contents)
-}
-
-/// Center above the ground (top edge of row `ty`) in column `tx` for an object of height `h`.
-pub(super) fn at(tx: usize, ty: usize, h: f32) -> Vec2 {
-    Vec2::new(tx as f32 * T + T / 2.0, ty as f32 * T - h / 2.0 - 1.0)
-}
-
-pub(super) fn corner(tx: usize, ty: usize) -> Vec2 {
-    Vec2::new(tx as f32 * T, ty as f32 * T)
-}
-
-pub(super) fn o(id: &str, pos: Vec2, kind: ObjectKind) -> Object {
-    Object {
-        id: id.into(),
-        pos,
-        kind,
-    }
-}
-
-pub(super) fn npc(id: &str, tx: usize, ty: usize, facing: i8, walk: f32) -> Object {
-    o(
-        id,
-        at(tx, ty, 28.0),
-        ObjectKind::Npc {
-            character: id.into(),
-            dialog: id.into(),
-            facing,
-            walk,
-        },
-    )
-}
-
-/// Signpost with a hint (E-273).
-pub(super) fn sign(dialog: &str, tx: usize, ty: usize) -> Object {
-    o(
-        dialog,
-        at(tx, ty, 28.0),
-        ObjectKind::Npc {
-            character: "signpost".into(),
-            dialog: dialog.into(),
-            facing: 1,
-            walk: 0.0,
-        },
-    )
-}
-
-pub(super) fn creature(id: &str, kind: &str, tx: usize, ty: usize, h: f32) -> Object {
-    o(
-        id,
-        at(tx, ty, h),
-        ObjectKind::Creature {
-            kind: kind.into(),
-            persistent: false,
-        },
-    )
-}
-
-pub(super) fn chest(id: &str, tx: usize, ty: usize, contents: &[(&str, u32)]) -> Object {
-    o(
-        id,
-        at(tx, ty, 26.0),
-        ObjectKind::Chest {
-            contents: contents.iter().map(|(i, n)| ((*i).into(), *n)).collect(),
-            lock: String::new(),
-        },
-    )
-}
-
-pub(super) fn plant(id: &str, tx: usize, ty: usize) -> Object {
-    o(id, at(tx, ty, 16.0), ObjectKind::HealPlant { heal: 2 })
-}
-
-/// Decoration on the ground (top edge of row `ty`), centered in column `tx` (half tiles allowed).
-pub(super) fn decor(name: &str, tx: f32, ty: usize) -> Decor {
-    Decor::new(
-        Art::Builtin(name.into()),
-        Vec2::new(tx * T + T / 2.0, ty as f32 * T),
-    )
-}
-
-/// Decoration at a world position (pixels), e.g. on roofs and benches.
-pub(super) fn decor_px(name: &str, x: f32, y: f32) -> Decor {
-    Decor::new(Art::Builtin(name.into()), Vec2::new(x, y))
-}
-
-/// Append an animation; returns its index.
-fn envelope(map: &mut Map, name: &str, kind: EnvKind, points: &[(u32, [f32; 4], Curve)]) -> u16 {
-    map.envelopes.push(Envelope {
-        name: name.into(),
-        kind,
-        synced: false,
-        points: points
-            .iter()
-            .map(|&(time_ms, value, curve)| EnvPoint {
-                time_ms,
-                value,
-                curve,
-            })
-            .collect(),
-    });
-    u16::try_from(map.envelopes.len() - 1).expect("few animations")
-}
-
-/// Small movements (detail): butterflies flutter, smoke rises, flags wave.
-pub(super) fn animate(map: &mut Map, smoke: &[Vec2]) {
-    use Curve::{Linear, Smooth};
-    let flutter = envelope(
-        map,
-        "Flattern",
-        EnvKind::Position,
-        &[
-            (0, [0.0, 0.0, 0.0, 0.0], Smooth),
-            (1500, [30.0, -24.0, 8.0, 0.0], Smooth),
-            (3000, [64.0, -4.0, -6.0, 0.0], Smooth),
-            (4500, [30.0, 18.0, 6.0, 0.0], Smooth),
-            (6000, [0.0, 0.0, 0.0, 0.0], Smooth),
-        ],
-    );
-    let wave = envelope(
-        map,
-        "Wehen",
-        EnvKind::Position,
-        &[
-            (0, [0.0, 0.0, -1.5, 0.0], Smooth),
-            (1800, [0.0, 0.0, 1.5, 0.0], Smooth),
-            (3600, [0.0, 0.0, -1.5, 0.0], Smooth),
-        ],
-    );
-    let rise = envelope(
-        map,
-        "Rauch",
-        EnvKind::Position,
-        &[
-            (0, [0.0, 0.0, 0.0, 0.0], Linear),
-            (3000, [14.0, -90.0, 0.0, 0.0], Linear),
-        ],
-    );
-    let fade = envelope(
-        map,
-        "Rauch verblasst",
-        EnvKind::Color,
-        &[
-            (0, [1.0, 1.0, 1.0, 0.0], Linear),
-            (400, [1.0, 1.0, 1.0, 0.9], Linear),
-            (3000, [1.0, 1.0, 1.0, 0.0], Linear),
-        ],
-    );
-    // glowing mushrooms pulse (R2-M2.2)
-    let pulse = envelope(
-        map,
-        "Leuchten der Pilze",
-        EnvKind::Color,
-        &[
-            (0, [1.0, 1.0, 1.0, 1.0], Smooth),
-            (1300, [0.82, 0.92, 1.0, 0.85], Smooth),
-            (2600, [1.0, 1.0, 1.0, 1.0], Smooth),
-        ],
-    );
-    let mut k = 0;
-    for d in map.decor_front.iter_mut().chain(map.decor_back.iter_mut()) {
-        let Art::Builtin(name) = &d.art else {
-            continue;
-        };
-        k += 1;
-        let offset_ms = (k * 977) % 6000;
-        match name.as_str() {
-            "butterfly" => {
-                d.pos_env = Some(EnvRef {
-                    index: flutter,
-                    offset_ms,
-                });
-            }
-            "glow_mushrooms" => {
-                d.color_env = Some(EnvRef {
-                    index: pulse,
-                    offset_ms: offset_ms % 2600,
-                });
-            }
-            n if n.starts_with("banner-") => {
-                d.pos_env = Some(EnvRef {
-                    index: wave,
-                    offset_ms,
-                });
-            }
-            _ => {}
-        }
-    }
-    for (i, &at) in smoke.iter().enumerate() {
-        for puff in 0..2 {
-            let offset_ms = i32::try_from(i * 700 + puff * 1500).unwrap_or(0);
-            let mut d = decor_px("smoke", at.x, at.y);
-            d.pos_env = Some(EnvRef {
-                index: rise,
-                offset_ms,
-            });
-            d.color_env = Some(EnvRef {
-                index: fade,
-                offset_ms,
-            });
-            map.decor_back.push(d);
-        }
-    }
-}
 
 /// Grass in front of the playfield (Tauwinkel: no colorful flowers, E-210).
 const GRASS: Theme = Theme {
@@ -373,33 +36,6 @@ const GRASS: Theme = Theme {
     front_density: 25,
     back_spacing: 1000,
 };
-
-pub(super) fn finish(map: Map, theme: &Theme) -> Map {
-    let mut editor = Editor::new(None, std::path::PathBuf::from("maps"));
-    let (back, front) = (map.decor_back.clone(), map.decor_front.clone());
-    editor.map = map;
-    editor.map.author = Some("Elora-Team".into());
-    editor.map.decor_back.clear();
-    editor.map.decor_front.clear();
-    editor.apply_preset(Preset::Day, Instant::now());
-    release::place(theme, &mut editor.map);
-    // large decoration only on continuous ground (not on hook rocks and ledges)
-    let auto = std::mem::take(&mut editor.map.decor_back);
-    let map = &editor.map;
-    let grounded = |d: &Decor| {
-        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-        let (tx, ty) = ((d.pos.x / T) as usize, (d.pos.y / T) as usize);
-        (ty..map.height).all(|y| map.tiles[y * map.width + tx] != elora_sim::Tile::Air)
-    };
-    let back: Vec<Decor> = back
-        .into_iter()
-        .chain(auto.into_iter().filter(|d| grounded(d)))
-        .collect();
-    editor.map.decor_back = back;
-    // custom decoration first (behind the automatic one)
-    editor.map.decor_front.splice(0..0, front);
-    editor.map
-}
 
 /// Tauwinkel, 450 × 50 (E-280): steep slope in the west, Elora's garden with tree house, hedge,
 /// ledge, well square, workshop and Tüftel's yard (E-281), climb to the upper village with smithy,
@@ -899,16 +535,9 @@ pub fn meadow() -> Map {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::editor::mapgen::{ADVENTURE, assert_current, write_maps, write_sheet};
     use elora_adventure::Content;
     use elora_adventure::check::{map_links, map_objects};
-
-    fn shipped(name: &str) -> String {
-        format!(
-            "{}/../../maps/adventure/{name}.{}",
-            env!("CARGO_MANIFEST_DIR"),
-            elora_map::EXTENSION
-        )
-    }
 
     #[test]
     fn prologue_maps_match_content_and_link_up() {
@@ -936,59 +565,27 @@ mod tests {
         assert!(beetle >= 3);
     }
 
+    fn maps() -> [(&'static str, Map); 2] {
+        [("tauwinkel", tauwinkel()), ("meadow-1", meadow())]
+    }
+
     #[test]
     fn shipped_prologue_maps_are_current() {
-        for (name, map) in [("tauwinkel", tauwinkel()), ("meadow-1", meadow())] {
-            let file = std::fs::read(shipped(name)).expect("map present");
-            assert_eq!(
-                elora_map::decode(&file).expect("valid"),
-                map,
-                "{name} outdated – write_prologue_maps -- --ignored"
-            );
-        }
+        assert_current(ADVENTURE, maps(), "write_prologue_maps");
     }
 
     #[test]
     #[ignore = "writes maps/adventure/*.emap"]
     fn write_prologue_maps() {
-        for (name, map) in [("tauwinkel", tauwinkel()), ("meadow-1", meadow())] {
-            map.save(std::path::Path::new(&shipped(name))).unwrap();
-        }
+        write_maps(ADVENTURE, maps());
     }
 
     /// Overview: `… prologue_sheets -- --ignored` → `target/prolog-<karte>.svg`.
     #[test]
     #[ignore = "only writes files for visual inspection"]
     fn prologue_sheets() {
-        use crate::editor::panel::Preview;
-        use crate::editor::view;
-        for (name, map) in [("tauwinkel", tauwinkel()), ("meadow-1", meadow())] {
-            let mut editor = Editor::new(None, std::path::PathBuf::from("maps"));
-            editor.map = map;
-            editor.center_view();
-            editor.visible.grid = false;
-            let size =
-                Vec2::new(editor.map.width as f32, editor.map.height as f32) * TILE_SIZE as f32;
-            let window = Vec2::new(2400.0, 2400.0 * size.y / size.x);
-            editor.zoom = size.x / window.x;
-            let cam = view::camera(&editor, window, window * 0.5);
-            let mut batch = elora_render::ShapeBatch::default();
-            view::draw(
-                &mut batch,
-                &editor,
-                &mut crate::map_view::MapView::default(),
-                &crate::items::ItemArt::load(),
-                &cam,
-                0.0,
-                Preview::None,
-            );
-            let tl = cam.top_left();
-            let svg = batch.debug_svg(tl, tl + cam.size, view::OUTSIDE);
-            let path = format!(
-                "{}/../../target/prolog-{name}.svg",
-                env!("CARGO_MANIFEST_DIR")
-            );
-            std::fs::write(path, svg).unwrap();
+        for (name, map) in maps() {
+            write_sheet(map, 2400.0, &format!("prolog-{name}"));
         }
     }
 }

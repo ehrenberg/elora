@@ -9,7 +9,7 @@
 
 use elora_map::{Map, Weather, WeatherKind};
 
-use super::prologue::{Grid, decor, finish};
+use super::mapgen::{Grid, decor, finish};
 use super::release;
 
 /// 140 × 50, start on the left; weather: rain.
@@ -53,25 +53,13 @@ pub fn weather_test() -> Map {
 #[cfg(test)]
 mod tests {
     use super::*;
-
-    fn shipped() -> String {
-        format!(
-            "{}/../../maps/weather-test.{}",
-            env!("CARGO_MANIFEST_DIR"),
-            elora_map::EXTENSION
-        )
-    }
+    use crate::editor::mapgen::{assert_current, write_maps};
 
     #[test]
     fn weather_test_map_is_current_and_rainy() {
-        let file = std::fs::read(shipped()).expect("map present");
-        let map = elora_map::decode(&file).expect("valid");
-        assert_eq!(
-            map,
-            weather_test(),
-            "outdated – write_weather_test_map -- --ignored"
-        );
+        let map = weather_test();
         assert_eq!(map.weather.kind, WeatherKind::Rain);
+        assert_current("", [("weather-test", map)], "write_weather_test_map");
     }
 
     /// Variants to look at: `… write_weather_variants -- --ignored` → `target/wetter-<art>.emap`.
@@ -98,8 +86,6 @@ mod tests {
     #[test]
     #[ignore = "writes maps/weather-test.emap"]
     fn write_weather_test_map() {
-        weather_test()
-            .save(std::path::Path::new(&shipped()))
-            .unwrap();
+        write_maps("", [("weather-test", weather_test())]);
     }
 }

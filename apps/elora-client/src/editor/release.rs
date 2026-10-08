@@ -318,6 +318,7 @@ pub(super) fn apply_look(theme: &Theme, map: &mut Map) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::editor::mapgen::{assert_current, write_maps, write_sheet};
 
     #[test]
     fn release_maps_are_valid_and_support_their_modes() {
@@ -345,23 +346,17 @@ mod tests {
         }
     }
 
+    /// All release maps with their file names.
+    fn maps() -> Vec<(&'static str, Map)> {
+        THEMES.iter().map(|t| (t.file, build(t))).collect()
+    }
+
     #[test]
     fn shipped_release_maps_are_current() {
         for theme in &THEMES {
-            let path = format!(
-                "{}/../../maps/{}.{}",
-                env!("CARGO_MANIFEST_DIR"),
-                theme.file,
-                elora_map::EXTENSION
-            );
-            let shipped = elora_map::decode(&std::fs::read(&path).unwrap()).unwrap();
-            assert!(
-                shipped == build(theme),
-                "{} outdated – write_release_maps -- --ignored",
-                theme.file
-            );
-            assert_eq!(shipped.weather, weather_of(theme.file));
+            assert_eq!(build(theme).weather, weather_of(theme.file));
         }
+        assert_current("", maps(), "write_release_maps");
         assert!(weather_of("dm-meadow").is_clear());
     }
 
@@ -369,15 +364,7 @@ mod tests {
     #[test]
     #[ignore = "writes maps/*.emap"]
     fn write_release_maps() {
-        for theme in &THEMES {
-            let path = format!(
-                "{}/../../maps/{}.{}",
-                env!("CARGO_MANIFEST_DIR"),
-                theme.file,
-                elora_map::EXTENSION
-            );
-            build(theme).save(std::path::Path::new(&path)).unwrap();
-        }
+        write_maps("", maps());
     }
 
     /// Overview of every release map: `… release_sheets -- --ignored` →
@@ -385,38 +372,8 @@ mod tests {
     #[test]
     #[ignore = "only writes files for visual inspection"]
     fn release_sheets() {
-        use crate::editor::panel::Preview;
-        use crate::editor::view;
-        for theme in &THEMES {
-            let mut editor = Editor::new(None, std::path::PathBuf::from("maps"));
-            editor.map = build(theme);
-            editor.center_view();
-            editor.visible.grid = false;
-            #[allow(clippy::cast_precision_loss)]
-            let size =
-                Vec2::new(editor.map.width as f32, editor.map.height as f32) * TILE_SIZE as f32;
-            let window = Vec2::new(1600.0, 1600.0 * size.y / size.x);
-            editor.zoom = size.x / window.x;
-            // camera roughly at ground level as in the game, so that the parallax layers are right
-            let cam = view::camera(&editor, window, window * 0.5);
-            let mut batch = elora_render::ShapeBatch::default();
-            view::draw(
-                &mut batch,
-                &editor,
-                &mut crate::map_view::MapView::default(),
-                &crate::items::ItemArt::load(),
-                &cam,
-                0.0,
-                Preview::None,
-            );
-            let tl = cam.top_left();
-            let svg = batch.debug_svg(tl, tl + cam.size, view::OUTSIDE);
-            let path = format!(
-                "{}/../../target/release-{}.svg",
-                env!("CARGO_MANIFEST_DIR"),
-                theme.file
-            );
-            std::fs::write(path, svg).unwrap();
+        for (file, map) in maps() {
+            write_sheet(map, 1600.0, &format!("release-{file}"));
         }
     }
 }
