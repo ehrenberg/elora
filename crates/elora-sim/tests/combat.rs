@@ -1,11 +1,11 @@
-//! Kampf-Tests (M2): Waffen, Schaden, Pickups, Tod und Respawn.
+//! Combat tests (M2): weapons, damage, pickups, death and respawn.
 
 use elora_sim::{
     Collision, DeathCause, DummyPattern, Event, PickupKind, PlayerInput, Tile, Tuning, Vec2,
     Weapon, World,
 };
 
-/// Offene Arena 60×20 Tiles, Boden in Zeile 18.
+/// Open arena 60×20 tiles, floor in row 18.
 fn arena_tiles() -> Vec<Tile> {
     let (w, h) = (60, 20);
     let mut tiles = vec![Tile::Air; w * h];
@@ -25,8 +25,8 @@ fn arena() -> World {
     World::new(Tuning::default(), Collision::new(60, 20, arena_tiles()))
 }
 
-/// Bodenposition (Figur steht) in Tile-Spalte `tx`. Die Box-Unterkante liegt
-/// 1 Einheit über dem Boden, sonst würde die gerundete Ecke schon im Boden stecken.
+/// Floor position (figure standing) in tile column `tx`. The bottom of the box sits
+/// 1 unit above the floor, otherwise the rounded corner would already be in the floor.
 fn ground(tx: i32) -> Vec2 {
     Vec2::new(tx as f32 * 32.0 + 16.0, 18.0 * 32.0 - 15.0)
 }
@@ -35,7 +35,7 @@ fn idle() -> PlayerInput {
     PlayerInput::default()
 }
 
-/// Eingabe „zielt auf (x, y) relativ“ mit Feuer-Zähler `fire`.
+/// Input "aims at (x, y) relative" with fire counter `fire`.
 fn aim(x: i32, y: i32, fire: u8) -> PlayerInput {
     PlayerInput {
         target_x: x,
@@ -61,7 +61,7 @@ fn give(w: &mut World, i: usize, weapon: Weapon) {
     ch.arsenal.active = weapon;
 }
 
-/// Zwei stehende Spieler: 0 bei `a`, 1 bei `b`.
+/// Two standing players: 0 at `a`, 1 at `b`.
 fn duel(a: i32, b: i32) -> World {
     let mut w = arena();
     w.spawn(ground(a));
@@ -82,8 +82,8 @@ fn hammer_hits_and_knocks_up_and_away() {
             .iter()
             .any(|e| matches!(e, Event::HammerHit { .. }))
     );
-    // nach einem Treffer: Sperre 1/3 s = 16 Ticks; wie im Original wird im selben
-    // Tick bereits einmal heruntergezählt
+    // after a hit: lockout 1/3 s = 16 ticks; as in the original it is already counted
+    // down once in the same tick
     assert_eq!(w.character(0).unwrap().arsenal.reload_timer, 15);
 }
 
@@ -99,7 +99,7 @@ fn hammer_miss_uses_fire_delay() {
 fn hammer_needs_a_click_not_just_holding() {
     let mut w = duel(10, 11);
     w.step(&[aim(100, 0, 1), idle()]);
-    run(&mut w, &[aim(100, 0, 1), idle()], 60); // Taste bleibt gedrückt
+    run(&mut w, &[aim(100, 0, 1), idle()], 60); // key stays pressed
     assert_eq!(health(&w, 1), 7, "Hammer ist kein Dauerfeuer");
 }
 
@@ -119,11 +119,11 @@ fn hammer_does_not_hit_through_walls() {
 
 #[test]
 fn laser_hits_with_damage_and_light_knockback() {
-    let mut w = duel(10, 30); // 640 Einheiten entfernt
+    let mut w = duel(10, 30); // 640 units apart
     give(&mut w, 0, Weapon::Laser);
     w.step(&[aim(100, 0, 1), idle()]);
     assert_eq!(health(&w, 1), 5, "T-20: 5 Schaden");
-    // Stoß 2 (E-052), im selben Tick schon einmal Bodenreibung 0,5 → 1
+    // knockback 2 (E-052), ground friction 0.5 already applied once in the same tick → 1
     let vx = w.core(1).unwrap().vel.x;
     assert!((vx - 1.0).abs() < 0.01, "E-052: leichter Stoß, war {vx}");
     assert_eq!(
@@ -134,7 +134,7 @@ fn laser_hits_with_damage_and_light_knockback() {
 
 #[test]
 fn laser_range_is_limited() {
-    let mut w = duel(5, 33); // 896 Einheiten > 850 (T-21)
+    let mut w = duel(5, 33); // 896 units > 850 (T-21)
     give(&mut w, 0, Weapon::Laser);
     w.step(&[aim(100, 0, 1), idle()]);
     assert_eq!(health(&w, 1), 10);
@@ -146,7 +146,7 @@ fn laser_bounces_off_walls() {
     w.spawn(ground(10));
     run(&mut w, &[idle()], 5);
     give(&mut w, 0, Weapon::Laser);
-    // schräg auf den Boden: erster Abprall direkt beim Schuss
+    // diagonally at the floor: first bounce right at the shot
     let mut bounced = false;
     for _ in 0..20 {
         w.step(&[aim(100, 60, 1)]);
@@ -165,14 +165,14 @@ fn laser_is_full_auto() {
     give(&mut w, 0, Weapon::Laser);
     let mut shots = 0;
     for _ in 0..100 {
-        w.step(&[aim(100, -50, 1)]); // gedrückt halten
+        w.step(&[aim(100, -50, 1)]); // hold pressed
         shots += w
             .events
             .iter()
             .filter(|e| matches!(e, Event::Fire { .. }))
             .count();
     }
-    // Feuerverzögerung 750 ms = 37 Ticks → Schüsse bei 0, 38, 76
+    // fire delay 750 ms = 37 ticks → shots at 0, 38, 76
     assert_eq!(shots, 3);
 }
 
@@ -182,7 +182,7 @@ fn grenade_rocket_jump_and_self_damage() {
     w.spawn(ground(20));
     run(&mut w, &[idle()], 5);
     give(&mut w, 0, Weapon::Grenade);
-    w.step(&[aim(0, 100, 1)]); // senkrecht nach unten
+    w.step(&[aim(0, 100, 1)]); // straight down
     let mut min_vy = 0.0f32;
     for _ in 0..10 {
         w.step(&[aim(0, 100, 1)]);
@@ -213,7 +213,7 @@ fn grenade_direct_hit_explodes_on_player() {
 
 #[test]
 fn armor_absorbs_damage_like_original() {
-    // 6 Schaden bei 5 Rüstung: 1 auf HP, 5 auf Rüstung
+    // 6 damage with 5 armour: 1 to HP, 5 to armour
     let mut w2 = duel(10, 18);
     w2.character_mut(1).unwrap().armor = 5;
     give(&mut w2, 0, Weapon::Grenade);
@@ -237,7 +237,7 @@ fn no_ammo_blocks_and_reports() {
     w.spawn(ground(10));
     give(&mut w, 0, Weapon::Laser);
     w.character_mut(0).unwrap().arsenal.slots[Weapon::Laser.index()].ammo = Some(0);
-    w.step(&[aim(100, 0, 0)]); // erste Eingabe nach dem Beitritt zählt nicht als Klick
+    w.step(&[aim(100, 0, 0)]); // first input after joining does not count as a click
     w.step(&[aim(100, 0, 1)]);
     assert!(w.events.iter().any(|e| matches!(e, Event::NoAmmo { .. })));
     assert_eq!(w.character(0).unwrap().arsenal.reload_timer, 6 - 1);
@@ -248,7 +248,7 @@ fn weapon_switch_waits_for_reload() {
     let mut w = arena();
     w.spawn(ground(10));
     give(&mut w, 0, Weapon::Laser);
-    w.step(&[aim(100, -50, 1)]); // Laser feuern → 37 Ticks Reload
+    w.step(&[aim(100, -50, 1)]); // fire laser → 37 ticks reload
     let switch = PlayerInput {
         wanted_weapon: 1,
         ..aim(100, -50, 2)
@@ -267,16 +267,16 @@ fn mouse_wheel_cycles_owned_weapons() {
         .unwrap()
         .arsenal
         .give(Weapon::Laser, 10, 10);
-    w.step(&[idle()]); // erste Eingabe nach dem Beitritt zählt nicht als Klick
+    w.step(&[idle()]); // first input after joining does not count as a click
     w.step(&[PlayerInput {
         next_weapon: 2,
         ..idle()
-    }]); // ein Klick vor
+    }]); // one click forward
     assert_eq!(w.character(0).unwrap().arsenal.active, Weapon::Laser);
     w.step(&[PlayerInput {
         next_weapon: 4,
         ..idle()
-    }]); // noch einer: zurück zum Hammer
+    }]); // another one: back to the hammer
     assert_eq!(w.character(0).unwrap().arsenal.active, Weapon::Hammer);
 }
 
@@ -287,19 +287,19 @@ fn pickups_follow_original_rules() {
     w.add_pickup(PickupKind::Health, ground(10));
     w.add_pickup(PickupKind::Weapon(Weapon::Laser), ground(10));
     w.step(&[idle()]);
-    // volles Leben: Herz bleibt liegen, Laser wird genommen
+    // full health: heart stays, laser is taken
     assert!(w.pickups[0].available());
     assert!(!w.pickups[1].available());
     assert_eq!(
         w.character(0).unwrap().arsenal.slot(Weapon::Laser).ammo,
         Some(10)
     );
-    // verletzt: Herz wird genommen
+    // hurt: heart is taken
     w.character_mut(0).unwrap().health = 5;
     w.step(&[idle()]);
     assert_eq!(health(&w, 0), 6);
     assert!(!w.pickups[0].available());
-    // nach 15 s wieder da (T-29)
+    // back after 15 s (T-29)
     w.character_mut(0).unwrap().health = 10;
     run(&mut w, &[idle()], 15 * 50 + 1);
     assert!(w.pickups[0].available());
@@ -311,7 +311,7 @@ fn respawn_on_click_after_half_second_or_auto_after_three() {
     w.spawn_points.push(ground(30));
     w.spawn(ground(10));
     w.die(0, None, DeathCause::World);
-    // Klick sofort: noch zu früh
+    // click right away: still too early
     run(&mut w, &[aim(1, 0, 1)], 10);
     assert!(w.character(0).is_none());
     run(&mut w, &[aim(1, 0, 1)], 20);
@@ -376,8 +376,8 @@ fn dummy_respawns_at_home_after_three_seconds() {
     assert_eq!(w.core(d).unwrap().pos, ground(20));
 }
 
-/// Kartenwechsel im Abenteuer (Playtest R2-M2.4): Die neue Welt bekommt den schon
-/// hochgezählten Feuer-Zähler des Clients – das ist kein Klick. Der nächste Druck schießt.
+/// Map change in the adventure (playtest R2-M2.4): the new world gets the client's
+/// already incremented fire counter – that is not a click. The next press shoots.
 #[test]
 fn first_input_after_joining_does_not_fire() {
     let mut w = arena();
@@ -393,7 +393,7 @@ fn first_input_after_joining_does_not_fire() {
             .filter(|e| matches!(e, Event::Fire { .. }))
             .count()
     };
-    // Zähler steht bei 6 (dreimal gedrückt und losgelassen in der alten Welt)
+    // counter is at 6 (pressed and released three times in the old world)
     w.step(&[aim(100, 0, 6)]);
     assert_eq!(fires(&w), 0, "kein Schuss beim Betreten");
     for _ in 0..30 {

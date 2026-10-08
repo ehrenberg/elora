@@ -1,5 +1,5 @@
-//! Bewegung, Sprung und Hook einer Figur
-//! (Referenz: Teeworlds `CCharacterCore`, E-007).
+//! Movement, jump and hook of a character
+//! (reference: Teeworlds `CCharacterCore`, E-007).
 
 use crate::ability::{Abilities, Ability};
 use crate::collision::{Collision, TILE_SIZE, Tile};
@@ -8,52 +8,52 @@ use crate::input::PlayerInput;
 use crate::math::{Vec2, round_to_int, saturated_add};
 use crate::tuning::{Tuning, ms_to_ticks};
 
-/// Kantenlänge der Kollisionsbox einer Figur.
+/// Edge length of a character's collision box.
 pub const PHYS_SIZE: f32 = 28.0;
-/// Unterhalb dieser Distanz zieht ein Wand-Hook nicht mehr.
+/// Below this distance a wall hook no longer pulls.
 const HOOK_MIN_DRAG_DISTANCE: f32 = 46.0;
-/// Geschwindigkeits-Obergrenze als Sicherheitsnetz.
+/// Speed cap as a safety net.
 const MAX_VELOCITY: f32 = 6000.0;
 
-/// Ereignisse eines Ticks (z. B. für Sounds und Effekte).
+/// Events of a tick (e.g. for sounds and effects).
 pub mod events {
     pub const GROUND_JUMP: u16 = 1 << 0;
     pub const AIR_JUMP: u16 = 1 << 1;
     pub const HOOK_ATTACH_PLAYER: u16 = 1 << 2;
     pub const HOOK_ATTACH_GROUND: u16 = 1 << 3;
     pub const HOOK_HIT_UNHOOKABLE: u16 = 1 << 4;
-    /// Von einem Sprungfeld geworfen (M6.1).
+    /// Launched by a jump pad (M6.1).
     pub const JUMP_PAD: u16 = 1 << 5;
-    /// Hook-Ruck ausgelöst (E-226).
+    /// Hook jerk triggered (E-226).
     pub const HOOK_RUCK: u16 = 1 << 6;
-    /// Stampfen begonnen (E-227).
+    /// Stomp started (E-227).
     pub const STOMP: u16 = 1 << 7;
-    /// Stampfen aufgeprallt – die Welt wertet die Stoßwelle aus.
+    /// Stomp landed – the world evaluates the shockwave.
     pub const STOMP_LAND: u16 = 1 << 8;
-    /// An einer Kletterwand festgehalten (E-228).
+    /// Clung to a climbing wall (E-228).
     pub const WALL_GRIP: u16 = 1 << 9;
-    /// Von einer Kletterwand abgesprungen.
+    /// Jumped off a climbing wall.
     pub const WALL_JUMP: u16 = 1 << 10;
-    /// Gleiten begonnen (E-229).
+    /// Glide started (E-229).
     pub const GLIDE: u16 = 1 << 11;
 }
 
-/// Zustand des Hooks.
+/// State of the hook.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum HookState {
-    /// Eingefahren, Hook-Taste noch gedrückt – erst Loslassen erlaubt einen neuen Schuss.
+    /// Retracted, hook key still pressed – only releasing allows a new shot.
     Retracted,
     #[default]
     Idle,
-    /// Fährt zurück, Schritt 1 bis 3.
+    /// Retracting, step 1 to 3.
     Retracting(u8),
     Flying,
     Grabbed,
 }
 
-/// Physikalischer Zustand einer Figur.
+/// Physical state of a character.
 #[derive(Debug, Clone, PartialEq, Default)]
-#[allow(clippy::struct_excessive_bools)] // unabhängige Zustände, keine Zustandsmaschine
+#[allow(clippy::struct_excessive_bools)] // independent states, no state machine
 pub struct CharacterCore {
     pub pos: Vec2,
     pub vel: Vec2,
@@ -61,52 +61,52 @@ pub struct CharacterCore {
     pub hook_dir: Vec2,
     pub hook_state: HookState,
     pub hook_tick: u32,
-    /// Index der gehookten Figur in der Welt.
+    /// Index of the hooked character in the world.
     pub hooked_player: Option<usize>,
-    /// Bit 0: Sprung mit aktuellem Tastendruck ausgeführt; Bit 1: Luftsprung verbraucht.
+    /// Bit 0: jump performed with the current key press; bit 1: air jump used up.
     pub jumped: u8,
     pub direction: i8,
-    /// Blickwinkel in 1/256 Radiant.
+    /// View angle in 1/256 radians.
     pub angle: i32,
-    /// Im letzten Tick ein Todes-Tile berührt.
+    /// Touched a death tile in the last tick.
     pub death: bool,
-    /// Ereignisse des letzten Ticks, siehe [`events`].
+    /// Events of the last tick, see [`events`].
     pub triggered_events: u16,
-    /// Von anderen Figuren per Hook aufgeprägte Geschwindigkeit (wird in `move` angewendet).
+    /// Velocity imposed by other characters via hook (applied in `move`).
     pub hook_drag_vel: Vec2,
-    /// „Runter“ gehalten: durch Plattformen fallen (E-141).
+    /// "Down" held: fall through platforms (E-141).
     pub drop_through: bool,
-    /// Geschwindigkeit des Untergrunds (Beschleuniger, T-35), in `move` angewendet.
+    /// Velocity of the ground (accelerator, T-35), applied in `move`.
     pub belt: f32,
-    /// Freigeschaltete Fähigkeiten (Abenteuer, Quellenkampf); leer im Mehrspieler.
+    /// Unlocked abilities (adventure, spring battle); empty in multiplayer.
     pub abilities: Abilities,
-    /// Fähigkeitstaste im letzten Tick gehalten (Flanke für den Hook-Ruck).
+    /// Ability key held in the last tick (edge detection for the hook jerk).
     pub ability_held: bool,
-    /// Ticks bis zum nächsten Hook-Ruck (A-02).
+    /// Ticks until the next hook jerk (A-02).
     pub ruck_cooldown: u32,
-    /// Fähigkeitstaste gedrückt, während der Hook noch flog: Ruck, sobald er greift.
+    /// Ability key pressed while the hook was still flying: jerk as soon as it grabs.
     pub ruck_queued: bool,
-    /// Ticks, die der Ruck noch zieht (A-28).
+    /// Ticks the jerk keeps pulling (A-28).
     pub ruck_ticks: u32,
-    /// Stampft gerade (bis zum Aufprall).
+    /// Currently stomping (until impact).
     pub stomping: bool,
-    /// Haftet an einer Kletterwand: -1 links, 1 rechts, 0 nicht.
+    /// Clinging to a climbing wall: -1 left, 1 right, 0 not.
     pub grip: i8,
-    /// Verbrauchte Haftzeit seit dem letzten Boden oder Wandsprung (A-06).
+    /// Cling time used since the last ground contact or wall jump (A-06).
     pub grip_ticks: u32,
-    /// Gleitet gerade.
+    /// Currently gliding.
     pub gliding: bool,
-    /// Gehakte Kreatur (Id, E-233).
+    /// Hooked creature (id, E-233).
     pub hooked_creature: Option<u32>,
-    /// Die gehakte Kreatur wird zu Elora gezogen (Heranhooken), statt Elora zu ihr.
+    /// The hooked creature is pulled towards Elora (pull hook) instead of Elora towards it.
     pub pulling: bool,
-    /// Bunter Rausch (Pilzwicht, E-311): noch so viele Ticks langsamer.
+    /// Colorful rush (mushroom imp, E-311): slower for this many more ticks.
     pub dazed: u32,
-    /// Erstarrt (Frostgeist, R2-M2.4): noch so viele Ticks ohne Eingabe (nur Zielen).
+    /// Frozen (frost ghost, R2-M2.4): this many more ticks without input (aiming only).
     pub frozen: u32,
-    /// Hitze-Leiste voll (E-320, setzt das Abenteuer): langsamer.
+    /// Heat bar full (E-320, set by the adventure): slower.
     pub overheated: bool,
-    /// Ticks im Treibsand (Positionen sind ganzzahlig: Einsinken in ganzen Einheiten).
+    /// Ticks in quicksand (positions are integers: sinking in whole units).
     pub sand_ticks: u32,
 }
 
@@ -119,13 +119,13 @@ impl CharacterCore {
         }
     }
 
-    /// Steht die Figur auf festem Boden oder auf einer Plattform (nicht beim Durchfallen)?
+    /// Is the character standing on solid ground or on a platform (not while falling through)?
     pub fn is_grounded(&self, col: &Collision) -> bool {
         self.ground_tile(col).is_some()
     }
 
-    /// Tile unter den Füßen, wenn die Figur steht. Spezial-Tiles haben Vorrang
-    /// (Sprungfeld vor Beschleuniger vor Eis), damit ein Fuß darauf genügt.
+    /// Tile under the feet when the character is standing. Special tiles take precedence
+    /// (jump pad before accelerator before ice), so that one foot on it is enough.
     pub fn ground_tile(&self, col: &Collision) -> Option<Tile> {
         let bottom = self.pos.y + PHYS_SIZE / 2.0;
         let y = bottom + 5.0;
@@ -150,31 +150,31 @@ impl CharacterCore {
             .max_by_key(|t| rank(*t))
     }
 
-    /// Stecken die Füße im Treibsand (E-318)?
+    /// Are the feet stuck in quicksand (E-318)?
     pub fn in_quicksand(&self, col: &Collision) -> bool {
         col.tile_at(Vec2::new(self.pos.x, self.pos.y + PHYS_SIZE / 2.0 - 1.0)) == Tile::Quicksand
     }
 
-    /// Steckt die Figur im Eiswasser (R2-M2.4)?
+    /// Is the character in ice water (R2-M2.4)?
     pub fn in_ice_water(&self, col: &Collision) -> bool {
         col.tile_at(Vec2::new(self.pos.x, self.pos.y + PHYS_SIZE / 2.0 - 4.0)) == Tile::IceWater
     }
 
-    /// Ist die Figur ganz eingesunken (Kopf im Treibsand)?
+    /// Has the character sunk in completely (head in quicksand)?
     pub fn buried(&self, col: &Collision) -> bool {
         col.tile_at(Vec2::new(self.pos.x, self.pos.y - PHYS_SIZE / 2.0 + 4.0)) == Tile::Quicksand
     }
 
-    /// Erste Tick-Phase: Eingabe, Kräfte, Hook.
+    /// First tick phase: input, forces, hook.
     ///
-    /// `others` enthält die Positionen aller Figuren der Welt (Index = Figur-Index,
-    /// `None` = kein Spieler); der eigene Eintrag wird über `self_index` übersprungen.
-    /// Hook-Kräfte auf andere Figuren werden in `drag_out` addiert.
-    /// `creatures` sind die Kreaturen als Hook-Ziele (im Mehrspieler leer).
-    #[allow(clippy::too_many_lines, clippy::too_many_arguments)] // bewusst nah an der Referenz gehalten
-    /// `input = None`: ohne Eingabe weiterrechnen (wie `Tick(false)` im Original:
-    /// Laufrichtung bleibt, Sprung und Hook ändern sich nicht). Für fremde
-    /// Figuren in der Client-Vorhersage.
+    /// `others` contains the positions of all characters in the world (index = character index,
+    /// `None` = no player); the own entry is skipped via `self_index`.
+    /// Hook forces on other characters are added into `drag_out`.
+    /// `creatures` are the creatures as hook targets (empty in multiplayer).
+    #[allow(clippy::too_many_lines, clippy::too_many_arguments)] // kept close to the reference
+    /// `input = None`: continue without input (like `Tick(false)` in the original:
+    /// walking direction stays, jump and hook do not change). For foreign
+    /// characters in client prediction.
     pub(crate) fn tick(
         &mut self,
         input: Option<&PlayerInput>,
@@ -186,7 +186,7 @@ impl CharacterCore {
         drag_out: &mut [Vec2],
     ) {
         self.triggered_events = 0;
-        // erstarrt: nur Zielen wirkt, Laufen, Springen, Hook und Feuer nicht (D-M24-07)
+        // frozen: only aiming works, not walking, jumping, hook or fire (D-M24-07)
         let still;
         let input = if self.frozen > 0 {
             self.frozen -= 1;
@@ -199,12 +199,13 @@ impl CharacterCore {
         } else {
             input
         };
-        // „Runter“ frisch gedrückt (vor dem Überschreiben von `drop_through`)
+        // "down" freshly pressed (before `drop_through` is overwritten)
         let down_pressed = input.is_some_and(|i| i.down && !self.drop_through);
-        // Stand die Figur vor diesem Druck? Dann fällt sie durch die Plattform statt zu stampfen
+        // Was the character standing before this press? Then it falls through the platform
+        // instead of stomping
         let stood = self.is_grounded(col);
         if let Some(input) = input {
-            // beim Stampfen landet die Figur auch auf Plattformen
+            // while stomping the character lands on platforms too
             self.drop_through = input.down && !self.stomping;
         }
         let ground = self.ground_tile(col);
@@ -224,7 +225,7 @@ impl CharacterCore {
                 tuning.ice_friction,
             )
         } else if grounded || in_sand {
-            // nasser oder verschneiter Boden bremst weicher (R2-W1, A-35)
+            // wet or snowy ground brakes more softly (R2-W1, A-35)
             let slip = col.wet * tuning.wet_slip;
             (
                 tuning.ground_control_speed,
@@ -246,14 +247,14 @@ impl CharacterCore {
             )
         };
 
-        // bunter Rausch: langsamer laufen (A-23)
+        // colorful rush: walk slower (A-23)
         self.dazed = self.dazed.saturating_sub(1);
         let max_speed = if self.dazed > 0 {
             max_speed * tuning.daze_speed
         } else {
             max_speed
         };
-        // Treibsand und volle Hitze-Leiste (E-318, E-320)
+        // quicksand and full heat bar (E-318, E-320)
         let max_speed = max_speed
             * if in_sand { tuning.quicksand_speed } else { 1.0 }
             * if self.overheated {
@@ -262,7 +263,7 @@ impl CharacterCore {
                 1.0
             };
 
-        // Eingabe
+        // input
         if let Some(input) = input {
             let target = Vec2::new(input.target_x as f32, input.target_y as f32);
             let target_dir = target.normalize();
@@ -272,7 +273,7 @@ impl CharacterCore {
             if input.jump {
                 if self.jumped & 1 == 0 {
                     if self.grip != 0 {
-                        // Wandsprung: weg von der Wand, Doppelsprung bleibt erhalten
+                        // wall jump: away from the wall, the double jump is kept
                         self.triggered_events |= events::WALL_JUMP;
                         self.vel = Vec2::new(
                             -f32::from(self.grip) * tuning.wall_jump_x,
@@ -282,7 +283,7 @@ impl CharacterCore {
                         self.grip = 0;
                         self.grip_ticks = 0;
                     } else if grounded || in_sand {
-                        // aus dem Treibsand befreit ein Sprung (E-318)
+                        // a jump frees from the quicksand (E-318)
                         self.triggered_events |= events::GROUND_JUMP;
                         self.vel.y = -tuning.ground_jump_impulse;
                         self.jumped |= 1;
@@ -309,7 +310,7 @@ impl CharacterCore {
             }
         }
 
-        // Laufen
+        // walking
         match self.direction {
             d if d < 0 => self.vel.x = saturated_add(-max_speed, max_speed, self.vel.x, -accel),
             d if d > 0 => self.vel.x = saturated_add(-max_speed, max_speed, self.vel.x, accel),
@@ -320,13 +321,13 @@ impl CharacterCore {
             self.jumped &= !2;
             self.grip_ticks = 0;
         } else if col.wind != 0.0 {
-            // Wind schiebt in der Luft (R2-W1, A-29); am Boden kaum
+            // wind pushes in the air (R2-W1, A-29); barely on the ground
             self.vel.x += col.wind * tuning.wind_push;
         }
         if self.stomping {
             self.vel = Vec2::new(0.0, self.vel.y.max(tuning.stomp_speed));
         }
-        // im Treibsand langsam einsinken: alle paar Ticks eine ganze Einheit
+        // slowly sink in quicksand: one whole unit every few ticks
         if in_sand {
             self.sand_ticks += 1;
             #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
@@ -341,7 +342,7 @@ impl CharacterCore {
             self.sand_ticks = 0;
         }
 
-        // Spezial-Tiles unter den Füßen (M6.1)
+        // special tiles under the feet (M6.1)
         self.belt = match ground {
             Some(Tile::Conveyor(dir)) => dir.sign() * tuning.conveyor_speed,
             _ => 0.0,
@@ -353,7 +354,7 @@ impl CharacterCore {
             self.triggered_events |= events::JUMP_PAD;
         }
 
-        // Hook-Zustandsautomat
+        // hook state machine
         match self.hook_state {
             HookState::Idle => self.release_hook(HookState::Idle),
             HookState::Retracting(step) if step < 3 => {
@@ -366,7 +367,7 @@ impl CharacterCore {
             HookState::Retracted | HookState::Grabbed => {}
         }
 
-        // Hook-Blüte welkt: loslassen
+        // hook blossom wilts: let go
         if self.hook_state == HookState::Grabbed
             && self.hooked_player.is_none()
             && self.hooked_creature.is_none()
@@ -381,7 +382,7 @@ impl CharacterCore {
             self.tick_grabbed_hook(tuning, others, creatures);
         }
 
-        // Spieler untereinander: Kollision und Hook-Zug
+        // players among each other: collision and hook pull
         for (i, other) in others.iter().enumerate() {
             let Some(other_pos) = *other else { continue };
             if i == self_index {
@@ -394,7 +395,7 @@ impl CharacterCore {
                 let a = PHYS_SIZE * 1.45 - distance;
                 let mut velocity = 0.5;
                 if self.vel.length() > 0.0001 {
-                    // bewusst nicht `f32::midpoint`: gleiche Rundung wie die Referenz
+                    // deliberately not `f32::midpoint`: same rounding as the reference
                     #[allow(clippy::manual_midpoint)]
                     {
                         velocity = 1.0 - (self.vel.normalize().dot(dir) + 1.0) / 2.0;
@@ -440,7 +441,7 @@ impl CharacterCore {
             new_pos = self.pos + (new_pos - self.pos).normalize() * tuning.hook_length;
         }
 
-        // nicht durch den Boden
+        // not through the ground
         let mut hit_ground = false;
         let mut hit_unhookable = false;
         if let Some((hit_pos, tile)) = col.intersect_line(self.hook_pos, new_pos) {
@@ -451,14 +452,14 @@ impl CharacterCore {
                 hit_unhookable = true;
             }
         }
-        // Hook-Blüte davor: greift in ihrer Mitte (R2-M2.1)
+        // hook blossom in front: grabs in its center (R2-M2.1)
         if let Some(p) = col.intersect_hook_point(self.hook_pos, new_pos) {
             new_pos = p;
             hit_ground = true;
             hit_unhookable = false;
         }
 
-        // zuerst andere Spieler prüfen
+        // check other players first
         if tuning.player_hooking {
             let mut best = f32::MAX;
             for (i, other) in others.iter().enumerate() {
@@ -479,7 +480,7 @@ impl CharacterCore {
             }
         }
 
-        // dann Kreaturen (E-233)
+        // then creatures (E-233)
         if self.hook_state == HookState::Flying {
             let mut best = f32::MAX;
             for c in creatures {
@@ -530,7 +531,7 @@ impl CharacterCore {
             self.hook_pos = p;
         }
 
-        // Hook-Ruck: zieht eine Weile mit voller Wucht geradewegs zum Hook-Punkt (E-226, A-28)
+        // hook jerk: pulls straight to the hook point at full force for a while (E-226, A-28)
         if self.ruck_ticks > 0 {
             self.ruck_ticks -= 1;
             let to = self.hook_pos - self.pos;
@@ -540,17 +541,17 @@ impl CharacterCore {
                 self.ruck_ticks = 0;
             }
         }
-        // Wand-Hook (oder Kreatur ohne Heranhooken) zieht die Figur
+        // wall hook (or creature without pull hook) pulls the character
         else if self.hooked_player.is_none()
             && !self.pulling
             && self.hook_pos.distance(self.pos) > HOOK_MIN_DRAG_DISTANCE
         {
             let mut hook_vel = (self.hook_pos - self.pos).normalize() * tuning.hook_drag_accel;
-            // nach oben zieht der Hook stärker als nach unten (leichter auf Plattformen)
+            // the hook pulls harder upwards than downwards (easier onto platforms)
             if hook_vel.y > 0.0 {
                 hook_vel.y *= 0.3;
             }
-            // Zug in Laufrichtung wird verstärkt, sonst gedämpft
+            // pull in the walking direction is amplified, otherwise damped
             let same_dir = (hook_vel.x < 0.0 && self.direction < 0)
                 || (hook_vel.x > 0.0 && self.direction > 0);
             hook_vel.x *= if same_dir { 0.95 } else { 0.75 };
@@ -569,9 +570,9 @@ impl CharacterCore {
         }
     }
 
-    /// Zweite Tick-Phase: aufgeprägte Hook-Kräfte anwenden und bewegen.
+    /// Second tick phase: apply imposed hook forces and move.
     ///
-    /// `others` sind die aktuellen Positionen der anderen Figuren (für Spielerkollision).
+    /// `others` are the current positions of the other characters (for player collision).
     pub(crate) fn apply_drag_and_move(
         &mut self,
         tuning: &Tuning,
@@ -592,7 +593,7 @@ impl CharacterCore {
         }
     }
 
-    /// Fähigkeiten vor der Laufsteuerung: Hook-Ruck, Stampfen, Eisgriff, Gleiten.
+    /// Abilities before the walking control: hook jerk, stomp, ice grip, glide.
     fn tick_abilities(
         &mut self,
         input: &PlayerInput,
@@ -606,8 +607,8 @@ impl CharacterCore {
         self.ability_held = input.ability;
         self.ruck_cooldown = self.ruck_cooldown.saturating_sub(1);
 
-        // Hook-Ruck (E-226): nur an einer Wand, nicht an Spielern; früh gedrückt (Hook fliegt
-        // noch) zählt, sobald er greift
+        // hook jerk (E-226): only on a wall, not on players; pressed early (hook still
+        // flying) counts as soon as it grabs
         if ability_pressed && self.hook_state == HookState::Flying {
             self.ruck_queued = true;
         }
@@ -629,7 +630,7 @@ impl CharacterCore {
             self.triggered_events |= events::HOOK_RUCK;
         }
 
-        // Stampfen (E-227): „Runter“ in der Luft; der Hook lässt los
+        // stomp (E-227): "down" in the air; the hook lets go
         if grounded {
             self.stomping = false;
         } else if a.has(Ability::Stomp) && down_pressed && !self.stomping {
@@ -639,10 +640,10 @@ impl CharacterCore {
             self.triggered_events |= events::STOMP;
         }
 
-        // Eisgriff (E-228): in der Luft gegen eine Kletterwand laufen
+        // ice grip (E-228): walk against a climbing wall in the air
         let was_gripping = self.grip != 0;
         self.grip = 0;
-        // gestärkt (A-42): wer weiter zur Wand drückt, zieht sich hinauf statt zu rutschen
+        // strengthened (A-42): whoever keeps pushing towards the wall pulls up instead of sliding
         let climbing = tuning.grip_climb > 0.0 && was_gripping;
         if a.has(Ability::Grip)
             && !grounded
@@ -665,7 +666,7 @@ impl CharacterCore {
             }
         }
 
-        // Gleiten (E-229): Springen halten beim Fallen, wenn der Doppelsprung verbraucht ist
+        // glide (E-229): hold jump while falling once the double jump is used up
         let was_gliding = self.gliding;
         self.gliding = a.has(Ability::Glide)
             && !grounded
@@ -682,7 +683,7 @@ impl CharacterCore {
         }
     }
 
-    /// Berührt die Figur seitlich (`side` -1/1) eine Kletterwand?
+    /// Does the character touch a climbing wall on the side (`side` -1/1)?
     fn touches_climb(&self, col: &Collision, side: i8) -> bool {
         let x = self.pos.x + f32::from(side) * (PHYS_SIZE / 2.0 + 1.0);
         let h = PHYS_SIZE / 2.0 - 2.0;
@@ -707,7 +708,7 @@ impl CharacterCore {
 
         self.vel.x *= ramp;
         let mut new_pos = self.pos;
-        // Laufband: Untergrund bewegt die Figur mit, ohne ihre eigene Geschwindigkeit zu ändern
+        // conveyor belt: the ground carries the character along without changing its own velocity
         let mut moved = self.vel + Vec2::new(self.belt, 0.0);
         self.death = col.move_box_platforms(
             &mut new_pos,
@@ -717,7 +718,7 @@ impl CharacterCore {
             !self.drop_through,
         );
         self.vel.y = moved.y;
-        // an einer Wand gestoppt: auch die eigene Geschwindigkeit ist weg
+        // stopped at a wall: the own velocity is gone too
         self.vel.x = if moved.x == 0.0 && self.vel.x + self.belt != 0.0 {
             0.0
         } else {
@@ -758,8 +759,8 @@ impl CharacterCore {
         self.pos = new_pos;
     }
 
-    /// Rundet den Zustand auf Netzwerk-Genauigkeit (E-021): Positionen auf ganze
-    /// Einheiten, Geschwindigkeit und Hook-Richtung auf 1/256.
+    /// Rounds the state to network precision (E-021): positions to whole
+    /// units, velocity and hook direction to 1/256.
     pub fn quantize(&mut self) {
         let q = |v: f32| round_to_int(v) as f32;
         let q256 = |v: f32| round_to_int(v * 256.0) as f32 / 256.0;
@@ -770,7 +771,7 @@ impl CharacterCore {
     }
 }
 
-/// Dämpft die Bewegung oberhalb von `start` exponentiell.
+/// Damps the movement above `start` exponentially.
 pub fn velocity_ramp(value: f32, start: f32, range: f32, curvature: f32) -> f32 {
     if value < start {
         return 1.0;

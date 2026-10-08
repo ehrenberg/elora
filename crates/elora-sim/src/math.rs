@@ -1,7 +1,7 @@
-//! Minimaler 2D-Vektor mit expliziten Float-Operationen (E-021).
+//! Minimal 2D vector with explicit float operations (E-021).
 //!
-//! Bewusst ohne externe Mathe-Bibliothek: Jede Operation ist hier sichtbar,
-//! damit Server und Client bit-genau gleich rechnen.
+//! Deliberately without an external math library: every operation is visible here,
+//! so that server and client compute bit-identically.
 
 use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Neg, Sub, SubAssign};
 
@@ -32,24 +32,24 @@ impl Vec2 {
         (self - other).length()
     }
 
-    /// Einheitsvektor. Für den Nullvektor wird der Nullvektor geliefert
-    /// (das Original würde hier `NaN` erzeugen).
+    /// Unit vector. For the zero vector the zero vector is returned
+    /// (the original would produce `NaN` here).
     pub fn normalize(self) -> Self {
         let len = self.length();
         if len == 0.0 { Self::ZERO } else { self / len }
     }
 
-    /// Winkel in Radiant (`atan2`).
+    /// Angle in radians (`atan2`).
     pub fn angle(self) -> f32 {
         self.y.atan2(self.x)
     }
 
-    /// Lineare Interpolation zwischen `self` und `other`.
+    /// Linear interpolation between `self` and `other`.
     pub fn lerp(self, other: Self, t: f32) -> Self {
         self + (other - self) * t
     }
 
-    /// Nächster Punkt auf der Strecke `a`–`b` zu `target`.
+    /// Closest point on the segment `a`–`b` to `target`.
     pub fn closest_point_on_segment(start: Self, end: Self, target: Self) -> Self {
         let len = start.distance(end);
         if len == 0.0 {
@@ -114,7 +114,7 @@ impl Neg for Vec2 {
     }
 }
 
-/// Rundet kaufmännisch weg von null (wie `round_to_int` im Original).
+/// Rounds half away from zero (like `round_to_int` in the original).
 pub fn round_to_int(f: f32) -> i32 {
     if f > 0.0 {
         (f + 0.5) as i32
@@ -123,8 +123,8 @@ pub fn round_to_int(f: f32) -> i32 {
     }
 }
 
-/// Addiert `modifier` zu `current`, ohne die Grenze `[min, max]` zu überschreiten.
-/// Liegt `current` bereits jenseits der Grenze, bleibt der Wert unverändert.
+/// Adds `modifier` to `current` without exceeding the bound `[min, max]`.
+/// If `current` is already beyond the bound, the value stays unchanged.
 pub fn saturated_add(min: f32, max: f32, current: f32, modifier: f32) -> f32 {
     if modifier < 0.0 {
         if current < min {
@@ -154,7 +154,7 @@ mod tests {
     #[test]
     fn saturated_add_respects_limits() {
         assert!((saturated_add(-10.0, 10.0, 9.0, 2.0) - 10.0).abs() < f32::EPSILON);
-        // bereits über dem Limit: keine weitere Beschleunigung, aber auch kein Abbremsen
+        // already above the limit: no further acceleration, but no slowing down either
         assert!((saturated_add(-10.0, 10.0, 15.0, 2.0) - 15.0).abs() < f32::EPSILON);
         assert!((saturated_add(-10.0, 10.0, -9.0, -2.0) + 10.0).abs() < f32::EPSILON);
     }

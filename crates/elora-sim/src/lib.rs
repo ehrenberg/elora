@@ -1,8 +1,8 @@
-//! Deterministische Spielsimulation von Elora.
+//! Deterministic game simulation of Elora.
 //!
-//! Enthält reine Spiellogik ohne Abhängigkeiten zu Fenster, Grafik oder Netzwerk
-//! (siehe `docs/handbook/architecture.md`). Server, Client-Vorhersage und Tests nutzen
-//! denselben Code.
+//! Contains pure game logic without dependencies on window, graphics or network
+//! (see `docs/handbook/architecture.md`). Server, client prediction and tests use
+//! the same code.
 
 pub mod ability;
 pub mod character;
@@ -37,5 +37,5 @@ pub use weapon::Weapon;
 pub use weather::WeatherEnv;
 pub use world::World;
 
-/// Feste Simulationsrate in Ticks pro Sekunde (T-01).
+/// Fixed simulation rate in ticks per second (T-01).
 pub const TICKS_PER_SECOND: u32 = 50;

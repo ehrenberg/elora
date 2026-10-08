@@ -1,8 +1,8 @@
-//! Waffen: Arten, Besitz und Munition (E-016, E-051).
+//! Weapons: types, ownership and ammo (E-016, E-051).
 
 use crate::tuning::{Tuning, ms_to_ticks};
 
-/// Waffen in Release 1, in der Reihenfolge der Tasten 1–3 (E-051).
+/// Weapons in Release 1, in the order of keys 1–3 (E-051).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Weapon {
@@ -18,17 +18,17 @@ impl Weapon {
         self as usize
     }
 
-    /// Waffe zur Tastennummer 1..=3.
+    /// Weapon for key number 1..=3.
     pub fn from_number(n: u8) -> Option<Self> {
         Self::ALL.get(usize::from(n).checked_sub(1)?).copied()
     }
 
-    /// Dauerfeuer bei gehaltener Taste (Original: Granate, Shotgun, Laser).
+    /// Automatic fire while the key is held (original: grenade, shotgun, laser).
     pub fn full_auto(self) -> bool {
         matches!(self, Self::Grenade | Self::Laser)
     }
 
-    /// Feuerverzögerung in Ticks.
+    /// Fire delay in ticks.
     pub fn fire_delay(self, t: &Tuning) -> u32 {
         ms_to_ticks(match self {
             Self::Hammer => t.hammer_fire_delay,
@@ -38,26 +38,26 @@ impl Weapon {
     }
 }
 
-/// Munition: `None` = unbegrenzt (Hammer).
+/// Ammo: `None` = unlimited (hammer).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct WeaponSlot {
     pub got: bool,
     pub ammo: Option<i32>,
 }
 
-/// Waffenzustand einer Figur.
+/// Weapon state of a character.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Arsenal {
     pub slots: [WeaponSlot; 3],
     pub active: Weapon,
-    /// Gewünschte Waffe; gewechselt wird erst, wenn der Reload-Timer abgelaufen ist.
+    /// Desired weapon; the switch only happens once the reload timer has expired.
     pub queued: Option<Weapon>,
-    /// Ticks bis zum nächsten möglichen Schuss.
+    /// Ticks until the next possible shot.
     pub reload_timer: u32,
 }
 
 impl Default for Arsenal {
-    /// Startausrüstung: nur Hammer (E-025).
+    /// Starting equipment: only the hammer (E-025).
     fn default() -> Self {
         let mut slots = [WeaponSlot::default(); 3];
         slots[Weapon::Hammer.index()] = WeaponSlot {
@@ -92,8 +92,8 @@ impl Arsenal {
         }
     }
 
-    /// Gibt eine Waffe mit `ammo` Schuss (höchstens `max`). Liefert `false`, wenn die
-    /// Waffe schon vorhanden und voll ist (dann wird das Pickup nicht verbraucht).
+    /// Gives a weapon with `ammo` shots (at most `max`). Returns `false` if the
+    /// weapon is already owned and full (then the pickup is not consumed).
     pub fn give(&mut self, w: Weapon, ammo: i32, max: i32) -> bool {
         let slot = &mut self.slots[w.index()];
         if slot.got && slot.ammo.is_none_or(|a| a >= max) {
@@ -104,7 +104,7 @@ impl Arsenal {
         true
     }
 
-    /// Wählt die nächste bzw. vorige vorhandene Waffe `steps` Mal.
+    /// Selects the next or previous owned weapon `steps` times.
     pub fn cycle(&self, from: Weapon, steps: u32, forward: bool) -> Weapon {
         let n = Weapon::ALL.len();
         let mut i = from.index();
@@ -144,7 +144,7 @@ mod tests {
         a.slots[Weapon::Laser.index()].ammo = Some(3);
         assert!(a.give(Weapon::Laser, 10, 10));
         assert_eq!(a.slot(Weapon::Laser).ammo, Some(10));
-        // Hammer (unbegrenzt) lässt sich nicht „auffüllen“
+        // Hammer (unlimited) cannot be "refilled"
         assert!(!a.give(Weapon::Hammer, 10, 10));
     }
 

@@ -1,4 +1,4 @@
-//! Kreaturen (R2-M1, A1.2, E-232 bis E-239): Verhalten, Treffer, Berührung, Beute.
+//! Creatures (R2-M1, A1.2, E-232 to E-239): behaviour, hits, contact, loot.
 
 use elora_sim::character::events;
 use elora_sim::{
@@ -71,7 +71,7 @@ fn kinds() -> Vec<CreatureKind> {
     ]
 }
 
-/// Arena mit Boden in Zeile 28, Abenteuer-Regeln an.
+/// Arena with floor in row 28, adventure rules on.
 fn world(edit: impl FnOnce(&mut Vec<Tile>)) -> World {
     let mut tiles = vec![Tile::Air; W * H];
     for x in 0..W {
@@ -93,7 +93,7 @@ fn set(tiles: &mut [Tile], x: usize, y: usize, t: Tile) {
     tiles[y * W + x] = t;
 }
 
-/// Mitte über dem Boden von Spalte `tx` für eine Box der Höhe `h`.
+/// Centre above the floor of column `tx` for a box of height `h`.
 fn on_floor(tx: usize, h: f32) -> Vec2 {
     #[allow(clippy::cast_precision_loss)]
     Vec2::new(tx as f32 * 32.0 + 16.0, FLOOR as f32 * 32.0 - h / 2.0 - 1.0)
@@ -110,7 +110,7 @@ fn run(w: &mut World, i: PlayerInput, ticks: u32) -> Vec<Event> {
 
 fn elora(w: &mut World, tx: usize) -> usize {
     let i = w.join();
-    // hier geht es um Treffer: der erste Feuer-Druck soll gleich zählen
+    // this is about hits: the first fire press should count right away
     w.players[i].as_mut().unwrap().fresh = false;
     w.spawn_character(i, on_floor(tx, 28.0));
     i
@@ -128,7 +128,7 @@ fn aim(x: i32, y: i32) -> PlayerInput {
     }
 }
 
-/// Feuer-Zähler: ungerade = gedrückt.
+/// Fire counter: odd = pressed.
 fn fire(x: i32, y: i32, counter: u8) -> PlayerInput {
     PlayerInput {
         fire: counter,
@@ -138,7 +138,7 @@ fn fire(x: i32, y: i32, counter: u8) -> PlayerInput {
 
 #[test]
 fn walker_turns_at_walls_and_edges() {
-    // Podest Zeilen 20, Spalten 20..30: der Läufer bleibt oben
+    // pedestal rows 20, columns 20..30: the walker stays on top
     let mut w = world(|t| (20..30).for_each(|x| set(t, x, 20, Tile::Solid)));
     let start = Vec2::new(25.0 * 32.0, 20.0 * 32.0 - 14.0);
     w.add_creature(0, start).unwrap();
@@ -175,10 +175,10 @@ fn touch_hurts_once_then_protects_with_knockback() {
 #[test]
 fn hammer_kills_creature_and_loot_flies_to_elora() {
     let mut w = world(|_| {});
-    w.tuning.hit_invulnerable = 100_000; // Berührung soll den Test nicht stören
+    w.tuning.hit_invulnerable = 100_000; // contact should not interfere with the test
     elora(&mut w, 30);
     w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
-    // stehender Gegner, damit jeder Schlag trifft
+    // standing enemy so that every swing hits
     let id = w.add_creature(1, on_floor(31, 26.0)).unwrap();
     let mut events = Vec::new();
     let mut counter = 0u8;
@@ -245,7 +245,7 @@ fn turret_shoots_at_elora_in_sight() {
             .any(|e| matches!(e, Event::CreatureFire { .. }))
     );
     assert!(health(&w) < 10, "Geschoss trifft");
-    // hinter einer Wand: kein Schuss
+    // behind a wall: no shot
     let mut w = world(|t| (20..FLOOR).for_each(|y| set(t, 24, y, Tile::Solid)));
     elora(&mut w, 20);
     w.add_creature(1, on_floor(28, 26.0)).unwrap();
@@ -312,7 +312,7 @@ fn hook_grabs_creature_and_pulls_elora() {
     let mut w = world(|_| {});
     elora(&mut w, 20);
     w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
-    // stehender Gegner (Geschütz außer Reichweite des Schießens: Reichweite 400)
+    // standing enemy (turret out of shooting range: range 400)
     w.add_creature(1, on_floor(28, 26.0)).unwrap();
     w.creature_kinds[1].behavior = Behavior::Turret {
         interval_ms: 1_000_000,
@@ -428,7 +428,7 @@ fn laser_hits_creature() {
 
 #[test]
 fn without_creatures_multiplayer_is_unchanged() {
-    // Ohne Gegnerarten und ohne Abenteuer bleibt alles beim Alten (Golden-Tests prüfen den Rest)
+    // Without enemy kinds and without adventure nothing changes (golden tests check the rest)
     let mut w = World::new(
         Tuning::default(),
         Collision::new(3, 3, vec![Tile::Solid; 9]),
@@ -438,9 +438,9 @@ fn without_creatures_multiplayer_is_unchanged() {
     assert!(w.events.is_empty());
 }
 
-// ---------------------------------------------------------------- Ausbau (A1.3, A-16 bis A-21)
+// ---------------------------------------------------------------- Expansion (A1.3, A-16 to A-21)
 
-/// Stehende Gegner, die nicht schießen.
+/// Standing enemies that do not shoot.
 fn still_turret(w: &mut World) {
     w.creature_kinds[1].behavior = Behavior::Turret {
         interval_ms: 1_000_000,
@@ -486,7 +486,7 @@ fn laser_pierce_hits_several_creatures() {
 
 #[test]
 fn hammer_reach_stun_and_shockwave() {
-    // Gegner hinter Elora: nur die Schockwelle trifft ihn
+    // enemy behind Elora: only the shockwave hits it
     for shockwave in [false, true] {
         let mut w = world(|_| {});
         still_turret(&mut w);
@@ -501,7 +501,7 @@ fn hammer_reach_stun_and_shockwave() {
             assert!(w.creatures[0].stun > 0, "Hammer betäubt (A-17)");
         }
     }
-    // größere Reichweite trifft weiter entfernte Gegner
+    // larger range hits enemies further away
     for (reach, hit) in [(14.0, false), (60.0, true)] {
         let mut w = world(|_| {});
         still_turret(&mut w);
@@ -531,7 +531,7 @@ fn grenade_shards_add_small_blasts() {
         .give(Weapon::Grenade, 10, 10);
     w.character_mut(0).unwrap().arsenal.active = Weapon::Grenade;
     w.add_creature(1, on_floor(22, 26.0)).unwrap();
-    // ein Schuss: drücken, loslassen (Granate feuert bei gehaltener Taste weiter)
+    // one shot: press, release (grenade keeps firing while the key is held)
     let mut ev = run(&mut w, fire(100, 0, 1), 1);
     ev.extend(run(&mut w, fire(100, 0, 2), 40));
     let blasts = ev
@@ -543,7 +543,7 @@ fn grenade_shards_add_small_blasts() {
 
 #[test]
 fn thorns_hurt_and_put_elora_back_on_safe_ground() {
-    // Grube mit Dornen in Spalte 20 bis 24
+    // pit with thorns in columns 20 to 24
     let mut w = world(|t| {
         for x in 20..=24 {
             set(t, x, FLOOR, Tile::Air);
@@ -573,7 +573,7 @@ fn thorns_hurt_and_put_elora_back_on_safe_ground() {
         ch.core.pos
     );
     assert!(ch.core.pos.y < FLOOR as f32 * 32.0);
-    // Ohne Abenteuer bleibt es beim Tod
+    // Without adventure death stays death
     let mut w = world(|t| {
         for x in 20..=24 {
             set(t, x, FLOOR, Tile::Air);
@@ -586,7 +586,7 @@ fn thorns_hurt_and_put_elora_back_on_safe_ground() {
     assert!(w.character(0).is_none());
 }
 
-// ---------------------------------------------------------------- Hüter aus der Luft (R2-M2.1)
+// ---------------------------------------------------------------- Guardian from the air (R2-M2.1)
 
 fn diver_def() -> elora_sim::DiverDef {
     elora_sim::DiverDef {
@@ -608,7 +608,7 @@ fn diver_def() -> elora_sim::DiverDef {
     }
 }
 
-/// Welt mit einem Hüter (Art 4) hoch über der Mitte und Elora am Boden.
+/// World with a guardian (kind 4) high above the centre and Elora on the ground.
 fn boss_world() -> (World, u32) {
     let mut w = world(|_| {});
     let mut k = w.creature_kinds[0].clone();
@@ -665,7 +665,7 @@ fn diver_takes_damage_only_while_stunned() {
     run(&mut w, PlayerInput::default(), 5);
     w.hurt_creature(id, 5);
     assert_eq!(boss(&w, id).health, 30, "in der Luft prallt es ab");
-    // bis er benommen ist
+    // until it is dazed
     for _ in 0..400 {
         run(&mut w, PlayerInput::default(), 1);
         if boss(&w, id).mode == diver::STUNNED {
@@ -715,7 +715,7 @@ fn hook_flowers_wilt_while_the_diver_is_angry() {
     assert_eq!(w.collision.hook_wilt, None, "nach dem Kampf alle frisch");
 }
 
-// ---------------------------------------------------------------- Kapitel 2 (R2-M2.2)
+// ---------------------------------------------------------------- Chapter 2 (R2-M2.2)
 
 fn add_kind(w: &mut World, name: &str, behavior: Behavior) -> usize {
     let mut k = kinds()[0].clone();
@@ -745,7 +745,7 @@ fn burrower_hides_until_elora_comes_and_only_then_is_dangerous() {
     let c = w.creatures.iter().find(|c| c.id == id).unwrap();
     assert_eq!(c.mode, burrow::HIDDEN, "Elora ist weit weg");
     assert!(!c.vulnerable(&w.creature_kinds[kind]));
-    // Elora kommt näher: die Schlange schießt hoch
+    // Elora comes closer: the snake shoots up
     w.spawn_character(0, on_floor(26, 28.0));
     let ev = run(&mut w, PlayerInput::default(), 5);
     assert!(ev.iter().any(|e| matches!(e, Event::CreatureAct { .. })));
@@ -755,7 +755,7 @@ fn burrower_hides_until_elora_comes_and_only_then_is_dangerous() {
     run(&mut w, PlayerInput::default(), 25);
     let c = w.creatures.iter().find(|c| c.id == id).unwrap();
     assert_eq!(c.mode, burrow::OUT);
-    // nach out_ms wieder versteckt
+    // hidden again after out_ms
     w.spawn_character(0, on_floor(5, 28.0));
     run(&mut w, PlayerInput::default(), 60);
     let c = w.creatures.iter().find(|c| c.id == id).unwrap();
@@ -809,7 +809,7 @@ fn mushroom_touch_dazes_and_slows_elora() {
     let dazed = w.character(0).unwrap().core.dazed;
     assert!(dazed > 0, "Rausch");
     assert_eq!(health(&w), 10, "kein Schaden");
-    // langsamer laufen
+    // walk slower
     let right = PlayerInput {
         direction: 1,
         ..PlayerInput::default()
@@ -826,7 +826,7 @@ fn mushroom_touch_dazes_and_slows_elora() {
 
 #[test]
 fn follower_follows_waits_at_gaps_and_never_hurts() {
-    // Lücke mit Dornen in Spalte 30 bis 33
+    // gap with thorns in columns 30 to 33
     let mut w = world(|t| {
         for x in 30..=33 {
             set(t, x, FLOOR, Tile::Air);
@@ -847,7 +847,7 @@ fn follower_follows_waits_at_gaps_and_never_hurts() {
     let c = w.creatures.iter().find(|c| c.id == id).unwrap();
     assert!(c.pos.x > 20.0 * 32.0, "folgt: {}", c.pos.x);
     assert_eq!(health(&w), 10, "harmlos");
-    // Elora auf der anderen Seite der Lücke: das Kind wartet an der Kante
+    // Elora on the other side of the gap: the child waits at the edge
     w.spawn_character(0, on_floor(40, 28.0));
     run(&mut w, PlayerInput::default(), 200);
     let c = w.creatures.iter().find(|c| c.id == id).expect("lebt noch");
@@ -923,7 +923,7 @@ fn pulling_a_core_opens_the_warden_for_hits() {
     run(&mut w, PlayerInput::default(), 3);
     let c = w.creatures.iter().find(|c| c.id == id).unwrap();
     assert!(!c.vulnerable(&w.creature_kinds[kind]));
-    // Hook am Wächter, Elora zieht weg (nach links)
+    // hook on the guard, Elora pulls away (to the left)
     let away = PlayerInput {
         direction: -1,
         hook: true,
@@ -972,7 +972,7 @@ fn angry_warden_raises_root_walls_that_disappear() {
     assert!(reset > 0, "verschwindet wieder");
 }
 
-// ---------------------------------------------------------------- Kapitel 3 (R2-M2.3)
+// ---------------------------------------------------------------- Chapter 3 (R2-M2.3)
 
 fn damage_of(ev: &[Event], id: u32) -> Option<i32> {
     ev.iter().find_map(|e| match e {
@@ -997,11 +997,11 @@ fn armored_crab_only_takes_hits_from_above() {
     let id = w.add_creature(kind, on_floor(30, 26.0)).unwrap();
     elora(&mut w, 29);
     w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
-    // Hammer von der Seite prallt ab
+    // hammer from the side bounces off
     let ev = run(&mut w, fire(100, 0, 1), 2);
     assert_eq!(damage_of(&ev, id), Some(0), "Panzer hält");
     assert_eq!(w.creatures[0].health, 6);
-    // Laser von der Seite auch
+    // laser from the side too
     w.spawn_character(0, on_floor(24, 28.0));
     w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
     w.character_mut(0)
@@ -1011,7 +1011,7 @@ fn armored_crab_only_takes_hits_from_above() {
     w.character_mut(0).unwrap().arsenal.active = Weapon::Laser;
     let ev = run(&mut w, fire(100, 0, 3), 2);
     assert_eq!(damage_of(&ev, id), Some(0), "Laser prallt ab");
-    // Hammer von oben trifft
+    // hammer from above hits
     w.character_mut(0).unwrap().arsenal.active = Weapon::Hammer;
     let top = w.creatures[0].pos - Vec2::new(0.0, 13.0 + 14.0 + 4.0);
     w.spawn_character(0, top);
@@ -1048,7 +1048,7 @@ fn dune_worm_travels_under_sand_warns_and_leaps_at_elora() {
     elora(&mut w, 30);
     w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
     let get = |w: &World| w.creatures.iter().find(|c| c.id == id).unwrap().clone();
-    // unter dem Sand: kommt näher, harmlos und unverwundbar
+    // under the sand: comes closer, harmless and invulnerable
     run(&mut w, PlayerInput::default(), 10);
     let c = get(&w);
     assert_eq!(c.mode, leaper::UNDER);
@@ -1056,7 +1056,7 @@ fn dune_worm_travels_under_sand_warns_and_leaps_at_elora() {
     assert!(!c.vulnerable(&w.creature_kinds[kind]) && !c.harmful(&w.creature_kinds[kind]));
     w.hurt_creature(id, 1);
     assert_eq!(get(&w).health, 6, "unter dem Sand nicht zu treffen");
-    // Warnung, dann Sprung
+    // warning, then jump
     let mut modes = Vec::new();
     let mut top = f32::MAX;
     for _ in 0..200 {
@@ -1132,7 +1132,7 @@ fn spark_moth_hovers_above_elora_and_sparks_glow_on_the_ground() {
         (elora_pos.y - m.pos.y - 120.0).abs() < 20.0,
         "in Schwebehöhe"
     );
-    // Elora geht zur Seite: der Funke landet und glüht
+    // Elora steps aside: the spark lands and glows
     w.spawn_character(0, on_floor(10, 28.0));
     w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
     let mut landed = 0;
@@ -1143,7 +1143,7 @@ fn spark_moth_hovers_above_elora_and_sparks_glow_on_the_ground() {
     assert!(landed > 0, "Funke liegt glühend am Boden");
     let s = w.creature_shots.iter().find(|s| s.landed).unwrap();
     assert!(s.pos.y > on_floor(20, 26.0).y, "am Boden");
-    // nach glow_ms verglüht
+    // burnt out after glow_ms
     w.creatures.clear();
     run(&mut w, PlayerInput::default(), 60);
     assert!(w.creature_shots.is_empty(), "verglüht");
@@ -1169,7 +1169,7 @@ fn glowing_spark_burns_elora() {
     assert!(health(&w) < before, "glühender Funke brennt");
 }
 
-/// Treibsand-Grube in Spalte 20 bis 26 (eine Tile-Reihe statt Boden).
+/// Quicksand pit in columns 20 to 26 (one tile row instead of floor).
 fn quicksand_world() -> World {
     world(|t| (20..=26).for_each(|x| set(t, x, FLOOR, Tile::Quicksand)))
 }
@@ -1179,7 +1179,7 @@ fn quicksand_sinks_slowly_slows_and_a_jump_frees() {
     let mut w = quicksand_world();
     elora(&mut w, 10);
     let surface = FLOOR as f32 * 32.0;
-    // zuerst auf festem Boden: so schnell läuft Elora
+    // first on solid ground: this is how fast Elora walks
     let right = PlayerInput {
         direction: 1,
         ..PlayerInput::default()
@@ -1198,7 +1198,7 @@ fn quicksand_sinks_slowly_slows_and_a_jump_frees() {
         slow > 0.0 && slow < fast * 0.5,
         "langsamer: {slow} statt {fast}"
     );
-    // Springen befreit
+    // jumping frees her
     let jump = PlayerInput {
         jump: true,
         ..PlayerInput::default()
@@ -1278,7 +1278,7 @@ fn serpent_def() -> elora_sim::SerpentDef {
     }
 }
 
-/// Kessel mit doppelt dickem Boden (Treibsand braucht festen Grund darunter).
+/// Basin with a double-thick floor (quicksand needs solid ground below).
 fn serpent_world() -> (World, usize) {
     let mut w = world(|t| (0..W).for_each(|x| set(t, x, FLOOR - 1, Tile::Solid)));
     let mut k = kinds()[0].clone();
@@ -1293,7 +1293,7 @@ fn serpent_world() -> (World, usize) {
     (w, kind)
 }
 
-/// Mitte über dem (angehobenen) Boden für eine Box der Höhe `h`.
+/// Centre above the (raised) floor for a box of height `h`.
 fn on_sand(tx: usize, h: f32) -> Vec2 {
     on_floor(tx, h) - Vec2::new(0.0, 32.0)
 }
@@ -1322,7 +1322,7 @@ fn sand_serpent_trails_warns_leaps_and_lies_stunned() {
     run(&mut w, PlayerInput::default(), 20);
     let get = |w: &World| w.creatures.iter().find(|c| c.id == id).unwrap().clone();
     assert_eq!(get(&w).mode, serpent::SLEEP, "Elora ist weit weg");
-    // Elora kommt in den Kessel
+    // Elora enters the basin
     w.spawn_character(i, on_sand(22, 28.0));
     w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
     run(&mut w, PlayerInput::default(), 3);
@@ -1348,7 +1348,7 @@ fn sand_serpent_trails_warns_leaps_and_lies_stunned() {
             .any(|m| m == [serpent::STUNNED, serpent::TRAIL]),
         "taucht wieder ein"
     );
-    // die Warnung kam unter Elora
+    // the warning came under Elora
     let warn = ev
         .iter()
         .find_map(|e| match e {
@@ -1375,7 +1375,7 @@ fn sand_serpent_is_hit_only_in_the_air_or_stunned_and_stomp_hits_double() {
     w.spawn_character(i, on_sand(30, 28.0) - Vec2::new(0.0, 120.0));
     w.set_abilities(i, Abilities::NONE.with(Ability::Stomp));
     w.character_mut(0).unwrap().invulnerable_until = u64::MAX;
-    // benommen am Boden: verwundbar
+    // dazed on the ground: vulnerable
     {
         let c = w.creatures.iter_mut().find(|c| c.id == id).unwrap();
         c.mode = serpent::STUNNED;
@@ -1428,7 +1428,7 @@ fn angry_serpent_turns_the_basin_to_quicksand_and_leaps_twice() {
             .any(|e| matches!(e, Event::TileSet { tile, .. } if *tile != Tile::Quicksand)),
         "Treibsand vergeht wieder"
     );
-    // letztes Viertel: zwei Bögen, bevor sie benommen liegt
+    // last quarter: two arcs before it lies dazed
     let (mut w, kind) = serpent_world();
     let id = w.add_creature(kind, on_sand(30, 60.0)).unwrap();
     let i = elora(&mut w, 22);
@@ -1461,8 +1461,8 @@ fn angry_serpent_turns_the_basin_to_quicksand_and_leaps_twice() {
     assert_eq!(emerges, 2, "zwei Bögen hintereinander");
 }
 
-/// Playtest 2026-10-06: Die Sandschlange war in einer einzigen Öffnung erledigt. Nach
-/// `open_hits` Treffern taucht sie sofort ab.
+/// Playtest 2026-10-06: the sand snake was finished off in a single opening. After
+/// `open_hits` hits it dives right away.
 #[test]
 fn serpent_dives_after_a_few_hits() {
     use elora_sim::creature::serpent;
@@ -1496,7 +1496,7 @@ fn serpent_dives_after_a_few_hits() {
     assert_eq!(w.creatures[0].health, 17, "unter dem Sand wieder geschützt");
 }
 
-/// Die Landung schleudert Sand: Schaden im Umkreis; wütend landet sie auf Elora.
+/// The landing hurls sand: damage in a radius; when enraged it lands on Elora.
 #[test]
 fn angry_serpent_aims_at_elora_and_its_landing_hurts() {
     use elora_sim::creature::serpent;
@@ -1513,7 +1513,7 @@ fn angry_serpent_aims_at_elora_and_its_landing_hurts() {
     w.creatures.iter_mut().find(|c| c.id == id).unwrap().health = 9;
     let i = elora(&mut w, 22);
     w.spawn_character(i, on_sand(22, 28.0));
-    // die Warnung kommt unter Elora; dann geht sie zwei Tiles zur Seite
+    // the warning comes under Elora; then she steps two tiles aside
     for _ in 0..300 {
         run(&mut w, PlayerInput::default(), 1);
         if w.creatures[0].mode == serpent::WARN {

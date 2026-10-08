@@ -1,44 +1,44 @@
-//! Eingabe eines Spielers für einen Tick.
+//! Input of a player for one tick.
 
-/// Maske der Tastenzähler (wie `INPUT_STATE_MASK` im Original).
+/// Mask of the key counters (like `INPUT_STATE_MASK` in the original).
 pub const INPUT_STATE_MASK: u8 = 0x3f;
 
-/// Eingabe eines Spielers. Ganzzahlig, damit sie später verlustfrei über das
-/// Netzwerk geht und Simulationen reproduzierbar bleiben.
+/// Input of a player. Integer-based, so that it can later be sent losslessly over the
+/// network and simulations stay reproducible.
 ///
-/// Feuer und Waffenwechsel sind **Zähler** wie im Original: Jede Änderung
-/// (Drücken oder Loslassen) erhöht den Zähler um 1; ungerade = gedrückt. So gehen
-/// auch Klicks, die kürzer als ein Tick sind, nicht verloren.
+/// Fire and weapon switching are **counters** like in the original: every change
+/// (press or release) increments the counter by 1; odd = pressed. This way even
+/// clicks shorter than a tick are not lost.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
-#[allow(clippy::struct_excessive_bools)] // Tasten sind unabhängig
+#[allow(clippy::struct_excessive_bools)] // keys are independent
 pub struct PlayerInput {
-    /// Laufrichtung: -1 links, 0 keine, 1 rechts.
+    /// Walking direction: -1 left, 0 none, 1 right.
     pub direction: i8,
-    /// Zielpunkt relativ zur Figur (Welteinheiten).
+    /// Target point relative to the character (world units).
     pub target_x: i32,
     pub target_y: i32,
     pub jump: bool,
     pub hook: bool,
-    /// Feuer-Zähler (ungerade = gedrückt).
+    /// Fire counter (odd = pressed).
     pub fire: u8,
-    /// Direkte Waffenwahl: 0 = keine, sonst Waffennummer 1..=3 (E-051).
+    /// Direct weapon selection: 0 = none, otherwise weapon number 1..=3 (E-051).
     pub wanted_weapon: u8,
-    /// Zähler „nächste Waffe“ (Mausrad).
+    /// "Next weapon" counter (mouse wheel).
     pub next_weapon: u8,
-    /// Zähler „vorige Waffe“ (Mausrad).
+    /// "Previous weapon" counter (mouse wheel).
     pub prev_weapon: u8,
-    /// „Runter“ gehalten: durch Plattformen fallen (E-141).
+    /// "Down" held: fall through platforms (E-141).
     #[cfg_attr(feature = "serde", serde(default))]
     pub down: bool,
-    /// Taste „Fähigkeit“ gehalten (Hook-Ruck, E-226).
+    /// "Ability" key held (hook jerk, E-226).
     #[cfg_attr(feature = "serde", serde(default))]
     pub ability: bool,
 }
 
 impl Default for PlayerInput {
     fn default() -> Self {
-        // Zielrichtung darf nie (0, 0) sein
+        // Aim direction must never be (0, 0)
         Self {
             direction: 0,
             target_x: 1,
@@ -56,13 +56,13 @@ impl Default for PlayerInput {
 }
 
 impl PlayerInput {
-    /// Ist die Feuertaste gerade gedrückt?
+    /// Is the fire key currently pressed?
     pub fn fire_held(&self) -> bool {
         self.fire & 1 == 1
     }
 }
 
-/// Anzahl der Tastendrücke zwischen zwei Zählerständen (`CountInput` im Original).
+/// Number of key presses between two counter values (`CountInput` in the original).
 pub fn count_presses(prev: u8, cur: u8) -> u32 {
     let (mut i, cur) = (prev & INPUT_STATE_MASK, cur & INPUT_STATE_MASK);
     let mut presses = 0;
@@ -82,9 +82,9 @@ mod tests {
     #[test]
     fn counts_presses_including_wraparound() {
         assert_eq!(count_presses(0, 0), 0);
-        assert_eq!(count_presses(0, 1), 1); // gedrückt
-        assert_eq!(count_presses(1, 2), 0); // losgelassen
-        assert_eq!(count_presses(0, 4), 2); // zwei kurze Klicks in einem Tick
-        assert_eq!(count_presses(63, 1), 1); // Überlauf der Maske
+        assert_eq!(count_presses(0, 1), 1); // pressed
+        assert_eq!(count_presses(1, 2), 0); // released
+        assert_eq!(count_presses(0, 4), 2); // two short clicks in one tick
+        assert_eq!(count_presses(63, 1), 1); // overflow of the mask
     }
 }

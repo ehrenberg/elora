@@ -1,5 +1,5 @@
-//! Wetter in der Simulation (R2-W1, W1.4, E-330, E-336): Wind, Nässe, Granaten, Blitze –
-//! nur im Abenteuer.
+//! Weather in the simulation (R2-W1, W1.4, E-330, E-336): wind, wetness, grenades, lightning –
+//! only in the adventure.
 
 use elora_sim::{Collision, Event, PlayerInput, Tile, Tuning, Vec2, Weapon, WeatherEnv, World};
 
@@ -44,7 +44,7 @@ fn x(w: &World) -> f32 {
     w.character(0).unwrap().core.pos.x
 }
 
-/// Gerader Sprung: wie weit treibt Elora seitlich ab?
+/// Straight jump: how far does Elora drift sideways?
 fn drift(adventure: bool, weather: Option<WeatherEnv>) -> f32 {
     let mut w = world(adventure, weather);
     run(&mut w, PlayerInput::default(), 10);
@@ -69,7 +69,7 @@ fn wind_pushes_elora_in_the_air_only_in_the_adventure() {
         drift(false, wind(1.0)).abs() < 0.5,
         "Mehrspieler: kein Wind"
     );
-    // am Boden schiebt er nicht
+    // on the ground it does not push
     let mut w = world(true, wind(1.0));
     run(&mut w, PlayerInput::default(), 10);
     let start = x(&w);
@@ -77,7 +77,7 @@ fn wind_pushes_elora_in_the_air_only_in_the_adventure() {
     assert!((x(&w) - start).abs() < 0.5, "steht fest");
 }
 
-/// Bremsweg nach dem Loslassen: nasser Boden bremst weicher.
+/// Braking distance after letting go: a wet floor brakes more softly.
 fn stop_distance(weather: Option<WeatherEnv>) -> f32 {
     let mut w = world(true, weather);
     let right = PlayerInput {
@@ -115,7 +115,7 @@ fn wind_bends_grenades() {
             target_y: -100,
             ..PlayerInput::default()
         };
-        // erst ein paar Ticks: das Wetter liegt ab dem ersten Tick in der Kollision
+        // a few ticks first: the weather is in the collision from the first tick on
         run(&mut w, PlayerInput::default(), 5);
         run(&mut w, fire, 1);
         let ev = run(&mut w, PlayerInput::default(), 200);
@@ -163,7 +163,7 @@ fn lightning_warns_then_strikes_and_hurts() {
     assert_eq!(pw, ps, "schlägt dort ein, wo es glimmt");
     assert!(ts - tw >= 40, "Zeit zum Ausweichen: {} Ticks", ts - tw);
     assert!((ps.y - FLOOR as f32 * 32.0).abs() < 0.5, "am Boden");
-    // Elora genau an der Einschlagstelle: Schaden
+    // Elora exactly at the impact point: damage
     let mut w = world(true, storm);
     let before = w.character(0).unwrap().health;
     let mut hurt = false;
@@ -185,7 +185,7 @@ fn lightning_warns_then_strikes_and_hurts() {
         }
     }
     assert!(hurt, "Blitz trifft Elora");
-    // im Mehrspieler keine Blitze
+    // no lightning in multiplayer
     let mut w = world(false, storm);
     let ev = run(&mut w, PlayerInput::default(), 3000);
     assert!(!ev.iter().any(|e| matches!(e, Event::Lightning { .. })));

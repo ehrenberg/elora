@@ -1,11 +1,11 @@
-//! Tile-Kollision (Referenz: Teeworlds `CCollision`, E-007).
+//! Tile collision (reference: Teeworlds `CCollision`, E-007).
 
 use crate::math::{Vec2, round_to_int};
 
-/// Kantenlänge eines Tiles in Welteinheiten.
+/// Edge length of a tile in world units.
 pub const TILE_SIZE: i32 = 32;
 
-/// Richtung eines Sprungfelds (T-34).
+/// Direction of a jump pad (T-34).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum JumpDir {
     Up,
@@ -14,7 +14,7 @@ pub enum JumpDir {
 }
 
 impl JumpDir {
-    /// Einheitsvektor der Wurfrichtung (y nach unten).
+    /// Unit vector of the launch direction (y pointing down).
     pub fn vector(self) -> Vec2 {
         let d = std::f32::consts::FRAC_1_SQRT_2;
         match self {
@@ -25,7 +25,7 @@ impl JumpDir {
     }
 }
 
-/// Laufrichtung eines Beschleunigers.
+/// Running direction of an accelerator.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum BeltDir {
     Left,
@@ -41,44 +41,44 @@ impl BeltDir {
     }
 }
 
-/// Kollisionsart eines Tiles.
+/// Collision kind of a tile.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Tile {
     #[default]
     Air,
     Solid,
-    /// Wand, an der der Hook nicht greift.
+    /// Wall the hook does not grab.
     Unhookable,
-    /// Tötet bei Berührung.
+    /// Kills on contact.
     Death,
-    /// Von oben begehbar, von unten und seitlich durchlässig; Hook, Granaten und
-    /// Laser fliegen hindurch (T-36, E-140). Mit „Runter“ fällt man hindurch (E-141).
+    /// Walkable from above, passable from below and the sides; hook, grenades and
+    /// laser fly through (T-36, E-140). With "down" you fall through (E-141).
     Platform,
-    /// Fest, aber rutschig (T-31, T-32).
+    /// Solid but slippery (T-31, T-32).
     Ice,
-    /// Fest; wirft eine darauf stehende Figur mit T-33 in Richtung T-34.
+    /// Solid; launches a character standing on it with T-33 in direction T-34.
     JumpPad(JumpDir),
-    /// Fest; trägt eine darauf stehende Figur wie ein Laufband (T-35).
+    /// Solid; carries a character standing on it like a conveyor belt (T-35).
     Conveyor(BeltDir),
-    /// Kletterwand: fest, nicht hookbar; mit Eisgriff kann man daran haften (E-228).
+    /// Climbing wall: solid, not hookable; with ice grip you can cling to it (E-228).
     Climb,
-    /// Bröckelboden: fest und hookbar; bricht beim Stampfen (E-230).
+    /// Crumbling floor: solid and hookable; breaks when stomped (E-230).
     Crumble,
-    /// Hookpunkt in der Luft (Hook-Blüte, R2-M2.1): der Hook greift in der Mitte, alles andere
-    /// fliegt und läuft hindurch. Kann zeitweise welk sein ([`Collision::hook_wilt`]).
+    /// Hook point in the air (hook blossom, R2-M2.1): the hook grabs in the center, everything
+    /// else flies and walks through. Can be temporarily wilted ([`Collision::hook_wilt`]).
     HookPoint,
-    /// Treibsand (R2-M2.3, E-318): nicht fest; Figuren sinken langsam ein und laufen
-    /// langsamer, Springen befreit, tief eingesunken kleiner Schaden und zurück an den Rand.
+    /// Quicksand (R2-M2.3, E-318): not solid; characters slowly sink in and walk
+    /// slower, jumping frees them, sunk in deep: small damage and back to the edge.
     Quicksand,
-    /// Dünnes Eis (R2-M2.4, E-343): fest, nicht hookbar, nicht rutschig; bricht nach kurzem
-    /// Stehen (A-36) oder sofort beim Stampfen und wächst nach einer Weile nach (A-37).
+    /// Thin ice (R2-M2.4, E-343): solid, not hookable, not slippery; breaks after standing
+    /// briefly (A-36) or immediately when stomped, and grows back after a while (A-37).
     ThinIce,
-    /// Eiswasser (R2-M2.4): nicht fest; wer hineinfällt, nimmt kleinen Schaden (A-38) und
-    /// kommt zurück an den Rand.
+    /// Ice water (R2-M2.4): not solid; whoever falls in takes small damage (A-38) and
+    /// returns to the edge.
     IceWater,
 }
 
-/// Zeichen der Tile-Arten im Textformat und in Aufzeichnungen (E-024, M6.1).
+/// Characters of the tile kinds in the text format and in recordings (E-024, M6.1).
 const TILE_CHARS: [(char, Tile); 17] = [
     ('.', Tile::Air),
     ('#', Tile::Solid),
@@ -100,10 +100,10 @@ const TILE_CHARS: [(char, Tile); 17] = [
 ];
 
 impl Tile {
-    /// Zeichen im Textformat (`.` Luft, `#` Wand, `%` unhookable, `^` Tod, `=` Plattform,
-    /// `~` Eis, `!` `\` `/` Sprungfeld hoch/schräg links/schräg rechts, `<` `>` Beschleuniger,
-    /// `|` Kletterwand, `:` Bröckelboden, `*` Hookpunkt, `&` Treibsand, `-` dünnes Eis,
-    /// `+` Eiswasser).
+    /// Character in the text format (`.` air, `#` wall, `%` unhookable, `^` death, `=` platform,
+    /// `~` ice, `!` `\` `/` jump pad up/diagonal left/diagonal right, `<` `>` accelerator,
+    /// `|` climbing wall, `:` crumbling floor, `*` hook point, `&` quicksand, `-` thin ice,
+    /// `+` ice water).
     pub fn to_char(self) -> char {
         TILE_CHARS
             .iter()
@@ -115,7 +115,7 @@ impl Tile {
         TILE_CHARS.iter().find(|(ch, _)| *ch == c).map(|(_, t)| *t)
     }
 
-    /// Fest für Figuren, Hook, Granaten und Laser (Plattformen zählen nicht).
+    /// Solid for characters, hook, grenades and laser (platforms do not count).
     pub fn is_solid(self) -> bool {
         matches!(
             self,
@@ -130,42 +130,42 @@ impl Tile {
         )
     }
 
-    /// Greift der Hook an diesem Tile (nur feste Tiles)?
+    /// Does the hook grab on this tile (solid tiles only)?
     pub fn is_hookable(self) -> bool {
         self.is_solid() && !matches!(self, Self::Unhookable | Self::Climb | Self::ThinIce)
     }
 }
 
-/// Treffer eines Linien-Tests.
+/// Hit of a line test.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct LineHit {
-    /// Erster fester Punkt.
+    /// First solid point.
     pub pos: Vec2,
-    /// Letzter freier Punkt davor.
+    /// Last free point before it.
     pub before: Vec2,
     pub tile: Tile,
 }
 
-/// Kollisionsraster der Welt. Alles außerhalb gilt als [`Tile::Solid`] (E-024).
+/// Collision grid of the world. Everything outside counts as [`Tile::Solid`] (E-024).
 #[derive(Debug, Clone)]
 pub struct Collision {
     width: usize,
     height: usize,
     tiles: Vec<Tile>,
-    /// Welke Hookpunkte (Hüter wütend, E-298): `Some(gerade)` = Hookpunkte in Spalten mit
-    /// `tx % 2 == 0` (bzw. ungerade) greifen gerade nicht; `None` = alle frisch.
+    /// Wilted hook points (guardian enraged, E-298): `Some(gerade)` = hook points in columns with
+    /// `tx % 2 == 0` (or odd) currently do not grab; `None` = all fresh.
     pub hook_wilt: Option<bool>,
-    /// Wetter dieses Ticks (R2-W1, nur Abenteuer): Wind mit Böen (−1..1) und Nässe des Bodens
-    /// (0..1); im Mehrspieler 0.
+    /// Weather of this tick (R2-W1, adventure only): wind with gusts (−1..1) and wetness of the
+    /// ground (0..1); 0 in multiplayer.
     pub wind: f32,
     pub wet: f32,
 }
 
 impl Collision {
-    /// Erzeugt ein Raster aus `tiles` (zeilenweise, oben links beginnend).
+    /// Creates a grid from `tiles` (row by row, starting top left).
     ///
     /// # Panics
-    /// Wenn `tiles.len() != width * height`.
+    /// If `tiles.len() != width * height`.
     pub fn new(width: usize, height: usize, tiles: Vec<Tile>) -> Self {
         assert_eq!(
             tiles.len(),
@@ -182,13 +182,13 @@ impl Collision {
         }
     }
 
-    /// Greift der Hookpunkt in Spalte `tx` gerade (nicht welk)?
+    /// Does the hook point in column `tx` currently grab (not wilted)?
     pub fn hook_point_active(&self, tx: i32) -> bool {
         self.hook_wilt
             .is_none_or(|even| (tx.rem_euclid(2) == 0) != even)
     }
 
-    /// Mitte des ersten greifenden Hookpunkts auf der Strecke `from`–`to`.
+    /// Center of the first grabbing hook point on the segment `from`–`to`.
     pub fn intersect_hook_point(&self, from: Vec2, to: Vec2) -> Option<Vec2> {
         let end = from.distance(to) as i32 + 1;
         let inv = 1.0 / end as f32;
@@ -217,7 +217,7 @@ impl Collision {
         self.height
     }
 
-    /// Tile an Rasterkoordinate. Außerhalb: [`Tile::Solid`].
+    /// Tile at a grid coordinate. Outside: [`Tile::Solid`].
     pub fn tile(&self, tx: i32, ty: i32) -> Tile {
         let (Ok(x), Ok(y)) = (usize::try_from(tx), usize::try_from(ty)) else {
             return Tile::Solid;
@@ -228,7 +228,7 @@ impl Collision {
         self.tiles[y * self.width + x]
     }
 
-    /// Setzt ein Tile (z. B. zerbrochener Bröckelboden); außerhalb des Rasters ohne Wirkung.
+    /// Sets a tile (e.g. broken crumbling floor); no effect outside the grid.
     pub fn set_tile(&mut self, tx: i32, ty: i32, tile: Tile) {
         let (Ok(x), Ok(y)) = (usize::try_from(tx), usize::try_from(ty)) else {
             return;
@@ -238,14 +238,14 @@ impl Collision {
         }
     }
 
-    /// Tile an einer Weltposition.
+    /// Tile at a world position.
     pub fn tile_at(&self, pos: Vec2) -> Tile {
         let x = round_to_int(pos.x).div_euclid(TILE_SIZE);
         let y = round_to_int(pos.y).div_euclid(TILE_SIZE);
         self.tile(x, y)
     }
 
-    /// Ist die Weltposition fest (Wand oder Unhookable)?
+    /// Is the world position solid (wall or unhookable)?
     pub fn is_solid(&self, pos: Vec2) -> bool {
         self.tile_at(pos).is_solid()
     }
@@ -262,13 +262,13 @@ impl Collision {
         .any(|p| check(self.tile_at(p)))
     }
 
-    /// Berührt eine der vier Ecken der Box eine Wand?
+    /// Does one of the four corners of the box touch a wall?
     pub fn test_box(&self, pos: Vec2, size: Vec2) -> bool {
         self.test_box_with(pos, size, Tile::is_solid)
     }
 
-    /// Landet eine Box mit Unterkante `prev → new` (abwärts) auf einer Plattform?
-    /// Sie muss vorher auf oder über der Oberkante gewesen sein (von unten durchlässig).
+    /// Does a box with bottom edge `prev → new` (downwards) land on a platform?
+    /// It must have been on or above the top edge before (passable from below).
     fn lands_on_platform(&self, x: f32, half_w: f32, prev_bottom: f32, new_bottom: f32) -> bool {
         if new_bottom <= prev_bottom {
             return false;
@@ -284,16 +284,16 @@ impl Collision {
             .any(|px| self.tile(round_to_int(px).div_euclid(TILE_SIZE), ty) == Tile::Platform)
     }
 
-    /// Bewegt eine Box um `vel` in Einzelschritten (max. 1 Einheit pro Schritt),
-    /// damit auch schnelle Objekte nicht durch Wände tunneln.
+    /// Moves a box by `vel` in single steps (max. 1 unit per step),
+    /// so that even fast objects do not tunnel through walls.
     ///
-    /// Gibt zurück, ob dabei ein Todes-Tile berührt wurde (Todes-Box ist 2/3 so groß).
+    /// Returns whether a death tile was touched (the death box is 2/3 as large).
     pub fn move_box(&self, pos: &mut Vec2, vel: &mut Vec2, size: Vec2, elasticity: f32) -> bool {
         self.move_box_platforms(pos, vel, size, elasticity, false)
     }
 
-    /// Wie [`Collision::move_box`]; mit `platforms` landet die Box auf Plattformen
-    /// (Figuren, die nicht gerade durchfallen).
+    /// Like [`Collision::move_box`]; with `platforms` the box lands on platforms
+    /// (characters that are not currently falling through).
     pub fn move_box_platforms(
         &self,
         pos: &mut Vec2,
@@ -330,7 +330,7 @@ impl Collision {
                     vel.x *= -elasticity;
                     hits += 1;
                 }
-                // echter Eckfall: keiner der Einzeltests trifft
+                // real corner case: none of the single tests hits
                 if hits == 0 {
                     new = p;
                     *vel *= -elasticity;
@@ -353,8 +353,8 @@ impl Collision {
         death
     }
 
-    /// Bewegt einen Punkt um `vel`; an Wänden wird die Geschwindigkeit mit
-    /// `elasticity` gespiegelt. Liefert die Anzahl der Abpraller.
+    /// Moves a point by `vel`; at walls the velocity is mirrored with
+    /// `elasticity`. Returns the number of bounces.
     pub fn move_point(&self, pos: &mut Vec2, vel: &mut Vec2, elasticity: f32) -> u32 {
         let p = *pos;
         let v = *vel;
@@ -377,14 +377,14 @@ impl Collision {
         bounces
     }
 
-    /// Tastet die Strecke `from`–`to` ab. Liefert beim ersten festen Punkt
-    /// dessen Position und Tile-Art.
+    /// Scans the segment `from`–`to`. Returns the position and tile kind
+    /// of the first solid point.
     pub fn intersect_line(&self, from: Vec2, to: Vec2) -> Option<(Vec2, Tile)> {
         self.intersect_line_detail(from, to)
             .map(|h| (h.pos, h.tile))
     }
 
-    /// Wie [`Self::intersect_line`], zusätzlich mit dem letzten freien Punkt davor.
+    /// Like [`Self::intersect_line`], additionally with the last free point before it.
     pub fn intersect_line_detail(&self, from: Vec2, to: Vec2) -> Option<LineHit> {
         let end = from.distance(to) as i32 + 1;
         let inv = 1.0 / end as f32;
@@ -409,7 +409,7 @@ impl Collision {
 mod tests {
     use super::*;
 
-    /// 5×5-Raster mit Wand-Rahmen.
+    /// 5×5 grid with a wall frame.
     fn boxed() -> Collision {
         let mut tiles = vec![Tile::Air; 25];
         for i in 0..5 {
@@ -436,7 +436,7 @@ mod tests {
         let mut pos = Vec2::new(80.0, 80.0);
         let mut vel = Vec2::new(500.0, 0.0);
         c.move_box(&mut pos, &mut vel, Vec2::new(28.0, 28.0), 0.0);
-        // rechte Wand beginnt bei x = 128, Box-Halbbreite 14
+        // right wall starts at x = 128, box half-width 14
         assert!(pos.x <= 128.0 - 14.0, "durch die Wand getunnelt: {pos:?}");
         assert!(pos.x > 100.0);
         assert!(vel.x.abs() < f32::EPSILON);

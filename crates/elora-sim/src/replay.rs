@@ -1,8 +1,8 @@
-//! Eingabe-Aufzeichnungen für Determinismus-Tests (M1.6).
+//! Input recordings for determinism tests (M1.6).
 //!
-//! Eine Aufzeichnung ist in sich geschlossen: Kollisionsraster, Spawnpunkt, Tuning
-//! und alle Eingaben stehen in einer Datei (`.erec.toml`). Beim Abspielen entsteht
-//! ein Zustandsprotokoll, das bit-genau mit einer Golden-Datei verglichen wird.
+//! A recording is self-contained: collision grid, spawn point, tuning
+//! and all inputs are in one file (`.erec.toml`). Playback produces
+//! a state log that is compared bit-exactly with a golden file.
 
 use std::fmt::Write as _;
 
@@ -11,23 +11,23 @@ use serde::{Deserialize, Serialize};
 use crate::player::Controller;
 use crate::{Collision, DummyPattern, PickupKind, PlayerInput, Tile, Tuning, Vec2, World};
 
-/// Formatversion von `.erec.toml`.
+/// Format version of `.erec.toml`.
 pub const RECORDING_FORMAT: u32 = 2;
 
-/// Alle wie viele Ticks der Zustand protokolliert wird.
+/// Every how many ticks the state is logged.
 const DUMP_INTERVAL: u64 = 25;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Recording {
     pub format: u32,
-    /// Kollisionsraster, Zeichen siehe [`Tile::to_char`].
+    /// Collision grid, characters see [`Tile::to_char`].
     pub tiles: String,
-    /// Spawnpunkte für den Respawn menschlicher Spieler.
+    /// Spawn points for the respawn of human players.
     pub spawn_points: Vec<[f32; 2]>,
-    /// Spieler-Slots in Reihenfolge; `dummy = None` ist der aufgezeichnete Mensch.
+    /// Player slots in order; `dummy = None` is the recorded human.
     pub players: Vec<RecordedPlayer>,
     pub pickups: Vec<RecordedPickup>,
-    /// Eingaben des Menschen, eine Zeile pro Tick:
+    /// Inputs of the human, one line per tick:
     /// `richtung ziel_x ziel_y sprung hook feuer waffe nächste vorige`.
     pub inputs: String,
     pub tuning: Tuning,
@@ -45,7 +45,7 @@ pub struct RecordedPickup {
     pub pos: [f32; 2],
 }
 
-/// Formatversion 1 (M1): ein Spieler ohne Waffen, Eingaben mit 5 Feldern.
+/// Format version 1 (M1): one player without weapons, inputs with 5 fields.
 #[derive(Debug, Deserialize)]
 struct RecordingV1 {
     spawn: [f32; 2],
@@ -75,7 +75,7 @@ impl From<RecordingV1> for Recording {
     }
 }
 
-/// Fehler beim Lesen einer Aufzeichnung.
+/// Error while reading a recording.
 #[derive(Debug)]
 pub struct RecordingError(pub String);
 
@@ -88,9 +88,9 @@ impl std::fmt::Display for RecordingError {
 impl std::error::Error for RecordingError {}
 
 impl Recording {
-    /// Beginnt eine Aufzeichnung für den Zustand von `world`. Erwartet eine
-    /// frische Welt (alle Figuren lebend an ihrer Startposition, Pickups verfügbar,
-    /// keine Projektile) mit genau einem menschlichen Spieler.
+    /// Starts a recording for the state of `world`. Expects a
+    /// fresh world (all characters alive at their start position, pickups available,
+    /// no projectiles) with exactly one human player.
     pub fn new(world: &World) -> Self {
         let collision = &world.collision;
         let mut tiles = String::new();
@@ -161,7 +161,7 @@ impl Recording {
     }
 
     /// # Errors
-    /// Wenn `src` kein gültiges TOML einer Aufzeichnung ist.
+    /// If `src` is not valid TOML of a recording.
     pub fn from_toml(src: &str) -> Result<Self, RecordingError> {
         let err = |e: toml::de::Error| RecordingError(e.to_string());
         let value: toml::Table = toml::from_str(src).map_err(err)?;
@@ -175,7 +175,7 @@ impl Recording {
     }
 
     /// # Errors
-    /// Wenn die Serialisierung fehlschlägt.
+    /// If serialization fails.
     pub fn to_toml(&self) -> Result<String, RecordingError> {
         toml::to_string(self).map_err(|e| RecordingError(e.to_string()))
     }
@@ -212,7 +212,7 @@ impl Recording {
                     .map(str::parse)
                     .collect::<Result<_, _>>()
                     .map_err(|_| err())?;
-                // 9 Felder (ältere Aufzeichnungen) oder 10 mit „Runter“ (M6.1)
+                // 9 fields (older recordings) or 10 with "down" (M6.1)
                 let (fields, down) = match f.len() {
                     9 => (&f[..], 0),
                     10 => (&f[..9], f[9]),
@@ -250,10 +250,10 @@ impl Recording {
             .collect()
     }
 
-    /// Baut die Welt zum Start der Aufzeichnung.
+    /// Builds the world at the start of the recording.
     ///
     /// # Errors
-    /// Bei ungültigem Raster.
+    /// On an invalid grid.
     pub fn world(&self) -> Result<(World, usize), RecordingError> {
         let v = |p: [f32; 2]| Vec2::new(p[0], p[1]);
         let mut world = World::new(self.tuning.clone(), self.collision()?);
@@ -274,10 +274,10 @@ impl Recording {
         Ok((world, human))
     }
 
-    /// Spielt die Aufzeichnung ab und liefert das Zustandsprotokoll.
+    /// Plays back the recording and returns the state log.
     ///
     /// # Errors
-    /// Bei ungültigem Raster oder ungültigen Eingabezeilen.
+    /// On an invalid grid or invalid input lines.
     pub fn replay(&self) -> Result<String, RecordingError> {
         let (mut world, human) = self.world()?;
         let mut inputs = vec![PlayerInput::default(); world.players.len()];
@@ -295,7 +295,7 @@ impl Recording {
     }
 }
 
-/// Zustand aller Slots. `{:?}` gibt f32 verlustfrei aus.
+/// State of all slots. `{:?}` prints f32 losslessly.
 fn dump(log: &mut String, world: &World) {
     let _ = writeln!(
         log,

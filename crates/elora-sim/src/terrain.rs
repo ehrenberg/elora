@@ -1,6 +1,6 @@
-//! Gelände mit Zustand (R2-M2.4, E-343): zeitweise gesetzte Tiles (Wurzelwände, Treibsand der
-//! Sandschlange, gebrochenes dünnes Eis) kehren zurück; dünnes Eis bekommt unter Elora Risse
-//! und bricht.
+//! Terrain with state (R2-M2.4, E-343): temporarily placed tiles (root walls, quicksand of the
+//! Sand Serpent, broken thin ice) return; thin ice gets cracks under Elora
+//! and breaks.
 
 use crate::character::PHYS_SIZE;
 use crate::event::Event;
@@ -10,7 +10,7 @@ use crate::world::World;
 use crate::{TILE_SIZE, Tile};
 
 impl World {
-    /// Vor den Figuren: Risse im dünnen Eis, Brüche, zurückkehrende Tiles.
+    /// Before the characters: cracks in thin ice, breaks, returning tiles.
     pub(crate) fn tick_terrain(&mut self) {
         if self.prediction {
             return;
@@ -19,7 +19,7 @@ impl World {
         self.tick_temp_tiles();
     }
 
-    /// Dünnes Eis unter stehenden Figuren bekommt Risse und bricht nach A-36.
+    /// Thin ice under standing characters gets cracks and breaks according to A-36.
     fn crack_thin_ice(&mut self) {
         let ts = TILE_SIZE as f32;
         let feet: Vec<(i32, i32)> = self
@@ -59,7 +59,7 @@ impl World {
         }
     }
 
-    /// Dünnes Eis bricht (Risse abgelaufen oder Stampfen) und wächst nach A-37 nach.
+    /// Thin ice breaks (cracks expired or stomp) and grows back according to A-37.
     pub(crate) fn break_thin_ice(&mut self, tx: i32, ty: i32) {
         self.cracking.retain(|c| (c.0, c.1) != (tx, ty));
         if self.collision.tile(tx, ty) != Tile::ThinIce {
@@ -80,7 +80,7 @@ impl World {
         });
     }
 
-    /// Zeitweise Tiles kehren zurück – feste erst, wenn keine Figur und kein Gegner darin steckt.
+    /// Temporary tiles return – solid ones only once no character and no enemy is inside.
     fn tick_temp_tiles(&mut self) {
         let tick = self.tick;
         let ts = TILE_SIZE as f32;

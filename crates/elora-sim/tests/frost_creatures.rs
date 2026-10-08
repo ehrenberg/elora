@@ -1,4 +1,4 @@
-//! Gegner der Frostspitzen (R2-M2.4): Schneeballrobbe, Eisspitzen-Fledermaus, Frostgeist.
+//! Frostspitzen enemies (R2-M2.4): snowball seal, ice-spike bat, frost ghost.
 
 use elora_sim::creature::{bat, ghost, seal};
 use elora_sim::{
@@ -155,7 +155,7 @@ fn bat_sleeps_dives_at_elora_and_flies_home() {
         "schläft, Elora ist weit weg"
     );
     assert!(creature(&w, id).pos.distance(home) < 0.5);
-    // Elora darunter
+    // Elora below
     w.spawn_character(0, standing(20));
     w.character_mut(0).unwrap().invulnerable_until = 0;
     let before = w.character(0).unwrap().health;
@@ -171,7 +171,7 @@ fn bat_sleeps_dives_at_elora_and_flies_home() {
         w.character(0).unwrap().health < before,
         "trifft im Sturzflug"
     );
-    // Elora geht weg, die Fledermaus kehrt heim
+    // Elora walks away, the bat flies home
     w.spawn_character(0, standing(55));
     run(&mut w, idle(), 200);
     let c = creature(&w, id);
@@ -181,7 +181,7 @@ fn bat_sleeps_dives_at_elora_and_flies_home() {
 
 #[test]
 fn ghost_floats_through_walls_freezes_elora_and_backs_off() {
-    // dicke Wand zwischen Geist und Elora
+    // thick wall between ghost and Elora
     let mut w = world(|t| {
         for y in 10..FLOOR {
             for x in 30..34 {
@@ -206,7 +206,7 @@ fn ghost_floats_through_walls_freezes_elora_and_backs_off() {
         "kommt durch die Wand und lässt Elora erstarren"
     );
     assert_eq!(creature(&w, id).mode, ghost::FLEE, "weicht zurück");
-    // erstarrt: Laufen wirkt nicht (nur der Rückstoß des Treffers schiebt)
+    // frozen: walking has no effect (only the hit's knockback pushes)
     let x = w.character(0).unwrap().core.pos.x;
     let right = PlayerInput {
         direction: 1,
@@ -214,7 +214,7 @@ fn ghost_floats_through_walls_freezes_elora_and_backs_off() {
     };
     run(&mut w, right, 20);
     let frozen = (w.character(0).unwrap().core.pos.x - x).abs();
-    // nach 0,6 s läuft sie wieder
+    // after 0.6 s it walks again
     run(&mut w, idle(), 30);
     let x = w.character(0).unwrap().core.pos.x;
     run(&mut w, right, 20);

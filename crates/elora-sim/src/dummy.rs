@@ -1,33 +1,33 @@
-//! Trainings-Dummies (E-053): feste Bewegungsmuster, keine KI (Bots folgen nach
-//! Release 1, E-035). Die Eingaben entstehen deterministisch aus dem Zustand.
+//! Training dummies (E-053): fixed movement patterns, no AI (bots follow after
+//! Release 1, E-035). The inputs are derived deterministically from the state.
 
 use crate::Vec2;
 use crate::character::{CharacterCore, PHYS_SIZE};
 use crate::collision::Collision;
 use crate::input::PlayerInput;
 
-/// Bewegungsmuster (Kartenzeichen E-054).
+/// Movement pattern (map character E-054).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum DummyPattern {
     /// `D`
     Stand,
-    /// `W`: läuft bis zur Wand oder Kante, dreht dann um
+    /// `W`: walks to the wall or edge, then turns around
     Walk,
-    /// `J`: springt regelmäßig, am Scheitelpunkt Doppelsprung
+    /// `J`: jumps regularly, double jump at the apex
     Jump,
-    /// `X`: läuft und springt
+    /// `X`: walks and jumps
     WalkJump,
 }
 
-/// Abstand zwischen zwei Sprüngen (Ticks).
+/// Interval between two jumps (ticks).
 const JUMP_INTERVAL: u64 = 60;
 
-/// Innerer Zustand eines Dummys.
+/// Internal state of a dummy.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct DummyBrain {
     direction: i8,
-    /// Tick des letzten Bodensprungs, falls der Doppelsprung noch aussteht.
+    /// Tick of the last ground jump, if the double jump is still pending.
     jumped_at: Option<u64>,
 }
 
@@ -41,7 +41,7 @@ impl Default for DummyBrain {
 }
 
 impl DummyBrain {
-    /// Eingabe für diesen Tick.
+    /// Input for this tick.
     pub fn input(
         &mut self,
         pattern: DummyPattern,
@@ -71,7 +71,7 @@ impl DummyBrain {
                 press_jump = true;
                 self.jumped_at = Some(tick);
             } else if let Some(t) = self.jumped_at {
-                // Doppelsprung am Scheitelpunkt (Taste vorher losgelassen)
+                // Double jump at the apex (key released before)
                 if tick > t + 1 && core.vel.y >= 0.0 {
                     press_jump = true;
                     self.jumped_at = None;

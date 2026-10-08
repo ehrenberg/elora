@@ -1,10 +1,10 @@
-//! Determinismus-Golden-Tests (M1.6).
+//! Determinism golden tests (M1.6).
 //!
-//! Jede Aufzeichnung in `tests/recordings/*.erec.toml` wird abgespielt; das
-//! Zustandsprotokoll muss bit-genau der Datei `<name>.golden` daneben entsprechen.
-//! Zusätzlich gibt es ein fest programmiertes Szenario (`scripted`).
+//! Every recording in `tests/recordings/*.erec.toml` is played back; the
+//! state log must match the `<name>.golden` file next to it bit for bit.
+//! In addition there is a hard-coded scenario (`scripted`).
 //!
-//! Golden-Dateien neu schreiben (nach bewusster Physik-Änderung):
+//! Rewrite golden files (after a deliberate physics change):
 //! `ELORA_BLESS=1 cargo nextest run -p elora-sim --all-features`
 
 use std::path::{Path, PathBuf};
@@ -22,7 +22,7 @@ fn bless() -> bool {
     std::env::var_os("ELORA_BLESS").is_some()
 }
 
-/// Vergleicht `actual` mit der Golden-Datei (oder schreibt sie bei `ELORA_BLESS`).
+/// Compares `actual` with the golden file (or writes it with `ELORA_BLESS`).
 fn check_golden(name: &str, actual: &str) {
     let path = recordings_dir().join(format!("{name}.golden"));
     if bless() {
@@ -33,7 +33,7 @@ fn check_golden(name: &str, actual: &str) {
         panic!("{} fehlt – mit ELORA_BLESS=1 erzeugen", path.display());
     });
     if expected != actual {
-        // Zum Vergleichen: tatsächliches Protokoll neben die Golden-Datei legen
+        // For comparison: put the actual log next to the golden file
         let _ = std::fs::write(path.with_extension("actual"), actual);
         let first = expected
             .lines()
@@ -46,7 +46,7 @@ fn check_golden(name: &str, actual: &str) {
     }
 }
 
-/// Festes Szenario: Laufen, Springen, Doppelsprung, Hook an Decke und Wand.
+/// Fixed scenario: walking, jumping, double jump, hook on ceiling and wall.
 fn scripted() -> Recording {
     let mut rows = vec![format!("#{}#", ".".repeat(58)); 30];
     rows[0] = "#".repeat(60);
@@ -83,8 +83,8 @@ fn scripted() -> Recording {
     rec
 }
 
-/// Festes Kampf-Szenario (M2.9): Pickups einsammeln, Waffen wechseln, auf alle
-/// Dummy-Arten schießen, Rocket-Jumps, Tod und Respawn.
+/// Fixed combat scenario (M2.9): collect pickups, switch weapons, shoot at all
+/// dummy kinds, rocket jumps, death and respawn.
 fn scripted_combat() -> Recording {
     let (w, h) = (50, 20);
     let mut tiles = vec![Tile::Air; w * h];
@@ -104,7 +104,7 @@ fn scripted_combat() -> Recording {
     let mut world = World::new(Tuning::default(), Collision::new(w, h, tiles));
     world.spawn_points.push(tile(3, 17));
     world.spawn_points.push(tile(46, 17));
-    // Elora zuerst (Slot 0), Pickups direkt neben ihr, Dummies weiter rechts
+    // Elora first (slot 0), pickups right next to her, dummies further to the right
     world.spawn(tile(3, 17));
     world.add_pickup(PickupKind::Weapon(Weapon::Grenade), tile(5, 17));
     world.add_pickup(PickupKind::Weapon(Weapon::Laser), tile(6, 17));
@@ -117,12 +117,12 @@ fn scripted_combat() -> Recording {
     let mut fire = 0u8;
     for t in 0..3000_i32 {
         let phase = t / 250;
-        // Feuertaste: alle 20 Ticks drücken, 10 Ticks halten
+        // fire key: press every 20 ticks, hold for 10 ticks
         if t % 10 == 0 {
             fire = fire.wrapping_add(1) & 0x3f;
         }
-        // Phasen: 0 Waffen holen, 1 Granate, 2 Laser, 3 Rocket-Jumps, 4 Hammer im Lauf,
-        // danach Laser/Granate im Wechsel mit Hook
+        // phases: 0 fetch weapons, 1 grenade, 2 laser, 3 rocket jumps, 4 hammer while running,
+        // then laser/grenade alternating with hook
         let weapon: u8 = match phase {
             0 | 2 | 5 | 7 | 9 | 11 => 3,
             1 | 3 | 6 | 8 | 10 => 2,

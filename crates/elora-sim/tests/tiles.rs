@@ -1,13 +1,13 @@
-//! Neue Tile-Arten (M6.1, E-137, E-140, E-141): Plattform, Eis, Sprungfeld, Beschleuniger.
+//! New tile kinds (M6.1, E-137, E-140, E-141): platform, ice, jump pad, booster.
 
 use elora_sim::{BeltDir, Collision, JumpDir, PlayerInput, Tile, Tuning, Vec2, World};
 
 const W: usize = 60;
 const H: usize = 30;
-/// Bodenzeile der Arena.
+/// Floor row of the arena.
 const FLOOR: usize = 28;
 
-/// Offene Arena mit Boden in Zeile 28; `edit` setzt weitere Tiles.
+/// Open arena with floor in row 28; `edit` sets further tiles.
 fn world(edit: impl FnOnce(&mut Vec<Tile>)) -> World {
     let mut tiles = vec![Tile::Air; W * H];
     for x in 0..W {
@@ -26,7 +26,7 @@ fn set(tiles: &mut [Tile], x: usize, y: usize, t: Tile) {
     tiles[y * W + x] = t;
 }
 
-/// Figur steht auf Zeile `row` (Unterkante 1 Einheit über der Oberkante), Spalte `tx`.
+/// Figure stands on row `row` (bottom 1 unit above the top edge), column `tx`.
 fn standing(tx: usize, row: usize) -> Vec2 {
     #[allow(clippy::cast_precision_loss)]
     Vec2::new(tx as f32 * 32.0 + 16.0, row as f32 * 32.0 - 15.0)
@@ -58,7 +58,7 @@ fn spawn(w: &mut World, at: Vec2) {
 
 #[test]
 fn platform_carries_from_above_and_lets_through_from_below() {
-    // Plattform in Zeile 20, Spalten 10..20
+    // platform in row 20, columns 10..20
     let mut w = world(|t| (10..20).for_each(|x| set(t, x, 20, Tile::Platform)));
     spawn(&mut w, standing(14, 20) - Vec2::new(0.0, 100.0));
     run(&mut w, PlayerInput::default(), 80);
@@ -69,7 +69,7 @@ fn platform_carries_from_above_and_lets_through_from_below() {
     );
     assert!(w.character(0).unwrap().core.is_grounded(&w.collision));
 
-    // von unten durchspringen
+    // jump through from below
     let mut w = world(|t| (10..20).for_each(|x| set(t, x, 25, Tile::Platform)));
     spawn(&mut w, standing(14, FLOOR));
     run(&mut w, input(0, true, false), 1);
@@ -107,7 +107,7 @@ fn down_drops_through_platform() {
 #[test]
 fn hook_passes_through_platform() {
     let mut w = world(|t| {
-        // Decke in Reichweite (400), Plattform dazwischen
+        // ceiling in range (400), platform in between
         (5..40).for_each(|x| set(t, x, 23, Tile::Platform));
         (5..40).for_each(|x| set(t, x, 19, Tile::Solid));
     });
@@ -129,7 +129,7 @@ fn hook_passes_through_platform() {
     );
 }
 
-/// Strecke, die die Figur nach Loslassen der Laufrichtung noch rutscht.
+/// Distance the figure still slides after releasing the walking direction.
 fn slide_after_run(surface: Tile) -> f32 {
     let mut w = world(|t| (2..58).for_each(|x| set(t, x, FLOOR, surface)));
     spawn(&mut w, standing(5, FLOOR));
@@ -168,7 +168,7 @@ fn jump_pad_throws_up_and_sideways() {
             v.x * sign >= 0.0 && (sign == 0.0) == (v.x.abs() < 0.5),
             "{dir:?}: Richtung {v:?}"
         );
-        // höher als ein normaler Sprung
+        // higher than a normal jump
         let mut highest = f32::MAX;
         for _ in 0..60 {
             run(&mut w, PlayerInput::default(), 1);
@@ -197,7 +197,7 @@ fn conveyor_carries_standing_figure() {
         (moved - 50.0 * tuning.conveyor_speed).abs() < 8.0,
         "Laufband trägt: {moved}"
     );
-    // gegen die Richtung laufen kommt langsamer voran als ohne Band
+    // walking against the direction makes slower progress than without a belt
     let mut w = world(|t| (10..50).for_each(|x| set(t, x, FLOOR, Tile::Conveyor(BeltDir::Right))));
     spawn(&mut w, standing(40, FLOOR));
     run(&mut w, input(-1, false, false), 30);

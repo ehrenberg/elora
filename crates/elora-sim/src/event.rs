@@ -1,23 +1,23 @@
-//! Ereignisse eines Ticks – Grundlage für Effekte, Sounds (M5) und Netzwerk-Events (M3).
+//! Events of a tick – basis for effects, sounds (M5) and network events (M3).
 
 use crate::Vec2;
 use crate::weapon::Weapon;
 
-/// Ursache eines Todes.
+/// Cause of a death.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum DeathCause {
     Weapon(Weapon),
-    /// Todes-Tile
+    /// Death tile
     World,
-    /// Selbstmord-Befehl (`kill`, E-055)
+    /// Suicide command (`kill`, E-055)
     Suicide,
-    /// Durch das Spiel entfernt (Team-Wechsel, Neustart) – wird nicht gewertet.
+    /// Removed by the game (team change, restart) – not counted.
     Game,
-    /// Von einem Gegner im Abenteuer (A1.2).
+    /// By an enemy in the adventure (A1.2).
     Creature,
 }
 
-/// Art eines Pickups.
+/// Kind of a pickup.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum PickupKind {
@@ -28,45 +28,45 @@ pub enum PickupKind {
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Event {
-    /// Gewitter (R2-W1, E-336): hier schlägt gleich ein Blitz ein (der Boden glimmt).
+    /// Thunderstorm (R2-W1, E-336): lightning is about to strike here (the ground glows).
     LightningWarn {
         pos: Vec2,
     },
-    /// Blitzeinschlag am Boden.
+    /// Lightning strike on the ground.
     Lightning {
         pos: Vec2,
     },
-    /// Schuss abgegeben.
+    /// Shot fired.
     Fire {
         player: usize,
         weapon: Weapon,
         pos: Vec2,
     },
-    /// Feuertaste ohne Munition.
+    /// Fire key without ammo.
     NoAmmo {
         player: usize,
     },
-    /// Waffe gewechselt.
+    /// Weapon switched.
     WeaponSwitch {
         player: usize,
         weapon: Weapon,
     },
-    /// Hammer von `owner` hat getroffen.
+    /// Hammer of `owner` has hit.
     HammerHit {
         owner: usize,
         pos: Vec2,
     },
-    /// Laser von `owner` ist an einer Wand abgeprallt.
+    /// Laser of `owner` bounced off a wall.
     LaserBounce {
         owner: usize,
         pos: Vec2,
     },
-    /// Explosion einer Granate von `owner`.
+    /// Explosion of a grenade of `owner`.
     Explosion {
         owner: usize,
         pos: Vec2,
     },
-    /// Schaden erhalten (nach Rüstung).
+    /// Damage taken (after armor).
     Damage {
         player: usize,
         from: Option<usize>,
@@ -88,82 +88,83 @@ pub enum Event {
         kind: PickupKind,
         pos: Vec2,
     },
-    /// Flagge von `team` aufgenommen (`from_stand`: vom Stand, nicht vom Boden).
+    /// Flag of `team` picked up (`from_stand`: from the stand, not from the ground).
     FlagGrab {
         team: crate::Team,
         player: usize,
         from_stand: bool,
     },
-    /// Flagge von `team` fallen gelassen (Träger gestorben).
+    /// Flag of `team` dropped (carrier died).
     FlagDrop {
         team: crate::Team,
         player: usize,
         pos: Vec2,
     },
-    /// Flagge von `team` zurück am Stand (`player`: vom eigenen Team berührt, sonst Zeit/Todes-Tile).
+    /// Flag of `team` back at the stand (`player`: touched by its own team, otherwise
+    /// time/death tile).
     FlagReturn {
         team: crate::Team,
         player: Option<usize>,
     },
-    /// Flagge von `team` erobert durch `player` nach `ticks` Ticks.
+    /// Flag of `team` captured by `player` after `ticks` ticks.
     FlagCapture {
         team: crate::Team,
         player: usize,
         ticks: u64,
     },
-    /// Pickup ist wieder verfügbar.
+    /// Pickup is available again.
     PickupRespawn {
         kind: PickupKind,
         pos: Vec2,
     },
-    /// Stampfen ist aufgeprallt (Stoßwelle, A-05).
+    /// Stomp has landed (shockwave, A-05).
     Stomp {
         player: usize,
         pos: Vec2,
     },
-    /// Ein Tile ist zerbrochen (Bröckelboden, E-230) und jetzt Luft.
+    /// A tile has broken (crumbling floor, E-230) and is now air.
     TileBroken {
         tx: i32,
         ty: i32,
     },
-    /// Dünnes Eis (R2-M2.4): bekommt Risse unter Elora bzw. bricht (`broken`).
+    /// Thin ice (R2-M2.4): gets cracks under Elora or breaks (`broken`).
     IceCrack {
         tx: i32,
         ty: i32,
         broken: bool,
     },
-    /// Ein Tile wurde zeitweise gesetzt oder zurückgesetzt (Wurzelwand, R2-M2.2).
+    /// A tile was temporarily placed or reset (root wall, R2-M2.2).
     TileSet {
         tx: i32,
         ty: i32,
         tile: crate::Tile,
     },
-    /// Gegner getroffen (`from`: Spieler-Slot).
+    /// Enemy hit (`from`: player slot).
     CreatureHit {
         id: u32,
         pos: Vec2,
         damage: i32,
         from: Option<usize>,
     },
-    /// Gegner besiegt (`killer`: Spieler-Slot); `kind` ist der Index der Art.
+    /// Enemy defeated (`killer`: player slot); `kind` is the index of the kind.
     CreatureDeath {
         id: u32,
         kind: usize,
         pos: Vec2,
         killer: Option<usize>,
     },
-    /// Gegner hat geschossen.
+    /// Enemy has fired.
     CreatureFire {
         id: u32,
         pos: Vec2,
     },
-    /// Ein Hüter wechselt die Phase (Sound und Effekte, R2-M2.1).
+    /// A guardian changes phase (sound and effects, R2-M2.1).
     CreatureAct {
         id: u32,
         pos: Vec2,
         act: CreatureAct,
     },
-    /// Beute eingesammelt.
+    /// Loot collected.
     LootCollect {
         player: usize,
         item: String,
@@ -172,32 +173,32 @@ pub enum Event {
     },
 }
 
-/// Phasenwechsel eines Hüters.
+/// Phase change of a guardian.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum CreatureAct {
-    /// Aufgewacht, der Kampf beginnt.
+    /// Woken up, the fight begins.
     Wake,
-    /// Sturzflug beginnt.
+    /// Dive begins.
     Dive,
-    /// Aufgeprallt (benommen oder gleich wieder hoch).
+    /// Landed (stunned or right back up).
     Land,
-    /// Aus dem Boden geschossen (Wurzelschlange, R2-M2.2).
+    /// Shot out of the ground (root snake, R2-M2.2).
     Emerge,
-    /// Zurück in den Boden.
+    /// Back into the ground.
     Burrow,
-    /// Boden bebt: gleich ein Wurzelstoß an dieser Stelle (Wurzelwächter).
+    /// Ground quakes: a root thrust is about to hit this spot (Root Warden).
     Warn,
-    /// Wurzelstoß.
+    /// Root thrust.
     Strike,
-    /// Ein Kern hat sich gelöst.
+    /// A core has come loose.
     Core,
-    /// Schneesturm in der Halle beginnt (Kristella, R2-M2.4): die Sitzung setzt das Wetter.
+    /// Blizzard in the hall begins (Kristella, R2-M2.4): the session sets the weather.
     Storm,
 }
 
 impl Event {
-    /// Verursacher eines Schuss-Ereignisses (für die Client-Vorhersage, E-057).
+    /// Originator of a shot event (for client prediction, E-057).
     pub fn shooter(&self) -> Option<usize> {
         match *self {
             Self::Fire { player, .. }

@@ -1,8 +1,8 @@
-//! Wetter in der Simulation (R2-W1, W1.4, E-330, E-336): nur im Abenteuer. Wind mit Böen
-//! schiebt Elora in der Luft und lenkt Granaten ab, Nässe macht den Boden weicher, im
-//! Gewitter schlagen Blitze mit Warnung in Eloras Nähe ein.
+//! Weather in the simulation (R2-W1, W1.4, E-330, E-336): adventure only. Wind with gusts
+//! pushes Elora in the air and deflects grenades, wetness makes the ground softer, in
+//! thunderstorms lightning strikes near Elora with a warning.
 //!
-//! Alles deterministisch aus dem Tick; im Mehrspieler bleibt [`World::weather`] leer.
+//! Everything is deterministic from the tick; in multiplayer [`World::weather`] stays empty.
 
 use crate::character::PHYS_SIZE;
 use crate::creature::{rng, rng_f32};
@@ -11,30 +11,31 @@ use crate::math::Vec2;
 use crate::tuning::ms_to_ticks;
 use crate::world::World;
 
-/// Wetter, wie die Simulation es spürt (die Sitzung setzt es aus dem Wetter der Karte).
+/// Weather as the simulation feels it (the session sets it from the weather of the map).
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct WeatherEnv {
-    /// Grundwind (−1..1).
+    /// Base wind (−1..1).
     pub wind: f32,
-    /// Böen (Gewitter, Stürme, Wind mit Blättern oder Blüten).
+    /// Gusts (thunderstorms, storms, wind with leaves or blossoms).
     pub gusty: bool,
-    /// Nässe des Bodens (Regen, Schnee): 0..1.
+    /// Wetness of the ground (rain, snow): 0..1.
     pub wet: f32,
-    /// Blitze (Gewitter): Stärke 0..1, 0 = keine.
+    /// Lightning (thunderstorm): strength 0..1, 0 = none.
     pub lightning: f32,
 }
 
-/// Blitz-Zustand der Welt.
+/// Lightning state of the world.
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct Lightning {
-    /// Ticks bis zur nächsten Warnung (`None` = noch nicht gestellt).
+    /// Ticks until the next warning (`None` = not yet set).
     pub timer: Option<u32>,
-    /// Angekündigter Einschlag: Ort am Boden und verbleibende Ticks.
+    /// Announced strike: location on the ground and remaining ticks.
     pub strike: Option<(Vec2, u32)>,
 }
 
 impl World {
-    /// Wind (mit Böen) und Nässe dieses Ticks in die Kollision; Blitze. Vor den Figuren.
+    /// Wind (with gusts) and wetness of this tick into the collision; lightning. Before the
+    /// characters.
     pub(crate) fn tick_weather(&mut self) {
         let Some(w) = self.weather.filter(|_| self.adventure) else {
             self.collision.wind = 0.0;
@@ -55,7 +56,7 @@ impl World {
     }
 
     fn tick_lightning(&mut self, strength: f32) {
-        // angekündigter Einschlag
+        // announced strike
         if let Some((pos, left)) = self.lightning.strike {
             if left > 1 {
                 self.lightning.strike = Some((pos, left - 1));
@@ -76,7 +77,7 @@ impl World {
             *timer -= 1;
             return;
         }
-        // Ziel in der Nähe einer Figur, auf dem Boden darunter
+        // target near a character, on the ground below
         let r = rng(self.tick ^ 0x5eed_b1a5);
         #[allow(
             clippy::cast_precision_loss,
@@ -111,7 +112,7 @@ impl World {
         }
     }
 
-    /// Einschlag: Schaden und Stoß im Umkreis (E-336).
+    /// Strike: damage and knockback in the radius (E-336).
     fn strike(&mut self, pos: Vec2) {
         self.events.push(Event::Lightning { pos });
         let (radius, damage, kb) = (

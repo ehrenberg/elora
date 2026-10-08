@@ -1,5 +1,5 @@
-//! Hüterin der Frostspitzen (Eiskönigin Kristella, R2-M2.4, E-341): Frostwellen, Erschöpfung,
-//! Eiszapfen, Schneesturm.
+//! Guardian of the Frostspitzen (Ice Queen Kristella, R2-M2.4, E-341): frost waves, exhaustion,
+//! icicles, blizzard.
 
 use elora_sim::creature::queen;
 use elora_sim::{
@@ -10,7 +10,7 @@ use elora_sim::{
 const W: usize = 50;
 const H: usize = 30;
 const FLOOR: usize = 28;
-/// Mitte der Halle.
+/// Centre of the hall.
 const MID: f32 = 25.0 * 32.0;
 
 fn kind(name: &str, size: [f32; 2], health: i32, behavior: Behavior) -> CreatureKind {
@@ -30,7 +30,7 @@ fn kind(name: &str, size: [f32; 2], health: i32, behavior: Behavior) -> Creature
     }
 }
 
-/// Halle mit Decke in Zeile 8 und einem Sims (Zeile 25, Spalten 10–14) über dem Boden.
+/// Hall with ceiling in row 8 and a ledge (row 25, columns 10–14) above the floor.
 fn hall() -> World {
     let mut tiles = vec![Tile::Air; W * H];
     for x in 0..W {
@@ -88,7 +88,7 @@ fn spawn(w: &mut World, at: Vec2) {
     w.character_mut(i).unwrap().invulnerable_until = 0;
 }
 
-/// Auf dem Boden der Halle in Spalte `tx`.
+/// On the floor of the hall in column `tx`.
 fn floor_at(tx: usize) -> Vec2 {
     #[allow(clippy::cast_precision_loss)]
     Vec2::new(tx as f32 * 32.0 + 16.0, FLOOR as f32 * 32.0 - 15.0)
@@ -106,7 +106,7 @@ fn health(w: &World, id: u32) -> i32 {
     w.creatures.iter().find(|c| c.id == id).unwrap().health
 }
 
-/// Läuft, bis `until` gilt (höchstens `max` Ticks); sammelt die Ereignisse.
+/// Runs until `until` holds (at most `max` ticks); collects the events.
 fn run_until(w: &mut World, max: u32, until: impl Fn(&World) -> bool) -> Vec<Event> {
     let mut all = Vec::new();
     for _ in 0..max {
@@ -129,7 +129,7 @@ fn sleeps_until_elora_comes_then_wakes() {
     w.spawn_character(0, floor_at(47));
     let id = queen_id(&mut w);
     run_until(&mut w, 50, |_| false);
-    // Spalte 47 ist über 640 entfernt
+    // column 47 is more than 640 away
     assert_eq!(mode(&w, id), queen::SLEEP);
     w.spawn_character(0, floor_at(30));
     let ev = run_until(&mut w, 5, |_| false);
@@ -145,7 +145,7 @@ fn sleeps_until_elora_comes_then_wakes() {
 
 #[test]
 fn frost_wave_hurts_on_the_floor_but_not_on_a_ledge() {
-    // Elora am Boden
+    // Elora on the floor
     let mut w = hall();
     spawn(&mut w, floor_at(20));
     let id = queen_id(&mut w);
@@ -158,7 +158,7 @@ fn frost_wave_hurts_on_the_floor_but_not_on_a_ledge() {
         "frischer Frost trifft"
     );
     assert_eq!(mode(&w, id), queen::WAVE);
-    // Elora auf dem Sims: die Welle läuft unter ihr durch
+    // Elora on the ledge: the wave passes beneath her
     let mut w = hall();
     #[allow(clippy::cast_precision_loss)]
     let ledge = Vec2::new(12.0 * 32.0 + 16.0, 25.0 * 32.0 - 15.0);
@@ -191,7 +191,7 @@ fn only_vulnerable_while_tired_after_three_waves() {
     assert_eq!(health(&w, id), 36, "schwebend unverwundbar");
     run_until(&mut w, 1500, |w| mode(w, w.creatures[0].id) == queen::TIRED);
     assert_eq!(mode(&w, id), queen::TIRED, "nach drei Wellen erschöpft");
-    // sinkt bis auf den Boden
+    // sinks down to the floor
     run_until(&mut w, 60, |_| false);
     let c = w.creatures.iter().find(|c| c.id == id).unwrap();
     assert!(
@@ -212,7 +212,7 @@ fn angry_queen_alternates_sides_drops_icicles_and_calls_a_storm() {
     spawn(&mut w, ledge);
     let id = queen_id(&mut w);
     run_until(&mut w, 10, |_| false);
-    // auf ein Viertel herunter (nur erschöpft möglich: Leben direkt setzen)
+    // down to a quarter (only possible when exhausted: set health directly)
     w.creatures.iter_mut().find(|c| c.id == id).unwrap().health = 8;
     let mut sides = Vec::new();
     let mut icicles = false;

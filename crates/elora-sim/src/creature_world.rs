@@ -1,4 +1,4 @@
-//! Kreaturen in der Welt (A1.2): Verhalten, Bewegung, Treffer, Berührung, Geschosse, Beute.
+//! Creatures in the world (A1.2): behaviour, movement, hits, contact, projectiles, loot.
 
 use crate::character::PHYS_SIZE;
 use crate::collision::{Collision, Tile};
@@ -12,33 +12,33 @@ use crate::math::Vec2;
 use crate::tuning::ms_to_ticks;
 use crate::world::World;
 
-/// Kantenlänge der Beute-Box.
+/// Edge length of the loot box.
 const LOOT_SIZE: f32 = 12.0;
-/// Beute ist erst nach dieser Zeit einsammelbar (Ticks), damit sie sichtbar herausspringt.
+/// Loot can only be collected after this time (ticks), so it visibly pops out.
 const LOOT_DELAY: u32 = 20;
-/// Flugtempo der Beute zu Elora (Einheiten/Tick).
+/// Flight speed of loot towards Elora (units/tick).
 const LOOT_MAGNET_SPEED: f32 = 12.0;
-/// Höchstens so viele einzelne Stücke je Eintrag (der Rest wird zusammengelegt).
+/// At most this many individual pieces per entry (the rest is merged).
 const LOOT_PIECES: u32 = 8;
-/// Radius eines Gegner-Geschosses.
+/// Radius of an enemy projectile.
 const SHOT_RADIUS: f32 = 8.0;
-/// So lange bleibt eine Hälfte der Hook-Blüten welk (Ticks, 2,5 s).
+/// How long one half of the hook flowers stays wilted (ticks, 2.5 s).
 const WILT_TICKS: u64 = 125;
-/// Lebensdauer eines Gegner-Geschosses (Ticks).
+/// Lifetime of an enemy projectile (ticks).
 const SHOT_LIFETIME: u32 = 150;
 
 fn sign(v: f32) -> i8 {
     if v < 0.0 { -1 } else { 1 }
 }
 
-/// Steht etwas Festes (oder eine Plattform) unter dem Punkt?
+/// Is there something solid (or a platform) below the point?
 fn floor_at(col: &Collision, p: Vec2) -> bool {
     let t = col.tile_at(p);
     t.is_solid() || t == Tile::Platform
 }
 
-/// Wurf im Bogen von `from` nach `to`: waagerecht mit `speed`, senkrecht so, dass das
-/// Geschoss dort ankommt (flache Würfe mindestens etwas hoch).
+/// Arcing throw from `from` to `to`: horizontal with `speed`, vertical such that the
+/// projectile arrives there (flat throws go at least a little high).
 fn lob_velocity(from: Vec2, to: Vec2, speed: f32, gravity: f32) -> Vec2 {
     let d = to - from;
     let t = (d.x.abs() / speed).max(12.0);
@@ -46,7 +46,7 @@ fn lob_velocity(from: Vec2, to: Vec2, speed: f32, gravity: f32) -> Vec2 {
     Vec2::new(d.x / t, vy.min(-3.0))
 }
 
-/// Ist eine Figur unter `pos` (waagerecht bis `sight`, senkrecht bis `reach`, freie Sicht)?
+/// Is a figure below `pos` (horizontally up to `sight`, vertically up to `reach`, clear view)?
 fn below(col: &Collision, chars: &[(usize, Vec2)], pos: Vec2, sight: f32, reach: f32) -> bool {
     chars.iter().any(|&(_, p)| {
         (p.x - pos.x).abs() <= sight
@@ -63,7 +63,7 @@ fn grounded(col: &Collision, pos: Vec2, size: Vec2) -> bool {
 }
 
 impl World {
-    /// Hook-Blüten welken abwechselnd, solange ein Hüter aus der Luft wütend ist (E-298).
+    /// Hook flowers wilt alternately while a guardian from the air is angry (E-298).
     pub(crate) fn update_hook_wilt(&mut self) {
         let angry = self.creatures.iter().any(|c| {
             let k = &self.creature_kinds[c.kind];
@@ -81,12 +81,12 @@ impl World {
         self.collision.hook_wilt = angry.then(|| (self.tick / WILT_TICKS).is_multiple_of(2));
     }
 
-    /// Index einer Gegnerart nach Name.
+    /// Index of an enemy kind by name.
     pub fn creature_kind(&self, name: &str) -> Option<usize> {
         self.creature_kinds.iter().position(|k| k.name == name)
     }
 
-    /// Setzt einen Gegner der Art `kind` an `pos`; liefert seine Id.
+    /// Spawns an enemy of kind `kind` at `pos`; returns its id.
     pub fn add_creature(&mut self, kind: usize, pos: Vec2) -> Option<u32> {
         let k = self.creature_kinds.get(kind)?;
         let id = self.next_id;
@@ -137,7 +137,7 @@ impl World {
         self.creatures.iter().position(|c| c.id == id)
     }
 
-    /// Erster Gegner auf der Strecke `from`–`to`; liefert Index und Schnittpunkt.
+    /// First enemy on the segment `from`–`to`; returns index and intersection point.
     pub(crate) fn intersect_creature(
         &self,
         from: Vec2,
@@ -158,7 +158,7 @@ impl World {
         best.map(|(i, at, _)| (i, at))
     }
 
-    /// Gegner auf der Strecke `from`–`to`, nach Entfernung sortiert (Id, Schnittpunkt).
+    /// Enemies on the segment `from`–`to`, sorted by distance (id, intersection point).
     pub(crate) fn creatures_on_line(&self, from: Vec2, to: Vec2) -> Vec<(u32, Vec2)> {
         let mut hits: Vec<(u32, Vec2, f32)> = self
             .creatures
@@ -173,7 +173,7 @@ impl World {
         hits.into_iter().map(|(id, at, _)| (id, at)).collect()
     }
 
-    /// Splitter (A-20): kleine Nach-Explosionen um den Einschlag, nur gegen Gegner.
+    /// Shards (A-20): small follow-up explosions around the impact, only against enemies.
     pub(crate) fn grenade_shards(&mut self, pos: Vec2, owner: usize, max_damage: i32) {
         let n = self.tuning.grenade_shards;
         for k in 0..n {
@@ -185,8 +185,8 @@ impl World {
         }
     }
 
-    /// Hammerschlag auf Gegner; liefert die Anzahl der Treffer. Mit Schockwelle (A-19)
-    /// trifft er alle Gegner um Elora.
+    /// Hammer blow on enemies; returns the number of hits. With shockwave (A-19)
+    /// it hits all enemies around Elora.
     pub(crate) fn hammer_creatures(&mut self, owner: usize, pos: Vec2, start: Vec2) -> usize {
         let (reach, shockwave) = (self.tuning.hammer_reach, self.tuning.hammer_shockwave);
         let hits: Vec<(u32, Vec2)> = self
@@ -221,7 +221,7 @@ impl World {
         hits.len()
     }
 
-    /// Explosion trifft Gegner (wie Figuren, ohne Rüstung); `src` ist der Einschlag (Panzer).
+    /// Explosion hits enemies (like figures, without armour); `src` is the impact (shell).
     pub(crate) fn explode_creatures(
         &mut self,
         pos: Vec2,
@@ -263,7 +263,7 @@ impl World {
         }
     }
 
-    /// Stoßwelle des Stampfens: Schaden und Betäubung (A-13, A-14).
+    /// Shockwave of the stomp: damage and stun (A-13, A-14).
     pub(crate) fn stomp_creatures(&mut self, player: usize, pos: Vec2) {
         let r = self.tuning.stomp_radius;
         let (damage, stun) = (
@@ -280,7 +280,7 @@ impl World {
             let force = Vec2::new(f32::from(sign(p.x - pos.x)) * 4.0, -6.0);
             if let Some(i) = self.creature_index(id) {
                 self.creatures[i].stun = stun;
-                // die Sandschlange trifft Stampfen doppelt (E-316)
+                // the sand serpent takes double damage from stomps (E-316)
                 let serpent = matches!(
                     self.creature_kinds[self.creatures[i].kind].behavior,
                     Behavior::Serpent(_)
@@ -291,14 +291,14 @@ impl World {
         }
     }
 
-    /// Schaden an Gegner `id` ohne Rückstoß (Tests, Werkzeuge); prallt an Hütern in der Luft ab.
+    /// Damage to enemy `id` without knockback (tests, tools); bounces off guardians in the air.
     pub fn hurt_creature(&mut self, id: u32, damage: i32) {
         if let Some(i) = self.creature_index(id) {
             self.damage_creature(i, Vec2::ZERO, damage, None, None);
         }
     }
 
-    /// Schaden an Gegner `i` aus Richtung `src`; besiegt ihn bei 0 Leben.
+    /// Damage to enemy `i` from direction `src`; defeats it at 0 health.
     pub(crate) fn damage_creature(
         &mut self,
         i: usize,
@@ -313,7 +313,7 @@ impl World {
         let tick = self.tick;
         let c = &mut self.creatures[i];
         let kind = &self.creature_kinds[c.kind];
-        // Hüter in der Luft und Panzer von der Seite: Treffer prallen ab (E-299, E-317)
+        // Guardian in the air and shell from the side: hits bounce off (E-299, E-317)
         if !c.vulnerable(kind) || c.armor_blocks(kind, src) {
             self.events.push(Event::CreatureHit {
                 id: c.id,
@@ -388,7 +388,7 @@ impl World {
         }
     }
 
-    /// Lebende Figuren (Slot, Position).
+    /// Living figures (slot, position).
     fn living(&self) -> Vec<(usize, Vec2)> {
         self.players
             .iter()
@@ -409,7 +409,7 @@ impl World {
         self.tick_loot(&chars);
     }
 
-    /// Heranhooken (E-233): kleine Gegner fliegen zu Elora.
+    /// Pulling in (E-233): small enemies fly to Elora.
     fn tick_pull(&mut self) {
         let accel = self.tuning.pull_accel;
         let pulls: Vec<(u32, Vec2)> = self
@@ -428,7 +428,7 @@ impl World {
         }
     }
 
-    /// Spieler, die gerade am Wurzelwächter ziehen: am Hook und Laufrichtung weg von ihm.
+    /// Players currently pulling on the Root Warden: on the hook and running away from it.
     fn tuggers(&self) -> Vec<u32> {
         self.players
             .iter()
@@ -458,12 +458,13 @@ impl World {
         let gravity = tuning.gravity;
         let mut died = Vec::new();
         let mut summons: Vec<(u32, String, u32, Vec2)> = Vec::new();
-        // Wurzelstöße (Mitte am Boden, Breite, Höhe, Schaden) und Wurzelwände (Fuß, Höhe, Dauer)
+        // Root thrusts (centre on the ground, width, height, damage) and root walls
+        // (foot, height, duration)
         let mut spikes: Vec<(Vec2, f32, f32, i32)> = Vec::new();
         let mut walls: Vec<(Vec2, u32, u32)> = Vec::new();
-        // Treibsand der Sandschlange (Mitte am Boden, Breite in Tiles, Dauer)
+        // Quicksand of the sand serpent (centre on the ground, width in tiles, duration)
         let mut sands: Vec<(Vec2, u32, u32)> = Vec::new();
-        // Eiszapfen der Hüterin: über wem, wie viele
+        // Icicles of the guardian: above whom, how many
         let mut drops: Vec<(Vec2, u32)> = Vec::new();
         for c in creatures.iter_mut() {
             let kind = &creature_kinds[c.kind];
@@ -660,8 +661,8 @@ impl World {
                         c.facing = dir;
                         let front = c.pos.x + f32::from(dir) * (size.x / 2.0 + 4.0);
                         let feet = c.pos.y + size.y / 2.0;
-                        // Lücke oder Gefahr vor den Füßen: warten (E-308). Unter der
-                        // Fußspitze muss das erste Tile (bis 2 Tiles tief) tragen.
+                        // Gap or hazard ahead of the feet: wait (E-308). Below the
+                        // tip of the foot the first tile (up to 2 tiles deep) must carry.
                         let below = (0..5).find_map(|k| {
                             #[allow(clippy::cast_precision_loss)]
                             let y = feet + 4.0 + k as f32 * 16.0;
@@ -810,7 +811,7 @@ impl World {
                             }
                         }
                         (_, Some((p, d))) if d <= range => {
-                            // in Wurfweite: aufrichten, kurz zielen
+                            // within throwing range: rise up, aim briefly
                             c.mode = THROW;
                             c.timer = ms_to_ticks(interval_ms) / 2;
                             c.vel.x *= 0.7;
@@ -848,7 +849,7 @@ impl World {
                             fixed = true;
                             c.vel = Vec2::ZERO;
                             c.pos = c.home;
-                            // nach der Rückkehr kurz Ruhe
+                            // brief rest after returning
                             if active
                                 && c.timer > 50
                                 && let Some((p, _)) = target
@@ -886,7 +887,7 @@ impl World {
                                 fixed = true;
                             } else {
                                 c.vel = to.normalize() * speed * 0.6;
-                                fixed = c.timer > 120; // festgeklemmt: durch Wände heim
+                                fixed = c.timer > 120; // stuck: home through walls
                                 if fixed {
                                     c.pos += c.vel;
                                 }
@@ -903,7 +904,7 @@ impl World {
                     flee_ms,
                 } => {
                     use crate::creature::ghost::{CHASE, FLEE};
-                    // schwebt durch alles hindurch
+                    // floats through everything
                     fixed = true;
                     c.timer = c.timer.saturating_add(1);
                     let seen = target.filter(|&(_, d)| d <= sight && active);
@@ -943,7 +944,7 @@ impl World {
                     let chase = target.filter(|&(_, d)| d <= sight && active);
                     let goal = chase.map_or(c.home, |(p, _)| p - Vec2::new(0.0, hover));
                     c.timer = c.timer.saturating_add(1);
-                    // Funken fallen lassen, wenn er über Elora ist
+                    // drop sparks when above Elora
                     if drop_ms > 0
                         && let Some((p, _)) = chase
                         && (p.x - c.pos.x).abs() < 48.0
@@ -993,7 +994,7 @@ impl World {
             if matches!(kind.behavior, Behavior::Walker { .. }) && wanted_x != 0.0 && vel.x == 0.0 {
                 c.facing = -c.facing;
             }
-            // Schneebrocken zerplatzt an der Wand
+            // snow chunk bursts against the wall
             if matches!(kind.behavior, Behavior::Roller { .. }) && wanted_x != 0.0 && vel.x == 0.0 {
                 died.push(c.id);
             }
@@ -1013,7 +1014,7 @@ impl World {
         self.root_walls(&walls, chars);
         self.quicksand_patches(&sands);
         self.drop_icicles(&drops);
-        // Helfer der Hüter, höchstens `max` zugleich
+        // Helpers of the guardians, at most `max` at a time
         for (owner, name, max, pos) in summons {
             let Some(kind) = self.creature_kind(&name) else {
                 continue;
@@ -1028,7 +1029,7 @@ impl World {
         }
     }
 
-    /// Wurzelstöße treffen Figuren in ihrer Zone (Rückstoß nach oben).
+    /// Root thrusts hit figures in their zone (knockback upwards).
     fn root_spikes(&mut self, spikes: &[(Vec2, f32, f32, i32)], chars: &[(usize, Vec2)]) {
         let kb = self.tuning.hit_knockback;
         for &(at, w, h, damage) in spikes {
@@ -1049,7 +1050,7 @@ impl World {
         }
     }
 
-    /// Wurzelwände: eine Tile-Spalte vom Boden aufwärts, nur in Luft und nicht auf Figuren.
+    /// Root walls: a tile column from the ground upwards, only in air and not on figures.
     fn root_walls(&mut self, walls: &[(Vec2, u32, u32)], chars: &[(usize, Vec2)]) {
         let ts = crate::TILE_SIZE;
         for &(foot, height, ms) in walls {
@@ -1081,7 +1082,8 @@ impl World {
         }
     }
 
-    /// Eiszapfen der Hüterin (wütend): an der Decke über und neben Elora, sie zittern gleich.
+    /// Icicles of the guardian (angry): on the ceiling above and next to Elora; they tremble
+    /// at once.
     fn drop_icicles(&mut self, drops: &[(Vec2, u32)]) {
         let Some(kind) = self.creature_kind("eiszapfen") else {
             return;
@@ -1092,7 +1094,7 @@ impl World {
             for k in 0..n {
                 #[allow(clippy::cast_precision_loss)]
                 let x = at.x + (k as f32 - (n as f32 - 1.0) / 2.0) * 110.0;
-                // Decke über dieser Stelle
+                // ceiling above this spot
                 let mut y = at.y;
                 while y > at.y - 900.0 && !self.collision.tile_at(Vec2::new(x, y)).is_solid() {
                     y -= 8.0;
@@ -1110,8 +1112,8 @@ impl World {
         }
     }
 
-    /// Treibsand im Kessel (Sandschlange, wütend): die Oberfläche des Bodens um `at` wird für
-    /// eine Weile zu Treibsand (nur feste Tiles mit Luft darüber und festem Grund darunter).
+    /// Quicksand in the basin (sand serpent, angry): the surface of the ground around `at` turns
+    /// into quicksand for a while (only solid tiles with air above and solid ground below).
     fn quicksand_patches(&mut self, patches: &[(Vec2, u32, u32)]) {
         let ts = crate::TILE_SIZE;
         for &(at, width, ms) in patches {
@@ -1164,7 +1166,7 @@ impl World {
                 let force = vel.normalize() * (kb * 0.5);
                 self.take_damage(j, force, damage, None, DeathCause::Creature);
             } else if self.creature_shots[i].landed {
-                // Funke glüht am Boden aus
+                // spark burns out on the ground
                 if self.creature_shots[i].glow == 0 {
                     self.creature_shots.remove(i);
                 } else {
@@ -1184,7 +1186,7 @@ impl World {
         }
     }
 
-    /// Berührung schadet Elora (E-232) mit Rückstoß (A-12); der Schutz danach steckt in
+    /// Contact damages Elora (E-232) with knockback (A-12); the protection afterwards lives in
     /// `take_damage` (E-234).
     fn tick_contact(&mut self, chars: &[(usize, Vec2)]) {
         let kb = self.tuning.hit_knockback;
@@ -1205,7 +1207,7 @@ impl World {
             .collect();
         for c in &self.creatures {
             let k = &self.creature_kinds[c.kind];
-            // benommene Hüter, versteckte Schlangen und Begleiter schaden nicht
+            // dazed guardians, hidden serpents and companions do no damage
             if (k.touch_damage <= 0 && k.daze_ms == 0 && k.freeze_ms == 0) || !c.harmful(k) {
                 continue;
             }
@@ -1231,7 +1233,7 @@ impl World {
                 self.take_damage(j, force, damage, None, DeathCause::Creature);
             }
         }
-        // Eiszapfen und Schneebrocken zerschellen an Elora
+        // icicles and snow chunks shatter on Elora
         let shattered: Vec<u32> = self
             .creatures
             .iter()
@@ -1252,7 +1254,7 @@ impl World {
                 self.kill_creature(i, None, false);
             }
         }
-        // Frostgeist: Elora erstarrt, er weicht zurück (D-M24-07)
+        // Frost ghost: Elora freezes, it backs off (D-M24-07)
         for (j, ticks) in freezes {
             if let Some(ch) = self.character_mut(j)
                 && ch.core.frozen == 0
@@ -1266,7 +1268,7 @@ impl World {
                 c.timer = 0;
             }
         }
-        // bunter Rausch (E-311): nicht nachladen, solange er noch wirkt
+        // colourful rush (E-311): do not refresh while it is still active
         for (j, ticks) in dazes {
             if let Some(ch) = self.character_mut(j)
                 && ch.core.dazed == 0
@@ -1322,8 +1324,8 @@ impl World {
     }
 }
 
-/// Ein Tick des Hüters im Sand; liefert eine Stelle für Treibsand (wütend) und die Stelle
-/// einer Landung, die Sand schleudert.
+/// One tick of the guardian in the sand; returns a spot for quicksand (angry) and the spot
+/// of a landing that hurls sand.
 #[allow(clippy::too_many_lines)]
 fn tick_serpent(
     c: &mut Creature,
@@ -1354,7 +1356,7 @@ fn tick_serpent(
     c.vel.y += gravity;
     let mut sand = None;
     let mut slam = None;
-    // ab halbem Leben springt sie gezielt auf Elora zu
+    // from half health she leaps straight at Elora
     let aim = target.map(|(p, _)| p).filter(|_| angry);
     match c.mode {
         SLEEP => {
@@ -1405,7 +1407,7 @@ fn tick_serpent(
                     slam = Some(Vec2::new(c.pos.x, feet));
                 }
                 if double && c.count == 0 {
-                    // gleich noch ein Bogen, jetzt auf Elora zu
+                    // another arc right away, now towards Elora
                     c.count = 1;
                     leap(c, d, gravity, pace, target.map(|(p, _)| p));
                     act(events, c.pos, CreatureAct::Emerge);
@@ -1417,7 +1419,7 @@ fn tick_serpent(
             }
         }
         _ => {
-            // STUNNED: benommen, dann wieder unter den Sand – nach zu vielen Treffern sofort
+            // STUNNED: dazed, then back under the sand – immediately after too many hits
             c.vel.x = 0.0;
             let too_many = d.open_hits > 0 && c.hits >= d.open_hits;
             if c.timer >= ms_to_ticks(d.stun_ms) || too_many {
@@ -1428,7 +1430,7 @@ fn tick_serpent(
             }
         }
     }
-    // wütend: Teile des Kessels werden zu Treibsand, abwechselnd links und rechts von Elora
+    // angry: parts of the basin turn into quicksand, alternately left and right of Elora
     if angry && d.sand_every_ms > 0 && matches!(c.mode, TRAIL | WARN) {
         c.wall_timer += 1;
         if c.wall_timer >= ms_to_ticks(d.sand_every_ms)
@@ -1445,12 +1447,12 @@ fn tick_serpent(
     (sand, slam)
 }
 
-/// Sprung der Sandschlange: hoch und zur Mitte des Kessels (Startpunkt) – oder mit `aim`
-/// so, dass sie auf dieser Stelle landet.
+/// Leap of the sand serpent: up and to the centre of the basin (start point) – or with `aim`
+/// such that she lands on that spot.
 fn leap(c: &mut Creature, d: &SerpentDef, gravity: f32, pace: f32, aim: Option<Vec2>) {
     use crate::creature::serpent::LEAP;
     let vx = if let Some(p) = aim {
-        // Flugzeit bis zurück auf die Ausgangshöhe
+        // flight time back to the starting height
         let air = 2.0 * d.jump_y / gravity.max(0.01);
         let max = d.jump_x * 1.6;
         ((p.x - c.pos.x) / air).clamp(-max, max)
@@ -1470,7 +1472,7 @@ fn leap(c: &mut Creature, d: &SerpentDef, gravity: f32, pace: f32, aim: Option<V
     c.timer = 0;
 }
 
-/// Werte des Dünenwurms (aus [`Behavior::Leaper`]).
+/// Values of the dune worm (from [`Behavior::Leaper`]).
 struct LeaperDef {
     sight: f32,
     speed: f32,
@@ -1480,8 +1482,8 @@ struct LeaperDef {
     rest_ms: u32,
 }
 
-/// Ein Tick des Dünenwurms: unter dem Sand heran, Warnung, Sprung im Bogen auf die Stelle,
-/// an der Elora bei der Warnung stand, Landung und Eintauchen.
+/// One tick of the dune worm: approach under the sand, warning, arcing leap onto the spot
+/// where Elora stood at the warning, landing and submerging.
 fn tick_leaper(
     c: &mut Creature,
     d: &LeaperDef,
@@ -1494,7 +1496,7 @@ fn tick_leaper(
     use crate::creature::leaper::{LEAP, UNDER, WARN};
     c.vel.y += gravity;
     c.timer = c.timer.saturating_add(1);
-    // Flugzeit eines Sprungs bis zurück auf die Ausgangshöhe
+    // flight time of a leap back to the starting height
     let air = 2.0 * d.jump_y / gravity.max(0.01);
     let act = |events: &mut Vec<Event>, pos: Vec2, act: CreatureAct| {
         events.push(Event::CreatureAct { id: c.id, pos, act });
@@ -1551,7 +1553,7 @@ fn tick_leaper(
     }
 }
 
-/// Ein Tick des Hüters aus der Luft; liefert eine Position, wenn er einen Helfer ruft.
+/// One tick of the guardian from the air; returns a position when it calls a helper.
 #[allow(clippy::too_many_arguments, clippy::too_many_lines)]
 fn tick_diver(
     c: &mut Creature,
@@ -1575,7 +1577,7 @@ fn tick_diver(
     c.stun = 0;
     c.timer = c.timer.saturating_add(1);
     let mut summon = None;
-    // Helfer rufen (in jedem wachen Zustand)
+    // call helpers (in every awake state)
     if d.summon_at > 0.0
         && life <= d.summon_at
         && c.mode != SLEEP
@@ -1598,7 +1600,7 @@ fn tick_diver(
             }
         }
         CIRCLE => {
-            // Ellipse über dem Startpunkt
+            // ellipse above the start point
             c.count = (c.count + 1) % 100_000;
             #[allow(clippy::cast_precision_loss)]
             let a = c.count as f32 * d.speed * pace / d.circle[0].max(1.0);
@@ -1624,7 +1626,7 @@ fn tick_diver(
             if c.timer >= ticks(d.circle_ms) && target.is_some() {
                 c.mode = AIM;
                 c.timer = 0;
-                // ab hier zählt `count` die Sturzflüge
+                // from here on `count` counts the dives
                 c.count = 0;
             }
         }
@@ -1652,7 +1654,7 @@ fn tick_diver(
                 Vec2::new(0.0, 1.0)
             };
             c.vel = dir * d.dive_speed * pace;
-            // Boden erreicht oder zu lange unterwegs
+            // ground reached or under way too long
             let ahead = c.pos + c.vel;
             if collision.is_solid(ahead) || c.grounded || c.timer > 150 {
                 c.vel = Vec2::ZERO;
@@ -1662,7 +1664,7 @@ fn tick_diver(
                     act: CreatureAct::Land,
                 });
                 if angry && c.count == 0 {
-                    // gleich noch einmal
+                    // once more right away
                     c.count = 1;
                     c.mode = AIM;
                 } else {
@@ -1680,7 +1682,7 @@ fn tick_diver(
             }
         }
         _ => {
-            // RISE: zurück zum Kreis
+            // RISE: back to the circle
             let to = c.home - c.pos;
             c.vel = if to.length() > 8.0 {
                 to.normalize() * d.speed * 1.5 * pace
@@ -1696,7 +1698,7 @@ fn tick_diver(
     summon
 }
 
-/// Ein Tick des Hüters am Boden; liefert Wurzelstöße (Mitte am Boden) und eine Wurzelwand.
+/// One tick of the ground guardian; returns root thrusts (centre on the ground) and a root wall.
 #[allow(clippy::too_many_lines)]
 fn tick_warden(
     c: &mut Creature,
@@ -1748,7 +1750,7 @@ fn tick_warden(
         }
         _ => {}
     }
-    // Tauziehen: Kern löst sich
+    // tug-of-war: core comes loose
     c.tug = if tugged {
         c.tug + 1
     } else {
@@ -1767,7 +1769,7 @@ fn tick_warden(
             if c.timer >= ticks(d.warn_ms) {
                 spikes.push(c.goal);
                 act(events, c.goal, CreatureAct::Strike);
-                // letzter Kern: gleich noch eine Stelle näher am Wächter
+                // last core: right away one more spot closer to the warden
                 if c.count == 1 {
                     let toward = sign(c.pos.x - c.goal.x);
                     let second =
@@ -1790,7 +1792,7 @@ fn tick_warden(
             }
         }
     }
-    // Wurzelwände, wenn wütend: zwischen Elora und dem Wächter
+    // root walls when angry: between Elora and the warden
     if angry && d.wall_every_ms > 0 {
         c.wall_timer += 1;
         if c.wall_timer >= ms_to_ticks(d.wall_every_ms)
@@ -1806,13 +1808,13 @@ fn tick_warden(
     (spikes, wall)
 }
 
-/// Ergebnis eines Ticks der Hüterin: frischer Frost (wie Wurzelstöße) und Eiszapfen.
+/// Result of one tick of the guardian: fresh frost (like root thrusts) and icicles.
 struct QueenOut {
     frost: Option<(Vec2, f32, f32, i32)>,
     icicles: u32,
 }
 
-/// Ein Tick der Hüterin der Frostspitzen (E-341).
+/// One tick of the guardian of the Frostspitzen (E-341).
 #[allow(clippy::too_many_lines)]
 fn tick_queen(
     c: &mut Creature,
@@ -1853,7 +1855,7 @@ fn tick_queen(
     c.timer = c.timer.saturating_add(1);
     let half = d.width / 2.0;
     let floor = c.goal.y;
-    // Schneesturm einmal ansagen (die Sitzung macht das Wetter)
+    // announce the blizzard once (the session handles the weather)
     if storm && c.wall_timer == 0 && c.mode != SLEEP {
         c.wall_timer = 1;
         act(events, c.pos, CreatureAct::Storm);
@@ -1861,7 +1863,7 @@ fn tick_queen(
     match c.mode {
         SLEEP => {
             if target.is_some_and(|(_, dist)| dist <= d.sight) {
-                // Boden der Halle unter dem Startpunkt
+                // floor of the hall below the start point
                 let mut y = c.home.y;
                 while y < c.home.y + 1500.0 && !collision.tile_at(Vec2::new(c.home.x, y)).is_solid()
                 {
@@ -1882,8 +1884,8 @@ fn tick_queen(
                 c.facing = sign(p.x - c.pos.x);
             }
             if c.timer >= ticks(d.hover_ms) {
-                // ruhig: die Welle kommt von der Seite, auf der Elora nicht ist;
-                // wütend: abwechselnd von links und rechts
+                // calm: the wave comes from the side Elora is not on;
+                // angry: alternately from left and right
                 let from_left = if angry {
                     c.count.is_multiple_of(2)
                 } else {
@@ -1899,7 +1901,7 @@ fn tick_queen(
         WAVE => {
             let dir = f32::from(c.facing);
             c.goal.x += dir * d.wave_speed * pace;
-            // frischer Frost hinter der Front, innerhalb der Halle
+            // fresh frost behind the front, inside the hall
             let (a, b) = (c.goal.x - dir * d.fresh_len, c.goal.x);
             let (lo, hi) = (a.min(b).max(c.home.x - half), a.max(b).min(c.home.x + half));
             if hi > lo {
@@ -1919,7 +1921,7 @@ fn tick_queen(
                     act(events, c.pos, CreatureAct::Land);
                 } else {
                     c.mode = HOVER;
-                    // kurze Pause zwischen zwei Wellen
+                    // short pause between two waves
                     c.timer = ticks(d.hover_ms) * 2 / 3;
                     if angry {
                         out.icicles = d.icicles;
@@ -1928,17 +1930,17 @@ fn tick_queen(
             }
         }
         TIRED => {
-            // sinkt erschöpft herab und liegt
+            // sinks down exhausted and lies there
             let rest = Vec2::new(c.pos.x, floor - size.y / 2.0);
             let to = rest - c.pos;
             if to.length() > 9.0 {
                 c.pos += to.normalize() * 9.0;
-                // die Erschöpfung zählt erst ab der Landung
+                // exhaustion only counts from the landing
                 c.timer = 0;
             } else {
                 c.pos = rest;
             }
-            // genug Treffer eingesteckt: sofort wieder hinauf (Playtest: zu leicht)
+            // took enough hits: straight back up (playtest: too easy)
             let enough = d.open_hits > 0 && c.hits >= d.open_hits;
             if c.timer >= ms_to_ticks(d.stun_ms) || enough {
                 c.mode = RISE;

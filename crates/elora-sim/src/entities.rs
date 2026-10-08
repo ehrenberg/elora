@@ -1,26 +1,26 @@
-//! Projektile, Laserstrahlen und Pickups.
+//! Projectiles, laser beams and pickups.
 
 use crate::event::PickupKind;
 use crate::math::{Vec2, round_to_int};
 use crate::tuning::Tuning;
 
-/// Eindeutiger Schlüssel eines Schusses: Schütze und Tick (höchstens ein Schuss pro
-/// Spieler und Tick). Auf Server und Client-Vorhersage identisch.
+/// Unique key of a shot: shooter and tick (at most one shot per
+/// player and tick). Identical on the server and in client prediction.
 pub type ShotKey = (usize, u64);
 
-/// Granate (Referenz: `CProjectile`). Die Flugbahn wird analytisch aus Start,
-/// Richtung und Zeit berechnet – kein Aufsummieren von Rundungsfehlern.
+/// Grenade (reference: `CProjectile`). The trajectory is computed analytically from start,
+/// direction and time – no accumulation of rounding errors.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Projectile {
     pub owner: usize,
-    /// Startposition (auf ganze Einheiten gerundet).
+    /// Start position (rounded to whole units).
     pub pos: Vec2,
-    /// Richtung (auf 0,01 gerundet, wie im Netzwerkformat des Originals).
+    /// Direction (rounded to 0.01, as in the network format of the original).
     pub dir: Vec2,
     pub start_tick: u64,
     pub lifespan: i32,
     pub damage: i32,
-    /// Wind beim Abschuss (R2-W1, nur Abenteuer): lenkt die Flugbahn seitlich ab.
+    /// Wind at launch (R2-W1, adventure only): deflects the trajectory sideways.
     pub wind: f32,
 }
 
@@ -50,7 +50,7 @@ impl Projectile {
         }
     }
 
-    /// Position nach `time` Sekunden (`CalcPos` im Original).
+    /// Position after `time` seconds (`CalcPos` in the original).
     pub fn pos_at(&self, time: f32, t: &Tuning) -> Vec2 {
         let time = time * t.grenade_speed;
         Vec2::new(
@@ -60,19 +60,19 @@ impl Projectile {
     }
 }
 
-/// Laserstrahl (Referenz: `CLaser`). Sichtbar ist das Stück `from`–`pos`.
+/// Laser beam (reference: `CLaser`). The visible part is `from`–`pos`.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Laser {
     pub owner: usize,
     pub pos: Vec2,
     pub from: Vec2,
     pub dir: Vec2,
-    /// Verbleibende Reichweite; < 0 = erloschen.
+    /// Remaining range; < 0 = extinguished.
     pub energy: f32,
     pub bounces: u32,
-    /// Tick des letzten Abschnitts.
+    /// Tick of the last segment.
     pub eval_tick: u64,
-    /// Tick des Schusses; zusammen mit `owner` eindeutig.
+    /// Tick of the shot; unique together with `owner`.
     pub start_tick: u64,
 }
 
@@ -95,7 +95,7 @@ impl Laser {
     }
 }
 
-/// Pickup auf der Karte. `respawn_tick = Some(t)`: aufgenommen, wieder da nach Tick `t`.
+/// Pickup on the map. `respawn_tick = Some(t)`: picked up, back after tick `t`.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Pickup {
     pub kind: PickupKind,
@@ -109,7 +109,7 @@ impl Pickup {
     }
 }
 
-/// Flagge eines Teams (CTF, Referenz: `CFlag`).
+/// Flag of a team (CTF, reference: `CFlag`).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Flag {
     pub team: crate::Team,
@@ -123,9 +123,9 @@ pub struct Flag {
 }
 
 impl Flag {
-    /// Kollisionsgröße (Original: 14).
+    /// Collision size (original: 14).
     pub const PHYS_SIZE: f32 = 14.0;
-    /// Rückkehr nach so vielen Sekunden am Boden (Original: 30).
+    /// Return after this many seconds on the ground (original: 30).
     pub const RETURN_SECS: u64 = 30;
 
     pub fn new(team: crate::Team, stand: Vec2) -> Self {

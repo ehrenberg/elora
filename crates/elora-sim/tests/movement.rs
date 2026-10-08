@@ -1,8 +1,8 @@
-//! Verhaltenstests der Bewegungsphysik gegen die Werte aus docs/handbook/tuning.md.
+//! Behaviour tests of the movement physics against the values from docs/handbook/tuning.md.
 
 use elora_sim::{Collision, HookState, PlayerInput, Tile, Tuning, Vec2, World};
 
-/// Karte aus ASCII: `#` Wand, `%` unhookable, `^` Tod, sonst Luft.
+/// Map from ASCII: `#` wall, `%` unhookable, `^` death, otherwise air.
 fn world(rows: &[&str]) -> World {
     let width = rows[0].len();
     let tiles = rows
@@ -20,7 +20,7 @@ fn world(rows: &[&str]) -> World {
     World::new(Tuning::default(), Collision::new(width, rows.len(), tiles))
 }
 
-/// Große offene Arena (60×40 Tiles) mit Boden in Zeile 38.
+/// Large open arena (60×40 tiles) with floor in row 38.
 fn arena() -> World {
     let mut rows = vec!["#".to_string() + &".".repeat(58) + "#"; 40];
     rows[0] = "#".repeat(60);
@@ -30,7 +30,7 @@ fn arena() -> World {
     world(&refs)
 }
 
-/// Mittelpunkt des Tiles (tx, ty).
+/// Centre of the tile (tx, ty).
 fn tile_center(tx: i32, ty: i32) -> Vec2 {
     Vec2::new(tx as f32 * 32.0 + 16.0, ty as f32 * 32.0 + 16.0)
 }
@@ -45,7 +45,7 @@ fn core(w: &World) -> &elora_sim::CharacterCore {
     w.core(0).expect("Figur 0 lebt")
 }
 
-/// Lässt die Figur landen und zur Ruhe kommen.
+/// Lets the figure land and come to rest.
 fn landed(w: &mut World, tx: i32) {
     w.spawn(tile_center(tx, 36));
     run(w, PlayerInput::default(), 60);
@@ -56,7 +56,7 @@ fn landed(w: &mut World, tx: i32) {
 fn stands_on_ground() {
     let mut w = arena();
     landed(&mut w, 30);
-    // Boden-Oberkante 38*32 = 1216, halbe Box 14
+    // floor top edge 38*32 = 1216, half box 14
     assert!((core(&w).pos.y - (1216.0 - 14.0)).abs() <= 1.0);
     assert!(core(&w).vel.length() < 0.01);
 }
@@ -80,7 +80,7 @@ fn jump_and_double_jump_heights() {
     landed(&mut w, 30);
     let start_y = core(&w).pos.y;
 
-    // einfacher Sprung (T-05)
+    // simple jump (T-05)
     let jump = PlayerInput {
         jump: true,
         ..PlayerInput::default()
@@ -93,7 +93,7 @@ fn jump_and_double_jump_heights() {
     let single = start_y - min_y;
     assert!((180.0..=200.0).contains(&single), "Sprunghöhe {single}");
 
-    // Doppelsprung (T-06): am Scheitelpunkt loslassen und erneut drücken
+    // double jump (T-06): release at the apex and press again
     run(&mut w, PlayerInput::default(), 60);
     let mut min_y = start_y;
     for t in 0..120 {
@@ -121,7 +121,7 @@ fn holding_jump_does_not_rejump() {
         ..PlayerInput::default()
     };
     run(&mut w, jump, 200);
-    // nach der Landung bleibt die Figur trotz gehaltener Taste am Boden
+    // after landing the figure stays on the ground despite the held key
     assert!(core(&w).is_grounded(&w.collision));
     assert!(core(&w).vel.y.abs() < 0.01);
 }
@@ -142,22 +142,22 @@ fn hook_in_open_air_retracts_at_max_length() {
         w.step(&[hook]);
         max = max.max(core(&w).hook_pos.distance(start));
     }
-    // Wie im Original wird die Hook-Position beim Erreichen der Maximallänge nicht
-    // mehr aktualisiert (sichtbar: letzter Flugschritt); die Treffer-Prüfung reicht
-    // aber bis zur vollen Länge, siehe `hook_reaches_full_length`.
+    // As in the original the hook position is no longer updated once the maximum
+    // length is reached (visible: last flight step); the hit check does reach
+    // the full length though, see `hook_reaches_full_length`.
     assert!(max <= 400.0, "Hook zu lang: {max}");
     assert_eq!(core(&w).hook_state, HookState::Retracted);
 
-    // loslassen → Idle, erneutes Drücken schießt wieder
+    // release → idle, pressing again shoots again
     w.step(&[PlayerInput::default()]);
     assert_eq!(core(&w).hook_state, HookState::Idle);
     w.step(&[hook]);
     assert_eq!(core(&w).hook_state, HookState::Flying);
 }
 
-/// Wie im Original greift der Hook im Tick, in dem er die Maximallänge
-/// überschreitet, nicht an Wänden. Effektive Wand-Reichweite ist daher der letzte
-/// volle Flugschritt: 42 + 4 · 85 = 382 (Original: 42 + 4 · 80 = 362).
+/// As in the original the hook does not grab walls in the tick in which it exceeds
+/// the maximum length. The effective wall reach is therefore the last
+/// full flight step: 42 + 4 · 85 = 382 (original: 42 + 4 · 80 = 362).
 #[test]
 fn hook_wall_reach_follows_flight_steps() {
     let hook = PlayerInput {
@@ -169,7 +169,7 @@ fn hook_wall_reach_follows_flight_steps() {
     let mut rows = vec!["#..............#####"; 6];
     rows[5] = "####################";
 
-    // Wand ab x = 480, Abstand 380 → greift
+    // wall from x = 480, distance 380 → grabs
     let mut w = world(&rows);
     w.spawn(Vec2::new(100.0, 4.0 * 32.0 + 16.0));
     run(&mut w, PlayerInput::default(), 20);
@@ -177,7 +177,7 @@ fn hook_wall_reach_follows_flight_steps() {
     assert_eq!(core(&w).hook_state, HookState::Grabbed);
     assert!((core(&w).hook_pos.x - 480.0).abs() <= 1.0);
 
-    // Abstand 395 → liegt im gekappten Schritt, greift nicht
+    // distance 395 → lies in the capped step, does not grab
     let mut w = world(&rows);
     w.spawn(Vec2::new(85.0, 4.0 * 32.0 + 16.0));
     run(&mut w, PlayerInput::default(), 20);
@@ -278,7 +278,7 @@ fn player_hook_releases_after_limit() {
             grabbed_ticks += 1;
         }
     }
-    // T-16: 55 Ticks (+1 wegen `>`-Vergleich wie im Original)
+    // T-16: 55 ticks (+1 because of the `>` comparison as in the original)
     assert!(
         (55..=57).contains(&grabbed_ticks),
         "gehalten: {grabbed_ticks} Ticks"

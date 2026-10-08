@@ -1,4 +1,4 @@
-//! Spieler-Slots und lebende Figuren.
+//! Player slots and living characters.
 
 use crate::Vec2;
 use crate::ability::Abilities;
@@ -7,21 +7,21 @@ use crate::dummy::{DummyBrain, DummyPattern};
 use crate::input::PlayerInput;
 use crate::weapon::Arsenal;
 
-/// Eine lebende Figur: Physik, Leben und Waffen.
+/// A living character: physics, health and weapons.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Character {
     pub core: CharacterCore,
     pub health: i32,
     pub armor: i32,
     pub arsenal: Arsenal,
-    /// Im Abenteuer nach einem Treffer bis zu diesem Tick unverwundbar (E-234).
+    /// In the adventure, invulnerable until this tick after a hit (E-234).
     pub invulnerable_until: u64,
-    /// Zuletzt sicher betretener Boden: hierher setzen Dornen im Abenteuer zurück (E-283).
+    /// Last ground stepped on safely: thorns in the adventure reset to here (E-283).
     pub safe_pos: Vec2,
 }
 
 impl Character {
-    /// Frisch gespawnte Figur mit vollen Lebenspunkten, ohne Rüstung, nur Hammer.
+    /// Freshly spawned character with full health, no armor, only the hammer.
     pub fn spawn(pos: Vec2, max_health: i32) -> Self {
         Self {
             core: CharacterCore::new(pos),
@@ -34,21 +34,21 @@ impl Character {
     }
 }
 
-/// Team eines Spielers.
+/// Team of a player.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Team {
-    /// Kein Team (DM, LMS, Sandbox).
+    /// No team (DM, LMS, sandbox).
     #[default]
     None,
     Red,
     Blue,
-    /// Zuschauer: spawnt nie.
+    /// Spectator: never spawns.
     Spectator,
 }
 
 impl Team {
-    /// Index 0 (Rot) bzw. 1 (Blau) für Team-Tabellen.
+    /// Index 0 (red) or 1 (blue) for team tables.
     pub fn index(self) -> Option<usize> {
         match self {
             Self::Red => Some(0),
@@ -66,21 +66,21 @@ impl Team {
         }
     }
 
-    /// Gleiches (echtes) Team?
+    /// Same (real) team?
     pub fn is_mate(self, other: Self) -> bool {
         self.index().is_some() && self == other
     }
 }
 
-/// Wer steuert einen Slot?
+/// Who controls a slot?
 #[derive(Debug, Clone, PartialEq)]
 pub enum Controller {
-    /// Eingaben kommen von außen (`World::step`).
+    /// Inputs come from outside (`World::step`).
     Human,
-    /// Fremde Figur in der Client-Vorhersage: wird ohne Eingaben weitergerechnet
-    /// (wie `Tick(false)` im Original), feuert nicht.
+    /// Foreign character in client prediction: simulated further without inputs
+    /// (like `Tick(false)` in the original), does not fire.
     Remote,
-    /// Trainings-Dummy mit festem Bewegungsmuster (E-053); respawnt an `home`.
+    /// Training dummy with a fixed movement pattern (E-053); respawns at `home`.
     Dummy {
         pattern: DummyPattern,
         home: Vec2,
@@ -88,28 +88,28 @@ pub enum Controller {
     },
 }
 
-/// Ein Spieler-Slot. Existiert auch, während die Figur tot ist.
+/// A player slot. Exists even while the character is dead.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Player {
     pub controller: Controller,
     pub character: Option<Character>,
-    /// Aktuelle und vorige Eingabe (für Klick-Erkennung).
+    /// Current and previous input (for click detection).
     pub input: PlayerInput,
     pub prev_input: PlayerInput,
-    /// Tick des letzten Todes.
+    /// Tick of the last death.
     pub die_tick: u64,
-    /// Frühester Respawn-Tick.
+    /// Earliest respawn tick.
     pub respawn_tick: u64,
-    /// Respawn angefordert (Feuertaste oder Auto-Respawn).
+    /// Respawn requested (fire key or auto-respawn).
     pub spawning: bool,
     pub team: Team,
-    /// Kein Respawn (Survival-Modi während einer Runde).
+    /// No respawn (survival modes during a round).
     pub respawn_disabled: bool,
-    /// Fähigkeiten, mit denen die Figur spawnt (Abenteuer, Quellenkampf).
+    /// Abilities the character spawns with (adventure, spring battle).
     pub abilities: Abilities,
-    /// Eben beigetreten: die erste Eingabe ist nur Ausgangspunkt für die Klick-Erkennung
-    /// (sonst zählt ein schon hochgezählter Feuer-Zähler als Klick, z. B. beim Kartenwechsel
-    /// im Abenteuer – Playtest).
+    /// Just joined: the first input is only the baseline for click detection
+    /// (otherwise an already incremented fire counter counts as a click, e.g. on a map change
+    /// in the adventure – playtest).
     pub fresh: bool,
 }
 

@@ -1,25 +1,25 @@
-//! Fähigkeiten einer Figur im Abenteuer und im Quellenkampf (R2-M1, E-223 bis E-230).
+//! Abilities of a character in the adventure and in the spring battle (R2-M1, E-223 to E-230).
 //!
-//! Ohne Fähigkeiten verhält sich eine Figur genau wie im Mehrspieler.
+//! Without abilities a character behaves exactly like in multiplayer.
 
-/// Menge freigeschalteter Fähigkeiten.
+/// Set of unlocked abilities.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Abilities(u8);
 
-/// Eine einzelne Fähigkeit, in der Reihenfolge der Gebiete (E-212).
+/// A single ability, in the order of the regions (E-212).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Ability {
-    /// Taste „Fähigkeit“ bei hängendem Hook: Ruck zum Hook-Punkt (E-226).
+    /// "Ability" key while the hook is attached: jerk towards the hook point (E-226).
     HookRuck,
-    /// Hook zieht Gegenstände und kleine Gegner heran (kommt mit den Kreaturen, A1.2).
+    /// The hook pulls items and small enemies closer (comes with the creatures, A1.2).
     Pull,
-    /// „Runter“ in der Luft: Stoß nach unten, bricht Bröckelboden (E-227, E-230).
+    /// "Down" in the air: thrust downwards, breaks crumbling floor (E-227, E-230).
     Stomp,
-    /// An Kletterwänden haften und abspringen (E-228).
+    /// Cling to climbing walls and jump off (E-228).
     Grip,
-    /// Springen halten beim Fallen nach dem Doppelsprung (E-229).
+    /// Holding jump while falling after the double jump (E-229).
     Glide,
 }
 
@@ -59,7 +59,7 @@ impl Abilities {
         self
     }
 
-    /// Beide zusammen.
+    /// Both together.
     #[must_use]
     pub fn union(self, other: Self) -> Self {
         Self(self.0 | other.0)
@@ -69,7 +69,7 @@ impl Abilities {
         self.0
     }
 
-    /// Aus Bits; unbekannte Bits fallen weg.
+    /// From bits; unknown bits are dropped.
     pub fn from_bits(bits: u8) -> Self {
         Self(bits & Self::ALL.0)
     }

@@ -1,11 +1,11 @@
-//! Spielwelt: fester Tick über Spieler, Projektile, Laser und Pickups.
+//! Game world: fixed tick over players, projectiles, lasers and pickups.
 //!
-//! Ablauf eines Ticks wie im Original (`CGameContext::OnTick`):
-//! 1. Eingaben übernehmen, Waffenwechsel und Klick-Schüsse (`OnDirectInput`)
-//! 2. Projektile, Laser, Pickups
-//! 3. Figuren: Kräfte und Hook, danach Waffen (Reload bzw. Dauerfeuer)
-//! 4. Figuren: Hook-Zug anwenden, bewegen, quantisieren, Todes-Tiles
-//! 5. Spieler: Respawn
+//! Order of a tick as in the original (`CGameContext::OnTick`):
+//! 1. Take over inputs, weapon switches and click shots (`OnDirectInput`)
+//! 2. Projectiles, lasers, pickups
+//! 3. Characters: forces and hook, then weapons (reload or automatic fire)
+//! 4. Characters: apply hook pull, move, quantize, death tiles
+//! 5. Players: respawn
 
 use crate::TICKS_PER_SECOND;
 use crate::character::{CharacterCore, PHYS_SIZE};
@@ -20,61 +20,61 @@ use crate::player::{Character, Controller, Player, Team};
 use crate::tuning::{Tuning, ms_to_ticks, secs_to_ticks};
 use crate::weapon::Weapon;
 
-/// Sperre nach Feuern ohne Munition (Original: 125 ms).
+/// Lock after firing without ammo (original: 125 ms).
 const NO_AMMO_DELAY_MS: u32 = 125;
-/// Sperre nach einem Hammer-Treffer (Original: 1/3 s).
+/// Lock after a hammer hit (original: 1/3 s).
 const HAMMER_HIT_DELAY: u32 = TICKS_PER_SECOND / 3;
-/// Radius eines Projektils bei der Treffer-Prüfung.
+/// Radius of a projectile in the hit check.
 const PROJECTILE_RADIUS: f32 = 6.0;
-/// Aufnahme-Radius eines Pickups (Original: 20, effektiv < 40 durch `ClosestEntity`).
+/// Pickup radius of a pickup (original: 20, effectively < 40 due to `ClosestEntity`).
 const PICKUP_RADIUS: f32 = 20.0;
 
-/// Die Schalter (`friendly_fire`, `pickups_enabled`, `paused`, `prediction`) sind
-/// unabhängige Welt-Einstellungen, keine Zustandsmaschine.
+/// The switches (`friendly_fire`, `pickups_enabled`, `paused`, `prediction`) are
+/// independent world settings, not a state machine.
 #[derive(Debug, Clone)]
 #[allow(clippy::struct_excessive_bools)]
 pub struct World {
     pub tuning: Tuning,
     pub collision: Collision,
     pub tick: u64,
-    /// Ein Slot pro Spieler; `None` = unbesetzt.
+    /// One slot per player; `None` = unoccupied.
     pub players: Vec<Option<Player>>,
     pub projectiles: Vec<Projectile>,
     pub lasers: Vec<Laser>,
     pub pickups: Vec<Pickup>,
-    /// Neutrale Spawnpunkte für menschliche Spieler.
+    /// Neutral spawn points for human players.
     pub spawn_points: Vec<Vec2>,
-    /// Team-Spawnpunkte (Rot, Blau).
+    /// Team spawn points (red, blue).
     pub team_spawns: [Vec<Vec2>; 2],
-    /// Flaggen (CTF); leer = kein CTF.
+    /// Flags (CTF); empty = no CTF.
     pub flags: Vec<Flag>,
-    /// Flaggenstände aus der Karte (Rot, Blau) – die Regeln legen daraus Flaggen an.
+    /// Flag stands from the map (red, blue) – the rules create flags from them.
     pub flag_stands: [Option<Vec2>; 2],
-    /// Schaden an Teammitgliedern (E-069). Aus: nur Rückstoß wie im Original.
+    /// Damage to team members (E-069). Off: only knockback, as in the original.
     pub friendly_fire: bool,
-    /// Pickups aktiv (Instagib schaltet sie ab, E-026).
+    /// Pickups active (Instagib turns them off, E-026).
     pub pickups_enabled: bool,
-    /// Eingefroren (Countdown): Figuren und Objekte stehen, Zeiten laufen mit.
+    /// Frozen (countdown): characters and objects stand still, timers keep running.
     pub paused: bool,
-    /// Ereignisse des letzten Ticks.
+    /// Events of the last tick.
     pub events: Vec<Event>,
-    /// Client-Vorhersage (E-057): Kräfte wirken, aber kein Schaden, kein Tod, keine
-    /// Pickups und kein Respawn – das entscheidet allein der Server.
+    /// Client prediction (E-057): forces apply, but no damage, no death, no
+    /// pickups and no respawn – the server alone decides those.
     pub prediction: bool,
-    /// Abenteuer-Regeln: Schutz nach Treffern (E-234), kein Eigenschaden (E-237).
+    /// Adventure rules: protection after hits (E-234), no self-damage (E-237).
     pub adventure: bool,
-    /// Gegnerarten (A1.2); Kreaturen verweisen per Index darauf.
+    /// Enemy kinds (A1.2); creatures refer to them by index.
     pub creature_kinds: Vec<CreatureKind>,
     pub creatures: Vec<Creature>,
     pub creature_shots: Vec<CreatureShot>,
-    /// Zeitweise gesetzte Tiles (Wurzelwände): Tile-Position, ursprüngliches Tile, Ende (Tick).
+    /// Temporarily placed tiles (root walls): tile position, original tile, end (tick).
     pub temp_tiles: Vec<(i32, i32, crate::Tile, u64)>,
-    /// Dünnes Eis mit Rissen (R2-M2.4): Tile-Position und Tick, an dem es bricht.
+    /// Thin ice with cracks (R2-M2.4): tile position and the tick at which it breaks.
     pub cracking: Vec<(i32, i32, u64)>,
     pub loot: Vec<Loot>,
-    /// Nächste Id für Kreaturen und Beute.
+    /// Next id for creatures and loot.
     pub next_id: u32,
-    /// Wetter (R2-W1, nur Abenteuer; die Sitzung setzt es) und Zustand der Blitze.
+    /// Weather (R2-W1, adventure only; set by the session) and lightning state.
     pub weather: Option<crate::weather::WeatherEnv>,
     pub lightning: crate::weather::Lightning,
 }
@@ -121,8 +121,8 @@ impl World {
         }
     }
 
-    /// Fügt einen menschlichen Spieler hinzu, der beim nächsten Tick an einem
-    /// Spawnpunkt erscheint.
+    /// Adds a human player who appears at a spawn point on the
+    /// next tick.
     pub fn join(&mut self) -> usize {
         self.add_player(Player {
             fresh: true,
@@ -130,14 +130,14 @@ impl World {
         })
     }
 
-    /// Fügt einen menschlichen Spieler hinzu, der sofort an `pos` steht.
+    /// Adds a human player who stands at `pos` immediately.
     pub fn spawn(&mut self, pos: Vec2) -> usize {
         let i = self.join();
         self.spawn_character(i, pos);
         i
     }
 
-    /// Fügt einen Trainings-Dummy hinzu (E-053).
+    /// Adds a training dummy (E-053).
     pub fn add_dummy(&mut self, pos: Vec2, pattern: DummyPattern) -> usize {
         let i = self.add_player(Player::new(Controller::Dummy {
             pattern,
@@ -174,7 +174,7 @@ impl World {
         self.players.get_mut(i)?.as_mut()?.character.as_mut()
     }
 
-    /// Setzt eine Figur sofort (neu) an `pos`, z. B. für den Sandbox-Respawn.
+    /// Places a character (anew) at `pos` immediately, e.g. for the sandbox respawn.
     pub fn spawn_character(&mut self, i: usize, pos: Vec2) {
         let max_health = self.tuning.max_health;
         if let Some(p) = self.players.get_mut(i).and_then(Option::as_mut) {
@@ -189,7 +189,7 @@ impl World {
         }
     }
 
-    /// Fähigkeiten eines Spielers setzen – gilt sofort und nach jedem Respawn.
+    /// Sets a player's abilities – applies immediately and after every respawn.
     pub fn set_abilities(&mut self, i: usize, abilities: crate::Abilities) {
         if let Some(p) = self.players.get_mut(i).and_then(Option::as_mut) {
             p.abilities = abilities;
@@ -199,7 +199,7 @@ impl World {
         }
     }
 
-    /// Positionen aller lebenden Figuren (Index = Slot).
+    /// Positions of all living characters (index = slot).
     fn positions(&self) -> Vec<Option<Vec2>> {
         self.players
             .iter()
@@ -211,8 +211,8 @@ impl World {
             .collect()
     }
 
-    /// Simuliert einen Tick. `inputs[i]` gehört zum Slot `i`; fehlende Einträge
-    /// gelten als leere Eingabe. Dummies erzeugen ihre Eingaben selbst.
+    /// Simulates one tick. `inputs[i]` belongs to slot `i`; missing entries
+    /// count as empty input. Dummies generate their inputs themselves.
     pub fn step(&mut self, inputs: &[PlayerInput]) {
         self.events.clear();
         if self.paused {
@@ -239,8 +239,8 @@ impl World {
         self.tick_flags_rules();
     }
 
-    /// Eingefrorener Tick (wie `TickPaused` im Original): Eingaben merken, alle
-    /// Zeitstempel mitschieben, nichts bewegen.
+    /// Frozen tick (like `TickPaused` in the original): remember inputs, shift all
+    /// timestamps along, move nothing.
     fn step_paused(&mut self, inputs: &[PlayerInput]) {
         for (i, p) in self.players.iter_mut().enumerate() {
             let Some(p) = p else { continue };
@@ -272,13 +272,13 @@ impl World {
         self.tick += 1;
     }
 
-    /// Team eines Slots.
+    /// Team of a slot.
     pub fn team(&self, i: usize) -> Team {
         self.player(i).map_or(Team::None, |p| p.team)
     }
 
-    /// Neue Runde/neues Match: Schüsse weg, Pickups und Flaggen zurück, alle Figuren
-    /// (außer Zuschauern und gesperrten) sofort neu am Spawnpunkt.
+    /// New round/new match: shots gone, pickups and flags back, all characters
+    /// (except spectators and locked ones) immediately anew at a spawn point.
     pub fn reset_round(&mut self) {
         self.projectiles.clear();
         self.lasers.clear();
@@ -307,7 +307,7 @@ impl World {
         }
     }
 
-    /// Selbstmord (`kill`, E-055): wie im Original 3 s bis zum Respawn.
+    /// Suicide (`kill`, E-055): as in the original, 3 s until respawn.
     pub fn kill(&mut self, i: usize) {
         if self.character(i).is_none() {
             return;
@@ -319,7 +319,7 @@ impl World {
         }
     }
 
-    // ---------------------------------------------------------------- Eingaben
+    // ---------------------------------------------------------------- Inputs
 
     fn apply_inputs(&mut self, inputs: &[PlayerInput]) {
         for i in 0..self.players.len() {
@@ -334,12 +334,12 @@ impl World {
                     None => PlayerInput::default(),
                 },
             };
-            // nicht ins Zentrum zielen
+            // do not aim at the center
             if input.target_x == 0 && input.target_y == 0 {
                 input.target_y = -1;
             }
             if p.fresh {
-                // erste Eingabe nach dem Beitritt: Zähler übernehmen, nichts auslösen
+                // first input after joining: take over the counters, trigger nothing
                 p.fresh = false;
                 p.input = input;
             }
@@ -400,9 +400,9 @@ impl World {
         }
     }
 
-    // ---------------------------------------------------------------- Waffen
+    // ---------------------------------------------------------------- Weapons
 
-    /// `presses`: Klicks seit der letzten Eingabe (0 = nur Dauerfeuer).
+    /// `presses`: clicks since the last input (0 = automatic fire only).
     fn fire_weapon(&mut self, i: usize, presses: u32) {
         if self
             .character(i)
@@ -451,7 +451,7 @@ impl World {
                     (TICKS_PER_SECOND as f32 * t.grenade_lifetime) as i32,
                     t.grenade_damage,
                 );
-                // Wind lenkt die Granate ab (R2-W1, nur Abenteuer)
+                // wind deflects the grenade (R2-W1, adventure only)
                 p.wind = self.collision.wind;
                 self.projectiles.push(p);
             }
@@ -480,7 +480,7 @@ impl World {
         }
     }
 
-    /// Hammerschlag; liefert die Anzahl der Treffer.
+    /// Hammer strike; returns the number of hits.
     fn hammer(&mut self, i: usize, pos: Vec2, start: Vec2) -> usize {
         let targets: Vec<(usize, Vec2)> = self
             .positions()
@@ -519,8 +519,8 @@ impl World {
         targets.len() + self.hammer_creatures(i, pos, start)
     }
 
-    /// Erster Spieler auf der Strecke `from`–`to` (Abstand < Körper + `radius`),
-    /// außer `exclude`. Liefert Slot und Schnittpunkt.
+    /// First player on the segment `from`–`to` (distance < body + `radius`),
+    /// except `exclude`. Returns slot and intersection point.
     fn intersect_character(
         &self,
         from: Vec2,
@@ -547,7 +547,7 @@ impl World {
         hit
     }
 
-    /// Nächster Abschnitt eines Laserstrahls. `false` = Laser ist erloschen.
+    /// Next segment of a laser beam. `false` = laser is extinguished.
     fn laser_bounce(&mut self, idx: usize) -> bool {
         let mut l = self.lasers[idx].clone();
         l.eval_tick = self.tick;
@@ -561,7 +561,7 @@ impl World {
 
         let player_hit = self.intersect_character(l.pos, to, 0.0, owner);
         let limit = player_hit.map_or(to, |(_, p)| p);
-        // Gegner bis zum ersten Spieler; mit Durchschlag (A-21) mehrere hintereinander
+        // enemies up to the first player; with piercing (A-21) several in a row
         let creatures = self.creatures_on_line(l.pos, limit);
         if !creatures.is_empty() {
             let dir = (to - l.pos).normalize();
@@ -708,7 +708,7 @@ impl World {
         }
     }
 
-    /// Schaden und Kraft auf Slot `i`. Liefert `true`, wenn die Figur gestorben ist.
+    /// Damage and force on slot `i`. Returns `true` if the character died.
     pub(crate) fn take_damage(
         &mut self,
         i: usize,
@@ -723,7 +723,8 @@ impl World {
         let Some(ch) = self.character_mut(i) else {
             return false;
         };
-        // Abenteuer: eigene Granaten nur mit Rückstoß (E-237), kurz unverwundbar nach Treffer (E-234)
+        // adventure: own grenades only knock back (E-237), briefly invulnerable after a hit
+        // (E-234)
         if (adventure || cause == DeathCause::Creature)
             && from != Some(i)
             && tick < ch.invulnerable_until
@@ -734,7 +735,7 @@ impl World {
         if prediction || (adventure && from == Some(i)) {
             return false;
         }
-        // Friendly Fire (E-069): ausgeschaltet → nur Rückstoß wie im Original
+        // friendly fire (E-069): turned off → only knockback, as in the original
         if !self.friendly_fire
             && let Some(f) = from
             && f != i
@@ -745,7 +746,7 @@ impl World {
         let Some(ch) = self.character_mut(i) else {
             return false;
         };
-        // Eigenschaden halbiert (T-26)
+        // self-damage halved (T-26)
         let mut dmg = if from == Some(i) {
             (damage / 2).max(1)
         } else {
@@ -784,7 +785,7 @@ impl World {
         dead
     }
 
-    /// Tötet die Figur in Slot `i`.
+    /// Kills the character in slot `i`.
     pub fn die(&mut self, i: usize, killer: Option<usize>, cause: DeathCause) {
         let tick = self.tick;
         let delay = secs_to_ticks(self.tuning.respawn_delay);
@@ -801,7 +802,7 @@ impl World {
             cause,
             pos: ch.core.pos,
         });
-        // getragene Flagge fällt
+        // a carried flag drops
         for f in &mut self.flags {
             if f.carrier == Some(i) {
                 f.carrier = None;
@@ -835,7 +836,7 @@ impl World {
                     continue;
                 }
             }
-            // nächste Figur im Radius (wie `ClosestEntity`: zusätzlich < 2 · Radius)
+            // closest character in the radius (like `ClosestEntity`: additionally < 2 · radius)
             let mut best: Option<(usize, f32)> = None;
             for (j, p) in self.positions().into_iter().enumerate() {
                 let Some(p) = p else { continue };
@@ -859,7 +860,7 @@ impl World {
                     ch.armor = (ch.armor + 1).min(t.max_armor);
                     true
                 }
-                // Abenteuer: Waffen gibt es nur über den Fortschritt, Pickups füllen Munition (E-243)
+                // adventure: weapons only come from progress, pickups refill ammo (E-243)
                 PickupKind::Weapon(w) if adventure && !ch.arsenal.has(w) => false,
                 PickupKind::Weapon(w) => ch.arsenal.give(w, t.max_ammo, t.max_ammo),
                 _ => false,
@@ -875,7 +876,7 @@ impl World {
         }
     }
 
-    // ---------------------------------------------------------------- Figuren
+    // ---------------------------------------------------------------- Characters
 
     fn tick_characters(&mut self) {
         let positions = self.positions();
@@ -899,7 +900,7 @@ impl World {
                 &targets,
                 &mut drag,
             );
-            // Waffen: Reload herunterzählen, sonst Dauerfeuer
+            // weapons: count down the reload, otherwise automatic fire
             let ready = ch.arsenal.reload_timer == 0;
             ch.arsenal.reload_timer = ch.arsenal.reload_timer.saturating_sub(1);
             if ready && !remote {
@@ -944,8 +945,8 @@ impl World {
         }
     }
 
-    /// Dornen und Treibsand im Abenteuer (E-283, E-318): Schaden, dann zurück auf den letzten
-    /// sicheren Boden.
+    /// Thorns and quicksand in the adventure (E-283, E-318): damage, then back to the last
+    /// safe ground.
     fn back_to_safe_ground(&mut self, i: usize, damage: i32) {
         if self.take_damage(i, Vec2::ZERO, damage, None, DeathCause::World) {
             return;
@@ -962,7 +963,7 @@ impl World {
         ch.core = core;
     }
 
-    /// Sicheren Boden merken: fester Boden ohne Dornen und Treibsand in der Nähe.
+    /// Remember safe ground: solid ground without thorns and quicksand nearby.
     fn remember_safe_ground(&mut self) {
         let collision = &self.collision;
         for p in self.players.iter_mut().flatten() {
@@ -992,7 +993,7 @@ impl World {
         }
     }
 
-    /// Stoßwelle beim Aufprall des Stampfens (A-05): bricht Bröckelboden im Radius (E-230).
+    /// Shockwave on stomp impact (A-05): breaks crumbling floor in the radius (E-230).
     fn stomp_wave(&mut self, player: usize, pos: Vec2) {
         self.events.push(Event::Stomp { player, pos });
         self.stomp_creatures(player, pos);
@@ -1020,7 +1021,7 @@ impl World {
                         self.collision.set_tile(tx, ty, crate::Tile::Air);
                         self.events.push(Event::TileBroken { tx, ty });
                     }
-                    // dünnes Eis bricht sofort (R2-M2.4)
+                    // thin ice breaks immediately (R2-M2.4)
                     crate::Tile::ThinIce => self.break_thin_ice(tx, ty),
                     _ => {}
                 }
@@ -1057,14 +1058,14 @@ impl World {
         }
     }
 
-    /// Spawnpunkt mit dem geringsten „Gefahrenwert“ (Summe 1/Abstand zu allen
-    /// Figuren), freie Nachbarposition wie im Original (`EvaluateSpawnType`).
+    /// Spawn point with the lowest "danger score" (sum of 1/distance to all
+    /// characters), free neighboring position as in the original (`EvaluateSpawnType`).
     pub fn best_spawn(&self) -> Option<Vec2> {
         self.best_spawn_for(Team::None)
     }
 
-    /// Wie im Original (`CanSpawn`): Teams zuerst eigene Spawnpunkte, dann neutrale,
-    /// dann gegnerische; ohne Team alle. Teammitglieder zählen halb als Gefahr.
+    /// As in the original (`CanSpawn`): teams first use their own spawn points, then neutral,
+    /// then enemy ones; without a team all. Team members count half as danger.
     pub fn best_spawn_for(&self, team: Team) -> Option<Vec2> {
         match team.index() {
             Some(t) => self
@@ -1125,10 +1126,10 @@ impl World {
         best
     }
 
-    // ---------------------------------------------------------------- Flaggen (CTF)
+    // ---------------------------------------------------------------- Flags (CTF)
 
-    /// Physik (wie `CFlag::TickDefered`): folgt dem Träger, fällt sonst, kehrt nach
-    /// 30 s oder auf Todes-Tiles zurück.
+    /// Physics (like `CFlag::TickDefered`): follows the carrier, otherwise falls, returns
+    /// after 30 s or on death tiles.
     fn tick_flags_physics(&mut self) {
         let tick = self.tick;
         let gravity = self.tuning.gravity;
@@ -1163,7 +1164,7 @@ impl World {
         }
     }
 
-    /// Aufnehmen, Zurückbringen, Erobern (wie `CGameControllerCTF::Tick`).
+    /// Pick up, return, capture (like `CGameControllerCTF::Tick`).
     fn tick_flags_rules(&mut self) {
         if self.prediction || self.flags.len() != 2 {
             return;
@@ -1172,7 +1173,7 @@ impl World {
         for k in 0..2 {
             let other = 1 - k;
             if let Some(carrier) = self.flags[k].carrier {
-                // Eroberung: Träger an der eigenen Flagge, die am Stand ist
+                // capture: carrier at its own flag, which is at the stand
                 if self.flags[other].at_stand
                     && self.flags[k].pos.distance(self.flags[other].pos) < reach
                 {
@@ -1229,7 +1230,7 @@ impl World {
         }
     }
 
-    /// Nur für Tests und Werkzeuge: Kern einer lebenden Figur.
+    /// Only for tests and tools: core of a living character.
     pub fn core(&self, i: usize) -> Option<&CharacterCore> {
         self.character(i).map(|c| &c.core)
     }

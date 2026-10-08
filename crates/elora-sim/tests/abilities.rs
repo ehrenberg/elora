@@ -1,5 +1,5 @@
-//! Fähigkeiten (R2-M1, A1.1, E-226 bis E-230): Hook-Ruck, Stampfen, Eisgriff, Gleiten
-//! sowie Kletterwand und Bröckelboden.
+//! Abilities (R2-M1, A1.1, E-226 to E-230): hook jerk, stomp, ice grip, gliding
+//! as well as climbing wall and crumbling floor.
 
 use elora_sim::character::events;
 use elora_sim::{
@@ -8,10 +8,10 @@ use elora_sim::{
 
 const W: usize = 60;
 const H: usize = 30;
-/// Bodenzeile der Arena.
+/// Floor row of the arena.
 const FLOOR: usize = 28;
 
-/// Offene Arena mit Boden in Zeile 28; `edit` setzt weitere Tiles.
+/// Open arena with floor in row 28; `edit` sets further tiles.
 fn world(edit: impl FnOnce(&mut Vec<Tile>)) -> World {
     let mut tiles = vec![Tile::Air; W * H];
     for x in 0..W {
@@ -30,7 +30,7 @@ fn set(tiles: &mut [Tile], x: usize, y: usize, t: Tile) {
     tiles[y * W + x] = t;
 }
 
-/// Figur steht auf Zeile `row`, Spalte `tx`.
+/// Figure stands on row `row`, column `tx`.
 fn standing(tx: usize, row: usize) -> Vec2 {
     #[allow(clippy::cast_precision_loss)]
     Vec2::new(tx as f32 * 32.0 + 16.0, row as f32 * 32.0 - 15.0)
@@ -65,15 +65,15 @@ fn with(a: Ability) -> Abilities {
     Abilities::NONE.with(a)
 }
 
-/// Springt vom Boden und steigt bis kurz vor den Scheitel.
+/// Jumps off the floor and rises until just before the apex.
 fn jump_up(w: &mut World) {
     run(w, input(0, true, false), 1);
     run(w, input(0, false, false), 12);
 }
 
-// ---------------------------------------------------------------- Hook-Ruck
+// ---------------------------------------------------------------- Hook jerk
 
-/// Hook an der Decke (Zeile 18) über der Figur.
+/// Hook on the ceiling (row 18) above the figure.
 fn hook_ceiling(abilities: Abilities) -> World {
     let mut w = world(|t| (5..55).for_each(|x| set(t, x, 18, Tile::Solid)));
     spawn(&mut w, standing(30, FLOOR), abilities);
@@ -116,7 +116,7 @@ fn hook_ruck_pulls_hard_with_cooldown() {
         "schneller als normaler Hook-Zug: {:?}",
         c.vel
     );
-    // Taste halten löst nicht erneut aus, neuer Druck erst nach der Abklingzeit
+    // holding the key does not trigger again, a new press only after the cooldown
     w.step(&[held]);
     assert_eq!(core(&w).triggered_events & events::HOOK_RUCK, 0);
     let released = PlayerInput {
@@ -132,8 +132,8 @@ fn hook_ruck_pulls_hard_with_cooldown() {
     );
 }
 
-/// Der Ruck zieht spürbar schneller als der normale Hook (Playtest 2026-10-06, A-28):
-/// gleiche Strecke zur Decke in deutlich weniger Ticks.
+/// The jerk pulls noticeably faster than the normal hook (playtest 2026-10-06, A-28):
+/// same distance to the ceiling in clearly fewer ticks.
 #[test]
 fn hook_ruck_reaches_the_hook_point_much_faster() {
     let ticks_to_ceiling = |press: bool| {
@@ -175,11 +175,11 @@ fn hook_ruck_needs_ability() {
     assert_eq!(core(&w).vel, core(&plain).vel, "ohne Fähigkeit wirkungslos");
 }
 
-// ---------------------------------------------------------------- Stampfen
+// ---------------------------------------------------------------- Stomp
 
 #[test]
 fn stomp_breaks_crumble_floor_and_stays_broken() {
-    // Bröckelboden-Insel in Zeile 20, darunter Luft
+    // crumbling floor island in row 20, air below
     let mut w = world(|t| (20..26).for_each(|x| set(t, x, 20, Tile::Crumble)));
     spawn(&mut w, standing(22, 20), with(Ability::Stomp));
     run(&mut w, PlayerInput::default(), 10);
@@ -206,7 +206,7 @@ fn stomp_breaks_crumble_floor_and_stays_broken() {
         w.collision.tile(25, 20) == Tile::Crumble,
         "außerhalb des Radius bleibt"
     );
-    // Elora fällt durch das Loch auf den Boden
+    // Elora falls through the hole onto the floor
     run(&mut w, PlayerInput::default(), 60);
     assert!(core(&w).pos.y > 27.0 * 32.0);
 }
@@ -244,9 +244,9 @@ fn down_in_air_without_stomp_is_unchanged() {
     assert!(!core(&a).stomping);
 }
 
-// ---------------------------------------------------------------- Eisgriff
+// ---------------------------------------------------------------- Ice grip
 
-/// Kletterwand in Spalte 40 (Zeilen 5..28); Figur springt von links dagegen.
+/// Climbing wall in column 40 (rows 5..28); figure jumps against it from the left.
 fn climb_world(abilities: Abilities, wall: Tile) -> World {
     let mut w = world(|t| (5..FLOOR).for_each(|y| set(t, 40, y, wall)));
     spawn(&mut w, standing(37, FLOOR), abilities);
@@ -262,7 +262,7 @@ fn grip_holds_on_climbing_wall_then_slides_off() {
     let c = core(&w);
     assert_eq!(c.grip, 1, "haftet rechts");
     assert!(c.vel.y <= Tuning::default().grip_slide_speed + 0.01);
-    // nach der Haftzeit (1 s) fällt die Figur normal
+    // after the grip time (1 s) the figure falls normally
     run(&mut w, input(1, false, false), 50);
     assert_eq!(core(&w).grip, 0);
 }
@@ -286,7 +286,7 @@ fn wall_jump_pushes_away_and_keeps_air_jump() {
         "weg von der Wand: {:?}",
         c.vel
     );
-    // Doppelsprung danach noch möglich
+    // double jump still possible afterwards
     run(&mut w, input(0, false, false), 2);
     run(&mut w, input(0, true, false), 1);
     assert!(core(&w).triggered_events & events::AIR_JUMP != 0);
@@ -312,9 +312,9 @@ fn climbing_wall_is_not_hookable() {
     assert!(!grabbed);
 }
 
-// ---------------------------------------------------------------- Gleiten
+// ---------------------------------------------------------------- Gliding
 
-/// Sprung, Doppelsprung, dann Springen halten.
+/// Jump, double jump, then hold jump.
 fn glide_fall(abilities: Abilities) -> f32 {
     let mut w = world(|_| {});
     spawn(&mut w, standing(30, FLOOR), abilities);
@@ -341,7 +341,7 @@ fn no_glide_while_air_jump_unused() {
     let mut w = world(|_| {});
     spawn(&mut w, standing(30, FLOOR), with(Ability::Glide));
     run(&mut w, PlayerInput::default(), 5);
-    // Bodensprung gehalten bis über den Scheitel: kein Gleiten
+    // ground jump held until past the apex: no gliding
     run(&mut w, input(0, true, false), 45);
     assert!(!core(&w).gliding);
 }
@@ -363,7 +363,7 @@ fn down_on_platform_still_drops_through_with_stomp() {
 
 #[test]
 fn hook_grabs_hook_point_and_passes_through_it_otherwise() {
-    // Hook-Blüte zwei Tiles über Elora, Decke weit darüber
+    // hook blossom two tiles above Elora, ceiling far above
     let mut w = world(|t| set(t, 10, 24, Tile::HookPoint));
     let i = w.join();
     w.spawn_character(i, standing(10, FLOOR));
@@ -381,9 +381,9 @@ fn hook_grabs_hook_point_and_passes_through_it_otherwise() {
         core.hook_pos,
         Vec2::new(10.0 * 32.0 + 16.0, 24.0 * 32.0 + 16.0)
     );
-    // Figuren laufen hindurch, sie ist nicht fest
+    // figures walk through, it is not solid
     assert!(!Tile::HookPoint.is_solid());
-    // welk (nur beim Hüter, siehe creatures.rs): Spalten wechseln sich ab
+    // withered (only at the guardian, see creatures.rs): columns alternate
     let mut c = w.collision.clone();
     c.hook_wilt = Some(true);
     assert!(!c.hook_point_active(10) && c.hook_point_active(11));
@@ -391,11 +391,11 @@ fn hook_grabs_hook_point_and_passes_through_it_otherwise() {
     assert!(c.hook_point_active(10) && !c.hook_point_active(11));
 }
 
-/// Ruck-Stelle (R2-M2.1, M2.1.5): Schacht aus Stein, eine Hook-Blüte 12 Tiles über dem
-/// Boden und dicht an der rechten Wand, rechts ein Steinturm 9 Tiles über der Blüte
-/// (unten ein Durchgang).
-/// Ohne Hook-Ruck kommt Elora nicht hinauf, mit ihm schon. Die Karten bauen die Stelle
-/// genauso (`apps/elora-client/src/editor/kapitel1.rs`, `ruck_gate`).
+/// Jerk spot (R2-M2.1, M2.1.5): stone shaft, a hook blossom 12 tiles above the
+/// floor and close to the right wall, on the right a stone tower 9 tiles above the blossom
+/// (with a passage at the bottom).
+/// Without the hook jerk Elora cannot get up, with it she can. The maps build the spot
+/// the same way (`apps/elora-client/src/editor/kapitel1.rs`, `ruck_gate`).
 fn ruck_gate_world() -> (elora_sim::World, f32) {
     use elora_sim::{Collision, Tile, Tuning, World};
     let (w, h) = (24, 40);
@@ -406,13 +406,13 @@ fn ruck_gate_world() -> (elora_sim::World, f32) {
             t[y * w + x] = Tile::Solid;
         }
     }
-    // Schacht: Wände x = 7 und x = 13 (Stein), Sims rechts ab x = 13
+    // shaft: walls x = 7 and x = 13 (stone), ledge on the right from x = 13
     let flower_y = floor - 12;
     let ledge_y = flower_y - 9;
     for y in ledge_y..floor - 3 {
         t[y * w + 7] = Tile::Unhookable;
     }
-    // Turm mit Durchgang unten (3 Tiles), wie in den Karten
+    // tower with a passage at the bottom (3 tiles), as in the maps
     for y in ledge_y..floor - 3 {
         for x in 13..20 {
             t[y * w + x] = Tile::Unhookable;
@@ -423,7 +423,7 @@ fn ruck_gate_world() -> (elora_sim::World, f32) {
     (world, ledge_y as f32 * 32.0)
 }
 
-/// Kommt Elora mit diesen Zeitpunkten auf den Sims?
+/// Does Elora reach the ledge with these timings?
 fn ruck_gate_try(ruck: bool, release: u32, ruck_at: u32, jump_at: u32, right_at: u32) -> bool {
     use elora_sim::{Abilities, PlayerInput, Vec2};
     let (mut w, ledge_top) = ruck_gate_world();
@@ -437,7 +437,7 @@ fn ruck_gate_try(ruck: bool, release: u32, ruck_at: u32, jump_at: u32, right_at:
     }
     for t in 0..160u32 {
         let c = &w.character(i).expect("lebt").core;
-        // steht (Füße über der Kante) über dem Sims
+        // stands (feet above the edge) above the ledge
         if c.pos.y < ledge_top - 14.0 && c.pos.x > 13.0 * 32.0 + 8.0 && c.pos.x < 20.0 * 32.0 {
             return true;
         }
@@ -477,8 +477,9 @@ fn ruck_gate_needs_the_hook_ruck() {
     assert!(reach(true), "mit Hook-Ruck nicht erreichbar");
 }
 
-/// Kletterkamin der Frostspitzen (R2-M2.4): zwei Kletterwände mit drei Tiles Luft dazwischen,
-/// 26 Reihen hoch – mit Eisgriff und Wandsprüngen im Wechsel kommt Elora oben an, ohne nicht.
+/// Frostspitzen climbing chimney (R2-M2.4): two climbing walls with three tiles of air
+/// between them, 26 rows high – alternating ice grip and wall jumps Elora reaches the top,
+/// without them she does not.
 #[test]
 fn tall_chimney_can_be_climbed_with_grip_only() {
     let climb = |abilities: Abilities| {
@@ -487,7 +488,7 @@ fn tall_chimney_can_be_climbed_with_grip_only() {
                 set(t, 20, y, Tile::Climb);
                 set(t, 24, y, Tile::Climb);
             }
-            // oben rechts ein Sims hinter der rechten Wand
+            // top right a ledge behind the right wall
             for x in 25..40 {
                 set(t, x, 1, Tile::Solid);
             }
@@ -500,7 +501,7 @@ fn tall_chimney_can_be_climbed_with_grip_only() {
         for _ in 0..1500 {
             let c = core(&w);
             best = best.min(c.pos.y);
-            // an der Wand: abspringen und zur anderen Wand lenken; sonst zur Wand hin
+            // at the wall: jump off and steer to the other wall; otherwise towards the wall
             let jump = if c.grip != 0 && !held {
                 toward = -c.grip;
                 true
@@ -520,8 +521,8 @@ fn tall_chimney_can_be_climbed_with_grip_only() {
     assert!(climb(Abilities::NONE) > 12.0 * 32.0, "ohne Eisgriff nicht");
 }
 
-/// Gestärkter Eisgriff (R2-M2.4, D-M24-03, A-42): wer zur Wand drückt, zieht sich hinauf,
-/// bis die (verdoppelte) Haftzeit um ist; ohne Stärkung rutscht Elora langsam ab.
+/// Strengthened ice grip (R2-M2.4, D-M24-03, A-42): whoever presses towards the wall pulls
+/// themselves up until the (doubled) grip time is over; without the boost Elora slowly slides down.
 #[test]
 fn strong_grip_pulls_elora_up_the_wall() {
     let height_after = |climb: f32| {
@@ -531,7 +532,7 @@ fn strong_grip_pulls_elora_up_the_wall() {
         spawn(&mut w, standing(37, FLOOR), with(Ability::Grip));
         run(&mut w, PlayerInput::default(), 10);
         run(&mut w, input(1, true, false), 1);
-        // bis zur Wand und an ihr festhalten
+        // to the wall and hold on to it
         let mut gripped_at = None;
         let mut highest = f32::MAX;
         for _ in 0..200 {

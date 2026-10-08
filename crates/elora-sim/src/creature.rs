@@ -1,42 +1,42 @@
-//! Kreaturen im Abenteuer (R2-M1, A1.2, E-232 bis E-238): Gegner mit Verhalten und Leben,
-//! ihre Geschosse und herumliegende Beute.
+//! Creatures in the adventure (R2-M1, A1.2, E-232 to E-238): enemies with behavior and health,
+//! their projectiles and loot lying around.
 //!
-//! Die Arten kommen als Daten (`assets/adventure/creatures.toml`); die Simulation kennt nur
-//! die Verhaltensmuster. Alles ist deterministisch wie der Rest der Welt.
+//! The kinds come as data (`assets/adventure/creatures.toml`); the simulation only knows
+//! the behavior patterns. Everything is deterministic like the rest of the world.
 
 use crate::math::Vec2;
 
-/// Eine Gegnerart.
+/// An enemy kind.
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct CreatureKind {
-    /// Schlüssel für Karten, Grafik und Übersetzung (z. B. `stachelkaefer`).
+    /// Key for maps, graphics and translation (e.g. `stachelkaefer`).
     pub name: String,
-    /// Kollisionsbox (Breite, Höhe) in Einheiten; Ursprung in der Mitte.
+    /// Collision box (width, height) in units; origin in the center.
     pub size: [f32; 2],
     pub health: i32,
-    /// Schaden bei Berührung (E-232).
+    /// Damage on contact (E-232).
     #[cfg_attr(feature = "serde", serde(default))]
     pub touch_damage: i32,
-    /// Klein: Heranhooken zieht ihn zu Elora (E-233).
+    /// Small: the pull hook pulls it towards Elora (E-233).
     #[cfg_attr(feature = "serde", serde(default))]
     pub small: bool,
-    /// Boss oder besonderer Gegner: bleibt besiegt (E-235, wertet das Abenteuer aus).
+    /// Boss or special enemy: stays defeated (E-235, evaluated by the adventure).
     #[cfg_attr(feature = "serde", serde(default))]
     pub boss: bool,
-    /// Erfahrung beim Besiegen (wertet das Abenteuer aus).
+    /// Experience for defeating it (evaluated by the adventure).
     #[cfg_attr(feature = "serde", serde(default))]
     pub xp: u32,
     #[cfg_attr(feature = "serde", serde(default))]
     pub loot: Vec<LootEntry>,
-    /// Berührung löst den bunten Rausch aus (so viele ms, E-311): Elora läuft langsamer.
+    /// Contact triggers the colorful rush (this many ms, E-311): Elora walks slower.
     #[cfg_attr(feature = "serde", serde(default))]
     pub daze_ms: u32,
-    /// Berührung lässt Elora so viele ms erstarren (Frostgeist, D-M24-07).
+    /// Contact freezes Elora for this many ms (frost ghost, D-M24-07).
     #[cfg_attr(feature = "serde", serde(default))]
     pub freeze_ms: u32,
-    /// Panzer (Sandkrabbe, E-317): Treffer von der Seite oder von unten prallen ab, nur von
-    /// oben (Schlag, Granate darauf) und Stampfen wirken.
+    /// Shell (sand crab, E-317): hits from the side or from below bounce off, only hits from
+    /// above (strike, grenade on top) and stomp take effect.
     #[cfg_attr(feature = "serde", serde(default))]
     pub armor: bool,
     pub behavior: Behavior,
@@ -47,39 +47,39 @@ impl CreatureKind {
         Vec2::new(self.size[0], self.size[1])
     }
 
-    /// Radius für Treffer-Prüfungen (halbe größere Seite).
+    /// Radius for hit checks (half the larger side).
     pub fn radius(&self) -> f32 {
         self.size[0].max(self.size[1]) / 2.0
     }
 }
 
-/// Verhaltensmuster.
+/// Behavior pattern.
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[cfg_attr(feature = "serde", serde(tag = "type", rename_all = "snake_case"))]
 pub enum Behavior {
-    /// Läuft hin und her, dreht an Wänden und (wenn gewünscht) an Kanten.
+    /// Walks back and forth, turns at walls and (if desired) at edges.
     Walker { speed: f32, turn_at_edges: bool },
-    /// Wartet am Boden und springt Elora an, sobald sie in Sichtweite ist.
+    /// Waits on the ground and leaps at Elora as soon as she is in sight.
     Hopper {
         wait_ms: u32,
         jump_x: f32,
         jump_y: f32,
         sight: f32,
     },
-    /// Steht fest und schießt auf Elora, wenn sie in Reichweite und Sicht ist.
+    /// Stands still and shoots at Elora when she is in range and in sight.
     Turret {
         interval_ms: u32,
         range: f32,
         shot_speed: f32,
         shot_damage: i32,
-        /// Wirft im Bogen (Schwerkraft) statt gerade zu schießen (Eichhornpirat, R2-M2.2).
+        /// Throws in an arc (gravity) instead of shooting straight (squirrel pirate, R2-M2.2).
         #[cfg_attr(feature = "serde", serde(default))]
         lob: bool,
     },
-    /// Schwebt um den Startpunkt und verfolgt Elora in Sichtweite. Mit `hover` bleibt er so
-    /// hoch über ihr und lässt alle `drop_ms` einen Funken fallen, der `glow_ms` lang am Boden
-    /// glüht (Funkenmotte, R2-M2.3).
+    /// Hovers around the start point and chases Elora when in sight. With `hover` it stays
+    /// this high above her and drops a spark every `drop_ms` that glows on the ground for
+    /// `glow_ms` (spark moth, R2-M2.3).
     Flyer {
         speed: f32,
         sight: f32,
@@ -92,15 +92,15 @@ pub enum Behavior {
         #[cfg_attr(feature = "serde", serde(default))]
         glow_ms: u32,
     },
-    /// Hüter aus der Luft (R2-M2.1, E-298, E-299): kreist über dem Startpunkt und lässt
-    /// Geschosse fallen, visiert Elora an und stürzt herab; danach liegt er benommen am
-    /// Boden – **nur dann verwundbar** – und steigt wieder auf. Ab `enrage_at` (Anteil des
-    /// Lebens) schneller und zwei Sturzflüge hintereinander, ab `summon_at` ruft er Helfer.
+    /// Guardian from the air (R2-M2.1, E-298, E-299): circles above the start point and drops
+    /// projectiles, takes aim at Elora and dives down; afterwards it lies dazed on the
+    /// ground – **only then vulnerable** – and rises again. From `enrage_at` (share of
+    /// health) faster and two dives in a row, from `summon_at` it calls helpers.
     Diver(Box<DiverDef>),
-    /// Steckt im Boden und schießt hoch, wenn Elora näher als `sight` ist (Wurzelschlange,
-    /// R2-M2.2); bleibt `out_ms` draußen – **nur dann verwundbar und gefährlich** – und
-    /// wartet danach mindestens `hide_ms` versteckt.
-    /// Beim Auftauchen wächst sie `rise_ms` lang aus dem Boden (noch harmlos).
+    /// Sits in the ground and shoots up when Elora is closer than `sight` (root snake,
+    /// R2-M2.2); stays out for `out_ms` – **only then vulnerable and dangerous** – and
+    /// afterwards waits hidden for at least `hide_ms`.
+    /// When emerging it grows out of the ground for `rise_ms` (still harmless).
     Burrower {
         sight: f32,
         out_ms: u32,
@@ -108,22 +108,22 @@ pub enum Behavior {
         #[cfg_attr(feature = "serde", serde(default))]
         rise_ms: u32,
     },
-    /// Hüter am Boden (Wurzelwächter, R2-M2.2, E-307): steht, stößt Wurzeln aus dem Boden
-    /// (mit Warnung), Kerne in der Rinde lassen sich per Tauziehen mit dem Hook lösen –
-    /// **nur dann verwundbar**. Ab `enrage_at` schneller und mit Wurzelwänden, beim letzten
-    /// Kern Wurzeln an zwei Stellen.
+    /// Guardian on the ground (Root Warden, R2-M2.2, E-307): stands, thrusts roots out of the
+    /// ground (with a warning), cores in the bark can be pulled loose with the hook in a tug of
+    /// war – **only then vulnerable**. From `enrage_at` faster and with root walls, at the last
+    /// core roots at two spots.
     Warden(Box<WardenDef>),
-    /// Begleiter (Pilzkind, E-308): folgt Elora am Boden, springt über Stufen, wartet an
-    /// Lücken und Gefahren; unverwundbar und harmlos.
+    /// Companion (mushroom child, E-308): follows Elora on the ground, jumps over steps, waits
+    /// at gaps and hazards; invulnerable and harmless.
     Follower { speed: f32, jump: f32 },
-    /// Hüter im Sand (Sandschlange, R2-M2.3, E-316): zieht als Sandspur zu Elora, der Sand
-    /// bebt, dann schießt sie im Bogen heraus und liegt nach der Landung benommen am Boden –
-    /// **nur im Bogen und benommen verwundbar**. Ab `enrage_at` schneller und Treibsand im
-    /// Kessel, ab `double_at` zwei Bögen hintereinander. Stampfen trifft doppelt.
+    /// Guardian in the sand (Sand Serpent, R2-M2.3, E-316): moves towards Elora as a sand trail,
+    /// the sand quakes, then it shoots out in an arc and lies dazed on the ground after landing –
+    /// **vulnerable only in the arc and while dazed**. From `enrage_at` faster and quicksand in
+    /// the basin, from `double_at` two arcs in a row. Stomp hits twice.
     Serpent(Box<SerpentDef>),
-    /// Wandert unter dem Sand (nur die Sandspur ist zu sehen) auf Elora zu, kündigt sich
-    /// `warn_ms` lang an und springt im Bogen auf sie zu (Dünenwurm, R2-M2.3); nach der
-    /// Landung taucht er ein und ruht `rest_ms`. **Nur im Sprung verwundbar und gefährlich.**
+    /// Travels under the sand (only the sand trail is visible) towards Elora, announces itself
+    /// for `warn_ms` and leaps at her in an arc (dune worm, R2-M2.3); after landing
+    /// it dives in and rests for `rest_ms`. **Vulnerable and dangerous only mid-leap.**
     Leaper {
         sight: f32,
         speed: f32,
@@ -132,19 +132,19 @@ pub enum Behavior {
         jump_y: f32,
         rest_ms: u32,
     },
-    /// Eiszapfen an der Decke (R2-M2.4, E-343): hängt harmlos, zittert `warn_ms` lang, sobald
-    /// Elora darunter ist (waagerecht bis `sight`, senkrecht bis `reach`, freie Sicht), fällt
-    /// dann und zerschellt am Boden oder an Elora. **Nur im Fall gefährlich.**
+    /// Icicle on the ceiling (R2-M2.4, E-343): hangs harmlessly, trembles for `warn_ms` as soon
+    /// as Elora is below it (horizontally up to `sight`, vertically up to `reach`, clear line of
+    /// sight), then falls and shatters on the ground or on Elora. **Dangerous only while falling.**
     Icicle {
         sight: f32,
         reach: f32,
         warn_ms: u32,
     },
-    /// Schneebrocken einer Lawine (R2-M2.4): rollt mit `speed` in Blickrichtung hangabwärts
-    /// und zerplatzt an einer Wand, an Elora oder nach `life_ms`.
+    /// Snow chunk of an avalanche (R2-M2.4): rolls downhill with `speed` in its facing direction
+    /// and bursts at a wall, on Elora or after `life_ms`.
     Roller { speed: f32, life_ms: u32 },
-    /// Schneeballrobbe (R2-M2.4): rutscht auf dem Bauch mit `speed` heran, bis Elora näher als
-    /// `range` ist, richtet sich auf und wirft alle `interval_ms` einen Schneeball im Bogen.
+    /// Snowball seal (R2-M2.4): slides closer on its belly with `speed` until Elora is closer
+    /// than `range`, rears up and throws a snowball in an arc every `interval_ms`.
     Seal {
         sight: f32,
         speed: f32,
@@ -153,83 +153,83 @@ pub enum Behavior {
         shot_speed: f32,
         shot_damage: i32,
     },
-    /// Eisspitzen-Fledermaus (R2-M2.4): hängt schlafend an der Decke, stürzt mit `speed` auf
-    /// Elora herab, sobald sie darunter ist (wie beim Eiszapfen), und flattert zurück.
+    /// Ice-spike bat (R2-M2.4): hangs asleep from the ceiling, swoops down on Elora with `speed`
+    /// as soon as she is below it (like the icicle), and flutters back.
     Bat { sight: f32, reach: f32, speed: f32 },
-    /// Frostgeist (R2-M2.4, D-M24-07): schwebt mit `speed` durch Wände auf Elora zu; nach
-    /// einer Berührung (Erstarren über `freeze_ms` der Art) weicht er `flee_ms` lang zurück.
+    /// Frost ghost (R2-M2.4, D-M24-07): floats through walls towards Elora with `speed`; after
+    /// a touch (freezing for the kind's `freeze_ms`) it retreats for `flee_ms`.
     Ghost {
         sight: f32,
         speed: f32,
         flee_ms: u32,
     },
-    /// Hüterin der Frostspitzen (Eiskönigin Kristella, R2-M2.4, E-341): schwebt über der
-    /// Halle und zieht Frostwellen über den Boden (frischer Frost schadet, wer an der Wand
-    /// hängt oder springt, bleibt heil); nach `waves` Wellen sinkt sie erschöpft herab –
-    /// **nur dann verwundbar**. Ab `enrage_at` Wellen von beiden Seiten und Eiszapfen, ab
-    /// `storm_at` ein Schneesturm in der Halle.
+    /// Guardian of Frostspitzen (Ice Queen Kristella, R2-M2.4, E-341): floats above the
+    /// hall and sends frost waves across the floor (fresh frost hurts, whoever hangs on the
+    /// wall or jumps stays unharmed); after `waves` waves she sinks down exhausted –
+    /// **only then vulnerable**. From `enrage_at` waves from both sides and icicles, from
+    /// `storm_at` a blizzard in the hall.
     Queen(Box<QueenDef>),
 }
 
-/// Werte der Hüterin der Frostspitzen ([`Behavior::Queen`]).
+/// Values of the guardian of Frostspitzen ([`Behavior::Queen`]).
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct QueenDef {
-    /// Wacht auf, sobald Elora so nah ist.
+    /// Wakes up as soon as Elora is this close.
     pub sight: f32,
-    /// Breite der Halle (Wellen laufen von Rand zu Rand, Mitte = Startpunkt).
+    /// Width of the hall (waves run from edge to edge, center = start point).
     pub width: f32,
-    /// Schweben zwischen zwei Wellen.
+    /// Hovering between two waves.
     pub hover_ms: u32,
-    /// Wellen bis zur Erschöpfung.
+    /// Waves until exhaustion.
     pub waves: u32,
-    /// Tempo der Wellenfront (Einheiten/Tick) und Länge des frischen Frosts dahinter.
+    /// Speed of the wave front (units/tick) and length of the fresh frost behind it.
     pub wave_speed: f32,
     pub fresh_len: f32,
     pub wave_damage: i32,
-    /// Erschöpft am Boden: verwundbar.
+    /// Exhausted on the ground: vulnerable.
     pub stun_ms: u32,
-    /// Ab diesem Anteil des Lebens wütend: Wellen abwechselnd von beiden Seiten, dazwischen
-    /// `icicles` Eiszapfen über Elora; 0 = nie.
+    /// Enraged from this share of health: waves alternating from both sides, in between
+    /// `icicles` icicles above Elora; 0 = never.
     #[cfg_attr(feature = "serde", serde(default))]
     pub enrage_at: f32,
     #[cfg_attr(feature = "serde", serde(default))]
     pub icicles: u32,
-    /// Ab diesem Anteil des Lebens Schneesturm in der Halle (die Sitzung setzt das Wetter).
+    /// Blizzard in the hall from this share of health (the session sets the weather).
     #[cfg_attr(feature = "serde", serde(default))]
     pub storm_at: f32,
-    /// Nach so vielen Treffern in einer Erschöpfung steigt sie sofort wieder auf (0 = nie).
+    /// After this many hits during one exhaustion she rises again immediately (0 = never).
     #[cfg_attr(feature = "serde", serde(default))]
     pub open_hits: u32,
 }
 
-/// Werte des Hüters aus der Luft ([`Behavior::Diver`]).
+/// Values of the guardian from the air ([`Behavior::Diver`]).
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct DiverDef {
-    /// Wacht auf, sobald Elora so nah ist.
+    /// Wakes up as soon as Elora is this close.
     pub sight: f32,
-    /// Kreis über dem Startpunkt: halbe Breite und Höhe, Tempo (Einheiten/Tick).
+    /// Circle above the start point: half width and height, speed (units/tick).
     pub circle: [f32; 2],
     pub speed: f32,
-    /// So lange kreisen, bevor er anvisiert.
+    /// Circle this long before taking aim.
     pub circle_ms: u32,
-    /// Warnung vor dem Sturzflug (bleibt stehen und zittert).
+    /// Warning before the dive (stands still and trembles).
     pub aim_ms: u32,
     pub dive_speed: f32,
-    /// Benommen am Boden.
+    /// Dazed on the ground.
     pub stun_ms: u32,
-    /// Geschosse beim Kreisen (fallen nach unten); 0 = keine.
+    /// Projectiles while circling (fall downwards); 0 = none.
     #[cfg_attr(feature = "serde", serde(default))]
     pub drop_ms: u32,
     #[cfg_attr(feature = "serde", serde(default))]
     pub drop_speed: f32,
     #[cfg_attr(feature = "serde", serde(default))]
     pub drop_damage: i32,
-    /// Ab diesem Anteil des Lebens wütend (1,35-faches Tempo, doppelter Sturzflug); 0 = nie.
+    /// Enraged from this share of health (1.35× speed, double dive); 0 = never.
     #[cfg_attr(feature = "serde", serde(default))]
     pub enrage_at: f32,
-    /// Ab diesem Anteil des Lebens ruft er `summon` (Art), höchstens `summon_max` zugleich.
+    /// From this share of health it calls `summon` (kind), at most `summon_max` at once.
     #[cfg_attr(feature = "serde", serde(default))]
     pub summon_at: f32,
     #[cfg_attr(feature = "serde", serde(default))]
@@ -240,28 +240,28 @@ pub struct DiverDef {
     pub summon_ms: u32,
 }
 
-/// Werte des Hüters am Boden ([`Behavior::Warden`]).
+/// Values of the guardian on the ground ([`Behavior::Warden`]).
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct WardenDef {
-    /// Wacht auf, sobald Elora so nah ist.
+    /// Wakes up as soon as Elora is this close.
     pub sight: f32,
-    /// Abstand der Wurzelstöße und Warnzeit davor (Boden bebt).
+    /// Interval of the root thrusts and warning time before them (ground quakes).
     pub attack_ms: u32,
     pub warn_ms: u32,
-    /// Wurzelstoß: Breite und Höhe der Trefferzone, Schaden.
+    /// Root thrust: width and height of the hit zone, damage.
     pub spike_width: f32,
     pub spike_height: f32,
     pub spike_damage: i32,
-    /// So lange vom Wächter weg ziehen, bis ein Kern sich löst; so lange ist er dann offen.
+    /// Pull away from the warden this long until a core comes loose; it is then open this long.
     pub pull_ms: u32,
     pub open_ms: u32,
-    /// Kerne in der Rinde (wachsen nach, wenn alle gezogen sind).
+    /// Cores in the bark (grow back once all are pulled).
     pub cores: u32,
-    /// Ab diesem Anteil des Lebens wütend: schneller, Wurzelwände; 0 = nie.
+    /// Enraged from this share of health: faster, root walls; 0 = never.
     #[cfg_attr(feature = "serde", serde(default))]
     pub enrage_at: f32,
-    /// Wurzelwand: alle `wall_every_ms`, steht `wall_ms`, so viele Tiles hoch.
+    /// Root wall: every `wall_every_ms`, stands for `wall_ms`, this many tiles high.
     #[cfg_attr(feature = "serde", serde(default))]
     pub wall_every_ms: u32,
     #[cfg_attr(feature = "serde", serde(default))]
@@ -270,144 +270,144 @@ pub struct WardenDef {
     pub wall_height: u32,
 }
 
-/// Werte des Hüters im Sand ([`Behavior::Serpent`]).
+/// Values of the guardian in the sand ([`Behavior::Serpent`]).
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct SerpentDef {
-    /// Wacht auf, sobald Elora so nah ist.
+    /// Wakes up as soon as Elora is this close.
     pub sight: f32,
-    /// Tempo der Sandspur (Einheiten/Tick) und Mindestzeit unter dem Sand.
+    /// Speed of the sand trail (units/tick) and minimum time under the sand.
     pub speed: f32,
     pub trail_ms: u32,
-    /// Sand bebt so lange, bevor sie herausschießt.
+    /// Sand quakes this long before it shoots out.
     pub warn_ms: u32,
-    /// Sprung: waagerecht (zur Mitte des Kessels) und nach oben.
+    /// Leap: horizontal (towards the center of the basin) and upwards.
     pub jump_x: f32,
     pub jump_y: f32,
-    /// Benommen am Boden nach der Landung.
+    /// Dazed on the ground after landing.
     pub stun_ms: u32,
-    /// Ab diesem Anteil des Lebens wütend: schneller, Treibsand im Kessel; 0 = nie.
+    /// Enraged from this share of health: faster, quicksand in the basin; 0 = never.
     #[cfg_attr(feature = "serde", serde(default))]
     pub enrage_at: f32,
-    /// Ab diesem Anteil des Lebens zwei Bögen hintereinander; 0 = nie.
+    /// Two arcs in a row from this share of health; 0 = never.
     #[cfg_attr(feature = "serde", serde(default))]
     pub double_at: f32,
-    /// Treibsand: alle `sand_every_ms` für `sand_ms`, so viele Tiles breit.
+    /// Quicksand: every `sand_every_ms` for `sand_ms`, this many tiles wide.
     #[cfg_attr(feature = "serde", serde(default))]
     pub sand_every_ms: u32,
     #[cfg_attr(feature = "serde", serde(default))]
     pub sand_ms: u32,
     #[cfg_attr(feature = "serde", serde(default))]
     pub sand_width: u32,
-    /// Nach so vielen Treffern in einer Öffnung taucht sie sofort ab (0 = nie).
+    /// After this many hits during one opening it dives immediately (0 = never).
     #[cfg_attr(feature = "serde", serde(default))]
     pub open_hits: u32,
-    /// Landung schleudert Sand: Schaden im Umkreis (Einheiten, 0 = aus).
+    /// Landing flings sand: damage in the radius (units, 0 = off).
     #[cfg_attr(feature = "serde", serde(default))]
     pub land_damage: i32,
     #[cfg_attr(feature = "serde", serde(default))]
     pub land_radius: f32,
 }
 
-/// Zustand des Hüters im Sand (in [`Creature::mode`]).
+/// State of the guardian in the sand (in [`Creature::mode`]).
 pub mod serpent {
     pub const SLEEP: u8 = 0;
-    /// Unter dem Sand, nur die Spur ist zu sehen.
+    /// Under the sand, only the trail is visible.
     pub const TRAIL: u8 = 1;
-    /// Sand bebt an [`super::Creature::goal`].
+    /// Sand quakes at [`super::Creature::goal`].
     pub const WARN: u8 = 2;
-    /// Im Bogen durch die Luft: gefährlich und verwundbar.
+    /// In an arc through the air: dangerous and vulnerable.
     pub const LEAP: u8 = 3;
-    /// Benommen am Boden: verwundbar.
+    /// Dazed on the ground: vulnerable.
     pub const STUNNED: u8 = 4;
 }
 
-/// Zustand des Hüters am Boden (in [`Creature::mode`]).
+/// State of the guardian on the ground (in [`Creature::mode`]).
 pub mod warden {
     pub const SLEEP: u8 = 0;
     pub const IDLE: u8 = 1;
-    /// Boden bebt an [`super::Creature::goal`], gleich kommt der Wurzelstoß.
+    /// Ground quakes at [`super::Creature::goal`], the root thrust is about to come.
     pub const WARN: u8 = 2;
-    /// Ein Kern ist gezogen: verwundbar.
+    /// A core is pulled: vulnerable.
     pub const OPEN: u8 = 3;
 }
 
-/// Zustand eines Hüters aus der Luft (in [`Creature::mode`]).
+/// State of a guardian from the air (in [`Creature::mode`]).
 pub mod diver {
-    /// Wartet, bis Elora kommt.
+    /// Waits until Elora comes.
     pub const SLEEP: u8 = 0;
     pub const CIRCLE: u8 = 1;
     pub const AIM: u8 = 2;
     pub const DIVE: u8 = 3;
-    /// Benommen am Boden: verwundbar.
+    /// Dazed on the ground: vulnerable.
     pub const STUNNED: u8 = 4;
-    /// Steigt zurück zum Kreis.
+    /// Rises back to the circle.
     pub const RISE: u8 = 5;
 }
 
-/// Zustand der Wurzelschlange (in [`Creature::mode`]).
+/// State of the root snake (in [`Creature::mode`]).
 pub mod burrow {
     pub const HIDDEN: u8 = 0;
     pub const OUT: u8 = 1;
-    /// Wächst gerade aus dem Boden (harmlos, nicht verwundbar).
+    /// Currently growing out of the ground (harmless, not vulnerable).
     pub const RISING: u8 = 2;
 }
 
-/// Zustand des Dünenwurms (in [`Creature::mode`]).
+/// State of the dune worm (in [`Creature::mode`]).
 pub mod leaper {
-    /// Unter dem Sand: harmlos, unverwundbar.
+    /// Under the sand: harmless, invulnerable.
     pub const UNDER: u8 = 0;
-    /// Sand bebt, gleich springt er.
+    /// Sand quakes, it is about to leap.
     pub const WARN: u8 = 1;
-    /// Im Sprung: gefährlich und verwundbar.
+    /// Mid-leap: dangerous and vulnerable.
     pub const LEAP: u8 = 2;
 }
 
-/// Zustand eines Eiszapfens (in [`Creature::mode`]).
+/// State of an icicle (in [`Creature::mode`]).
 pub mod icicle {
     pub const HANG: u8 = 0;
-    /// Zittert: gleich fällt er.
+    /// Trembles: about to fall.
     pub const SHAKE: u8 = 1;
-    /// Fällt: gefährlich.
+    /// Falling: dangerous.
     pub const FALL: u8 = 2;
 }
 
-/// Zustand der Schneeballrobbe (in [`Creature::mode`]).
+/// State of the snowball seal (in [`Creature::mode`]).
 pub mod seal {
     pub const SLIDE: u8 = 0;
-    /// Aufgerichtet, wirft.
+    /// Reared up, throws.
     pub const THROW: u8 = 1;
 }
 
-/// Zustand der Eisspitzen-Fledermaus (in [`Creature::mode`]).
+/// State of the ice-spike bat (in [`Creature::mode`]).
 pub mod bat {
-    /// Schläft an der Decke: harmlos.
+    /// Sleeps on the ceiling: harmless.
     pub const HANG: u8 = 0;
     pub const DIVE: u8 = 1;
     pub const RETURN: u8 = 2;
 }
 
-/// Zustand der Hüterin der Frostspitzen (in [`Creature::mode`]); die Wellenfront steht in
-/// [`Creature::goal`] (x = Front, y = Boden der Halle), die Richtung in `facing`.
+/// State of the guardian of Frostspitzen (in [`Creature::mode`]); the wave front is stored in
+/// [`Creature::goal`] (x = front, y = floor of the hall), the direction in `facing`.
 pub mod queen {
     pub const SLEEP: u8 = 0;
     pub const HOVER: u8 = 1;
-    /// Frostwelle läuft über den Boden.
+    /// Frost wave runs across the floor.
     pub const WAVE: u8 = 2;
-    /// Erschöpft herabgesunken: verwundbar.
+    /// Sunk down exhausted: vulnerable.
     pub const TIRED: u8 = 3;
-    /// Steigt zurück.
+    /// Rises back up.
     pub const RISE: u8 = 4;
 }
 
-/// Zustand des Frostgeists (in [`Creature::mode`]).
+/// State of the frost ghost (in [`Creature::mode`]).
 pub mod ghost {
     pub const CHASE: u8 = 0;
-    /// Weicht nach einer Berührung zurück: harmlos.
+    /// Retreats after a touch: harmless.
     pub const FLEE: u8 = 1;
 }
 
-/// Eintrag der Beutetabelle: `min`–`max` Stück mit Wahrscheinlichkeit `chance`.
+/// Entry of the loot table: `min`–`max` pieces with probability `chance`.
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LootEntry {
@@ -423,42 +423,42 @@ fn one() -> f32 {
     1.0
 }
 
-/// Ein lebender Gegner.
+/// A living enemy.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Creature {
-    /// Fest für die Lebensdauer der Welt (Hook, Grafik, Ereignisse).
+    /// Fixed for the lifetime of the world (hook, graphics, events).
     pub id: u32,
-    /// Index in [`crate::World::creature_kinds`].
+    /// Index into [`crate::World::creature_kinds`].
     pub kind: usize,
     pub pos: Vec2,
     pub vel: Vec2,
     pub home: Vec2,
     pub health: i32,
-    /// Blickrichtung: -1 links, 1 rechts.
+    /// Facing direction: -1 left, 1 right.
     pub facing: i8,
-    /// Zähler des Verhaltens (Warten, Nachladen).
+    /// Counter of the behavior (waiting, reloading).
     pub timer: u32,
-    /// Betäubt (Ticks, Stampfen A-14).
+    /// Stunned (ticks, stomp A-14).
     pub stun: u32,
-    /// Tick des letzten Treffers (Lebensbalken, E-238).
+    /// Tick of the last hit (health bar, E-238).
     pub hit_tick: Option<u64>,
     pub grounded: bool,
-    /// Zustand mehrstufiger Verhalten (Hüter, [`diver`]).
+    /// State of multi-stage behaviors (guardians, [`diver`]).
     pub mode: u8,
-    /// Ziel des Verhaltens (Sturzflug-Richtung).
+    /// Target of the behavior (dive direction).
     pub goal: Vec2,
-    /// Zähler im Zustand (Sturzflüge hintereinander, Winkel beim Kreisen in 1/1000;
-    /// beim Wurzelwächter: verbleibende Kerne).
+    /// Counter within the state (dives in a row, angle while circling in 1/1000;
+    /// for the Root Warden: remaining cores).
     pub count: u32,
-    /// Tauziehen am Wurzelwächter (Ticks) und Takt der Wurzelwände.
+    /// Tug of war on the Root Warden (ticks) and timing of the root walls.
     pub tug: u32,
     pub wall_timer: u32,
-    /// Treffer seit der letzten Öffnung (Sandschlange: taucht nach `open_hits` ab).
+    /// Hits since the last opening (Sand Serpent: dives after `open_hits`).
     pub hits: u32,
 }
 
 impl Creature {
-    /// Kann der Gegner gerade Schaden nehmen? Hüter aus der Luft nur benommen (E-299).
+    /// Can the enemy take damage right now? Guardians from the air only when dazed (E-299).
     pub fn vulnerable(&self, kind: &CreatureKind) -> bool {
         match kind.behavior {
             Behavior::Diver(_) => self.mode == diver::STUNNED,
@@ -472,7 +472,7 @@ impl Creature {
         }
     }
 
-    /// Schadet die Berührung gerade? (Wurzelschlange nur draußen, Begleiter nie.)
+    /// Does contact hurt right now? (Root snake only when out, companion never.)
     pub fn harmful(&self, kind: &CreatureKind) -> bool {
         match kind.behavior {
             Behavior::Diver(_) => self.mode != diver::STUNNED,
@@ -489,7 +489,7 @@ impl Creature {
         }
     }
 
-    /// Zerschellt bei Berührung (Eiszapfen, Schneebrocken)?
+    /// Shatters on contact (icicle, snow chunk)?
     pub fn shatters(kind: &CreatureKind) -> bool {
         matches!(
             kind.behavior,
@@ -497,7 +497,7 @@ impl Creature {
         )
     }
 
-    /// Kann der Hook ihn greifen? (Versteckte Schlangen und Begleiter nicht.)
+    /// Can the hook grab it? (Hidden snakes and companions cannot.)
     pub fn hookable(&self, kind: &CreatureKind) -> bool {
         match kind.behavior {
             Behavior::Burrower { .. } => self.mode == burrow::OUT,
@@ -511,14 +511,14 @@ impl Creature {
         }
     }
 
-    /// Prallt ein Treffer aus Richtung `src` am Panzer ab? Nur Treffer von oben wirken
-    /// (E-317); ohne Richtung (Stampfen, Werkzeuge) immer.
+    /// Does a hit from direction `src` bounce off the shell? Only hits from above take effect
+    /// (E-317); without a direction (stomp, tools) always.
     pub fn armor_blocks(&self, kind: &CreatureKind, src: Option<Vec2>) -> bool {
         kind.armor && src.is_some_and(|p| p.y > self.pos.y - kind.size[1] / 2.0)
     }
 }
 
-/// Geschoss eines Gegners (z. B. Pollenkugel): fliegt gerade.
+/// Projectile of an enemy (e.g. pollen ball): flies straight.
 #[derive(Debug, Clone, PartialEq)]
 pub struct CreatureShot {
     pub owner: u32,
@@ -526,15 +526,15 @@ pub struct CreatureShot {
     pub vel: Vec2,
     pub damage: i32,
     pub ticks: u32,
-    /// Schwerkraft je Tick (0 = fliegt gerade; Nüsse im Bogen).
+    /// Gravity per tick (0 = flies straight; nuts in an arc).
     pub gravity: f32,
-    /// Glüht nach der Landung noch so viele Ticks am Boden (Funken, 0 = verschwindet).
+    /// Keeps glowing on the ground for this many ticks after landing (sparks, 0 = vanishes).
     pub glow: u32,
-    /// Liegt glühend am Boden.
+    /// Lies glowing on the ground.
     pub landed: bool,
 }
 
-/// Herumliegende Beute (E-236).
+/// Loot lying around (E-236).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Loot {
     pub id: u32,
@@ -542,22 +542,22 @@ pub struct Loot {
     pub count: u32,
     pub pos: Vec2,
     pub vel: Vec2,
-    /// Alter in Ticks (erst nach kurzer Zeit einsammelbar).
+    /// Age in ticks (can only be collected after a short time).
     pub age: u32,
 }
 
-/// Ziel für den Hook (Kreaturen aus Sicht einer Figur).
+/// Target for the hook (creatures from a character's point of view).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct HookTarget {
     pub id: u32,
     pub pos: Vec2,
     pub radius: f32,
     pub small: bool,
-    /// Fest verankert (Wurzelwächter): der Hook hält, zieht Elora aber nicht hin.
+    /// Firmly anchored (Root Warden): the hook holds, but does not pull Elora there.
     pub anchor: bool,
 }
 
-/// Fester Pseudo-Zufall (splitmix64) – gleiche Eingabe, gleiches Ergebnis.
+/// Fixed pseudo-random generator (splitmix64) – same input, same result.
 pub(crate) fn rng(seed: u64) -> u64 {
     let mut z = seed.wrapping_add(0x9e37_79b9_7f4a_7c15);
     z = (z ^ (z >> 30)).wrapping_mul(0xbf58_476d_1ce4_e5b9);
@@ -565,23 +565,23 @@ pub(crate) fn rng(seed: u64) -> u64 {
     z ^ (z >> 31)
 }
 
-/// Zufallszahl 0..1 aus einem Startwert.
+/// Random number 0..1 from a seed.
 #[allow(clippy::cast_precision_loss)]
 pub(crate) fn rng_f32(seed: u64) -> f32 {
     (rng(seed) >> 40) as f32 / (1u64 << 24) as f32
 }
 
-/// Datei der Gegnerarten (`assets/adventure/creatures.toml`).
+/// File of the enemy kinds (`assets/adventure/creatures.toml`).
 #[cfg(feature = "serde")]
 #[derive(serde::Deserialize)]
 struct KindsFile {
     creature: Vec<CreatureKind>,
 }
 
-/// Liest Gegnerarten aus TOML.
+/// Reads enemy kinds from TOML.
 ///
 /// # Errors
-/// Bei ungültigem TOML oder fehlenden Feldern.
+/// On invalid TOML or missing fields.
 #[cfg(feature = "serde")]
 pub fn kinds_from_toml(src: &str) -> Result<Vec<CreatureKind>, String> {
     toml::from_str::<KindsFile>(src)

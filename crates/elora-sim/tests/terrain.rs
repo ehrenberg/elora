@@ -1,4 +1,4 @@
-//! Gelände der Frostspitzen (R2-M2.4, E-343): dünnes Eis, Eiswasser, Eiszapfen, Schneebrocken.
+//! Frostspitzen terrain (R2-M2.4, E-343): thin ice, ice water, icicles, snow chunks.
 
 use elora_sim::creature::icicle;
 use elora_sim::{
@@ -27,7 +27,7 @@ fn kind(name: &str, size: [f32; 2], behavior: Behavior) -> CreatureKind {
     }
 }
 
-/// Abenteuer-Arena mit Boden in Zeile 28 und Wänden; `edit` setzt weitere Tiles.
+/// Adventure arena with floor in row 28 and walls; `edit` sets further tiles.
 fn world(edit: impl FnOnce(&mut Vec<Tile>)) -> World {
     let mut tiles = vec![Tile::Air; W * H];
     for x in 0..W {
@@ -67,13 +67,13 @@ fn set(tiles: &mut [Tile], x: usize, y: usize, t: Tile) {
     tiles[y * W + x] = t;
 }
 
-/// Schneebrocken (36 hoch) auf dem Boden in Spalte `tx`.
+/// Snow chunk (36 high) on the floor in column `tx`.
 fn rock_at(tx: usize) -> Vec2 {
     #[allow(clippy::cast_precision_loss)]
     Vec2::new(tx as f32 * 32.0 + 16.0, FLOOR as f32 * 32.0 - 19.0)
 }
 
-/// Mitte über Tile-Spalte `tx`, stehend auf Zeile `row`.
+/// Centre above tile column `tx`, standing on row `row`.
 fn standing(tx: usize, row: usize) -> Vec2 {
     #[allow(clippy::cast_precision_loss)]
     Vec2::new(tx as f32 * 32.0 + 16.0, row as f32 * 32.0 - 15.0)
@@ -105,7 +105,7 @@ fn health(w: &World) -> i32 {
 
 #[test]
 fn thin_ice_cracks_breaks_and_grows_back() {
-    // Steg aus dünnem Eis in Zeile 20 über Luft
+    // walkway of thin ice in row 20 over air
     let mut w = world(|t| (20..26).for_each(|x| set(t, x, 20, Tile::ThinIce)));
     spawn(&mut w, standing(22, 20), Abilities::NONE);
     let ev = run(&mut w, idle(), 10);
@@ -123,7 +123,7 @@ fn thin_ice_cracks_breaks_and_grows_back() {
     );
     assert_eq!(w.collision.tile(22, 20), Tile::Air);
     assert_eq!(w.collision.tile(25, 20), Tile::ThinIce, "nur unter Elora");
-    // Elora fällt hindurch, das Eis wächst nach A-37 nach
+    // Elora falls through, the ice grows back after A-37
     run(&mut w, idle(), 60);
     assert!(w.character(0).unwrap().core.pos.y > 27.0 * 32.0);
     let regrow = elora_sim::tuning::ms_to_ticks(Tuning::default().thin_ice_regrow);
@@ -140,7 +140,7 @@ fn thin_ice_does_not_grow_back_into_elora() {
     w.temp_tiles.push((22, 27, Tile::ThinIce, 5));
     run(&mut w, idle(), 20);
     assert_eq!(w.collision.tile(22, 27), Tile::Air, "Elora steht darin");
-    // weg da: jetzt wächst es zu
+    // out of the way: now it closes up
     let right = PlayerInput {
         direction: 1,
         ..idle()
@@ -153,7 +153,7 @@ fn thin_ice_does_not_grow_back_into_elora() {
 #[test]
 fn stomp_breaks_thin_ice_at_once() {
     let mut w = world(|t| (20..26).for_each(|x| set(t, x, 20, Tile::ThinIce)));
-    // ohne Stampfen hält das Eis hier ewig
+    // without a stomp the ice holds here forever
     w.tuning.thin_ice_break = 1_000_000;
     spawn(
         &mut w,
@@ -175,7 +175,7 @@ fn stomp_breaks_thin_ice_at_once() {
 
 #[test]
 fn ice_water_hurts_and_returns_elora_to_the_edge() {
-    // Becken aus Eiswasser in Zeile 26–27, Elora läuft hinein
+    // pool of ice water in rows 26–27, Elora walks in
     let mut w = world(|t| {
         for x in 30..36 {
             set(t, x, 28, Tile::Air);
@@ -208,14 +208,14 @@ fn ice_water_hurts_and_returns_elora_to_the_edge() {
 fn icicle_shakes_falls_hurts_and_shatters() {
     let mut w = world(|t| (0..W).for_each(|x| set(t, x, 18, Tile::Solid)));
     spawn(&mut w, standing(40, 28), Abilities::NONE);
-    // Zapfen hängt unter der Decke (Zeile 18) über Spalte 20 – Elora ist weit weg
+    // icicle hangs under the ceiling (row 18) above column 20 – Elora is far away
     let id = w
         .add_creature(0, Vec2::new(20.0 * 32.0 + 16.0, 19.0 * 32.0 + 24.0))
         .unwrap();
     run(&mut w, idle(), 50);
     let c = w.creatures.iter().find(|c| c.id == id).unwrap();
     assert_eq!(c.mode, icicle::HANG, "hängt, solange niemand darunter ist");
-    // Elora steht darunter
+    // Elora stands beneath it
     let before = health(&w);
     w.spawn_character(0, standing(20, 28));
     w.character_mut(0).unwrap().invulnerable_until = 0;
@@ -243,7 +243,7 @@ fn icicle_can_be_dodged() {
         .unwrap();
     run(&mut w, idle(), 10);
     let before = health(&w);
-    // drunter durchlaufen
+    // walk through underneath
     let right = PlayerInput {
         direction: 1,
         ..idle()
@@ -259,7 +259,7 @@ fn icicle_can_be_dodged() {
 
 #[test]
 fn snow_rock_rolls_downhill_and_bursts_at_a_wall() {
-    // Wand bei Spalte 50
+    // wall at column 50
     let mut w = world(|t| (20..28).for_each(|y| set(t, 50, y, Tile::Solid)));
     spawn(&mut w, standing(5, 28), Abilities::NONE);
     let id = w.add_creature(1, rock_at(30)).unwrap();
