@@ -17,7 +17,7 @@ tracing.workspace = true
 
 [features]
 default = ["playback"]
-# Wiedergabe mit kira (Audiogerät); ohne: nur Generator, Zuordnung und WAV-Export
+# playback with kira (audio device); without: only generator, mapping and WAV export
 playback = ["dep:kira"]
 
 [lints]

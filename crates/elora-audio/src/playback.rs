@@ -1,4 +1,4 @@
-//! Wiedergabe mit kira (Feature `playback`).
+//! Playback with kira (feature `playback`).
 
 use std::collections::BTreeMap;
 use std::sync::Arc;
@@ -11,14 +11,14 @@ use kira::{AudioManager, AudioManagerSettings, Decibels, DefaultBackend, Frame, 
 
 use crate::{AudioSettings, Bank, Cue, SAMPLE_RATE, Sound, spatial};
 
-/// Wiedergabe mit kira.
+/// Playback with kira.
 pub struct Audio {
     manager: Option<AudioManager<DefaultBackend>>,
     sounds: BTreeMap<Sound, StaticSoundData>,
     applied: Option<AudioSettings>,
-    /// Laufende Musik (Schleife) und ihre Lautstärke.
+    /// Running music (loop) and its volume.
     music: Option<(StreamingSoundHandle<FromFileError>, f32)>,
-    /// Umgebungsspur (Wetter, R2-W1): laufende Schleifen je Name mit Lautstärke.
+    /// Ambience track (weather, R2-W1): running loops per name with volume.
     ambience: BTreeMap<String, (StreamingSoundHandle<FromFileError>, f32)>,
 }
 
@@ -41,7 +41,7 @@ fn to_data(samples: &[f32]) -> StaticSoundData {
     }
 }
 
-/// Amplitude 0..1 → Dezibel für kira.
+/// Amplitude 0..1 → decibels for kira.
 fn decibels(amplitude: f32) -> Decibels {
     if amplitude <= 0.001 {
         Decibels::SILENCE
@@ -51,8 +51,8 @@ fn decibels(amplitude: f32) -> Decibels {
 }
 
 impl Audio {
-    /// Erzeugt alle Sounds der Bank und öffnet das Audiogerät. Fehlt ein Gerät,
-    /// bleibt das Spiel stumm (Warnung im Log).
+    /// Creates all sounds of the bank and opens the audio device. Without a device
+    /// the game stays muted (warning in the log).
     pub fn new(bank: &Bank) -> Self {
         let manager = match AudioManager::<DefaultBackend>::new(AudioManagerSettings::default()) {
             Ok(m) => Some(m),
@@ -85,7 +85,7 @@ impl Audio {
         self.manager.is_some()
     }
 
-    /// Gesamtlautstärke übernehmen (nur bei Änderung).
+    /// Applies the master volume (only on change).
     pub fn apply(&mut self, settings: AudioSettings) {
         if self.applied == Some(settings) {
             return;
@@ -101,11 +101,11 @@ impl Audio {
         }
     }
 
-    /// Musik (Ogg Vorbis oder WAV, beim Abspielen entpackt) in Schleife starten, falls noch
-    /// keine läuft; `volume` 0..1 wird bei Änderung sanft nachgeführt.
+    /// Starts music (Ogg Vorbis or WAV, decoded while playing) in a loop if none is
+    /// running yet; `volume` 0..1 is smoothly adjusted on change.
     ///
     /// # Errors
-    /// Die Datei ist keine lesbare Musik (ohne Audiogerät: nie).
+    /// The file is not readable music (without an audio device: never).
     pub fn play_music(&mut self, data: &Arc<[u8]>, volume: f32) -> Result<(), String> {
         let tween = Tween {
             duration: std::time::Duration::from_millis(300),
@@ -126,7 +126,7 @@ impl Audio {
             .loop_region(..)
             .volume(Decibels::SILENCE);
         match manager.play(sound) {
-            // sanft einblenden
+            // fade in smoothly
             Ok(mut handle) => {
                 handle.set_volume(
                     decibels(volume),
@@ -142,7 +142,7 @@ impl Audio {
         Ok(())
     }
 
-    /// Musik ausblenden und beenden.
+    /// Fades out and stops the music.
     pub fn stop_music(&mut self) {
         if let Some((mut handle, _)) = self.music.take() {
             handle.stop(Tween {
@@ -152,11 +152,11 @@ impl Audio {
         }
     }
 
-    /// Umgebungsschleife `name` (zweite Spur neben der Musik, R2-W1) auf `volume` 0..1
-    /// nachführen, weich überblendet; bei 0 ausgeblendet und beendet. Jeden Frame aufrufen.
+    /// Adjusts the ambience loop `name` (second track next to the music, R2-W1) to
+    /// `volume` 0..1 with a soft crossfade; at 0 it is faded out and stopped. Call every frame.
     ///
     /// # Errors
-    /// Die Datei ist keine lesbare Tondatei (ohne Audiogerät: nie).
+    /// The file is not a readable sound file (without an audio device: never).
     pub fn ambience(&mut self, name: &str, data: &Arc<[u8]>, volume: f32) -> Result<(), String> {
         let fade = |ms| Tween {
             duration: std::time::Duration::from_millis(ms),
@@ -192,7 +192,7 @@ impl Audio {
         Ok(())
     }
 
-    /// Alle Umgebungsschleifen ausblenden (Menü, Editor).
+    /// Fades out all ambience loops (menu, editor).
     pub fn stop_ambience(&mut self) {
         let names: Vec<String> = self.ambience.keys().cloned().collect();
         for n in names {
@@ -205,10 +205,10 @@ impl Audio {
         }
     }
 
-    /// Längeren Klang (Donner) einmal abspielen, gestreamt, mit Lautstärke und Panorama.
+    /// Plays a longer sound (thunder) once, streamed, with volume and panning.
     ///
     /// # Errors
-    /// Die Datei ist keine lesbare Tondatei (ohne Audiogerät: nie).
+    /// The file is not a readable sound file (without an audio device: never).
     pub fn play_once(&mut self, data: &Arc<[u8]>, volume: f32, pan: f32) -> Result<(), String> {
         let Some(manager) = &mut self.manager else {
             return Ok(());
@@ -223,7 +223,7 @@ impl Audio {
         Ok(())
     }
 
-    /// Spielt `cue`; räumliche Sounds relativ zu `ear` (Kameramitte).
+    /// Plays `cue`; spatial sounds relative to `ear` (camera center).
     pub fn play(&mut self, cue: &Cue, ear: Vec2) {
         let Some(manager) = &mut self.manager else {
             return;

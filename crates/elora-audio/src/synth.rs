@@ -1,16 +1,16 @@
-//! Prozeduraler Sound-Generator nach dem sfxr-Prinzip (E-081, E-105).
+//! Procedural sound generator following the sfxr principle (E-081, E-105).
 //!
-//! Ein Sound besteht aus einer oder mehreren [`Layer`]n, die gemischt werden. Jede
-//! Schicht ist eine Wellenform mit Tonhöhenverlauf, Lautstärke-Hüllkurve und Filtern.
-//! Alle Werte sind in Sekunden, Hertz bzw. Oktaven – so lassen sie sich in
-//! `assets/sounds/sounds.toml` von Hand einstellen. Gleiche Parameter ergeben
-//! immer denselben Klang (Rauschen mit festem Startwert).
+//! A sound consists of one or more [`Layer`]s that are mixed. Each layer is a
+//! waveform with a pitch curve, a volume envelope and filters. All values are in
+//! seconds, hertz or octaves – so they can be tuned by hand in
+//! `assets/sounds/sounds.toml`. The same parameters always produce the same sound
+//! (noise with a fixed seed).
 
 use serde::{Deserialize, Serialize};
 
-/// Abtastrate der erzeugten Sounds.
+/// Sample rate of the generated sounds.
 pub const SAMPLE_RATE: u32 = 44_100;
-/// Längster erlaubter Sound (Schutz vor Tippfehlern in der Datei).
+/// Longest allowed sound (protection against typos in the file).
 const MAX_SECONDS: f32 = 5.0;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
@@ -21,50 +21,50 @@ pub enum Wave {
     Saw,
     Sine,
     Triangle,
-    /// Rauschen, dessen „Tonhöhe“ die Frequenz bestimmt (wie in sfxr).
+    /// Noise whose "pitch" sets the frequency (as in sfxr).
     Noise,
 }
 
-/// Eine Klangschicht.
+/// One sound layer.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct Layer {
     pub wave: Wave,
-    /// Startfrequenz (Hz).
+    /// Start frequency (Hz).
     pub freq: f32,
-    /// Tonhöhenänderung in Oktaven pro Sekunde (negativ = fällt).
+    /// Pitch change in octaves per second (negative = falling).
     pub slide: f32,
-    /// Änderung von `slide` pro Sekunde.
+    /// Change of `slide` per second.
     pub slide_accel: f32,
-    /// Untergrenze der Frequenz (Hz); darunter endet die Schicht.
+    /// Lower frequency limit (Hz); below it the layer ends.
     pub min_freq: f32,
-    /// Vibrato: Tiefe (Anteil der Frequenz) und Tempo (Hz).
+    /// Vibrato: depth (fraction of the frequency) and rate (Hz).
     pub vibrato: f32,
     pub vibrato_hz: f32,
-    /// Arpeggio: nach `arp_after` s wird die Frequenz mit `arp` multipliziert.
+    /// Arpeggio: after `arp_after` s the frequency is multiplied by `arp`.
     pub arp: f32,
     pub arp_after: f32,
-    /// Wiederholung: Tonhöhe alle `repeat` s zurücksetzen (0 = aus).
+    /// Repeat: reset the pitch every `repeat` s (0 = off).
     pub repeat: f32,
-    /// Hüllkurve (s): Anstieg, Halten, Abklingen; `punch` hebt das Halten an (0..1).
+    /// Envelope (s): attack, sustain, decay; `punch` boosts the sustain (0..1).
     pub attack: f32,
     pub sustain: f32,
     pub punch: f32,
     pub decay: f32,
-    /// Tastverhältnis der Rechteckwelle (0..1) und seine Änderung pro Sekunde.
+    /// Duty cycle of the square wave (0..1) and its change per second.
     pub duty: f32,
     pub duty_sweep: f32,
-    /// Tiefpass (Hz, 0 = aus), Änderung als Faktor pro Sekunde, Resonanz (0..1).
+    /// Low-pass (Hz, 0 = off), change as a factor per second, resonance (0..1).
     pub lowpass: f32,
     pub lowpass_sweep: f32,
     pub resonance: f32,
-    /// Hochpass (Hz, 0 = aus).
+    /// High-pass (Hz, 0 = off).
     pub highpass: f32,
-    /// Lautstärke der Schicht (0..1).
+    /// Volume of the layer (0..1).
     pub volume: f32,
-    /// Verzögerung des Einsatzes (s).
+    /// Delay of the onset (s).
     pub delay: f32,
-    /// Startwert des Rauschens.
+    /// Seed of the noise.
     pub seed: u64,
 }
 
@@ -99,12 +99,12 @@ impl Default for Layer {
 }
 
 impl Layer {
-    /// Dauer inklusive Verzögerung (s).
+    /// Duration including delay (s).
     pub fn duration(&self) -> f32 {
         self.delay + self.attack + self.sustain + self.decay
     }
 
-    /// Lautstärke-Hüllkurve zur Zeit `t` nach dem Einsatz.
+    /// Volume envelope at time `t` after the onset.
     fn envelope(&self, t: f32) -> f32 {
         if t < self.attack {
             t / self.attack.max(1e-6)
@@ -117,7 +117,7 @@ impl Layer {
         }
     }
 
-    /// Schicht in `out` hineinmischen (Mono, [`SAMPLE_RATE`]).
+    /// Mixes the layer into `out` (mono, [`SAMPLE_RATE`]).
     #[allow(
         clippy::cast_precision_loss,
         clippy::cast_possible_truncation,
@@ -145,7 +145,7 @@ impl Layer {
         let mut octave = 0.0_f32;
         let mut duty = self.duty;
         let mut cutoff = self.lowpass;
-        // Zustand der Filter: Zustandsvariablen-Tiefpass und einpoliger Hochpass
+        // Filter state: state-variable low-pass and one-pole high-pass
         let (mut low, mut band) = (0.0_f32, 0.0_f32);
         let (mut hp_prev_in, mut hp_prev_out) = (0.0_f32, 0.0_f32);
 
@@ -182,7 +182,7 @@ impl Layer {
             }
             duty = (duty + self.duty_sweep * dt).clamp(0.02, 0.98);
             let sample = match self.wave {
-                // mittelwertfrei: bei jedem Tastverhältnis ohne Gleichanteil
+                // zero-mean: no DC offset at any duty cycle
                 Wave::Square => {
                     if phase < duty {
                         1.0 - duty
@@ -221,7 +221,7 @@ impl Layer {
     }
 }
 
-/// Ein Sound aus Schichten mit Gesamtlautstärke.
+/// A sound made of layers with an overall volume.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct SoundDef {
@@ -248,7 +248,7 @@ impl SoundDef {
             .min(MAX_SECONDS)
     }
 
-    /// Erzeugt die Samples (Mono, [`SAMPLE_RATE`], Werte in −1..1).
+    /// Produces the samples (mono, [`SAMPLE_RATE`], values in −1..1).
     #[allow(
         clippy::cast_precision_loss,
         clippy::cast_possible_truncation,
@@ -261,7 +261,7 @@ impl SoundDef {
             layer.render_into(&mut out);
         }
         for s in &mut out {
-            // weich begrenzen, damit laute Schichten nicht hart übersteuern
+            // soft clipping so that loud layers do not clip hard
             *s = (*s * self.volume).tanh();
         }
         out
@@ -285,7 +285,7 @@ mod tests {
         }
     }
 
-    /// Nulldurchgänge pro Sekunde ≈ 2 × Frequenz.
+    /// Zero crossings per second ≈ 2 × frequency.
     #[allow(clippy::cast_precision_loss)]
     fn crossings_per_second(s: &[f32]) -> f32 {
         let n = s
@@ -313,15 +313,15 @@ mod tests {
         let s = d.render();
         #[allow(clippy::cast_precision_loss)]
         let mean = s.iter().sum::<f32>() / s.len() as f32;
-        // ohne Ausgleich wären es −0.3; ein kleiner Rest entsteht durch die weiche
-        // Begrenzung (tanh) der unsymmetrischen Welle
+        // without compensation it would be −0.3; a small remainder comes from the soft
+        // clipping (tanh) of the asymmetric wave
         assert!(mean.abs() < 0.05, "Gleichanteil {mean}");
     }
 
     #[test]
     fn slide_lowers_pitch() {
         let mut d = tone(Wave::Sine);
-        d.layers[0].slide = -3.0; // drei Oktaven pro Sekunde abwärts
+        d.layers[0].slide = -3.0; // three octaves per second downwards
         let s = d.render();
         let (a, b) = s.split_at(s.len() / 2);
         assert!(crossings_per_second(b) < crossings_per_second(a) * 0.95);

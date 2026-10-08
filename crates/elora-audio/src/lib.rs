@@ -1,12 +1,12 @@
-//! Sounds von Elora (M5.7, E-032, E-081, E-105).
+//! Sounds of Elora (M5.7, E-032, E-081, E-105).
 //!
-//! - [`synth`]: prozeduraler Generator (sfxr-Prinzip), Parameter in
+//! - [`synth`]: procedural generator (sfxr principle), parameters in
 //!   `assets/sounds/sounds.toml`,
-//! - Tondateien `assets/sounds/files/<name>.wav` (CC0, E-107, Quellen in
-//!   `assets/SOURCES.md`) ersetzen den prozeduralen Klang eines Sounds,
-//! - [`cues`]: welche Ereignisse welche Sounds auslösen,
-//! - [`Audio`]: Wiedergabe mit kira – Lautstärke nach Entfernung zur Kamera,
-//!   Stereo-Panorama, Gesamtlautstärke. Ohne Audiogerät läuft das Spiel stumm weiter.
+//! - sound files `assets/sounds/files/<name>.wav` (CC0, E-107, sources in
+//!   `assets/SOURCES.md`) replace the procedural sound of a sound,
+//! - [`cues`]: which events trigger which sounds,
+//! - [`Audio`]: playback with kira – volume by distance to the camera,
+//!   stereo panning, master volume. Without an audio device the game keeps running muted.
 
 pub mod cues;
 pub mod synth;
@@ -24,18 +24,18 @@ pub use playback::Audio;
 pub use cues::{Cue, Listener, Sound};
 pub use synth::{Layer, SAMPLE_RATE, SoundDef, Wave};
 
-/// Die Sound-Parameter des Spiels (eingebettet).
+/// The game's sound parameters (embedded).
 pub const SOUNDS_TOML: &str = include_str!("../../../assets/sounds/sounds.toml");
 
 mod embedded {
     include!(concat!(env!("OUT_DIR"), "/files.rs"));
 }
-/// Eingebettete Tondateien (Sound-Name, WAV), siehe `build.rs`.
+/// Embedded sound files (sound name, WAV), see `build.rs`.
 pub use embedded::FILES;
 
-/// Räumliche Sounds sind bis zu dieser Entfernung (Welteinheiten) hörbar.
+/// Spatial sounds are audible up to this distance (world units).
 const RANGE: f32 = 1400.0;
-/// Ab dieser seitlichen Entfernung ganz links bzw. rechts (begrenzt auf ±0.8).
+/// From this lateral distance on, fully left or right (clamped to ±0.8).
 const PAN_RANGE: f32 = 900.0;
 
 #[derive(Debug, thiserror::Error)]
@@ -48,12 +48,12 @@ pub enum BankError {
     Wav(String, &'static str),
 }
 
-/// Woher ein Sound kommt.
+/// Where a sound comes from.
 #[derive(Debug, Clone)]
 pub enum Source {
-    /// Prozedural aus `sounds.toml`.
+    /// Procedural from `sounds.toml`.
     Synth(SoundDef),
-    /// Tondatei (Mono, [`SAMPLE_RATE`]) mit Lautstärke aus `[gain]` in `sounds.toml`.
+    /// Sound file (mono, [`SAMPLE_RATE`]) with volume from `[gain]` in `sounds.toml`.
     File { samples: Vec<f32>, gain: f32 },
 }
 
@@ -78,19 +78,19 @@ impl Source {
     }
 }
 
-/// Alle Sounds nach Name.
+/// All sounds by name.
 #[derive(Debug, Clone, Default)]
 pub struct Bank {
     pub sounds: BTreeMap<Sound, Source>,
-    /// Lautstärke je Tondatei (Abschnitt `[gain]` in `sounds.toml`, Standard 1).
+    /// Volume per sound file (section `[gain]` in `sounds.toml`, default 1).
     gains: BTreeMap<Sound, f32>,
 }
 
 impl Bank {
-    /// Die eingebaute Bank: `sounds.toml` plus eingebettete Tondateien.
+    /// The built-in bank: `sounds.toml` plus embedded sound files.
     ///
     /// # Errors
-    /// Bei ungültigem TOML, unbekannten Namen oder fehlerhaften Tondateien.
+    /// On invalid TOML, unknown names or broken sound files.
     pub fn load() -> Result<Self, BankError> {
         let mut bank = Self::parse(SOUNDS_TOML)?;
         for (name, data) in FILES {
@@ -99,10 +99,10 @@ impl Bank {
         Ok(bank)
     }
 
-    /// Nur die prozeduralen Sounds und Lautstärken aus `sounds.toml`.
+    /// Only the procedural sounds and volumes from `sounds.toml`.
     ///
     /// # Errors
-    /// Bei ungültigem TOML oder unbekannten Sound-Namen.
+    /// On invalid TOML or unknown sound names.
     pub fn parse(src: &str) -> Result<Self, BankError> {
         let raw: BTreeMap<String, toml::Value> = toml::from_str(src)?;
         let mut bank = Self::default();
@@ -121,10 +121,10 @@ impl Bank {
         Ok(bank)
     }
 
-    /// Tondatei für `name` einsetzen (ersetzt einen prozeduralen Sound).
+    /// Inserts a sound file for `name` (replaces a procedural sound).
     ///
     /// # Errors
-    /// Bei unbekanntem Namen oder nicht lesbarer WAV-Datei.
+    /// On an unknown name or an unreadable WAV file.
     pub fn add_file(&mut self, name: &str, data: &[u8]) -> Result<(), BankError> {
         let sound = Sound::from_name(name).ok_or_else(|| BankError::Unknown(name.to_owned()))?;
         let samples = decode_wav(data).map_err(|e| BankError::Wav(name.to_owned(), e))?;
@@ -133,7 +133,7 @@ impl Bank {
         Ok(())
     }
 
-    /// Sounds, für die es keine Definition gibt.
+    /// Sounds that have no definition.
     pub fn missing(&self) -> Vec<Sound> {
         Sound::ALL
             .into_iter()
@@ -142,7 +142,7 @@ impl Bank {
     }
 }
 
-/// Mono-Samples als 16-Bit-WAV (für Hörproben).
+/// Mono samples as 16-bit WAV (for listening samples).
 #[allow(clippy::cast_possible_truncation)]
 pub fn wav(samples: &[f32]) -> Vec<u8> {
     let data_len = u32::try_from(samples.len() * 2).unwrap_or(u32::MAX);
@@ -150,13 +150,13 @@ pub fn wav(samples: &[f32]) -> Vec<u8> {
     out.extend_from_slice(b"RIFF");
     out.extend_from_slice(&(36 + data_len).to_le_bytes());
     out.extend_from_slice(b"WAVEfmt ");
-    out.extend_from_slice(&16u32.to_le_bytes()); // Größe des fmt-Blocks
+    out.extend_from_slice(&16u32.to_le_bytes()); // size of the fmt chunk
     out.extend_from_slice(&1u16.to_le_bytes()); // PCM
     out.extend_from_slice(&1u16.to_le_bytes()); // Mono
     out.extend_from_slice(&SAMPLE_RATE.to_le_bytes());
-    out.extend_from_slice(&(SAMPLE_RATE * 2).to_le_bytes()); // Bytes pro Sekunde
-    out.extend_from_slice(&2u16.to_le_bytes()); // Bytes pro Frame
-    out.extend_from_slice(&16u16.to_le_bytes()); // Bits pro Sample
+    out.extend_from_slice(&(SAMPLE_RATE * 2).to_le_bytes()); // bytes per second
+    out.extend_from_slice(&2u16.to_le_bytes()); // bytes per frame
+    out.extend_from_slice(&16u16.to_le_bytes()); // bits per sample
     out.extend_from_slice(b"data");
     out.extend_from_slice(&data_len.to_le_bytes());
     for s in samples {
@@ -166,10 +166,10 @@ pub fn wav(samples: &[f32]) -> Vec<u8> {
     out
 }
 
-/// Liest 16-Bit-PCM-WAV (Mono oder Stereo, [`SAMPLE_RATE`]) als Mono-Samples.
+/// Reads 16-bit PCM WAV (mono or stereo, [`SAMPLE_RATE`]) as mono samples.
 ///
 /// # Errors
-/// Bei anderem Format; `cargo xtask sound-import` erzeugt passende Dateien.
+/// On any other format; `cargo xtask sound-import` produces matching files.
 pub fn decode_wav(data: &[u8]) -> Result<Vec<f32>, &'static str> {
     let u16_at = |i: usize| data.get(i..i + 2).map(|b| u16::from_le_bytes([b[0], b[1]]));
     let u32_at = |i: usize| {
@@ -219,22 +219,22 @@ pub fn decode_wav(data: &[u8]) -> Result<Vec<f32>, &'static str> {
     Err("data fehlt")
 }
 
-/// Lautstärke (Amplitude 0..1) und Panorama (−1..1) eines Sounds bei `pos`,
-/// gehört von `ear`. `None` = zu weit weg.
+/// Volume (amplitude 0..1) and panning (−1..1) of a sound at `pos`,
+/// heard from `ear`. `None` = too far away.
 pub fn spatial(pos: Vec2, ear: Vec2) -> Option<(f32, f32)> {
     let d = pos - ear;
     let gain = 1.0 - d.length() / RANGE;
     (gain > 0.0).then(|| (gain, (d.x / PAN_RANGE).clamp(-0.8, 0.8)))
 }
 
-/// Einstellungen der Wiedergabe, gespeichert in `tuning.toml` unter `[audio]`.
+/// Playback settings, stored in `tuning.toml` under `[audio]`.
 #[derive(Debug, Clone, Copy, PartialEq, serde::Serialize, serde::Deserialize)]
 #[serde(default)]
 pub struct AudioSettings {
-    /// Gesamtlautstärke 0..1.
+    /// Master volume 0..1.
     pub volume: f32,
     pub muted: bool,
-    /// Lautstärke der Menümusik 0..1 (E-121), zusätzlich zur Gesamtlautstärke.
+    /// Volume of the menu music 0..1 (E-121), in addition to the master volume.
     pub music_volume: f32,
 }
 

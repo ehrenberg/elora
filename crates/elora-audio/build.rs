@@ -1,5 +1,5 @@
-//! Bettet alle `assets/sounds/files/*.wav` ein (CC0-Sounds, E-107). Liegt für einen
-//! Sound eine Datei vor, ersetzt sie den prozeduralen Klang aus `sounds.toml`.
+//! Embeds all `assets/sounds/files/*.wav` (CC0 sounds, E-107). If a file exists for a
+//! sound, it replaces the procedural sound from `sounds.toml`.
 
 use std::fmt::Write as _;
 use std::path::Path;

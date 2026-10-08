@@ -1,10 +1,10 @@
-//! Welche Sounds Ereignisse auslösen (M5.7). Reine Zuordnung ohne Wiedergabe –
-//! dieselben Ereignisse speisen auch Effekte und Killfeed.
+//! Which sounds events trigger (M5.7). Pure mapping without playback – the same
+//! events also feed effects and the killfeed.
 
 use elora_sim::character::events as bits;
 use elora_sim::{CreatureAct, Event, HookState, PickupKind, Team, Vec2, Weapon};
 
-/// Alle Sounds des Spiels. Die Namen (`snake_case`) sind die Schlüssel in
+/// All sounds of the game. The names (`snake_case`) are the keys in
 /// `assets/sounds/sounds.toml`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Sound {
@@ -31,80 +31,80 @@ pub enum Sound {
     PickupArmor,
     PickupWeapon,
     PickupRespawn,
-    /// Eigener Treffer (Treffer-Bestätigung).
+    /// Own hit (hit confirmation).
     HitConfirm,
     Chat,
     Emote,
-    /// Die eigene Flagge wurde genommen.
+    /// The own flag was taken.
     FlagGrabOwn,
-    /// Das eigene Team hat die gegnerische Flagge.
+    /// The own team has the enemy flag.
     FlagGrabEnemy,
     FlagDrop,
     FlagReturn,
     FlagCapture,
-    /// Klick auf eine Schaltfläche oder Antwort (E-285).
+    /// Click on a button or answer (E-285).
     UiClick,
-    /// Auswahl wechselt (Tastatur, Reiter).
+    /// Selection changes (keyboard, tabs).
     UiSelect,
-    /// Fenster öffnet sich.
+    /// Window opens.
     UiOpen,
-    /// Fenster schließt sich.
+    /// Window closes.
     UiClose,
-    /// Plapperlaut beim Sprechen (E-286), Tonhöhe je Figur.
+    /// Babble sound while speaking (E-286), pitch per character.
     Voice,
-    /// Hüter erwacht (Brummen, R2-M2.1).
+    /// Guardian awakens (humming, R2-M2.1).
     BossWake,
-    /// Sturzflug eines Hüters.
+    /// Dive of a guardian.
     BossDive,
-    /// Hüter prallt auf.
+    /// Guardian hits the ground.
     BossLand,
-    /// Treffer prallt ab (Hüter in der Luft, E-299).
+    /// Hit bounces off (guardian in the air, E-299).
     Deflect,
-    /// Sammelstück gefunden (Biene, Glitzerstein).
+    /// Collectible found (bee, glitter stone).
     Collect,
-    /// Besonderer Fund (Quellfunke) oder neue Fähigkeit.
+    /// Special find (source spark) or new ability.
     Fanfare,
-    /// Aufgabe erledigt.
+    /// Task completed.
     QuestDone,
-    /// Wurzelschlange taucht auf (knarrendes Holz, R2-M2.2).
+    /// Root snake emerges (creaking wood, R2-M2.2).
     RootEmerge,
-    /// Boden bebt vor einem Wurzelstoß.
+    /// Ground trembles before a root thrust.
     RootRumble,
-    /// Wurzelstoß bricht aus dem Boden.
+    /// Root thrust breaks out of the ground.
     RootStrike,
-    /// Kern löst sich aus der Rinde.
+    /// Core comes loose from the bark.
     CorePull,
-    /// Bunter Rausch beginnt (E-311).
+    /// Colourful frenzy begins (E-311).
     Daze,
-    /// Sand spritzt: Dünenwurm oder Sandschlange schießt heraus (R2-M2.3).
+    /// Sand splashes: dune worm or sand snake shoots out (R2-M2.3).
     SandBurst,
-    /// Zurück in den Sand.
+    /// Back into the sand.
     SandDig,
-    /// Sand bebt vor dem Sprung.
+    /// Sand trembles before the leap.
     SandRumble,
-    /// Funkenmotte lässt einen Funken fallen.
+    /// Spark moth drops a spark.
     Spark,
-    /// Treffer prallt am Panzer der Sandkrabbe ab (E-317).
+    /// Hit bounces off the sand crab's shell (E-317).
     ShellClack,
-    /// Die Sandschlange zischt.
+    /// The sand snake hisses.
     SnakeHiss,
-    /// Elora gerät in Treibsand (E-318).
+    /// Elora gets into quicksand (E-318).
     Quicksand,
-    /// Hook-Ruck: Zischen beim Hinschnellen (E-226).
+    /// Hook jerk: whoosh while snapping over (E-226).
     HookRuck,
-    /// Dünnes Eis bekommt Risse (R2-M2.4).
+    /// Thin ice cracks (R2-M2.4).
     IceCrack,
-    /// Dünnes Eis bricht.
+    /// Thin ice breaks.
     IceBreak,
-    /// Eiszapfen zerschellt.
+    /// Icicle shatters.
     IcicleShatter,
-    /// Schnee knirscht (Schneeball, Schneebrocken).
+    /// Snow crunches (snowball, snow chunk).
     SnowCrunch,
-    /// Die Fledermaus quiekt im Sturzflug.
+    /// The bat squeaks while diving.
     BatScreech,
-    /// Elora erstarrt im Eis (Frostgeist).
+    /// Elora freezes in the ice (frost spirit).
     Freeze,
-    /// Kristellas Frosthauch: die Welle beginnt.
+    /// Kristella's frost breath: the wave begins.
     FrostWave,
     /// A chest opens (playtest: chests need feedback).
     ChestOpen,
@@ -252,12 +252,12 @@ impl Sound {
     }
 }
 
-/// Ein abzuspielender Sound; `pos = None`: nicht räumlich (Hinweise, UI).
+/// A sound to play; `pos = None`: not spatial (hints, UI).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Cue {
     pub sound: Sound,
     pub pos: Option<Vec2>,
-    /// Abspielgeschwindigkeit (1 = unverändert, 2 = eine Oktave höher).
+    /// Playback speed (1 = unchanged, 2 = one octave higher).
     pub pitch: f32,
 }
 
@@ -278,24 +278,24 @@ impl Cue {
         }
     }
 
-    /// Mit anderer Tonhöhe.
+    /// With a different pitch.
     #[must_use]
     pub fn pitched(self, pitch: f32) -> Self {
         Self { pitch, ..self }
     }
 }
 
-/// Wer zuhört: eigener Slot und eigenes Team (für Treffer-Bestätigung und CTF).
+/// Who is listening: own slot and own team (for hit confirmation and CTF).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct Listener {
     pub local: Option<usize>,
     pub team: Team,
 }
 
-/// Ab so viel Schaden (Leben + Rüstung) der lange Schmerzlaut.
+/// From this much damage (health + armour) on, the long pain sound.
 const PAIN_LONG_FROM: i32 = 3;
 
-/// Sounds für ein Simulations-Ereignis; `pos_of` liefert die Position einer Figur.
+/// Sounds for a simulation event; `pos_of` returns the position of a character.
 pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>) -> Vec<Cue> {
     let at_player = |sound, player| pos_of(player).map(|p| Cue::at(sound, p));
     match *e {
@@ -311,7 +311,8 @@ pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>)
         Event::WeaponSwitch { player, .. } => {
             at_player(Sound::WeaponSwitch, player).into_iter().collect()
         }
-        // Stampfen (A1.1) klingt vorerst wie ein Hammertreffer; eigene Sounds liefert der Projektinhaber (E-109)
+        // stomp (A1.1) sounds like a hammer hit for now; the project owner provides own
+        // sounds (E-109)
         Event::HammerHit { pos, .. } | Event::Stomp { pos, .. } => {
             vec![Cue::at(Sound::HammerHit, pos)]
         }
@@ -356,7 +357,7 @@ pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>)
         Event::FlagReturn { .. } => vec![Cue::global(Sound::FlagReturn)],
         Event::FlagCapture { .. } => vec![Cue::global(Sound::FlagCapture)],
         Event::TileBroken { .. } | Event::TileSet { .. } => Vec::new(),
-        // dünnes Eis (R2-M2.4): knackt, bricht (eigene Klänge folgen mit M2.4.8)
+        // thin ice (R2-M2.4): cracks, breaks (own sounds follow with M2.4.8)
         Event::IceCrack { tx, ty, broken } => {
             #[allow(clippy::cast_precision_loss)]
             let pos = Vec2::new(
@@ -372,8 +373,8 @@ pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>)
                 pos,
             )]
         }
-        // Gegner (A1.2): vorerst vorhandene Sounds, eigene liefert der Projektinhaber (E-109)
-        // Hüter in der Luft: Treffer prallt ab (E-299)
+        // enemies (A1.2): existing sounds for now, the project owner provides own ones (E-109)
+        // guardian in the air: hit bounces off (E-299)
         Event::CreatureHit { pos, damage: 0, .. } => vec![Cue::at(Sound::Deflect, pos)],
         Event::CreatureHit { pos, from, .. } => {
             let mut cues = vec![Cue::at(Sound::PainShort, pos)];
@@ -389,25 +390,25 @@ pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>)
                 CreatureAct::Dive => Sound::BossDive,
                 CreatureAct::Land => Sound::BossLand,
                 CreatureAct::Emerge => Sound::RootEmerge,
-                // zurück in den Boden: leiser Nachklang des Auftauchens
+                // back into the ground: quiet echo of emerging
                 CreatureAct::Burrow => return vec![Cue::at(Sound::RootEmerge, pos).pitched(0.8)],
                 CreatureAct::Warn => Sound::RootRumble,
                 CreatureAct::Strike => Sound::RootStrike,
                 CreatureAct::Core => Sound::CorePull,
-                // den Sturm hört man über die Umgebungsspur (Wetter)
+                // the storm is heard via the ambience track (weather)
                 CreatureAct::Storm => return Vec::new(),
             },
             pos,
         )],
         Event::LootCollect { pos, .. } => vec![Cue::at(Sound::PickupArmor, pos)],
-        // Gewitter (R2-W1): Knistern vor dem Einschlag; den Donner spielt die Umgebungsspur
+        // thunderstorm (R2-W1): crackling before the strike; the ambience track plays the thunder
         Event::LightningWarn { pos } => vec![Cue::at(Sound::Spark, pos).pitched(0.8)],
         Event::Lightning { .. } => vec![],
     }
 }
 
-/// Eigene Klänge der Wüsten-Gegner (R2-M2.3) je Art (`kind`, Name aus `creatures.toml`);
-/// `None`: die allgemeine Zuordnung aus [`for_event`] gilt.
+/// Own sounds of the desert enemies (R2-M2.3) per kind (`kind`, name from `creatures.toml`);
+/// `None`: the general mapping from [`for_event`] applies.
 pub fn for_creature(e: &Event, kind: &str) -> Option<Vec<Cue>> {
     use CreatureAct::{Burrow, Emerge, Land, Wake, Warn};
     let one = |sound, pos| Some(vec![Cue::at(sound, pos)]);
@@ -438,7 +439,7 @@ pub fn for_creature(e: &Event, kind: &str) -> Option<Vec<Cue>> {
             Some(vec![Cue::at(Sound::IceCrack, pos).pitched(1.6)])
         }
         ("eiszapfen", &Event::CreatureDeath { pos, .. }) => one(Sound::IcicleShatter, pos),
-        // Lawine geht ab (die Sitzung meldet den ersten Brocken), Brocken zerplatzt
+        // avalanche starts (the session reports the first chunk), chunk bursts
         ("schneebrocken", &Event::CreatureAct { act: Warn, pos, .. }) => {
             Some(vec![Cue::at(Sound::SandRumble, pos).pitched(0.55)])
         }
@@ -470,8 +471,8 @@ pub fn for_creature(e: &Event, kind: &str) -> Option<Vec<Cue>> {
     }
 }
 
-/// Sounds aus dem Zustand einer Figur: Sprünge und Hook (Bits des letzten Ticks)
-/// sowie Hook-Abschuss (Wechsel nach [`HookState::Flying`]).
+/// Sounds from the state of a character: jumps and hook (bits of the last tick)
+/// as well as hook launch (switch to [`HookState::Flying`]).
 pub fn for_character(pos: Vec2, triggered: u16, prev_hook: HookState, hook: HookState) -> Vec<Cue> {
     let mut cues = Vec::new();
     let table = [
