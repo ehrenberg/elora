@@ -136,7 +136,7 @@ fn lang_code(l: Language) -> &'static str {
 }
 
 impl App {
-    fn lang_code(&self) -> &'static str {
+    pub(crate) fn lang_code(&self) -> &'static str {
         lang_code(self.settings.language)
     }
 

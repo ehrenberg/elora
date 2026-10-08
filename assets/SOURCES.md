@@ -95,7 +95,8 @@ Per ffmpeg nach Ogg Vorbis umgewandelt (Stereo, 44,1 kHz, Qualität 4); das Spie
 
 ## Intro video (`assets/intro/`)
 
-`intro.ivf` (AV1) is converted with `cargo xtask intro-import`. **Current file: placeholder**
-made from the project's own design sheets (`docs/release-2/design/`, CC-BY-SA 4.0). The final
-video is created by the project owner with an external AI tool (exception to E-295, E-355);
-tool and licence are named here when it is added. Subtitles: `intro.toml` + `assets/lang`.
+- `intro.ivf` (AV1): four 8-second shots created by the project owner with Google Veo
+  (exception to E-295, E-355), started from key frames made from the game's own graphics
+  (`docs/release-2/design/intro/`), joined with `cargo xtask intro-import`.
+- `narration-de.ogg`, `narration-en.ogg`: spoken narration supplied by the project owner,
+  converted with `cargo xtask intro-voice`.

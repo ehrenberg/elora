@@ -212,9 +212,10 @@ Back to the procedural sound: delete the file and add an entry with layers in `s
 
 ### Adventure intro video (E-355)
 
-The intro before a new adventure is `assets/intro/intro.ivf` (AV1, 1280×720, 24 fps, no sound);
-the subtitles are in `assets/intro/intro.toml` with the texts in `assets/lang` (`[intro]`).
-Convert a new video with the local ffmpeg (needs an AV1 encoder, SVT-AV1 or libaom):
+The intro before a new adventure is `assets/intro/intro.ivf` (AV1, 1280×720, 24 fps, no sound)
+with the spoken narration `assets/intro/narration-<de|en>.ogg` for the game's language and the
+Tauwinkel music, quieter, underneath. Convert a new video with the local ffmpeg (needs an AV1
+encoder, SVT-AV1 or libaom):
 
 ```sh
 cargo xtask intro-import ~/Videos/intro.mp4            # default quality (crf 36)
@@ -222,7 +223,14 @@ cargo xtask intro-import ~/Videos/intro.mp4 --crf 30   # better quality, bigger 
 ```
 
 The command letterboxes to 16:9, drops the audio, decodes the result once with the game's
-decoder and prints size and length. Name the tool and licence in `assets/SOURCES.md`.
+decoder and prints size and length. Narration (any audio format ffmpeg reads):
+
+```sh
+cargo xtask intro-voice de ~/Audio/speaker_de.wav   # → assets/intro/narration-de.ogg
+cargo xtask intro-voice en ~/Audio/speaker_en.wav
+```
+
+Name the tools and licences in `assets/SOURCES.md`.
 
 ## Packages and releases
 

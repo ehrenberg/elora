@@ -20,6 +20,8 @@ pub struct Audio {
     music: Option<(StreamingSoundHandle<FromFileError>, f32)>,
     /// Ambience track (weather, R2-W1): running loops per name with volume.
     ambience: BTreeMap<String, (StreamingSoundHandle<FromFileError>, f32)>,
+    /// Spoken narration (intro, E-355): once, can be cut off.
+    voice: Option<StreamingSoundHandle<FromFileError>>,
 }
 
 impl std::fmt::Debug for Audio {
@@ -78,6 +80,7 @@ impl Audio {
             applied: None,
             music: None,
             ambience: BTreeMap::new(),
+            voice: None,
         }
     }
 
@@ -202,6 +205,35 @@ impl Audio {
                     ..Tween::default()
                 });
             }
+        }
+    }
+
+    /// Plays spoken narration once (streamed); a running one is replaced.
+    ///
+    /// # Errors
+    /// The file is not a readable sound file (without an audio device: never).
+    pub fn play_voice(&mut self, data: &Arc<[u8]>, volume: f32) -> Result<(), String> {
+        self.stop_voice();
+        let Some(manager) = &mut self.manager else {
+            return Ok(());
+        };
+        let sound = StreamingSoundData::from_cursor(std::io::Cursor::new(data.clone()))
+            .map_err(|e| e.to_string())?
+            .volume(decibels(volume));
+        match manager.play(sound) {
+            Ok(handle) => self.voice = Some(handle),
+            Err(e) => tracing::debug!("Voice not played: {e}"),
+        }
+        Ok(())
+    }
+
+    /// Fades the narration out quickly (intro skipped).
+    pub fn stop_voice(&mut self) {
+        if let Some(mut handle) = self.voice.take() {
+            handle.stop(Tween {
+                duration: std::time::Duration::from_millis(250),
+                ..Tween::default()
+            });
         }
     }
 

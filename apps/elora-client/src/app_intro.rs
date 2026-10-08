@@ -1,4 +1,5 @@
-//! Intro video before a new adventure (I-3, E-355, E-357): drawing, skipping, music.
+//! Intro video before a new adventure (I-3, E-355, E-357): drawing, skipping, narration and
+//! music.
 
 use std::time::Instant;
 
@@ -7,7 +8,7 @@ use elora_sim::Vec2;
 use winit::keyboard::KeyCode;
 
 use crate::App;
-use crate::intro::{Intro, subtitle_at, wrap};
+use crate::intro::Intro;
 
 impl App {
     /// Starts the intro if the video exists; the adventure waits underneath.
@@ -15,7 +16,8 @@ impl App {
         self.intro = Intro::start_default(Instant::now());
         if self.intro.is_some() {
             self.controls.release_all();
-            self.sounds.music(Some("tauwinkel"));
+            let lang = self.lang_code();
+            self.sounds.intro(lang);
         }
     }
 
@@ -41,6 +43,7 @@ impl App {
 
     fn end_intro(&mut self) {
         self.intro = None;
+        self.sounds.end_intro();
         if let Some(gfx) = &mut self.gfx {
             gfx.renderer.clear_picture();
         }
@@ -49,7 +52,7 @@ impl App {
         self.last_frame = Instant::now();
     }
 
-    /// Draws the current video frame with subtitles and the skip hint.
+    /// Draws the current video frame and the skip hint.
     pub(crate) fn redraw_intro(&mut self) {
         let now = Instant::now();
         let (screen, s) = self.menu_ctx_parts();
@@ -59,35 +62,8 @@ impl App {
             return;
         }
         let frame = intro.update(now);
-        let t = intro.time(now);
         self.hud_batch.clear();
         let font = self.hud.font();
-        if let Some((line, alpha)) = subtitle_at(&intro.subtitles, t) {
-            let text = self.lang.t(&format!("intro.{}", line.key)).to_owned();
-            let size = 22.0 * s;
-            let lines = wrap(&text, screen.x * 0.8, |p| font.width(p, size));
-            let height = size * 1.4;
-            #[allow(clippy::cast_precision_loss)]
-            let total = lines.len() as f32 * height;
-            let top = screen.y - 40.0 * s - total;
-            self.hud_batch.fill_rect(
-                Vec2::new(0.0, top - 14.0 * s),
-                Vec2::new(screen.x, top + total + 10.0 * s),
-                Color::rgba(0.0, 0.0, 0.0, 0.45 * alpha),
-            );
-            for (i, l) in lines.iter().enumerate() {
-                #[allow(clippy::cast_precision_loss)]
-                let y = top + height * (i as f32 + 0.75);
-                font.draw(
-                    &mut self.hud_batch,
-                    l,
-                    Vec2::new(screen.x / 2.0, y),
-                    size,
-                    Color::rgba(1.0, 1.0, 1.0, alpha),
-                    Align::Center,
-                );
-            }
-        }
         if intro.can_skip(now) {
             let key = crate::bindings::Trigger::Key(KeyCode::Space).label(&self.lang);
             font.draw(

@@ -26,6 +26,8 @@ Commands:
                  videos via ffmpeg (AV1), joined in order, to assets/intro/intro.ivf:
                  1280×720, 24 fps, no sound
                  (E-355; name the tool and licence in assets/SOURCES.md!)
+  intro-voice <de|en> <audio>
+                 narration of the intro via ffmpeg (Ogg Vorbis) to assets/intro/narration-<lang>.ogg
   package [--archive]
                  release package in dist/ (programs, maps, licenses; macOS: Elora.app),
                  with --archive as .tar.gz or .zip (M8.3)
@@ -51,6 +53,10 @@ fn main() -> ExitCode {
         Some("intro-import") => {
             let args: Vec<String> = std::env::args().skip(2).collect();
             intro_import(&args)
+        }
+        Some("intro-voice") => {
+            let args: Vec<String> = std::env::args().skip(2).collect();
+            intro_voice(&args)
         }
         Some("sound-preview") => {
             let args: Vec<String> = std::env::args().skip(2).collect();
@@ -351,6 +357,33 @@ fn intro_import(args: &[String]) -> Result<(), String> {
         header.height,
         f64::from(frames) / f64::from(header.fps()),
     );
+    Ok(())
+}
+
+/// Converts the spoken narration of the intro for one language (E-355): Ogg Vorbis, mono,
+/// loudness normalised, small enough to ship (WAV would be ten times larger).
+fn intro_voice(args: &[String]) -> Result<(), String> {
+    let usage = "Usage: cargo xtask intro-voice <de|en> <audio>";
+    let (Some(lang), Some(input)) = (args.first(), args.get(1)) else {
+        return Err(usage.into());
+    };
+    if !matches!(lang.as_str(), "de" | "en") {
+        return Err(format!("unknown language `{lang}` (de, en)"));
+    }
+    let out = format!("assets/intro/narration-{lang}.ogg");
+    let status = Command::new("ffmpeg")
+        .args(["-v", "error", "-y", "-i", input, "-vn", "-ac", "1"])
+        .args(["-af", "loudnorm=I=-16:TP=-1.5:LRA=11", "-ar", "44100"])
+        .args(["-c:a", "libvorbis", "-q:a", "4", &out])
+        .status()
+        .map_err(|e| format!("ffmpeg could not be started: {e}"))?;
+    if !status.success() {
+        return Err("ffmpeg failed".into());
+    }
+    let size = std::fs::metadata(&out).map_err(|e| e.to_string())?.len();
+    #[allow(clippy::cast_precision_loss)]
+    let kb = size as f64 / 1024.0;
+    println!("{out}: {kb:.0} KiB");
     Ok(())
 }
 

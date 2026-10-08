@@ -43,7 +43,14 @@ pub struct Sounds {
     ambience: HashMap<String, Option<Arc<[u8]>>>,
     /// Thunder still to come: place and remaining delay (s).
     thunder: Vec<(Vec2, f32)>,
+    /// Music volume factor: lower while the intro narration speaks (E-355).
+    duck: f32,
 }
+
+/// Folder of the intro narration (`narration-<lang>.ogg`, E-355).
+pub const INTRO_DIR: &str = "assets/intro";
+/// Music under the narration.
+const INTRO_MUSIC_DUCK: f32 = 0.35;
 
 /// Folder of the weather sounds: loops `regen`, `wind`, `sand` and `donner` (R2-W1, E-338).
 pub const AMBIENCE_DIR: &str = "assets/ambience";
@@ -100,6 +107,7 @@ impl Sounds {
             playing: None,
             ambience: HashMap::new(),
             thunder: Vec::new(),
+            duck: 1.0,
         }
     }
 
@@ -192,7 +200,7 @@ impl Sounds {
             .entry(name.to_owned())
             .or_insert_with(|| load_music(MUSIC_DIR, name));
         let Some(data) = track.clone() else { return };
-        let volume = self.settings.music_volume.clamp(0.0, 1.0);
+        let volume = self.settings.music_volume.clamp(0.0, 1.0) * self.duck;
         match self.audio.play_music(&data, volume) {
             Ok(()) => self.playing = Some(name.to_owned()),
             Err(e) => {
@@ -200,6 +208,28 @@ impl Sounds {
                 *track = None;
             }
         }
+    }
+
+    /// Intro (E-355, E-357): Tauwinkel music, quieter, under the narration in the language
+    /// `lang` (`de`, `en`; English if the language has none).
+    pub fn intro(&mut self, lang: &str) {
+        self.duck = INTRO_MUSIC_DUCK;
+        self.music(Some("tauwinkel"));
+        let voice = load_music(INTRO_DIR, &format!("narration-{lang}"))
+            .or_else(|| load_music(INTRO_DIR, "narration-en"));
+        if let Some(data) = voice
+            && let Err(e) = self.audio.play_voice(&data, 1.0)
+        {
+            tracing::warn!("{INTRO_DIR}/narration-{lang}: {e}");
+        }
+    }
+
+    /// End of the intro (also when skipped): narration off, music back to normal.
+    pub fn end_intro(&mut self) {
+        self.audio.stop_voice();
+        self.duck = 1.0;
+        let playing = self.playing.clone();
+        self.music(playing.as_deref());
     }
 
     /// Play non-spatial sounds (UI) immediately.

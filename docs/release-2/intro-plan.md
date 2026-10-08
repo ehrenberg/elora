@@ -133,6 +133,12 @@ towards the sun. The camera rises slowly. Hopeful, triumphant mood.
 - Check Google's terms for the generated video (use in a GPL/CC-BY-SA game, watermark,
   SynthID) and note the tool in `assets/SOURCES.md`.
 
+## Narration instead of subtitles (2026-10-08)
+
+The owner supplied spoken narration in German and English; the subtitles were removed. The
+game plays `assets/intro/narration-<lang>.ogg` for the game's language (English as fallback),
+with the Tauwinkel music at 35 % underneath; skipping stops the narration.
+
 ## Decided (E-357)
 
 - Intro music: the existing `tauwinkel` track.

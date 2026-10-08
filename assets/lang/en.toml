@@ -666,9 +666,5 @@ blizzard = "Blizzard"
 
 # Adventure intro (E-355)
 [intro]
-silence = "In the Tauland the springs fall silent, one after another – and the colours fade."
-oma = "“When I was as small as you, the springs still sang morning songs …”"
-elora = "Elora does not want to wait until everything is grey."
-sets_out = "She sets out to make the springs sing again."
 skip = "Skip: {key}"
 watch = "Watch the intro"
