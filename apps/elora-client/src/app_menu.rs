@@ -8,12 +8,13 @@ use elora_sim::Vec2;
 use winit::event::{ElementState, KeyEvent, MouseButton, MouseScrollDelta};
 use winit::keyboard::KeyCode;
 
+use crate::debug_ui::Action;
 use crate::lang::{Lang, Language};
 use crate::menu::{MenuAction, MenuCtx};
 use crate::menu_settings::SettingsEdit;
 use crate::settings::GraphicsSettings;
 use crate::ui::UiKey;
-use crate::{Action, App, Screen, draw, hosting, hud};
+use crate::{App, Screen, draw, hosting, hud};
 
 /// A second click within this time and distance counts as a double click.
 const DOUBLE_CLICK_SECS: f32 = 0.4;
