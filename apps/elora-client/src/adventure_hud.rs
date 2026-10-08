@@ -2,7 +2,7 @@
 //! current quest, conversation box with portrait and choices, speech bubbles, hints.
 //!
 //! Everything in screen pixels via [`crate::ui`]; style like the drafts
-//! (`docs/release-2/design/abenteuer-ui.png`).
+//! (`docs/release-2/design/adventure-ui.png`).
 
 // Layout code: `s` (scale), `w`/`h`/`x`/`y` as in menu.rs
 #![allow(clippy::many_single_char_names)]

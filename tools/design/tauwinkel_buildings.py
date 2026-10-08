@@ -1,7 +1,7 @@
 """Drafts of the buildings of Tauwinkel (A1.9, E-274, E-276, E-277) as map decoration in style A.
 
-Usage: python3 tools/design/tauwinkel_gebaeude.py && cargo xtask svg-preview \
-        docs/release-2/design/tauwinkel-gebaeude.svg docs/release-2/design/tauwinkel-gebaeude.png 1600
+Usage: python3 tools/design/tauwinkel_buildings.py && cargo xtask svg-preview \
+        docs/release-2/design/tauwinkel-buildings.svg docs/release-2/design/tauwinkel-buildings.png 1600
 
 Second version: proper roofs (tiles, slate, thatch, shingles), half-timbering, stone and wood;
 restrained, warm colours. Each figure shows its colour only in details (shutters, door,
@@ -159,7 +159,7 @@ def flower_box(x0, x1, y, pale):
 
 # ---------------------------------------------------------------- Buildings (origin bottom centre)
 
-def haus_elora(pale=True):
+def elora_house(pale=True):
     s = chimney(40, -232)
     s += foundation(-86, 86, 0)
     s += timber(-86, 86, -150, -18, posts=4)
@@ -171,7 +171,7 @@ def haus_elora(pale=True):
     return s
 
 
-def haus_oma(pale=True):
+def oma_house(pale=True):
     s = stone_wall(-78, 78, -120, 0, '#b8b1a6')
     s += f'<path d="M -98,-112 Q -60,-196 0,-206 Q 60,-196 98,-112 Z" fill="{THATCH}" {st()}/>'
     for i, y in enumerate((-130, -150, -170, -188)):
@@ -189,7 +189,7 @@ def haus_oma(pale=True):
     return s
 
 
-def brunnen(pale=True):
+def well(pale=True):
     s = ''
     # bed all around
     s += f'<path d="M -84,0 Q -70,-10 -56,0 Z M 56,0 Q 70,-10 84,0 Z" fill="#7a5a3e" {st(1.6)}/>'
@@ -210,7 +210,7 @@ def brunnen(pale=True):
     return s
 
 
-def werkstatt_tueftel(pale=True):
+def tueftel_workshop(pale=True):
     s = chimney(-60, -250, 18, 60)
     s += f'<path d="M -51,-256 V -276 M -63,-276 L -39,-276" stroke="{OUT}" stroke-width="2.5"/><path d="M -51,-276 l 10,-6 l -10,-6 l -10,6 Z" fill="#c8ced6" {st(1.4)}/>'
     s += stone_wall(-92, 92, -96, 0, '#b48a6e')  # bricks at the bottom
@@ -234,7 +234,7 @@ def werkstatt_tueftel(pale=True):
     return s
 
 
-def schmiede_klonk(pale=True):
+def klonk_forge(pale=True):
     s = f'<rect x="58" y="-262" width="28" height="110" fill="{STONE}" {st()}/><rect x="54" y="-268" width="36" height="8" fill="{STONE_LINE}" {st(1.6)}/>'
     s += f'<ellipse cx="72" cy="-282" rx="18" ry="9" fill="#d6d6d6" opacity="0.85"/><ellipse cx="80" cy="-300" rx="12" ry="6" fill="#e2e2e2" opacity="0.7"/>'
     s += stone_wall(-96, 96, -140, 0)
@@ -254,7 +254,7 @@ def schmiede_klonk(pale=True):
     return s
 
 
-def laden_lotte(pale=True):
+def lotte_shop(pale=True):
     s = chimney(-56, -238)
     s += foundation(-92, 92, 0)
     s += timber(-92, 92, -160, -18, posts=4, braces=False)
@@ -282,7 +282,7 @@ def laden_lotte(pale=True):
     return s
 
 
-def baumhaus_pip(pale=True):
+def pip_tree_house(pale=True):
     s = f'<path d="M -30,0 Q -16,-10 -16,-40 L -18,-250 H 18 L 16,-40 Q 16,-10 30,0 Z" fill="#7a5a3e" {st()}/>'
     s += f'<path d="M -8,-60 Q -4,-120 -8,-180 M 6,-90 Q 8,-130 5,-160" stroke="#5e4430" stroke-width="2" fill="none"/>'
     for (x, y, r, c) in ((-84, -282, 52, '#4f8f3a'), (78, -292, 56, '#4f8f3a'), (-10, -340, 66, '#5b9d42'),
@@ -307,7 +307,7 @@ def baumhaus_pip(pale=True):
     return s
 
 
-def anschlagbrett(pale=True):
+def notice_board(pale=True):
     s = f'<rect x="-40" y="-70" width="8" height="70" fill="{WOOD}" {st()}/><rect x="32" y="-70" width="8" height="70" fill="{WOOD}" {st()}/>'
     s += f'<rect x="-46" y="-104" width="92" height="58" rx="3" fill="#b8865a" {st()}/>'
     s += gable(0, -104, 92, 22, SHINGLE, SHINGLE_LINE, rows=2, overhang=8)
@@ -317,7 +317,7 @@ def anschlagbrett(pale=True):
     return s
 
 
-def wegweiser(pale=True):
+def signpost(pale=True):
     s = f'<rect x="-4" y="-92" width="8" height="92" fill="{WOOD}" {st()}/>'
     s += f'<path d="M -6,-84 H 42 L 52,-75 L 42,-66 H -6 Z" fill="#c9955c" {st()}/>'
     s += f'<path d="M 6,-58 H -42 L -52,-49 L -42,-40 H 6 Z" fill="#b8865a" {st()}/>'
@@ -325,7 +325,7 @@ def wegweiser(pale=True):
     return s
 
 
-def fahne(pale=True):
+def banner(pale=True):
     cloth = '#c5c0b8' if pale else '#4f8f3a'
     band = '#b0aaa2' if pale else '#f2c14e'
     s = f'<rect x="-3" y="-150" width="6" height="150" fill="{WOOD}" {st(1.6)}/><circle cx="0" cy="-152" r="5" fill="#d9a93c" {st(1.4)}/>'
@@ -334,23 +334,23 @@ def fahne(pale=True):
     return s
 
 
-def beet(pale=True):
+def flower_bed(pale=True):
     s = f'<path d="M -50,0 Q -48,-10 -36,-12 H 36 Q 48,-10 50,0 Z" fill="#7a5a3e" {st()}/>'
     return s + flowers([-38, -30, -22, -14, -6, 2, 10, 18, 26, 34], -10, pale)
 
 
 BUILDINGS = [
-    ('haus-elora', 'Eloras Haus', 'Fachwerk, Ziegeldach, gelbe Läden, Blumenkasten', haus_elora, 190),
-    ('haus-oma', 'Haus von Oma Pfütze', 'altes Steinhaus, Reetdach, Bank und Kräuterbeet', haus_oma, 200),
-    ('brunnen', 'Dorfbrunnen', 'Deckel mit Eisenbändern und Schloss (Weltbuch §2), Schindeldach', brunnen, 180),
-    ('werkstatt', 'Tüftels Werkstatt', 'Ziegel und Fachwerk, Schieferdach, Holztor, Zahnrad-Schild', werkstatt_tueftel, 240),
-    ('schmiede', 'Klonks Schmiede', 'Stein, offene Esse, Amboss, Schornstein, Hammer-Schild', schmiede_klonk, 240),
-    ('laden', 'Lottes Laden', 'Schaufenster mit Tränken, Markise, Fässer, Trank-Schild', laden_lotte, 260),
-    ('baumhaus', 'Pips Baumhaus', 'Bretterhütte auf Plattform (5 Tiles), Strickleiter', baumhaus_pip, 180),
-    ('anschlagbrett', 'Anschlagbrett', 'Aufgaben am Brunnenplatz', anschlagbrett, 100),
-    ('wegweiser', 'Wegweiser', 'zum Lesen mit E (E-273)', wegweiser, 110),
-    ('fahne', 'Fahne', 'verblasst / farbig (E-277)', fahne, 70),
-    ('beet', 'Blumenbeet', 'verblasst / farbig (E-277)', beet, 110),
+    ('haus-elora', 'Eloras Haus', 'Fachwerk, Ziegeldach, gelbe Läden, Blumenkasten', elora_house, 190),
+    ('haus-oma', 'Haus von Oma Pfütze', 'altes Steinhaus, Reetdach, Bank und Kräuterbeet', oma_house, 200),
+    ('brunnen', 'Dorfbrunnen', 'Deckel mit Eisenbändern und Schloss (Weltbuch §2), Schindeldach', well, 180),
+    ('werkstatt', 'Tüftels Werkstatt', 'Ziegel und Fachwerk, Schieferdach, Holztor, Zahnrad-Schild', tueftel_workshop, 240),
+    ('schmiede', 'Klonks Schmiede', 'Stein, offene Esse, Amboss, Schornstein, Hammer-Schild', klonk_forge, 240),
+    ('laden', 'Lottes Laden', 'Schaufenster mit Tränken, Markise, Fässer, Trank-Schild', lotte_shop, 260),
+    ('baumhaus', 'Pips Baumhaus', 'Bretterhütte auf Plattform (5 Tiles), Strickleiter', pip_tree_house, 180),
+    ('anschlagbrett', 'Anschlagbrett', 'Aufgaben am Brunnenplatz', notice_board, 100),
+    ('wegweiser', 'Wegweiser', 'zum Lesen mit E (E-273)', signpost, 110),
+    ('fahne', 'Fahne', 'verblasst / farbig (E-277)', banner, 70),
+    ('beet', 'Blumenbeet', 'verblasst / farbig (E-277)', flower_bed, 110),
 ]
 
 
@@ -419,33 +419,33 @@ def sheet():
     return '\n'.join(o)
 
 
-def blumenkasten(pale=True):
+def window_box(pale=True):
     """Flower box below a window (separate decoration so that it can fade)."""
     return flower_box(-18, 18, -9, pale)
 
 
-def kraeuterbeet(pale=True):
+def herb_bed(pale=True):
     s = f'<path d="M -16,0 Q -2,-8 12,0 Z" fill="#7a5a3e" {st(1.6)}/>'
     return s + flowers([-12, -5, 2, 9], -3, pale)
 
 
 # Decoration for the maps (E-278): buildings without flowers, flowers/beds/flags as variants (E-277)
 DECOR = {
-    'haus-elora': (haus_elora, '-140 -290 280 292'),
-    'haus-oma': (haus_oma, '-120 -220 240 222'),
-    'brunnen': (brunnen, '-100 -180 200 182'),
-    'werkstatt': (werkstatt_tueftel, '-120 -300 270 302'),
-    'schmiede': (schmiede_klonk, '-120 -320 270 322'),
-    'laden': (laden_lotte, '-150 -260 300 262'),
-    'baumhaus': (baumhaus_pip, '-150 -420 300 422'),
-    'anschlagbrett': (anschlagbrett, '-60 -140 120 142'),
-    'wegweiser': (wegweiser, '-60 -100 120 102'),
+    'haus-elora': (elora_house, '-140 -290 280 292'),
+    'haus-oma': (oma_house, '-120 -220 240 222'),
+    'brunnen': (well, '-100 -180 200 182'),
+    'werkstatt': (tueftel_workshop, '-120 -300 270 302'),
+    'schmiede': (klonk_forge, '-120 -320 270 322'),
+    'laden': (lotte_shop, '-150 -260 300 262'),
+    'baumhaus': (pip_tree_house, '-150 -420 300 422'),
+    'anschlagbrett': (notice_board, '-60 -140 120 142'),
+    'wegweiser': (signpost, '-60 -100 120 102'),
 }
 VARIANTS = {
-    'blumenkasten': (blumenkasten, '-30 -30 60 32'),
-    'beet': (beet, '-60 -30 120 32'),
-    'kraeuterbeet': (kraeuterbeet, '-24 -24 48 26'),
-    'fahne': (fahne, '-10 -160 80 162'),
+    'blumenkasten': (window_box, '-30 -30 60 32'),
+    'beet': (flower_bed, '-60 -30 120 32'),
+    'kraeuterbeet': (herb_bed, '-24 -24 48 26'),
+    'fahne': (banner, '-10 -160 80 162'),
 }
 
 
@@ -465,5 +465,5 @@ def export_decor():
 
 if __name__ == '__main__':
     os.makedirs('docs/release-2/design', exist_ok=True)
-    open('docs/release-2/design/tauwinkel-gebaeude.svg', 'w').write(sheet())
+    open('docs/release-2/design/tauwinkel-buildings.svg', 'w').write(sheet())
     export_decor()

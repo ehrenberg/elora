@@ -36,5 +36,5 @@ def build():
     return g
 if __name__ == '__main__':
     g = build()
-    check(g, name='Wüste')
+    check(g, name='Desert')
     print('\n'.join(g.rows()))

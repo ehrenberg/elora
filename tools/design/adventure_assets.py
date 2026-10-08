@@ -1,7 +1,7 @@
 """Generates the game graphics of the adventure enemies and the loot from the accepted
 drafts (E-225) into assets/adventure/.
 
-Usage: python3 tools/design/abenteuer_assets.py
+Usage: python3 tools/design/adventure_assets.py
 
 World units like assets/elora/elora.svg: origin in the centre of the collision box
 (see assets/adventure/creatures.toml), facing right.
@@ -12,19 +12,19 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 import re  # noqa: E402
 
-from abenteuer_figuren import (glanztropfen, glitzerstein, grashuepfer, klonk, lotte, oma_pfuetze, pip,  # noqa: E402
-                               pollenblaeser, quellstein, schalter, stachelkaefer, truhe, tueftel)
+from adventure_figures import (gleam_drop, glitter_stone, grasshopper, klonk, lotte, oma_pfuetze, pip,  # noqa: E402
+                               pollen_blower, spring_stone, switch, spike_beetle, chest, tueftel)
 
-from kapitel1_entwuerfe import biene, hummel, quellfunke, wabe, wabenhut  # noqa: E402
-from kapitel2_entwuerfe import (eichhornpirat, pilzkind, pilzmama, pilzwicht, plumm, rune,  # noqa: E402
-                                wurzelschlange, wurzelwaechter)
-from kapitel3_entwuerfe import (duenenwurm, funkenmotte, giessstelle, palma, ruinenquelle,  # noqa: E402
-                                sandkrabbe, sandschlange, sirup, steintafel, wasserschlauch)
-from kapitel4_entwuerfe import (eiszapfen_figur, fledermaus, flocke, frostgeist, grauspur_eis,  # noqa: E402
-                                kletterer, kristella, robbe, schneebrocken)
+from chapter1_drafts import bee, bumblebee, spring_spark, wabe, honeycomb_hat  # noqa: E402
+from chapter2_drafts import (squirrel_pirate, mushroom_child, mushroom_mama, mushroom_imp, plumm, rune,  # noqa: E402
+                                root_snake, root_warden)
+from chapter3_drafts import (dune_worm, spark_moth, watering_spot, palma, ruin_spring,  # noqa: E402
+                                sand_crab, sand_serpent, sirup, stone_tablet, water_skin)
+from chapter4_drafts import (icicle_enemy, bat, flocke, frost_ghost, grey_trail_ice,  # noqa: E402
+                                climber, kristella, seal, snow_boulder)
 
 
-def strohpuppe():
+def straw_dummy():
     """Training dummy at Klonk (A1.9): post, straw sack, target."""
     s = '<path d="M 0,0 V -20" stroke="#2b2b2b" stroke-width="10"/><path d="M 0,0 V -20" stroke="#a87a52" stroke-width="5"/>'
     s += '<path d="M -26,-34 H 26" stroke="#2b2b2b" stroke-width="9" stroke-linecap="round"/><path d="M -26,-34 H 26" stroke="#a87a52" stroke-width="5" stroke-linecap="round"/>'
@@ -37,7 +37,7 @@ def strohpuppe():
     return s
 
 
-def wegweiser_npc():
+def signpost_npc():
     """Readable sign (E-273), same shape as the decoration."""
     s = '<rect x="-4" y="-92" width="8" height="92" fill="#a87a52" stroke="#2b2b2b" stroke-width="2"/>'
     s += '<path d="M -6,-84 H 42 L 52,-75 L 42,-66 H -6 Z" fill="#c9955c" stroke="#2b2b2b" stroke-width="2" stroke-linejoin="round"/>'
@@ -48,44 +48,44 @@ def wegweiser_npc():
 
 # Name: (box height, scale, {part: drawing})
 CREATURES = {
-    'stachelkaefer': (26, 0.36, {'idle': stachelkaefer()}),
-    'pollenblaeser': (60, 0.42, {'idle': pollenblaeser(shots=False)}),
-    'grashuepfer': (28, 0.36, {'idle': grashuepfer(), 'air': grashuepfer(True, arc=False)}),
-    'strohpuppe': (40, 0.5, {'idle': strohpuppe()}),
+    'stachelkaefer': (26, 0.36, {'idle': spike_beetle()}),
+    'pollenblaeser': (60, 0.42, {'idle': pollen_blower(shots=False)}),
+    'grashuepfer': (28, 0.36, {'idle': grasshopper(), 'air': grasshopper(True, arc=False)}),
+    'strohpuppe': (40, 0.5, {'idle': straw_dummy()}),
     # Chapter 1 (R2-M2.1): warden with flight, dive and dazed pose, confused bee
-    'brummbaer': (120, 0.62, {'idle': f'<g transform="translate(0,-26)">{hummel("flug")}</g>',
-                              'dive': f'<g transform="translate(0,-40)">{hummel("sturz")}</g>',
-                              'stunned': hummel('benommen')}),
-    'wirrbiene': (24, 0.5, {'idle': f'<g transform="translate(0,-6)">{biene(1.0, 0, 0, angry=True)}</g>'}),
+    'brummbaer': (120, 0.62, {'idle': f'<g transform="translate(0,-26)">{bumblebee("flug")}</g>',
+                              'dive': f'<g transform="translate(0,-40)">{bumblebee("sturz")}</g>',
+                              'stunned': bumblebee('benommen')}),
+    'wirrbiene': (24, 0.5, {'idle': f'<g transform="translate(0,-6)">{bee(1.0, 0, 0, angry=True)}</g>'}),
     # Chapter 2 (R2-M2.2): root snake outside / hidden, squirrel pirate, mushroom imp, mushroom child
-    'wurzelschlange': (110, 0.72, {'idle': wurzelschlange(True), 'hidden': wurzelschlange(False)}),
-    'eichhornpirat': (52, 0.4, {'idle': eichhornpirat()}),
-    'pilzwicht': (40, 0.4, {'idle': pilzwicht()}),
-    'pilzkind': (34, 0.21, {'idle': pilzkind(False)}),
+    'wurzelschlange': (110, 0.72, {'idle': root_snake(True), 'hidden': root_snake(False)}),
+    'eichhornpirat': (52, 0.4, {'idle': squirrel_pirate()}),
+    'pilzwicht': (40, 0.4, {'idle': mushroom_imp()}),
+    'pilzkind': (34, 0.21, {'idle': mushroom_child(False)}),
     # Warden: parts per state m0 sleeps, m2 root attack, m3 core pulled (creature::warden)
-    'wurzelwaechter': (280, 0.45, {'idle': wurzelwaechter('wach'), 'm0': wurzelwaechter('schlaf'),
-                                   'm2': wurzelwaechter('angriff_ohne'), 'm3': wurzelwaechter('offen')}),
+    'wurzelwaechter': (280, 0.45, {'idle': root_warden('wach'), 'm0': root_warden('schlaf'),
+                                   'm2': root_warden('angriff_ohne'), 'm3': root_warden('offen')}),
     # Chapter 3 (R2-M2.3): sand crab; dune worm under the sand (hidden = state 0), m1 warning,
     # otherwise mid-leap; spark moth
-    'sandkrabbe': (30, 0.36, {'idle': sandkrabbe()}),
-    'duenenwurm': (36, 0.42, {'idle': f'<g transform="translate(0,-6)">{duenenwurm("flug")}</g>',
-                              'hidden': duenenwurm('spur'), 'm1': duenenwurm('warnung')}),
-    'funkenmotte': (32, 0.36, {'idle': f'<g transform="translate(0,4)">{funkenmotte(False)}</g>'}),
+    'sandkrabbe': (30, 0.36, {'idle': sand_crab()}),
+    'duenenwurm': (36, 0.42, {'idle': f'<g transform="translate(0,-6)">{dune_worm("flug")}</g>',
+                              'hidden': dune_worm('spur'), 'm1': dune_worm('warnung')}),
+    'funkenmotte': (32, 0.36, {'idle': f'<g transform="translate(0,4)">{spark_moth(False)}</g>'}),
     # Warden: m0 sleeps, m1 sand trail, m2 sand quakes, m3 arc (idle), m4 dazed (creature::serpent)
-    'sandschlange': (70, 0.42, {'idle': f'<g transform="translate(20,-60)">{sandschlange("flug")}</g>',
-                                'm0': sandschlange('spur'), 'm1': sandschlange('spur'),
-                                'm2': sandschlange('beben'),
-                                'm4': f'<g transform="translate(-60,0)">{sandschlange("benommen")}</g>'}),
+    'sandschlange': (70, 0.42, {'idle': f'<g transform="translate(20,-60)">{sand_serpent("flug")}</g>',
+                                'm0': sand_serpent('spur'), 'm1': sand_serpent('spur'),
+                                'm2': sand_serpent('beben'),
+                                'm4': f'<g transform="translate(-60,0)">{sand_serpent("benommen")}</g>'}),
     # Chapter 4 (R2-M2.4): icicle (tip down; trembles and falls in the same pose),
     # snow boulder of the avalanches (rolls, the client rotates it)
-    'eiszapfen': (48, 0.5, {'idle': eiszapfen_figur()}),
-    'schneebrocken': (36, 0.62, {'idle': f'<g transform="translate(0,1)">{schneebrocken(False)}</g>'}),
+    'eiszapfen': (48, 0.5, {'idle': icicle_enemy()}),
+    'schneebrocken': (36, 0.62, {'idle': f'<g transform="translate(0,1)">{snow_boulder(False)}</g>'}),
     # Enemies: seal slides (idle) and throws upright (m1 = creature::seal::THROW);
     # bat flies (idle) and sleeps upside down (m0 = creature::bat::HANG); frost ghost
-    'schneeballrobbe': (28, 0.4, {'idle': robbe('rutschen'), 'm1': robbe('werfen')}),
-    'fledermaus': (36, 0.4, {'idle': f'<g transform="translate(0,26)">{fledermaus("sturz")}</g>',
-                             'm0': f'<g transform="translate(0,-86)">{fledermaus("haengt", bar=False)}</g>'}),
-    'frostgeist': (52, 0.42, {'idle': frostgeist()}),
+    'schneeballrobbe': (28, 0.4, {'idle': seal('rutschen'), 'm1': seal('werfen')}),
+    'fledermaus': (36, 0.4, {'idle': f'<g transform="translate(0,26)">{bat("sturz")}</g>',
+                             'm0': f'<g transform="translate(0,-86)">{bat("haengt", bar=False)}</g>'}),
+    'frostgeist': (52, 0.42, {'idle': frost_ghost()}),
     # Warden (female): m0 sleeps (calm), idle floats, m2 frost breath, m3 exhausted (creature::queen)
     'kristella': (110, 0.36, {'idle': kristella('schwebend', False), 'm0': kristella('ruhig', False),
                               'm2': kristella('hauch', False), 'm3': kristella('erschoepft', False)}),
@@ -100,36 +100,36 @@ CHARACTERS = {
     'tueftel': (1.0, tueftel()),
     'pip': (0.7, pip()),
     # same size as the decoration (world units): 1 / 0.36
-    'wegweiser': (1 / 0.36 * 0.55, wegweiser_npc()),
+    'wegweiser': (1 / 0.36 * 0.55, signpost_npc()),
     # Chapter 1 (R2-M2.1): beekeeper Wabe, bumblebee as speaker after the fight
     'wabe': (1.0, wabe()),
-    'hummel': (0.6, f'<g transform="translate(0,-60)">{hummel("ruhig")}</g>'),
+    'hummel': (0.6, f'<g transform="translate(0,-60)">{bumblebee("ruhig")}</g>'),
     # Chapter 2 (R2-M2.2)
     'plumm': (1.0, plumm()),
-    'pilzkind': (0.6, pilzkind(True)),
-    'pilzkind_froh': (0.6, pilzkind(False)),
-    'pilzmama': (0.85, pilzmama()),
+    'pilzkind': (0.6, mushroom_child(True)),
+    'pilzkind_froh': (0.6, mushroom_child(False)),
+    'pilzmama': (0.85, mushroom_mama()),
     # friendly after the fight (conversation figure), same size as the warden
-    'waechter': (1.25, wurzelwaechter('ruhig')),
+    'waechter': (1.25, root_warden('ruhig')),
     # Chapter 3 (R2-M2.3); fixed things at decoration size (1 / 0.36 × scale)
     'sirup': (1.0, sirup()),
     'palma': (1.0, palma()),
-    'schlange': (1.1, f'<g transform="translate(-20,0)">{sandschlange("ruhig")}</g>'),
-    'tafel': (1 / 0.36 * 0.5, steintafel()),
-    'ruinenquelle': (1 / 0.36 * 0.5, ruinenquelle()),
-    'giessstelle': (1 / 0.36 * 0.55, giessstelle(False)),
-    'giessstelle_bluete': (1 / 0.36 * 0.55, giessstelle(True)),
+    'schlange': (1.1, f'<g transform="translate(-20,0)">{sand_serpent("ruhig")}</g>'),
+    'tafel': (1 / 0.36 * 0.5, stone_tablet()),
+    'ruinenquelle': (1 / 0.36 * 0.5, ruin_spring()),
+    'giessstelle': (1 / 0.36 * 0.55, watering_spot(False)),
+    'giessstelle_bluete': (1 / 0.36 * 0.55, watering_spot(True)),
     # Chapter 4 (R2-M2.4): Flocke, three climbers, Kristella after the fight (size of the warden)
     'flocke': (1.0, flocke()),
-    'bolle': (0.85, kletterer('f2a65a', 'c97f3a', '#f2c14e')),
-    'kiesel': (0.85, kletterer('8fd06a', '5fa03a', '#e8685a')),
-    'wicke': (0.85, kletterer('c8a0e8', '9a70c0', '#5fc8e8')),
+    'bolle': (0.85, climber('f2a65a', 'c97f3a', '#f2c14e')),
+    'kiesel': (0.85, climber('8fd06a', '5fa03a', '#e8685a')),
+    'wicke': (0.85, climber('c8a0e8', '9a70c0', '#5fc8e8')),
     'kristella': (1.0, kristella('ruhig', False)),
-    'graue_stelle': (1 / 0.36 * 0.5, grauspur_eis()),
+    'graue_stelle': (1 / 0.36 * 0.5, grey_trail_ice()),
 }
 
 
-def heilpflanze():
+def healing_plant():
     """Healing plant (E-258): blossom with a heart, friendly – counterpart to the pollen blower."""
     s = '<path d="M 0,0 Q -4,-30 0,-56" fill="none" stroke="#2b2b2b" stroke-width="9"/>'
     s += '<path d="M 0,0 Q -4,-30 0,-56" fill="none" stroke="#4f9a3a" stroke-width="4.5"/>'
@@ -145,7 +145,7 @@ def heilpflanze():
     return s
 
 
-def welk():
+def withered_plant():
     """Used-up healing plant: smaller, pale."""
     s = '<path d="M 0,0 Q -6,-18 2,-30" fill="none" stroke="#2b2b2b" stroke-width="8"/>'
     s += '<path d="M 0,0 Q -6,-18 2,-30" fill="none" stroke="#7f9a6a" stroke-width="4"/>'
@@ -155,10 +155,10 @@ def welk():
 
 # Objects: origin on the ground, (scale, {part: drawing})
 OBJECTS = {
-    'truhe': (0.45, {'closed': truhe(), 'open': truhe(True)}),
-    'quellstein': (0.45, {'off': quellstein(False), 'on': quellstein(True)}),
-    'schalter': (0.5, {'off': schalter(False), 'on': schalter(True)}),
-    'heilpflanze': (0.3, {'fresh': heilpflanze(), 'used': welk()}),
+    'truhe': (0.45, {'closed': chest(), 'open': chest(True)}),
+    'quellstein': (0.45, {'off': spring_stone(False), 'on': spring_stone(True)}),
+    'schalter': (0.5, {'off': switch(False), 'on': switch(True)}),
+    'heilpflanze': (0.3, {'fresh': healing_plant(), 'used': withered_plant()}),
 }
 
 
@@ -194,13 +194,13 @@ def main():
                         f'  {body}\n</svg>\n')
     items = 'assets/adventure/items'
     os.makedirs(items, exist_ok=True)
-    for name, art, scale in (('glanztropfen', glanztropfen(), 0.5), ('item', glitzerstein(), 0.4),
+    for name, art, scale in (('glanztropfen', gleam_drop(), 0.5), ('item', glitter_stone(), 0.4),
                              # own images per item (R2-M2.1), otherwise `item` applies
                              # same size as the other icons (about 22 units)
-                             ('biene', biene(1.0, 0, 0), 0.31), ('quellfunke', quellfunke(), 0.33),
-                             ('wabenhut', wabenhut(), 0.25), ('rune', rune(True), 0.32),
+                             ('biene', bee(1.0, 0, 0), 0.31), ('quellfunke', spring_spark(), 0.33),
+                             ('wabenhut', honeycomb_hat(), 0.25), ('rune', rune(True), 0.32),
                              # Chapter 3: empty and full waterskin
-                             ('wasserschlauch', wasserschlauch(False), 0.32), ('wasser', wasserschlauch(True), 0.32)):
+                             ('wasserschlauch', water_skin(False), 0.32), ('wasser', water_skin(True), 0.32)):
         with open(f'{items}/{name}.svg', 'w') as f:
             dy = {'item': 8, 'glanztropfen': 3, 'biene': 5.5, 'quellfunke': 10, 'wabenhut': 4, 'rune': 12,
                   'wasserschlauch': 10, 'wasser': 10}.get(name, 0)

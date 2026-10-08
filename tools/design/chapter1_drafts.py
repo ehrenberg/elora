@@ -1,9 +1,9 @@
 """Drafts for chapter 1 "Blütenwiesen" (R2-M2.1, step M2.1.0, E-297 to E-302).
 
-Usage: python3 tools/design/kapitel1_entwuerfe.py && cargo xtask svg-preview \
-        docs/release-2/design/kapitel1-entwuerfe.svg docs/release-2/design/kapitel1-entwuerfe.png 1600
+Usage: python3 tools/design/chapter1_drafts.py && cargo xtask svg-preview \
+        docs/release-2/design/chapter1-drafts.svg docs/release-2/design/chapter1-drafts.png 1600
 
-Style like the figures (abenteuer_figuren.py) and buildings (tauwinkel_gebaeude.py):
+Style like the figures (adventure_figures.py) and buildings (tauwinkel_buildings.py):
 drop creatures, dark outline, flat colours; enemies round and colourful, looking grumpy, no blood.
 """
 import math
@@ -11,7 +11,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from abenteuer_figuren import DIM, OUT, TEXT, angry_eye, drop, g, star, text  # noqa: E402
+from adventure_figures import DIM, OUT, TEXT, angry_eye, drop, g, star, text  # noqa: E402
 
 HONEY = '#f2b33a'
 HONEY_DARK = '#c98a1e'
@@ -52,13 +52,13 @@ def wabe():
     s += f'<rect x="42" y="-58" width="28" height="8" rx="2" fill="#e8685a" {st(2.5)}/>'
     s += '<path d="M 50,-44 q 4,-2 6,2" fill="none" stroke="#fff6d8" stroke-width="2.5" stroke-linecap="round"/>'
     # a bee circles around the hat
-    s += biene(scale=0.38, x=58, y=-140)
+    s += bee(scale=0.38, x=58, y=-140)
     return s
 
 
 # ── Bees ────────────────────────────────────────────────────────────────
 
-def biene(scale=1.0, x=0, y=0, angry=False, flip=False):
+def bee(scale=1.0, x=0, y=0, angry=False, flip=False):
     """Small bee: striped, two wings; `angry` = confused enemy (spiral eyes)."""
     s = f'<ellipse cx="-6" cy="-30" rx="14" ry="20" fill="{WING}" fill-opacity="0.9" {st(3)} transform="rotate(-25 -6 -30)"/>'
     s += f'<ellipse cx="10" cy="-32" rx="12" ry="18" fill="{WING}" fill-opacity="0.9" {st(3)} transform="rotate(20 10 -32)"/>'
@@ -81,7 +81,7 @@ def biene(scale=1.0, x=0, y=0, angry=False, flip=False):
 
 # ── Grumble bumblebee ───────────────────────────────────────────────────
 
-def hummel(pose='flug'):
+def bumblebee(pose='flug'):
     """Warden of the blossom spring: large, furry bumblebee. Poses: flug, sturz, benommen, ruhig."""
     calm = pose == 'ruhig'
     stunned = pose == 'benommen'
@@ -148,7 +148,7 @@ def pollen(x, y, r=9):
 
 # ── Arena and chapter items ─────────────────────────────────────────────
 
-def hookbluete(fresh=True):
+def hook_blossom(fresh=True):
     """Hook point in the air: large blossom on a tendril from above, centre as a ring for hooking."""
     petal = PINK if fresh else '#c8b6bc'
     core = '#f2c14e' if fresh else '#b8ac90'
@@ -167,7 +167,7 @@ def hookbluete(fresh=True):
     return s
 
 
-def quellfunke():
+def spring_spark():
     s = '<circle cx="0" cy="-30" r="34" fill="#ffd6ea" opacity="0.45"/>'
     s += f'<path d="M 0,-64 C 18,-40 22,-24 0,-6 C -22,-24 -18,-40 0,-64 Z" fill="{PINK}" {st(4)}/>'
     s += '<path d="M -6,-40 Q -8,-28 -2,-20" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>'
@@ -176,7 +176,7 @@ def quellfunke():
     return s
 
 
-def wabenhut():
+def honeycomb_hat():
     s = f'<ellipse cx="0" cy="-10" rx="44" ry="10" fill="#f0ece4" {st(4)}/>'
     s += f'<path d="M -24,-14 Q -22,-48 0,-50 Q 22,-48 24,-14 Z" fill="#f0ece4" {st(4)}/>'
     s += f'<path d="M -23,-22 Q 0,-16 23,-22" fill="none" stroke="{HONEY_DARK}" stroke-width="6"/>'
@@ -187,7 +187,7 @@ def wabenhut():
     return s
 
 
-def bienenstock():
+def beehive():
     """Straw skep (beehive) on a wooden trestle."""
     s = f'<rect x="-34" y="-20" width="68" height="8" fill="#a87a52" {st(3)}/><path d="M -28,-12 V 0 M 28,-12 V 0" stroke="{OUT}" stroke-width="5"/>'
     s += f'<path d="M -30,-20 Q -34,-74 0,-80 Q 34,-74 30,-20 Z" fill="#d9b860" {st(4)}/>'
@@ -199,7 +199,7 @@ def bienenstock():
     return s
 
 
-def beutenstapel():
+def hive_stack():
     """Wooden hives (boxes) stacked, with lid."""
     s = ''
     for k, c in enumerate(('#e8c070', '#d9a85a', '#e8c070')):
@@ -211,7 +211,7 @@ def beutenstapel():
     return s
 
 
-def honigstand():
+def honey_stand():
     s = f'<rect x="-50" y="-44" width="100" height="44" fill="#c79a66" {st()}/>'
     s += f'<path d="M -58,-44 H 58 L 50,-56 H -50 Z" fill="#a87a52" {st()}/>'
     for k, x in enumerate((-34, -12, 10, 32)):
@@ -222,7 +222,7 @@ def honigstand():
     return s
 
 
-def riesenblume(color=PINK):
+def giant_flower(color=PINK):
     """Decoration in wiese-2: flower as tall as a house, leaves as steps."""
     s = f'<path d="M 0,0 Q -14,-120 6,-250" fill="none" stroke="{OUT}" stroke-width="16"/>'
     s += f'<path d="M 0,0 Q -14,-120 6,-250" fill="none" stroke="{STEM}" stroke-width="9"/>'
@@ -236,7 +236,7 @@ def riesenblume(color=PINK):
     return s
 
 
-def girlande():
+def garland():
     s = f'<path d="M -110,-150 Q 0,-110 110,-150" fill="none" stroke="#7a7266" stroke-width="2.5"/>'
     colors = ('#e8685a', '#f2c14e', '#5aaee8', '#7fd99a', '#a77be0', PINK)
     for k in range(9):
@@ -247,7 +247,7 @@ def girlande():
     return s
 
 
-def festlaterne(color='#e8685a'):
+def festival_lantern(color='#e8685a'):
     s = f'<path d="M 0,-120 V -100" stroke="{OUT}" stroke-width="2.5"/>'
     s += f'<circle cx="0" cy="-78" r="34" fill="#ffd27a" opacity="0.3"/>'
     s += f'<ellipse cx="0" cy="-78" rx="20" ry="24" fill="{color}" {st(3)}/>'
@@ -257,7 +257,7 @@ def festlaterne(color='#e8685a'):
     return s
 
 
-def bluetenquelle(freed=True):
+def blossom_spring(freed=True):
     """Spring at the end of the Blütenwiesen: stone basin, water, blossoms; withered = grey and dry."""
     s = ''
     if freed:
@@ -315,7 +315,7 @@ def sheet():
     o.append(ground(60, 400, 260) + g(190, 400, 1.0, wabe()) + elora(320, 400))
     o.append(text(190, 436, 'Imkerin Wabe', 17, TEXT, weight='bold'))
     o.append(text(190, 458, 'Imkerhut mit Schleier, Schürze mit Waben, Smoker, Honigglas', 12, DIM, style='italic'))
-    o.append(biene(1.3, 470, 340) + biene(1.3, 650, 340, angry=True))
+    o.append(bee(1.3, 470, 340) + bee(1.3, 650, 340, angry=True))
     o.append(text(470, 436, 'Biene (Sammelstück)', 15, TEXT, weight='bold'))
     o.append(text(470, 456, 'freundlich, schwebt, 5 Stück', 12, DIM))
     o.append(text(650, 436, 'verwirrte Biene (Gegner)', 15, TEXT, weight='bold'))
@@ -323,13 +323,13 @@ def sheet():
 
     # items
     o.append(card(810, 100, 760, 390, 'Gegenstände'))
-    o.append(ground(860, 400, 180) + g(950, 400, 1.6, quellfunke()))
+    o.append(ground(860, 400, 180) + g(950, 400, 1.6, spring_spark()))
     o.append(text(950, 436, 'Quellfunke', 17, TEXT, weight='bold'))
     o.append(text(950, 458, 'Beute des Hüters, für Tüftel', 12, DIM))
-    o.append(ground(1120, 400, 180) + g(1210, 400, 1.6, wabenhut()))
+    o.append(ground(1120, 400, 180) + g(1210, 400, 1.6, honeycomb_hat()))
     o.append(text(1210, 436, 'Wabenhut', 17, TEXT, weight='bold'))
     o.append(text(1210, 458, 'Belohnung für die Bienen (E-300)', 12, DIM))
-    o.append(g(1440, 330, 1.2, biene(1.0, 0, 0)) + text(1440, 436, 'Bienensymbol', 15, TEXT, weight='bold'))
+    o.append(g(1440, 330, 1.2, bee(1.0, 0, 0)) + text(1440, 436, 'Bienensymbol', 15, TEXT, weight='bold'))
     o.append(text(1440, 458, 'Aufgabenbuch, Zähler 0/5', 12, DIM))
 
     # bumblebee
@@ -342,7 +342,7 @@ def sheet():
     ]
     for x, y, pose, name, note in poses:
         o.append(ground(x - 160, 900, 320))
-        o.append(g(x - 20, y, 1.0, hummel(pose)))
+        o.append(g(x - 20, y, 1.0, bumblebee(pose)))
         o.append(text(x, 934, name, 17, TEXT, weight='bold'))
         o.append(text(x, 956, note, 12, DIM))
     o.append(pollen(330, 880) + pollen(300, 840, 7))
@@ -351,18 +351,18 @@ def sheet():
 
     # arena
     o.append(card(30, 1000, 760, 360, 'Arena und Blütenquelle'))
-    o.append(g(120, 1250, 0.9, hookbluete(True)) + g(250, 1250, 0.9, hookbluete(False)))
+    o.append(g(120, 1250, 0.9, hook_blossom(True)) + g(250, 1250, 0.9, hook_blossom(False)))
     o.append(text(185, 1316, 'Hook-Blüte frisch / welk', 15, TEXT, weight='bold'))
     o.append(text(185, 1336, 'Hookpunkt in der Luft (neues Tile)', 12, DIM))
-    o.append(ground(330, 1290, 440) + g(430, 1290, 0.75, bluetenquelle(False)) + g(670, 1290, 0.75, bluetenquelle(True)))
+    o.append(ground(330, 1290, 440) + g(430, 1290, 0.75, blossom_spring(False)) + g(670, 1290, 0.75, blossom_spring(True)))
     o.append(text(550, 1316, 'Blütenquelle verdorrt / befreit', 15, TEXT, weight='bold'))
     o.append(text(550, 1336, 'Mitte der Arena, Schluss des Kapitels', 12, DIM))
 
     # apiary and decoration
     o.append(card(810, 1000, 760, 360, 'Imkerei und Deko (wiese-2)'))
     o.append(ground(840, 1290, 700))
-    o.append(g(890, 1290, 1.0, bienenstock()) + g(980, 1290, 1.0, beutenstapel()) + g(1100, 1290, 0.9, honigstand()))
-    o.append(g(1260, 1290, 0.85, riesenblume()) + g(1400, 1290, 0.7, riesenblume('#a77be0')) + elora(1490, 1290))
+    o.append(g(890, 1290, 1.0, beehive()) + g(980, 1290, 1.0, hive_stack()) + g(1100, 1290, 0.9, honey_stand()))
+    o.append(g(1260, 1290, 0.85, giant_flower()) + g(1400, 1290, 0.7, giant_flower('#a77be0')) + elora(1490, 1290))
     o.append(text(935, 1316, 'Bienenkorb, Beuten', 15, TEXT, weight='bold'))
     o.append(text(1100, 1316, 'Wabes Honigstand', 15, TEXT, weight='bold'))
     o.append(text(1330, 1316, 'Riesenblumen', 15, TEXT, weight='bold'))
@@ -371,12 +371,12 @@ def sheet():
     # festival
     o.append(card(30, 1380, 1540, 230, 'Fest in Tauwinkel nach Kapitel 1 (E-301)'))
     o.append(ground(60, 1570, 1480))
-    o.append(g(260, 1570, 1.0, girlande()) + g(560, 1570, 1.0, girlande()))
+    o.append(g(260, 1570, 1.0, garland()) + g(560, 1570, 1.0, garland()))
     for k, (x, c) in enumerate(((800, '#e8685a'), (880, '#f2c14e'), (960, '#5aaee8'), (1040, '#7fd99a'))):
-        o.append(g(x, 1570 - (k % 2) * 14, 1.0, festlaterne(c)))
+        o.append(g(x, 1570 - (k % 2) * 14, 1.0, festival_lantern(c)))
     o.append(text(410, 1600, 'Girlanden zwischen den Häusern', 15, TEXT, weight='bold'))
     o.append(text(920, 1600, 'Festlaternen (leuchten am Abend)', 15, TEXT, weight='bold'))
-    o.append(g(1250, 1570, 0.8, wabe()) + elora(1350, 1570) + g(1430, 1490, 0.7, hummel('ruhig')))
+    o.append(g(1250, 1570, 0.8, wabe()) + elora(1350, 1570) + g(1430, 1490, 0.7, bumblebee('ruhig')))
     o.append(text(1340, 1600, 'Wabe, Elora und die Hummel feiern mit', 13, DIM))
     o.append('</svg>')
     return '\n'.join(o)
@@ -384,7 +384,7 @@ def sheet():
 
 def export():
     """Game graphics from the accepted drafts (E-303): hook blossom as a tile."""
-    parts = ''.join(f'<g id="{k}"><g transform="translate(16,24) scale(0.4)">{hookbluete(v)}</g></g>'
+    parts = ''.join(f'<g id="{k}"><g transform="translate(16,24) scale(0.4)">{hook_blossom(v)}</g></g>'
                     for k, v in (('fresh', True), ('wilted', False)))
     with open('assets/map/tiles/hookpoint.svg', 'w') as f:
         f.write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">\n'
@@ -395,17 +395,17 @@ def export():
 # Decoration for the chapter 1 maps (E-303): name: (drawing, viewBox), origin at the bottom centre.
 # `-fest` only hangs during the festival, `-verdorrt` becomes `-befreit` after `befreit.<name>` (session).
 DECOR = {
-    'bienenstock': (bienenstock(), '-40 -84 80 86'),
-    'beutenstapel': (beutenstapel(), '-40 -88 80 90'),
-    'honigstand': (honigstand(), '-70 -126 140 128'),
-    'riesenblume-rosa': (riesenblume(PINK), '-110 -310 220 312'),
-    'riesenblume-gelb': (riesenblume('#f2c14e'), '-110 -310 220 312'),
-    'riesenblume-lila': (riesenblume('#a77be0'), '-110 -310 220 312'),
-    'girlande-fest': (girlande(), '-116 -156 232 158'),
-    'festlaterne-fest': (festlaterne(), '-36 -124 72 86'),
-    'festlaterne-gelb-fest': (festlaterne('#f2c14e'), '-36 -124 72 86'),
-    'bluetenquelle-verdorrt': (bluetenquelle(False), '-150 -180 300 182'),
-    'bluetenquelle-befreit': (bluetenquelle(True), '-150 -180 300 182'),
+    'bienenstock': (beehive(), '-40 -84 80 86'),
+    'beutenstapel': (hive_stack(), '-40 -88 80 90'),
+    'honigstand': (honey_stand(), '-70 -126 140 128'),
+    'riesenblume-rosa': (giant_flower(PINK), '-110 -310 220 312'),
+    'riesenblume-gelb': (giant_flower('#f2c14e'), '-110 -310 220 312'),
+    'riesenblume-lila': (giant_flower('#a77be0'), '-110 -310 220 312'),
+    'girlande-fest': (garland(), '-116 -156 232 158'),
+    'festlaterne-fest': (festival_lantern(), '-36 -124 72 86'),
+    'festlaterne-gelb-fest': (festival_lantern('#f2c14e'), '-36 -124 72 86'),
+    'bluetenquelle-verdorrt': (blossom_spring(False), '-150 -180 300 182'),
+    'bluetenquelle-befreit': (blossom_spring(True), '-150 -180 300 182'),
 }
 
 
@@ -419,6 +419,6 @@ def export_decor():
 
 if __name__ == '__main__':
     os.makedirs('docs/release-2/design', exist_ok=True)
-    open('docs/release-2/design/kapitel1-entwuerfe.svg', 'w').write(sheet())
+    open('docs/release-2/design/chapter1-drafts.svg', 'w').write(sheet())
     export()
     export_decor()

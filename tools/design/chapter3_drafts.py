@@ -1,7 +1,7 @@
 """Drafts for chapter 3 "Glutsandwüste" (R2-M2.3, step M2.3.0, E-315 to E-320).
 
-Usage: python3 tools/design/kapitel3_entwuerfe.py && cargo xtask svg-preview \
-        docs/release-2/design/kapitel3-entwuerfe.svg docs/release-2/design/kapitel3-entwuerfe.png 1600
+Usage: python3 tools/design/chapter3_drafts.py && cargo xtask svg-preview \
+        docs/release-2/design/chapter3-drafts.svg docs/release-2/design/chapter3-drafts.png 1600
 
 Style like chapters 1 and 2: dark outline, flat colours, warm sand and ochre tones; enemies
 cheeky, not bloody. The desert is hot and bright, the ruins old and mysterious.
@@ -11,9 +11,9 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from abenteuer_figuren import DIM, OUT, TEXT, angry_eye, drop, g, star, text  # noqa: E402
-from kapitel1_entwuerfe import card, elora, ground  # noqa: E402
-from kapitel2_entwuerfe import blob  # noqa: E402
+from adventure_figures import DIM, OUT, TEXT, angry_eye, drop, g, star, text  # noqa: E402
+from chapter1_drafts import card, elora, ground  # noqa: E402
+from chapter2_drafts import blob  # noqa: E402
 
 SAND = '#e8c88a'
 SAND_DARK = '#c9a25e'
@@ -67,7 +67,7 @@ def palma():
     return s
 
 
-def kamel():
+def camel():
     """Caravan camel (decoration in the camp): friendly, with saddlebags."""
     s = ''
     for x in (-50, -26, 30, 54):
@@ -82,7 +82,7 @@ def kamel():
 
 # ── Enemies ─────────────────────────────────────────────────────────────
 
-def sandkrabbe():
+def sand_crab():
     """Sand crab: armoured (shell on the sides, soft and light on top), large pincers."""
     s = ''
     for x in (-30, -14, 14, 30):
@@ -106,7 +106,7 @@ def sandkrabbe():
     return s
 
 
-def duenenwurm(pose='bogen'):
+def dune_worm(pose='bogen'):
     """Dune worm: segmented, mandibles; `spur` = sand wave, `bogen` = leaps out."""
     if pose == 'spur':
         s = f'<path d="M -60,0 Q -40,-18 -20,-8 Q 0,-22 20,-8 Q 40,-18 60,0 Z" fill="{SAND}" {st(3)}/>'
@@ -139,7 +139,7 @@ def duenenwurm(pose='bogen'):
     return s
 
 
-def funkenmotte(sparks=True):
+def spark_moth(sparks=True):
     """Spark moth: glowing wings, sparks fall."""
     s = '<circle cx="0" cy="-40" r="46" fill="#ffb84a" opacity="0.18"/>'
     for side in (-1, 1):
@@ -156,7 +156,7 @@ def funkenmotte(sparks=True):
 
 # ── Warden ──────────────────────────────────────────────────────────────
 
-def sandschlange(pose='bogen'):
+def sand_serpent(pose='bogen'):
     """Sand serpent: large serpent with sand scales and diamond pattern, yellow eyes.
     Poses: spur (sand wave only), auftauchen, bogen (in the air), benommen, ruhig."""
     if pose in ('spur', 'beben'):
@@ -210,7 +210,7 @@ def sandschlange(pose='bogen'):
 
 # ── Items, spring, decoration ───────────────────────────────────────────
 
-def wasserschlauch(full=True):
+def water_skin(full=True):
     s = f'<path d="M -22,-8 Q -30,-40 -10,-54 L 10,-54 Q 30,-40 22,-8 Q 0,4 -22,-8 Z" fill="{"#a8703c" if full else "#c8a07a"}" {st(3.5)}/>'
     s += f'<rect x="-6" y="-66" width="12" height="14" rx="3" fill="#5e4430" {st(2.5)}/>'
     if full:
@@ -218,7 +218,7 @@ def wasserschlauch(full=True):
     return s
 
 
-def steintafel():
+def stone_tablet():
     """Ruin tablet with an engraved grey imprint (trail of the being that drinks colour)."""
     s = f'<path d="M -40,0 L -36,-90 Q 0,-104 36,-90 L 40,0 Z" fill="{STONE}" {st(4)}/>'
     s += f'<path d="M -28,-74 H 28 M -28,-60 H 16 M -28,-46 H 24" stroke="{STONE_DARK}" stroke-width="3"/>'
@@ -227,7 +227,7 @@ def steintafel():
     return s
 
 
-def glutquelle(freed=True):
+def ember_spring(freed=True):
     """Ember spring in the sand basin: stone basin, warm glow; withered = grey and cracked."""
     s = ''
     if freed:
@@ -245,7 +245,7 @@ def glutquelle(freed=True):
     return s
 
 
-def ruinenquelle():
+def ruin_spring():
     """Small spring between the pillars: stone ring, clear bubbling water."""
     s = f'<path d="M -60,0 Q -64,-24 -48,-28 H 48 Q 64,-24 60,0 Z" fill="{STONE}" {st(4)}/>'
     for x in (-36, -12, 12, 36):
@@ -256,19 +256,19 @@ def ruinenquelle():
     return s
 
 
-def duene():
+def dune():
     return (f'<path d="M -200,0 Q -120,-90 -20,-70 Q 60,-120 200,0 Z" fill="{SAND}" {st(4)}/>'
             f'<path d="M -120,-40 Q -60,-70 0,-50 M 40,-60 Q 100,-80 150,-30" fill="none" stroke="{SAND_LIGHT}" stroke-width="5" stroke-linecap="round"/>')
 
 
-def felsbogen():
+def rock_arch():
     s = f'<path d="M -130,0 Q -140,-160 0,-180 Q 140,-160 130,0 L 80,0 Q 90,-110 0,-120 Q -90,-110 -80,0 Z" fill="#d9a066" {st(5)}/>'
     s += f'<path d="M -110,-60 Q -100,-120 -40,-150 M 60,-140 Q 100,-120 110,-60" fill="none" stroke="#b8804a" stroke-width="4"/>'
     s += f'<path d="M -126,-20 H -86 M 90,-30 H 124" stroke="#b8804a" stroke-width="3"/>'
     return s
 
 
-def saeule(broken=False):
+def pillar(broken=False):
     h = 140 if broken else 200
     s = f'<rect x="-30" y="-12" width="60" height="12" fill="{STONE}" {st(3.5)}/>'
     s += f'<rect x="-22" y="{-h}" width="44" height="{h - 12}" fill="{STONE}" {st(4)}/>'
@@ -281,15 +281,15 @@ def saeule(broken=False):
     return s
 
 
-def ruinentor():
-    s = f'<g transform="translate(-80,0)">{saeule()}</g><g transform="translate(80,0)">{saeule()}</g>'
+def ruin_gate():
+    s = f'<g transform="translate(-80,0)">{pillar()}</g><g transform="translate(80,0)">{pillar()}</g>'
     s += f'<path d="M -118,-216 H 118 V -244 H -118 Z" fill="{STONE}" {st(4)}/>'
     s += f'<path d="M -40,-230 h 20 m 10,0 h 20 m 10,0 h 20" stroke="{STONE_DARK}" stroke-width="4"/>'
     s += f'<circle cx="0" cy="-230" r="8" fill="#8a8a88" stroke="#5a5a58" stroke-width="2"/>'
     return s
 
 
-def kaktus():
+def cactus():
     s = f'<path d="M -14,0 V -110 Q -14,-130 0,-130 Q 14,-130 14,-110 V 0 Z" fill="{CACTUS}" {st(4)}/>'
     s += f'<path d="M -14,-60 H -34 Q -44,-60 -44,-70 V -90 Q -44,-100 -36,-100 Q -28,-100 -28,-90 V -76 H -14" fill="{CACTUS}" {st(3.5)}/>'
     s += f'<path d="M 14,-40 H 30 Q 40,-40 40,-50 V -76 Q 40,-86 32,-86 Q 24,-86 24,-76 V -56 H 14" fill="{CACTUS}" {st(3.5)}/>'
@@ -299,7 +299,7 @@ def kaktus():
     return s
 
 
-def palme():
+def palm_tree():
     s = f'<path d="M -10,0 Q -4,-120 20,-220 L 32,-218 Q 10,-120 10,0 Z" fill="#a87a52" {st(4)}/>'
     for y in range(-200, -10, 20):
         s += f'<path d="M -6,{y * -0.5 - 200 + 100} q 8,4 18,0" fill="none" stroke="#7a5434" stroke-width="2"/>'
@@ -313,7 +313,7 @@ def palme():
     return s
 
 
-def zelt():
+def tent():
     s = f'<path d="M -110,0 L 0,-120 L 110,0 Z" fill="#e8d0a0" {st(5)}/>'
     s += f'<path d="M -110,0 L 0,-120 L -40,0 Z" fill="#c8483a" {st(4)}/>'
     s += f'<path d="M -20,0 L 0,-80 L 20,0 Z" fill="#5e4430" {st(3)}/>'
@@ -322,7 +322,7 @@ def zelt():
     return s
 
 
-def oase():
+def oasis():
     s = f'<ellipse cx="0" cy="-6" rx="150" ry="20" fill="{WATER}" {st(4)}/>'
     s += '<path d="M -80,-10 q 14,-6 28,0 M 30,-8 q 14,-6 28,0" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>'
     for x in (-150, -130, 132, 150):
@@ -330,7 +330,7 @@ def oase():
     return s
 
 
-def giessstelle(bloom=False):
+def watering_spot(bloom=False):
     """Withered patch of the oasis / blossomed after watering."""
     if not bloom:
         s = f'<ellipse cx="0" cy="-4" rx="40" ry="8" fill="#b89a6a" {st(3)}/>'
@@ -343,7 +343,7 @@ def giessstelle(bloom=False):
     return s
 
 
-def grauspur():
+def grey_trail():
     """Grey footprints of the wanderer (E-325): three pairs, pale as ash."""
     s = ''
     for k in range(3):
@@ -356,19 +356,19 @@ def grauspur():
 
 # Decoration for the maps (world units, origin at the bottom centre): name → (drawing, viewBox)
 DECOR = {
-    'duene': (duene(), '-210 -130 420 134'),
-    'felsbogen': (felsbogen(), '-140 -190 280 194'),
-    'saeule': (saeule(), '-36 -222 72 226'),
-    'saeule-bruch': (saeule(True), '-36 -160 72 164'),
-    'ruinentor': (ruinentor(), '-124 -250 248 254'),
-    'kaktus': (kaktus(), '-50 -146 100 150'),
-    'palme': (palme(), '-110 -300 260 304'),
-    'oase': (oase(), '-160 -76 320 80'),
-    'zelt': (zelt(), '-116 -156 232 160'),
-    'kamel': (kamel(), '-80 -184 232 188'),
-    'glutquelle-verdorrt': (glutquelle(False), '-120 -60 240 64'),
-    'glutquelle-befreit': (glutquelle(True), '-160 -136 320 140'),
-    'grauspur': (grauspur(), '-74 -10 156 14'),
+    'duene': (dune(), '-210 -130 420 134'),
+    'felsbogen': (rock_arch(), '-140 -190 280 194'),
+    'saeule': (pillar(), '-36 -222 72 226'),
+    'saeule-bruch': (pillar(True), '-36 -160 72 164'),
+    'ruinentor': (ruin_gate(), '-124 -250 248 254'),
+    'kaktus': (cactus(), '-50 -146 100 150'),
+    'palme': (palm_tree(), '-110 -300 260 304'),
+    'oase': (oasis(), '-160 -76 320 80'),
+    'zelt': (tent(), '-116 -156 232 160'),
+    'kamel': (camel(), '-80 -184 232 188'),
+    'glutquelle-verdorrt': (ember_spring(False), '-120 -60 240 64'),
+    'glutquelle-befreit': (ember_spring(True), '-160 -136 320 140'),
+    'grauspur': (grey_trail(), '-74 -10 156 14'),
 }
 
 
@@ -400,29 +400,29 @@ def sheet():
     o.append(g(420, 410, 1.0, palma()))
     o.append(text(420, 446, 'Oasen-Hüterin Palma', 17, TEXT, weight='bold'))
     o.append(text(420, 468, 'Kopftuch, Wasserkrug', 12, DIM, style='italic'))
-    o.append(g(640, 410, 0.9, kamel()) + g(880, 410, 0.9, zelt()))
+    o.append(g(640, 410, 0.9, camel()) + g(880, 410, 0.9, tent()))
     o.append(text(690, 446, 'Kamel mit Satteltaschen', 15, TEXT, weight='bold'))
     o.append(text(880, 446, 'Zelt der Karawane', 15, TEXT, weight='bold'))
 
     o.append(card(1050, 100, 520, 400, 'Gegenstände'))
     o.append(ground(1080, 410, 460))
-    o.append(g(1130, 410, 1.2, wasserschlauch(False)) + g(1210, 410, 1.2, wasserschlauch(True)))
+    o.append(g(1130, 410, 1.2, water_skin(False)) + g(1210, 410, 1.2, water_skin(True)))
     o.append(text(1170, 446, 'Wasserschlauch leer / voll', 15, TEXT, weight='bold'))
-    o.append(g(1320, 410, 1.0, steintafel()))
+    o.append(g(1320, 410, 1.0, stone_tablet()))
     o.append(text(1320, 446, 'Ruinentafel', 15, TEXT, weight='bold'))
     o.append(text(1320, 466, 'grauer Abdruck', 12, DIM))
-    o.append(g(1420, 410, 0.8, giessstelle(False)) + g(1500, 410, 0.8, giessstelle(True)))
+    o.append(g(1420, 410, 0.8, watering_spot(False)) + g(1500, 410, 0.8, watering_spot(True)))
     o.append(text(1460, 446, 'Gießstelle', 15, TEXT, weight='bold'))
 
     o.append(card(30, 520, 1540, 360, 'Gegner'))
     o.append(ground(60, 800, 1480))
-    o.append(g(170, 800, 1.2, sandkrabbe()))
+    o.append(g(170, 800, 1.2, sand_crab()))
     o.append(text(170, 836, 'Sandkrabbe', 17, TEXT, weight='bold'))
     o.append(text(170, 858, 'Panzer an den Seiten, nur von oben verwundbar', 12, DIM))
-    o.append(g(470, 800, 1.0, duenenwurm('spur')) + g(660, 800, 1.0, duenenwurm('bogen')))
+    o.append(g(470, 800, 1.0, dune_worm('spur')) + g(660, 800, 1.0, dune_worm('bogen')))
     o.append(text(570, 836, 'Dünenwurm: Sandspur / Sprung', 17, TEXT, weight='bold'))
     o.append(text(570, 858, 'wandert unter dem Sand, springt im Bogen', 12, DIM))
-    o.append(g(980, 740, 1.2, funkenmotte()))
+    o.append(g(980, 740, 1.2, spark_moth()))
     o.append(text(980, 836, 'Funkenmotte', 17, TEXT, weight='bold'))
     o.append(text(980, 858, 'lässt glühende Funken fallen', 12, DIM))
     o.append(elora(1200, 800) + text(1200, 836, 'Maßstab', 13, DIM))
@@ -435,17 +435,17 @@ def sheet():
                                 (1150, 'benommen', 'benommen', 'Hammer und Granaten'),
                                 (1420, 'ruhig', 'nach dem Kampf', 'müde, nicht böse')):
         sc = 0.7 if pose in ('bogen',) else 0.75
-        o.append(g(x, 1290, sc, sandschlange(pose)))
+        o.append(g(x, 1290, sc, sand_serpent(pose)))
         o.append(text(x, 1324, name, 17, TEXT, weight='bold'))
         o.append(text(x, 1346, note, 12, DIM))
 
     o.append(card(30, 1400, 1540, 450, 'Quelle und Deko der Wüste'))
     o.append(ground(60, 1780, 1480))
-    o.append(g(150, 1780, 0.6, glutquelle(False)) + g(310, 1780, 0.6, glutquelle(True)))
+    o.append(g(150, 1780, 0.6, ember_spring(False)) + g(310, 1780, 0.6, ember_spring(True)))
     o.append(text(230, 1814, 'Glutquelle verdorrt / befreit', 15, TEXT, weight='bold'))
-    o.append(g(480, 1780, 0.5, oase()) + g(700, 1780, 0.5, duene()) + g(900, 1780, 0.55, felsbogen()))
-    o.append(g(1030, 1780, 0.7, saeule()) + g(1090, 1780, 0.7, saeule(True)))
-    o.append(g(1220, 1780, 0.55, ruinentor()) + g(1350, 1780, 0.8, kaktus()) + g(1440, 1780, 0.7, palme()))
+    o.append(g(480, 1780, 0.5, oasis()) + g(700, 1780, 0.5, dune()) + g(900, 1780, 0.55, rock_arch()))
+    o.append(g(1030, 1780, 0.7, pillar()) + g(1090, 1780, 0.7, pillar(True)))
+    o.append(g(1220, 1780, 0.55, ruin_gate()) + g(1350, 1780, 0.8, cactus()) + g(1440, 1780, 0.7, palm_tree()))
     for x, t in ((480, 'Oase'), (700, 'Düne'), (900, 'Felsbogen'), (1060, 'Säulen'), (1220, 'Ruinentor'), (1350, 'Kaktus'), (1450, 'Palme')):
         o.append(text(x, 1814, t, 14, TEXT, weight='bold'))
     o.append(elora(1540, 1780))
@@ -455,5 +455,5 @@ def sheet():
 
 if __name__ == '__main__':
     os.makedirs('docs/release-2/design', exist_ok=True)
-    open('docs/release-2/design/kapitel3-entwuerfe.svg', 'w').write(sheet())
+    open('docs/release-2/design/chapter3-drafts.svg', 'w').write(sheet())
     export_decor()

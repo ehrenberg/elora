@@ -3,8 +3,8 @@
 The same small scene (hill, house, tree, Elora) in all eight weathers, plus the shapes of the
 weather particles and the warning before a lightning strike.
 
-Usage: python3 tools/design/wetter_entwuerfe.py && cargo xtask svg-preview \
-        docs/release-2/design/wetter-entwuerfe.svg docs/release-2/design/wetter-entwuerfe.png 1600
+Usage: python3 tools/design/weather_drafts.py && cargo xtask svg-preview \
+        docs/release-2/design/weather-drafts.svg docs/release-2/design/weather-drafts.png 1600
 """
 import math
 import os
@@ -12,8 +12,8 @@ import random
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from abenteuer_figuren import DIM, OUT, TEXT, text  # noqa: E402
-from kapitel1_entwuerfe import card, elora  # noqa: E402
+from adventure_figures import DIM, OUT, TEXT, text  # noqa: E402
+from chapter1_drafts import card, elora  # noqa: E402
 
 PW, PH = 360, 240  # size of one image
 
@@ -245,4 +245,4 @@ def sheet():
 
 if __name__ == '__main__':
     os.makedirs('docs/release-2/design', exist_ok=True)
-    open('docs/release-2/design/wetter-entwuerfe.svg', 'w').write(sheet())
+    open('docs/release-2/design/weather-drafts.svg', 'w').write(sheet())

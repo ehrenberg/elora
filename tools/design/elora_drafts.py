@@ -1,7 +1,7 @@
-"""Generates docs/archive/release-1/design/elora-entwuerfe.svg – three drop drafts of Elora (E-085).
+"""Generates docs/archive/release-1/design/elora-drafts.svg – three drop drafts of Elora (E-085).
 
-Usage: python3 tools/design/elora_entwuerfe.py && cargo xtask svg-preview \
-        docs/archive/release-1/design/elora-entwuerfe.svg docs/archive/release-1/design/elora-entwuerfe.png 1260
+Usage: python3 tools/design/elora_drafts.py && cargo xtask svg-preview \
+        docs/archive/release-1/design/elora-drafts.svg docs/archive/release-1/design/elora-drafts.png 1260
 
 Scale: figure locally ~100 wide → game size 36 units (E-087), factor 0.36.
 The feet (local y = 67) stand on the bottom edge of the hitbox (+14 units).
@@ -86,5 +86,5 @@ def sheet():
 
 
 if __name__ == '__main__':
-    with open('docs/archive/release-1/design/elora-entwuerfe.svg', 'w') as f:
+    with open('docs/archive/release-1/design/elora-drafts.svg', 'w') as f:
         f.write(sheet())

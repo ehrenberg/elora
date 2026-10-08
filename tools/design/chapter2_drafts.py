@@ -1,9 +1,9 @@
 """Drafts for chapter 2 "Murmelwald" (R2-M2.2, step M2.2.0, E-306 to E-311).
 
-Usage: python3 tools/design/kapitel2_entwuerfe.py && cargo xtask svg-preview \
-        docs/release-2/design/kapitel2-entwuerfe.svg docs/release-2/design/kapitel2-entwuerfe.png 1600
+Usage: python3 tools/design/chapter2_drafts.py && cargo xtask svg-preview \
+        docs/release-2/design/chapter2-drafts.svg docs/release-2/design/chapter2-drafts.png 1600
 
-Style like chapter 1 (kapitel1_entwuerfe.py): dark outline, flat colours; enemies round and
+Style like chapter 1 (chapter1_drafts.py): dark outline, flat colours; enemies round and
 cheeky, no blood. The forest is shadier but friendly: moss, glowing mushrooms, tree houses.
 """
 import math
@@ -11,8 +11,8 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from abenteuer_figuren import DIM, OUT, TEXT, angry_eye, drop, g, star, text  # noqa: E402
-from kapitel1_entwuerfe import card, elora, ground  # noqa: E402
+from adventure_figures import DIM, OUT, TEXT, angry_eye, drop, g, star, text  # noqa: E402
+from chapter1_drafts import card, elora, ground  # noqa: E402
 
 BARK = '#8a6040'
 BARK_DARK = '#5e4430'
@@ -70,7 +70,7 @@ def plumm():
     return s
 
 
-def pilzkind(sad=True):
+def mushroom_child(sad=True):
     """Small mushroom child: drop body with red mushroom cap, tearful or happy."""
     s = drop('f6efdf', 'd8c8a8')
     s += f'<path d="M -70,-92 Q -60,-150 0,-156 Q 60,-150 70,-92 Q 0,-104 -70,-92 Z" fill="#e8685a" {st(4.5)}/>'
@@ -82,7 +82,7 @@ def pilzkind(sad=True):
     return s
 
 
-def pilzmama():
+def mushroom_mama():
     """Mother of the mushroom child: larger, brown cap with light dots, apron."""
     s = drop('f6efdf', 'd8c8a8')
     s += f'<path d="M -46,-40 Q 4,-30 52,-40 L 50,-14 Q 4,-6 -44,-14 Z" fill="#7fd99a" {st(3.5)}/>'
@@ -94,7 +94,7 @@ def pilzmama():
 
 # ── Enemies ─────────────────────────────────────────────────────────────
 
-def wurzelschlange(out=True):
+def root_snake(out=True):
     """Root snake: gnarled root with leaves; `out` = surfaced, otherwise only a mound of earth."""
     s = f'<path d="M -40,0 Q -36,-14 -20,-16 H 20 Q 36,-14 40,0 Z" fill="#7a5a3e" {st(3.5)}/>'
     for x in (-24, -6, 14, 28):
@@ -113,12 +113,12 @@ def wurzelschlange(out=True):
     return s
 
 
-def nuss(x, y, r=11):
+def nut(x, y, r=11):
     return (f'<ellipse cx="{x}" cy="{y}" rx="{r}" ry="{r * 1.2:.1f}" fill="{NUT}" stroke="{OUT}" stroke-width="2.5"/>'
             f'<path d="M {x - r},{y - r * 0.5:.1f} Q {x},{y - r * 1.6:.1f} {x + r},{y - r * 0.5:.1f} Z" fill="#6e4a2a" stroke="{OUT}" stroke-width="2.5"/>')
 
 
-def eichhornpirat():
+def squirrel_pirate():
     """Squirrel with headscarf and eye patch, throws nuts."""
     s = f'<path d="M -30,-30 C -90,-40 -96,-130 -40,-130 C -20,-130 -14,-100 -30,-90 C -60,-90 -56,-50 -26,-56" fill="#d9822b" {st(4)}/>'
     s += f'<path d="M -52,-110 q 8,-8 18,-4" fill="none" stroke="#f2b36a" stroke-width="4" stroke-linecap="round"/>'
@@ -140,13 +140,13 @@ def eichhornpirat():
     # paw with nut
     s += f'<path d="M 18,-52 Q 40,-62 44,-44" fill="none" stroke="{OUT}" stroke-width="9" stroke-linecap="round"/>'
     s += f'<path d="M 18,-52 Q 40,-62 44,-44" fill="none" stroke="#d9822b" stroke-width="5" stroke-linecap="round"/>'
-    s += nuss(50, -46, 10)
+    s += nut(50, -46, 10)
     for x in (-12, 14):
         s += f'<ellipse cx="{x}" cy="-2" rx="12" ry="6" fill="#b8682a" {st(3)}/>'
     return s
 
 
-def pilzwicht():
+def mushroom_imp():
     """Mushroom imp: small cheeky mushroom with a purple cap, puffs out colourful spores."""
     s = f'<path d="M -22,0 Q -26,-34 -18,-48 H 18 Q 26,-34 22,0 Z" fill="#f2e6d0" {st(4)}/>'
     s += angry_eye(-7, -30, 6) + angry_eye(11, -30, 6)
@@ -162,7 +162,7 @@ def pilzwicht():
     return s
 
 
-def rausch_elora():
+def dazed_elora():
     """Elora in a colourful daze (E-311): rainbow shimmer, little stars, slower."""
     colors = ('e8685a', 'f2c14e', '7fd99a', '5aaee8', 'a77be0')
     s = ''
@@ -177,7 +177,7 @@ def rausch_elora():
 
 # ── Warden ──────────────────────────────────────────────────────────────
 
-def kern(x, y, r=14, lit=True):
+def core_orb(x, y, r=14, lit=True):
     c = AMBER if lit else '#8a7a5a'
     s = f'<circle cx="{x}" cy="{y}" r="{r + 8}" fill="{AMBER}" opacity="0.3"/>' if lit else ''
     s += f'<ellipse cx="{x}" cy="{y}" rx="{r}" ry="{r * 1.2:.1f}" fill="{c}" stroke="{OUT}" stroke-width="3"/>'
@@ -205,7 +205,7 @@ def twigs(x, y, ang, n=3, length=34):
     return s
 
 
-def wurzelwaechter(pose='schlaf'):
+def root_warden(pose='schlaf'):
     """Root warden: an ancient, walking giant tree (tree shepherd) – root legs, long branch arms with
     twig fingers, bark face with heavy brows, bulbous nose and long beard of moss and
     twigs, crown of leaves. Three cores in the chest.
@@ -254,7 +254,7 @@ def wurzelwaechter(pose='schlaf'):
             s += f'<ellipse cx="{x}" cy="{y}" rx="18" ry="22" fill="#3a2a1a" stroke="{OUT}" stroke-width="3"/>'
             s += f'<ellipse cx="{x}" cy="{y}" rx="10" ry="12" fill="#ffd27a" opacity="0.85"/>'
         else:
-            s += kern(x, y, 13, pose != 'ruhig')
+            s += core_orb(x, y, 13, pose != 'ruhig')
     # head: upper part of the trunk, elongated
     s += f'<path d="M -64,-430 Q -74,-540 -30,-580 Q 0,-596 34,-580 Q 76,-540 66,-430 Z" fill="{BARK}" {st(5)}/>'
     # crown of leaves and twigs like hair
@@ -317,7 +317,7 @@ def rune(lit=True):
     return s
 
 
-def waldquelle(freed=True):
+def forest_spring(freed=True):
     """Forest spring between large roots: dark basin; when freed clear and glowing."""
     s = ''
     if freed:
@@ -337,7 +337,7 @@ def waldquelle(freed=True):
     return s
 
 
-def waldbaum():
+def forest_tree():
     """Tall forest tree (lots of verticality): wide roots, furrowed bark with knothole and moss,
     side branches, crown of several leaf clouds with light and shadow, a few leaves."""
     s = ''
@@ -374,7 +374,7 @@ def waldbaum():
     return s
 
 
-def baumhaus():
+def tree_house():
     """Tree house of the settlement with platform and door."""
     s = f'<rect x="-90" y="-12" width="180" height="12" fill="#a87a52" {st(4)}/>'
     for x in (-80, 80):
@@ -389,7 +389,7 @@ def baumhaus():
     return s
 
 
-def haengebruecke():
+def suspension_bridge():
     s = f'<path d="M -150,-60 Q 0,-10 150,-60" fill="none" stroke="#8a7050" stroke-width="3"/>'
     for k in range(13):
         x = -144 + k * 24
@@ -399,7 +399,7 @@ def haengebruecke():
     return s
 
 
-def leuchtpilze():
+def glow_mushrooms():
     """Glowing mushrooms: strong glow, luminous caps with light dots (little stars rise
     as particles in the game)."""
     s = '<ellipse cx="0" cy="-26" rx="70" ry="44" fill="#9ff2ff" opacity="0.22"/>'
@@ -414,7 +414,7 @@ def leuchtpilze():
     return s
 
 
-def wurzelbogen():
+def root_arch():
     s = f'<path d="M -120,0 Q -110,-140 0,-150 Q 110,-140 120,0" fill="none" stroke="{OUT}" stroke-width="34" stroke-linecap="round"/>'
     s += f'<path d="M -120,0 Q -110,-140 0,-150 Q 110,-140 120,0" fill="none" stroke="{BARK}" stroke-width="26" stroke-linecap="round"/>'
     s += blob(-40, -150, 40, 14, MOSS, 18, 0.18, 3) + blob(50, -146, 30, 12, MOSS, 16, 0.2, 3)
@@ -437,7 +437,7 @@ def sheet():
     o.append(ground(60, 410, 300) + g(180, 410, 1.0, plumm()) + elora(320, 410))
     o.append(text(190, 446, 'Uhu Plumm', 17, TEXT, weight='bold'))
     o.append(text(190, 468, 'sammelt Geschichten, Brille, Buch', 12, DIM, style='italic'))
-    o.append(ground(430, 410, 330) + g(510, 410, 0.55, pilzkind(True)) + g(680, 410, 0.55, pilzkind(False)))
+    o.append(ground(430, 410, 330) + g(510, 410, 0.55, mushroom_child(True)) + g(680, 410, 0.55, mushroom_child(False)))
     o.append(text(595, 446, 'Pilzkind verirrt / froh', 17, TEXT, weight='bold'))
     o.append(text(595, 468, 'folgt Elora nach Hause (E-308)', 12, DIM, style='italic'))
 
@@ -445,20 +445,20 @@ def sheet():
     o.append(ground(840, 410, 200) + g(900, 410, 1.0, rune(True)) + g(990, 410, 1.0, rune(False)))
     o.append(text(945, 446, 'Erinnerungsrune', 15, TEXT, weight='bold'))
     o.append(text(945, 466, 'leuchtet, bis Elora sie liest', 12, DIM))
-    o.append(kern(1100, 360, 20) + text(1100, 446, 'Kern', 15, TEXT, weight='bold'))
+    o.append(core_orb(1100, 360, 20) + text(1100, 446, 'Kern', 15, TEXT, weight='bold'))
     o.append(text(1100, 466, 'aus der Rinde gezogen', 12, DIM))
-    o.append(ground(1180, 410, 370) + g(1270, 410, 0.55, waldquelle(False)) + g(1460, 410, 0.55, waldquelle(True)))
+    o.append(ground(1180, 410, 370) + g(1270, 410, 0.55, forest_spring(False)) + g(1460, 410, 0.55, forest_spring(True)))
     o.append(text(1365, 446, 'Waldquelle verdorrt / befreit', 15, TEXT, weight='bold'))
 
     o.append(card(30, 520, 1540, 380, 'Gegner'))
-    o.append(ground(60, 820, 340) + g(140, 820, 0.9, wurzelschlange(False)) + g(300, 820, 0.9, wurzelschlange(True)))
+    o.append(ground(60, 820, 340) + g(140, 820, 0.9, root_snake(False)) + g(300, 820, 0.9, root_snake(True)))
     o.append(text(220, 856, 'Wurzelschlange', 17, TEXT, weight='bold'))
     o.append(text(220, 878, 'versteckt / schießt aus dem Boden', 12, DIM))
-    o.append(ground(460, 820, 320) + g(580, 820, 1.0, eichhornpirat()) + nuss(700, 700) + nuss(740, 730, 9))
+    o.append(ground(460, 820, 320) + g(580, 820, 1.0, squirrel_pirate()) + nut(700, 700) + nut(740, 730, 9))
     o.append('<path d="M 640,760 Q 690,660 740,720" fill="none" stroke="#a8946e" stroke-width="2" stroke-dasharray="5 6"/>')
     o.append(text(620, 856, 'Eichhornpirat', 17, TEXT, weight='bold'))
     o.append(text(620, 878, 'wirft Nüsse im Bogen', 12, DIM))
-    o.append(ground(840, 820, 320) + g(930, 820, 1.0, pilzwicht()) + g(1080, 820, 0.36, rausch_elora()))
+    o.append(ground(840, 820, 320) + g(930, 820, 1.0, mushroom_imp()) + g(1080, 820, 0.36, dazed_elora()))
     o.append(text(1000, 856, 'Pilzwicht und der bunte Rausch', 17, TEXT, weight='bold'))
     o.append(text(1000, 878, 'Elora schimmert bunt, läuft langsamer (E-311)', 12, DIM))
     o.append(elora(1250, 820) + text(1250, 856, 'Maßstab', 13, DIM))
@@ -468,15 +468,15 @@ def sheet():
                                 (610, 'angriff', 'Wurzelangriff', 'Boden bebt vorher'),
                                 (990, 'offen', 'Kern gezogen', 'jetzt verwundbar'),
                                 (1360, 'ruhig', 'nach dem Kampf', 'müde, nicht böse')):
-        o.append(ground(x - 170, 1290, 340) + g(x, 1290, 0.5, wurzelwaechter(pose)))
+        o.append(ground(x - 170, 1290, 340) + g(x, 1290, 0.5, root_warden(pose)))
         o.append(text(x, 1322, name, 17, TEXT, weight='bold'))
         o.append(text(x, 1344, note, 12, DIM))
     o.append(elora(1500, 1290))
 
     o.append(card(30, 1380, 1540, 330, 'Deko des Waldes'))
     o.append(ground(60, 1665, 1480))
-    o.append(g(150, 1665, 0.34, waldbaum()) + g(380, 1625, 0.75, baumhaus()))
-    o.append(g(650, 1645, 0.8, haengebruecke()) + g(880, 1665, 1.0, leuchtpilze()) + g(1100, 1665, 0.8, wurzelbogen()))
+    o.append(g(150, 1665, 0.34, forest_tree()) + g(380, 1625, 0.75, tree_house()))
+    o.append(g(650, 1645, 0.8, suspension_bridge()) + g(880, 1665, 1.0, glow_mushrooms()) + g(1100, 1665, 0.8, root_arch()))
     o.append(elora(1300, 1665))
     for x, t in ((140, 'Waldbaum'), (380, 'Baumhaus'), (650, 'Hängebrücke'), (880, 'Leuchtpilze'), (1100, 'Wurzelbogen')):
         o.append(text(x, 1694, t, 14, TEXT, weight='bold'))
@@ -484,7 +484,7 @@ def sheet():
     return '\n'.join(o)
 
 
-def pilzring():
+def mushroom_ring():
     """Ring of mushrooms (home of the Morchel family), flat on the ground."""
     s = '<ellipse cx="0" cy="-6" rx="120" ry="16" fill="#9ff2d8" opacity="0.2"/>'
     for k, (x, h, r, c) in enumerate(((-110, 18, 12, '#e8685a'), (-80, 26, 15, '#a8703c'), (-46, 20, 12, '#e8685a'),
@@ -499,14 +499,14 @@ def pilzring():
 
 # Decoration for the chapter 2 maps (E-312): name: (drawing, viewBox), origin at the bottom centre.
 DECOR = {
-    'waldbaum': (waldbaum(), '-200 -680 400 690'),
-    'waldhaus': (baumhaus(), '-100 -160 200 204'),
-    'haengebruecke': (haengebruecke(), '-160 -70 320 72'),
-    'leuchtpilze': (leuchtpilze(), '-74 -92 148 94'),
-    'wurzelbogen': (wurzelbogen(), '-140 -180 280 182'),
-    'pilzring': (pilzring(), '-130 -56 260 58'),
-    'waldquelle-verdorrt': (waldquelle(False), '-160 -160 320 162'),
-    'waldquelle-befreit': (waldquelle(True), '-160 -160 320 162'),
+    'waldbaum': (forest_tree(), '-200 -680 400 690'),
+    'waldhaus': (tree_house(), '-100 -160 200 204'),
+    'haengebruecke': (suspension_bridge(), '-160 -70 320 72'),
+    'leuchtpilze': (glow_mushrooms(), '-74 -92 148 94'),
+    'wurzelbogen': (root_arch(), '-140 -180 280 182'),
+    'pilzring': (mushroom_ring(), '-130 -56 260 58'),
+    'waldquelle-verdorrt': (forest_spring(False), '-160 -160 320 162'),
+    'waldquelle-befreit': (forest_spring(True), '-160 -160 320 162'),
 }
 
 
@@ -520,5 +520,5 @@ def export_decor():
 
 if __name__ == '__main__':
     os.makedirs('docs/release-2/design', exist_ok=True)
-    open('docs/release-2/design/kapitel2-entwuerfe.svg', 'w').write(sheet())
+    open('docs/release-2/design/chapter2-drafts.svg', 'w').write(sheet())
     export_decor()

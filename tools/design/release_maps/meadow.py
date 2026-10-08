@@ -32,5 +32,5 @@ def build():
     return g
 if __name__ == '__main__':
     g = build()
-    check(g, name='Wiese')
+    check(g, name='Meadow')
     print('\n'.join(g.rows()))

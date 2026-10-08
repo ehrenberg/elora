@@ -40,9 +40,9 @@ def check(grid, ctf=False, name=''):
             c = g.at(x, y)
             if c in ENTS:
                 if g.at(x, y+1) not in GROUND and c in 'SRBrb':
-                    errs.append(f'{c} bei {x},{y} steht nicht auf Boden')
+                    errs.append(f'{c} at {x},{y} is not standing on ground')
                 if c in 'SRB' and g.at(x, y-1) not in '.' + ''.join(ENTS):
-                    errs.append(f'{c} bei {x},{y}: kein Platz über dem Spawn')
+                    errs.append(f'{c} at {x},{y}: no room above the spawn')
             if (c == '.' or c in ENTS) and g.at(x, y+1) in GROUND and g.at(x, y-1) not in SOLID:
                 stand.add((x, y))
     # Reachability: from standing spot to standing spot if the path (straight line) is clear and
@@ -84,15 +84,15 @@ def check(grid, ctf=False, name=''):
             if c in ENTS:
                 # entity must be within reach of a reachable standing spot
                 near = any(abs(x-a) <= 2 and 0 <= b - y <= 3 or (a, b) == (x, y) for (a, b) in seen)
-                if not near: errs.append(f'{c} bei {x},{y} nicht erreichbar')
+                if not near: errs.append(f'{c} at {x},{y} not reachable')
     unreach = [n for n in nodes if n not in seen]
     if ctf:
         for y in range(h):
             for x in range(w):
                 c, d = g.at(x, y), g.at(w-1-x, y)
                 sw = {'R':'B','B':'R','r':'b','b':'r','\\':'/','/':'\\','<':'>','>':'<'}
-                if sw.get(c, c) != d: errs.append(f'nicht gespiegelt bei {x},{y}'); break
+                if sw.get(c, c) != d: errs.append(f'not mirrored at {x},{y}'); break
     counts = {k: sum(r.count(k) for r in grid.rows()) for k in 'SRBrbhaLG'}
-    print(f'== {name} {w}×{h}: Standplätze {len(nodes)}, erreichbar {len(seen)}, unerreichbar {len(unreach)}; {counts}')
-    for e in errs[:20]: print('  FEHLER', e)
+    print(f'== {name} {w}×{h}: standing spots {len(nodes)}, reachable {len(seen)}, unreachable {len(unreach)}; {counts}')
+    for e in errs[:20]: print('  ERROR', e)
     return errs, unreach

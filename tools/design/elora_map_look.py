@@ -1,7 +1,7 @@
-"""Generates docs/archive/release-1/design/elora-kartenlook.svg – three drafts for the map look (M6.0, E-130).
+"""Generates docs/archive/release-1/design/elora-map-look.svg – three drafts for the map look (M6.0, E-130).
 
-Usage: python3 tools/design/elora_kartenlook.py && cargo xtask svg-preview \
-        docs/archive/release-1/design/elora-kartenlook.svg docs/archive/release-1/design/elora-kartenlook.png 1400
+Usage: python3 tools/design/elora_map_look.py && cargo xtask svg-preview \
+        docs/archive/release-1/design/elora-map-look.svg docs/archive/release-1/design/elora-map-look.png 1400
 
 Each row shows the same scene: playing area with outer/inner corners, unhookable
 stone (U), death (x), platform (~), ice (I), jump pad (^), booster (>),
@@ -191,7 +191,7 @@ def specials(st, key):
     return ''.join(s)
 
 
-def deko(st, key):
+def decoration(st, key):
     s = []
     ground = 6 * T  # top edge of the ground
     if key == 'A':
@@ -234,7 +234,7 @@ def sheet():
         out.append(f'<clipPath id="clip{key}"><rect x="0" y="{-2 * T}" width="{SW}" height="{SH}" rx="10"/></clipPath>')
         out.append(f'<g transform="translate(30,{oy + 34 + 2 * T})"><g clip-path="url(#clip{key})">')
         out.append(background(st, key))
-        out.append(deko(st, key))
+        out.append(decoration(st, key))
         out.append(terrain(st, key))
         out.append(specials(st, key))
         scale = 0.36 * T / 32  # as in the game
@@ -247,5 +247,5 @@ def sheet():
 
 
 if __name__ == '__main__':
-    with open('docs/archive/release-1/design/elora-kartenlook.svg', 'w') as fh:
+    with open('docs/archive/release-1/design/elora-map-look.svg', 'w') as fh:
         fh.write(sheet())

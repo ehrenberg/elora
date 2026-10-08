@@ -124,7 +124,7 @@ pub fn bonus_text(lang: &Lang, b: Bonus) -> String {
     lang.f(key, &[("n", &n)])
 }
 
-/// Icon of an item by kind (draft `abenteuer-ui.png`): potion, hat, cape,
+/// Icon of an item by kind (draft `adventure-ui.png`): potion, hat, cape,
 /// boots, pendant, material chunk; gleam drops and collectibles from the graphics.
 pub fn item_icon(
     batch: &mut elora_render::ShapeBatch,

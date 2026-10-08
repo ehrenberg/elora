@@ -10,12 +10,12 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 from kit import check  # noqa: E402
 
-MAPS = [('wiese', 'WIESE', False), ('wueste', 'WUESTE', False), ('winter', 'WINTER', False),
-        ('wald', 'WALD', True), ('nacht', 'NACHT', True)]
+MAPS = [('meadow', 'MEADOW', False), ('desert', 'DESERT', False), ('winter', 'WINTER', False),
+        ('forest', 'FOREST', True), ('night', 'NIGHT', True)]
 
-out = ['//! Layouts der Release-Karten (M6.10, E-134, E-155 bis E-158), erzeugt mit dem Baukasten',
-       '//! `tools/design/release_maps/` und dort geprüft (Erreichbarkeit, Spawns, Spiegelung).',
-       '//! Zeichen wie in den Aufzeichnungen; Entities `S R B r b h a L G`.', '']
+out = ['//! Layouts of the release maps (M6.10, E-134, E-155 to E-158), generated with the toolkit',
+       '//! `tools/design/release_maps/` and checked there (reachability, spawns, mirroring).',
+       '//! Characters as in the notes; entities `S R B r b h a L G`.', '']
 failed = False
 for mod, const, ctf in MAPS:
     g = importlib.import_module(mod).build()
@@ -25,7 +25,7 @@ for mod, const, ctf in MAPS:
     out += [f'    r"{r}",' for r in g.rows()]
     out += ['];', '']
 if failed:
-    sys.exit('Prüfung fehlgeschlagen – nichts geschrieben')
+    sys.exit('check failed – nothing written')
 with open('apps/elora-client/src/editor/release_layouts.rs', 'w') as fh:
     fh.write('\n'.join(out))
-print('geschrieben')
+print('written')

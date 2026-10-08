@@ -1,7 +1,7 @@
 """Drafts for chapter 4 "Frostspitzen" (R2-M2.4, step M2.4.0, E-340 to E-343).
 
-Usage: python3 tools/design/kapitel4_entwuerfe.py && cargo xtask svg-preview \
-        docs/release-2/design/kapitel4-entwuerfe.svg docs/release-2/design/kapitel4-entwuerfe.png 1600
+Usage: python3 tools/design/chapter4_drafts.py && cargo xtask svg-preview \
+        docs/release-2/design/chapter4-drafts.svg docs/release-2/design/chapter4-drafts.png 1600
 
 Style like chapters 1 to 3: dark outline, flat colours; here cool ice blue, snow and
 wood tones. Enemies cheeky, not bloody; Kristella noble and stern, gentle after the fight.
@@ -12,9 +12,9 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from abenteuer_figuren import DIM, OUT, TEXT, angry_eye, drop, g, star, text  # noqa: E402
-from kapitel1_entwuerfe import card, elora  # noqa: E402
-from kapitel2_entwuerfe import blob  # noqa: E402
+from adventure_figures import DIM, OUT, TEXT, angry_eye, drop, g, star, text  # noqa: E402
+from chapter1_drafts import card, elora  # noqa: E402
+from chapter2_drafts import blob  # noqa: E402
 
 SNOW = '#f6fafd'
 SNOW_SHADE = '#d4e2ee'
@@ -90,7 +90,7 @@ def flocke():
     return s
 
 
-def kletterer(body='f2a65a', feet='c97f3a', helmet='#f2c14e'):
+def climber(body='f2a65a', feet='c97f3a', helmet='#f2c14e'):
     """Lost climber: helmet with lamp, backpack, waves for help."""
     s = f'<rect x="-62" y="-92" width="26" height="56" rx="9" fill="{WOOD}" {st(3)}/>'
     s += drop(body, feet)
@@ -105,7 +105,7 @@ def kletterer(body='f2a65a', feet='c97f3a', helmet='#f2c14e'):
 
 # ── Enemies ─────────────────────────────────────────────────────────────
 
-def robbe(pose='rutschen'):
+def seal(pose='rutschen'):
     """Snowball seal: roundish, light belly; `rutschen` on its belly, `werfen` upright with a snowball."""
     if pose == 'rutschen':
         s = f'<path d="M -70,-6 Q -74,-44 -20,-46 Q 40,-50 60,-30 Q 74,-18 70,-6 Q 0,4 -70,-6 Z" fill="#9aaab8" {st(4)}/>'
@@ -131,7 +131,7 @@ def robbe(pose='rutschen'):
     return s
 
 
-def fledermaus(pose='haengt', bar=True):
+def bat(pose='haengt', bar=True):
     """Ice-spike bat: wings with ice spikes; `haengt` sleeping upside down (with `bar` the
     rock ceiling as well), `sturz` in a dive."""
     if pose == 'haengt':
@@ -160,7 +160,7 @@ def fledermaus(pose='haengt', bar=True):
     return s
 
 
-def frostgeist(in_wall=False):
+def frost_ghost(in_wall=False):
     """Frost ghost: semi-transparent mist body with ice crown, floats through walls."""
     s = ''
     if in_wall:
@@ -181,7 +181,7 @@ def frostgeist(in_wall=False):
     return s
 
 
-def erstarrt():
+def frozen_elora():
     """Elora briefly frozen (touched by the frost ghost): inside an ice block."""
     s = elora(0, 0, 0.36)
     s += f'<rect x="-24" y="-46" width="48" height="50" rx="6" fill="{ICE}" fill-opacity="0.6" {st(3)}/>'
@@ -254,7 +254,7 @@ def kristella(pose='schwebend', floating=True):
     return s
 
 
-def frostwelle():
+def frost_wave():
     """Frost wave across the ground: hoarfrost creeps ahead (warning), fresh frost behind it (deals damage), ice remains."""
     s = f'<rect x="-200" y="0" width="400" height="14" fill="{SNOW_SHADE}" {st(3)}/>'
     s += f'<rect x="-200" y="0" width="150" height="14" fill="{ICE}" {st(3)}/>'
@@ -272,7 +272,7 @@ def frostwelle():
 
 # ── Terrain and items ───────────────────────────────────────────────────
 
-def eiszapfen(state='haengt'):
+def icicle(state='haengt'):
     """Icicle on the ceiling: hangs, trembles (warning), falls, shatters."""
     s = f'<rect x="-34" y="-150" width="68" height="14" fill="{ROCK}" {st(3)}/>'
     if state == 'zerschellt':
@@ -292,7 +292,7 @@ def eiszapfen(state='haengt'):
     return s
 
 
-def eiszapfen_figur():
+def icicle_enemy():
     """Icicle as an enemy (tip down at the origin, 96 high)."""
     s = f'<path d="M -16,-96 L 0,0 L 16,-96 Z" fill="{ICE}" {st(3.5)}/>'
     s += f'<path d="M -5,-90 L 0,-40" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>'
@@ -300,7 +300,7 @@ def eiszapfen_figur():
     return s
 
 
-def duennes_eis(state='ganz'):
+def thin_ice(state='ganz'):
     """Thin ice over ice water (two tiles each): intact, cracks (about to break), broken."""
     s = f'<rect x="-64" y="0" width="128" height="40" fill="{WATER}" {st(3)}/>'
     s += '<path d="M -50,16 q 10,-5 20,0 q 10,5 20,0 M 10,26 q 10,-5 20,0 q 10,5 20,0" fill="none" stroke="#9fd8f0" stroke-width="2.5"/>'
@@ -315,7 +315,7 @@ def duennes_eis(state='ganz'):
     return s
 
 
-def schneebrocken(dust=True):
+def snow_boulder(dust=True):
     """Avalanche snow boulder: rolls downhill, snow dust behind it (`dust`)."""
     s = blob(0, -30, 30, 28, '#ffffff', n=30, jag=0.08, w=4)
     s += f'<path d="M -14,-44 q 8,-6 18,0 M -6,-22 q 10,6 20,-2" fill="none" stroke="{SNOW_SHADE}" stroke-width="3"/>'
@@ -327,18 +327,18 @@ def schneebrocken(dust=True):
     return s
 
 
-def lawine():
+def avalanche():
     """Avalanche slope: snow breaks loose at the top, boulders roll; niche as shelter."""
     s = f'<path d="M -150,0 L 150,0 L 150,-30 L -150,-150 Z" fill="{SNOW}" {st(4)}/>'
     s += f'<path d="M -150,-150 L -100,-130 M -96,-128 l 6,-10 l 8,12" fill="none" stroke="{DEEP}" stroke-width="3"/>'
-    s += f'<g transform="translate(-40,-96) scale(0.6)">{schneebrocken()}</g>'
-    s += f'<g transform="translate(40,-62) scale(0.5)">{schneebrocken()}</g>'
+    s += f'<g transform="translate(-40,-96) scale(0.6)">{snow_boulder()}</g>'
+    s += f'<g transform="translate(40,-62) scale(0.5)">{snow_boulder()}</g>'
     s += f'<path d="M 92,0 v -40 h 40 v 40" fill="{ROCK}" {st(3)}/>'
     s += f'<path d="M 100,0 v -28 h 24 v 28 Z" fill="#3f4a56"/>'
     return s
 
 
-def feuerstelle(lit=True):
+def fireplace(lit=True):
     """Fireplace (warms the cold bar): stone ring, logs, flames, warm glow."""
     s = ''
     if lit:
@@ -353,7 +353,7 @@ def feuerstelle(lit=True):
     return s
 
 
-def eisblock():
+def ice_block():
     """Ice block on the mountain path (breaks when stomped, D-M24-01)."""
     s = f'<path d="M -50,0 L -46,-90 L 44,-96 L 50,0 Z" fill="{ICE}" {st(4.5)}/>'
     s += f'<path d="M -34,-80 L -30,-20 M -20,-84 L -18,-50" stroke="#ffffff" stroke-width="5" stroke-linecap="round" opacity="0.8"/>'
@@ -362,7 +362,7 @@ def eisblock():
     return s
 
 
-def steigkrallen():
+def climbing_claws():
     """Climbing claws (ice grip): glove with three ice claws."""
     s = f'<path d="M -26,0 Q -34,-40 -18,-56 L 22,-56 Q 34,-40 26,0 Z" fill="#c8483a" {st(4)}/>'
     s += f'<rect x="-28" y="-8" width="56" height="12" rx="5" fill="#ffffff" {st(3)}/>'
@@ -373,7 +373,7 @@ def steigkrallen():
     return s
 
 
-def seil():
+def rope():
     s = ''
     for k, r in enumerate((30, 24, 18)):
         s += f'<ellipse cx="0" cy="{-30 + k * 2}" rx="{r + 6}" ry="{r}" fill="none" stroke="{OUT}" stroke-width="9"/>'
@@ -381,12 +381,12 @@ def seil():
     return s
 
 
-def eiskristall_item():
+def ice_crystal_item():
     s = crystal(-12, 0, 44, ICE_MID) + crystal(12, 0, 56, ICE) + crystal(0, 4, 34, FROST)
     return s
 
 
-def kaelteleiste():
+def cold_bar():
     """Cold bar in the HUD (counterpart to the heat bar) with frost border at the screen edge."""
     s = ('<defs><clipPath id="hud-clip"><rect x="0" y="0" width="300" height="150" rx="12"/></clipPath></defs>'
          '<rect x="0" y="0" width="300" height="150" rx="12" fill="#1c2833"/><g clip-path="url(#hud-clip)">')
@@ -405,7 +405,7 @@ def kaelteleiste():
 
 # ── Spring and decoration ───────────────────────────────────────────────
 
-def frostquelle(free=False):
+def frost_spring(free=False):
     """Frost spring: frozen (grey-pale, iced over) / freed (ice blue, shimmering, crystals)."""
     if not free:
         s = f'<ellipse cx="0" cy="-10" rx="110" ry="22" fill="#b8c4cc" {st(4)}/>'
@@ -422,7 +422,7 @@ def frostquelle(free=False):
     return s
 
 
-def gipfel():
+def summit():
     s = f'<path d="M -220,0 L -90,-220 L -40,-150 L 20,-260 L 220,0 Z" fill="{ROCK}" {st(5)}/>'
     s += f'<path d="M -90,-220 L -120,-170 L -96,-176 L -80,-158 L -62,-182 Z" fill="#ffffff" {st(3)}/>'
     s += f'<path d="M 20,-260 L -16,-196 L 6,-204 L 24,-180 L 42,-208 L 60,-196 Z" fill="#ffffff" {st(3)}/>'
@@ -430,7 +430,7 @@ def gipfel():
     return s
 
 
-def tanne_schnee():
+def snowy_fir():
     s = f'<rect x="-8" y="-30" width="16" height="30" fill="{WOOD}" {st(3.5)}/>'
     for k, (w, y) in enumerate(((70, -30), (56, -80), (40, -126))):
         s += f'<path d="M {-w},{y} L 0,{y - 70} L {w},{y} Z" fill="{PINE}" {st(4)}/>'
@@ -439,7 +439,7 @@ def tanne_schnee():
     return s
 
 
-def berghuette():
+def mountain_hut():
     s = f'<rect x="-90" y="-100" width="180" height="100" fill="{WOOD}" {st(5)}/>'
     for y in (-80, -60, -40, -20):
         s += f'<path d="M -90,{y} H 90" stroke="{WOOD_DARK}" stroke-width="3"/>'
@@ -452,7 +452,7 @@ def berghuette():
     return s
 
 
-def seilbruecke():
+def rope_bridge():
     s = f'<path d="M -150,-60 V 0 M 150,-60 V 0" stroke="{OUT}" stroke-width="10"/><path d="M -150,-60 V 0 M 150,-60 V 0" stroke="{WOOD}" stroke-width="6"/>'
     s += f'<path d="M -150,-56 Q 0,-10 150,-56" fill="none" stroke="#d9a066" stroke-width="4"/>'
     s += f'<path d="M -150,-14 Q 0,30 150,-14" fill="none" stroke="#d9a066" stroke-width="4"/>'
@@ -464,20 +464,20 @@ def seilbruecke():
     return s
 
 
-def schneewehe():
+def snowdrift():
     s = f'<path d="M -120,0 Q -100,-50 -30,-56 Q 40,-60 90,-30 Q 120,-14 120,0 Z" fill="#ffffff" {st(4)}/>'
     s += f'<path d="M -70,-40 Q -20,-50 30,-44" fill="none" stroke="{SNOW_SHADE}" stroke-width="4"/>'
     return s
 
 
-def gletscher():
+def glacier():
     s = f'<path d="M -160,0 L -140,-80 L -60,-110 L 40,-96 L 140,-120 L 160,0 Z" fill="{ICE}" {st(5)}/>'
     s += f'<path d="M -40,0 L -30,-60 L -20,0 Z M 60,0 L 72,-80 L 84,0 Z" fill="{ICE_DARK}" {st(3)}/>'
     s += f'<path d="M -130,-60 L -80,-90 M 100,-100 L 130,-80" stroke="#ffffff" stroke-width="5" stroke-linecap="round"/>'
     return s
 
 
-def grauspur_eis():
+def grey_trail_ice():
     """Trail of the Withered One: a spot where the ice has lost its colour (grey, dull)."""
     s = f'<ellipse cx="0" cy="-6" rx="80" ry="12" fill="#a8a8a6" opacity="0.8"/>'
     s += crystal(-40, -8, 40, '#b8b8b6') + crystal(30, -8, 52, '#c4c4c2')
@@ -488,17 +488,17 @@ def grauspur_eis():
 
 
 DECOR = {
-    'gipfel': (gipfel(), '-226 -266 452 270'),
-    'tanne-schnee': (tanne_schnee(), '-76 -210 152 214'),
-    'berghuette': (berghuette(), '-122 -210 244 214'),
-    'seilbruecke': (seilbruecke(), '-158 -66 316 82'),
-    'schneewehe': (schneewehe(), '-126 -66 252 70'),
-    'gletscher': (gletscher(), '-166 -126 332 130'),
-    'feuerstelle': (feuerstelle(True), '-76 -104 152 108'),
-    'eisblock': (eisblock(), '-70 -102 140 106'),
-    'frostquelle-verdorrt': (frostquelle(False), '-120 -62 240 66'),
-    'frostquelle-befreit': (frostquelle(True), '-150 -156 300 160'),
-    'grauspur-eis': (grauspur_eis(), '-86 -64 262 68'),
+    'gipfel': (summit(), '-226 -266 452 270'),
+    'tanne-schnee': (snowy_fir(), '-76 -210 152 214'),
+    'berghuette': (mountain_hut(), '-122 -210 244 214'),
+    'seilbruecke': (rope_bridge(), '-158 -66 316 82'),
+    'schneewehe': (snowdrift(), '-126 -66 252 70'),
+    'gletscher': (glacier(), '-166 -126 332 130'),
+    'feuerstelle': (fireplace(True), '-76 -104 152 108'),
+    'eisblock': (ice_block(), '-70 -102 140 106'),
+    'frostquelle-verdorrt': (frost_spring(False), '-120 -62 240 66'),
+    'frostquelle-befreit': (frost_spring(True), '-150 -156 300 160'),
+    'grauspur-eis': (grey_trail_ice(), '-86 -64 262 68'),
 }
 
 
@@ -531,38 +531,38 @@ def sheet():
     for x, (b, f, h) in zip((470, 660, 850), (('f2a65a', 'c97f3a', '#f2c14e'),
                                                ('8fd06a', '5fa03a', '#e8685a'),
                                                ('c8a0e8', '9a70c0', '#5fc8e8'))):
-        o.append(g(x, 410, 0.85, kletterer(b, f, h)))
+        o.append(g(x, 410, 0.85, climber(b, f, h)))
     o.append(text(660, 446, 'Drei verlorene Kletterer', 17, TEXT, weight='bold'))
     o.append(text(660, 468, 'Helm mit Lampe, Rucksack, winken um Hilfe', 12, DIM, style='italic'))
 
     o.append(card(1050, 100, 520, 400, 'Gegenstände'))
     o.append(ground(1080, 410, 460))
-    o.append(g(1130, 410, 1.2, steigkrallen()))
+    o.append(g(1130, 410, 1.2, climbing_claws()))
     o.append(text(1130, 446, 'Steigkrallen', 15, TEXT, weight='bold'))
     o.append(text(1130, 466, '= Eisgriff', 12, DIM))
-    o.append(g(1250, 410, 1.1, seil()))
+    o.append(g(1250, 410, 1.1, rope()))
     o.append(text(1250, 446, 'Flockes Seil', 15, TEXT, weight='bold'))
-    o.append(g(1360, 410, 1.3, eiskristall_item()))
+    o.append(g(1360, 410, 1.3, ice_crystal_item()))
     o.append(text(1360, 446, 'Eiskristall', 15, TEXT, weight='bold'))
-    o.append(g(1480, 410, 0.9, eisblock()))
+    o.append(g(1480, 410, 0.9, ice_block()))
     o.append(text(1480, 446, 'Eisblock am Bergsteig', 15, TEXT, weight='bold'))
     o.append(text(1480, 466, 'bricht mit Stampfen', 12, DIM))
 
     # enemies
     o.append(card(30, 520, 1540, 380, 'Gegner'))
     o.append(ground(60, 820, 1480))
-    o.append(g(170, 820, 1.0, robbe('rutschen')) + g(340, 820, 1.0, robbe('werfen')))
+    o.append(g(170, 820, 1.0, seal('rutschen')) + g(340, 820, 1.0, seal('werfen')))
     o.append(text(250, 856, 'Schneeballrobbe: rutscht / wirft', 17, TEXT, weight='bold'))
     o.append(text(250, 878, 'auf dem Bauch heran, Schneebälle im Bogen', 12, DIM))
     o.append(f'<rect x="520" y="596" width="240" height="14" fill="{ROCK}" stroke="{OUT}" stroke-width="3"/>')
-    o.append(g(580, 610, 1.0, fledermaus('haengt', bar=False)))
-    o.append(g(700, 790, 1.0, fledermaus('sturz')))
+    o.append(g(580, 610, 1.0, bat('haengt', bar=False)))
+    o.append(g(700, 790, 1.0, bat('sturz')))
     o.append(text(640, 856, 'Eisspitzen-Fledermaus: schläft / stürzt', 17, TEXT, weight='bold'))
     o.append(text(640, 878, 'hängt an der Decke, stürzt herab, flattert zurück', 12, DIM))
-    o.append(g(1000, 820, 1.0, frostgeist()) + g(1200, 820, 1.0, frostgeist(True)))
+    o.append(g(1000, 820, 1.0, frost_ghost()) + g(1200, 820, 1.0, frost_ghost(True)))
     o.append(text(1100, 856, 'Frostgeist: schwebt / durch die Wand', 17, TEXT, weight='bold'))
     o.append(text(1100, 878, 'Berührung lässt Elora kurz erstarren', 12, DIM))
-    o.append(g(1440, 820, 1.6, erstarrt()))
+    o.append(g(1440, 820, 1.6, frozen_elora()))
     o.append(text(1440, 856, 'Elora erstarrt', 15, TEXT, weight='bold'))
     o.append(text(1440, 878, '0,6 s im Eis', 12, DIM))
 
@@ -576,7 +576,7 @@ def sheet():
         o.append(g(x, 1350, 0.95, kristella(pose)))
         o.append(text(x, 1386, name, 17, TEXT, weight='bold'))
         o.append(text(x, 1408, note, 12, DIM))
-    o.append(g(1130, 1250, 0.6, frostwelle()))
+    o.append(g(1130, 1250, 0.6, frost_wave()))
     o.append(text(1130, 1200, 'Frostwelle', 14, TEXT, weight='bold'))
     o.append(text(1130, 1290, 'Eis · frischer Frost (schadet) · Reif (Warnung)', 11, DIM))
     o.append(elora(700, 1350))
@@ -585,28 +585,28 @@ def sheet():
     o.append(card(30, 1460, 1540, 400, 'Gelände und Kälte (E-342, E-343)'))
     o.append(ground(60, 1770, 1480))
     for x, state in ((120, 'haengt'), (200, 'zittert'), (280, 'faellt'), (360, 'zerschellt')):
-        o.append(g(x, 1770, 0.9, eiszapfen(state)))
+        o.append(g(x, 1770, 0.9, icicle(state)))
     o.append(text(240, 1806, 'Eiszapfen: hängt · zittert · fällt · zerschellt', 15, TEXT, weight='bold'))
     for x, state in ((520, 'ganz'), (670, 'risse'), (820, 'gebrochen')):
-        o.append(g(x, 1730, 0.9, duennes_eis(state)))
+        o.append(g(x, 1730, 0.9, thin_ice(state)))
     o.append(text(670, 1806, 'Dünnes Eis über Eiswasser: ganz · Risse · gebrochen', 15, TEXT, weight='bold'))
-    o.append(g(1030, 1770, 0.7, lawine()))
+    o.append(g(1030, 1770, 0.7, avalanche()))
     o.append(text(1030, 1806, 'Lawine mit Schutz-Nische', 15, TEXT, weight='bold'))
-    o.append(g(1190, 1770, 0.8, feuerstelle()))
+    o.append(g(1190, 1770, 0.8, fireplace()))
     o.append(text(1190, 1806, 'Feuerstelle', 15, TEXT, weight='bold'))
     o.append(text(1190, 1826, 'wärmt auf', 12, DIM))
-    o.append(g(1270, 1560, 0.9, kaelteleiste()))
+    o.append(g(1270, 1560, 0.9, cold_bar()))
     o.append(text(1405, 1806, 'Kälte-Leiste + Frostrand', 15, TEXT, weight='bold'))
     o.append(text(1405, 1826, 'voll = langsamer', 12, DIM))
 
     # spring and decoration
     o.append(card(30, 1880, 1540, 450, 'Quelle und Deko der Berge'))
     o.append(ground(60, 2260, 1480))
-    o.append(g(160, 2260, 0.65, frostquelle(False)) + g(350, 2260, 0.6, frostquelle(True)))
+    o.append(g(160, 2260, 0.65, frost_spring(False)) + g(350, 2260, 0.6, frost_spring(True)))
     o.append(text(255, 2294, 'Frostquelle vereist / befreit', 15, TEXT, weight='bold'))
-    o.append(g(570, 2260, 0.55, gipfel()) + g(760, 2260, 0.7, tanne_schnee()) + g(900, 2260, 0.6, berghuette()))
-    o.append(g(1090, 2260, 0.5, seilbruecke()) + g(1240, 2260, 0.55, gletscher()) + g(1365, 2260, 0.45, schneewehe()))
-    o.append(g(1470, 2260, 0.4, grauspur_eis()))
+    o.append(g(570, 2260, 0.55, summit()) + g(760, 2260, 0.7, snowy_fir()) + g(900, 2260, 0.6, mountain_hut()))
+    o.append(g(1090, 2260, 0.5, rope_bridge()) + g(1240, 2260, 0.55, glacier()) + g(1365, 2260, 0.45, snowdrift()))
+    o.append(g(1470, 2260, 0.4, grey_trail_ice()))
     for x, t in ((570, 'Gipfel'), (760, 'Tanne'), (900, 'Berghütte'), (1080, 'Seilbrücke'), (1240, 'Gletscher'),
                  (1365, 'Schneewehe'), (1490, 'graue Stelle')):
         o.append(text(x, 2294, t, 14, TEXT, weight='bold'))
@@ -617,6 +617,6 @@ def sheet():
 
 if __name__ == '__main__':
     os.makedirs('docs/release-2/design', exist_ok=True)
-    open('docs/release-2/design/kapitel4-entwuerfe.svg', 'w').write(sheet())
+    open('docs/release-2/design/chapter4-drafts.svg', 'w').write(sheet())
     if '--decor' in sys.argv:
         export_decor()

@@ -42,6 +42,6 @@ def build():
     return g
 if __name__ == '__main__':
     g = build()
-    e, u = check(g, ctf=True, name='Nacht')
+    e, u = check(g, ctf=True, name='Night')
     print(u[:30])
     print('\n'.join(g.rows()))

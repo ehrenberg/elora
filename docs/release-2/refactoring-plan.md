@@ -43,8 +43,8 @@ New and changed code follows the rule immediately; existing code is converted in
 | RF-02 ✅ | Translate `DEVELOPMENT.md` and `docs/handbook/*` to English; rename the folder to `docs/handbook/` | Fix all links |
 | RF-03 ✅ | Translate all plans, decisions and the archive (`docs/release-2/`, `docs/archive/`, `docs/releases/`) | D-RF-03; rename `docs/archive/` to `docs/archive/` |
 | RF-04 ✅ | Translate code comments and doc comments, crate by crate (`elora-sim` → `elora-map` → `elora-protocol` → `elora-net` → `elora-audio` → `elora-render` → `elora-game` → `elora-adventure` → apps → `xtask`) | One commit per crate; no code changes in the same commit |
-| RF-05 | Rename German identifiers in code (map generators `kapitel*` → `chapter*`, `wueste_*` → `desert_*`, helpers like `stampf`/`kletter`, test names) | Pure renames, compiler-checked |
-| RF-06 | Translate log, panic and error messages and `xtask` output | Player-facing messages stay in `assets/lang` |
+| RF-05 ✅ | Rename German identifiers in code (map generators `kapitel*` → `chapter*`, `wueste_*` → `desert_*`, helpers like `stampf`/`kletter`, test names) | Pure renames, compiler-checked |
+| RF-06 | Translate log, panic and error messages and `xtask` output | E-352: player-visible errors via `assets/lang`; logs, console, CLI help and xtask English only; `--abenteuer` → `--adventure` |
 | RF-07 | Commit messages in English from the start of the refactoring | Conventional Commits stay |
 
 ### Phase 2 – data and content language (needs decisions, save-game impact)

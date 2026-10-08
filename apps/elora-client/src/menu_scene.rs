@@ -172,7 +172,7 @@ impl Scene<'_> {
     }
 }
 
-/// Windows of the buildings (center, size in world units; from `tauwinkel_gebaeude.py`).
+/// Windows of the buildings (center, size in world units; from `tauwinkel_buildings.py`).
 /// Windows: center x, y and width, height (width 0 = unused).
 type Window = (f32, f32, f32, f32);
 

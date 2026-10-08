@@ -1,7 +1,7 @@
-"""Generates docs/release-2/design/abenteuer-figuren.svg – NPCs, enemies and objects (R2-M1, A1.0).
+"""Generates docs/release-2/design/adventure-figures.svg – NPCs, enemies and objects (R2-M1, A1.0).
 
-Usage: python3 tools/design/abenteuer_figuren.py && cargo xtask svg-preview \
-        docs/release-2/design/abenteuer-figuren.svg docs/release-2/design/abenteuer-figuren.png 1400
+Usage: python3 tools/design/adventure_figures.py && cargo xtask svg-preview \
+        docs/release-2/design/adventure-figures.svg docs/release-2/design/adventure-figures.png 1400
 
 All figures use Elora's drop shape (assets/elora/elora.svg) and the same line width;
 accessories are in Elora's coordinates (origin = ground contact, facing right).
@@ -172,7 +172,7 @@ def angry_eye(x, y, r=7, brow=1):
             f'stroke="#2b2b2b" stroke-width="4" stroke-linecap="round"/>')
 
 
-def stachelkaefer():
+def spike_beetle():
     s = ''
     for x in (-24, 0, 24):
         s += f'<path d="M {x},-14 l -6,12 l -6,0" fill="none" stroke="#2b2b2b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>'
@@ -196,7 +196,7 @@ def stachelkaefer():
     return s
 
 
-def pollenblaeser(shots=True):
+def pollen_blower(shots=True):
     s = '<path d="M 0,0 Q -6,-40 0,-70" fill="none" stroke="#2b2b2b" stroke-width="10"/>'
     s += '<path d="M 0,0 Q -6,-40 0,-70" fill="none" stroke="#4f9a3a" stroke-width="5"/>'
     s += '<path d="M -3,-26 Q -36,-40 -40,-18 Q -20,-12 -3,-26 Z" fill="#6cbf4a" stroke="#2b2b2b" stroke-width="3.5"/>'
@@ -223,7 +223,7 @@ def pollenblaeser(shots=True):
     return s
 
 
-def grashuepfer(jump=False, arc=True):
+def grasshopper(jump=False, arc=True):
     s = ''
     if jump and arc:
         s += '<path d="M -80,30 Q -40,-60 10,-30" fill="none" stroke="#8a7a66" stroke-width="3" stroke-dasharray="6 7"/>'
@@ -247,7 +247,7 @@ def grashuepfer(jump=False, arc=True):
 
 # ── Objects ─────────────────────────────────────────────────────────────
 
-def truhe(open_=False):
+def chest(open_=False):
     s = '<rect x="-34" y="-40" width="68" height="40" rx="6" fill="#a8744a" stroke="#2b2b2b" stroke-width="4"/>'
     s += '<rect x="-34" y="-28" width="68" height="7" fill="#e0b85a" stroke="#2b2b2b" stroke-width="2.5"/>'
     if open_:
@@ -261,7 +261,7 @@ def truhe(open_=False):
     return s
 
 
-def glanztropfen(scale=1.0):
+def gleam_drop(scale=1.0):
     d = 'M 0,-30 C 3,-20 14,-12 14,-2 C 14,7 7,13 0,13 C -7,13 -14,7 -14,-2 C -14,-12 -3,-20 0,-30 Z'
     s = f'<circle cx="0" cy="-6" r="22" fill="#7fe3f0" opacity="0.3"/>'
     s += f'<path d="{d}" fill="#5ad0e8" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round"/>'
@@ -270,7 +270,7 @@ def glanztropfen(scale=1.0):
     return f'<g transform="scale({scale})">{s}</g>'
 
 
-def quellstein(active):
+def spring_stone(active):
     glow = '#5ad0e8' if active else '#9aa4ae'
     s = ''
     if active:
@@ -285,7 +285,7 @@ def quellstein(active):
     return s
 
 
-def schalter(on):
+def switch(on):
     a = 30 if on else -30
     s = (f'<g transform="rotate({a} 0 -14)"><path d="M 0,-14 L 0,-56" stroke="#2b2b2b" stroke-width="10" stroke-linecap="round"/>'
          '<path d="M 0,-14 L 0,-56" stroke="#8a6a4a" stroke-width="5" stroke-linecap="round"/>'
@@ -294,7 +294,7 @@ def schalter(on):
     return s
 
 
-def tuer():
+def gate():
     s = '<rect x="-30" y="-96" width="60" height="96" rx="6" fill="#a8744a" stroke="#2b2b2b" stroke-width="4.5"/>'
     for x in (-15, 0, 15):
         s += f'<path d="M {x},-92 L {x},-4" stroke="#6b4a32" stroke-width="3"/>'
@@ -305,7 +305,7 @@ def tuer():
     return s
 
 
-def glitzerstein():
+def glitter_stone():
     s = '<ellipse cx="0" cy="-20" rx="26" ry="26" fill="#ef7fb0" opacity="0.25"/>'
     s += ('<path d="M -16,-20 L -8,-36 L 8,-36 L 16,-20 L 0,0 Z" fill="#c9a0f0" stroke="#2b2b2b" '
           'stroke-width="3.5" stroke-linejoin="round"/>')
@@ -355,9 +355,9 @@ def sheet():
     # Enemies
     o.append(card(30, 510, 1340, 330, 'Gegner der Blütenwiesen'))
     foes = [
-        (230, 'Stachelkäfer', 'läuft hin und her · Stacheln oben: nicht draufspringen', g(210, 760, 1.15, stachelkaefer())),
-        (540, 'Pollenbläser', 'steht fest · schießt langsame Pollenkugeln', g(500, 760, 1.0, pollenblaeser())),
-        (920, 'Gras-Hüpfer', 'wartet und springt Elora an', g(860, 760, 1.05, grashuepfer()) + g(1040, 720, 1.05, grashuepfer(True))),
+        (230, 'Stachelkäfer', 'läuft hin und her · Stacheln oben: nicht draufspringen', g(210, 760, 1.15, spike_beetle())),
+        (540, 'Pollenbläser', 'steht fest · schießt langsame Pollenkugeln', g(500, 760, 1.0, pollen_blower())),
+        (920, 'Gras-Hüpfer', 'wartet und springt Elora an', g(860, 760, 1.05, grasshopper()) + g(1040, 720, 1.05, grasshopper(True))),
     ]
     for x, name, note, art in foes:
         o.append(ground(x - 150, 760, 300 if x < 900 else 420))
@@ -369,12 +369,12 @@ def sheet():
     # Objects
     o.append(card(30, 860, 1340, 290, 'Abenteuer-Objekte'))
     objs = [
-        ('Truhe', 'zu / offen', g(110, 1060, 1.0, truhe()) + g(210, 1060, 1.0, truhe(True)), 160),
-        ('Glanztropfen', 'Währung', g(350, 1050, 1.6, glanztropfen()), 350),
-        ('Speicherpunkt „Quellstein“', 'aus / aktiv', g(500, 1060, 1.0, quellstein(False)) + g(610, 1060, 1.0, quellstein(True)), 555),
-        ('Schalter', 'aus / an', g(750, 1060, 1.0, schalter(False)) + g(830, 1060, 1.0, schalter(True)), 790),
-        ('Tür / Tor', 'öffnet per Schalter oder Aufgabe', g(980, 1060, 1.0, tuer()), 980),
-        ('Glitzerstein', 'Sammelstück', g(1150, 1050, 1.5, glitzerstein()), 1150),
+        ('Truhe', 'zu / offen', g(110, 1060, 1.0, chest()) + g(210, 1060, 1.0, chest(True)), 160),
+        ('Glanztropfen', 'Währung', g(350, 1050, 1.6, gleam_drop()), 350),
+        ('Speicherpunkt „Quellstein“', 'aus / aktiv', g(500, 1060, 1.0, spring_stone(False)) + g(610, 1060, 1.0, spring_stone(True)), 555),
+        ('Schalter', 'aus / an', g(750, 1060, 1.0, switch(False)) + g(830, 1060, 1.0, switch(True)), 790),
+        ('Tür / Tor', 'öffnet per Schalter oder Aufgabe', g(980, 1060, 1.0, gate()), 980),
+        ('Glitzerstein', 'Sammelstück', g(1150, 1050, 1.5, glitter_stone()), 1150),
     ]
     for name, note, art, tx in objs:
         o.append(ground(tx - 90, 1060, 180))
@@ -390,4 +390,4 @@ def sheet():
 if __name__ == '__main__':
     import os
     os.makedirs('docs/release-2/design', exist_ok=True)
-    open('docs/release-2/design/abenteuer-figuren.svg', 'w').write(sheet())
+    open('docs/release-2/design/adventure-figures.svg', 'w').write(sheet())

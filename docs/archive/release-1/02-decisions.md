@@ -100,7 +100,7 @@ All decisions are made by the project owner. Every decision is recorded here wit
 | E-091 | 2026-09-29 | Emotes (D-M5-10) | **Emote wheel with 8 own emoticons** (hold E, the mouse selects) + automatic eye expressions | Decision of the project owner |
 | E-092 | 2026-09-29 | M4 acceptance | Game modes “done for now” | Decision of the project owner |
 | E-093 | 2026-09-29 | M5 plan | Implement the plan from [`11-m5-plan.md`](11-m5-plan.md) | Decision of the project owner |
-| E-094 | 2026-09-29 | Elora draft (M5.3) | **Draft B “Swirl”:** drop with its tip tilted to the side, light belly patch, small eyes with a smile ([`design/elora-entwuerfe.png`](design/elora-entwuerfe.png)) | Decision of the project owner |
+| E-094 | 2026-09-29 | Elora draft (M5.3) | **Draft B “Swirl”:** drop with its tip tilted to the side, light belly patch, small eyes with a smile ([`design/elora-drafts.png`](design/elora-drafts.png)) | Decision of the project owner |
 | E-095 | 2026-09-29 | Skin parts (O-46) | Colorable are **eyes, body, feet** – **colors only**, no shape variants per part | Decision of the project owner |
 | E-096 | 2026-09-29 | Color choice (O-46) | **Fixed palette** per part, no free sliders; palette colors as a draft for approval | Decision of the project owner |
 | E-097 | 2026-09-29 | Belly patch (O-46) | Not a separate part – **lighter shade of the body color** | Decision of the project owner |
@@ -145,7 +145,7 @@ All decisions are made by the project owner. Every decision is recorded here wit
 | E-136 | 2026-10-01 | Map download (D-M6-07) | **Automatic:** the server sends missing maps compressed in parts, checksum, cache in the client | Decision of the project owner |
 | E-137 | 2026-10-01 | New tile types (D-M6-08) | **Platform** (passable from below/the side), **ice** (slippery), **jump pad** (launches upward/diagonally), **booster** (conveyor belt) – values as a tuning proposal for approval | Decision of the project owner |
 | E-138 | 2026-10-01 | M6 plan | Plan from [`13-m6-plan.md`](13-m6-plan.md) approved, starting with M6.0 (map look drafts) | Decision of the project owner |
-| E-139 | 2026-10-01 | Map look (M6.0) | **Style A “Soft & lively”** from [`design/elora-kartenlook.png`](design/elora-kartenlook.png): soil with turf, rounded outer corners, outline, bushes/flowers, cloud and hill layers; special tiles are adapted to the style | Decision of the project owner |
+| E-139 | 2026-10-01 | Map look (M6.0) | **Style A “Soft & lively”** from [`design/elora-map-look.png`](design/elora-map-look.png): soil with turf, rounded outer corners, outline, bushes/flowers, cloud and hill layers; special tiles are adapted to the style | Decision of the project owner |
 | E-140 | 2026-10-01 | Tuning of new tiles (M6.1) | Proposal accepted: **T-31** ice friction 0.985 · **T-32** ice acceleration 0.35 · **T-33** jump pad force 20 · **T-34** directions up/diagonal left/diagonal right (45°) · **T-35** booster 4.0 units/tick · **T-36** platform passable from below/the side, hook/grenade/laser pass through | Decision of the project owner |
 | E-141 | 2026-10-01 | Dropping through platforms | New bindable action **“Down”** (default S); the player input gets a field for it (**protocol version 3**) | Decision of the project owner |
 | E-142 | 2026-10-01 | M6.1 accepted | New tile types in the playtest “feel perfect”; values T-31 to T-36 stay | Decision of the project owner |

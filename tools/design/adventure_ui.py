@@ -1,7 +1,7 @@
-"""Generates docs/release-2/design/abenteuer-ui.svg – user interface of the adventure (R2-M1, A1.0).
+"""Generates docs/release-2/design/adventure-ui.svg – user interface of the adventure (R2-M1, A1.0).
 
-Usage: python3 tools/design/abenteuer_ui.py && cargo xtask svg-preview \
-        docs/release-2/design/abenteuer-ui.svg docs/release-2/design/abenteuer-ui.png 1400
+Usage: python3 tools/design/adventure_ui.py && cargo xtask svg-preview \
+        docs/release-2/design/adventure-ui.svg docs/release-2/design/adventure-ui.png 1400
 
 Six screens (16:9): game with HUD, conversation, inventory, skills, quests, merchant.
 Game HUD in the style of the multiplayer bar (dark, bottom), menus in the "light & soft" style (E-123).
@@ -11,8 +11,8 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from abenteuer_figuren import (drop, g, glanztropfen, glitzerstein, grashuepfer, klonk, lotte, oma_pfuetze,  # noqa: E402
-                               pip, stachelkaefer, star, truhe)
+from adventure_figures import (drop, g, gleam_drop, glitter_stone, grasshopper, klonk, lotte, oma_pfuetze,  # noqa: E402
+                               pip, spike_beetle, star, chest)
 
 OUT = '#2b2b2b'
 TEXT = '#3b3024'
@@ -93,7 +93,7 @@ def hud_bar(ox, oy):
 
 def drops_counter(ox, oy, n='128'):
     s = f'<rect x="{ox + 14}" y="{oy + 14}" width="92" height="30" rx="15" {HUD}/>'
-    s += g(ox + 32, oy + 32, 0.55, glanztropfen())
+    s += g(ox + 32, oy + 32, 0.55, gleam_drop())
     s += text(ox + 50, oy + 34, n, 13, '#ffffff')
     return s
 
@@ -129,12 +129,12 @@ def screen_game(ox, oy):
     s += g(ox + 250, oy + 286, 0.5, ELORA)
     s += f'<path d="M {ox + 262},{oy + 244} L {ox + 446},{oy + 212}" stroke="#2b2b2b" stroke-width="2"/>'
     s += f'<circle cx="{ox + 446}" cy="{oy + 212}" r="4" fill="#9aa4ae" stroke="{OUT}" stroke-width="1.5"/>'
-    s += g(ox + 400, oy + 286, 0.5, stachelkaefer(), flip=True)
+    s += g(ox + 400, oy + 286, 0.5, spike_beetle(), flip=True)
     s += f'<rect x="{ox + 378}" y="{oy + 238}" width="44" height="6" rx="3" fill="#1e2a36" fill-opacity="0.5"/><rect x="{ox + 378}" y="{oy + 238}" width="26" height="6" rx="3" fill="#e05a7a"/>'
     s += text(ox + 376, oy + 228, '−3', 13, '#ffffff', weight='bold')
-    s += g(ox + 590, oy + 286, 0.7, truhe())
+    s += g(ox + 590, oy + 286, 0.7, chest())
     s += f'<rect x="{ox + 548}" y="{oy + 210}" width="84" height="24" rx="12" {HUD}/>' + key_hint(ox + 566, oy + 227, 'E', 'Öffnen')
-    s += g(ox + 330, oy + 190, 0.5, glanztropfen()) + g(ox + 352, oy + 182, 0.5, glanztropfen())
+    s += g(ox + 330, oy + 190, 0.5, gleam_drop()) + g(ox + 352, oy + 182, 0.5, gleam_drop())
     s += world_end(ox, oy)
     s += drops_counter(ox, oy) + quest_tracker(ox, oy) + hud_bar(ox, oy)
     return s
@@ -175,7 +175,7 @@ def menu_frame(ox, oy, uid, active):
     tabs = [('Inventar', 'f28c3a'), ('Fähigkeiten', '6cbf4a'), ('Aufgaben', '5aaee8'), ('Karte', 'a77be0')]
     for i, (t, c) in enumerate(tabs):
         s += pill(ox + 30 + i * 88, oy + 26, 80, t, c if i == active else 'e0c89a', 22, 11)
-    s += g(ox + W - 110, oy + 40, 0.5, glanztropfen()) + text(ox + W - 96, oy + 43, '128', 12)
+    s += g(ox + W - 110, oy + 40, 0.5, gleam_drop()) + text(ox + W - 96, oy + 43, '128', 12)
     s += f'<circle cx="{ox + W - 48}" cy="{oy + 38}" r="11" fill="#f2c14e" stroke="{OUT}" stroke-width="1.5"/>'
     s += text(ox + W - 48, oy + 42, '3', 11, TEXT, 'middle', 'bold')
     return s
@@ -312,7 +312,7 @@ def screen_quests(ox, oy):
         if done:
             s += f'<path d="M {x + 17},{y + 6} L {x + 20},{y + 9} L {x + 24},{y + 3}" fill="none" stroke="#ffffff" stroke-width="2"/>'
         s += text(x + 34, y + 10, t, 11, DIM if done else TEXT)
-    s += text(x + 16, oy + 292, 'Belohnung: 50 EP · 30', 10, DIM) + g(x + 136, oy + 291, 0.32, glanztropfen())
+    s += text(x + 16, oy + 292, 'Belohnung: 50 EP · 30', 10, DIM) + g(x + 136, oy + 291, 0.32, gleam_drop())
     return s
 
 
@@ -325,7 +325,7 @@ def screen_shop(ox, oy):
     s += bubble(ox + 100, oy + 72, 'Kaum gebraucht!', 112)
     for i, (t, c) in enumerate([('Kaufen', 'f28c3a'), ('Verkaufen', 'e0c89a')]):
         s += pill(ox + 200 + i * 92, oy + 26, 84, t, c, 22, 11)
-    s += g(ox + W - 110, oy + 40, 0.5, glanztropfen()) + text(ox + W - 96, oy + 43, '128', 12)
+    s += g(ox + W - 110, oy + 40, 0.5, gleam_drop()) + text(ox + W - 96, oy + 43, '128', 12)
     rows = [(icon_potion, ('e05a7a',), 'Heiltrank', 'stellt 5 Leben her', '15'),
             (icon_boots, (), 'Sandstiefel', 'kein Einsinken in Treibsand', '80'),
             (icon_amulet, (), 'Glücksanhänger', 'mehr Beute aus Truhen', '120'),
@@ -340,7 +340,7 @@ def screen_shop(ox, oy):
         s += text(ox + 242, y + 32, note, 9, DIM)
         too_much = int(price) > 128
         s += text(ox + W - 62, y + 25, price, 12, '#d94a4a' if too_much else TEXT, 'end', 'bold')
-        s += g(ox + W - 50, y + 26, 0.4, glanztropfen())
+        s += g(ox + W - 50, y + 26, 0.4, gleam_drop())
     s += pill(ox + W - 132, oy + H - 50, 100, 'Kaufen · 80', '6cbf4a', 22, 11)
     return s
 
@@ -370,4 +370,4 @@ def sheet():
 
 if __name__ == '__main__':
     os.makedirs('docs/release-2/design', exist_ok=True)
-    open('docs/release-2/design/abenteuer-ui.svg', 'w').write(sheet())
+    open('docs/release-2/design/adventure-ui.svg', 'w').write(sheet())

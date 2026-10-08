@@ -86,7 +86,7 @@ Continued from **E-200**. Release 1 (E-001 to E-173) is in the
 | E-275 | 2026-10-02 | Paleness of the village (E-210) | ~~Desaturated look of the map~~ (replaced by E-277): via a colour filter (characters stay colourful), gets weaker with every freed spring (flag) | Project owner decision |
 | E-276 | 2026-10-02 | Look of the buildings (designs A1.9) | **No drop-shaped roofs**, not too childish: child-friendly but **to be taken seriously** (proper roofs, half-timbering, stone, wood) | Project owner decision |
 | E-277 | 2026-10-02 | Paleness of the village (replaces E-275) | **No colour filter:** the village stays drawn normally, **individual things are faded** (flowers, flags, flowerbeds, well square) and get their colour back with every freed spring (decoration variants via flag) | Project owner decision |
-| E-278 | 2026-10-02 | Buildings of Tauwinkel | **Second version accepted** (`design/tauwinkel-gebaeude.png`) | Project owner decision |
+| E-278 | 2026-10-02 | Buildings of Tauwinkel | **Second version accepted** (`design/tauwinkel-buildings.png`) | Project owner decision |
 | E-279 | 2026-10-02 | Map edges (playtest A1.9) | **Open where the way continues:** the path runs out of the picture, the transition spans the full height; **where the world ends, a natural boundary** (steep slope, rocks, dense forest), no walls | Project owner decision |
 | E-280 | 2026-10-02 | Size of Tauwinkel (playtest A1.9) | **About 450 tiles wide**, houses and characters with large gaps, longer paths between places | Project owner decision |
 | E-281 | 2026-10-02 | Practice ground (playtest A1.9) | **Tüftel's yard in the village**, larger and winding: hooking on the ceiling, swinging over gaps, stone (hook slips off), crumbling floor, a reward at the top | Project owner decision |
@@ -111,7 +111,7 @@ Continued from **E-200**. Release 1 (E-001 to E-173) is in the
 | E-300 | 2026-10-02 | Reward “Wabe's Bees” | **Honeycomb hat** (equipment with a small bonus) and experience | Project owner decision |
 | E-301 | 2026-10-02 | Village after chapter 1 | **Small celebration:** conversation at the well, lanterns, garlands and festive music until Elora moves on; plus more colour and new call-outs | Project owner decision |
 | E-302 | 2026-10-02 | Explaining hook jerk | **Practice ground in the yard:** Tüftel explains and opens a new part of his yard with a course that only works with hook jerk | Project owner decision |
-| E-303 | 2026-10-03 | Chapter 1 designs (M2.1.0) | **Accepted** as presented ([`design/kapitel1-entwuerfe.png`](design/kapitel1-entwuerfe.png)) | Project owner decision |
+| E-303 | 2026-10-03 | Chapter 1 designs (M2.1.0) | **Accepted** as presented ([`design/chapter1-drafts.png`](design/chapter1-drafts.png)) | Project owner decision |
 | E-304 | 2026-10-04 | Chapter 1 music | **Fight: “Urban Boss Battle”** (mintodog), **celebration: “Minstrel Dance”** (randommind), both CC0 from OpenGameArt | Project owner decision |
 | E-305 | 2026-10-05 | Acceptance R2-M2.1 | **Accepted for now** (“leave it like this for now”) after the fixes from the playtest (hook jerk immediate, icon sizes, map list); continue with R2-M2.2 | Project owner decision |
 | E-306 | 2026-10-05 | Path into the Murmelwald | **Path up the western slope** of Tauwinkel, the forest begins at the top | Project owner decision |
@@ -120,7 +120,7 @@ Continued from **E-200**. Release 1 (E-001 to E-173) is in the
 | E-309 | 2026-10-05 | Memory runes reward | **Piece of equipment and a dewdrop point** | Project owner decision |
 | E-310 | 2026-10-05 | Celebration after chapter 2 | **As after chapter 1** | Project owner decision |
 | E-311 | 2026-10-05 | Mushroom imp effect | **Colourful trip:** Elora rainbow-coloured and slower for a few seconds, the world wobbles slightly; child-friendly | Project owner decision |
-| E-312 | 2026-10-05 | Chapter 2 designs (M2.2.0) | **Accepted** ([`design/kapitel2-entwuerfe.png`](design/kapitel2-entwuerfe.png)); the Root Warden as a walking tree giant with a bark face and moss beard (inspired by Treebeard) | Project owner decision |
+| E-312 | 2026-10-05 | Chapter 2 designs (M2.2.0) | **Accepted** ([`design/chapter2-drafts.png`](design/chapter2-drafts.png)); the Root Warden as a walking tree giant with a bark face and moss beard (inspired by Treebeard) | Project owner decision |
 | E-313 | 2026-10-05 | Chapter 2 music | **Murmelwald: “Woodland Fantasy”** (Matthew Pablo, CC BY 3.0, credit in `SOURCES.md` and “About”), **Root Warden: “Bamboo Blitz”** (Tsorthan Grove, CC0) | Project owner decision |
 | E-314 | 2026-10-05 | Acceptance R2-M2.2 | **Accepted** (“fits like this”); continue with R2-M2.3 Glutsandwüste | Project owner decision |
 | E-315 | 2026-10-05 | Path into the Glutsandwüste | **Branch off the east path:** sunken path south down into the desert | Project owner decision |
@@ -129,7 +129,7 @@ Continued from **E-200**. Release 1 (E-001 to E-173) is in the
 | E-318 | 2026-10-05 | Quicksand | **Sinks in slowly, slows down, jumping frees you;** sunk in deep: small damage and back to the edge | Project owner decision |
 | E-319 | 2026-10-05 | Oasis quest | Fill a **water skin** in the ruins, water three withered patches of the oasis | Project owner decision |
 | E-320 | 2026-10-05 | Heat in the desert | **Heat shimmer and heat bar:** sun fills it, shade and oasis cool down, full = Elora gets slower | Project owner decision |
-| E-321 | 2026-10-05 | Chapter 3 designs (M2.3.0) | **Accepted** ([`design/kapitel3-entwuerfe.png`](design/kapitel3-entwuerfe.png)); heat shimmer as a shader (post-processing of the world), not as a drawn overlay | Project owner decision |
+| E-321 | 2026-10-05 | Chapter 3 designs (M2.3.0) | **Accepted** ([`design/chapter3-drafts.png`](design/chapter3-drafts.png)); heat shimmer as a shader (post-processing of the world), not as a drawn overlay | Project owner decision |
 | E-322 | 2026-10-06 | Water skin | **Three fillings:** fill once at the ruin spring, enough for all three withered patches | Project owner decision |
 | E-323 | 2026-10-06 | Ruin side quest | Given by **Sirup**; in the buried chamber (with stomp) a stone tablet and as reward the **sun veil** (hat: heat bar fills more slowly) | Project owner decision |
 | E-324 | 2026-10-06 | Sirup's shop | **Small shop with rare goods** (consumable, material, a trinket) | Project owner decision |
@@ -145,7 +145,7 @@ Continued from **E-200**. Release 1 (E-001 to E-173) is in the
 | E-334 | 2026-10-06 | Weather sounds | **Free recordings (CC0)**, presented for listening | Project owner decision |
 | E-335 | 2026-10-06 | Weather setting | **Full, gentle, off** under graphics; the gameplay effect in the adventure stays the same | Project owner decision |
 | E-336 | 2026-10-06 | Plan R2-W1 | **Approved** with the proposals D-W1-01 to D-W1-03; **lightning can do damage** (only in the adventure, with a short warning on the ground) | Project owner decision |
-| E-337 | 2026-10-06 | Weather designs (W1.0) | **Accepted** ([`design/wetter-entwuerfe.png`](design/wetter-entwuerfe.png)) | Project owner decision |
+| E-337 | 2026-10-06 | Weather designs (W1.0) | **Accepted** ([`design/weather-drafts.png`](design/weather-drafts.png)) | Project owner decision |
 | E-338 | 2026-10-06 | Weather sounds (W1.5) | After a listening test: **rain** “Rain (loopable)” no. 1 (Ylmir), **wind** “Low Rumbling” (Musheran), **thunder** “Rain + Long Thunder” (WuxiaScrub, excerpt), **sand** from “Mild Wind Background Noise” (Bashar3A) filtered brighter; all CC0 (OpenGameArt) | Project owner decision |
 | E-339 | 2026-10-06 | Acceptance R2-W1 | **Weather accepted**: nine weather types with visuals, sound and a light gameplay effect in the adventure (wind, wetness, lightning with warning, visibility); release maps `dm-winter`, `ctf-nacht`, `dm-wueste` with weather; R2-W1 completed | Project owner decision |
 | E-340 | 2026-10-06 | Chapter 4: ice grip | **In the middle of the chapter:** Flocke gives climbing claws (= ice grip) in the mountain village; the guardian fight uses the walls; the spring spark strengthens the ice grip | Project owner decision |
@@ -153,13 +153,14 @@ Continued from **E-200**. Release 1 (E-001 to E-173) is in the
 | E-342 | 2026-10-06 | Chapter 4: cold | **Cold bar** mirroring the heat: it fills outdoors, faster in a blizzard; fireplaces and huts warm; full = slower | Project owner decision |
 | E-343 | 2026-10-06 | Chapter 4: terrain | **Icicles, avalanches, thin ice**; no jump pads | Project owner decision |
 | E-344 | 2026-10-06 | Plan R2-M2.4 | **Approved** with the proposals D-M24-01 to D-M24-10 ([`m2-4-plan.md`](m2-4-plan.md)) | Project owner decision |
-| E-345 | 2026-10-06 | Chapter 4 designs (M2.4.0) | **Accepted** ([`design/kapitel4-entwuerfe.png`](design/kapitel4-entwuerfe.png)) | Project owner decision |
+| E-345 | 2026-10-06 | Chapter 4 designs (M2.4.0) | **Accepted** ([`design/chapter4-drafts.png`](design/chapter4-drafts.png)) | Project owner decision |
 | E-346 | 2026-10-07 | Chapter 4 texts (M2.4.5) | **Approved** ([`m2-4-content.md`](m2-4-content.md)); victory screen: „Kristella lächelt wieder – und die Frostquelle glitzert klar wie ein Wintermorgen.“, honorary title „Gipfelstürmerin“ | Project owner decision |
 | E-347 | 2026-10-07 | Chapter 4 music (M2.4.8) | After a listening test: **Frostspitzen** “Ice Village” (KarateStudios, CC0), **Kristella** “Dramatic Boss Encounter” (cynicmusic, CC0); sounds from Kenney packs (CC0) and procedural, fireplace “Fireplace Sound loop” (PagDev, CC0) | Project owner decision |
 | E-348 | 2026-10-07 | Language policy and refactoring | **From now on English** for README, code identifiers, code comments and documentation; player-facing text stays translated in `assets/lang`. Before the next release a refactoring pass ([`refactoring-plan.md`](refactoring-plan.md)) converts existing code and docs and improves structure. Nothing is converted yet. | Project owner decision |
 | E-349 | 2026-10-07 | Acceptance R2-M2.4 | **Chapter 4 accepted** after the playtest fixes (Kristella harder, thin ice, icicles, confetti, weather particles, no shot on map change) | Project owner decision |
 | E-350 | 2026-10-07 | Refactoring decisions | D-RF-01 **content ids in English** (with save-game migration); D-RF-02 **condition language in English** (German keywords accepted for one release); D-RF-03 **archive is translated too**; D-RF-04 **start after the chapter 4 acceptance** (now) | Project owner decision |
 | E-351 | 2026-10-07 | First-start setup screen | **One page** with name, language and Elora's look (colors with preview); **mandatory on the first start** (no settings file yet), no skipping; built **as part of the refactoring** (R2-RF, task RF-30), directly in English and in the new structure | Project owner decision |
+| E-352 | 2026-10-08 | Text language in code (RF-06) | Error messages that **players see** get keys in `assets/lang` (de/en), technical detail is appended; **logs, server console, CLI help and xtask output in English only**; client option `--abenteuer` becomes **`--adventure` without alias** |
 
 ## Open points
 
