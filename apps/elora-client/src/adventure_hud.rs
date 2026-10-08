@@ -40,7 +40,6 @@ fn arc(center: Vec2, r: f32, from: f32, to: f32) -> Vec<Vec2> {
     let n = 32;
     (0..=n)
         .map(|i| {
-            #[allow(clippy::cast_precision_loss)]
             let a = from + (to - from) * i as f32 / n as f32;
             center + Vec2::new(a.cos() * r, a.sin() * r)
         })
@@ -48,7 +47,6 @@ fn arc(center: Vec2, r: f32, from: f32, to: f32) -> Vec<Vec2> {
 }
 
 /// Level with experience ring left of the bar, gleam drops top left, quest top right.
-#[allow(clippy::too_many_lines)] // three small displays in one place
 pub fn status(
     ui: &mut Ui<'_>,
     art: &CreatureArt,
@@ -58,6 +56,13 @@ pub fn status(
     save: &SaveGame,
     screen: Vec2,
 ) {
+    level_badge(ui, c, save, screen);
+    gleam_pill(ui, art, save);
+    quest_card(ui, lang, code, c, save, screen);
+}
+
+/// Level badge with experience ring left of the bar.
+fn level_badge(ui: &mut Ui<'_>, c: &Content, save: &SaveGame, screen: Vec2) {
     let s = ui.s;
     // Level
     let center = Vec2::new(
@@ -66,7 +71,6 @@ pub fn status(
     );
     ui.batch.fill_circle(center, 25.0 * s, PANEL);
     let need = c.xp_to_next(save.level).max(1);
-    #[allow(clippy::cast_precision_loss)]
     let frac = if save.level >= c.progression.max_level {
         1.0
     } else {
@@ -93,7 +97,11 @@ pub fn status(
         ui::TEXT,
         Align::Center,
     );
+}
 
+/// Gleam drops counter top left.
+fn gleam_pill(ui: &mut Ui<'_>, art: &CreatureArt, save: &SaveGame) {
+    let s = ui.s;
     // Gleam drops
     let pill = Rect::new(14.0 * s, 14.0 * s, 104.0 * s, 32.0 * s);
     ui.batch
@@ -111,7 +119,18 @@ pub fn status(
         WHITE,
         Align::Left,
     );
+}
 
+/// Card with the current quest step top right.
+fn quest_card(
+    ui: &mut Ui<'_>,
+    lang: &Lang,
+    code: &str,
+    c: &Content,
+    save: &SaveGame,
+    screen: Vec2,
+) {
+    let s = ui.s;
     // Quest: main quest first, otherwise the first active one
     let active = c
         .quests
@@ -194,7 +213,6 @@ fn temperature_bar(ui: &mut Ui<'_>, value: f32, full: bool, time: f32, cold: boo
         // snowflake, rotates slowly
         let c = Color::hex(0xbfe6f5);
         for k in 0..6 {
-            #[allow(clippy::cast_precision_loss)]
             let a = k as f32 * std::f32::consts::TAU / 6.0 + time * 0.3;
             let d = Vec2::new(a.cos(), a.sin());
             ui.batch.stroke_line(icon, icon + d * (9.0 * s), 1.8 * s, c);
@@ -206,7 +224,6 @@ fn temperature_bar(ui: &mut Ui<'_>, value: f32, full: bool, time: f32, cold: boo
     } else {
         // sun
         for k in 0..8 {
-            #[allow(clippy::cast_precision_loss)]
             let a = k as f32 * std::f32::consts::TAU / 8.0 + time * 0.6;
             let d = Vec2::new(a.cos(), a.sin());
             ui.batch
@@ -274,9 +291,7 @@ fn ease_out_back(x: f32) -> f32 {
 
 /// Victory screen “Chapter X complete!”: rotating sun rays in the colour of the region,
 /// confetti, the five springs as drops, honorary title. Returns `true` when “Continue” is pressed.
-#[allow(clippy::too_many_lines)] // one scene in one piece
 pub fn victory(ui: &mut Ui<'_>, lang: &Lang, v: &VictoryView<'_>, screen: Vec2) -> bool {
-    use std::f32::consts::TAU;
     let s = ui.s;
     let t = v.time;
     let fade = (t * 3.0).min(1.0);
@@ -286,56 +301,8 @@ pub fn victory(ui: &mut Ui<'_>, lang: &Lang, v: &VictoryView<'_>, screen: Vec2) 
         Color::rgba(0.07, 0.09, 0.13, 0.62 * fade),
     );
     let center = Vec2::new(screen.x / 2.0, screen.y * 0.44);
-    // sun rays
-    let reach = screen.length();
-    let rays = 18;
-    for k in 0..rays {
-        #[allow(clippy::cast_precision_loss)]
-        let a = k as f32 / rays as f32 * TAU + t * 0.22;
-        let w = TAU / rays as f32 * 0.28;
-        let dir = |a: f32| Vec2::new(a.cos(), a.sin()) * reach;
-        let mut c = v.color;
-        c.0[3] = if k % 2 == 0 { 0.22 } else { 0.12 } * fade;
-        ui.batch
-            .fill_polygon(&[center, center + dir(a - w), center + dir(a + w)], c);
-    }
-    let mut glow = v.color;
-    glow.0[3] = 0.25 * fade;
-    ui.batch.fill_circle(center, 230.0 * s, glow);
-    // confetti
-    let palette = [
-        v.color,
-        GOLD,
-        Color::hex(0xef7fb0),
-        Color::hex(0x5aaee8),
-        Color::hex(0x7fd99a),
-    ];
-    for i in 0..70u32 {
-        let h = i.wrapping_mul(2_654_435_761).rotate_left(i % 13);
-        // own random number 0..1 per size (previously the bits for x only reached the middle)
-        let r = |k: u32| {
-            let mut z = h ^ k.wrapping_mul(0x9e37_79b9);
-            z = (z ^ (z >> 16)).wrapping_mul(0x85eb_ca6b);
-            z = (z ^ (z >> 13)).wrapping_mul(0xc2b2_ae35);
-            z ^= z >> 16;
-            #[allow(clippy::cast_precision_loss)]
-            let v = (z & 0xffff) as f32 / 65535.0;
-            v
-        };
-        let speed = 0.12 + r(3) * 0.18;
-        let y = ((t * speed + r(13)) % 1.15 - 0.08) * screen.y;
-        let x = r(23) * screen.x + (t * (1.0 + r(5) * 2.0) + r(7) * 6.0).sin() * 18.0 * s;
-        let ang = t * (2.0 + r(9) * 4.0) + r(11) * TAU;
-        let (dx, dy) = (
-            Vec2::new(ang.cos(), ang.sin()) * 5.0 * s,
-            Vec2::new(-ang.sin(), ang.cos()) * 2.5 * s,
-        );
-        let p = Vec2::new(x, y);
-        let mut c = palette[(h % 5) as usize];
-        c.0[3] = fade;
-        ui.batch
-            .fill_polygon(&[p - dx - dy, p + dx - dy, p + dx + dy, p - dx + dy], c);
-    }
+    victory_rays(ui, v, center, screen, fade);
+    confetti(ui, v, screen, fade);
     // card
     let (w, h) = (560.0 * s, 400.0 * s);
     let card = Rect::new(center.x - w / 2.0, center.y - h / 2.0, w, h);
@@ -363,42 +330,7 @@ pub fn victory(ui: &mut Ui<'_>, lang: &Lang, v: &VictoryView<'_>, screen: Vec2) 
     }
     // the five springs
     let dy = card.min.y + 210.0 * s;
-    for (k, spring) in v.springs.iter().enumerate() {
-        #[allow(clippy::cast_precision_loss)]
-        let cx = x + (k as f32 - 2.0) * 54.0 * s;
-        let bob = if spring.is_some() {
-            (t * 3.0 + k as f32).sin() * 3.0 * s
-        } else {
-            0.0
-        };
-        let c = spring.unwrap_or(Color::hex(0xc8ccd2));
-        let base = Vec2::new(cx, dy + bob);
-        ui.batch.fill_circle(base, 15.0 * s, ui::OUTLINE);
-        ui.batch.fill_polygon(
-            &[
-                base + Vec2::new(-12.5 * s, -6.0 * s),
-                base + Vec2::new(0.0, -30.0 * s),
-                base + Vec2::new(12.5 * s, -6.0 * s),
-            ],
-            ui::OUTLINE,
-        );
-        ui.batch.fill_circle(base, 12.0 * s, c);
-        ui.batch.fill_polygon(
-            &[
-                base + Vec2::new(-10.0 * s, -6.0 * s),
-                base + Vec2::new(0.0, -25.0 * s),
-                base + Vec2::new(10.0 * s, -6.0 * s),
-            ],
-            c,
-        );
-        if spring.is_some() {
-            ui.batch.fill_circle(
-                base + Vec2::new(-4.0 * s, -4.0 * s),
-                3.0 * s,
-                Color::rgba(1.0, 1.0, 1.0, 0.8),
-            );
-        }
-    }
+    victory_springs(ui, v, x, dy);
     let freed = v.springs.iter().filter(|c| c.is_some()).count();
     ui.label(
         &lang.f("victory.springs", &[("n", &freed)]),
@@ -440,6 +372,108 @@ pub fn victory(ui: &mut Ui<'_>, lang: &Lang, v: &VictoryView<'_>, screen: Vec2) 
         return ui.button("victory_continue", b, lang.t("victory.continue"), ui::GREEN);
     }
     false
+}
+
+/// Rotating sun rays and glow in the colour of the region.
+fn victory_rays(ui: &mut Ui<'_>, v: &VictoryView<'_>, center: Vec2, screen: Vec2, fade: f32) {
+    use std::f32::consts::TAU;
+    let s = ui.s;
+    let t = v.time;
+    // sun rays
+    let reach = screen.length();
+    let rays = 18;
+    for k in 0..rays {
+        let a = k as f32 / rays as f32 * TAU + t * 0.22;
+        let w = TAU / rays as f32 * 0.28;
+        let dir = |a: f32| Vec2::new(a.cos(), a.sin()) * reach;
+        let mut c = v.color;
+        c.0[3] = if k % 2 == 0 { 0.22 } else { 0.12 } * fade;
+        ui.batch
+            .fill_polygon(&[center, center + dir(a - w), center + dir(a + w)], c);
+    }
+    let mut glow = v.color;
+    glow.0[3] = 0.25 * fade;
+    ui.batch.fill_circle(center, 230.0 * s, glow);
+}
+
+/// Falling, spinning confetti in the colours of the region.
+fn confetti(ui: &mut Ui<'_>, v: &VictoryView<'_>, screen: Vec2, fade: f32) {
+    use std::f32::consts::TAU;
+    let s = ui.s;
+    let t = v.time;
+    // confetti
+    let palette = [
+        v.color,
+        GOLD,
+        Color::hex(0xef7fb0),
+        Color::hex(0x5aaee8),
+        Color::hex(0x7fd99a),
+    ];
+    for i in 0..70u32 {
+        let h = i.wrapping_mul(2_654_435_761).rotate_left(i % 13);
+        // own random number 0..1 per size (previously the bits for x only reached the middle)
+        let r = |k: u32| {
+            let mut z = h ^ k.wrapping_mul(0x9e37_79b9);
+            z = (z ^ (z >> 16)).wrapping_mul(0x85eb_ca6b);
+            z = (z ^ (z >> 13)).wrapping_mul(0xc2b2_ae35);
+            z ^= z >> 16;
+            (z & 0xffff) as f32 / 65535.0
+        };
+        let speed = 0.12 + r(3) * 0.18;
+        let y = ((t * speed + r(13)) % 1.15 - 0.08) * screen.y;
+        let x = r(23) * screen.x + (t * (1.0 + r(5) * 2.0) + r(7) * 6.0).sin() * 18.0 * s;
+        let ang = t * (2.0 + r(9) * 4.0) + r(11) * TAU;
+        let (dx, dy) = (
+            Vec2::new(ang.cos(), ang.sin()) * 5.0 * s,
+            Vec2::new(-ang.sin(), ang.cos()) * 2.5 * s,
+        );
+        let p = Vec2::new(x, y);
+        let mut c = palette[(h % 5) as usize];
+        c.0[3] = fade;
+        ui.batch
+            .fill_polygon(&[p - dx - dy, p + dx - dy, p + dx + dy, p - dx + dy], c);
+    }
+}
+
+/// The five springs as drops (freed ones in colour and bobbing).
+fn victory_springs(ui: &mut Ui<'_>, v: &VictoryView<'_>, x: f32, dy: f32) {
+    let s = ui.s;
+    let t = v.time;
+    for (k, spring) in v.springs.iter().enumerate() {
+        let cx = x + (k as f32 - 2.0) * 54.0 * s;
+        let bob = if spring.is_some() {
+            (t * 3.0 + k as f32).sin() * 3.0 * s
+        } else {
+            0.0
+        };
+        let c = spring.unwrap_or(Color::hex(0xc8ccd2));
+        let base = Vec2::new(cx, dy + bob);
+        ui.batch.fill_circle(base, 15.0 * s, ui::OUTLINE);
+        ui.batch.fill_polygon(
+            &[
+                base + Vec2::new(-12.5 * s, -6.0 * s),
+                base + Vec2::new(0.0, -30.0 * s),
+                base + Vec2::new(12.5 * s, -6.0 * s),
+            ],
+            ui::OUTLINE,
+        );
+        ui.batch.fill_circle(base, 12.0 * s, c);
+        ui.batch.fill_polygon(
+            &[
+                base + Vec2::new(-10.0 * s, -6.0 * s),
+                base + Vec2::new(0.0, -25.0 * s),
+                base + Vec2::new(10.0 * s, -6.0 * s),
+            ],
+            c,
+        );
+        if spring.is_some() {
+            ui.batch.fill_circle(
+                base + Vec2::new(-4.0 * s, -4.0 * s),
+                3.0 * s,
+                Color::rgba(1.0, 1.0, 1.0, 0.8),
+            );
+        }
+    }
 }
 
 /// Replace the placeholder `{taste:<aktion>}` with the bound key (signs, E-273),
@@ -581,7 +615,6 @@ pub fn dialog(
     let w = (screen.x - 48.0 * s).min(920.0 * s);
     let text_w = w - 170.0 * s;
     let lines = wrap(ui, &with_keys(v.text.get(code), keys, lang), 13.0, text_w);
-    #[allow(clippy::cast_precision_loss)]
     let h =
         (54.0 + lines.len() as f32 * 19.0 + v.choices.len() as f32 * 30.0 + 26.0).max(170.0) * s;
     let card = Rect::new((screen.x - w) / 2.0, screen.y - h - 20.0 * s, w, h);

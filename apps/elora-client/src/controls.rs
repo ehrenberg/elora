@@ -10,7 +10,7 @@ pub const MOUSE_MAX_DISTANCE: f32 = 400.0;
 
 /// Key state; the individual `bool`s represent pressed keys.
 #[derive(Debug, Clone)]
-#[allow(clippy::struct_excessive_bools)]
+#[allow(clippy::struct_excessive_bools)] // independent key states
 pub struct Controls {
     left: bool,
     right: bool,

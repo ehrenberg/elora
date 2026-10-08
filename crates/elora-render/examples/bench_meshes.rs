@@ -59,10 +59,8 @@ fn main() {
     let t0 = Instant::now();
     for f in 0..frames {
         batch.clear();
-        #[allow(clippy::cast_precision_loss)]
         let phase = f as f32 * 0.1;
         for i in 0..64 {
-            #[allow(clippy::cast_precision_loss)]
             let x = i as f32 * 40.0;
             let squash = 1.0 + 0.2 * (phase + x).sin();
             let t = Affine::translate(Vec2::new(x, 100.0))
@@ -71,7 +69,6 @@ fn main() {
             batch.draw_mesh(&figure, &t, &tint);
         }
         for i in 0..2000 {
-            #[allow(clippy::cast_precision_loss)]
             let p = Vec2::new((i % 50) as f32 * 30.0, (i / 50) as f32 * 20.0);
             batch.draw_mesh(
                 &particle,

@@ -3,7 +3,8 @@
 //!
 //! All in screen coordinates; graphics from existing assets (map decoration, figures, enemies).
 
-#![allow(clippy::cast_precision_loss, clippy::many_single_char_names)]
+// Drawing code: `w`/`h` (screen), `s` (scale), `t` (time), `k` (world scale)
+#![allow(clippy::many_single_char_names)]
 
 use elora_render::{Affine, Color, Mesh, ShapeBatch, Tint};
 use elora_sim::Vec2;
@@ -212,7 +213,6 @@ const WINDOWS: [(&str, [Window; 3]); 4] = [
 ];
 
 /// Draw the background: `screen` in pixels, `s` UI scale, `t` running time (s), `hour` 0..24.
-#[allow(clippy::too_many_lines, clippy::too_many_arguments)]
 pub fn draw(
     batch: &mut ShapeBatch,
     map: &MapArt,
@@ -226,28 +226,7 @@ pub fn draw(
     let m = mood(hour);
     batch.fill_rect_vgradient(Vec2::ZERO, screen, rgb(m.sky_top), rgb(m.sky_bottom));
 
-    // stars and moon
-    if m.night > 0.05 {
-        for i in 0..70u32 {
-            let fx = ((i * 7919) % 1000) as f32 / 1000.0;
-            let fy = ((i * 104_729) % 1000) as f32 / 1000.0;
-            let twinkle = 0.6 + 0.4 * (t * 1.7 + i as f32).sin();
-            let c = Color::rgba(1.0, 0.97, 0.88, m.night * twinkle);
-            batch.fill_circle(
-                Vec2::new(fx * w, fy * h * 0.55),
-                (1.0 + (i % 3) as f32 * 0.6) * s,
-                c,
-            );
-        }
-        let moon = Vec2::new(w * 0.18, h * 0.16);
-        batch.fill_circle(moon, 46.0 * s, Color::rgba(1.0, 0.97, 0.85, 0.12 * m.night));
-        batch.fill_circle(moon, 26.0 * s, Color::rgba(0.98, 0.95, 0.82, m.night));
-        batch.fill_circle(
-            moon + Vec2::new(9.0 * s, -6.0 * s),
-            22.0 * s,
-            Color::rgba(m.sky_top[0], m.sky_top[1], m.sky_top[2], m.night),
-        );
-    }
+    stars_and_moon(batch, &m, screen, s, t);
     // sun
     if m.sun > 0.0 {
         let p = Vec2::new(w * 0.22, h * (0.62 - m.sun * 0.5));
@@ -272,6 +251,135 @@ pub fn draw(
         t,
     };
 
+    clouds_and_hills(&mut sc, &m, s, h);
+    // ground
+    let grass = Color::rgb(0.49 * m.light[0], 0.70 * m.light[1], 0.40 * m.light[2]);
+    let earth = Color::rgb(0.63 * m.light[0], 0.45 * m.light[1], 0.31 * m.light[2]);
+    sc.batch
+        .fill_rect(Vec2::new(0.0, ground), Vec2::new(w, h), earth);
+    sc.batch.fill_rect(
+        Vec2::new(0.0, ground - 2.0 * s),
+        Vec2::new(w, ground + 10.0 * s),
+        grass,
+    );
+
+    // village: trees, houses, props
+    for (name, frac, size, flip) in [
+        ("tree-round", 0.02, 1.1, false),
+        ("tree-pine", 0.205, 1.0, false),
+        ("tree-round", 0.53, 1.0, true),
+        ("tree-pine", 0.995, 1.1, true),
+        ("house-elora", 0.10, 1.0, false),
+        ("well", 0.255, 1.0, false),
+        ("house-oma", 0.38, 1.0, false),
+        ("shop", 0.65, 1.0, false),
+        ("workshop", 0.93, 1.0, true),
+        ("fence", 0.175, 1.0, false),
+        ("lantern", 0.205, 1.0, false),
+        ("bench", 0.31, 1.0, false),
+        ("cart", 0.47, 1.0, true),
+        ("lantern", 0.565, 1.0, false),
+        ("barrels", 0.72, 1.0, false),
+        ("hay_bale", 0.785, 1.0, false),
+        ("woodpile", 0.875, 1.0, false),
+    ] {
+        sc.decor(name, frac, size, flip);
+    }
+    night_windows(&mut sc, &m);
+    // lanterns
+    if m.lamps > 0.05 {
+        for frac in [0.205, 0.565] {
+            let c = Vec2::new(sc.x(frac), ground - 139.0 * k);
+            sc.batch
+                .fill_circle(c, 40.0 * k, Color::rgba(1.0, 0.85, 0.45, 0.18 * m.lamps));
+            sc.batch
+                .fill_circle(c, 9.0 * k, Color::rgba(1.0, 0.92, 0.6, 0.9 * m.lamps));
+        }
+    }
+    // beds and flag
+    for (name, frac) in [
+        ("flower-bed-colourful", 0.055),
+        ("window-box-colourful", 0.115),
+        ("herb-bed-colourful", 0.41),
+        ("flower-pot-colourful", 0.62),
+        ("flower-bed-colourful", 0.69),
+    ] {
+        sc.decor(name, frac, 1.0, false);
+    }
+    let wave = (t * 1.6).sin() * 2.0;
+    let at = Vec2::new(sc.x(0.455), ground);
+    sc.decor_at("banner-colourful", at, 1.0, false, wave);
+    chimney_smoke(&mut sc, &m);
+    villagers(&mut sc);
+    butterflies(&mut sc, &m, s);
+    // birds fly across the sky (not at night)
+    if m.night < 0.6 {
+        for (i, (y, speed)) in [(0.2, 40.0), (0.27, 55.0)].into_iter().enumerate() {
+            let span = w + 200.0 * s;
+            let x = (t * speed * s + i as f32 * span * 0.5).rem_euclid(span) - 100.0 * s;
+            let bob = (t * 3.0 + i as f32).sin() * 6.0 * s;
+            let at = Vec2::new(x, h * y + bob);
+            sc.decor_at("bird", at, 1.3, false, (t * 3.0).sin() * 8.0);
+        }
+    }
+    m
+}
+
+/// Villagers going for a walk, a crawling beetle and a jumping grasshopper.
+fn villagers(sc: &mut Scene<'_>) {
+    let t = sc.t;
+    // figures: some go for a walk
+    sc.character("oma", sc.x(0.335), 1.0);
+    let (x, f) = sc.stroll(0.13, 0.24, 0.35, 0.0);
+    sc.character("pip", x, f);
+    sc.character("lotte", sc.x(0.60), 1.0);
+    sc.character("klonk", sc.x(0.745), -1.0);
+    let (x, f) = sc.stroll(0.44, 0.52, 0.22, 1.3);
+    sc.character("tueftel", x, f);
+    // enemies: a beetle crawls, a hopper jumps now and then
+    let (x, f) = sc.stroll(0.27, 0.36, 0.5, 2.0);
+    sc.creature("spike_beetle", x, 0.0, 13.0, f);
+    let cycle = (t / 2.6).fract();
+    let hop = if cycle < 0.3 {
+        (cycle / 0.3 * std::f32::consts::PI).sin() * 60.0
+    } else {
+        0.0
+    };
+    let (x, f) = sc.stroll(0.02, 0.08, 0.18, 0.4);
+    sc.creature("grasshopper", x, hop, 14.0, f);
+}
+
+/// Stars and moon at night.
+fn stars_and_moon(batch: &mut ShapeBatch, m: &Mood, screen: Vec2, s: f32, t: f32) {
+    let (w, h) = (screen.x, screen.y);
+    // stars and moon
+    if m.night > 0.05 {
+        for i in 0..70u32 {
+            let fx = ((i * 7919) % 1000) as f32 / 1000.0;
+            let fy = ((i * 104_729) % 1000) as f32 / 1000.0;
+            let twinkle = 0.6 + 0.4 * (t * 1.7 + i as f32).sin();
+            let c = Color::rgba(1.0, 0.97, 0.88, m.night * twinkle);
+            batch.fill_circle(
+                Vec2::new(fx * w, fy * h * 0.55),
+                (1.0 + (i % 3) as f32 * 0.6) * s,
+                c,
+            );
+        }
+        let moon = Vec2::new(w * 0.18, h * 0.16);
+        batch.fill_circle(moon, 46.0 * s, Color::rgba(1.0, 0.97, 0.85, 0.12 * m.night));
+        batch.fill_circle(moon, 26.0 * s, Color::rgba(0.98, 0.95, 0.82, m.night));
+        batch.fill_circle(
+            moon + Vec2::new(9.0 * s, -6.0 * s),
+            22.0 * s,
+            Color::rgba(m.sky_top[0], m.sky_top[1], m.sky_top[2], m.night),
+        );
+    }
+}
+
+/// Drifting clouds and two rows of hills.
+fn clouds_and_hills(sc: &mut Scene<'_>, m: &Mood, s: f32, h: f32) {
+    let map = sc.map;
+    let (w, ground, t) = (sc.w, sc.ground, sc.t);
     // clouds drift
     for (i, (name, y, speed, size)) in [
         ("cloud-1", 0.12, 9.0, 1.1),
@@ -307,40 +415,11 @@ pub fn draw(
             }
         }
     }
+}
 
-    // ground
-    let grass = Color::rgb(0.49 * m.light[0], 0.70 * m.light[1], 0.40 * m.light[2]);
-    let earth = Color::rgb(0.63 * m.light[0], 0.45 * m.light[1], 0.31 * m.light[2]);
-    sc.batch
-        .fill_rect(Vec2::new(0.0, ground), Vec2::new(w, h), earth);
-    sc.batch.fill_rect(
-        Vec2::new(0.0, ground - 2.0 * s),
-        Vec2::new(w, ground + 10.0 * s),
-        grass,
-    );
-
-    // village: trees, houses, props
-    for (name, frac, size, flip) in [
-        ("tree-round", 0.02, 1.1, false),
-        ("tree-pine", 0.205, 1.0, false),
-        ("tree-round", 0.53, 1.0, true),
-        ("tree-pine", 0.995, 1.1, true),
-        ("house-elora", 0.10, 1.0, false),
-        ("well", 0.255, 1.0, false),
-        ("house-oma", 0.38, 1.0, false),
-        ("shop", 0.65, 1.0, false),
-        ("workshop", 0.93, 1.0, true),
-        ("fence", 0.175, 1.0, false),
-        ("lantern", 0.205, 1.0, false),
-        ("bench", 0.31, 1.0, false),
-        ("cart", 0.47, 1.0, true),
-        ("lantern", 0.565, 1.0, false),
-        ("barrels", 0.72, 1.0, false),
-        ("hay_bale", 0.785, 1.0, false),
-        ("woodpile", 0.875, 1.0, false),
-    ] {
-        sc.decor(name, frac, size, flip);
-    }
+/// House windows glow at night.
+fn night_windows(sc: &mut Scene<'_>, m: &Mood) {
+    let (ground, k) = (sc.ground, sc.k);
     // windows glow at night
     if m.night > 0.05 {
         for (name, frac, flip) in [
@@ -371,29 +450,12 @@ pub fn draw(
             }
         }
     }
-    // lanterns
-    if m.lamps > 0.05 {
-        for frac in [0.205, 0.565] {
-            let c = Vec2::new(sc.x(frac), ground - 139.0 * k);
-            sc.batch
-                .fill_circle(c, 40.0 * k, Color::rgba(1.0, 0.85, 0.45, 0.18 * m.lamps));
-            sc.batch
-                .fill_circle(c, 9.0 * k, Color::rgba(1.0, 0.92, 0.6, 0.9 * m.lamps));
-        }
-    }
-    // beds and flag
-    for (name, frac) in [
-        ("flower-bed-colourful", 0.055),
-        ("window-box-colourful", 0.115),
-        ("herb-bed-colourful", 0.41),
-        ("flower-pot-colourful", 0.62),
-        ("flower-bed-colourful", 0.69),
-    ] {
-        sc.decor(name, frac, 1.0, false);
-    }
-    let wave = (t * 1.6).sin() * 2.0;
-    let at = Vec2::new(sc.x(0.455), ground);
-    sc.decor_at("banner-colourful", at, 1.0, false, wave);
+}
+
+/// Puffs of smoke rising from the chimneys.
+fn chimney_smoke(sc: &mut Scene<'_>, m: &Mood) {
+    let map = sc.map;
+    let (ground, k, t) = (sc.ground, sc.k, sc.t);
     // smoke from the chimneys
     for (i, (frac, dx, dy)) in [(0.10, 48.0, -240.0), (0.65, -48.0, -246.0)]
         .into_iter()
@@ -420,27 +482,12 @@ pub fn draw(
             }
         }
     }
+}
 
-    // figures: some go for a walk
-    sc.character("oma", sc.x(0.335), 1.0);
-    let (x, f) = sc.stroll(0.13, 0.24, 0.35, 0.0);
-    sc.character("pip", x, f);
-    sc.character("lotte", sc.x(0.60), 1.0);
-    sc.character("klonk", sc.x(0.745), -1.0);
-    let (x, f) = sc.stroll(0.44, 0.52, 0.22, 1.3);
-    sc.character("tueftel", x, f);
-    // enemies: a beetle crawls, a hopper jumps now and then
-    let (x, f) = sc.stroll(0.27, 0.36, 0.5, 2.0);
-    sc.creature("spike_beetle", x, 0.0, 13.0, f);
-    let cycle = (t / 2.6).fract();
-    let hop = if cycle < 0.3 {
-        (cycle / 0.3 * std::f32::consts::PI).sin() * 60.0
-    } else {
-        0.0
-    };
-    let (x, f) = sc.stroll(0.02, 0.08, 0.18, 0.4);
-    sc.creature("grasshopper", x, hop, 14.0, f);
-
+/// Butterflies by day, fireflies at night.
+fn butterflies(sc: &mut Scene<'_>, m: &Mood, s: f32) {
+    let map = sc.map;
+    let (w, ground, k, t) = (sc.w, sc.ground, sc.k, sc.t);
     // butterflies by day, fireflies at night
     for i in 0..6 {
         let fi = i as f32;
@@ -474,17 +521,6 @@ pub fn draw(
             );
         }
     }
-    // birds fly across the sky (not at night)
-    if m.night < 0.6 {
-        for (i, (y, speed)) in [(0.2, 40.0), (0.27, 55.0)].into_iter().enumerate() {
-            let span = w + 200.0 * s;
-            let x = (t * speed * s + i as f32 * span * 0.5).rem_euclid(span) - 100.0 * s;
-            let bob = (t * 3.0 + i as f32).sin() * 6.0 * s;
-            let at = Vec2::new(x, h * y + bob);
-            sc.decor_at("bird", at, 1.3, false, (t * 3.0).sin() * 8.0);
-        }
-    }
-    m
 }
 
 #[cfg(test)]

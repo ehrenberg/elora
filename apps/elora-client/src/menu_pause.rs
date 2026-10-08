@@ -76,7 +76,6 @@ pub fn content(
         ("menu.quit", GRAY, Some(MenuAction::Quit)),
     ];
     for (i, (key, color, act)) in items.into_iter().enumerate() {
-        #[allow(clippy::cast_precision_loss)]
         let r = Rect::new(
             card.min.x + 24.0 * s,
             card.min.y + (78.0 + i as f32 * 46.0) * s,

@@ -36,7 +36,7 @@ pub(crate) fn to_rgba(
     out
 }
 
-#[allow(clippy::cast_sign_loss)]
+#[allow(clippy::cast_sign_loss)] // clamped to 0..=255
 fn channel(v: i32) -> u8 {
     ((v + 512) >> 10).clamp(0, 255) as u8
 }

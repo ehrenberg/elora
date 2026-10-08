@@ -3,9 +3,6 @@
 //! The menu draws itself via [`crate::ui`] in screen pixels and reports
 //! [`MenuAction`]s; the app executes them (start training, connect, host …).
 
-// Layout code: `s` (scale), `w`/`h`/`x`/`y` are more readable here than long names
-#![allow(clippy::many_single_char_names)]
-
 use elora_game::Mode;
 use elora_protocol::Skin;
 use elora_render::{Align, Color, Font, ShapeBatch};
@@ -441,7 +438,24 @@ fn quick_card(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, area: Rect) -> Option<MenuActio
 }
 
 /// "Create server" (E-122): name, map, mode, instagib, player count.
-#[allow(clippy::too_many_lines)]
+/// Game mode selection of the create page (label with tabs below it).
+fn mode_tabs(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, at: Vec2, form: &mut CreateForm) {
+    let s = cx.s;
+    ui.label(cx.lang.t("menu.mode"), at, 11.0, TEXT_DIM, Align::Left);
+    let names: Vec<&str> = MODES.iter().map(|m| m.name()).collect();
+    let current = MODES.iter().position(|m| *m == form.mode).unwrap_or(0);
+    if let Some(i) = ui.tabs(
+        "mode",
+        at + Vec2::new(0.0, 12.0 * s),
+        26.0 * s,
+        &names,
+        current,
+        &[VIOLET],
+    ) {
+        form.mode = MODES[i];
+    }
+}
+
 fn create_page(
     ui: &mut Ui<'_>,
     cx: &MenuCtx<'_>,
@@ -500,25 +514,7 @@ fn create_page(
         form.map = i;
     }
     y += 12.0 * s + used + 16.0 * s;
-    ui.label(
-        lang.t("menu.mode"),
-        Vec2::new(x, y),
-        11.0,
-        TEXT_DIM,
-        Align::Left,
-    );
-    let names: Vec<&str> = MODES.iter().map(|m| m.name()).collect();
-    let current = MODES.iter().position(|m| *m == form.mode).unwrap_or(0);
-    if let Some(i) = ui.tabs(
-        "mode",
-        Vec2::new(x, y + 12.0 * s),
-        26.0 * s,
-        &names,
-        current,
-        &[VIOLET],
-    ) {
-        form.mode = MODES[i];
-    }
+    mode_tabs(ui, cx, Vec2::new(x, y), form);
     y += 60.0 * s;
     ui.toggle(
         "instagib",
@@ -534,8 +530,7 @@ fn create_page(
         &mut form.public,
     );
     y += 40.0 * s;
-    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-    let n = form.max_clients.round() as u32;
+    let n = crate::ui::to_u32(form.max_clients.round());
     ui.label(
         &lang.f("menu.max_players", &[("n", &n)]),
         Vec2::new(x, y),

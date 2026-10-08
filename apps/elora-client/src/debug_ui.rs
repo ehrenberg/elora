@@ -565,9 +565,7 @@ impl FrameStats {
         vsync: bool,
     ) -> Self {
         let n = times.len().max(1);
-        #[allow(clippy::cast_precision_loss)]
         let avg_ms = times.iter().sum::<f32>() / n as f32;
-        #[allow(clippy::cast_precision_loss)]
         Self {
             min_ms: times.iter().copied().fold(f32::INFINITY, f32::min),
             avg_ms,

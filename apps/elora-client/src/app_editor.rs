@@ -64,7 +64,6 @@ impl App {
         };
         let Some(gfx) = &mut self.gfx else { return };
         let (w, h) = gfx.renderer.size();
-        #[allow(clippy::cast_precision_loss)]
         let window = Vec2::new(w as f32, h as f32);
         let area_center = if self.editor_area.center_px == Vec2::ZERO {
             window * 0.5
@@ -101,7 +100,6 @@ impl App {
             .draw_shapes(&mut frame, &camera, &self.batch, view::OUTSIDE);
         let lang = &self.lang;
         let map_view = &mut self.map_view;
-        #[allow(clippy::cast_possible_truncation)]
         let time_ms = (f64::from(self.figures.time()) * 1000.0) as i64;
         let mut area = self.editor_area;
         gfx.gui.draw(&gfx.window, &gfx.renderer, &mut frame, |ui| {

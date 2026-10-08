@@ -88,7 +88,6 @@ impl<S: Socket> InfoProbe<S> {
         self.rng ^= self.rng << 13;
         self.rng ^= self.rng >> 7;
         self.rng ^= self.rng << 17;
-        #[allow(clippy::cast_possible_truncation)]
         let v = self.rng as u32;
         v.to_le_bytes()
     }

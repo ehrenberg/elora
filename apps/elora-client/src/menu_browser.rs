@@ -359,17 +359,14 @@ fn player_grid(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, r: Rect, players: &[elora_prot
     let x = r.min.x + 12.0 * s;
     let row = 18.0 * s;
     let top = r.min.y + 58.0 * s;
-    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-    let per_col = ((r.max.y - top - 6.0 * s) / row).floor().max(1.0) as usize;
+    let per_col = crate::ui::to_usize(((r.max.y - top - 6.0 * s) / row).floor().max(1.0));
     let col_w = 190.0 * s;
     for (i, p) in players.iter().enumerate() {
         let (col, line) = (i / per_col, i % per_col);
-        #[allow(clippy::cast_precision_loss)]
         let px = x + col as f32 * col_w;
         if px + col_w > r.max.x {
             break;
         }
-        #[allow(clippy::cast_precision_loss)]
         let py = top + line as f32 * row + row / 2.0;
         let color = match p.team {
             Team::Red | Team::Blue => crate::draw::team_color(p.team),

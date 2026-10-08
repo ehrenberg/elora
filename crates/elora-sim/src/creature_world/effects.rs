@@ -37,18 +37,15 @@ impl World {
     pub(super) fn root_walls(&mut self, walls: &[(Vec2, u32, u32)], chars: &[(usize, Vec2)]) {
         let ts = crate::TILE_SIZE;
         for &(foot, height, ms) in walls {
-            #[allow(clippy::cast_possible_truncation)]
             let tx = (foot.x as i32).div_euclid(ts);
-            #[allow(clippy::cast_possible_truncation)]
             let ground = (foot.y as i32 - 1).div_euclid(ts);
             let until = self.tick + u64::from(ms_to_ticks(ms));
-            #[allow(clippy::cast_possible_wrap)]
+            #[allow(clippy::cast_possible_wrap)] // a few tiles
             for k in 0..height as i32 {
                 let ty = ground - k;
                 if self.collision.tile(tx, ty) != Tile::Air {
                     break;
                 }
-                #[allow(clippy::cast_precision_loss)]
                 let center =
                     Vec2::new((tx as f32 + 0.5) * ts as f32, (ty as f32 + 0.5) * ts as f32);
                 if chars.iter().any(|&(_, p)| p.distance(center) < PHYS_SIZE) {
@@ -75,7 +72,6 @@ impl World {
         let ts = crate::TILE_SIZE as f32;
         for &(at, n) in drops {
             for k in 0..n {
-                #[allow(clippy::cast_precision_loss)]
                 let x = at.x + (k as f32 - (n as f32 - 1.0) / 2.0) * 110.0;
                 // ceiling above this spot
                 let mut y = at.y;
@@ -100,13 +96,12 @@ impl World {
     pub(super) fn quicksand_patches(&mut self, patches: &[(Vec2, u32, u32)]) {
         let ts = crate::TILE_SIZE;
         for &(at, width, ms) in patches {
-            #[allow(clippy::cast_possible_truncation)]
             let (cx, ty) = (
                 (at.x as i32).div_euclid(ts),
                 (at.y as i32 + 4).div_euclid(ts),
             );
             let until = self.tick + u64::from(ms_to_ticks(ms));
-            #[allow(clippy::cast_possible_wrap)]
+            #[allow(clippy::cast_possible_wrap)] // a few tiles
             let half = width as i32 / 2;
             for tx in cx - half..=cx + half {
                 let t = self.collision.tile(tx, ty);

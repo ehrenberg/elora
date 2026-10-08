@@ -95,7 +95,6 @@ impl Hud {
         let min = Vec2::new((screen.x - size.x) / 2.0, screen.y - size.y - 14.0 * s);
         batch.fill_rounded_rect(min, min + size, 16.0 * s, PANEL);
 
-        #[allow(clippy::cast_precision_loss)]
         let frac = |v: i32| (v.max(0) as f32 / max.max(1) as f32).min(1.0);
         let bar = |batch: &mut ShapeBatch, y: f32, h: f32, value: i32, color: Color| {
             let a = min + Vec2::new(16.0 * s, y * s);
@@ -112,7 +111,6 @@ impl Hud {
 
         for (i, &w) in Weapon::ALL.iter().enumerate() {
             let slot = ch.arsenal.slot(w);
-            #[allow(clippy::cast_precision_loss)]
             let x = min.x + (160.0 + i as f32 * 44.0) * s;
             let center = Vec2::new(x + 20.0 * s, min.y + 22.0 * s);
             let active = w == ch.arsenal.active;
@@ -272,7 +270,6 @@ pub fn crosshair_color(health: i32, max: i32) -> Color {
     const WHITE: Color = Color::rgb(1.0, 1.0, 1.0);
     const YELLOW: Color = Color::hex(0xffd24a);
     const RED: Color = Color::hex(0xff4a4a);
-    #[allow(clippy::cast_precision_loss)]
     let f = (health.max(0) as f32 / max.max(1) as f32).clamp(0.0, 1.0);
     if f >= 0.5 {
         elora_render::lerp_color(YELLOW, WHITE, (f - 0.5) * 2.0)

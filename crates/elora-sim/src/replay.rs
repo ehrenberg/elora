@@ -96,7 +96,7 @@ impl Recording {
         let mut tiles = String::new();
         for y in 0..collision.height() {
             for x in 0..collision.width() {
-                #[allow(clippy::cast_possible_wrap)]
+                #[allow(clippy::cast_possible_wrap)] // map sizes are far below i32::MAX
                 tiles.push(collision.tile(x as i32, y as i32).to_char());
             }
             tiles.push('\n');

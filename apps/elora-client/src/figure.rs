@@ -263,7 +263,6 @@ impl Figures {
             (vel.y.abs() / 60.0).min(0.15)
         };
         // standing, she breathes slightly (E-328)
-        #[allow(clippy::cast_precision_loss)]
         let breathe = if state.grounded && vel.x.abs() < 0.5 {
             (self.time * 2.2 + c.slot as f32).sin() * 0.022
         } else {
@@ -306,7 +305,6 @@ impl Figures {
 
         // eyes: look at the target, blink occasionally
         let look = Vec2::new(aim.x * facing, aim.y) * EYES_LOOK;
-        #[allow(clippy::cast_precision_loss)]
         let t = self.time + c.slot as f32 * 1.37;
         let (mesh, blink) = match state.expression {
             Expression::Normal => (&art.eyes, if t % 4.3 > 4.18 { 0.15 } else { 1.0 }),
@@ -395,7 +393,6 @@ mod tests {
             Color::hex(0)
         });
         for (i, (_, vel, grounded, squash, aim)) in poses.iter().enumerate() {
-            #[allow(clippy::cast_precision_loss)]
             let x = 40.0 + i as f32 * 60.0 + if i == 3 { 7.0 } else { 0.0 };
             let mut ch = Character::spawn(Vec2::new(x, ground - 14.0), 10);
             ch.core.vel = *vel;

@@ -65,7 +65,6 @@ impl Source {
         }
     }
 
-    #[allow(clippy::cast_precision_loss)]
     pub fn duration(&self) -> f32 {
         match self {
             Self::Synth(def) => def.duration(),
@@ -143,7 +142,6 @@ impl Bank {
 }
 
 /// Mono samples as 16-bit WAV (for listening samples).
-#[allow(clippy::cast_possible_truncation)]
 pub fn wav(samples: &[f32]) -> Vec<u8> {
     let data_len = u32::try_from(samples.len() * 2).unwrap_or(u32::MAX);
     let mut out = Vec::with_capacity(44 + samples.len() * 2);
@@ -206,7 +204,6 @@ pub fn decode_wav(data: &[u8]) -> Result<Vec<f32>, &'static str> {
                             .iter()
                             .map(|b| f32::from(i16::from_le_bytes(*b)))
                             .sum();
-                        #[allow(clippy::cast_precision_loss)]
                         let n = ch as f32;
                         sum / n / f32::from(i16::MAX)
                     })

@@ -140,7 +140,6 @@ fn frost_wave_hurts_on_the_floor_but_not_on_a_ledge() {
     assert_eq!(mode(&w, id), queen::WAVE);
     // Elora on the ledge: the wave passes beneath her
     let mut w = hall();
-    #[allow(clippy::cast_precision_loss)]
     let ledge = Vec2::new(12.0 * 32.0 + 16.0, 25.0 * 32.0 - 15.0);
     spawn(&mut w, ledge);
     let id = queen_id(&mut w);
@@ -162,7 +161,6 @@ fn frost_wave_hurts_on_the_floor_but_not_on_a_ledge() {
 #[test]
 fn only_vulnerable_while_tired_after_three_waves() {
     let mut w = hall();
-    #[allow(clippy::cast_precision_loss)]
     let ledge = Vec2::new(12.0 * 32.0 + 16.0, 25.0 * 32.0 - 15.0);
     spawn(&mut w, ledge);
     let id = queen_id(&mut w);
@@ -187,7 +185,6 @@ fn only_vulnerable_while_tired_after_three_waves() {
 #[test]
 fn angry_queen_alternates_sides_drops_icicles_and_calls_a_storm() {
     let mut w = hall();
-    #[allow(clippy::cast_precision_loss)]
     let ledge = Vec2::new(12.0 * 32.0 + 16.0, 25.0 * 32.0 - 15.0);
     spawn(&mut w, ledge);
     let id = queen_id(&mut w);
@@ -226,7 +223,6 @@ fn angry_queen_alternates_sides_drops_icicles_and_calls_a_storm() {
 #[test]
 fn rises_again_after_enough_hits() {
     let mut w = hall();
-    #[allow(clippy::cast_precision_loss)]
     let ledge = Vec2::new(12.0 * 32.0 + 16.0, 25.0 * 32.0 - 15.0);
     spawn(&mut w, ledge);
     let id = queen_id(&mut w);

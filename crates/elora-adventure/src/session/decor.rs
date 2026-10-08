@@ -53,7 +53,6 @@ fn recolor(map: &mut Map, freed: i64) {
         if let Art::Builtin(name) = &d.art
             && let Some(stem) = name.strip_suffix("-pale")
         {
-            #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
             let h = (d.pos.x as i64 * 31 + d.pos.y as i64 * 17).rem_euclid(5);
             if h < freed {
                 d.art = Art::Builtin(format!("{stem}-colourful"));

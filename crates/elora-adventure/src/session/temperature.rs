@@ -38,7 +38,6 @@ impl TemperatureBar {
     /// bonus in percent (negative = fills more slowly). Returns whether Elora is in the open
     /// (the bar fills).
     fn tick(&self, level: &mut f32, full: &mut bool, at: &Surroundings<'_>, pct: f32) -> bool {
-        #[allow(clippy::cast_precision_loss)]
         let step = |ms: u32| 1.0 / elora_sim::tuning::ms_to_ticks(ms).max(1) as f32;
         let open = if at.in_zone(&self.relief_zones) {
             *level -= step(self.relief_ms);
@@ -89,7 +88,6 @@ impl Session {
     /// empty. Heat and cold slow Elora down equally (A-27).
     pub(super) fn temperature(&mut self, world: &mut World, pos: Vec2) {
         let roof = (1..=ROOF_TILES).any(|k| {
-            #[allow(clippy::cast_precision_loss)]
             let p = pos - Vec2::new(0.0, (k * TILE_SIZE) as f32);
             let t = world.collision.tile_at(p);
             t.is_solid() || t == Tile::Platform

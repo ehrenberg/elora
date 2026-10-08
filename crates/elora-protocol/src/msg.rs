@@ -5,11 +5,7 @@
 
 // Wire format: conversions between the field integers and the simulation types.
 // Value ranges are checked while decoding (`validate`, `Reader::int`).
-#![allow(
-    clippy::cast_possible_wrap,
-    clippy::cast_sign_loss,
-    clippy::cast_possible_truncation
-)]
+#![allow(clippy::cast_possible_wrap)]
 
 use elora_sim::{DeathCause, Event, PickupKind, PlayerInput, Team, Tuning, Vec2, Weapon};
 
@@ -1077,7 +1073,7 @@ mod tests {
     }
 
     #[test]
-    #[allow(clippy::too_many_lines)]
+    #[allow(clippy::too_many_lines)] // one roundtrip per message
     fn server_messages_roundtrip() {
         let events = vec![
             Event::Explosion {

@@ -787,7 +787,6 @@ impl OnlineClient {
                 team: wb.team(i),
             });
         }
-        #[allow(clippy::cast_possible_truncation)]
         scene.add_shots(&wb, alpha, interval as f32, |owner| owner != slot);
 
         // own character and own shots from the prediction

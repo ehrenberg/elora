@@ -232,7 +232,6 @@ impl Editor {
         self.begin_edit("preset", now);
         self.end_edit();
         let ts = TILE_SIZE as f32;
-        #[allow(clippy::cast_precision_loss)]
         let ground = (self.map.height as f32 - 2.0).max(1.0) * ts;
         // Layers only grow upwards: for the highest camera (about half a view height below
         // the top edge) they end at the ground; lower down their edge disappears behind the

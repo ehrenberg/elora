@@ -88,7 +88,6 @@ impl ApplicationHandler for App {
                 self.set_cursor_grab(false);
             }
             WindowEvent::CursorMoved { position, .. } => {
-                #[allow(clippy::cast_possible_truncation)]
                 self.menu_cursor(elora_sim::Vec2::new(position.x as f32, position.y as f32));
             }
             WindowEvent::KeyboardInput { event, .. } => self.key(&event),

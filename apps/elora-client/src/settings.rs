@@ -324,7 +324,6 @@ impl Settings {
     }
 
     /// Add a favourite (without duplicates) or remove it.
-    #[allow(dead_code)] // Server browser (M7.7)
     pub fn toggle_favorite(&mut self, address: &str) {
         if let Some(i) = self.favorites.iter().position(|a| a == address) {
             self.favorites.remove(i);

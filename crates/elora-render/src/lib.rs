@@ -402,7 +402,6 @@ impl Renderer {
             self.world.draw(&mut pass, &self.pipeline, batch);
         }
         let gr = self.post.grade;
-        #[allow(clippy::cast_precision_loss)]
         let params = [
             self.post.time,
             self.post.strength,

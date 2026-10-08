@@ -98,7 +98,7 @@ fn swatch(ui: &mut egui::Ui, color: u32) {
 }
 
 /// Builds the whole editor UI. `window` = window size in pixels, `ppp` = pixels per point.
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments)] // the editor UI needs all window and frame values
 pub fn ui(
     ui: &mut egui::Ui,
     editor: &mut Editor,

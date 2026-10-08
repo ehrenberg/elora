@@ -29,8 +29,6 @@
 //! Mirroring happens before [`finish`], so the automatic theme decoration and the animations
 //! are placed on the already mirrored terrain and are not flipped.
 
-#![allow(clippy::cast_precision_loss)]
-
 use std::time::Instant;
 
 use elora_map::look::{Curve, EnvKind, EnvPoint, EnvRef, Envelope};
@@ -472,7 +470,7 @@ pub(super) fn finish(map: Map, theme: &Theme) -> Map {
     let auto = std::mem::take(&mut editor.map.decor_back);
     let map = &editor.map;
     let grounded = |d: &Decor| {
-        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+        #[allow(clippy::cast_sign_loss)] // decoration lies inside the map
         let (tx, ty) = ((d.pos.x / T) as usize, (d.pos.y / T) as usize);
         (ty..map.height).all(|y| map.tiles[y * map.width + tx] != elora_sim::Tile::Air)
     };

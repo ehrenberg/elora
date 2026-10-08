@@ -253,7 +253,6 @@ impl Envelope {
         if duration == 0 {
             return first.value;
         }
-        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
         let t = time_ms.rem_euclid(duration) as u32;
         let next = self.points.partition_point(|p| p.time_ms <= t);
         if next == 0 {
@@ -263,7 +262,6 @@ impl Envelope {
         let Some(b) = self.points.get(next) else {
             return a.value;
         };
-        #[allow(clippy::cast_precision_loss)]
         let f = a
             .curve
             .ease((t - a.time_ms) as f32 / (b.time_ms - a.time_ms) as f32);
@@ -302,7 +300,7 @@ mod tests {
     }
 
     #[test]
-    #[allow(clippy::float_cmp)]
+    #[allow(clippy::float_cmp)] // exact key values
     fn envelope_interpolates_and_loops() {
         let e = env(&[
             (0, 0.0, Curve::Linear),
@@ -321,7 +319,7 @@ mod tests {
     }
 
     #[test]
-    #[allow(clippy::float_cmp)]
+    #[allow(clippy::float_cmp)] // exact values at the ends
     fn curves_start_and_end_right() {
         for c in [Curve::Linear, Curve::Slow, Curve::Fast, Curve::Smooth] {
             assert_eq!(c.ease(0.0), 0.0);

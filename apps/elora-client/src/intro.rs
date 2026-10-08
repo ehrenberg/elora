@@ -24,7 +24,7 @@ pub fn available() -> bool {
 }
 
 /// Index of the frame that is due at `t` seconds.
-#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+#[allow(clippy::cast_sign_loss)] // excluded by `max(0.0)`
 pub fn frame_due(t: f32, fps: f32) -> usize {
     (t.max(0.0) * fps).floor() as usize
 }
@@ -120,7 +120,6 @@ impl Intro {
 
     /// The video is over: all frames shown and their time passed.
     pub fn finished(&self, now: Instant) -> bool {
-        #[allow(clippy::cast_precision_loss)]
         let end = self.shown as f32 / self.fps;
         self.decoded_all && self.time(now) >= end
     }

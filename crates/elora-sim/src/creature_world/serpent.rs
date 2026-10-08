@@ -1,7 +1,7 @@
 //! Guardian in the sand ([`Behavior::Serpent`](crate::creature::Behavior::Serpent)).
 
 use super::behavior::{Ctx, Step};
-use super::sign;
+use super::{paced_ticks, sign};
 use crate::creature::{Creature, SerpentDef};
 use crate::event::{CreatureAct, Event};
 use crate::math::Vec2;
@@ -28,7 +28,6 @@ pub(super) fn tick(cx: &mut Ctx, d: &SerpentDef) -> Step {
 
 /// One tick of the guardian in the sand; returns a spot for quicksand (angry) and the spot
 /// of a landing that hurls sand.
-#[allow(clippy::too_many_lines)]
 fn tick_serpent(
     c: &mut Creature,
     d: &SerpentDef,
@@ -39,16 +38,11 @@ fn tick_serpent(
     events: &mut Vec<Event>,
 ) -> (Option<Vec2>, Option<Vec2>) {
     use crate::creature::serpent::{LEAP, SLEEP, STUNNED, TRAIL, WARN};
-    #[allow(clippy::cast_precision_loss)]
     let life = c.health as f32 / max_health.max(1) as f32;
     let angry = d.enrage_at > 0.0 && life <= d.enrage_at;
     let double = d.double_at > 0.0 && life <= d.double_at;
     let pace = if angry { 1.35 } else { 1.0 };
-    let ticks = |ms: u32| {
-        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-        let t = (ms_to_ticks(ms) as f32 / pace) as u32;
-        t.max(1)
-    };
+    let ticks = |ms: u32| paced_ticks(ms, pace);
     let id = c.id;
     let act = |events: &mut Vec<Event>, pos: Vec2, act: CreatureAct| {
         events.push(Event::CreatureAct { id, pos, act });
@@ -141,7 +135,6 @@ fn tick_serpent(
             c.wall_timer = 0;
             c.tug = 1 - c.tug.min(1);
             let side = if c.tug == 0 { -1.0 } else { 1.0 };
-            #[allow(clippy::cast_precision_loss)]
             let at = Vec2::new(p.x + side * 5.0 * crate::TILE_SIZE as f32, feet);
             sand = Some(at);
         }

@@ -32,7 +32,7 @@ const PICKUP_RADIUS: f32 = 20.0;
 /// The switches (`friendly_fire`, `pickups_enabled`, `paused`, `prediction`) are
 /// independent world settings, not a state machine.
 #[derive(Debug, Clone)]
-#[allow(clippy::struct_excessive_bools)]
+#[allow(clippy::struct_excessive_bools)] // independent states of the world
 pub struct World {
     pub tuning: Tuning,
     pub collision: Collision,
@@ -1002,7 +1002,6 @@ impl World {
         }
         let r = self.tuning.stomp_radius;
         let tile = crate::TILE_SIZE as f32;
-        #[allow(clippy::cast_possible_truncation)]
         let (x0, x1, y0, y1) = (
             ((pos.x - r) / tile).floor() as i32,
             ((pos.x + r) / tile).floor() as i32,
@@ -1011,7 +1010,6 @@ impl World {
         );
         for ty in y0..=y1 {
             for tx in x0..=x1 {
-                #[allow(clippy::cast_precision_loss)]
                 let center = Vec2::new((tx as f32 + 0.5) * tile, (ty as f32 + 0.5) * tile);
                 if center.distance(pos) > r {
                     continue;

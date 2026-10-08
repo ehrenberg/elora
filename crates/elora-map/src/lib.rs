@@ -60,7 +60,6 @@ impl Entity {
 
 /// Game modes a map supports based on its entities.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
-#[allow(clippy::struct_excessive_bools)]
 pub struct SupportedModes {
     /// DM, LMS, Instagib (neutral spawns)
     pub free_for_all: bool,

@@ -473,7 +473,6 @@ fn plot(ui: &mut egui::Ui, e: &elora_map::Envelope, time_ms: i64) {
         egui::Color32::from_rgb(90, 150, 230),
         egui::Color32::from_gray(220),
     ];
-    #[allow(clippy::cast_precision_loss)]
     let point = |k: usize, v: f32| {
         egui::pos2(
             rect.left() + rect.width() * k as f32 / 120.0,
@@ -488,7 +487,6 @@ fn plot(ui: &mut egui::Ui, e: &elora_map::Envelope, time_ms: i64) {
             .collect();
         painter.add(egui::Shape::line(line, egui::Stroke::new(1.5, colors[c])));
     }
-    #[allow(clippy::cast_precision_loss)]
     let x = rect.left() + rect.width() * (time_ms.rem_euclid(dur) as f32 / dur as f32);
     painter.line_segment(
         [egui::pos2(x, rect.top()), egui::pos2(x, rect.bottom())],
@@ -498,7 +496,6 @@ fn plot(ui: &mut egui::Ui, e: &elora_map::Envelope, time_ms: i64) {
 
 /// Decoration tool on the map area: clicking an object selects it (dragging moves it),
 /// clicking next to it places the selected graphic, right-click removes.
-#[allow(clippy::fn_params_excessive_bools)]
 pub fn decor_interact(
     editor: &mut Editor,
     map_view: &mut MapView,

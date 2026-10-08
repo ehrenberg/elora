@@ -6,11 +6,8 @@
 //! `cargo test -p elora-client --bin elora write_chapter2_maps -- --ignored` writes
 //! `maps/adventure/*.emap`.
 
-#![allow(
-    clippy::cast_precision_loss,
-    clippy::many_single_char_names,
-    clippy::too_many_lines
-)]
+// Map generator: `x`/`y`/`w`/`h` (tiles) as in mapgen.rs
+#![allow(clippy::many_single_char_names)]
 
 use elora_map::adventure::CameraMode;
 use elora_map::{Map, Object, ObjectKind};

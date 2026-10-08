@@ -141,7 +141,6 @@ impl Emotes {
                 let steps = 12;
                 let mut points = vec![center + dir * (40.0 * s)];
                 for k in 0..=steps {
-                    #[allow(clippy::cast_precision_loss)]
                     let b = a - half + 2.0 * half * k as f32 / steps as f32;
                     points.push(center + Vec2::new(b.cos(), b.sin()) * (radius + 40.0 * s));
                 }
@@ -166,7 +165,7 @@ pub fn selection(aim: Vec2) -> Option<u8> {
         return None;
     }
     let deg = aim.y.atan2(aim.x).to_degrees() + 90.0;
-    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)] // 0..8
+    #[allow(clippy::cast_sign_loss)] // 0..8
     let sector = ((deg / 45.0).round().rem_euclid(8.0)) as u8;
     Some(sector)
 }

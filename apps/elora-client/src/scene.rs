@@ -250,9 +250,7 @@ fn grow(kind: &elora_sim::CreatureKind, c: &elora_sim::Creature) -> f32 {
     use elora_sim::creature::{Behavior, burrow};
     match kind.behavior {
         Behavior::Burrower { rise_ms, .. } if c.mode == burrow::RISING => {
-            #[allow(clippy::cast_precision_loss)]
             let total = elora_sim::tuning::ms_to_ticks(rise_ms).max(1) as f32;
-            #[allow(clippy::cast_precision_loss)]
             let p = c.timer as f32 / total;
             p.clamp(0.0, 1.0)
         }

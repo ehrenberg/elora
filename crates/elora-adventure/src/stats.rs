@@ -77,13 +77,12 @@ impl Stats {
     pub fn apply(&self, base: &Tuning) -> Tuning {
         let mut t = base.clone();
         let pct = |v: f32| 1.0 + v / 100.0;
-        #[allow(clippy::cast_possible_truncation)]
         let scale_dmg = |d: i32| ((d as f32 * pct(self.damage_pct)).round() as i32).max(1);
         t.hammer_damage = scale_dmg(base.hammer_damage + self.hammer_damage);
         t.grenade_damage = scale_dmg(base.grenade_damage);
         t.laser_damage = scale_dmg(base.laser_damage);
         let delay = |ms: u32, extra: f32| {
-            #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+            #[allow(clippy::cast_sign_loss)] // at least 20 ms
             let v = (ms as f32 * pct(self.fire_delay_pct) * pct(extra))
                 .round()
                 .max(20.0) as u32;

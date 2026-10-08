@@ -1,7 +1,7 @@
 //! Guardian on the ground ([`Behavior::Warden`](crate::creature::Behavior::Warden)).
 
 use super::behavior::{Ctx, Step};
-use super::sign;
+use super::{paced_ticks, sign};
 use crate::creature::{Creature, WardenDef};
 use crate::event::{CreatureAct, Event};
 use crate::math::Vec2;
@@ -43,15 +43,10 @@ fn tick_warden(
     events: &mut Vec<Event>,
 ) -> (Vec<Vec2>, Option<Vec2>) {
     use crate::creature::warden::{IDLE, OPEN, SLEEP, WARN};
-    #[allow(clippy::cast_precision_loss)]
     let life = c.health as f32 / max_health.max(1) as f32;
     let angry = d.enrage_at > 0.0 && life <= d.enrage_at;
     let pace = if angry { 1.4 } else { 1.0 };
-    let ticks = |ms: u32| {
-        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-        let t = (ms_to_ticks(ms) as f32 / pace) as u32;
-        t.max(1)
-    };
+    let ticks = |ms: u32| paced_ticks(ms, pace);
     let mut spikes = Vec::new();
     let mut wall = None;
     c.timer = c.timer.saturating_add(1);

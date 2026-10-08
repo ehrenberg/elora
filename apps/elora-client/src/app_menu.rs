@@ -36,7 +36,6 @@ impl App {
 
     pub(crate) fn menu_ctx_parts(&self) -> (Vec2, f32) {
         let size = self.gfx.as_ref().map_or((1, 1), |g| g.renderer.size());
-        #[allow(clippy::cast_precision_loss)]
         let screen = Vec2::new(size.0 as f32, size.1 as f32);
         (
             screen,
@@ -256,10 +255,7 @@ impl App {
                 } else {
                     Vec::new()
                 };
-                #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-                {
-                    config.max_clients = form.max_clients.round() as usize;
-                }
+                config.max_clients = crate::ui::to_usize(form.max_clients.round());
                 self.apply(Action::HostStart);
                 if self.online.is_some() {
                     self.settings.last_server = Some(self.net.address.clone());
@@ -368,7 +364,6 @@ impl App {
     pub(crate) fn menu_wheel(&mut self, delta: MouseScrollDelta) {
         self.menu.input.scroll += match delta {
             MouseScrollDelta::LineDelta(_, y) => y,
-            #[allow(clippy::cast_possible_truncation)]
             MouseScrollDelta::PixelDelta(p) => (p.y / 40.0) as f32,
         };
     }

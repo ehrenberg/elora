@@ -4,11 +4,8 @@
 //! `cargo test -p elora-client --bin elora write_prologue_maps -- --ignored` writes
 //! `maps/adventure/*.emap`.
 
-#![allow(
-    clippy::cast_precision_loss,
-    clippy::many_single_char_names,
-    clippy::too_many_lines
-)]
+// Map generator: short tile names and one long build function per area
+#![allow(clippy::many_single_char_names, clippy::too_many_lines)]
 
 use elora_map::{Art, Decor, Map, ObjectKind};
 use elora_sim::Vec2;

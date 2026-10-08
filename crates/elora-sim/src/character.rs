@@ -133,7 +133,6 @@ impl CharacterCore {
             col.tile_at(Vec2::new(self.pos.x + PHYS_SIZE / 2.0, y)),
             col.tile_at(Vec2::new(self.pos.x - PHYS_SIZE / 2.0, y)),
         ];
-        #[allow(clippy::cast_precision_loss)]
         let platform_top = (crate::math::round_to_int(y).div_euclid(TILE_SIZE) * TILE_SIZE) as f32;
         let stands = |t: Tile| {
             t.is_solid()
@@ -171,10 +170,10 @@ impl CharacterCore {
     /// `None` = no player); the own entry is skipped via `self_index`.
     /// Hook forces on other characters are added into `drag_out`.
     /// `creatures` are the creatures as hook targets (empty in multiplayer).
-    #[allow(clippy::too_many_lines, clippy::too_many_arguments)] // kept close to the reference
     /// `input = None`: continue without input (like `Tick(false)` in the original:
     /// walking direction stays, jump and hook do not change). For foreign
     /// characters in client prediction.
+    #[allow(clippy::too_many_arguments)] // kept close to the reference
     pub(crate) fn tick(
         &mut self,
         input: Option<&PlayerInput>,
@@ -218,96 +217,12 @@ impl CharacterCore {
             self.tick_abilities(input, tuning, col, grounded, down_pressed && !stood);
         }
 
-        let (max_speed, accel, friction) = if ground == Some(Tile::Ice) {
-            (
-                tuning.ground_control_speed,
-                tuning.ice_accel,
-                tuning.ice_friction,
-            )
-        } else if grounded || in_sand {
-            // wet or snowy ground brakes more softly (R2-W1, A-35)
-            let slip = col.wet * tuning.wet_slip;
-            (
-                tuning.ground_control_speed,
-                tuning.ground_control_accel
-                    + (tuning.ice_accel - tuning.ground_control_accel) * slip,
-                tuning.ground_friction + (tuning.ice_friction - tuning.ground_friction) * slip,
-            )
-        } else if self.gliding {
-            (
-                tuning.glide_control_speed,
-                tuning.air_control_accel,
-                tuning.air_friction,
-            )
-        } else {
-            (
-                tuning.air_control_speed,
-                tuning.air_control_accel,
-                tuning.air_friction,
-            )
-        };
-
-        // colorful rush: walk slower (A-23)
-        self.dazed = self.dazed.saturating_sub(1);
-        let max_speed = if self.dazed > 0 {
-            max_speed * tuning.daze_speed
-        } else {
-            max_speed
-        };
-        // quicksand and full heat bar (E-318, E-320)
-        let max_speed = max_speed
-            * if in_sand { tuning.quicksand_speed } else { 1.0 }
-            * if self.overheated {
-                tuning.heat_speed
-            } else {
-                1.0
-            };
+        let (max_speed, accel, friction) =
+            self.movement_limits(tuning, col, ground, grounded, in_sand);
 
         // input
         if let Some(input) = input {
-            let target = Vec2::new(input.target_x as f32, input.target_y as f32);
-            let target_dir = target.normalize();
-            self.direction = input.direction.signum();
-            self.angle = (target.angle() * 256.0) as i32;
-
-            if input.jump {
-                if self.jumped & 1 == 0 {
-                    if self.grip != 0 {
-                        // wall jump: away from the wall, the double jump is kept
-                        self.triggered_events |= events::WALL_JUMP;
-                        self.vel = Vec2::new(
-                            -f32::from(self.grip) * tuning.wall_jump_x,
-                            -tuning.wall_jump_y,
-                        );
-                        self.jumped |= 1;
-                        self.grip = 0;
-                        self.grip_ticks = 0;
-                    } else if grounded || in_sand {
-                        // a jump frees from the quicksand (E-318)
-                        self.triggered_events |= events::GROUND_JUMP;
-                        self.vel.y = -tuning.ground_jump_impulse;
-                        self.jumped |= 1;
-                    } else if self.jumped & 2 == 0 {
-                        self.triggered_events |= events::AIR_JUMP;
-                        self.vel.y = -tuning.air_jump_impulse;
-                        self.jumped |= 3;
-                    }
-                }
-            } else {
-                self.jumped &= !1;
-            }
-
-            if input.hook {
-                if self.hook_state == HookState::Idle {
-                    self.hook_state = HookState::Flying;
-                    self.hook_pos = self.pos + target_dir * PHYS_SIZE * 1.5;
-                    self.hook_dir = target_dir;
-                    self.hooked_player = None;
-                    self.hook_tick = 0;
-                }
-            } else {
-                self.release_hook(HookState::Idle);
-            }
+            self.apply_input(input, tuning, grounded, in_sand);
         }
 
         // walking
@@ -330,8 +245,8 @@ impl CharacterCore {
         // slowly sink in quicksand: one whole unit every few ticks
         if in_sand {
             self.sand_ticks += 1;
-            #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-            let every = (1.0 / tuning.quicksand_sink.max(0.01)).round().max(1.0) as u32;
+            let every =
+                crate::math::to_u32((1.0 / tuning.quicksand_sink.max(0.01)).round().max(1.0));
             let step = if self.sand_ticks.is_multiple_of(every) {
                 1.0
             } else {
@@ -383,6 +298,125 @@ impl CharacterCore {
         }
 
         // players among each other: collision and hook pull
+        self.interact_with_players(tuning, self_index, others, drag_out);
+
+        if self.vel.length() > MAX_VELOCITY {
+            self.vel = self.vel.normalize() * MAX_VELOCITY;
+        }
+    }
+
+    /// Walking limits for this tick: top speed, acceleration and friction by ground,
+    /// gliding, daze, quicksand and heat (reduces the daze counter).
+    fn movement_limits(
+        &mut self,
+        tuning: &Tuning,
+        col: &Collision,
+        ground: Option<Tile>,
+        grounded: bool,
+        in_sand: bool,
+    ) -> (f32, f32, f32) {
+        let (max_speed, accel, friction) = if ground == Some(Tile::Ice) {
+            (
+                tuning.ground_control_speed,
+                tuning.ice_accel,
+                tuning.ice_friction,
+            )
+        } else if grounded || in_sand {
+            // wet or snowy ground brakes more softly (R2-W1, A-35)
+            let slip = col.wet * tuning.wet_slip;
+            (
+                tuning.ground_control_speed,
+                tuning.ground_control_accel
+                    + (tuning.ice_accel - tuning.ground_control_accel) * slip,
+                tuning.ground_friction + (tuning.ice_friction - tuning.ground_friction) * slip,
+            )
+        } else if self.gliding {
+            (
+                tuning.glide_control_speed,
+                tuning.air_control_accel,
+                tuning.air_friction,
+            )
+        } else {
+            (
+                tuning.air_control_speed,
+                tuning.air_control_accel,
+                tuning.air_friction,
+            )
+        };
+
+        // colorful rush: walk slower (A-23)
+        self.dazed = self.dazed.saturating_sub(1);
+        let max_speed = if self.dazed > 0 {
+            max_speed * tuning.daze_speed
+        } else {
+            max_speed
+        };
+        // quicksand and full heat bar (E-318, E-320)
+        let max_speed = max_speed
+            * if in_sand { tuning.quicksand_speed } else { 1.0 }
+            * if self.overheated {
+                tuning.heat_speed
+            } else {
+                1.0
+            };
+        (max_speed, accel, friction)
+    }
+
+    /// Input of this tick: aim, walking direction, jumps and firing the hook.
+    fn apply_input(&mut self, input: &PlayerInput, tuning: &Tuning, grounded: bool, in_sand: bool) {
+        let target = Vec2::new(input.target_x as f32, input.target_y as f32);
+        let target_dir = target.normalize();
+        self.direction = input.direction.signum();
+        self.angle = (target.angle() * 256.0) as i32;
+
+        if input.jump {
+            if self.jumped & 1 == 0 {
+                if self.grip != 0 {
+                    // wall jump: away from the wall, the double jump is kept
+                    self.triggered_events |= events::WALL_JUMP;
+                    self.vel = Vec2::new(
+                        -f32::from(self.grip) * tuning.wall_jump_x,
+                        -tuning.wall_jump_y,
+                    );
+                    self.jumped |= 1;
+                    self.grip = 0;
+                    self.grip_ticks = 0;
+                } else if grounded || in_sand {
+                    // a jump frees from the quicksand (E-318)
+                    self.triggered_events |= events::GROUND_JUMP;
+                    self.vel.y = -tuning.ground_jump_impulse;
+                    self.jumped |= 1;
+                } else if self.jumped & 2 == 0 {
+                    self.triggered_events |= events::AIR_JUMP;
+                    self.vel.y = -tuning.air_jump_impulse;
+                    self.jumped |= 3;
+                }
+            }
+        } else {
+            self.jumped &= !1;
+        }
+
+        if input.hook {
+            if self.hook_state == HookState::Idle {
+                self.hook_state = HookState::Flying;
+                self.hook_pos = self.pos + target_dir * PHYS_SIZE * 1.5;
+                self.hook_dir = target_dir;
+                self.hooked_player = None;
+                self.hook_tick = 0;
+            }
+        } else {
+            self.release_hook(HookState::Idle);
+        }
+    }
+
+    /// Players among each other: collision and hook pull (forces on others go into `drag_out`).
+    fn interact_with_players(
+        &mut self,
+        tuning: &Tuning,
+        self_index: usize,
+        others: &[Option<Vec2>],
+        drag_out: &mut [Vec2],
+    ) {
         for (i, other) in others.iter().enumerate() {
             let Some(other_pos) = *other else { continue };
             if i == self_index {
@@ -411,10 +445,6 @@ impl CharacterCore {
                 drag_out[i] += dir * accel * tuning.player_hook_force;
                 self.hook_drag_vel -= dir * accel * 0.25;
             }
-        }
-
-        if self.vel.length() > MAX_VELOCITY {
-            self.vel = self.vel.normalize() * MAX_VELOCITY;
         }
     }
 

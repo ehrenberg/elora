@@ -89,7 +89,6 @@ impl App {
             .local()
             .filter(|c| c.ch.core.dazed > 0)
             .map_or(Vec2::ZERO, |c| {
-                #[allow(clippy::cast_precision_loss)]
                 let t = tick as f32 / elora_sim::TICKS_PER_SECOND as f32;
                 let fade = (c.ch.core.dazed as f32 / 25.0).min(1.0);
                 Vec2::new((t * 2.3).sin() * 7.0, (t * 1.7).cos() * 4.0) * fade
@@ -101,7 +100,6 @@ impl App {
         );
         // snap to whole screen pixels: fine lines stay calm while scrolling (E-288)
         if let Some(gfx) = &self.gfx {
-            #[allow(clippy::cast_precision_loss)]
             let px = gfx.renderer.size().0 as f32 / camera.size.x;
             if px > 0.0 {
                 camera.center = Vec2::new(
@@ -252,7 +250,7 @@ impl App {
             Some(o) => o.client.map.as_ref(),
             None => Some(&self.sandbox.map),
         };
-        #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
+        #[allow(clippy::cast_possible_wrap)] // milliseconds of the running time fit easily into i64
         let look_time = map_view::LookTime {
             local_ms: (f64::from(self.figures.time()) * 1000.0) as i64,
             server_ms: (tick * 1000 / u64::from(elora_sim::TICKS_PER_SECOND)) as i64,
@@ -295,7 +293,6 @@ impl App {
     /// Collect the HUD of the frame in `self.hud_batch`; returns the screen size.
     fn build_hud(&mut self, scene: &Scene, tuning: &Tuning, info: &FrameInfo) -> Vec2 {
         let size = self.gfx.as_ref().map_or((1, 1), |g| g.renderer.size());
-        #[allow(clippy::cast_precision_loss)]
         let screen = Vec2::new(size.0 as f32, size.1 as f32);
         self.hud_batch.clear();
         self.hud.draw(

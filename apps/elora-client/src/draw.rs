@@ -49,7 +49,6 @@ const ARMOR: Color = Color::hex(0xe0b85a);
 const SPAWN: Color = Color::rgba(1.0, 1.0, 1.0, 0.35);
 
 /// Draws map, pickups, figures, projectiles, lasers, effects and crosshair.
-#[allow(clippy::too_many_lines)] // one drawing order, deliberately in one place
 pub fn scene(
     batch: &mut ShapeBatch,
     scene: &Scene,
@@ -81,22 +80,7 @@ pub fn scene(
     }
     // soft shadows on the ground below figures and enemies (E-328)
     if let Some(map) = map {
-        for o in &scene.objects {
-            if let elora_client::scene::ObjectLook::Npc { character, .. } = &o.look
-                && !crate::creatures::CreatureArt::is_still(character)
-            {
-                ground_shadow(batch, map, o.pos + Vec2::new(0.0, PHYS_SIZE / 2.0), 30.0);
-            }
-        }
-        for c in &scene.creatures {
-            if crate::creatures::CreatureArt::casts_shadow(c) {
-                let foot = c.pos + Vec2::new(0.0, c.size.y / 2.0);
-                ground_shadow(batch, map, foot, c.size.x * 0.85);
-            }
-        }
-        for c in &scene.chars {
-            ground_shadow(batch, map, c.pos() + Vec2::new(0.0, PHYS_SIZE / 2.0), 28.0);
-        }
+        ground_shadows(batch, map, scene);
     }
     // weather behind the figures: particles of the back layer, splashes (R2-W1)
     weather.draw_back(batch);
@@ -139,32 +123,13 @@ pub fn scene(
         }
         let mut tint = skins::tint(skin, c.team, c.dummy, team_color);
         if c.ch.core.dazed > 0 {
-            #[allow(clippy::cast_precision_loss)]
             let t = scene.tick as f32 / elora_sim::TICKS_PER_SECOND as f32;
             tint = skins::rainbow(tint, t);
         }
         figures.draw(batch, art, c, aim, &tint);
         // frozen (frost ghost): Elora is briefly stuck in an ice block
         if c.ch.core.frozen > 0 {
-            let half = Vec2::new(r + 5.0, r + 6.0);
-            batch.fill_rounded_rect(
-                pos - half,
-                pos + half,
-                5.0,
-                Color::rgba(0.75, 0.9, 0.98, 0.55),
-            );
-            batch.stroke_line(
-                pos + Vec2::new(-r, -r + 2.0),
-                pos + Vec2::new(-r + 9.0, -r + 2.0),
-                2.5,
-                Color::rgba(1.0, 1.0, 1.0, 0.9),
-            );
-            batch.stroke_line(
-                pos + Vec2::new(r - 2.0, -r + 4.0),
-                pos + Vec2::new(r + 2.0, -r + 9.0),
-                2.0,
-                Color::rgba(1.0, 1.0, 1.0, 0.8),
-            );
+            ice_block(batch, pos, r);
         }
         let facing = if aim.x < 0.0 { -1.0 } else { 1.0 };
         let swing = figures.weapon_swing(c.slot, facing);
@@ -185,13 +150,74 @@ pub fn scene(
         }
     }
 
-    for f in &scene.flags {
-        if !f.at_stand {
-            batch.stroke_circle(f.stand, 16.0, 2.0, team_color(f.team));
-        }
-        items.draw_flag(batch, f.pos, team_color(f.team), time);
+    flags(batch, scene, items, time);
+    shots_and_lasers(batch, scene, time);
+    if let Some(map) = map {
+        map_view.draw_front(batch, map, camera, look_time);
     }
+    // weather in front of everything: front particles, lightning
+    weather.draw_front(batch);
+    effects.draw(batch);
+    emotes.draw(batch, scene);
 
+    // crosshair
+    if let Some(local) = scene.local() {
+        let c = local.pos() + mouse_pos;
+        let color = crate::hud::crosshair_color(local.ch.health, tuning.max_health);
+        batch.stroke_circle(c, 8.0, 2.0, color);
+        batch.fill_circle(c, 1.5, color);
+        effects.draw_hit_marker(batch, c);
+    }
+}
+
+/// This far below the feet a shadow is still visible (units).
+const SHADOW_REACH: f32 = 320.0;
+
+/// Soft shadows below moving characters, creatures and players (E-328).
+fn ground_shadows(batch: &mut ShapeBatch, map: &elora_map::Map, scene: &Scene) {
+    for o in &scene.objects {
+        if let elora_client::scene::ObjectLook::Npc { character, .. } = &o.look
+            && !crate::creatures::CreatureArt::is_still(character)
+        {
+            ground_shadow(batch, map, o.pos + Vec2::new(0.0, PHYS_SIZE / 2.0), 30.0);
+        }
+    }
+    for c in &scene.creatures {
+        if crate::creatures::CreatureArt::casts_shadow(c) {
+            let foot = c.pos + Vec2::new(0.0, c.size.y / 2.0);
+            ground_shadow(batch, map, foot, c.size.x * 0.85);
+        }
+    }
+    for c in &scene.chars {
+        ground_shadow(batch, map, c.pos() + Vec2::new(0.0, PHYS_SIZE / 2.0), 28.0);
+    }
+}
+
+/// Ice block around a frozen character (frost ghost) of radius `r`.
+fn ice_block(batch: &mut ShapeBatch, pos: Vec2, r: f32) {
+    let half = Vec2::new(r + 5.0, r + 6.0);
+    batch.fill_rounded_rect(
+        pos - half,
+        pos + half,
+        5.0,
+        Color::rgba(0.75, 0.9, 0.98, 0.55),
+    );
+    batch.stroke_line(
+        pos + Vec2::new(-r, -r + 2.0),
+        pos + Vec2::new(-r + 9.0, -r + 2.0),
+        2.5,
+        Color::rgba(1.0, 1.0, 1.0, 0.9),
+    );
+    batch.stroke_line(
+        pos + Vec2::new(r - 2.0, -r + 4.0),
+        pos + Vec2::new(r + 2.0, -r + 9.0),
+        2.0,
+        Color::rgba(1.0, 1.0, 1.0, 0.8),
+    );
+}
+
+/// Grenades, creature shots and laser beams.
+fn shots_and_lasers(batch: &mut ShapeBatch, scene: &Scene, time: f32) {
     for &p in &scene.projectiles {
         batch.fill_circle(p, 7.0, OUTLINE);
         batch.fill_circle(p, 5.5, GRENADE);
@@ -213,36 +239,19 @@ pub fn scene(
             Color::rgba(0.9, 1.0, 1.0, l.fade),
         );
     }
-    if let Some(map) = map {
-        map_view.draw_front(batch, map, camera, look_time);
-    }
-    // weather in front of everything: front particles, lightning
-    weather.draw_front(batch);
-    effects.draw(batch);
-    emotes.draw(batch, scene);
+}
 
-    // crosshair
-    if let Some(local) = scene.local() {
-        let c = local.pos() + mouse_pos;
-        let color = crate::hud::crosshair_color(local.ch.health, tuning.max_health);
-        batch.stroke_circle(c, 8.0, 2.0, color);
-        batch.fill_circle(c, 1.5, color);
-        effects.draw_hit_marker(batch, c);
+/// Flags (with an empty stand when carried away).
+fn flags(batch: &mut ShapeBatch, scene: &Scene, items: &ItemArt, time: f32) {
+    for f in &scene.flags {
+        if !f.at_stand {
+            batch.stroke_circle(f.stand, 16.0, 2.0, team_color(f.team));
+        }
+        items.draw_flag(batch, f.pos, team_color(f.team), time);
     }
 }
 
-/// Adventure objects (A1.6, graphics A1.7). `pos` is the center; the ground lies half the
-/// height of the respective object below it (as placed on the maps).
-/// This far below the feet a shadow is still visible (units).
-const SHADOW_REACH: f32 = 320.0;
-
 /// Soft shadow on the first ground below `foot`: the higher, the smaller and paler.
-#[allow(
-    clippy::cast_possible_wrap,
-    clippy::cast_possible_truncation,
-    clippy::cast_precision_loss,
-    clippy::cast_sign_loss
-)]
 fn ground_shadow(batch: &mut ShapeBatch, map: &elora_map::Map, foot: Vec2, width: f32) {
     let Some(ground) = crate::weather::surface_below(map, foot, SHADOW_REACH) else {
         return;
@@ -256,7 +265,6 @@ fn ground_shadow(batch: &mut ShapeBatch, map: &elora_map::Map, foot: Vec2, width
     let (rx, ry) = (width * 0.62 * size, 5.0 * size);
     let points: Vec<Vec2> = (0..16)
         .map(|i| {
-            #[allow(clippy::cast_precision_loss)]
             let a = i as f32 / 16.0 * std::f32::consts::TAU;
             Vec2::new(foot.x + a.cos() * rx, ground - 1.0 + a.sin() * ry)
         })
@@ -264,6 +272,8 @@ fn ground_shadow(batch: &mut ShapeBatch, map: &elora_map::Map, foot: Vec2, width
     batch.fill_polygon(&points, Color::rgba(0.1, 0.08, 0.06, 0.3 * k));
 }
 
+/// Adventure objects (A1.6, graphics A1.7). `pos` is the center; the ground lies half the
+/// height of the respective object below it (as placed on the maps).
 fn draw_objects(
     batch: &mut ShapeBatch,
     scene: &Scene,

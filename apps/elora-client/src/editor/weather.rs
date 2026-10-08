@@ -5,8 +5,6 @@
 //! `cargo test -p elora-client --bin elora write_weather_test_map -- --ignored` writes
 //! `maps/weather-test.emap`.
 
-#![allow(clippy::cast_precision_loss)]
-
 use elora_map::{Map, Weather, WeatherKind};
 
 use super::mapgen::{Grid, decor, finish};

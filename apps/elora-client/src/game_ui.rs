@@ -143,7 +143,7 @@ pub fn draw(
 }
 
 /// Map loading indicator in the middle of the screen with a progress bar.
-#[allow(clippy::too_many_arguments)]
+#[allow(clippy::too_many_arguments)] // layout values of the loading screen
 fn loading(
     batch: &mut ShapeBatch,
     font: &Font,
@@ -154,14 +154,12 @@ fn loading(
     size: usize,
     lang: &Lang,
 ) {
-    #[allow(clippy::cast_precision_loss)]
     let frac = if size == 0 {
         1.0
     } else {
         (received as f32 / size as f32).clamp(0.0, 1.0)
     };
-    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-    let percent = (frac * 100.0).round() as u32;
+    let percent = crate::ui::to_u32((frac * 100.0).round());
     let text = lang.f("game.loading_map", &[("map", &map), ("percent", &percent)]);
     let w = font.width(&text, 16.0 * s).max(260.0 * s) + 40.0 * s;
     let top = Vec2::new((screen.x - w) / 2.0, screen.y / 2.0 - 40.0 * s);
@@ -248,7 +246,6 @@ fn killfeed(
     let right = screen.x - 12.0 * s;
     let first = entries.len().saturating_sub(6);
     for (n, k) in entries[first..].iter().enumerate() {
-        #[allow(clippy::cast_precision_loss)]
         let y = 12.0 * s + n as f32 * (row + 4.0 * s);
         let cause_text = match k.cause {
             DeathCause::World => Some(g.lang.t("game.death_zone")),
@@ -327,7 +324,6 @@ fn chat(batch: &mut ShapeBatch, font: &Font, screen: Vec2, s: f32, g: &GameUi<'_
     let width = 460.0 * s;
     let shown: Vec<&&ChatLine> = lines.iter().rev().take(if open { 14 } else { 8 }).collect();
     let rows = shown.len() + usize::from(open);
-    #[allow(clippy::cast_precision_loss)]
     let height = rows as f32 * line_h + 16.0 * s;
     // bottom edge above the HUD bar
     let bottom = screen.y - 90.0 * s;
@@ -431,7 +427,6 @@ fn scoreboard(
     let col_w = 330.0 * s;
     let row_h = 24.0 * s;
     let max_rows = columns.iter().map(|c| c.2.len()).max().unwrap_or(0);
-    #[allow(clippy::cast_precision_loss)]
     let (w, h) = (
         columns.len() as f32 * col_w + 24.0 * s,
         (max_rows as f32 + 2.0) * row_h + 70.0 * s,
@@ -453,7 +448,6 @@ fn scoreboard(
         Align::Center,
     );
     for (ci, column) in columns.iter().enumerate() {
-        #[allow(clippy::cast_precision_loss)]
         let x0 = top.x + 12.0 * s + ci as f32 * col_w;
         scoreboard_column(
             batch,

@@ -163,7 +163,6 @@ fn key(kind: &str, map: &str, id: &str) -> String {
 }
 
 fn tile_range(pos: Vec2, size: (u8, u8)) -> impl Iterator<Item = (i32, i32)> {
-    #[allow(clippy::cast_possible_truncation)]
     let (x0, y0) = (
         (pos.x / TILE_SIZE as f32) as i32,
         (pos.y / TILE_SIZE as f32) as i32,
@@ -346,61 +345,14 @@ impl Session {
             .collect()
     }
 
-    /// After every world tick; `interact` = action key pressed in this tick.
-    #[allow(clippy::too_many_lines)]
-    pub fn tick(&mut self, world: &mut World, interact: bool) -> Vec<SessionEvent> {
-        let mut out = std::mem::take(&mut self.pending);
-        self.ticks += 1;
-        // the map's weather affects the game (R2-W1); changes when a spring is freed
-        world.weather = weather_env(self.map.weather);
-        if self
-            .ticks
-            .is_multiple_of(u64::from(elora_sim::TICKS_PER_SECOND))
-        {
-            self.save.play_time_secs += 1;
-        }
+    /// Reacts to the events of the world tick; `true` when the player died for good.
+    fn world_events(&mut self, world: &mut World, out: &mut Vec<SessionEvent>) -> bool {
         let me = self.player;
         let events = world.events.clone();
         for e in &events {
             match e {
                 Event::CreatureDeath { id, kind, .. } => {
-                    if let Some(obj) = self.creatures.remove(id) {
-                        let persistent = self.map.adventure.object(&obj).is_some_and(|o| {
-                            matches!(
-                                o.kind,
-                                ObjectKind::Creature {
-                                    persistent: true,
-                                    ..
-                                }
-                            )
-                        });
-                        let boss = world.creature_kinds.get(*kind).is_some_and(|k| k.boss);
-                        if persistent || boss {
-                            self.save
-                                .defeated
-                                .insert(key("enemy", &self.map_name, &obj));
-                        }
-                    }
-                    // guardian defeated: flag for doors, dialogs and quests (R2-M2.1)
-                    if let Some(k) = world.creature_kinds.get(*kind).filter(|k| k.boss) {
-                        // a storm of the guardian calms down (Kristella, R2-M2.4)
-                        self.map.weather = self.pick_weather(&self.map_name.clone());
-                        self.save.set_flag(&format!("defeated.{}", k.name), 1);
-                        out.extend(outcomes(self.save.update_quests(&self.content)));
-                        // chapter done: victory screen
-                        if let Some(a) = self
-                            .content
-                            .areas
-                            .iter()
-                            .find(|a| a.guardian.as_deref() == Some(k.name.as_str()))
-                        {
-                            out.push(SessionEvent::ChapterDone { area: a.id.clone() });
-                        }
-                    }
-                    let n = self
-                        .save
-                        .on_event(&self.content, &world.creature_kinds, me, e);
-                    out.extend(n.into_iter().map(SessionEvent::Notice));
+                    self.creature_died(world, *id, *kind, e, out);
                 }
                 // Kristella calls a blizzard into the hall (E-341)
                 Event::CreatureAct {
@@ -453,11 +405,79 @@ impl Session {
                         let lost = self.save.die(&self.content);
                         self.dead = true;
                         out.push(SessionEvent::Died { lost });
-                        return out;
+                        return true;
                     }
                 }
                 _ => {}
             }
+        }
+        false
+    }
+
+    /// A creature died: remember defeated enemies, guardian flags, quests and victory.
+    fn creature_died(
+        &mut self,
+        world: &World,
+        id: u32,
+        kind: usize,
+        e: &Event,
+        out: &mut Vec<SessionEvent>,
+    ) {
+        let me = self.player;
+        if let Some(obj) = self.creatures.remove(&id) {
+            let persistent = self.map.adventure.object(&obj).is_some_and(|o| {
+                matches!(
+                    o.kind,
+                    ObjectKind::Creature {
+                        persistent: true,
+                        ..
+                    }
+                )
+            });
+            let boss = world.creature_kinds.get(kind).is_some_and(|k| k.boss);
+            if persistent || boss {
+                self.save
+                    .defeated
+                    .insert(key("enemy", &self.map_name, &obj));
+            }
+        }
+        // guardian defeated: flag for doors, dialogs and quests (R2-M2.1)
+        if let Some(k) = world.creature_kinds.get(kind).filter(|k| k.boss) {
+            // a storm of the guardian calms down (Kristella, R2-M2.4)
+            self.map.weather = self.pick_weather(&self.map_name.clone());
+            self.save.set_flag(&format!("defeated.{}", k.name), 1);
+            out.extend(outcomes(self.save.update_quests(&self.content)));
+            // chapter done: victory screen
+            if let Some(a) = self
+                .content
+                .areas
+                .iter()
+                .find(|a| a.guardian.as_deref() == Some(k.name.as_str()))
+            {
+                out.push(SessionEvent::ChapterDone { area: a.id.clone() });
+            }
+        }
+        let n = self
+            .save
+            .on_event(&self.content, &world.creature_kinds, me, e);
+        out.extend(n.into_iter().map(SessionEvent::Notice));
+    }
+
+    /// After every world tick; `interact` = action key pressed in this tick.
+    pub fn tick(&mut self, world: &mut World, interact: bool) -> Vec<SessionEvent> {
+        let mut out = std::mem::take(&mut self.pending);
+        self.ticks += 1;
+        // the map's weather affects the game (R2-W1); changes when a spring is freed
+        world.weather = weather_env(self.map.weather);
+        if self
+            .ticks
+            .is_multiple_of(u64::from(elora_sim::TICKS_PER_SECOND))
+        {
+            self.save.play_time_secs += 1;
+        }
+        let me = self.player;
+        if self.world_events(world, &mut out) {
+            return out;
         }
 
         let Some(ch) = world.character(me) else {
@@ -738,7 +758,6 @@ impl Session {
     /// Characters facing Elora and with a short walking path (E-257).
     pub fn npcs(&self, world: &World) -> Vec<NpcView> {
         let elora = world.character(self.player).map(|c| c.core.pos);
-        #[allow(clippy::cast_precision_loss)]
         let t = world.tick as f32 / elora_sim::TICKS_PER_SECOND as f32;
         self.map
             .adventure

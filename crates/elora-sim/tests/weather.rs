@@ -26,7 +26,7 @@ fn world(adventure: bool, weather: Option<WeatherEnv>) -> World {
     w
 }
 
-#[allow(clippy::unnecessary_wraps)]
+#[allow(clippy::unnecessary_wraps)] // reads like the `weather` field it fills
 fn wind(v: f32) -> Option<WeatherEnv> {
     Some(WeatherEnv {
         wind: v,

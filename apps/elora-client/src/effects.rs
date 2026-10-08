@@ -269,9 +269,7 @@ impl Effects {
         self.rng ^= self.rng << 13;
         self.rng ^= self.rng >> 7;
         self.rng ^= self.rng << 17;
-        #[allow(clippy::cast_precision_loss)]
-        let v = (self.rng >> 40) as f32 / (1u64 << 24) as f32;
-        v
+        (self.rng >> 40) as f32 / (1u64 << 24) as f32
     }
 
     fn range(&mut self, lo: f32, hi: f32) -> f32 {
@@ -399,7 +397,6 @@ impl Effects {
             }
             if bits & events::AIR_JUMP != 0 {
                 for k in 0..8 {
-                    #[allow(clippy::cast_precision_loss)]
                     let a = k as f32 / 8.0 * std::f32::consts::TAU;
                     self.particles.push(Particle {
                         pos: feet(c.pos()),
@@ -416,8 +413,7 @@ impl Effects {
             }
         }
         for l in landings {
-            #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)] // 0..=8
-            let n = (l.strength * 10.0).clamp(0.0, 8.0) as u32;
+            let n = crate::ui::to_u32((l.strength * 10.0).clamp(0.0, 8.0));
             if n > 1 {
                 for side in [-1.0, 1.0] {
                     for _ in 0..n / 2 {
@@ -462,9 +458,7 @@ impl Effects {
 
     /// Thin ice gets cracks (`broken = false`) or breaks into shards.
     fn ice_crack(&mut self, tx: i32, ty: i32, broken: bool) {
-        #[allow(clippy::cast_precision_loss)]
         let ts = elora_sim::TILE_SIZE as f32;
-        #[allow(clippy::cast_precision_loss)]
         let min = Vec2::new(tx as f32 * ts, ty as f32 * ts);
         if broken {
             self.cracks.retain(|c| c.0 != min);
@@ -565,9 +559,7 @@ impl Effects {
             Event::IceCrack { tx, ty, broken } => self.ice_crack(tx, ty, broken),
             // broken floor and root walls crumble
             Event::TileBroken { tx, ty } | Event::TileSet { tx, ty, .. } => {
-                #[allow(clippy::cast_precision_loss)]
                 let ts = elora_sim::TILE_SIZE as f32;
-                #[allow(clippy::cast_precision_loss)]
                 let center = Vec2::new((tx as f32 + 0.5) * ts, (ty as f32 + 0.5) * ts);
                 self.burst(center, CRUMB, &CRUMBS);
             }
@@ -622,7 +614,6 @@ impl Effects {
     pub fn draw(&self, batch: &mut ShapeBatch) {
         let mut tint = Tint::new(vec![WHITE]);
         // cracks in the thin ice: grow until it breaks
-        #[allow(clippy::cast_precision_loss)]
         let ts = elora_sim::TILE_SIZE as f32;
         for &(min, age) in &self.cracks {
             let k = (age / 0.6).min(1.0);
@@ -793,7 +784,6 @@ mod tests {
                     fx.update(0.01, &[], &scene, &[], |_| WHITE);
                     left -= 0.01;
                 }
-                #[allow(clippy::cast_precision_loss)]
                 let offset = Vec2::new(150.0 + col as f32 * 300.0, 100.0 + row as f32 * 200.0);
                 for p in &mut fx.particles {
                     p.pos += offset;

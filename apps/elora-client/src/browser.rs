@@ -244,7 +244,6 @@ impl Browser<UdpSocket> {
                 if let Err(e) = socket.set_broadcast(true) {
                     tracing::warn!("broadcast not possible: {e}");
                 }
-                #[allow(clippy::cast_possible_truncation)]
                 let seed = Instant::now().elapsed().as_nanos() as u64 ^ 0x9e37_79b9;
                 self.probe = Some(InfoProbe::new(socket, seed));
             }

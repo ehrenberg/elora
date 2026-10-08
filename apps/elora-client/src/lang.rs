@@ -78,7 +78,6 @@ fn parse(src: &str) -> HashMap<String, String> {
 
 #[derive(Debug)]
 pub struct Lang {
-    #[allow(dead_code)] // language selection in the settings (M7.4)
     pub language: Language,
     texts: HashMap<String, String>,
     fallback: HashMap<String, String>,

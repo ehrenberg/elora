@@ -7,7 +7,7 @@
 use crate::character::PHYS_SIZE;
 use crate::creature::{rng, rng_f32};
 use crate::event::{DeathCause, Event};
-use crate::math::Vec2;
+use crate::math::{Vec2, to_u32};
 use crate::tuning::ms_to_ticks;
 use crate::world::World;
 
@@ -42,7 +42,6 @@ impl World {
             self.collision.wet = 0.0;
             return;
         };
-        #[allow(clippy::cast_precision_loss)]
         let gust = if w.gusty {
             (self.tick as f32 * 0.031).sin() * 0.3 * w.wind.abs().max(0.3)
         } else {
@@ -66,12 +65,7 @@ impl World {
             }
             return;
         }
-        #[allow(
-            clippy::cast_precision_loss,
-            clippy::cast_possible_truncation,
-            clippy::cast_sign_loss
-        )]
-        let every = (ms_to_ticks(self.tuning.lightning_every) as f32 / strength.max(0.3)) as u32;
+        let every = to_u32(ms_to_ticks(self.tuning.lightning_every) as f32 / strength.max(0.3));
         let timer = self.lightning.timer.get_or_insert(every / 2);
         if *timer > 0 {
             *timer -= 1;
@@ -79,14 +73,7 @@ impl World {
         }
         // target near a character, on the ground below
         let r = rng(self.tick ^ 0x5eed_b1a5);
-        #[allow(
-            clippy::cast_precision_loss,
-            clippy::cast_possible_truncation,
-            clippy::cast_sign_loss
-        )]
-        {
-            self.lightning.timer = Some((every as f32 * (0.6 + rng_f32(r ^ 1) * 0.8)) as u32);
-        }
+        self.lightning.timer = Some(to_u32(every as f32 * (0.6 + rng_f32(r ^ 1) * 0.8)));
         let Some(p) = self
             .players
             .iter()
@@ -96,11 +83,9 @@ impl World {
         else {
             return;
         };
-        #[allow(clippy::cast_precision_loss)]
         let x = p.x + (r % 361) as f32 - 180.0;
         let ts = crate::TILE_SIZE as f32;
         let ground = (0..30).find_map(|k| {
-            #[allow(clippy::cast_precision_loss)]
             let at = Vec2::new(x, p.y - 160.0 + k as f32 * ts);
             let t = self.collision.tile_at(at);
             (t.is_solid() || t == crate::Tile::Platform).then(|| (at.y / ts).floor() * ts)

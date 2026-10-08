@@ -348,7 +348,6 @@ fn intro_import(args: &[String]) -> Result<(), String> {
     while video.next_frame().map_err(|e| e.to_string())?.is_some() {
         frames += 1;
     }
-    #[allow(clippy::cast_precision_loss)]
     let mb = data.len() as f64 / 1_048_576.0;
     println!(
         "{}: {}×{}, {frames} frames, {:.1} s, {mb:.1} MB ({encoder}, crf {crf})",
@@ -381,7 +380,6 @@ fn intro_voice(args: &[String]) -> Result<(), String> {
         return Err("ffmpeg failed".into());
     }
     let size = std::fs::metadata(&out).map_err(|e| e.to_string())?.len();
-    #[allow(clippy::cast_precision_loss)]
     let kb = size as f64 / 1024.0;
     println!("{out}: {kb:.0} KiB");
     Ok(())
@@ -435,7 +433,6 @@ fn sound_import(args: &[String]) -> Result<(), String> {
         .enumerate()
         .skip(len.saturating_sub(fade))
     {
-        #[allow(clippy::cast_precision_loss)]
         let t = (len - i) as f32 / fade as f32;
         *s *= t;
     }
@@ -450,7 +447,6 @@ fn sound_import(args: &[String]) -> Result<(), String> {
     let path = std::path::Path::new(SOUND_FILES).join(format!("{name}.wav"));
     std::fs::write(&path, elora_audio::wav(&samples))
         .map_err(|e| format!("{}: {e}", path.display()))?;
-    #[allow(clippy::cast_precision_loss)]
     let secs = samples.len() as f32 / elora_audio::SAMPLE_RATE as f32;
     println!("{} ({secs:.2} s)", path.display());
     Ok(())
@@ -476,7 +472,7 @@ fn svg_preview(args: &[String]) -> Result<(), String> {
         None => size.width(),
     };
     let scale = width / size.width();
-    #[allow(clippy::cast_sign_loss)]
+    #[allow(clippy::cast_sign_loss)] // positive image sizes
     let (w, h) = (
         (size.width() * scale).ceil() as u32,
         (size.height() * scale).ceil() as u32,

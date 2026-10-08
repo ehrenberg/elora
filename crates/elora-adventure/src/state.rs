@@ -520,7 +520,7 @@ impl SaveGame {
                 let mut count = *count;
                 if item == GLEAM_DROPS {
                     let pct = self.stats(content).drops_pct;
-                    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+                    #[allow(clippy::cast_sign_loss)] // excluded by `max(0.0)`
                     let extra = (count as f32 * pct / 100.0).round().max(0.0) as u32;
                     count += extra;
                 }

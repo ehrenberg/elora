@@ -41,9 +41,8 @@ pub struct SettingsEdit<'a> {
     pub audio_device: bool,
 }
 
-#[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
 fn percent(v: f32) -> u32 {
-    (v * 100.0).round() as u32
+    crate::ui::to_u32((v * 100.0).round())
 }
 
 /// Draws the page `tab` into `page`; `true` if something has changed.
@@ -185,8 +184,7 @@ fn controls(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, page: Rect, edit: &mut SettingsEd
     let lang = cx.lang;
     let x = page.min.x + 20.0 * s;
     let y = page.min.y + 60.0 * s;
-    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-    let n = edit.sensitivity.round() as u32;
+    let n = crate::ui::to_u32(edit.sensitivity.round());
     ui.label(
         &lang.f("settings.mouse", &[("n", &n)]),
         Vec2::new(x, y),
@@ -253,7 +251,6 @@ fn binding_list(
     let mut changed = false;
     for (i, action) in GameAction::ALL.iter().enumerate() {
         let (col, line) = (i / half, i % half);
-        #[allow(clippy::cast_precision_loss)]
         let pos = origin + Vec2::new(col as f32 * col_w, line as f32 * row);
         let conflict = edit.bindings.conflict(*action);
         let label = lang.t(&format!("bind.{}", action.name())).to_owned();
@@ -283,7 +280,6 @@ fn binding_list(
             *edit.capture = Some(*action);
         }
     }
-    #[allow(clippy::cast_precision_loss)]
     let y = origin.y + half as f32 * row + 8.0 * s;
     let hint = if edit.capture.is_some() {
         lang.t("bind.press")

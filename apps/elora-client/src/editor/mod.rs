@@ -53,7 +53,6 @@ pub const NEW_SIZE: (usize, usize) = (60, 30);
 
 /// What is visible (layer list).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[allow(clippy::struct_excessive_bools)]
 pub struct Visible {
     pub layers: Layers,
     pub entities: bool,
@@ -263,7 +262,6 @@ impl Editor {
     /// View on the map center.
     pub fn center_view(&mut self) {
         let ts = TILE_SIZE as f32;
-        #[allow(clippy::cast_precision_loss)]
         {
             self.center = Vec2::new(self.map.width as f32 * ts, self.map.height as f32 * ts) * 0.5;
         }
@@ -333,11 +331,7 @@ impl Editor {
     pub fn tile_at(&self, world: Vec2) -> Option<(usize, usize)> {
         let ts = TILE_SIZE as f32;
         let (x, y) = ((world.x / ts).floor(), (world.y / ts).floor());
-        #[allow(
-            clippy::cast_precision_loss,
-            clippy::cast_possible_truncation,
-            clippy::cast_sign_loss
-        )]
+        #[allow(clippy::cast_sign_loss)] // checked for >= 0 just before
         (x >= 0.0 && y >= 0.0 && x < self.map.width as f32 && y < self.map.height as f32)
             .then_some((x as usize, y as usize))
     }

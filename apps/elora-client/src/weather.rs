@@ -4,11 +4,8 @@
 //! Pure presentation: particles live in world coordinates around the camera view and are
 //! reused there; none of it affects the simulation.
 
-#![allow(
-    clippy::cast_precision_loss,
-    clippy::cast_possible_truncation,
-    clippy::cast_sign_loss
-)]
+// tile indices, particle counts, palette picks and seeds come from non-negative values
+#![allow(clippy::cast_sign_loss)]
 
 use elora_map::{Map, Weather, WeatherKind};
 use elora_render::{Camera, Color, Grade, ShapeBatch};
@@ -77,11 +74,7 @@ pub struct WeatherView {
 }
 
 /// Top edge of the first ground (solid, platform, quicksand) below `from`, at most `reach` deep.
-#[allow(
-    clippy::cast_possible_truncation,
-    clippy::cast_possible_wrap,
-    clippy::cast_sign_loss
-)]
+#[allow(clippy::cast_possible_wrap)] // map sizes are far below i64::MAX
 pub fn surface_below(map: &Map, from: Vec2, reach: f32) -> Option<f32> {
     let ts = TILE_SIZE as f32;
     let (tx, ty) = ((from.x / ts).floor() as i64, (from.y / ts).floor() as i64);
@@ -99,7 +92,7 @@ pub fn surface_below(map: &Map, from: Vec2, reach: f32) -> Option<f32> {
 }
 
 /// Is `pos` inside the ground – or (falling weather) under a roof up to 8 tiles above?
-#[allow(clippy::cast_possible_wrap)]
+#[allow(clippy::cast_possible_wrap)] // map sizes are far below i64::MAX
 fn sheltered(map: &Map, pos: Vec2, kind: WeatherKind) -> bool {
     let ts = TILE_SIZE as f32;
     let (tx, ty) = ((pos.x / ts).floor() as i64, (pos.y / ts).floor() as i64);
@@ -249,8 +242,57 @@ impl WeatherView {
         }
     }
 
+    /// Moves the particles; those that leave the view come back in on the other side while
+    /// fewer than `target` of the current `kind` are alive, otherwise they disappear.
+    /// Returns the number of particles of the current kind.
+    fn move_particles(
+        &mut self,
+        dt: f32,
+        kind: WeatherKind,
+        map: Option<&Map>,
+        target: usize,
+        (tl, br): (Vec2, Vec2),
+    ) -> usize {
+        let inside = |p: Vec2| p.x >= tl.x && p.x <= br.x && p.y >= tl.y && p.y <= br.y;
+        let mut alive = 0;
+        let mut i = 0;
+        while i < self.particles.len() {
+            let p = &mut self.particles[i];
+            let sway = match p.kind {
+                WeatherKind::Snow | WeatherKind::Petals | WeatherKind::Leaves => {
+                    (self.time * 1.8 + p.seed).sin() * 30.0
+                }
+                _ => 0.0,
+            };
+            p.pos += (p.vel + Vec2::new(sway, 0.0)) * dt;
+            p.angle += p.spin * dt;
+            p.hidden = map.is_some_and(|m| sheltered(m, p.pos, p.kind));
+            let current = p.kind == kind;
+            if current {
+                alive += 1;
+            }
+            if inside(p.pos) {
+                i += 1;
+                continue;
+            }
+            if current && alive <= target {
+                // continue around the view: whoever falls out at the bottom comes back at the top,
+                // whoever stays behind on the left while running comes in on the right – so the density
+                // stays the same no matter how the camera moves (playtest: leaves in bursts)
+                let size = br - tl;
+                p.pos = Vec2::new(
+                    tl.x + (p.pos.x - tl.x).rem_euclid(size.x),
+                    tl.y + (p.pos.y - tl.y).rem_euclid(size.y),
+                );
+                i += 1;
+            } else {
+                self.particles.swap_remove(i);
+            }
+        }
+        alive
+    }
+
     /// One frame: weather `w` (with "off" everything disappears), view `camera`.
-    #[allow(clippy::too_many_lines, clippy::many_single_char_names)]
     pub fn update(
         &mut self,
         dt: f32,
@@ -284,46 +326,10 @@ impl WeatherView {
         self.wind += (if q > 0.0 { wind } else { 0.0 } - self.wind) * (dt * 1.5).min(1.0);
         let tl = camera.top_left() - Vec2::new(MARGIN, MARGIN);
         let br = camera.top_left() + camera.size + Vec2::new(MARGIN, MARGIN);
-        let inside = |p: Vec2| p.x >= tl.x && p.x <= br.x && p.y >= tl.y && p.y <= br.y;
 
         // move; whatever leaves the view comes back in at the top or on the windward side
-        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
         let target = (base_count(w.kind) * strength * q) as usize;
-        let mut alive = 0;
-        let mut i = 0;
-        while i < self.particles.len() {
-            let p = &mut self.particles[i];
-            let sway = match p.kind {
-                WeatherKind::Snow | WeatherKind::Petals | WeatherKind::Leaves => {
-                    (self.time * 1.8 + p.seed).sin() * 30.0
-                }
-                _ => 0.0,
-            };
-            p.pos += (p.vel + Vec2::new(sway, 0.0)) * dt;
-            p.angle += p.spin * dt;
-            p.hidden = map.is_some_and(|m| sheltered(m, p.pos, p.kind));
-            let current = p.kind == w.kind;
-            if current {
-                alive += 1;
-            }
-            if inside(p.pos) {
-                i += 1;
-                continue;
-            }
-            if current && alive <= target {
-                // continue around the view: whoever falls out at the bottom comes back at the top,
-                // whoever stays behind on the left while running comes in on the right – so the density
-                // stays the same no matter how the camera moves (playtest: leaves in bursts)
-                let size = br - tl;
-                p.pos = Vec2::new(
-                    tl.x + (p.pos.x - tl.x).rem_euclid(size.x),
-                    tl.y + (p.pos.y - tl.y).rem_euclid(size.y),
-                );
-                i += 1;
-            } else {
-                self.particles.swap_remove(i);
-            }
-        }
+        let alive = self.move_particles(dt, w.kind, map, target, (tl, br));
         // fill up: on entering, spread over the whole view
         let missing = target.saturating_sub(alive).min(SPAWN_PER_FRAME);
         for _ in 0..missing {
@@ -365,7 +371,6 @@ impl WeatherView {
                 let ground = map
                     .and_then(|m| surface_below(m, Vec2::new(x, tl.y + MARGIN), br.y - tl.y))
                     .unwrap_or(br.y - MARGIN);
-                #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
                 let seed = (self.rand() * 1e6) as u32;
                 self.strike(Vec2::new(x, ground), tl.y, seed, quality);
             }
@@ -406,7 +411,6 @@ impl WeatherView {
     /// Simulation (adventure): strike at `pos`.
     pub fn sim_strike(&mut self, pos: Vec2) {
         self.warnings.retain(|w| w.0.distance(pos) > 1.0);
-        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
         let seed = (pos.x.abs() * 13.0 + self.time * 977.0) as u32;
         self.strike(pos, self.sky_top, seed, self.quality);
         // very close: the thunder cracks immediately

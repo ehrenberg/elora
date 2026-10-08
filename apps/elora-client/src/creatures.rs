@@ -181,10 +181,8 @@ impl CreatureArt {
 
     /// Enemies with a health bar after hits; unknown kinds as a circle. They breathe when standing,
     /// bob when walking, hover in the air and tilt flight poses into the flight direction (E-328).
-    #[allow(clippy::too_many_lines)]
     pub fn draw(&self, batch: &mut ShapeBatch, c: &SceneCreature, time: f32) {
         let flip = if c.facing < 0 { -1.0 } else { 1.0 };
-        #[allow(clippy::cast_precision_loss)]
         let phase = time + c.id as f32 * 1.37;
         let flash = c.since_hit.is_some_and(|t| t < 6);
         let tint = if flash {
@@ -278,7 +276,6 @@ impl CreatureArt {
         }
         if c.stunned {
             for k in 0..3 {
-                #[allow(clippy::cast_precision_loss)]
                 let a = time * 4.0 + k as f32 * std::f32::consts::TAU / 3.0;
                 let p = c.pos + Vec2::new(a.cos() * 14.0, -26.0 + a.sin() * 4.0);
                 batch.fill_circle(p, 3.0, STUN);
@@ -287,7 +284,6 @@ impl CreatureArt {
         if !c.boss && c.since_hit.is_some_and(|t| t < BAR_TICKS) && c.max_health > 0 {
             let (w, h) = (36.0, 5.0);
             let top = c.pos + Vec2::new(-w / 2.0, -38.0);
-            #[allow(clippy::cast_precision_loss)]
             let frac = (c.health.max(0) as f32 / c.max_health as f32).clamp(0.0, 1.0);
             batch.fill_rect(top, top + Vec2::new(w, h), BAR_BACK);
             batch.fill_rect(top, top + Vec2::new(w * frac, h), BAR);
@@ -334,7 +330,6 @@ impl CreatureArt {
         let sy = if Self::is_still(id) {
             1.0
         } else {
-            #[allow(clippy::cast_precision_loss)]
             let seed = id.bytes().map(f32::from).sum::<f32>();
             1.0 + (time * 2.2 + seed).sin() * 0.025
         };
@@ -455,7 +450,6 @@ fn draw_frost_wave(
     let mut k = 0u32;
     while (front.x - x) * dir <= fresh {
         if inside(x) {
-            #[allow(clippy::cast_precision_loss)]
             let h = 16.0 + ((k as f32 * 1.7 + time * 9.0).sin() * 0.5 + 0.5) * 12.0;
             let w = 7.0;
             batch.fill_polygon(
@@ -480,12 +474,10 @@ fn draw_frost_wave(
     }
     // hoarfrost creeps ahead
     for j in 0..7 {
-        #[allow(clippy::cast_precision_loss)]
         let x = front.x + dir * (10.0 + j as f32 * 13.0);
         if !inside(x) {
             continue;
         }
-        #[allow(clippy::cast_precision_loss)]
         let a = (1.0 - j as f32 / 7.0) * 0.9;
         batch.stroke_polyline(
             &[
@@ -525,7 +517,7 @@ mod tests {
 
     #[test]
     #[ignore = "only writes a file for visual inspection"]
-    #[allow(clippy::too_many_lines)]
+    #[allow(clippy::too_many_lines)] // one sheet with all creatures
     fn creature_sheet() {
         use elora_sim::creature::diver;
         let art = CreatureArt::load();
@@ -649,7 +641,6 @@ mod tests {
             .iter()
             .enumerate()
         {
-            #[allow(clippy::cast_precision_loss)]
             let x = 60.0 + i as f32 * 70.0;
             art.draw_character(&mut batch, c, Vec2::new(x, ground2), 1, 1.0);
         }
@@ -667,7 +658,6 @@ mod tests {
         .iter()
         .enumerate()
         {
-            #[allow(clippy::cast_precision_loss)]
             let x = 480.0 + i as f32 * 52.0;
             art.draw_object(&mut batch, name, Vec2::new(x, ground2), *on);
         }

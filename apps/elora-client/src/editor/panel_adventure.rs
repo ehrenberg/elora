@@ -326,7 +326,6 @@ pub fn tool(ui: &mut Ui, editor: &mut Editor, lang: &Lang, now: Instant) {
     test_setup(ui, editor, lang);
 }
 
-#[allow(clippy::too_many_lines)] // a small form per kind
 fn properties(ui: &mut Ui, editor: &mut Editor, lang: &Lang, now: Instant) {
     let Some(obj) = editor.selected_object().cloned() else {
         ui.small(lang.t("editor.adv_none_selected"));
@@ -344,14 +343,7 @@ fn properties(ui: &mut Ui, editor: &mut Editor, lang: &Lang, now: Instant) {
     let dialogs: Vec<String> = c.iter().flat_map(|c| c.dialogs.keys().cloned()).collect();
     let items: Vec<String> = c.iter().flat_map(|c| c.items.keys().cloned()).collect();
     ui.strong(lang.t(Kind::of(&obj.kind).key()));
-    let mut id = obj.id.clone();
-    ui.horizontal(|ui| {
-        ui.label("Id");
-        let r = ui.text_edit_singleline(&mut id);
-        if r.lost_focus() && id != obj.id && !editor.rename_object(&id, now) {
-            editor.note("editor.adv_id_taken", id.clone());
-        }
-    });
+    id_field(ui, editor, &obj.id, now);
     ui.small(format!("({:.0}, {:.0})", obj.pos.x, obj.pos.y));
     let mut kind = obj.kind.clone();
     let mut changed = false;
@@ -388,14 +380,7 @@ fn properties(ui: &mut Ui, editor: &mut Editor, lang: &Lang, now: Instant) {
                 dialog,
                 &dialogs,
             );
-            ui.horizontal(|ui| {
-                changed |= ui
-                    .radio_value(facing, -1, lang.t("editor.adv_left"))
-                    .changed();
-                changed |= ui
-                    .radio_value(facing, 1, lang.t("editor.adv_right"))
-                    .changed();
-            });
+            changed |= facing_field(ui, lang, facing);
             changed |= ui
                 .add(egui::Slider::new(walk, 0.0..=160.0).text(lang.t("editor.adv_walk")))
                 .changed();
@@ -404,75 +389,14 @@ fn properties(ui: &mut Ui, editor: &mut Editor, lang: &Lang, now: Instant) {
             }
         }
         ObjectKind::Chest { contents, lock } => {
-            let mut remove = None;
-            for (i, (item, n)) in contents.iter_mut().enumerate() {
-                ui.horizontal(|ui| {
-                    changed |= combo(ui, &format!("adv_chest{i}"), "", item, &items);
-                    changed |= ui.add(egui::DragValue::new(n).range(1..=999)).changed();
-                    if ui.small_button("✕").clicked() {
-                        remove = Some(i);
-                    }
-                });
-            }
-            if let Some(i) = remove {
-                contents.remove(i);
-                changed = true;
-            }
-            if ui.small_button(lang.t("editor.adv_add_item")).clicked() {
-                contents.push(("gleam_drops".into(), 1));
-                changed = true;
-            }
-            ui.label(lang.t("editor.adv_lock"));
-            changed |= ui.text_edit_singleline(lock).changed();
+            changed |= chest_fields(ui, lang, contents, lock, &items);
         }
         ObjectKind::Switch {
             flag,
             once,
             trigger,
-        } => {
-            ui.horizontal(|ui| {
-                ui.label(lang.t("editor.adv_flag"));
-                changed |= ui.text_edit_singleline(flag).changed();
-            });
-            changed |= ui.checkbox(once, lang.t("editor.adv_once")).changed();
-            ui.horizontal(|ui| {
-                changed |= ui
-                    .radio_value(
-                        trigger,
-                        SwitchTrigger::Interact,
-                        lang.t("editor.adv_trigger_key"),
-                    )
-                    .changed();
-                changed |= ui
-                    .radio_value(
-                        trigger,
-                        SwitchTrigger::Hammer,
-                        lang.t("editor.adv_trigger_hammer"),
-                    )
-                    .changed();
-                changed |= ui
-                    .radio_value(
-                        trigger,
-                        SwitchTrigger::Hook,
-                        lang.t("editor.adv_trigger_hook"),
-                    )
-                    .changed();
-            });
-        }
-        ObjectKind::Door { size, open_if } => {
-            ui.horizontal(|ui| {
-                changed |= ui
-                    .add(egui::DragValue::new(&mut size.0).range(1..=32))
-                    .changed();
-                ui.label("×");
-                changed |= ui
-                    .add(egui::DragValue::new(&mut size.1).range(1..=32))
-                    .changed();
-                ui.label(lang.t("editor.adv_tiles"));
-            });
-            ui.label(lang.t("editor.adv_open_if"));
-            changed |= ui.text_edit_singleline(open_if).changed();
-        }
+        } => changed |= switch_fields(ui, lang, flag, once, trigger),
+        ObjectKind::Door { size, open_if } => changed |= door_fields(ui, lang, size, open_if),
         ObjectKind::Collectible { item } => {
             changed |= combo(ui, "adv_collect", lang.t("editor.adv_item"), item, &items);
         }
@@ -486,50 +410,10 @@ fn properties(ui: &mut Ui, editor: &mut Editor, lang: &Lang, now: Instant) {
             map,
             spawn,
             on_touch,
-        } => {
-            let maps = adventure_maps(editor);
-            let names: Vec<String> = maps.iter().map(|(n, _)| n.clone()).collect();
-            changed |= combo(
-                ui,
-                "adv_exit_map",
-                lang.t("editor.adv_target_map"),
-                map,
-                &names,
-            );
-            let spawns: Vec<String> = maps
-                .iter()
-                .find(|(n, _)| n == map)
-                .map(|(_, m)| {
-                    m.adventure
-                        .objects
-                        .iter()
-                        .filter(|o| matches!(o.kind, ObjectKind::Spawn))
-                        .map(|o| o.id.clone())
-                        .collect()
-                })
-                .unwrap_or_default();
-            changed |= combo(
-                ui,
-                "adv_exit_spawn",
-                lang.t("editor.adv_target_spawn"),
-                spawn,
-                &spawns,
-            );
-            changed |= ui
-                .checkbox(on_touch, lang.t("editor.adv_on_touch"))
-                .changed();
-            size_fields(ui, lang, size, &mut changed);
-        }
+        } => changed |= exit_fields(ui, editor, lang, size, map, spawn, on_touch),
         ObjectKind::Zone { size } => size_fields(ui, lang, size, &mut changed),
         ObjectKind::Camera { size, mode } => {
-            ui.horizontal(|ui| {
-                changed |= ui
-                    .radio_value(mode, CameraMode::Fixed, lang.t("editor.adv_camera_fixed"))
-                    .changed();
-                changed |= ui
-                    .radio_value(mode, CameraMode::Bounds, lang.t("editor.adv_camera_bounds"))
-                    .changed();
-            });
+            changed |= camera_mode_field(ui, lang, mode);
             size_fields(ui, lang, size, &mut changed);
         }
         ObjectKind::SavePoint | ObjectKind::Spawn => {}
@@ -540,6 +424,182 @@ fn properties(ui: &mut Ui, editor: &mut Editor, lang: &Lang, now: Instant) {
     if ui.button(lang.t("editor.adv_delete")).clicked() {
         editor.remove_object(&obj.id, now);
     }
+}
+
+/// Id of the object; renaming on leaving the field (taken ids are refused).
+fn id_field(ui: &mut Ui, editor: &mut Editor, old: &str, now: Instant) {
+    let mut id = old.to_owned();
+    ui.horizontal(|ui| {
+        ui.label("Id");
+        let r = ui.text_edit_singleline(&mut id);
+        if r.lost_focus() && id != old && !editor.rename_object(&id, now) {
+            editor.note("editor.adv_id_taken", id.clone());
+        }
+    });
+}
+
+/// Viewing direction of a character (left/right).
+fn facing_field(ui: &mut Ui, lang: &Lang, facing: &mut i8) -> bool {
+    let mut changed = false;
+    ui.horizontal(|ui| {
+        changed |= ui
+            .radio_value(facing, -1, lang.t("editor.adv_left"))
+            .changed();
+        changed |= ui
+            .radio_value(facing, 1, lang.t("editor.adv_right"))
+            .changed();
+    });
+    changed
+}
+
+/// Camera zone: fixed view or only bounds.
+fn camera_mode_field(ui: &mut Ui, lang: &Lang, mode: &mut CameraMode) -> bool {
+    let mut changed = false;
+    ui.horizontal(|ui| {
+        changed |= ui
+            .radio_value(mode, CameraMode::Fixed, lang.t("editor.adv_camera_fixed"))
+            .changed();
+        changed |= ui
+            .radio_value(mode, CameraMode::Bounds, lang.t("editor.adv_camera_bounds"))
+            .changed();
+    });
+    changed
+}
+
+/// Chest: contents (item and count) and lock flag.
+fn chest_fields(
+    ui: &mut Ui,
+    lang: &Lang,
+    contents: &mut Vec<(String, u32)>,
+    lock: &mut String,
+    items: &[String],
+) -> bool {
+    let mut changed = false;
+    let mut remove = None;
+    for (i, (item, n)) in contents.iter_mut().enumerate() {
+        ui.horizontal(|ui| {
+            changed |= combo(ui, &format!("adv_chest{i}"), "", item, items);
+            changed |= ui.add(egui::DragValue::new(n).range(1..=999)).changed();
+            if ui.small_button("✕").clicked() {
+                remove = Some(i);
+            }
+        });
+    }
+    if let Some(i) = remove {
+        contents.remove(i);
+        changed = true;
+    }
+    if ui.small_button(lang.t("editor.adv_add_item")).clicked() {
+        contents.push(("gleam_drops".into(), 1));
+        changed = true;
+    }
+    ui.label(lang.t("editor.adv_lock"));
+    changed |= ui.text_edit_singleline(lock).changed();
+    changed
+}
+
+/// Switch: flag, once and trigger (key, hammer, hook).
+fn switch_fields(
+    ui: &mut Ui,
+    lang: &Lang,
+    flag: &mut String,
+    once: &mut bool,
+    trigger: &mut SwitchTrigger,
+) -> bool {
+    let mut changed = false;
+    ui.horizontal(|ui| {
+        ui.label(lang.t("editor.adv_flag"));
+        changed |= ui.text_edit_singleline(flag).changed();
+    });
+    changed |= ui.checkbox(once, lang.t("editor.adv_once")).changed();
+    ui.horizontal(|ui| {
+        changed |= ui
+            .radio_value(
+                trigger,
+                SwitchTrigger::Interact,
+                lang.t("editor.adv_trigger_key"),
+            )
+            .changed();
+        changed |= ui
+            .radio_value(
+                trigger,
+                SwitchTrigger::Hammer,
+                lang.t("editor.adv_trigger_hammer"),
+            )
+            .changed();
+        changed |= ui
+            .radio_value(
+                trigger,
+                SwitchTrigger::Hook,
+                lang.t("editor.adv_trigger_hook"),
+            )
+            .changed();
+    });
+    changed
+}
+
+/// Door: size in tiles and opening condition.
+fn door_fields(ui: &mut Ui, lang: &Lang, size: &mut (u8, u8), open_if: &mut String) -> bool {
+    let mut changed = false;
+    ui.horizontal(|ui| {
+        changed |= ui
+            .add(egui::DragValue::new(&mut size.0).range(1..=32))
+            .changed();
+        ui.label("×");
+        changed |= ui
+            .add(egui::DragValue::new(&mut size.1).range(1..=32))
+            .changed();
+        ui.label(lang.t("editor.adv_tiles"));
+    });
+    ui.label(lang.t("editor.adv_open_if"));
+    changed |= ui.text_edit_singleline(open_if).changed();
+    changed
+}
+
+/// Exit: target map and spawn point, on touch, size.
+fn exit_fields(
+    ui: &mut Ui,
+    editor: &Editor,
+    lang: &Lang,
+    size: &mut Vec2,
+    map: &mut String,
+    spawn: &mut String,
+    on_touch: &mut bool,
+) -> bool {
+    let mut changed = false;
+    let maps = adventure_maps(editor);
+    let names: Vec<String> = maps.iter().map(|(n, _)| n.clone()).collect();
+    changed |= combo(
+        ui,
+        "adv_exit_map",
+        lang.t("editor.adv_target_map"),
+        map,
+        &names,
+    );
+    let spawns: Vec<String> = maps
+        .iter()
+        .find(|(n, _)| n == map)
+        .map(|(_, m)| {
+            m.adventure
+                .objects
+                .iter()
+                .filter(|o| matches!(o.kind, ObjectKind::Spawn))
+                .map(|o| o.id.clone())
+                .collect()
+        })
+        .unwrap_or_default();
+    changed |= combo(
+        ui,
+        "adv_exit_spawn",
+        lang.t("editor.adv_target_spawn"),
+        spawn,
+        &spawns,
+    );
+    changed |= ui
+        .checkbox(on_touch, lang.t("editor.adv_on_touch"))
+        .changed();
+    size_fields(ui, lang, size, &mut changed);
+    changed
 }
 
 fn size_fields(ui: &mut Ui, lang: &Lang, size: &mut Vec2, changed: &mut bool) {

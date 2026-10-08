@@ -1,7 +1,7 @@
 //! Guardian of Frostspitzen ([`Behavior::Queen`](crate::creature::Behavior::Queen)).
 
 use super::behavior::{Ctx, Step};
-use super::sign;
+use super::{paced_ticks, sign};
 use crate::collision::Collision;
 use crate::creature::{Creature, QueenDef};
 use crate::event::{CreatureAct, Event};
@@ -36,7 +36,6 @@ struct QueenOut {
 }
 
 /// One tick of the guardian of the Frostspitzen (E-341).
-#[allow(clippy::too_many_lines)]
 fn tick_queen(
     c: &mut Creature,
     d: &QueenDef,
@@ -46,8 +45,7 @@ fn tick_queen(
     collision: &Collision,
     events: &mut Vec<Event>,
 ) -> QueenOut {
-    use crate::creature::queen::{HOVER, RISE, SLEEP, TIRED, WAVE};
-    #[allow(clippy::cast_precision_loss)]
+    use crate::creature::queen::{HOVER, SLEEP, TIRED, WAVE};
     let life = c.health as f32 / max_health.max(1) as f32;
     let angry = d.enrage_at > 0.0 && life <= d.enrage_at;
     let storm = d.storm_at > 0.0 && life <= d.storm_at;
@@ -58,11 +56,7 @@ fn tick_queen(
     } else {
         1.0
     };
-    let ticks = |ms: u32| {
-        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-        let t = (ms_to_ticks(ms) as f32 / pace) as u32;
-        t.max(1)
-    };
+    let ticks = |ms: u32| paced_ticks(ms, pace);
     let id = c.id;
     let act = |events: &mut Vec<Event>, pos: Vec2, act: CreatureAct| {
         events.push(Event::CreatureAct { id, pos, act });
@@ -98,7 +92,6 @@ fn tick_queen(
             }
         }
         HOVER => {
-            #[allow(clippy::cast_precision_loss)]
             let t = c.timer as f32;
             c.pos = c.home + Vec2::new((t * 0.02).sin() * half * 0.45, (t * 0.05).sin() * 6.0);
             if let Some((p, _)) = target {
@@ -120,54 +113,10 @@ fn tick_queen(
             }
         }
         WAVE => {
-            let dir = f32::from(c.facing);
-            c.goal.x += dir * d.wave_speed * pace;
-            // fresh frost behind the front, inside the hall
-            let (a, b) = (c.goal.x - dir * d.fresh_len, c.goal.x);
-            let (lo, hi) = (a.min(b).max(c.home.x - half), a.max(b).min(c.home.x + half));
-            if hi > lo {
-                out.frost = Some((
-                    Vec2::new(f32::midpoint(lo, hi), floor),
-                    hi - lo,
-                    22.0,
-                    d.wave_damage,
-                ));
-            }
-            if (c.goal.x - c.home.x) * dir > half + d.fresh_len {
-                c.count += 1;
-                c.timer = 0;
-                if c.count.is_multiple_of(d.waves.max(1)) {
-                    c.mode = TIRED;
-                    c.hits = 0;
-                    act(events, c.pos, CreatureAct::Land);
-                } else {
-                    c.mode = HOVER;
-                    // short pause between two waves
-                    c.timer = ticks(d.hover_ms) * 2 / 3;
-                    if angry {
-                        out.icicles = d.icicles;
-                    }
-                }
-            }
+            queen_wave(c, d, pace, angry, &mut out, events);
         }
         TIRED => {
-            // sinks down exhausted and lies there
-            let rest = Vec2::new(c.pos.x, floor - size.y / 2.0);
-            let to = rest - c.pos;
-            if to.length() > 9.0 {
-                c.pos += to.normalize() * 9.0;
-                // exhaustion only counts from the landing
-                c.timer = 0;
-            } else {
-                c.pos = rest;
-            }
-            // took enough hits: straight back up (playtest: too easy)
-            let enough = d.open_hits > 0 && c.hits >= d.open_hits;
-            if c.timer >= ms_to_ticks(d.stun_ms) || enough {
-                c.mode = RISE;
-                c.timer = 0;
-                act(events, c.pos, CreatureAct::Wake);
-            }
+            queen_tired(c, d, size, events);
         }
         _ => {
             let to = c.home - c.pos;
@@ -181,4 +130,78 @@ fn tick_queen(
         }
     }
     out
+}
+
+/// The frost wave runs through the hall; afterwards the guardian hovers again or tires.
+fn queen_wave(
+    c: &mut Creature,
+    d: &QueenDef,
+    pace: f32,
+    angry: bool,
+    out: &mut QueenOut,
+    events: &mut Vec<Event>,
+) {
+    use crate::creature::queen::{HOVER, TIRED};
+    let ticks = |ms: u32| paced_ticks(ms, pace);
+    let half = d.width / 2.0;
+    let floor = c.goal.y;
+    let dir = f32::from(c.facing);
+    c.goal.x += dir * d.wave_speed * pace;
+    // fresh frost behind the front, inside the hall
+    let (a, b) = (c.goal.x - dir * d.fresh_len, c.goal.x);
+    let (lo, hi) = (a.min(b).max(c.home.x - half), a.max(b).min(c.home.x + half));
+    if hi > lo {
+        out.frost = Some((
+            Vec2::new(f32::midpoint(lo, hi), floor),
+            hi - lo,
+            22.0,
+            d.wave_damage,
+        ));
+    }
+    if (c.goal.x - c.home.x) * dir > half + d.fresh_len {
+        c.count += 1;
+        c.timer = 0;
+        if c.count.is_multiple_of(d.waves.max(1)) {
+            c.mode = TIRED;
+            c.hits = 0;
+            events.push(Event::CreatureAct {
+                id: c.id,
+                pos: c.pos,
+                act: CreatureAct::Land,
+            });
+        } else {
+            c.mode = HOVER;
+            // short pause between two waves
+            c.timer = ticks(d.hover_ms) * 2 / 3;
+            if angry {
+                out.icicles = d.icicles;
+            }
+        }
+    }
+}
+
+/// Sinks down exhausted and lies there until rested or hit often enough.
+fn queen_tired(c: &mut Creature, d: &QueenDef, size: Vec2, events: &mut Vec<Event>) {
+    use crate::creature::queen::RISE;
+    let floor = c.goal.y;
+    let rest = Vec2::new(c.pos.x, floor - size.y / 2.0);
+    let to = rest - c.pos;
+    if to.length() > 9.0 {
+        c.pos += to.normalize() * 9.0;
+        // exhaustion only counts from the landing
+        c.timer = 0;
+    } else {
+        c.pos = rest;
+    }
+    // took enough hits: straight back up (playtest: too easy)
+    let enough = d.open_hits > 0 && c.hits >= d.open_hits;
+    if c.timer >= ms_to_ticks(d.stun_ms) || enough {
+        c.mode = RISE;
+        c.timer = 0;
+        events.push(Event::CreatureAct {
+            id: c.id,
+            pos: c.pos,
+            act: CreatureAct::Wake,
+        });
+    }
 }

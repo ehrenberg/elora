@@ -55,7 +55,6 @@ impl Session {
                 hit
             })
             .unwrap_or(&list[0]);
-        #[allow(clippy::cast_precision_loss)]
         let mut unit = || (next() >> 40) as f32 / (1u64 << 24) as f32;
         let lerp = |r: [f32; 2], t: f32| r[0] + (r[1] - r[0]) * t;
         let kind = WeatherKind::from_key(&chosen.kind).unwrap_or_default();

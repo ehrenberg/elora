@@ -114,6 +114,12 @@ impl Neg for Vec2 {
     }
 }
 
+/// `f32` as `u32` for tick counts and durations; cut off like `as` (negative → 0).
+#[allow(clippy::cast_sign_loss)] // callers pass non-negative values; `as` saturates anyway
+pub(crate) fn to_u32(v: f32) -> u32 {
+    v as u32
+}
+
 /// Rounds half away from zero (like `round_to_int` in the original).
 pub fn round_to_int(f: f32) -> i32 {
     if f > 0.0 {

@@ -108,7 +108,6 @@ pub(super) fn follower(cx: &mut Ctx, speed: f32, jump: f32) -> Step {
         // Gap or hazard ahead of the feet: wait (E-308). Below the
         // tip of the foot the first tile (up to 2 tiles deep) must carry.
         let below = (0..5).find_map(|k| {
-            #[allow(clippy::cast_precision_loss)]
             let y = feet + 4.0 + k as f32 * 16.0;
             let t = cx.collision.tile_at(Vec2::new(front, y));
             (t != crate::Tile::Air).then_some(t)

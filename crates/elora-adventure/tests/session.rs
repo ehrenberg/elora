@@ -355,7 +355,6 @@ fn heat_fills_in_the_sun_and_cools_in_shade_and_at_the_oasis() {
     w.creatures.clear();
     assert!(s.hot());
     let sky_above = (1..=10).all(|k| {
-        #[allow(clippy::cast_precision_loss)]
         let p = w.character(s.player).unwrap().core.pos - Vec2::new(0.0, k as f32 * 32.0);
         !w.collision.tile_at(p).is_solid()
     });
@@ -374,7 +373,6 @@ fn heat_fills_in_the_sun_and_cools_in_shade_and_at_the_oasis() {
     assert!(s.overheated && w.character(s.player).unwrap().core.overheated);
     // roof above Elora: shade cools
     let pos = w.character(s.player).unwrap().core.pos;
-    #[allow(clippy::cast_possible_truncation)]
     let (tx, ty) = ((pos.x / 32.0) as i32, (pos.y / 32.0) as i32 - 4);
     w.collision.set_tile(tx, ty, Tile::Solid);
     for _ in 0..100 {
@@ -609,7 +607,6 @@ fn cold_fills_outside_faster_in_blizzards_and_warms_at_fire_and_roofs() {
     // roof above Elora warms slowly
     s.map.weather = Weather::CLEAR;
     let pos = w.character(s.player).unwrap().core.pos;
-    #[allow(clippy::cast_possible_truncation)]
     let (tx, ty) = ((pos.x / 32.0) as i32, (pos.y / 32.0) as i32 - 4);
     w.collision.set_tile(tx, ty, Tile::Solid);
     run(&mut s, &mut w, 100);

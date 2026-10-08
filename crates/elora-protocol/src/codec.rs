@@ -54,7 +54,7 @@ impl Writer {
 
     /// Signed number (`ZigZag`: small magnitudes = few bytes).
     pub fn ivar(&mut self, v: i64) {
-        #[allow(clippy::cast_sign_loss)]
+        #[allow(clippy::cast_sign_loss)] // zigzag encoding: only the bits matter
         self.uvar(((v << 1) ^ (v >> 63)) as u64);
     }
 
@@ -139,7 +139,7 @@ impl<'a> Reader<'a> {
     /// Like [`Self::uvar`].
     pub fn ivar(&mut self) -> DecodeResult<i64> {
         let u = self.uvar()?;
-        #[allow(clippy::cast_possible_wrap)]
+        #[allow(clippy::cast_possible_wrap)] // zigzag decoding: only the bits matter
         Ok(((u >> 1) as i64) ^ -((u & 1) as i64))
     }
 

@@ -114,7 +114,6 @@ impl Avalanches {
                 continue;
             }
             // slightly offset so the boulders don't lie on top of each other
-            #[allow(clippy::cast_precision_loss)]
             let jitter = ((run.left * 37) % 5) as f32 * 6.0 - 12.0;
             let pos = run.from + Vec2::new(jitter, 0.0);
             if let Some(cid) = world.add_creature(kind, pos)

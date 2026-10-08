@@ -242,8 +242,7 @@ impl ShapeBatch {
         use std::fmt::Write as _;
         let size = max - min;
         let hex = |c: [f32; 4]| {
-            #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
-            // clamped to 0..=255
+            #[allow(clippy::cast_sign_loss)] // clamped to 0..=255
             let b = |v: f32| (v.clamp(0.0, 1.0) * 255.0).round() as u8;
             format!("#{:02x}{:02x}{:02x}", b(c[0]), b(c[1]), b(c[2]))
         };

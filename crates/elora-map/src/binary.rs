@@ -598,7 +598,7 @@ impl<'a> Sections<'a> {
     }
 
     /// `&'static`, so that the identifier appears in the error.
-    #[allow(clippy::trivially_copy_pass_by_ref)]
+    #[allow(clippy::trivially_copy_pass_by_ref)] // see above
     fn require(&self, tag: &'static [u8; 4]) -> Result<Reader<'a>> {
         self.get(*tag).ok_or(MapError::MissingSection(
             std::str::from_utf8(tag).expect("tag is ASCII"),

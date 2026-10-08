@@ -39,7 +39,6 @@ const MATERIALS_TOML: &str = include_str!("../../../assets/map/materials.toml");
 pub use crate::asset_files::{BACKGROUND_FILES, DECOR_FILES};
 
 /// Width of the repeatable background strips.
-#[allow(dead_code)] // for tests and the editor (M6.8)
 pub const STRIP_WIDTH: f32 = 1024.0;
 
 #[derive(Debug, Deserialize)]
@@ -250,7 +249,7 @@ fn has_material(t: Tile) -> bool {
 
 /// Fixed pseudo-random value per tile (same picture on every load).
 fn hash(x: i32, y: i32) -> u32 {
-    #[allow(clippy::cast_sign_loss)]
+    #[allow(clippy::cast_sign_loss)] // only the bits matter for the hash
     let mut h = (x as u32).wrapping_mul(0x9E37_79B1) ^ (y as u32).wrapping_mul(0x85EB_CA77);
     h ^= h >> 15;
     h = h.wrapping_mul(0x2C1B_3C6D);
@@ -259,7 +258,7 @@ fn hash(x: i32, y: i32) -> u32 {
 
 /// Free sides of a tile.
 #[derive(Debug, Clone, Copy)]
-#[allow(clippy::struct_excessive_bools)]
+#[allow(clippy::struct_excessive_bools)] // open sides of a tile
 struct Open {
     up: bool,
     down: bool,
@@ -460,7 +459,6 @@ pub fn draw_terrain(
         batch.fill_path(&body_path(min, open, m.radius), m.body);
     }
     for &(min, open, m, h) in &cells {
-        #[allow(clippy::cast_precision_loss)]
         let roll = (h % 1000) as f32 / 1000.0;
         if !m.details.is_empty() && roll < m.detail_chance {
             let d = &m.details[(h / 1000) as usize % m.details.len()];
@@ -553,7 +551,6 @@ pub fn draw_quicksand(batch: &mut ShapeBatch, min: Vec2, top: bool, time: f32) {
         let wave = |x: f32| min.y + 5.0 + (time * 1.6 + x * 0.12).sin() * 1.6;
         let pts: Vec<Vec2> = (0..=8)
             .map(|i| {
-                #[allow(clippy::cast_precision_loss)]
                 let x = min.x + i as f32 * ts / 8.0;
                 Vec2::new(x, wave(x))
             })
@@ -567,11 +564,9 @@ pub fn draw_quicksand(batch: &mut ShapeBatch, min: Vec2, top: bool, time: f32) {
         batch.stroke_polyline(&crest, 1.2, SAND_LIGHT);
     }
     // grains sink slowly (shows: this pulls downwards)
-    #[allow(clippy::cast_possible_truncation)]
     let h = hash((min.x / ts).round() as i32, (min.y / ts).round() as i32);
     for k in 0..3u32 {
         let r = h.rotate_left(k * 9);
-        #[allow(clippy::cast_precision_loss)]
         let (fx, fy) = ((r % 97) as f32 / 97.0, (r / 97 % 89) as f32 / 89.0);
         let y = (fy + time * 0.08).fract();
         let p = min
@@ -627,7 +622,6 @@ pub fn draw_ice_water(batch: &mut ShapeBatch, min: Vec2, top: bool, time: f32) {
     if top {
         let pts: Vec<Vec2> = (0..=8)
             .map(|i| {
-                #[allow(clippy::cast_precision_loss)]
                 let x = min.x + i as f32 * ts / 8.0;
                 Vec2::new(x, min.y + 6.0 + (time * 2.2 + x * 0.15).sin() * 1.2)
             })
@@ -761,7 +755,7 @@ mod tests {
             let (x, y) = (usize::try_from(x).ok()?, usize::try_from(y).ok()?);
             mats.get(y * w + x).copied().flatten()
         };
-        #[allow(clippy::cast_possible_wrap)]
+        #[allow(clippy::cast_possible_wrap)] // map sizes are far below i32::MAX
         let range = TileRange {
             x0: 0,
             y0: 0,
@@ -835,7 +829,7 @@ mod tests {
     /// then `cargo xtask svg-preview target/map-art.svg docs/archive/release-1/design/elora-kartenteile.png 1400`.
     #[test]
     #[ignore = "only writes a file for visual inspection"]
-    #[allow(clippy::too_many_lines)]
+    #[allow(clippy::too_many_lines)] // one sheet with all graphics
     fn map_art_sheet() {
         let art = MapArt::load();
         let mut batch = ShapeBatch::default();

@@ -7,9 +7,6 @@
 //!
 //! Sizes apply to a 720 px window height and are scaled with [`Ui::s`].
 
-// Included with the main menu (M7.3); until then only used by tests.
-#![allow(dead_code)]
-
 use std::collections::HashMap;
 
 use elora_render::{Align, Color, Font, ShapeBatch, lerp_color, shade};
@@ -33,6 +30,18 @@ pub const GRAY: Color = Color::hex(0x9aa4ae);
 pub const SAND: Color = Color::hex(0xe0c89a);
 pub const LOGO: Color = Color::hex(0xe8a53a);
 const WHITE: Color = Color::rgb(1.0, 1.0, 1.0);
+
+/// Layout value (not negative) as a whole number for counts and labels, cut off like `as`.
+#[allow(clippy::cast_sign_loss)] // layout values are not negative; `as` saturates anyway
+pub fn to_u32(v: f32) -> u32 {
+    v as u32
+}
+
+/// Layout value (not negative) as a count or index, cut off like `as`.
+#[allow(clippy::cast_sign_loss)] // layout values are not negative; `as` saturates anyway
+pub fn to_usize(v: f32) -> usize {
+    v as usize
+}
 
 /// Readable text color on `bg`: dark on light colors (e.g. sand), otherwise white.
 pub fn on_color(bg: Color) -> Color {
@@ -131,10 +140,6 @@ impl UiInput {
         self.scroll = 0.0;
         self.text.clear();
         self.keys.clear();
-    }
-
-    pub fn key(&self, k: UiKey) -> bool {
-        self.keys.contains(&k)
     }
 }
 
@@ -286,7 +291,7 @@ impl Ui<'_> {
 
     /// Choice as chips that wrap into rows (`max_w`): the selected one as a colored pill,
     /// the others outlined. Returns the clicked index and the occupied height.
-    #[allow(clippy::too_many_arguments)]
+    #[allow(clippy::too_many_arguments)] // layout values of the chip row
     pub fn chips(
         &mut self,
         id: &str,
@@ -328,7 +333,7 @@ impl Ui<'_> {
     }
 
     /// Layout of the chips of [`Self::chips`] (for the height before drawing).
-    #[allow(clippy::many_single_char_names)]
+    #[allow(clippy::many_single_char_names)] // layout code: `x`/`y`/`w`/`h`
     pub fn chip_layout(&self, origin: Vec2, max_w: f32, height: f32, items: &[&str]) -> Vec<Rect> {
         let s = self.s;
         let size = (height / s * 0.46).clamp(9.0, 18.0);
@@ -404,7 +409,6 @@ impl Ui<'_> {
         let row = 32.0 * s;
         let mut hit = None;
         for (i, item) in items.iter().enumerate() {
-            #[allow(clippy::cast_precision_loss)]
             let rr = Rect::new(r.min.x, r.min.y + i as f32 * row, r.w(), row - 6.0 * s);
             let tab_id = format!("{id}#{i}");
             if i == selected {
@@ -576,7 +580,6 @@ impl Ui<'_> {
         let gap = 3.0 * s;
         let mut changed = false;
         for (i, c) in colors.iter().enumerate() {
-            #[allow(clippy::cast_precision_loss)]
             let r = Rect::new(pos.x + i as f32 * (size + gap), pos.y, size, size);
             let sel = usize::from(*selected) == i;
             let edge = r.shrink(if sel { -2.5 * s } else { -s });
@@ -618,26 +621,18 @@ impl Ui<'_> {
             );
         }
         let body = Rect::new(r.min.x, r.min.y + head, r.w(), r.h() - head);
-        #[allow(
-            clippy::cast_precision_loss,
-            clippy::cast_possible_truncation,
-            clippy::cast_sign_loss
-        )]
-        let visible = (body.h() / row_h).floor().max(1.0) as usize;
+        let visible = to_usize((body.h() / row_h).floor().max(1.0));
         let max_scroll = rows.len().saturating_sub(visible);
         let scroll = self.state.scroll.entry(id.to_owned()).or_insert(0.0);
         if body.contains(self.input.mouse) {
             *scroll -= self.input.scroll;
         }
-        #[allow(clippy::cast_precision_loss)]
         let clamped = scroll.clamp(0.0, max_scroll as f32);
         *scroll = clamped;
-        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-        let first = clamped.round() as usize;
+        let first = to_usize(clamped.round());
 
         let mut hit = None;
         for (n, row) in rows.iter().enumerate().skip(first).take(visible) {
-            #[allow(clippy::cast_precision_loss)]
             let y = body.min.y + (n - first) as f32 * row_h;
             let rr = Rect::new(body.min.x, y, body.w(), row_h - 3.0 * s);
             if selected == Some(n) {
@@ -669,9 +664,7 @@ impl Ui<'_> {
         }
         if rows.len() > visible {
             // scrollbar on the right
-            #[allow(clippy::cast_precision_loss)]
             let frac = visible as f32 / rows.len() as f32;
-            #[allow(clippy::cast_precision_loss)]
             let pos = if max_scroll == 0 {
                 0.0
             } else {
@@ -921,7 +914,6 @@ mod tests {
             .iter()
             .enumerate()
             {
-                #[allow(clippy::cast_precision_loss)]
                 let y = 140.0 + i as f32 * 44.0;
                 ui.button(&format!("b{i}"), Rect::new(70.0, y, 220.0, 34.0), t, *c);
             }

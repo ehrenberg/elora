@@ -151,7 +151,6 @@ impl Cache {
             .filter_map(|(i, t)| match t {
                 Tile::Conveyor(d) => {
                     let (x, y) = (i % map.width, i / map.width);
-                    #[allow(clippy::cast_precision_loss)]
                     Some((Vec2::new(x as f32 * ts, y as f32 * ts), *d))
                 }
                 _ => None,
@@ -165,7 +164,6 @@ impl Cache {
             .map(|(i, _)| {
                 let (x, y) = (i % map.width, i / map.width);
                 let top = y == 0 || map.tiles[i - map.width] != Tile::Quicksand;
-                #[allow(clippy::cast_precision_loss)]
                 (Vec2::new(x as f32 * ts, y as f32 * ts), top)
             })
             .collect();
@@ -177,7 +175,6 @@ impl Cache {
             .map(|(i, t)| {
                 let (x, y) = (i % map.width, i / map.width);
                 let top = y == 0 || map.tiles[i - map.width] != *t;
-                #[allow(clippy::cast_precision_loss)]
                 (Vec2::new(x as f32 * ts, y as f32 * ts), *t, top)
             })
             .collect();
@@ -197,7 +194,7 @@ impl Cache {
                 .filter(|(_, t)| **t == Tile::HookPoint)
                 .map(|(i, _)| {
                     let (x, y) = (i % map.width, i / map.width);
-                    #[allow(clippy::cast_precision_loss, clippy::cast_possible_wrap)]
+                    #[allow(clippy::cast_possible_wrap)] // map sizes are far below i32::MAX
                     (Vec2::new(x as f32 * ts, y as f32 * ts), x as i32)
                 })
                 .collect(),
@@ -249,7 +246,7 @@ fn merge(asset: &SvgAsset) -> Mesh {
 
 /// Which layers are drawn (the editor hides individual ones).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-#[allow(clippy::struct_excessive_bools)]
+#[allow(clippy::struct_excessive_bools)] // independent layer switches
 pub struct Layers {
     /// Sky over the whole view (the editor draws it only inside the map).
     pub sky: bool,
@@ -416,7 +413,6 @@ impl MapView {
     ) {
         let cache = self.sync(map);
         let (min, max) = visible(camera, TILE_SIZE as f32);
-        #[allow(clippy::cast_precision_loss)]
         let secs = time.local_ms as f32 / 1000.0;
         for &(pos, top) in &cache.quicksand {
             if pos.x + TILE_SIZE as f32 >= min.x
@@ -448,14 +444,13 @@ impl MapView {
         };
         let span = CHUNK as f32 * TILE_SIZE as f32;
         let (min, max) = visible(camera, TILE_SIZE as f32);
-        #[allow(clippy::cast_possible_truncation)]
         let (cx0, cy0, cx1, cy1) = (
             (min.x / span).floor().max(0.0) as i32,
             (min.y / span).floor().max(0.0) as i32,
             (max.x / span).floor() as i32,
             (max.y / span).floor() as i32,
         );
-        #[allow(clippy::cast_possible_wrap, clippy::cast_possible_truncation)]
+        #[allow(clippy::cast_possible_wrap)] // map sizes are far below i32::MAX
         let (cw, ch) = (
             (cache.col.width() as i32 + CHUNK - 1) / CHUNK,
             (cache.col.height() as i32 + CHUNK - 1) / CHUNK,
@@ -470,7 +465,6 @@ impl MapView {
                 );
             }
         }
-        #[allow(clippy::cast_precision_loss)]
         let phase = (time.local_ms as f32 / 1000.0 * BELT_ARROW_HZ).fract();
         for &(pos, dir) in &cache.belts {
             if pos.x + TILE_SIZE as f32 >= min.x
@@ -481,7 +475,6 @@ impl MapView {
                 map_art::draw_belt_arrow(batch, &self.art, pos, dir, phase);
             }
         }
-        #[allow(clippy::cast_precision_loss)]
         let secs = time.local_ms as f32 / 1000.0;
         for &(pos, tx) in &cache.hook_points {
             if pos.x + TILE_SIZE as f32 >= min.x
@@ -532,7 +525,6 @@ impl MapView {
                 && sways(name)
             {
                 // lean into the wind and sway in gusts (degrees)
-                #[allow(clippy::cast_precision_loss)]
                 let t = time.local_ms as f32 / 1000.0;
                 let gust = (t * 1.7 + d.pos.x * 0.013).sin();
                 a.rotation += time.wind * 4.0 + gust * time.wind.abs() * 3.0;
@@ -650,7 +642,7 @@ mod tests {
 
     /// Demo map for the map look (M6.4): materials, special tiles, backgrounds with parallax,
     /// drifting clouds, trees in the wind, decoration in front of and behind the playfield.
-    #[allow(clippy::too_many_lines)]
+    #[allow(clippy::too_many_lines)] // test map with all looks
     pub fn look_test_map() -> Map {
         let plain: Vec<String> = LOOK_ROWS
             .iter()

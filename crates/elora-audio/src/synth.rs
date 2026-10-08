@@ -118,11 +118,7 @@ impl Layer {
     }
 
     /// Mixes the layer into `out` (mono, [`SAMPLE_RATE`]).
-    #[allow(
-        clippy::cast_precision_loss,
-        clippy::cast_possible_truncation,
-        clippy::cast_sign_loss
-    )]
+    #[allow(clippy::cast_sign_loss)] // sample counts from non-negative durations
     fn render_into(&self, out: &mut [f32]) {
         let dt = 1.0 / SAMPLE_RATE as f32;
         let start = (self.delay.max(0.0) * SAMPLE_RATE as f32) as usize;
@@ -249,11 +245,7 @@ impl SoundDef {
     }
 
     /// Produces the samples (mono, [`SAMPLE_RATE`], values in −1..1).
-    #[allow(
-        clippy::cast_precision_loss,
-        clippy::cast_possible_truncation,
-        clippy::cast_sign_loss
-    )]
+    #[allow(clippy::cast_sign_loss)] // sample counts from non-negative durations
     pub fn render(&self) -> Vec<f32> {
         let len = (self.duration() * SAMPLE_RATE as f32).ceil() as usize;
         let mut out = vec![0.0; len];
@@ -286,7 +278,6 @@ mod tests {
     }
 
     /// Zero crossings per second ≈ 2 × frequency.
-    #[allow(clippy::cast_precision_loss)]
     fn crossings_per_second(s: &[f32]) -> f32 {
         let n = s
             .windows(2)
@@ -311,7 +302,6 @@ mod tests {
         let mut d = tone(Wave::Square);
         d.layers[0].duty = 0.2;
         let s = d.render();
-        #[allow(clippy::cast_precision_loss)]
         let mean = s.iter().sum::<f32>() / s.len() as f32;
         // without compensation it would be −0.3; a small remainder comes from the soft
         // clipping (tanh) of the asymmetric wave

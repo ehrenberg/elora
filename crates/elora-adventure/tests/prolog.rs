@@ -376,7 +376,6 @@ fn stomp_vaults_open_only_with_a_stomp() {
         let crumbs: Vec<(i32, i32)> = (-6..=6)
             .flat_map(|dx| (-8..=0).map(move |dy| (dx, dy)))
             .map(|(dx, dy)| {
-                #[allow(clippy::cast_possible_truncation)]
                 let (tx, ty) = ((chest.x / 32.0) as i32 + dx, (chest.y / 32.0) as i32 + dy);
                 (tx, ty)
             })
@@ -384,9 +383,7 @@ fn stomp_vaults_open_only_with_a_stomp() {
             .collect();
         assert!(!crumbs.is_empty(), "{map}: no crumbling floor");
         let top = crumbs.iter().map(|c| c.1).min().unwrap();
-        #[allow(clippy::cast_precision_loss)]
         let mid = crumbs.iter().map(|c| c.0 as f32).sum::<f32>() / crumbs.len() as f32;
-        #[allow(clippy::cast_precision_loss)]
         let above = Vec2::new((mid + 0.5) * 32.0, top as f32 * 32.0 - 20.0);
         let run = |s: &mut Session, w: &mut World, input: PlayerInput, n: usize| {
             for _ in 0..n {
@@ -408,7 +405,6 @@ fn stomp_vaults_open_only_with_a_stomp() {
         run(&mut s, &mut w, jump, 1);
         run(&mut s, &mut w, PlayerInput::default(), 12);
         run(&mut s, &mut w, down, 60);
-        #[allow(clippy::cast_precision_loss)]
         let surface = top as f32 * 32.0;
         let y = w.character(s.player).unwrap().core.pos.y;
         assert!(y < surface, "{map}: no way in without stomp ({y})");
@@ -620,7 +616,6 @@ fn climb_vaults_need_the_grip() {
                 1.0
             };
             let start = Vec2::new(chest.x + side * 5.0 * 32.0, floor - 15.0);
-            #[allow(clippy::cast_possible_truncation)]
             let to_ledge = -side as i8;
             w.spawn_character(s.player, start);
             w.set_abilities(s.player, abilities);

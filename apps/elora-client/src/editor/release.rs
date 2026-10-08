@@ -152,7 +152,6 @@ pub const THEMES: [Theme; 5] = [
 
 /// Fixed pseudo-random value per cell (same map on every build).
 fn hash(x: usize, y: usize, salt: u32) -> u32 {
-    #[allow(clippy::cast_possible_truncation)]
     let mut h = (x as u32).wrapping_mul(0x9E37_79B1) ^ (y as u32).wrapping_mul(0x85EB_CA77) ^ salt;
     h ^= h >> 15;
     h = h.wrapping_mul(0x2C1B_3C6D);
@@ -184,7 +183,6 @@ pub(super) fn place(theme: &Theme, map: &mut Map) {
             if !surface(map, x, y) {
                 continue;
             }
-            #[allow(clippy::cast_precision_loss)]
             let ground = Vec2::new(x as f32 * ts + ts / 2.0, y as f32 * ts);
             let h = hash(x, y, 7);
             // large decoration in the back: keep spacing, enough room above, not right at edges
@@ -248,7 +246,7 @@ fn glow(map: &mut Map) {
             d.tint = Rgba::WHITE;
             d.color_env = Some(EnvRef {
                 index,
-                #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
+                #[allow(clippy::cast_possible_wrap)] // a handful of lights
                 offset_ms: (k as i32 * 373) % 2800,
             });
         }

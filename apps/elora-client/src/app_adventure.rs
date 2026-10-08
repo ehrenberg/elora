@@ -704,7 +704,6 @@ impl App {
         let Some(a) = &mut self.adventure else {
             return false;
         };
-        #[allow(clippy::cast_precision_loss)]
         let total = a.reveal_total as f32;
         if a.conversation.is_some() && a.reveal < total {
             a.reveal = total;
@@ -873,7 +872,6 @@ impl App {
 
     /// Action key hint, shouts, conversation box and exhaustion into the HUD batch.
     /// Returns `true` if “Continue at the spring stone” or `false` if “Main menu” was chosen.
-    #[allow(clippy::too_many_lines)] // drawing order in one place until A1.7 splits it up
     pub(crate) fn draw_adventure_hud(
         &mut self,
         camera: &Camera,
@@ -904,39 +902,20 @@ impl App {
             s,
         };
         ui.begin(dt);
-        let content = &session.content;
-        #[allow(clippy::cast_precision_loss)]
+        let refs = HudRefs {
+            lang: &self.lang,
+            art: &self.creature_art,
+            bindings: &self.settings.bindings,
+            code,
+            screen,
+        };
         let secs = world.tick as f32 / elora_sim::TICKS_PER_SECOND as f32;
-        let hot = session.hot();
         if a.conversation.is_none() && a.dead.is_none() && a.menu.is_none() {
-            crate::adventure_hud::status(
-                &mut ui,
-                &self.creature_art,
-                &self.lang,
-                code,
-                content,
-                &session.save,
-                screen,
-            );
-            if hot {
-                crate::adventure_hud::heat_bar(&mut ui, session.heat, session.overheated, secs);
-            } else if session.chilly() {
-                crate::adventure_hud::cold_bar(&mut ui, session.cold, session.frozen, secs);
-            }
+            status_bars(&mut ui, &refs, session, secs);
         }
         // health bar of an awake guardian (R2-M2.1)
-        if a.conversation.is_none()
-            && a.menu.is_none()
-            && let Some((c, k)) = world
-                .creatures
-                .iter()
-                .map(|c| (c, &world.creature_kinds[c.kind]))
-                .find(|(c, k)| k.boss && c.mode != elora_sim::creature::diver::SLEEP)
-        {
-            #[allow(clippy::cast_precision_loss)]
-            let frac = c.health as f32 / k.health.max(1) as f32;
-            let name = self.lang.t(&format!("creature.{}", k.name)).to_owned();
-            crate::adventure_hud::boss_bar(&mut ui, &name, frac, screen);
+        if a.conversation.is_none() && a.menu.is_none() {
+            boss_health(&mut ui, &refs, world);
         }
         // shouts above the characters
         let npcs = session.npcs(world);
@@ -947,118 +926,12 @@ impl App {
             }
         }
         // action key hint
-        if a.conversation.is_none()
-            && a.dead.is_none()
-            && let Some(ch) = world.character(session.player)
-            && let Some((id, prompt)) = session.interactable(ch.core.pos)
-            && let Some(o) = session.map.adventure.object(&id)
-        {
-            let key = match prompt {
-                Prompt::Talk => "adventure.prompt_talk",
-                Prompt::Open => "adventure.prompt_open",
-                Prompt::Use => "adventure.prompt_use",
-                Prompt::Enter => "adventure.prompt_enter",
-                Prompt::Rest => "adventure.prompt_rest",
-            };
-            let anchor = session.anchor(&id).unwrap_or(o.pos);
-            // tall signs and boards: hint above the figure instead of across it (E-354)
-            let lift = match &o.kind {
-                ObjectKind::Npc { character, .. }
-                    if crate::creatures::CreatureArt::is_still(character) =>
-                {
-                    self.creature_art
-                        .character_mesh(character)
-                        .and_then(elora_render::Mesh::bounds)
-                        .map_or(40.0, |(min, _)| {
-                            (-min.y - elora_sim::PHYS_SIZE / 2.0 + 12.0).max(40.0)
-                        })
-                }
-                _ => 40.0,
-            };
-            let p = to_screen(anchor - Vec2::new(0.0, lift));
-            let label = self
-                .settings
-                .bindings
-                .trigger(crate::bindings::GameAction::Interact)
-                .label(&self.lang);
-            crate::adventure_hud::prompt(&mut ui, &label, self.lang.t(key), p);
-            // name of the character above the hint
-            if let ObjectKind::Npc { character, .. } = &o.kind
-                && let Some(c) = content.characters.get(character)
-            {
-                let above = p - Vec2::new(0.0, 34.0 * s);
-                crate::adventure_hud::name_tag(&mut ui, c.name.get(code), character, above);
-            }
+        if a.conversation.is_none() && a.dead.is_none() {
+            action_hint(&mut ui, &refs, session, world, &to_screen);
         }
         // conversation (E-222)
-        let mut chosen = None;
-        if let Some(conv) = &a.conversation
-            && let Some((d, node)) = conv.current(content)
-        {
-            let speaker = d.speaker_of(node);
-            // text appears gradually, plus babble sounds (E-286)
-            let key = (conv.dialog.clone(), conv.node.clone());
-            if a.reveal_key != key {
-                a.reveal_key = key;
-                a.reveal = 0.0;
-            }
-            let text: Vec<char> = crate::adventure_hud::with_keys(
-                node.text.get(code),
-                &self.settings.bindings,
-                &self.lang,
-            )
-            .chars()
-            .collect();
-            a.reveal_total = text.len();
-            #[allow(clippy::cast_precision_loss)]
-            let total = text.len() as f32;
-            let before = a.reveal;
-            a.reveal = (a.reveal + dt * REVEAL_PER_SECOND).min(total);
-            let voice = content
-                .characters
-                .get(speaker)
-                .map_or(ELORA_VOICE, |c| c.voice);
-            #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-            let (from, to) = (before as usize, a.reveal as usize);
-            if voice > 0.0 {
-                for i in from..to {
-                    if i % SYLLABLE == 0 && text.get(i).is_some_and(|c| c.is_alphanumeric()) {
-                        #[allow(clippy::cast_precision_loss)]
-                        let wobble = ((i * 7919) % 13) as f32 / 100.0 - 0.06;
-                        self.ui_cues.push(
-                            elora_audio::Cue::global(elora_audio::Sound::Voice)
-                                .pitched(voice * (1.0 + wobble)),
-                        );
-                    }
-                }
-            }
-            let name = content
-                .characters
-                .get(speaker)
-                .map_or("Elora", |c| c.name.get(code));
-            let choices = conv
-                .choices(content, &session.save)
-                .into_iter()
-                .map(|i| (i, &node.choice[i]))
-                .collect();
-            #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-            let view = crate::adventure_hud::DialogView {
-                speaker,
-                name,
-                text: &node.text,
-                choices,
-                shown: a.reveal as usize,
-            };
-            chosen = crate::adventure_hud::dialog(
-                &mut ui,
-                &self.creature_art,
-                &self.lang,
-                code,
-                &view,
-                screen,
-                &self.settings.bindings,
-            );
-        }
+        let chosen = conversation(&mut ui, &refs, a, &mut self.ui_cues, dt);
+        let session = &a.session;
         // adventure menu
         let mut menu_cmd = None;
         if let Some(st) = &mut a.menu {
@@ -1081,90 +954,14 @@ impl App {
             menu_cmd = crate::adventure_menu::draw(&mut ui, &data, st);
         }
         // chapter complete: victory screen
-        let mut victory_done = false;
-        if let Some((id, at)) = &a.victory
-            && let Some(area) = session.content.areas.iter().find(|x| &x.id == id)
-        {
-            let mut springs = [None; 5];
-            for (slot, x) in springs
-                .iter_mut()
-                .zip(session.content.areas.iter().filter(|x| x.id != "tauwinkel"))
-            {
-                // the spring that was just calmed is already singing
-                if x.freed(&session.save) || &x.id == id {
-                    *slot = Some(crate::adventure_menu::hex(&x.color));
-                }
-            }
-            let text = |t: &Option<elora_adventure::data::Text>| {
-                t.as_ref().map_or(String::new(), |t| t.get(code).to_owned())
-            };
-            let stats = self.lang.f(
-                "victory.stats",
-                &[
-                    ("level", &session.save.level),
-                    ("time", &play_time(&self.lang, session.save.play_time_secs)),
-                ],
-            );
-            let view = crate::adventure_hud::VictoryView {
-                chapter: area.chapter.unwrap_or(0),
-                area: area.name.get(code),
-                line: &text(&area.victory),
-                honor: &text(&area.honor),
-                color: crate::adventure_menu::hex(&area.color),
-                springs,
-                stats: &stats,
-                time: at.elapsed().as_secs_f32(),
-            };
-            victory_done = crate::adventure_hud::victory(&mut ui, &self.lang, &view, screen);
-        }
+        let victory_done = a
+            .victory
+            .as_ref()
+            .is_some_and(|(id, at)| victory_screen(&mut ui, &refs, session, id, *at));
         // exhausted (E-261)
-        let mut death = None;
-        if let Some(lost) = a.dead {
-            ui.batch
-                .fill_rect(Vec2::ZERO, screen, Color::rgba(0.9, 0.92, 0.95, 0.55));
-            let (w, h) = (420.0 * s, 200.0 * s);
-            let card = Rect::new((screen.x - w) / 2.0, (screen.y - h) / 2.0, w, h);
-            ui.card(card);
-            ui.label(
-                self.lang.t("adventure.died"),
-                Vec2::new(card.center().x, card.min.y + 40.0 * s),
-                20.0,
-                ui::TEXT,
-                Align::Center,
-            );
-            if lost > 0 {
-                ui.label(
-                    &self.lang.f("adventure.lost", &[("n", &lost)]),
-                    Vec2::new(card.center().x, card.min.y + 72.0 * s),
-                    13.0,
-                    ui::TEXT_DIM,
-                    Align::Center,
-                );
-            }
-            let b = Rect::new(
-                card.min.x + 24.0 * s,
-                card.max.y - 70.0 * s,
-                w - 48.0 * s,
-                30.0 * s,
-            );
-            if ui.button(
-                "adv_respawn",
-                b,
-                self.lang.t("adventure.respawn"),
-                ui::GREEN,
-            ) {
-                death = Some(true);
-            }
-            let b = b.offset(Vec2::new(0.0, 36.0 * s));
-            if ui.button(
-                "adv_menu",
-                Rect::new(b.min.x, b.min.y, b.w(), 26.0 * s),
-                self.lang.t("adventure.to_menu"),
-                ui::GRAY,
-            ) {
-                death = Some(false);
-            }
-        }
+        let death = a
+            .dead
+            .and_then(|lost| exhausted(&mut ui, &self.lang, lost, screen));
         ui.end();
         self.menu.input.next_frame();
         if let Some(k) = chosen {
@@ -1179,6 +976,262 @@ impl App {
         }
         death
     }
+}
+
+/// Shared references for the adventure HUD helpers.
+struct HudRefs<'a> {
+    lang: &'a Lang,
+    art: &'a crate::creatures::CreatureArt,
+    bindings: &'a crate::bindings::Bindings,
+    code: &'a str,
+    screen: Vec2,
+}
+
+/// Level, gleam drops and quest, plus the heat or cold bar when it matters.
+fn status_bars(ui: &mut Ui<'_>, refs: &HudRefs<'_>, session: &Session, secs: f32) {
+    crate::adventure_hud::status(
+        ui,
+        refs.art,
+        refs.lang,
+        refs.code,
+        &session.content,
+        &session.save,
+        refs.screen,
+    );
+    if session.hot() {
+        crate::adventure_hud::heat_bar(ui, session.heat, session.overheated, secs);
+    } else if session.chilly() {
+        crate::adventure_hud::cold_bar(ui, session.cold, session.frozen, secs);
+    }
+}
+
+/// Health bar of an awake guardian (R2-M2.1).
+fn boss_health(ui: &mut Ui<'_>, refs: &HudRefs<'_>, world: &elora_sim::World) {
+    if let Some((c, k)) = world
+        .creatures
+        .iter()
+        .map(|c| (c, &world.creature_kinds[c.kind]))
+        .find(|(c, k)| k.boss && c.mode != elora_sim::creature::diver::SLEEP)
+    {
+        let frac = c.health as f32 / k.health.max(1) as f32;
+        let name = refs.lang.t(&format!("creature.{}", k.name)).to_owned();
+        crate::adventure_hud::boss_bar(ui, &name, frac, refs.screen);
+    }
+}
+
+/// Action key hint (with the name of the character) above the object Elora can use.
+fn action_hint(
+    ui: &mut Ui<'_>,
+    refs: &HudRefs<'_>,
+    session: &Session,
+    world: &elora_sim::World,
+    to_screen: &dyn Fn(Vec2) -> Vec2,
+) {
+    let s = ui.s;
+    if let Some(ch) = world.character(session.player)
+        && let Some((id, prompt)) = session.interactable(ch.core.pos)
+        && let Some(o) = session.map.adventure.object(&id)
+    {
+        let key = match prompt {
+            Prompt::Talk => "adventure.prompt_talk",
+            Prompt::Open => "adventure.prompt_open",
+            Prompt::Use => "adventure.prompt_use",
+            Prompt::Enter => "adventure.prompt_enter",
+            Prompt::Rest => "adventure.prompt_rest",
+        };
+        let anchor = session.anchor(&id).unwrap_or(o.pos);
+        // tall signs and boards: hint above the figure instead of across it (E-354)
+        let lift = match &o.kind {
+            ObjectKind::Npc { character, .. }
+                if crate::creatures::CreatureArt::is_still(character) =>
+            {
+                refs.art
+                    .character_mesh(character)
+                    .and_then(elora_render::Mesh::bounds)
+                    .map_or(40.0, |(min, _)| {
+                        (-min.y - elora_sim::PHYS_SIZE / 2.0 + 12.0).max(40.0)
+                    })
+            }
+            _ => 40.0,
+        };
+        let p = to_screen(anchor - Vec2::new(0.0, lift));
+        let label = refs
+            .bindings
+            .trigger(crate::bindings::GameAction::Interact)
+            .label(refs.lang);
+        crate::adventure_hud::prompt(ui, &label, refs.lang.t(key), p);
+        // name of the character above the hint
+        if let ObjectKind::Npc { character, .. } = &o.kind
+            && let Some(c) = session.content.characters.get(character)
+        {
+            let above = p - Vec2::new(0.0, 34.0 * s);
+            crate::adventure_hud::name_tag(ui, c.name.get(refs.code), character, above);
+        }
+    }
+}
+
+/// Conversation box (E-222): the text appears gradually with babble sounds (E-286).
+/// Returns the chosen answer.
+fn conversation(
+    ui: &mut Ui<'_>,
+    refs: &HudRefs<'_>,
+    a: &mut AdventureMode,
+    cues: &mut Vec<elora_audio::Cue>,
+    dt: f32,
+) -> Option<usize> {
+    let session = &a.session;
+    let content = &session.content;
+    if let Some(conv) = &a.conversation
+        && let Some((d, node)) = conv.current(content)
+    {
+        let speaker = d.speaker_of(node);
+        // text appears gradually, plus babble sounds (E-286)
+        let key = (conv.dialog.clone(), conv.node.clone());
+        if a.reveal_key != key {
+            a.reveal_key = key;
+            a.reveal = 0.0;
+        }
+        let text: Vec<char> =
+            crate::adventure_hud::with_keys(node.text.get(refs.code), refs.bindings, refs.lang)
+                .chars()
+                .collect();
+        a.reveal_total = text.len();
+        let total = text.len() as f32;
+        let before = a.reveal;
+        a.reveal = (a.reveal + dt * REVEAL_PER_SECOND).min(total);
+        let voice = content
+            .characters
+            .get(speaker)
+            .map_or(ELORA_VOICE, |c| c.voice);
+        let (from, to) = (ui::to_usize(before), ui::to_usize(a.reveal));
+        if voice > 0.0 {
+            for i in from..to {
+                if i % SYLLABLE == 0 && text.get(i).is_some_and(|c| c.is_alphanumeric()) {
+                    let wobble = ((i * 7919) % 13) as f32 / 100.0 - 0.06;
+                    cues.push(
+                        elora_audio::Cue::global(elora_audio::Sound::Voice)
+                            .pitched(voice * (1.0 + wobble)),
+                    );
+                }
+            }
+        }
+        let name = content
+            .characters
+            .get(speaker)
+            .map_or("Elora", |c| c.name.get(refs.code));
+        let choices = conv
+            .choices(content, &session.save)
+            .into_iter()
+            .map(|i| (i, &node.choice[i]))
+            .collect();
+        let view = crate::adventure_hud::DialogView {
+            speaker,
+            name,
+            text: &node.text,
+            choices,
+            shown: ui::to_usize(a.reveal),
+        };
+        return crate::adventure_hud::dialog(
+            ui,
+            refs.art,
+            refs.lang,
+            refs.code,
+            &view,
+            refs.screen,
+            refs.bindings,
+        );
+    }
+    None
+}
+
+/// Victory screen for the region `id` (shown since `at`); `true` when “Continue” is pressed.
+fn victory_screen(
+    ui: &mut Ui<'_>,
+    refs: &HudRefs<'_>,
+    session: &Session,
+    id: &str,
+    at: Instant,
+) -> bool {
+    if let Some(area) = session.content.areas.iter().find(|x| x.id == id) {
+        let mut springs = [None; 5];
+        for (slot, x) in springs
+            .iter_mut()
+            .zip(session.content.areas.iter().filter(|x| x.id != "tauwinkel"))
+        {
+            // the spring that was just calmed is already singing
+            if x.freed(&session.save) || x.id == id {
+                *slot = Some(crate::adventure_menu::hex(&x.color));
+            }
+        }
+        let text = |t: &Option<elora_adventure::data::Text>| {
+            t.as_ref()
+                .map_or(String::new(), |t| t.get(refs.code).to_owned())
+        };
+        let stats = refs.lang.f(
+            "victory.stats",
+            &[
+                ("level", &session.save.level),
+                ("time", &play_time(refs.lang, session.save.play_time_secs)),
+            ],
+        );
+        let view = crate::adventure_hud::VictoryView {
+            chapter: area.chapter.unwrap_or(0),
+            area: area.name.get(refs.code),
+            line: &text(&area.victory),
+            honor: &text(&area.honor),
+            color: crate::adventure_menu::hex(&area.color),
+            springs,
+            stats: &stats,
+            time: at.elapsed().as_secs_f32(),
+        };
+        return crate::adventure_hud::victory(ui, refs.lang, &view, refs.screen);
+    }
+    false
+}
+
+/// Exhausted (E-261): `Some(true)` = continue at the spring stone, `Some(false)` = main menu.
+fn exhausted(ui: &mut Ui<'_>, lang: &Lang, lost: u32, screen: Vec2) -> Option<bool> {
+    let s = ui.s;
+    ui.batch
+        .fill_rect(Vec2::ZERO, screen, Color::rgba(0.9, 0.92, 0.95, 0.55));
+    let (w, h) = (420.0 * s, 200.0 * s);
+    let card = Rect::new((screen.x - w) / 2.0, (screen.y - h) / 2.0, w, h);
+    ui.card(card);
+    ui.label(
+        lang.t("adventure.died"),
+        Vec2::new(card.center().x, card.min.y + 40.0 * s),
+        20.0,
+        ui::TEXT,
+        Align::Center,
+    );
+    if lost > 0 {
+        ui.label(
+            &lang.f("adventure.lost", &[("n", &lost)]),
+            Vec2::new(card.center().x, card.min.y + 72.0 * s),
+            13.0,
+            ui::TEXT_DIM,
+            Align::Center,
+        );
+    }
+    let b = Rect::new(
+        card.min.x + 24.0 * s,
+        card.max.y - 70.0 * s,
+        w - 48.0 * s,
+        30.0 * s,
+    );
+    if ui.button("adv_respawn", b, lang.t("adventure.respawn"), ui::GREEN) {
+        return Some(true);
+    }
+    let b = b.offset(Vec2::new(0.0, 36.0 * s));
+    if ui.button(
+        "adv_menu",
+        Rect::new(b.min.x, b.min.y, b.w(), 26.0 * s),
+        lang.t("adventure.to_menu"),
+        ui::GRAY,
+    ) {
+        return Some(false);
+    }
+    None
 }
 
 fn outcome_event(o: elora_adventure::Outcome) -> SessionEvent {

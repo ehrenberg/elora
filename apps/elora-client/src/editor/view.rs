@@ -53,11 +53,9 @@ pub fn draw(
 ) {
     let map = &editor.map;
     let ts = TILE_SIZE as f32;
-    #[allow(clippy::cast_precision_loss)]
     let size = Vec2::new(map.width as f32 * ts, map.height as f32 * ts);
     let tl = camera.top_left();
     batch.fill_rect(tl, tl + camera.size, OUTSIDE);
-    #[allow(clippy::cast_possible_truncation)]
     let look_time = LookTime {
         local_ms: (f64::from(time) * 1000.0) as i64,
         server_ms: (f64::from(time) * 1000.0) as i64,
@@ -157,7 +155,6 @@ pub fn draw(
 /// World rectangle of a tile area.
 fn cell_rect(c: Cells) -> (Vec2, Vec2) {
     let ts = TILE_SIZE as f32;
-    #[allow(clippy::cast_precision_loss)]
     (
         Vec2::new(c.x0 as f32 * ts, c.y0 as f32 * ts),
         Vec2::new((c.x1 + 1) as f32 * ts, (c.y1 + 1) as f32 * ts),
@@ -192,13 +189,11 @@ fn stamp(batch: &mut ShapeBatch, clip: &super::tools::Clip, x: usize, y: usize, 
             }
             let mut c = Color::hex(hex);
             c.0[3] = 0.55;
-            #[allow(clippy::cast_precision_loss)]
             let min = Vec2::new((x + cx) as f32 * ts, (y + cy) as f32 * ts);
             batch.fill_rect(min, min + Vec2::new(ts, ts), c);
         }
     }
     for &(_, ex, ey) in &clip.entities {
-        #[allow(clippy::cast_precision_loss)]
         let p = Vec2::new(
             (x + ex) as f32 * ts + ts / 2.0,
             (y + ey) as f32 * ts + ts / 2.0,
@@ -271,7 +266,6 @@ fn grid(batch: &mut ShapeBatch, camera: &Camera, size: Vec2, zoom: f32) {
     }
     let fine = zoom < 2.5;
     let w = zoom;
-    #[allow(clippy::cast_possible_truncation)]
     let (x0, x1, y0, y1) = (
         (tl.x / ts).floor() as i32,
         (br.x / ts).ceil() as i32,

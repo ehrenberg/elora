@@ -5,7 +5,8 @@
 //! `cargo test -p elora-client --bin elora write_training_map -- --ignored` writes
 //! `maps/training.emap`.
 
-#![allow(clippy::cast_precision_loss, clippy::many_single_char_names)]
+// Map generator: `x`/`y`/`w`/`h` (tiles) as in mapgen.rs
+#![allow(clippy::many_single_char_names)]
 
 use elora_map::{Map, ObjectKind};
 

@@ -1,7 +1,7 @@
 //! Guardian from the air ([`Behavior::Diver`](crate::creature::Behavior::Diver)).
 
 use super::behavior::{Ctx, Step};
-use super::{SHOT_RADIUS, sign};
+use super::{SHOT_RADIUS, paced_ticks, sign};
 use crate::collision::Collision;
 use crate::creature::{Creature, CreatureShot, DiverDef};
 use crate::event::{CreatureAct, Event};
@@ -31,7 +31,6 @@ pub(super) fn tick(cx: &mut Ctx, d: &DiverDef) -> Step {
 }
 
 /// One tick of the guardian from the air; returns a position when it calls a helper.
-#[allow(clippy::too_many_lines)]
 fn tick_diver(
     c: &mut Creature,
     d: &DiverDef,
@@ -42,15 +41,10 @@ fn tick_diver(
     events: &mut Vec<Event>,
 ) -> Option<Vec2> {
     use crate::creature::diver::{AIM, CIRCLE, DIVE, RISE, SLEEP, STUNNED};
-    #[allow(clippy::cast_precision_loss)]
     let life = c.health as f32 / max_health.max(1) as f32;
     let angry = d.enrage_at > 0.0 && life <= d.enrage_at;
     let pace = if angry { 1.35 } else { 1.0 };
-    let ticks = |ms: u32| {
-        #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
-        let t = (ms_to_ticks(ms) as f32 / pace) as u32;
-        t.max(1)
-    };
+    let ticks = |ms: u32| paced_ticks(ms, pace);
     c.stun = 0;
     c.timer = c.timer.saturating_add(1);
     let mut summon = None;
@@ -77,35 +71,7 @@ fn tick_diver(
             }
         }
         CIRCLE => {
-            // ellipse above the start point
-            c.count = (c.count + 1) % 100_000;
-            #[allow(clippy::cast_precision_loss)]
-            let a = c.count as f32 * d.speed * pace / d.circle[0].max(1.0);
-            let want = c.home + Vec2::new(a.cos() * d.circle[0], a.sin() * d.circle[1]);
-            c.vel = (want - c.pos) * 0.2;
-            if c.vel.x.abs() > 0.3 {
-                c.facing = sign(c.vel.x);
-            }
-            if d.drop_ms > 0 && c.timer.is_multiple_of(ticks(d.drop_ms)) {
-                let pos = c.pos + Vec2::new(0.0, SHOT_RADIUS + 20.0);
-                shots.push(CreatureShot {
-                    owner: c.id,
-                    pos,
-                    vel: Vec2::new(0.0, d.drop_speed),
-                    damage: d.drop_damage,
-                    ticks: 0,
-                    gravity: 0.0,
-                    glow: 0,
-                    landed: false,
-                });
-                events.push(Event::CreatureFire { id: c.id, pos });
-            }
-            if c.timer >= ticks(d.circle_ms) && target.is_some() {
-                c.mode = AIM;
-                c.timer = 0;
-                // from here on `count` counts the dives
-                c.count = 0;
-            }
+            diver_circle(c, d, pace, target.is_some(), shots, events);
         }
         AIM => {
             c.vel = Vec2::ZERO;
@@ -124,32 +90,7 @@ fn tick_diver(
             }
         }
         DIVE => {
-            let to = c.goal - c.pos;
-            let dir = if to.length() > 1.0 {
-                to.normalize()
-            } else {
-                Vec2::new(0.0, 1.0)
-            };
-            c.vel = dir * d.dive_speed * pace;
-            // ground reached or under way too long
-            let ahead = c.pos + c.vel;
-            if collision.is_solid(ahead) || c.grounded || c.timer > 150 {
-                c.vel = Vec2::ZERO;
-                events.push(Event::CreatureAct {
-                    id: c.id,
-                    pos: c.pos,
-                    act: CreatureAct::Land,
-                });
-                if angry && c.count == 0 {
-                    // once more right away
-                    c.count = 1;
-                    c.mode = AIM;
-                } else {
-                    c.count = 0;
-                    c.mode = STUNNED;
-                }
-                c.timer = 0;
-            }
+            diver_dive(c, d, pace, angry, collision, events);
         }
         STUNNED => {
             c.vel = Vec2::new(0.0, 4.0);
@@ -173,4 +114,83 @@ fn tick_diver(
         }
     }
     summon
+}
+
+/// Circles above the start point, drops shots and starts aiming after a while.
+fn diver_circle(
+    c: &mut Creature,
+    d: &DiverDef,
+    pace: f32,
+    has_target: bool,
+    shots: &mut Vec<CreatureShot>,
+    events: &mut Vec<Event>,
+) {
+    use crate::creature::diver::AIM;
+    let ticks = |ms: u32| paced_ticks(ms, pace);
+    // ellipse above the start point
+    c.count = (c.count + 1) % 100_000;
+    let a = c.count as f32 * d.speed * pace / d.circle[0].max(1.0);
+    let want = c.home + Vec2::new(a.cos() * d.circle[0], a.sin() * d.circle[1]);
+    c.vel = (want - c.pos) * 0.2;
+    if c.vel.x.abs() > 0.3 {
+        c.facing = sign(c.vel.x);
+    }
+    if d.drop_ms > 0 && c.timer.is_multiple_of(ticks(d.drop_ms)) {
+        let pos = c.pos + Vec2::new(0.0, SHOT_RADIUS + 20.0);
+        shots.push(CreatureShot {
+            owner: c.id,
+            pos,
+            vel: Vec2::new(0.0, d.drop_speed),
+            damage: d.drop_damage,
+            ticks: 0,
+            gravity: 0.0,
+            glow: 0,
+            landed: false,
+        });
+        events.push(Event::CreatureFire { id: c.id, pos });
+    }
+    if c.timer >= ticks(d.circle_ms) && has_target {
+        c.mode = AIM;
+        c.timer = 0;
+        // from here on `count` counts the dives
+        c.count = 0;
+    }
+}
+
+/// Dives at the aimed point until it hits the ground (angry: once more right away).
+fn diver_dive(
+    c: &mut Creature,
+    d: &DiverDef,
+    pace: f32,
+    angry: bool,
+    collision: &Collision,
+    events: &mut Vec<Event>,
+) {
+    use crate::creature::diver::{AIM, STUNNED};
+    let to = c.goal - c.pos;
+    let dir = if to.length() > 1.0 {
+        to.normalize()
+    } else {
+        Vec2::new(0.0, 1.0)
+    };
+    c.vel = dir * d.dive_speed * pace;
+    // ground reached or under way too long
+    let ahead = c.pos + c.vel;
+    if collision.is_solid(ahead) || c.grounded || c.timer > 150 {
+        c.vel = Vec2::ZERO;
+        events.push(Event::CreatureAct {
+            id: c.id,
+            pos: c.pos,
+            act: CreatureAct::Land,
+        });
+        if angry && c.count == 0 {
+            // once more right away
+            c.count = 1;
+            c.mode = AIM;
+        } else {
+            c.count = 0;
+            c.mode = STUNNED;
+        }
+        c.timer = 0;
+    }
 }

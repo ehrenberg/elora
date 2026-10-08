@@ -132,7 +132,7 @@ pub fn new_kind(kind: Kind, d: &Defaults, size: Vec2) -> ObjectKind {
         },
         Kind::Door => {
             let ts = TILE_SIZE as f32;
-            #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+            #[allow(clippy::cast_sign_loss)] // clamped to 1..=255
             let tiles = |v: f32| (v / ts).round().clamp(1.0, 255.0) as u8;
             ObjectKind::Door {
                 size: (tiles(size.x), tiles(size.y)),
@@ -173,7 +173,6 @@ pub struct AdventureTool {
 
 fn tile_center(x: usize, y: usize) -> Vec2 {
     let ts = TILE_SIZE as f32;
-    #[allow(clippy::cast_precision_loss)]
     Vec2::new(x as f32 * ts + ts / 2.0, y as f32 * ts + ts / 2.0)
 }
 
@@ -199,7 +198,6 @@ impl Editor {
                 t.is_solid() || t == elora_sim::Tile::Platform
             })
             .unwrap_or(self.map.height);
-        #[allow(clippy::cast_precision_loss)]
         let top = floor as f32 * ts;
         Vec2::new(c.x, top - h / 2.0 - 1.0)
     }
@@ -222,9 +220,7 @@ impl Editor {
         let ts = TILE_SIZE as f32;
         let (x0, x1) = (a.0.min(b.0), a.0.max(b.0));
         let (y0, y1) = (a.1.min(b.1), a.1.max(b.1));
-        #[allow(clippy::cast_precision_loss)]
         let pos = Vec2::new(x0 as f32 * ts, y0 as f32 * ts);
-        #[allow(clippy::cast_precision_loss)]
         let size = Vec2::new((x1 - x0 + 1) as f32 * ts, (y1 - y0 + 1) as f32 * ts);
         let kind = new_kind(self.adventure.kind, &self.adventure.defaults, size);
         self.add_object(pos, kind, now);

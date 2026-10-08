@@ -108,7 +108,6 @@ impl ObjectKind {
                 Some(*size)
             }
             Self::Door { size, .. } => {
-                #[allow(clippy::cast_precision_loss)]
                 let ts = TILE_SIZE as f32;
                 Some(Vec2::new(f32::from(size.0) * ts, f32::from(size.1) * ts))
             }
@@ -143,7 +142,6 @@ impl Adventure {
     /// # Errors
     /// With the first error and the id of the object.
     pub fn validate(&self, w: usize, h: usize) -> Result<(), String> {
-        #[allow(clippy::cast_precision_loss)]
         let (ts, mw, mh) = (
             TILE_SIZE as f32,
             w as f32 * TILE_SIZE as f32,

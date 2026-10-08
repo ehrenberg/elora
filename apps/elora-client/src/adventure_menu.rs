@@ -5,10 +5,10 @@
 //! executed in `app_adventure.rs` on the game state.
 
 // Layout code: `s` (scale), `w`/`h`/`x`/`y` as in menu.rs
-#![allow(clippy::many_single_char_names, clippy::too_many_lines)]
+#![allow(clippy::many_single_char_names)]
 
-use elora_adventure::data::{Bonus, Branch, ItemKind, Rarity, Slot};
-use elora_adventure::quest::{QuestKind, QuestStatus};
+use elora_adventure::data::{Bonus, Branch, ItemKind, Rarity, SkillNode, Slot, Upgrade};
+use elora_adventure::quest::{QuestDef, QuestKind, QuestState, QuestStatus};
 use elora_adventure::state::Refusal;
 use elora_adventure::{Content, GLEAM_DROPS, SaveGame};
 use elora_render::{Align, Color, Tint};
@@ -170,100 +170,7 @@ pub fn item_icon(
                 Color::rgba(1.0, 1.0, 1.0, 0.7),
             );
         }
-        Some(ItemKind::Equipment { slot, .. }) => match slot {
-            Slot::Hat => {
-                batch.fill_rounded_rect(
-                    c + Vec2::new(-15.0, 3.0) * k,
-                    c + Vec2::new(15.0, 9.0) * k,
-                    3.0 * k,
-                    line,
-                );
-                batch.fill_rounded_rect(
-                    c + Vec2::new(-14.0, 4.0) * k,
-                    c + Vec2::new(14.0, 8.0) * k,
-                    2.0 * k,
-                    Color::hex(0xe0c89a),
-                );
-                batch.fill_rounded_rect(
-                    c + Vec2::new(-9.0, -9.0) * k,
-                    c + Vec2::new(9.0, 5.0) * k,
-                    6.0 * k,
-                    line,
-                );
-                batch.fill_rounded_rect(
-                    c + Vec2::new(-8.0, -8.0) * k,
-                    c + Vec2::new(8.0, 4.0) * k,
-                    5.0 * k,
-                    Color::hex(0xe0c89a),
-                );
-                batch.fill_rect(
-                    c + Vec2::new(-8.0, -1.0) * k,
-                    c + Vec2::new(8.0, 2.0) * k,
-                    Color::hex(0x6cbf4a),
-                );
-            }
-            Slot::Cape => {
-                batch.fill_rounded_rect(
-                    c + Vec2::new(-11.0, -11.0) * k,
-                    c + Vec2::new(11.0, 12.0) * k,
-                    5.0 * k,
-                    line,
-                );
-                batch.fill_rounded_rect(
-                    c + Vec2::new(-9.5, -9.5) * k,
-                    c + Vec2::new(9.5, 10.5) * k,
-                    4.0 * k,
-                    Color::hex(0x5aaee8),
-                );
-                batch.fill_rect(
-                    c + Vec2::new(-9.5, -9.5) * k,
-                    c + Vec2::new(9.5, -6.0) * k,
-                    Color::hex(0x3d86c0),
-                );
-            }
-            Slot::Boots => {
-                batch.fill_rounded_rect(
-                    c + Vec2::new(-9.0, -11.0) * k,
-                    c + Vec2::new(1.0, 8.0) * k,
-                    2.0 * k,
-                    line,
-                );
-                batch.fill_rounded_rect(
-                    c + Vec2::new(-9.0, 2.0) * k,
-                    c + Vec2::new(12.0, 9.0) * k,
-                    3.0 * k,
-                    line,
-                );
-                batch.fill_rounded_rect(
-                    c + Vec2::new(-7.5, -9.5) * k,
-                    c + Vec2::new(-0.5, 7.5) * k,
-                    1.5 * k,
-                    Color::hex(0xe0c89a),
-                );
-                batch.fill_rounded_rect(
-                    c + Vec2::new(-7.5, 3.5) * k,
-                    c + Vec2::new(10.5, 7.5) * k,
-                    2.0 * k,
-                    Color::hex(0xe0c89a),
-                );
-            }
-            Slot::Pendant => {
-                batch.stroke_line(
-                    c + Vec2::new(-8.0, -10.0) * k,
-                    c + Vec2::new(0.0, -2.0) * k,
-                    1.6 * k,
-                    line,
-                );
-                batch.stroke_line(
-                    c + Vec2::new(8.0, -10.0) * k,
-                    c + Vec2::new(0.0, -2.0) * k,
-                    1.6 * k,
-                    line,
-                );
-                batch.fill_circle(c + Vec2::new(0.0, 3.0) * k, 7.0 * k, line);
-                batch.fill_circle(c + Vec2::new(0.0, 3.0) * k, 5.5 * k, Color::hex(0xef7fb0));
-            }
-        },
+        Some(ItemKind::Equipment { slot, .. }) => equipment_icon(batch, *slot, c, k),
         Some(ItemKind::Material) => {
             let col = material_color(id);
             batch.fill_circle(c, 10.5 * k, line);
@@ -275,6 +182,105 @@ pub fn item_icon(
             );
         }
         _ => d.art.draw_loot_icon(batch, id, c, 1.1 * k),
+    }
+}
+
+/// Icon of a piece of equipment: hat, cape, boots or pendant.
+fn equipment_icon(batch: &mut elora_render::ShapeBatch, slot: Slot, c: Vec2, k: f32) {
+    let line = ui::OUTLINE;
+    match slot {
+        Slot::Hat => {
+            batch.fill_rounded_rect(
+                c + Vec2::new(-15.0, 3.0) * k,
+                c + Vec2::new(15.0, 9.0) * k,
+                3.0 * k,
+                line,
+            );
+            batch.fill_rounded_rect(
+                c + Vec2::new(-14.0, 4.0) * k,
+                c + Vec2::new(14.0, 8.0) * k,
+                2.0 * k,
+                Color::hex(0xe0c89a),
+            );
+            batch.fill_rounded_rect(
+                c + Vec2::new(-9.0, -9.0) * k,
+                c + Vec2::new(9.0, 5.0) * k,
+                6.0 * k,
+                line,
+            );
+            batch.fill_rounded_rect(
+                c + Vec2::new(-8.0, -8.0) * k,
+                c + Vec2::new(8.0, 4.0) * k,
+                5.0 * k,
+                Color::hex(0xe0c89a),
+            );
+            batch.fill_rect(
+                c + Vec2::new(-8.0, -1.0) * k,
+                c + Vec2::new(8.0, 2.0) * k,
+                Color::hex(0x6cbf4a),
+            );
+        }
+        Slot::Cape => {
+            batch.fill_rounded_rect(
+                c + Vec2::new(-11.0, -11.0) * k,
+                c + Vec2::new(11.0, 12.0) * k,
+                5.0 * k,
+                line,
+            );
+            batch.fill_rounded_rect(
+                c + Vec2::new(-9.5, -9.5) * k,
+                c + Vec2::new(9.5, 10.5) * k,
+                4.0 * k,
+                Color::hex(0x5aaee8),
+            );
+            batch.fill_rect(
+                c + Vec2::new(-9.5, -9.5) * k,
+                c + Vec2::new(9.5, -6.0) * k,
+                Color::hex(0x3d86c0),
+            );
+        }
+        Slot::Boots => {
+            batch.fill_rounded_rect(
+                c + Vec2::new(-9.0, -11.0) * k,
+                c + Vec2::new(1.0, 8.0) * k,
+                2.0 * k,
+                line,
+            );
+            batch.fill_rounded_rect(
+                c + Vec2::new(-9.0, 2.0) * k,
+                c + Vec2::new(12.0, 9.0) * k,
+                3.0 * k,
+                line,
+            );
+            batch.fill_rounded_rect(
+                c + Vec2::new(-7.5, -9.5) * k,
+                c + Vec2::new(-0.5, 7.5) * k,
+                1.5 * k,
+                Color::hex(0xe0c89a),
+            );
+            batch.fill_rounded_rect(
+                c + Vec2::new(-7.5, 3.5) * k,
+                c + Vec2::new(10.5, 7.5) * k,
+                2.0 * k,
+                Color::hex(0xe0c89a),
+            );
+        }
+        Slot::Pendant => {
+            batch.stroke_line(
+                c + Vec2::new(-8.0, -10.0) * k,
+                c + Vec2::new(0.0, -2.0) * k,
+                1.6 * k,
+                line,
+            );
+            batch.stroke_line(
+                c + Vec2::new(8.0, -10.0) * k,
+                c + Vec2::new(0.0, -2.0) * k,
+                1.6 * k,
+                line,
+            );
+            batch.fill_circle(c + Vec2::new(0.0, 3.0) * k, 7.0 * k, line);
+            batch.fill_circle(c + Vec2::new(0.0, 3.0) * k, 5.5 * k, Color::hex(0xef7fb0));
+        }
     }
 }
 
@@ -443,46 +449,7 @@ fn inventory(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState, area: Rect) 
     let s = ui.s;
     let lang = d.lang;
     let mut cmd = None;
-    // Elora with equipment
-    let center = Vec2::new(area.min.x + 120.0 * s, area.min.y + 170.0 * s);
-    ui.batch
-        .fill_circle(center, 90.0 * s, Color::rgba(0.95, 0.76, 0.31, 0.15));
-    d.figure.draw_pose(
-        ui.batch,
-        center + Vec2::new(0.0, 70.0 * s),
-        140.0 * s,
-        1.0,
-        d.tint,
-    );
-    let places = [
-        (Slot::Hat, Vec2::new(-110.0, -110.0)),
-        (Slot::Cape, Vec2::new(60.0, -110.0)),
-        (Slot::Boots, Vec2::new(-110.0, 70.0)),
-        (Slot::Pendant, Vec2::new(60.0, 70.0)),
-    ];
-    for (slot, off) in places {
-        let r = Rect::new(
-            center.x + off.x * s,
-            center.y + off.y * s,
-            50.0 * s,
-            50.0 * s,
-        );
-        let worn = d.save.equipped.get(&slot);
-        slot_box(ui, r, worn.is_some_and(|w| st.item.as_ref() == Some(w)));
-        if let Some(id) = worn {
-            item_icon(ui.batch, d, id, r.center(), 1.3 * s);
-            if ui.click(&format!("slot{slot:?}"), r) {
-                st.item = Some(id.clone());
-            }
-        }
-        ui.label(
-            lang.t(slot_key(slot)),
-            Vec2::new(r.center().x, r.max.y + 10.0 * s),
-            9.0,
-            ui::TEXT_DIM,
-            Align::Center,
-        );
-    }
+    equipment_slots(ui, d, st, area);
 
     // Backpack
     let x0 = area.min.x + 290.0 * s;
@@ -493,32 +460,7 @@ fn inventory(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState, area: Rect) 
         ui::TEXT,
         Align::Left,
     );
-    let items = backpack(d);
-    let cols = 8;
-    for (i, (id, n)) in items.iter().enumerate() {
-        #[allow(clippy::cast_precision_loss)]
-        let r = Rect::new(
-            x0 + (i % cols) as f32 * 54.0 * s,
-            area.min.y + 24.0 * s + (i / cols) as f32 * 54.0 * s,
-            46.0 * s,
-            46.0 * s,
-        );
-        slot_box(ui, r, st.item.as_deref() == Some(*id));
-        item_icon(ui.batch, d, id, r.center(), 1.2 * s);
-        if *n > 1 {
-            ui.label(
-                &n.to_string(),
-                r.max - Vec2::new(6.0 * s, 8.0 * s),
-                10.0,
-                ui::TEXT,
-                Align::Right,
-            );
-        }
-        if ui.click(&format!("inv{i}"), r) {
-            st.item = Some((*id).to_owned());
-            st.refusal = None;
-        }
-    }
+    backpack_grid(ui, d, st, area, x0);
 
     // Description
     let Some(id) = st.item.clone() else {
@@ -595,6 +537,82 @@ fn inventory(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState, area: Rect) 
     cmd
 }
 
+/// Elora with the four equipment slots around her.
+fn equipment_slots(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState, area: Rect) {
+    let s = ui.s;
+    let lang = d.lang;
+    // Elora with equipment
+    let center = Vec2::new(area.min.x + 120.0 * s, area.min.y + 170.0 * s);
+    ui.batch
+        .fill_circle(center, 90.0 * s, Color::rgba(0.95, 0.76, 0.31, 0.15));
+    d.figure.draw_pose(
+        ui.batch,
+        center + Vec2::new(0.0, 70.0 * s),
+        140.0 * s,
+        1.0,
+        d.tint,
+    );
+    let places = [
+        (Slot::Hat, Vec2::new(-110.0, -110.0)),
+        (Slot::Cape, Vec2::new(60.0, -110.0)),
+        (Slot::Boots, Vec2::new(-110.0, 70.0)),
+        (Slot::Pendant, Vec2::new(60.0, 70.0)),
+    ];
+    for (slot, off) in places {
+        let r = Rect::new(
+            center.x + off.x * s,
+            center.y + off.y * s,
+            50.0 * s,
+            50.0 * s,
+        );
+        let worn = d.save.equipped.get(&slot);
+        slot_box(ui, r, worn.is_some_and(|w| st.item.as_ref() == Some(w)));
+        if let Some(id) = worn {
+            item_icon(ui.batch, d, id, r.center(), 1.3 * s);
+            if ui.click(&format!("slot{slot:?}"), r) {
+                st.item = Some(id.clone());
+            }
+        }
+        ui.label(
+            lang.t(slot_key(slot)),
+            Vec2::new(r.center().x, r.max.y + 10.0 * s),
+            9.0,
+            ui::TEXT_DIM,
+            Align::Center,
+        );
+    }
+}
+
+/// Grid of all carried items (with count).
+fn backpack_grid(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState, area: Rect, x0: f32) {
+    let s = ui.s;
+    let items = backpack(d);
+    let cols = 8;
+    for (i, (id, n)) in items.iter().enumerate() {
+        let r = Rect::new(
+            x0 + (i % cols) as f32 * 54.0 * s,
+            area.min.y + 24.0 * s + (i / cols) as f32 * 54.0 * s,
+            46.0 * s,
+            46.0 * s,
+        );
+        slot_box(ui, r, st.item.as_deref() == Some(*id));
+        item_icon(ui.batch, d, id, r.center(), 1.2 * s);
+        if *n > 1 {
+            ui.label(
+                &n.to_string(),
+                r.max - Vec2::new(6.0 * s, 8.0 * s),
+                10.0,
+                ui::TEXT,
+                Align::Right,
+            );
+        }
+        if ui.click(&format!("inv{i}"), r) {
+            st.item = Some((*id).to_owned());
+            st.refusal = None;
+        }
+    }
+}
+
 fn skills(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState, area: Rect) -> Option<Command> {
     let s = ui.s;
     let lang = d.lang;
@@ -629,7 +647,6 @@ fn skills(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState, area: Rect) -> 
     let col_w = area.w() / 3.0;
     let mut hover_desc = None;
     for (b, (branch, key, color)) in branches.iter().enumerate() {
-        #[allow(clippy::cast_precision_loss)]
         let cx = area.min.x + col_w * b as f32 + 40.0 * s;
         let head = Rect::new(cx - 20.0 * s, area.min.y + 28.0 * s, 130.0 * s, 24.0 * s);
         ui.batch
@@ -643,7 +660,6 @@ fn skills(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState, area: Rect) -> 
         );
         let nodes: Vec<_> = SaveGame::branch(d.content, *branch).collect();
         for (i, n) in nodes.iter().enumerate() {
-            #[allow(clippy::cast_precision_loss)]
             let y = area.min.y + (82.0 + i as f32 * 54.0) * s;
             let c = Vec2::new(cx, y);
             let rank = d.save.skills.get(&n.id).copied().unwrap_or(0);
@@ -680,27 +696,7 @@ fn skills(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState, area: Rect) -> 
                     Align::Center,
                 );
             }
-            let name_color = if rank > 0 || can.is_ok() {
-                ui::TEXT
-            } else {
-                ui::TEXT_DIM
-            };
-            ui.label(
-                if unknown { "???" } else { n.name.get(d.code) },
-                c + Vec2::new(26.0 * s, -6.0 * s),
-                11.0,
-                name_color,
-                Align::Left,
-            );
-            if !unknown {
-                ui.label(
-                    &lang.f("adventure.rank", &[("r", &rank), ("max", &n.ranks)]),
-                    c + Vec2::new(26.0 * s, 8.0 * s),
-                    9.0,
-                    ui::TEXT_DIM,
-                    Align::Left,
-                );
-            }
+            skill_labels(ui, d, n, c, rank, can.is_ok(), unknown);
             let hit = Rect::new(c.x - 18.0 * s, c.y - 18.0 * s, col_w - 30.0 * s, 36.0 * s);
             if ui.hovered(hit) {
                 hover_desc = Some((*n, unknown));
@@ -714,24 +710,66 @@ fn skills(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState, area: Rect) -> 
         }
     }
     if let Some((n, unknown)) = hover_desc {
-        let mut text = if unknown {
-            lang.t("adventure.skill_unknown").to_owned()
-        } else {
-            n.desc.get(d.code).to_owned()
-        };
-        let effects: Vec<String> = n.per_rank.iter().map(|b| bonus_text(lang, *b)).collect();
-        if !effects.is_empty() && !unknown {
-            text = format!("{text}  ·  {}", effects.join(", "));
-        }
+        skill_tooltip(ui, d, area, n, unknown);
+    }
+    cmd
+}
+
+/// Description of the skill under the mouse at the bottom ("???" for unknown abilities).
+fn skill_tooltip(ui: &mut Ui<'_>, d: &MenuData<'_>, area: Rect, n: &SkillNode, unknown: bool) {
+    let s = ui.s;
+    let lang = d.lang;
+    let mut text = if unknown {
+        lang.t("adventure.skill_unknown").to_owned()
+    } else {
+        n.desc.get(d.code).to_owned()
+    };
+    let effects: Vec<String> = n.per_rank.iter().map(|b| bonus_text(lang, *b)).collect();
+    if !effects.is_empty() && !unknown {
+        text = format!("{text}  ·  {}", effects.join(", "));
+    }
+    ui.label(
+        &text,
+        Vec2::new(area.min.x, area.max.y - 6.0 * s),
+        11.0,
+        ui::TEXT,
+        Align::Left,
+    );
+}
+
+/// Name and rank next to a skill node.
+fn skill_labels(
+    ui: &mut Ui<'_>,
+    d: &MenuData<'_>,
+    n: &SkillNode,
+    c: Vec2,
+    rank: u8,
+    learnable: bool,
+    unknown: bool,
+) {
+    let s = ui.s;
+    let lang = d.lang;
+    let name_color = if rank > 0 || learnable {
+        ui::TEXT
+    } else {
+        ui::TEXT_DIM
+    };
+    ui.label(
+        if unknown { "???" } else { n.name.get(d.code) },
+        c + Vec2::new(26.0 * s, -6.0 * s),
+        11.0,
+        name_color,
+        Align::Left,
+    );
+    if !unknown {
         ui.label(
-            &text,
-            Vec2::new(area.min.x, area.max.y - 6.0 * s),
-            11.0,
-            ui::TEXT,
+            &lang.f("adventure.rank", &[("r", &rank), ("max", &n.ranks)]),
+            c + Vec2::new(26.0 * s, 8.0 * s),
+            9.0,
+            ui::TEXT_DIM,
             Align::Left,
         );
     }
-    cmd
 }
 
 fn quests(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState, area: Rect) -> Option<Command> {
@@ -762,7 +800,6 @@ fn quests(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState, area: Rect) -> 
         st.quest = Some(list[0].0.id.clone());
     }
     for (i, (q, qs)) in list.iter().enumerate() {
-        #[allow(clippy::cast_precision_loss)]
         let r = Rect::new(
             area.min.x,
             area.min.y + i as f32 * 50.0 * s,
@@ -810,6 +847,14 @@ fn quests(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState, area: Rect) -> 
     let (q, qs) = list
         .iter()
         .find(|(q, _)| Some(&q.id) == st.quest.as_ref())?;
+    quest_details(ui, d, area, q, qs);
+    None
+}
+
+/// Details of the selected quest: description, steps so far and reward.
+fn quest_details(ui: &mut Ui<'_>, d: &MenuData<'_>, area: Rect, q: &QuestDef, qs: &QuestState) {
+    let s = ui.s;
+    let lang = d.lang;
     let box_ = Rect::new(
         area.min.x + 280.0 * s,
         area.min.y,
@@ -885,7 +930,6 @@ fn quests(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState, area: Rect) -> 
             Align::Left,
         );
     }
-    None
 }
 
 pub(crate) fn hex(c: &str) -> Color {
@@ -918,7 +962,6 @@ fn world_map(ui: &mut Ui<'_>, d: &MenuData<'_>, area: Rect) {
             let to = at(a.pos);
             let n = 14;
             for k in (0..n).step_by(2) {
-                #[allow(clippy::cast_precision_loss)]
                 let (t0, t1) = (k as f32 / n as f32, (k + 1) as f32 / n as f32);
                 ui.batch.stroke_line(
                     hub.lerp(to, t0),
@@ -955,7 +998,6 @@ fn world_map(ui: &mut Ui<'_>, d: &MenuData<'_>, area: Rect) {
         let freed = a.freed(d.save);
         if freed {
             for k in 0..8 {
-                #[allow(clippy::cast_precision_loss)]
                 let ang = k as f32 * std::f32::consts::TAU / 8.0;
                 let q = p + Vec2::new(ang.cos(), ang.sin()) * 54.0 * s;
                 ui.batch.fill_circle(q, 5.0 * s, Color::hex(0xfff2b0));
@@ -1004,27 +1046,12 @@ fn shop(
     let mut cmd = None;
     let sh = d.content.shops.get(id)?;
     // shopkeeper on the left
-    let owner = sh.owner.as_deref().unwrap_or("lotte");
-    let c = Vec2::new(area.min.x + 90.0 * s, area.min.y + 140.0 * s);
-    ui.batch
-        .fill_circle(c, 70.0 * s, Color::rgba(0.56, 0.82, 0.94, 0.25));
-    d.art
-        .draw_character(ui.batch, owner, c + Vec2::new(0.0, 60.0 * s), 1, 2.6 * s);
-    if let Some(ch) = d.content.characters.get(owner) {
-        ui.label(
-            ch.name.get(d.code),
-            c + Vec2::new(0.0, 96.0 * s),
-            13.0,
-            ui::TEXT,
-            Align::Center,
-        );
-    }
+    shopkeeper(ui, d, area, sh.owner.as_deref().unwrap_or("lotte"));
     let x0 = area.min.x + 200.0 * s;
     for (i, (key, selling)) in [("adventure.shop_buy", false), ("adventure.shop_sell", true)]
         .into_iter()
         .enumerate()
     {
-        #[allow(clippy::cast_precision_loss)]
         let r = Rect::new(
             x0 + i as f32 * 110.0 * s,
             area.min.y - 44.0 * s,
@@ -1063,7 +1090,6 @@ fn shop(
         );
     }
     for (i, (it, price)) in rows.iter().enumerate() {
-        #[allow(clippy::cast_precision_loss)]
         let r = Rect::new(
             x0,
             area.min.y + i as f32 * 48.0 * s,
@@ -1078,29 +1104,7 @@ fn shop(
             r.min + Vec2::new(24.0 * s, 21.0 * s),
             1.0 * s,
         );
-        let def = d.content.item(it);
-        ui.label(
-            def.map_or(it.as_str(), |x| x.name.get(d.code)),
-            r.min + Vec2::new(48.0 * s, 15.0 * s),
-            12.0,
-            ui::TEXT,
-            Align::Left,
-        );
-        let note = def.map_or(String::new(), |x| match &x.kind {
-            ItemKind::Equipment { bonuses, .. } => bonuses
-                .iter()
-                .map(|b| bonus_text(lang, *b))
-                .collect::<Vec<_>>()
-                .join(", "),
-            _ => x.desc.get(d.code).to_owned(),
-        });
-        ui.label(
-            &note,
-            r.min + Vec2::new(48.0 * s, 30.0 * s),
-            9.0,
-            ui::TEXT_DIM,
-            Align::Left,
-        );
+        shop_item_text(ui, d, it, r);
         let affordable = st.selling || d.save.gleam_drops >= *price;
         let pc = Vec2::new(r.max.x - 150.0 * s, r.center().y);
         ui.label(
@@ -1136,6 +1140,54 @@ fn shop(
     cmd
 }
 
+/// The shopkeeper on the left with name.
+fn shopkeeper(ui: &mut Ui<'_>, d: &MenuData<'_>, area: Rect, owner: &str) {
+    let s = ui.s;
+    let c = Vec2::new(area.min.x + 90.0 * s, area.min.y + 140.0 * s);
+    ui.batch
+        .fill_circle(c, 70.0 * s, Color::rgba(0.56, 0.82, 0.94, 0.25));
+    d.art
+        .draw_character(ui.batch, owner, c + Vec2::new(0.0, 60.0 * s), 1, 2.6 * s);
+    if let Some(ch) = d.content.characters.get(owner) {
+        ui.label(
+            ch.name.get(d.code),
+            c + Vec2::new(0.0, 96.0 * s),
+            13.0,
+            ui::TEXT,
+            Align::Center,
+        );
+    }
+}
+
+/// Name and short description (or bonuses) of an item in the shop.
+fn shop_item_text(ui: &mut Ui<'_>, d: &MenuData<'_>, it: &str, r: Rect) {
+    let s = ui.s;
+    let lang = d.lang;
+    let def = d.content.item(it);
+    ui.label(
+        def.map_or(it, |x| x.name.get(d.code)),
+        r.min + Vec2::new(48.0 * s, 15.0 * s),
+        12.0,
+        ui::TEXT,
+        Align::Left,
+    );
+    let note = def.map_or(String::new(), |x| match &x.kind {
+        ItemKind::Equipment { bonuses, .. } => bonuses
+            .iter()
+            .map(|b| bonus_text(lang, *b))
+            .collect::<Vec<_>>()
+            .join(", "),
+        _ => x.desc.get(d.code).to_owned(),
+    });
+    ui.label(
+        &note,
+        r.min + Vec2::new(48.0 * s, 30.0 * s),
+        9.0,
+        ui::TEXT_DIM,
+        Align::Left,
+    );
+}
+
 fn forge(ui: &mut Ui<'_>, d: &MenuData<'_>, area: Rect) -> Option<Command> {
     let s = ui.s;
     let lang = d.lang;
@@ -1154,7 +1206,6 @@ fn forge(ui: &mut Ui<'_>, d: &MenuData<'_>, area: Rect) -> Option<Command> {
     );
     let x0 = area.min.x + 200.0 * s;
     for (i, w) in Weapon::ALL.iter().enumerate() {
-        #[allow(clippy::cast_precision_loss)]
         let r = Rect::new(
             x0,
             area.min.y + i as f32 * 110.0 * s,
@@ -1205,35 +1256,7 @@ fn forge(ui: &mut Ui<'_>, d: &MenuData<'_>, area: Rect) -> Option<Command> {
             Align::Left,
         );
         // costs: gleam drops and material with stock
-        let mut cx = x;
-        let y = r.min.y + 72.0 * s;
-        let enough = d.save.gleam_drops >= u.gleam_drops;
-        d.art
-            .draw_loot_icon(ui.batch, GLEAM_DROPS, Vec2::new(cx + 6.0 * s, y), 0.8 * s);
-        ui.label(
-            &u.gleam_drops.to_string(),
-            Vec2::new(cx + 16.0 * s, y),
-            11.0,
-            if enough { ui::TEXT } else { PRICE_BAD },
-            Align::Left,
-        );
-        cx += 70.0 * s;
-        for m in &u.materials {
-            let have = d.save.count(&m.item);
-            let name = d
-                .content
-                .item(&m.item)
-                .map_or(m.item.as_str(), |i| i.name.get(d.code));
-            let text = format!("{name} {have}/{}", m.count);
-            ui.label(
-                &text,
-                Vec2::new(cx, y),
-                11.0,
-                if have >= m.count { ui::TEXT } else { PRICE_BAD },
-                Align::Left,
-            );
-            cx += ui.text_width(&text, 11.0) + 20.0 * s;
-        }
+        forge_costs(ui, d, u, Vec2::new(x, r.min.y + 72.0 * s));
         let b = Rect::new(r.max.x - 126.0 * s, r.max.y - 38.0 * s, 110.0 * s, 28.0 * s);
         if ui.button(
             &format!("forge{i}"),
@@ -1245,6 +1268,39 @@ fn forge(ui: &mut Ui<'_>, d: &MenuData<'_>, area: Rect) -> Option<Command> {
         }
     }
     cmd
+}
+
+/// Costs of an upgrade: gleam drops and materials with stock (red when missing).
+fn forge_costs(ui: &mut Ui<'_>, d: &MenuData<'_>, u: &Upgrade, at: Vec2) {
+    let s = ui.s;
+    let (mut cx, y) = (at.x, at.y);
+    let enough = d.save.gleam_drops >= u.gleam_drops;
+    d.art
+        .draw_loot_icon(ui.batch, GLEAM_DROPS, Vec2::new(cx + 6.0 * s, y), 0.8 * s);
+    ui.label(
+        &u.gleam_drops.to_string(),
+        Vec2::new(cx + 16.0 * s, y),
+        11.0,
+        if enough { ui::TEXT } else { PRICE_BAD },
+        Align::Left,
+    );
+    cx += 70.0 * s;
+    for m in &u.materials {
+        let have = d.save.count(&m.item);
+        let name = d
+            .content
+            .item(&m.item)
+            .map_or(m.item.as_str(), |i| i.name.get(d.code));
+        let text = format!("{name} {have}/{}", m.count);
+        ui.label(
+            &text,
+            Vec2::new(cx, y),
+            11.0,
+            if have >= m.count { ui::TEXT } else { PRICE_BAD },
+            Align::Left,
+        );
+        cx += ui.text_width(&text, 11.0) + 20.0 * s;
+    }
 }
 
 #[cfg(test)]

@@ -31,10 +31,7 @@ impl World {
                 [-1.0, 1.0].map(|s| Vec2::new(ch.core.pos.x + s * (PHYS_SIZE / 2.0 - 1.0), y))
             })
             .filter(|&p| self.collision.tile_at(p) == Tile::ThinIce)
-            .map(|p| {
-                #[allow(clippy::cast_possible_truncation)]
-                ((p.x / ts).floor() as i32, (p.y / ts).floor() as i32)
-            })
+            .map(|p| ((p.x / ts).floor() as i32, (p.y / ts).floor() as i32))
             .collect();
         let until = self.tick + u64::from(ms_to_ticks(self.tuning.thin_ice_break).max(1));
         for (tx, ty) in feet {
@@ -87,7 +84,6 @@ impl World {
         let mut i = 0;
         while i < self.temp_tiles.len() {
             let (tx, ty, old, until) = self.temp_tiles[i];
-            #[allow(clippy::cast_precision_loss)]
             let (x0, y0) = (tx as f32 * ts, ty as f32 * ts);
             let overlaps = |p: Vec2, half: Vec2| {
                 p.x + half.x > x0

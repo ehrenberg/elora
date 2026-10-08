@@ -1,7 +1,8 @@
 //! Simple test maps for the session (A1.6), independent of the prologue maps (A1.9):
 //! `tauwinkel` and `wiese-1` with chest, lever and gate, transition, zones and enemies.
 
-#![allow(clippy::many_single_char_names, dead_code)]
+// Test maps: `x`/`y`/`w`/`h` (tiles)
+#![allow(clippy::many_single_char_names)]
 
 use elora_map::adventure::{CameraMode, SwitchTrigger};
 use elora_map::{Map, Object, ObjectKind};
@@ -30,12 +31,10 @@ fn rows(g: &[Vec<char>]) -> Vec<String> {
 }
 
 /// Centre above the ground in column `tx` for an object of height `h`.
-#[allow(clippy::cast_precision_loss)]
 fn at(tx: usize, floor: usize, h: f32) -> Vec2 {
     Vec2::new(tx as f32 * T + T / 2.0, floor as f32 * T - h / 2.0 - 1.0)
 }
 
-#[allow(clippy::cast_precision_loss)]
 fn corner(tx: usize, ty: usize) -> Vec2 {
     Vec2::new(tx as f32 * T, ty as f32 * T)
 }

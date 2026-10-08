@@ -19,7 +19,6 @@ impl App {
             .filter(|s| s.hot())
             .map_or(0.0, |s| (if s.in_sun { 0.6 } else { 0.3 }) + 0.4 * s.heat);
         // frost edge from a third of the cold bar on, when full it pulses slightly (E-342)
-        #[allow(clippy::cast_precision_loss)]
         let pulse = (tick as f32 * 0.12).sin() * 0.08;
         let frost = session.filter(|s| s.chilly()).map_or(0.0, |s| {
             ((s.cold - 0.33) / 0.67).clamp(0.0, 1.0) + if s.frozen { pulse } else { 0.0 }
@@ -31,7 +30,6 @@ impl App {
         let step = dt * 0.2;
         self.saturation += (target - self.saturation).clamp(-step, step);
         if let Some(gfx) = &mut self.gfx {
-            #[allow(clippy::cast_precision_loss)]
             let secs = tick as f32 / elora_sim::TICKS_PER_SECOND as f32;
             gfx.renderer.set_heat_haze(haze, secs);
             gfx.renderer.set_saturation(self.saturation);

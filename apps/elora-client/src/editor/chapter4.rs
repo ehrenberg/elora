@@ -7,11 +7,8 @@
 //! `cargo test -p elora-client --bin elora write_chapter4_maps -- --ignored` writes
 //! `maps/adventure/*.emap`.
 
-#![allow(
-    clippy::cast_precision_loss,
-    clippy::many_single_char_names,
-    clippy::too_many_lines
-)]
+// Map generator: `x`/`y`/`w`/`h` (tiles) as in mapgen.rs
+#![allow(clippy::many_single_char_names)]
 
 use elora_map::adventure::CameraMode;
 use elora_map::{Map, Object, ObjectKind, Weather, WeatherKind};
@@ -493,7 +490,7 @@ mod tests {
 
     /// The hall is as wide as Kristella's frost waves, the starting point lies in the middle.
     #[test]
-    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+    #[allow(clippy::cast_sign_loss)] // hall size in whole tiles, positive
     fn ice_hall_fits_the_frost_waves() {
         let c = Content::builtin();
         let k = c.creatures.iter().find(|k| k.name == "kristella").unwrap();

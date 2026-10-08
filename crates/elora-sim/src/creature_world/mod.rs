@@ -39,6 +39,11 @@ const WILT_TICKS: u64 = 125;
 /// Lifetime of an enemy projectile (ticks).
 const SHOT_LIFETIME: u32 = 150;
 
+/// Duration `ms` in ticks, shortened by `pace` (faster when angry); at least one tick.
+fn paced_ticks(ms: u32, pace: f32) -> u32 {
+    crate::math::to_u32(ms_to_ticks(ms) as f32 / pace).max(1)
+}
+
 fn sign(v: f32) -> i8 {
     if v < 0.0 { -1 } else { 1 }
 }
@@ -81,7 +86,6 @@ impl World {
             let k = &self.creature_kinds[c.kind];
             match &k.behavior {
                 Behavior::Diver(d) => {
-                    #[allow(clippy::cast_precision_loss)]
                     let life = c.health as f32 / k.health.max(1) as f32;
                     c.mode != crate::creature::diver::SLEEP
                         && d.enrage_at > 0.0
@@ -189,7 +193,6 @@ impl World {
     pub(crate) fn grenade_shards(&mut self, pos: Vec2, owner: usize, max_damage: i32) {
         let n = self.tuning.grenade_shards;
         for k in 0..n {
-            #[allow(clippy::cast_precision_loss)]
             let a = std::f32::consts::FRAC_PI_2 + k as f32 * std::f32::consts::TAU / n as f32;
             let p = pos + Vec2::new(a.cos(), a.sin()) * 48.0;
             self.events.push(Event::Explosion { owner, pos: p });
@@ -263,7 +266,6 @@ impl World {
                     Vec2::new(0.0, -max_force)
                 };
                 let factor = 1.0 - ((l - inner) / (radius - inner)).clamp(0.0, 1.0);
-                #[allow(clippy::cast_possible_truncation)]
                 let damage = (factor * max_damage as f32) as i32;
                 (damage != 0).then_some((c.id, force * factor, damage))
             })
@@ -377,7 +379,6 @@ impl World {
                 continue;
             }
             let span = entry.max.saturating_sub(entry.min) + 1;
-            #[allow(clippy::cast_possible_truncation)]
             let count = entry.min + (rng(s ^ 1) % u64::from(span)) as u32;
             if count == 0 {
                 continue;

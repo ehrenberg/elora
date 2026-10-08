@@ -63,11 +63,7 @@ pub fn tint(skin: Skin, team: Team, dummy: bool, team_color: impl Fn(Team) -> Co
 }
 
 /// Colorful rush (E-311): body and feet cycle through the rainbow colors (`t` in s).
-#[allow(
-    clippy::many_single_char_names,
-    clippy::cast_possible_truncation,
-    clippy::cast_sign_loss
-)]
+#[allow(clippy::many_single_char_names, clippy::cast_sign_loss)] // colour maths: `r`/`g`/`b`/`h`; hue sector 0..6
 pub fn rainbow(mut tint: Tint, t: f32) -> Tint {
     let hue = |h: f32| {
         let h = h.rem_euclid(1.0) * 6.0;
@@ -105,7 +101,7 @@ fn row(ui: &mut egui::Ui, label: &str, palette: &[(&str, Color)], value: &mut u8
     ui.horizontal_wrapped(|ui| {
         ui.spacing_mut().item_spacing = egui::vec2(3.0, 3.0);
         for (i, (name, color)) in palette.iter().enumerate() {
-            #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)] // colors 0..=1
+            #[allow(clippy::cast_sign_loss)] // colors 0..=1
             let [r, g, b, _] = color.0.map(|v| (v * 255.0).round() as u8);
             let selected = usize::from(*value) == i;
             let (rect, response) =
