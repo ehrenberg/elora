@@ -1,22 +1,22 @@
-//! SVG-Assets (M5.2, D-M5-02): SVG → gecachte [`Mesh`]es.
+//! SVG assets (M5.2, D-M5-02): SVG → cached [`Mesh`]es.
 //!
-//! Konventionen für Elora-Assets:
+//! Conventions for Elora assets:
 //!
-//! - **Ursprung:** Die `viewBox` legt die lokalen Koordinaten fest, z. B.
-//!   `viewBox="-60 -70 120 140"` für eine Figur mit Mittelpunkt (0, 0).
-//! - **Teile:** Jede Gruppe der obersten Ebene mit `id` wird ein eigenes Mesh
-//!   (z. B. `body`, `foot`, `eyes`), damit Teile einzeln animiert werden können.
-//!   Alles andere landet im Teil `""`.
-//! - **Farbschlüssel:** Eine `id` der Form `tint-<n>` (an der Form oder einer
-//!   umschließenden Gruppe) ersetzt die Füllfarbe beim Zeichnen durch Farbe `n`
-//!   der [`Tint`](crate::Tint). Mit `-l<prozent>` wird sie aufgehellt, mit
-//!   `-d<prozent>` abgedunkelt, z. B. `tint-2-l45` (Bauchfleck, E-097).
-//!   Mehrere Formen: `tint-2`, `tint-2-a`, `tint-2-l45-b` – alles nach dem
-//!   Muster wird ignoriert. Die Farbe in der Datei bleibt die Vorschaufarbe.
-//! - **Konturen** behalten ihre Farbe und werden immer mit runden Ecken gezeichnet –
-//!   außer bei Formen ohne Füllung: dort färbt der Farbschlüssel die Kontur
-//!   (z. B. Augen als Linien `> <`).
-//! - Nicht unterstützt: radiale Verläufe, Muster, Bilder, Text, Filter.
+//! - **Origin:** The `viewBox` defines the local coordinates, e.g.
+//!   `viewBox="-60 -70 120 140"` for a figure centered on (0, 0).
+//! - **Parts:** Every top-level group with an `id` becomes its own mesh
+//!   (e.g. `body`, `foot`, `eyes`) so parts can be animated individually.
+//!   Everything else ends up in the part `""`.
+//! - **Color keys:** An `id` of the form `tint-<n>` (on the shape or an
+//!   enclosing group) replaces the fill color at draw time with color `n`
+//!   of the [`Tint`](crate::Tint). `-l<percent>` lightens it,
+//!   `-d<percent>` darkens it, e.g. `tint-2-l45` (belly patch, E-097).
+//!   Multiple shapes: `tint-2`, `tint-2-a`, `tint-2-l45-b` – anything after the
+//!   pattern is ignored. The color in the file remains the preview color.
+//! - **Strokes** keep their color and are always drawn with round joins –
+//!   except for shapes without a fill: there the color key colors the stroke
+//!   (e.g. eyes as lines `> <`).
+//! - Not supported: radial gradients, patterns, images, text, filters.
 
 use elora_sim::Vec2;
 use lyon::math::point;
@@ -35,26 +35,26 @@ pub enum SvgError {
     Unsupported(String),
 }
 
-/// Ein geladenes SVG, aufgeteilt nach Gruppen der obersten Ebene.
+/// A loaded SVG, split by top-level groups.
 #[derive(Debug, Clone, Default)]
 pub struct SvgAsset {
     pub parts: Vec<(String, Mesh)>,
 }
 
 impl SvgAsset {
-    /// Lädt ein SVG; `tolerance` in lokalen Einheiten (siehe [`MeshBuilder::new`]).
+    /// Loads an SVG; `tolerance` in local units (see [`MeshBuilder::new`]).
     ///
     /// # Errors
-    /// Wenn das SVG nicht lesbar ist oder nicht unterstützte Merkmale enthält.
+    /// If the SVG cannot be read or contains unsupported features.
     pub fn load(data: &[u8], tolerance: f32) -> Result<Self, SvgError> {
         Self::load_with(data, tolerance, &usvg::Options::default())
     }
 
-    /// Lädt ein fremdes SVG (z. B. aus einer heruntergeladenen Karte): Verweise auf Dateien
-    /// oder eingebettete Bilder werden nie aufgelöst, und die Geometrie ist begrenzt.
+    /// Loads a foreign SVG (e.g. from a downloaded map): references to files
+    /// or embedded images are never resolved, and the geometry is limited.
     ///
     /// # Errors
-    /// Wie [`SvgAsset::load`], außerdem bei mehr als `max_vertices` Ecken.
+    /// Like [`SvgAsset::load`], and also with more than `max_vertices` vertices.
     pub fn load_untrusted(
         data: &[u8],
         tolerance: f32,
@@ -85,7 +85,7 @@ impl SvgAsset {
         let local = to_local(text, &tree);
         let mut asset = Self::default();
         let mut rest = MeshBuilder::new(tolerance);
-        // usvg legt Hüllgruppen ohne id an (z. B. für die viewBox) – überspringen
+        // usvg creates wrapper groups without an id (e.g. for the viewBox) – skip them
         let mut top = tree.root();
         while let [usvg::Node::Group(g)] = top.children()
             && g.id().is_empty()
@@ -114,7 +114,7 @@ impl SvgAsset {
     }
 }
 
-/// Farbschlüssel aus einer `id` wie `tint-2-l45`.
+/// Color key from an `id` like `tint-2-l45`.
 #[derive(Debug, Clone, Copy, PartialEq)]
 struct Key {
     slot: u8,
@@ -140,7 +140,7 @@ impl Key {
     }
 }
 
-/// Transformation von usvg-Ausgabekoordinaten zurück in `viewBox`-Koordinaten.
+/// Transformation from usvg output coordinates back to `viewBox` coordinates.
 fn to_local(text: &str, tree: &usvg::Tree) -> Transform {
     let view_box = usvg::roxmltree::Document::parse(text).ok().and_then(|doc| {
         let v: Vec<f32> = doc
@@ -190,7 +190,7 @@ fn add_node(
             Ok(())
         }
         usvg::Node::Image(_) => Err(SvgError::Unsupported("Bild".into())),
-        // Ohne Schrift-Feature liefert usvg keinen Text
+        // Without the font feature, usvg yields no text
         usvg::Node::Text(_) => Err(SvgError::Unsupported("Text".into())),
     }
 }
@@ -225,10 +225,10 @@ fn add_path(
     let stroke = p
         .stroke()
         .map(|s| -> Result<_, SvgError> {
-            // Breite mit der mittleren Skalierung der Transformation
+            // Width with the average scale of the transformation
             let scale = (t.sx * t.sy - t.kx * t.ky).abs().sqrt();
             let alpha = s.opacity().get() * opacity;
-            // Formen ohne Füllung: der Farbschlüssel färbt die Kontur
+            // Shapes without a fill: the color key colors the stroke
             let paint = match key {
                 Some(k) if p.fill().is_none() => Paint::Key {
                     slot: k.slot,
@@ -337,7 +337,7 @@ mod tests {
 
     #[test]
     fn untrusted_svg_resolves_nothing_and_is_limited() {
-        // Verweise auf Dateien werden nicht geladen: kein Inhalt statt Dateizugriff
+        // References to files are not loaded: no content instead of file access
         let img = br#"<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 10 10"><image width="10" height="10" xlink:href="/etc/hostname"/><image width="10" height="10" href="file:///etc/hostname"/></svg>"#;
         let a = SvgAsset::load_untrusted(img, 0.1, 1000).unwrap();
         assert!(a.parts.iter().all(|(_, m)| m.is_empty()));
@@ -394,7 +394,7 @@ mod tests {
         let asset = SvgAsset::load(FIGURE.as_bytes(), 0.25).expect("lesbar");
         let names: Vec<&str> = asset.parts.iter().map(|(n, _)| n.as_str()).collect();
         assert_eq!(names, ["body", "foot", ""]);
-        // viewBox-Koordinaten, nicht Pixel: Kreis r=50 + halbe Kontur um (0,0)
+        // viewBox coordinates, not pixels: circle r=50 + half the stroke around (0,0)
         let (min, max) = asset.part("body").unwrap().bounds().unwrap();
         assert!(
             (min.x + 52.5).abs() < 0.5 && (max.x - 52.5).abs() < 0.5,

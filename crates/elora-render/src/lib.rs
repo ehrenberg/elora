@@ -1,10 +1,9 @@
-//! 2D-Renderer von Elora auf Basis von wgpu (E-011).
+//! 2D renderer of Elora based on wgpu (E-011).
 //!
-//! Formen werden zur Laufzeit per lyon tesselliert (E-033) und in einem Draw-Call
-//! pro Frame gezeichnet. Wiederkehrende Formen (Figur, Pickups) liegen als
-//! gecachte [`Mesh`]es vor und werden nur noch transformiert (M5.1). Kanten werden
-//! per MSAA geglättet. Weitere Pässe (z. B. egui) können sich über
-//! [`Frame`] einklinken.
+//! Shapes are tessellated at runtime via lyon (E-033) and drawn in one draw call
+//! per frame. Recurring shapes (figure, pickups) are stored as cached
+//! [`Mesh`]es and only transformed (M5.1). Edges are smoothed via MSAA.
+//! Further passes (e.g. egui) can hook in via [`Frame`].
 
 mod camera;
 mod mesh;
@@ -15,7 +14,7 @@ mod text;
 use std::sync::Arc;
 
 pub use camera::{Camera, ViewSettings};
-/// Pfade für [`MeshBuilder`].
+/// Paths for [`MeshBuilder`].
 pub use lyon::path::Path;
 pub use mesh::{Affine, Mesh, MeshBuilder, Paint, Tint, ellipse, lerp_color, rounded_rect, shade};
 pub use shapes::{Color, ShapeBatch};
@@ -25,7 +24,7 @@ pub use wgpu;
 
 use shapes::Vertex;
 
-/// Fehler beim Aufsetzen des Renderers.
+/// Error while setting up the renderer.
 #[derive(Debug, thiserror::Error)]
 pub enum RenderError {
     #[error("Surface konnte nicht erstellt werden: {0}")]
@@ -38,7 +37,7 @@ pub enum RenderError {
     UnsupportedSurface,
 }
 
-/// Ein Fenster, auf das gerendert werden kann.
+/// A window that can be rendered to.
 pub trait RenderTarget:
     wgpu::rwh::HasWindowHandle + wgpu::rwh::HasDisplayHandle + std::fmt::Debug + Send + Sync + 'static
 {
@@ -54,7 +53,7 @@ impl<T> RenderTarget for T where
 {
 }
 
-/// wgpu-Zustand plus Pipeline für farbige Formen.
+/// wgpu state plus pipeline for colored shapes.
 #[derive(Debug)]
 pub struct Renderer {
     surface: wgpu::Surface<'static>,
@@ -62,52 +61,52 @@ pub struct Renderer {
     queue: wgpu::Queue,
     config: wgpu::SurfaceConfiguration,
     pipeline: wgpu::RenderPipeline,
-    /// Welt (Weltkoordinaten) und Overlay (z. B. HUD in Bildschirmkoordinaten)
-    /// brauchen eigene Puffer, weil beide im selben Frame beschrieben werden.
+    /// World (world coordinates) and overlay (e.g. HUD in screen coordinates)
+    /// need separate buffers because both are written in the same frame.
     world: Layer,
     overlay: Layer,
-    /// Abtastungen je Pixel (1 = kein MSAA) und höchste mögliche Stufe.
+    /// Samples per pixel (1 = no MSAA) and the highest possible level.
     samples: u32,
     max_samples: u32,
     layout: wgpu::BindGroupLayout,
-    /// Mehrfach abgetastetes Ziel, wird in die Surface aufgelöst.
+    /// Multisampled target, resolved into the surface.
     msaa: Option<wgpu::TextureView>,
-    /// Nachbearbeitung der Welt (Hitzeflimmern); Stärke 0 = aus.
+    /// Post-processing of the world (heat shimmer); strength 0 = off.
     post: Post,
 }
 
-/// Hitzeflimmern (R2-M2.3, E-320): die Welt wird zuerst in `scene` gezeichnet und dann
-/// verzerrt in den Frame übertragen; das Overlay (HUD) bleibt unverzerrt.
+/// Heat shimmer (R2-M2.3, E-320): the world is first drawn into `scene` and then
+/// transferred distorted into the frame; the overlay (HUD) stays undistorted.
 #[derive(Debug)]
 struct Post {
     pipeline: wgpu::RenderPipeline,
     layout: wgpu::BindGroupLayout,
     sampler: wgpu::Sampler,
     uniform: wgpu::Buffer,
-    /// Zwischenbild in Surface-Größe samt Bind-Group (neu bei Größenänderung).
+    /// Intermediate image at surface size plus bind group (recreated on resize).
     scene: Option<(wgpu::TextureView, wgpu::BindGroup)>,
     strength: f32,
     time: f32,
-    /// Sättigung der Welt (1 = unverändert).
+    /// Saturation of the world (1 = unchanged).
     saturation: f32,
-    /// Frostrand am Bildrand (Kälte, E-342): 0..1.
+    /// Frost border at the screen edge (cold, E-342): 0..1.
     frost: f32,
-    /// Farbstimmung des Wetters.
+    /// Color grading of the weather.
     grade: Grade,
 }
 
-/// Farbstimmung der Welt durch das Wetter (R2-W1): Tönung, Abdunkeln, Nebel, Blitz.
+/// Color grading of the world by the weather (R2-W1): tint, darkening, fog, lightning.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Grade {
-    /// Farbe, mit der multipliziert wird, und ihr Anteil (0 = keine Tönung).
+    /// Color to multiply with, and its share (0 = no tint).
     pub tint: [f32; 3],
     pub tint_amount: f32,
-    /// 0 = unverändert, 1 = schwarz.
+    /// 0 = unchanged, 1 = black.
     pub darken: f32,
-    /// Nebelfarbe und Dichte (unten voll, oben ein gutes Drittel).
+    /// Fog color and density (full at the bottom, a good third at the top).
     pub fog: [f32; 3],
     pub fog_density: f32,
-    /// Blitz: hellt das Bild auf (0..1).
+    /// Lightning: brightens the image (0..1).
     pub flash: f32,
 }
 
@@ -129,7 +128,7 @@ impl Grade {
     }
 }
 
-/// Ein laufender Frame: Ziel-Textur und Command-Encoder.
+/// A running frame: target texture and command encoder.
 #[derive(Debug)]
 pub struct Frame {
     pub encoder: wgpu::CommandEncoder,
@@ -139,14 +138,14 @@ pub struct Frame {
 
 const INITIAL_VERTICES: u64 = 16 * 1024;
 
-/// Gewünschte MSAA-Stufe; fällt auf 1 zurück, wenn das Format sie nicht kann.
+/// Desired MSAA level; falls back to 1 if the format does not support it.
 const MSAA_SAMPLES: u32 = 4;
 
 impl Renderer {
-    /// Initialisiert wgpu für `window` mit der Anfangsgröße in Pixeln.
+    /// Initializes wgpu for `window` with the initial size in pixels.
     ///
     /// # Errors
-    /// Wenn kein geeigneter Adapter, kein Gerät oder keine Surface verfügbar ist.
+    /// If no suitable adapter, device or surface is available.
     pub async fn new<W: RenderTarget>(
         window: Arc<W>,
         width: u32,
@@ -191,7 +190,7 @@ impl Renderer {
         let mut config = surface
             .get_default_config(&adapter, width.max(1), height.max(1))
             .ok_or(RenderError::UnsupportedSurface)?;
-        // Nicht-sRGB-Format: Farben werden als sRGB-Werte direkt geschrieben (wie egui).
+        // Non-sRGB format: colors are written directly as sRGB values (like egui).
         let caps = surface.get_capabilities(&adapter);
         if let Some(format) = caps.formats.iter().find(|f| !f.is_srgb()) {
             config.format = *format;
@@ -232,7 +231,7 @@ impl Renderer {
         })
     }
 
-    /// Bildsynchronisation an/aus (E-120).
+    /// Vertical sync on/off (E-120).
     pub fn set_vsync(&mut self, on: bool) {
         let mode = if on {
             wgpu::PresentMode::AutoVsync
@@ -245,7 +244,7 @@ impl Renderer {
         }
     }
 
-    /// Kantenglättung an/aus (E-120); an = 4× MSAA, falls die Grafikkarte es kann.
+    /// Anti-aliasing on/off (E-120); on = 4× MSAA if the graphics card supports it.
     pub fn set_msaa(&mut self, on: bool) {
         let samples = if on { self.max_samples } else { 1 };
         if samples != self.samples {
@@ -258,28 +257,28 @@ impl Renderer {
         }
     }
 
-    /// Hitzeflimmern für die nächsten Frames: `strength` 0..1 (0 = aus), `time` in Sekunden.
+    /// Heat shimmer for the next frames: `strength` 0..1 (0 = off), `time` in seconds.
     pub fn set_heat_haze(&mut self, strength: f32, time: f32) {
         self.post.strength = strength.clamp(0.0, 1.0);
         self.post.time = time;
     }
 
-    /// Sättigung der Welt für die nächsten Frames (1 = unverändert, 0 = grau); das HUD bleibt.
+    /// Saturation of the world for the next frames (1 = unchanged, 0 = gray); the HUD stays.
     pub fn set_saturation(&mut self, saturation: f32) {
         self.post.saturation = saturation.clamp(0.0, 1.0);
     }
 
-    /// Frostrand am Bildrand (Kälte-Leiste, E-342): 0 = aus, 1 = dicke Eisblumen.
+    /// Frost border at the screen edge (cold bar, E-342): 0 = off, 1 = thick frost flowers.
     pub fn set_frost(&mut self, frost: f32) {
         self.post.frost = frost.clamp(0.0, 1.0);
     }
 
-    /// Farbstimmung des Wetters für die nächsten Frames ([`Grade::NONE`] = aus).
+    /// Weather color grading for the next frames ([`Grade::NONE`] = off).
     pub fn set_grade(&mut self, grade: Grade) {
         self.post.grade = grade;
     }
 
-    /// MSAA-Stufe (1 = aus).
+    /// MSAA level (1 = off).
     pub fn msaa_samples(&self) -> u32 {
         self.samples
     }
@@ -296,12 +295,12 @@ impl Renderer {
         self.config.format
     }
 
-    /// Größe der Zeichenfläche in Pixeln.
+    /// Size of the drawing surface in pixels.
     pub fn size(&self) -> (u32, u32) {
         (self.config.width, self.config.height)
     }
 
-    /// Seitenverhältnis Breite / Höhe.
+    /// Aspect ratio width / height.
     pub fn aspect(&self) -> f32 {
         self.config.width as f32 / self.config.height as f32
     }
@@ -317,8 +316,8 @@ impl Renderer {
         self.post.scene = None;
     }
 
-    /// Beginnt einen Frame. `None`, wenn gerade nicht gezeichnet werden kann
-    /// (z. B. Fenster minimiert); dann den Frame überspringen.
+    /// Begins a frame. `None` if drawing is currently not possible
+    /// (e.g. window minimized); skip the frame in that case.
     pub fn begin_frame(&mut self) -> Option<Frame> {
         let texture = match self.surface.get_current_texture() {
             wgpu::CurrentSurfaceTexture::Success(t)
@@ -344,10 +343,10 @@ impl Renderer {
         })
     }
 
-    /// Löscht den Frame mit `clear` und zeichnet alle Formen aus `batch`.
+    /// Clears the frame with `clear` and draws all shapes from `batch`.
     ///
     /// # Panics
-    /// Bei mehr als `u32::MAX` Indizes in einem Batch.
+    /// With more than `u32::MAX` indices in one batch.
     pub fn draw_shapes(
         &mut self,
         frame: &mut Frame,
@@ -363,7 +362,7 @@ impl Renderer {
             self.draw_layer(frame, false, camera, batch, Some(clear));
             return;
         }
-        // erst in das Zwischenbild, dann verzerrt in den Frame
+        // first into the intermediate image, then distorted into the frame
         if self.post.scene.is_none() {
             self.post.scene = Some(self.post.create_scene(&self.device, &self.config));
         }
@@ -436,11 +435,11 @@ impl Renderer {
         pass.draw(0..3, 0..1);
     }
 
-    /// Zeichnet `batch` über den bisherigen Frame (nach [`Renderer::draw_shapes`]),
-    /// z. B. das HUD mit einer Kamera in Bildschirm-Pixeln.
+    /// Draws `batch` on top of the current frame (after [`Renderer::draw_shapes`]),
+    /// e.g. the HUD with a camera in screen pixels.
     ///
     /// # Panics
-    /// Bei mehr als `u32::MAX` Indizes in einem Batch.
+    /// With more than `u32::MAX` indices in one batch.
     pub fn draw_overlay(&mut self, frame: &mut Frame, camera: &Camera, batch: &ShapeBatch) {
         self.draw_layer(frame, true, camera, batch, None);
     }
@@ -476,7 +475,7 @@ impl Renderer {
                     resolve_target: self.msaa.as_ref().map(|_| &frame.view),
                     ops: wgpu::Operations {
                         load,
-                        // MSAA-Inhalt behalten, damit das Overlay darauf aufsetzen kann
+                        // keep the MSAA content so the overlay can build on it
                         store: wgpu::StoreOp::Store,
                     },
                 })],
@@ -488,14 +487,14 @@ impl Renderer {
         layer.draw(&mut pass, &self.pipeline, batch);
     }
 
-    /// Schickt den Frame ab und zeigt ihn an.
+    /// Submits the frame and presents it.
     pub fn end_frame(&mut self, frame: Frame) {
         self.queue.submit([frame.encoder.finish()]);
         self.queue.present(frame.texture);
     }
 }
 
-/// Pipeline für farbige Formen samt Uniform-Buffer für den Sichtbereich.
+/// Pipeline for colored shapes plus uniform buffer for the view area.
 fn create_layout(device: &wgpu::Device) -> wgpu::BindGroupLayout {
     device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
         label: Some("view"),
@@ -512,7 +511,7 @@ fn create_layout(device: &wgpu::Device) -> wgpu::BindGroupLayout {
     })
 }
 
-/// Pipeline für farbige Formen mit `samples` Abtastungen je Pixel.
+/// Pipeline for colored shapes with `samples` samples per pixel.
 fn create_pipeline(
     device: &wgpu::Device,
     format: wgpu::TextureFormat,
@@ -559,7 +558,7 @@ fn create_pipeline(
     })
 }
 
-/// Puffer für einen Zeichendurchgang: Sichtbereich, Vertices, Indizes.
+/// Buffers for one draw pass: view area, vertices, indices.
 #[derive(Debug)]
 struct Layer {
     view: wgpu::Buffer,
@@ -700,7 +699,7 @@ impl Post {
         }
     }
 
-    /// Zwischenbild in Surface-Größe und die Bind-Group dazu.
+    /// Intermediate image at surface size and its bind group.
     fn create_scene(
         &self,
         device: &wgpu::Device,
@@ -745,7 +744,7 @@ impl Post {
     }
 }
 
-/// Pipeline der Nachbearbeitung: ein bildschirmfüllendes Dreieck, das `scene` verzerrt.
+/// Post-processing pipeline: a fullscreen triangle that distorts `scene`.
 fn create_post_pipeline(
     device: &wgpu::Device,
     format: wgpu::TextureFormat,
@@ -788,7 +787,7 @@ fn create_post_pipeline(
     })
 }
 
-/// MSAA-Ziel in Surface-Größe; `None` ohne MSAA.
+/// MSAA target at surface size; `None` without MSAA.
 fn create_msaa(
     device: &wgpu::Device,
     config: &wgpu::SurfaceConfiguration,
@@ -828,7 +827,7 @@ fn create_buffer(
     })
 }
 
-/// Vergrößert `buffer` bei Bedarf (Verdopplung).
+/// Grows `buffer` when needed (doubling).
 fn ensure_capacity(
     device: &wgpu::Device,
     buffer: &mut wgpu::Buffer,
@@ -846,7 +845,7 @@ fn ensure_capacity(
 
 #[cfg(test)]
 mod tests {
-    /// Shader parsen und validieren wie wgpu (ohne Grafikkarte).
+    /// Parse and validate the shader like wgpu does (without a graphics card).
     #[test]
     fn shaders_are_valid() {
         for (name, src) in [

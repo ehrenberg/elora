@@ -1,7 +1,7 @@
-// Farbige 2D-Dreiecke in Weltkoordinaten.
+// Colored 2D triangles in world coordinates.
 
 struct View {
-    // x, y: obere linke Ecke; z, w: Größe (Welteinheiten)
+    // x, y: top left corner; z, w: size (world units)
     rect: vec4<f32>,
 };
 

@@ -1,15 +1,15 @@
-// Nachbearbeitung der Welt: Hitzeflimmern (R2-M2.3, E-320) und Sättigung (Farbe kehrt mit
-// den Quellen zurück, E-328).
+// Post-processing of the world: heat shimmer (R2-M2.3, E-320) and saturation (color returns
+// with the sources, E-328).
 //
-// Die Welt liegt als Textur vor; jede Bildzeile wird leicht seitlich verschoben, die Wellen
-// steigen langsam auf und sind am unteren Bildrand (heißer Boden) am stärksten.
+// The world is available as a texture; every image row is shifted slightly sideways, the waves
+// rise slowly and are strongest at the bottom edge of the screen (hot ground).
 
 struct Post {
-    // x: Zeit in Sekunden, y: Stärke des Flimmerns 0..1, z: Seitenverhältnis (Breite / Höhe),
-    // w: Sättigung (1 = unverändert, 0 = grau)
+    // x: time in seconds, y: shimmer strength 0..1, z: aspect ratio (width / height),
+    // w: saturation (1 = unchanged, 0 = gray)
     params: vec4<f32>,
-    // Wetter (R2-W1): Tönung (rgb, Anteil), Nebel (rgb, Dichte), x: Abdunkeln, y: Blitz,
-    // z: Frostrand (Kälte, E-342)
+    // Weather (R2-W1): tint (rgb, share), fog (rgb, density), x: darkening, y: lightning,
+    // z: frost border (cold, E-342)
     tint: vec4<f32>,
     fog: vec4<f32>,
     extra: vec4<f32>,
@@ -24,7 +24,7 @@ struct VertexOut {
     @location(0) uv: vec2<f32>,
 };
 
-// Ein Dreieck, das den ganzen Bildschirm bedeckt.
+// A triangle that covers the whole screen.
 @vertex
 fn vs_main(@builtin(vertex_index) i: u32) -> VertexOut {
     let uv = vec2<f32>(f32((i << 1u) & 2u), f32(i & 2u));
@@ -40,9 +40,9 @@ fn fs_main(in: VertexOut) -> @location(0) vec4<f32> {
     let strength = post.params.y;
     let aspect = post.params.z;
     let uv = in.uv;
-    // oben schwächer, unten (Boden) kräftig
+    // weaker at the top, strong at the bottom (ground)
     let falloff = mix(0.3, 1.0, smoothstep(0.0, 1.0, uv.y));
-    // zwei überlagerte Wellen, deren Phase mit der Zeit nach oben wandert
+    // two superimposed waves whose phase moves upwards over time
     let wobble = sin(uv.x * 7.0 * aspect + t * 0.9) * 1.6;
     let w1 = sin(uv.y * 85.0 + t * 4.2 + wobble);
     let w2 = sin(uv.y * 37.0 + t * 2.6 - uv.x * 5.0 * aspect);
@@ -50,19 +50,19 @@ fn fs_main(in: VertexOut) -> @location(0) vec4<f32> {
     let dy = sin(uv.x * 46.0 * aspect + t * 3.1) * 0.0009;
     let offset = vec2<f32>(dx, dy) * strength * falloff;
     let color = textureSample(scene, scene_sampler, clamp(uv + offset, vec2<f32>(0.0), vec2<f32>(1.0)));
-    // ganz leicht warm getönt
+    // very slightly warm-tinted
     let warm = color.rgb * vec3<f32>(1.03, 1.0, 0.93);
     let tinted = mix(color.rgb, warm, strength * 0.6);
-    // Sättigung: Grauwert nach Helligkeit, dann zurück zur Farbe
+    // Saturation: gray value by luminance, then back towards the color
     let gray = dot(tinted, vec3<f32>(0.299, 0.587, 0.114));
     var rgb = mix(vec3<f32>(gray), tinted, post.params.w);
-    // Wetter: Tönung, Abdunkeln, Nebel nach unten dichter, Blitz hellt alles auf
+    // Weather: tint, darkening, fog denser towards the bottom, lightning brightens everything
     rgb = mix(rgb, rgb * post.tint.rgb, post.tint.a);
     rgb = rgb * (1.0 - post.extra.x);
     let fog = clamp(post.fog.a * mix(0.35, 1.0, uv.y), 0.0, 1.0);
     rgb = mix(rgb, post.fog.rgb, fog);
     rgb = min(rgb + vec3<f32>(post.extra.y * 0.55), vec3<f32>(1.0));
-    // Frostrand: Eisblumen wachsen von den Rändern und Ecken herein, die Welt wird kühler
+    // Frost border: frost flowers grow in from the edges and corners, the world gets cooler
     let frost = post.extra.z;
     if (frost > 0.0) {
         let x = uv.x * aspect;

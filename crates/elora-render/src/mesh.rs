@@ -1,9 +1,9 @@
-//! Gecachte Formen (M5.1): einmal tesselliert, oft gezeichnet.
+//! Cached shapes (M5.1): tessellated once, drawn often.
 //!
-//! Ein [`Mesh`] liegt in lokalen Koordinaten vor. Beim Zeichnen wird es per
-//! [`Affine`] verschoben, gedreht, skaliert oder verformt (Squash & Stretch) und
-//! über eine [`Tint`] eingefärbt: Ecken mit Farbschlüssel bekommen die Farbe des
-//! Schlüssels, optional aufgehellt oder abgedunkelt (z. B. Bauchfleck, E-097).
+//! A [`Mesh`] is stored in local coordinates. When drawn, it is translated, rotated,
+//! scaled or deformed (squash & stretch) via an [`Affine`] and colored via a [`Tint`]:
+//! vertices with a color key get the color of that key, optionally lightened or
+//! darkened (e.g. belly patch, E-097).
 
 use elora_sim::Vec2;
 use lyon::math::point;
@@ -15,7 +15,7 @@ use lyon::tessellation::{
 
 use crate::Color;
 
-/// Affine 2D-Transformation: `p' = x_axis * p.x + y_axis * p.y + offset`.
+/// Affine 2D transformation: `p' = x_axis * p.x + y_axis * p.y + offset`.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Affine {
     pub x_axis: Vec2,
@@ -51,7 +51,7 @@ impl Affine {
         }
     }
 
-    /// Drehung um den Ursprung (Bogenmaß; positiv = im Uhrzeigersinn, da y nach unten zeigt).
+    /// Rotation around the origin (radians; positive = clockwise, since y points down).
     pub fn rotate(angle: f32) -> Self {
         let (s, c) = angle.sin_cos();
         Self {
@@ -61,7 +61,7 @@ impl Affine {
         }
     }
 
-    /// Erst `inner`, dann `self` anwenden.
+    /// Apply `inner` first, then `self`.
     #[must_use]
     pub fn then(self, inner: Self) -> Self {
         Self {
@@ -80,19 +80,19 @@ impl Affine {
     }
 }
 
-/// Wie eine Form gefüllt wird.
+/// How a shape is filled.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Paint {
-    /// Feste Farbe.
+    /// Fixed color.
     Solid(Color),
-    /// Linearer Verlauf von `from` (Farbe `a`) nach `to` (Farbe `b`), lokale Koordinaten.
+    /// Linear gradient from `from` (color `a`) to `to` (color `b`), local coordinates.
     Linear {
         from: Vec2,
         to: Vec2,
         a: Color,
         b: Color,
     },
-    /// Farbe aus der [`Tint`] beim Zeichnen; `shade` > 0 hellt auf, < 0 dunkelt ab (−1..=1).
+    /// Color from the [`Tint`] at draw time; `shade` > 0 lightens, < 0 darkens (−1..=1).
     Key { slot: u8, shade: f32, alpha: f32 },
 }
 
@@ -137,14 +137,14 @@ impl Paint {
     }
 }
 
-/// Farben für die Schlüssel eines Meshes. Schlüssel 0 bleibt unbenutzt (feste Farbe);
-/// fehlende Schlüssel werden magenta gezeichnet, damit sie auffallen.
+/// Colors for the keys of a mesh. Key 0 stays unused (fixed color);
+/// missing keys are drawn magenta so they stand out.
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Tint {
     pub colors: Vec<Color>,
-    /// Deckkraft für das ganze Mesh (Ausblenden, Unsichtbarkeit).
+    /// Opacity for the whole mesh (fading out, invisibility).
     pub alpha: Option<f32>,
-    /// Färbung für das ganze Mesh (Komponenten multipliziert, z. B. Kartendeko bei Nacht).
+    /// Tint for the whole mesh (components multiplied, e.g. map decoration at night).
     pub multiply: Option<Color>,
 }
 
@@ -182,7 +182,7 @@ impl Tint {
     }
 }
 
-/// Hellt (`amount` > 0, Richtung Weiß) oder dunkelt (< 0, Richtung Schwarz) eine Farbe ab.
+/// Lightens (`amount` > 0, towards white) or darkens (< 0, towards black) a color.
 pub fn shade(c: Color, amount: f32) -> Color {
     if amount >= 0.0 {
         lerp_color(c, Color::rgba(1.0, 1.0, 1.0, c.0[3]), amount.min(1.0))
@@ -202,14 +202,14 @@ pub fn lerp_color(a: Color, b: Color, t: f32) -> Color {
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub(crate) struct MeshVertex {
     pub pos: [f32; 2],
-    /// Feste Farbe, bei Schlüssel nur die Deckkraft.
+    /// Fixed color; with a key, only the opacity.
     pub color: [f32; 4],
-    /// 0 = feste Farbe, sonst Schlüssel (1-basiert in [`Tint::colors`]).
+    /// 0 = fixed color, otherwise key (1-based in [`Tint::colors`]).
     pub slot: u8,
     pub shade: f32,
 }
 
-/// Fertig tessellierte Form in lokalen Koordinaten.
+/// Fully tessellated shape in local coordinates.
 #[derive(Debug, Clone, Default)]
 pub struct Mesh {
     pub(crate) vertices: Vec<MeshVertex>,
@@ -233,7 +233,7 @@ impl Mesh {
         self.indices.is_empty()
     }
 
-    /// Umschließendes Rechteck (min, max) in lokalen Koordinaten.
+    /// Bounding rectangle (min, max) in local coordinates.
     pub fn bounds(&self) -> Option<(Vec2, Vec2)> {
         let first = self.vertices.first()?;
         let mut min = Vec2::new(first.pos[0], first.pos[1]);
@@ -245,7 +245,7 @@ impl Mesh {
         Some((min, max))
     }
 
-    /// Ecken transformiert und eingefärbt an `out` anhängen.
+    /// Appends the vertices, transformed and colored, to `out`.
     pub(crate) fn emit(
         &self,
         transform: &Affine,
@@ -264,7 +264,7 @@ impl Mesh {
     }
 }
 
-/// Baut ein [`Mesh`] aus Pfaden auf; spätere Formen liegen über früheren.
+/// Builds a [`Mesh`] from paths; later shapes lie on top of earlier ones.
 pub struct MeshBuilder {
     geometry: VertexBuffers<MeshVertex, u32>,
     fill: FillTessellator,
@@ -282,7 +282,7 @@ impl std::fmt::Debug for MeshBuilder {
 }
 
 impl MeshBuilder {
-    /// `tolerance`: maximale Abweichung von der Kurve in lokalen Einheiten.
+    /// `tolerance`: maximum deviation from the curve in local units.
     pub fn new(tolerance: f32) -> Self {
         Self {
             geometry: VertexBuffers::new(),
@@ -307,7 +307,7 @@ impl MeshBuilder {
         self
     }
 
-    /// Kontur mit runden Ecken und Enden.
+    /// Stroke with round joins and caps.
     pub fn stroke_path(&mut self, path: &Path, width: f32, paint: Paint) -> &mut Self {
         let options = StrokeOptions::tolerance(self.tolerance)
             .with_line_width(width)
@@ -323,7 +323,7 @@ impl MeshBuilder {
         self
     }
 
-    /// Gefüllt mit Kontur darüber (`outline` = Breite, Farbe).
+    /// Filled, with a stroke on top (`outline` = width, color).
     pub fn fill_outlined(&mut self, path: &Path, fill: Paint, outline: (f32, Paint)) -> &mut Self {
         self.fill_path(path, fill)
             .stroke_path(path, outline.0, outline.1)
@@ -342,7 +342,7 @@ impl MeshBuilder {
     }
 }
 
-/// Ellipse als Pfad.
+/// Ellipse as a path.
 pub fn ellipse(center: Vec2, radii: Vec2) -> Path {
     let mut b = Path::builder();
     b.add_ellipse(
@@ -354,7 +354,7 @@ pub fn ellipse(center: Vec2, radii: Vec2) -> Path {
     b.build()
 }
 
-/// Rechteck mit abgerundeten Ecken als Pfad.
+/// Rectangle with rounded corners as a path.
 pub fn rounded_rect(min: Vec2, max: Vec2, radius: f32) -> Path {
     let mut b = Path::builder();
     b.add_rounded_rectangle(
@@ -366,7 +366,7 @@ pub fn rounded_rect(min: Vec2, max: Vec2, radius: f32) -> Path {
 }
 
 #[cfg(test)]
-#[allow(clippy::float_cmp)] // exakte Werte bei 0, 0.5 und 1
+#[allow(clippy::float_cmp)] // exact values at 0, 0.5 and 1
 mod tests {
     use super::*;
 
@@ -379,7 +379,7 @@ mod tests {
         let t = Affine::translate(Vec2::new(10.0, 0.0))
             .then(Affine::rotate(std::f32::consts::FRAC_PI_2))
             .then(Affine::scale(2.0, 1.0));
-        // (1,0) → skaliert (2,0) → gedreht (0,2) → verschoben (10,2)
+        // (1,0) → scaled (2,0) → rotated (0,2) → translated (10,2)
         assert!(close(t.apply(Vec2::new(1.0, 0.0)), Vec2::new(10.0, 2.0)));
         assert!(close(
             Affine::IDENTITY.apply(Vec2::new(3.0, 4.0)),
@@ -403,7 +403,7 @@ mod tests {
         mesh.emit(&Affine::IDENTITY, &tint, &mut out);
         assert!(out.vertices.iter().any(|v| v.color == [0.0, 0.0, 1.0, 1.0]));
         assert!(out.vertices.iter().any(|v| v.color == [0.5, 0.5, 1.0, 1.0]));
-        // fehlender Schlüssel fällt auf
+        // missing key stands out
         let mut out = VertexBuffers::new();
         mesh.emit(&Affine::IDENTITY, &Tint::default(), &mut out);
         assert_eq!(out.vertices[0].color, [1.0, 0.0, 1.0, 1.0]);

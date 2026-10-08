@@ -1,16 +1,16 @@
-//! Kamera und Sichtbereich (E-044, E-045).
+//! Camera and view area (E-044, E-045).
 
 use elora_sim::Vec2;
 
-/// Einstellungen für den sichtbaren Weltausschnitt. Startwerte wie im Original
-/// (`CalcScreenParams(1150*1000, 1500, 1050, …)`); als Tuning-Regler einstellbar (E-045).
+/// Settings for the visible section of the world. Initial values as in the original
+/// (`CalcScreenParams(1150*1000, 1500, 1050, …)`); adjustable as tuning controls (E-045).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct ViewSettings {
-    /// Sichtfläche in Welteinheiten².
+    /// Visible area in world units².
     pub area: f32,
-    /// Maximale Sichtbreite.
+    /// Maximum visible width.
     pub max_width: f32,
-    /// Maximale Sichthöhe.
+    /// Maximum visible height.
     pub max_height: f32,
 }
 
@@ -25,7 +25,7 @@ impl Default for ViewSettings {
 }
 
 impl ViewSettings {
-    /// Breite und Höhe des sichtbaren Bereichs für ein Seitenverhältnis (Breite / Höhe).
+    /// Width and height of the visible area for an aspect ratio (width / height).
     pub fn view_size(&self, aspect: f32) -> Vec2 {
         let f = self.area.sqrt() / aspect.sqrt();
         let (mut w, mut h) = (f * aspect, f);
@@ -41,12 +41,12 @@ impl ViewSettings {
     }
 }
 
-/// Sichtbarer Weltausschnitt eines Frames.
+/// Visible section of the world for one frame.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Camera {
-    /// Mittelpunkt in Weltkoordinaten.
+    /// Centre in world coordinates.
     pub center: Vec2,
-    /// Größe des Ausschnitts in Welteinheiten.
+    /// Size of the section in world units.
     pub size: Vec2,
 }
 
@@ -58,7 +58,7 @@ impl Camera {
         }
     }
 
-    /// Zoom um `factor` (> 1 = näher heran, weniger sichtbar). Reine Darstellung.
+    /// Zoom by `factor` (> 1 = closer, less visible). Presentation only.
     #[must_use]
     pub fn zoomed(self, factor: f32) -> Self {
         Self {
@@ -67,18 +67,18 @@ impl Camera {
         }
     }
 
-    /// Obere linke Ecke.
+    /// Top left corner.
     pub fn top_left(&self) -> Vec2 {
         self.center - self.size * 0.5
     }
 
-    /// Bildschirmpunkt (Pixel) → Weltpunkt.
+    /// Screen point (pixels) → world point.
     pub fn screen_to_world(&self, screen: Vec2, screen_size: Vec2) -> Vec2 {
         let rel = Vec2::new(screen.x / screen_size.x, screen.y / screen_size.y);
         self.top_left() + Vec2::new(rel.x * self.size.x, rel.y * self.size.y)
     }
 
-    /// Welteinheiten pro Bildschirm-Pixel.
+    /// World units per screen pixel.
     pub fn units_per_pixel(&self, screen_size: Vec2) -> f32 {
         self.size.x / screen_size.x
     }

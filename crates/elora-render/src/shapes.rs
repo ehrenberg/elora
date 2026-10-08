@@ -1,4 +1,4 @@
-//! Vektorformen, zur Laufzeit per lyon tesselliert (E-033).
+//! Vector shapes, tessellated at runtime via lyon (E-033).
 
 use elora_sim::Vec2;
 use lyon::math::point;
@@ -8,7 +8,7 @@ use lyon::tessellation::{
     StrokeVertex, VertexBuffers,
 };
 
-/// RGBA-Farbe, Komponenten 0..=1 (sRGB).
+/// RGBA color, components 0..=1 (sRGB).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Color(pub [f32; 4]);
 
@@ -21,7 +21,7 @@ impl Color {
         Self([r, g, b, a])
     }
 
-    /// Aus 0xRRGGBB.
+    /// From 0xRRGGBB.
     pub const fn hex(v: u32) -> Self {
         Self::rgb(
             ((v >> 16) & 0xff) as f32 / 255.0,
@@ -38,12 +38,12 @@ pub(crate) struct Vertex {
     pub color: [f32; 4],
 }
 
-/// Sammelt Formen eines Frames in Weltkoordinaten.
+/// Collects the shapes of a frame in world coordinates.
 pub struct ShapeBatch {
     pub(crate) geometry: VertexBuffers<Vertex, u32>,
     fill: FillTessellator,
     stroke: StrokeTessellator,
-    /// Toleranz der Tessellierung in Welteinheiten (kleiner = feiner).
+    /// Tessellation tolerance in world units (smaller = finer).
     pub tolerance: f32,
 }
 
@@ -77,10 +77,10 @@ impl ShapeBatch {
         self.geometry.indices.is_empty()
     }
 
-    /// Achsenparalleles Rechteck ohne Tessellierung (für viele Tiles).
+    /// Axis-aligned rectangle without tessellation (for many tiles).
     ///
     /// # Panics
-    /// Bei mehr als `u32::MAX` Vertices in einem Batch.
+    /// With more than `u32::MAX` vertices in one batch.
     pub fn fill_rect(&mut self, min: Vec2, max: Vec2, color: Color) {
         let base = u32::try_from(self.geometry.vertices.len()).expect("zu viele Vertices");
         let c = color.0;
@@ -112,10 +112,10 @@ impl ShapeBatch {
         ]);
     }
 
-    /// Rechteck mit senkrechtem Verlauf von `top` nach `bottom`.
+    /// Rectangle with a vertical gradient from `top` to `bottom`.
     ///
     /// # Panics
-    /// Bei mehr als `u32::MAX` Vertices in einem Batch.
+    /// With more than `u32::MAX` vertices in one batch.
     pub fn fill_rect_vgradient(&mut self, min: Vec2, max: Vec2, top: Color, bottom: Color) {
         let base = u32::try_from(self.geometry.vertices.len()).expect("zu viele Vertices");
         let (t, b) = (top.0, bottom.0);
@@ -150,7 +150,7 @@ impl ShapeBatch {
     pub fn fill_circle(&mut self, center: Vec2, radius: f32, color: Color) {
         let options = FillOptions::tolerance(self.tolerance);
         let c = color.0;
-        // Tessellierung einfacher Formen kann nicht fehlschlagen
+        // Tessellating simple shapes cannot fail
         let _ = self.fill.tessellate_circle(
             point(center.x, center.y),
             radius,
@@ -162,7 +162,7 @@ impl ShapeBatch {
         );
     }
 
-    /// Geschlossenes, gefülltes Polygon.
+    /// Closed, filled polygon.
     pub fn fill_polygon(&mut self, points: &[Vec2], color: Color) {
         let Some(path) = polyline(points, true) else {
             return;
@@ -178,7 +178,7 @@ impl ShapeBatch {
         );
     }
 
-    /// Beliebiger gefüllter Pfad (Regel: nicht null).
+    /// Arbitrary filled path (rule: non-zero).
     pub fn fill_path(&mut self, path: &Path, color: Color) {
         let c = color.0;
         let _ = self.fill.tessellate_path(
@@ -191,7 +191,7 @@ impl ShapeBatch {
         );
     }
 
-    /// Rechteck mit abgerundeten Ecken (für UI-Flächen).
+    /// Rectangle with rounded corners (for UI surfaces).
     pub fn fill_rounded_rect(&mut self, min: Vec2, max: Vec2, radius: f32, color: Color) {
         let radius = radius
             .min((max.x - min.x) / 2.0)
@@ -209,7 +209,7 @@ impl ShapeBatch {
         );
     }
 
-    /// Linienzug mit runden Enden.
+    /// Polyline with round caps.
     pub fn stroke_polyline(&mut self, points: &[Vec2], width: f32, color: Color) {
         let Some(path) = polyline(points, false) else {
             return;
@@ -228,22 +228,22 @@ impl ShapeBatch {
         );
     }
 
-    /// Gecachtes Mesh transformiert und eingefärbt anhängen.
+    /// Appends a cached mesh, transformed and colored.
     ///
     /// # Panics
-    /// Bei mehr als `u32::MAX` Vertices in einem Batch.
+    /// With more than `u32::MAX` vertices in one batch.
     pub fn draw_mesh(&mut self, mesh: &crate::Mesh, transform: &crate::Affine, tint: &crate::Tint) {
         mesh.emit(transform, tint, &mut self.geometry);
     }
 
-    /// Dreiecke als SVG im Weltausschnitt `min..max` – zur Sichtprüfung ohne Fenster
-    /// (z. B. mit `cargo xtask svg-preview` rastern).
+    /// Triangles as SVG in the world section `min..max` – for visual checks without a window
+    /// (e.g. rasterize with `cargo xtask svg-preview`).
     pub fn debug_svg(&self, min: Vec2, max: Vec2, background: Color) -> String {
         use std::fmt::Write as _;
         let size = max - min;
         let hex = |c: [f32; 4]| {
             #[allow(clippy::cast_sign_loss, clippy::cast_possible_truncation)]
-            // auf 0..=255 begrenzt
+            // clamped to 0..=255
             let b = |v: f32| (v.clamp(0.0, 1.0) * 255.0).round() as u8;
             format!("#{:02x}{:02x}{:02x}", b(c[0]), b(c[1]), b(c[2]))
         };
@@ -282,7 +282,7 @@ impl ShapeBatch {
         out
     }
 
-    /// Inhalt als Mesh mit festen Farben (z. B. einmal gebaute Kartengeometrie zum Zwischenspeichern).
+    /// Content as a mesh with fixed colors (e.g. map geometry built once, for caching).
     pub fn to_mesh(&self) -> crate::Mesh {
         crate::Mesh::from_parts(
             self.geometry
@@ -299,7 +299,7 @@ impl ShapeBatch {
         )
     }
 
-    /// Anzahl Dreiecke im Batch (Statistik).
+    /// Number of triangles in the batch (statistics).
     pub fn triangle_count(&self) -> usize {
         self.geometry.indices.len() / 3
     }

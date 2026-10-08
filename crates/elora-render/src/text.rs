@@ -1,9 +1,9 @@
-//! Vektortext (M5.8): Glyphen aus einer TrueType-Schrift, einmal tesselliert und
-//! gecacht, beim Zeichnen nur verschoben und skaliert. Für die eigene Spiel-UI
-//! (E-031) – HUD jetzt, Menüs später.
+//! Vector text (M5.8): glyphs from a TrueType font, tessellated once and
+//! cached, only translated and scaled when drawn. For the game's own UI
+//! (E-031) – HUD now, menus later.
 //!
-//! Einfaches Layout: eine Zeile, Vorschub je Glyphe, keine Unterschneidung und
-//! keine Ligaturen. Für Zahlen, Namen und kurze Hinweise reicht das.
+//! Simple layout: one line, advance per glyph, no kerning and
+//! no ligatures. That is enough for numbers, names and short hints.
 
 use std::cell::RefCell;
 use std::collections::HashMap;
@@ -20,7 +20,7 @@ use crate::{Color, ShapeBatch};
 #[error("Schrift nicht lesbar: {0}")]
 pub struct FontError(#[from] ttf_parser::FaceParsingError);
 
-/// Ausrichtung einer Zeile relativ zum Ankerpunkt.
+/// Alignment of a line relative to the anchor point.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Align {
     #[default]
@@ -29,14 +29,14 @@ pub enum Align {
     Right,
 }
 
-/// Tessellierte Glyphe: Mesh in em-Einheiten (y nach unten, Grundlinie bei 0) und Vorschub.
+/// Tessellated glyph: mesh in em units (y down, baseline at 0) and advance.
 #[derive(Debug)]
 struct Glyph {
     mesh: Mesh,
     advance: f32,
 }
 
-/// Eine Schrift mit Glyphen-Cache.
+/// A font with a glyph cache.
 pub struct Font {
     face: ttf_parser::Face<'static>,
     glyphs: RefCell<HashMap<char, Glyph>>,
@@ -50,12 +50,12 @@ impl std::fmt::Debug for Font {
     }
 }
 
-/// Toleranz der Tessellierung in em (bei 20 px Schriftgröße ≈ 0.04 px).
+/// Tessellation tolerance in em (at 20 px font size ≈ 0.04 px).
 const TOLERANCE_EM: f32 = 0.002;
 
 impl Font {
     /// # Errors
-    /// Wenn `data` keine gültige TrueType/OpenType-Schrift ist.
+    /// If `data` is not a valid TrueType/OpenType font.
     pub fn new(data: &'static [u8]) -> Result<Self, FontError> {
         Ok(Self {
             face: ttf_parser::Face::parse(data, 0)?,
@@ -67,7 +67,7 @@ impl Font {
         f32::from(self.face.units_per_em())
     }
 
-    /// Höhe der Großbuchstaben in em (für vertikales Zentrieren).
+    /// Height of capital letters in em (for vertical centering).
     pub fn cap_height(&self) -> f32 {
         f32::from(self.face.capital_height().unwrap_or(700)) / self.em()
     }
@@ -99,12 +99,12 @@ impl Font {
                 .fill_path(&outline.builder.build(), Paint::key(1))
                 .build()
         } else {
-            Mesh::default() // z. B. Leerzeichen
+            Mesh::default() // e.g. space
         };
         Glyph { mesh, advance }
     }
 
-    /// Breite von `text` bei Schriftgröße `size`.
+    /// Width of `text` at font size `size`.
     pub fn width(&self, text: &str, size: f32) -> f32 {
         text.chars()
             .map(|c| self.with_glyph(c, |g| g.advance))
@@ -112,7 +112,7 @@ impl Font {
             * size
     }
 
-    /// Zeichnet eine Zeile; `pos` ist der Ankerpunkt auf der Grundlinie.
+    /// Draws a line; `pos` is the anchor point on the baseline.
     pub fn draw(
         &self,
         batch: &mut ShapeBatch,
@@ -141,7 +141,7 @@ impl Font {
         }
     }
 
-    /// Wie [`Font::draw`], aber vertikal um `pos.y` zentriert (nach Großbuchstabenhöhe).
+    /// Like [`Font::draw`], but vertically centered on `pos.y` (by capital height).
     pub fn draw_centered(
         &self,
         batch: &mut ShapeBatch,
@@ -156,7 +156,7 @@ impl Font {
     }
 }
 
-/// Glyphen-Umriss → lyon-Pfad in em, y nach unten.
+/// Glyph outline → lyon path in em, y down.
 struct Outline {
     builder: WithSvg<lyon::path::path::BuilderImpl>,
     scale: f32,
@@ -216,9 +216,9 @@ mod tests {
             Align::Center,
         );
         assert!(batch.triangle_count() > 50);
-        // 1 2 E l o r a ␣ 3 : 4 – „2“ doppelt; das Leerzeichen hat keine Form, wird aber gecacht
+        // 1 2 E l o r a ␣ 3 : 4 – "2" twice; the space has no shape but is cached
         assert_eq!(font.glyphs.borrow().len(), 11);
-        // Glyphen liegen über der Grundlinie (y < 0) und mittig um den Anker
+        // Glyphs lie above the baseline (y < 0) and centered around the anchor
         let (min, max) = batch_bounds(&batch);
         assert!(min.y < -10.0 && max.y <= 0.5, "{min:?} {max:?}");
         assert!((min.x + max.x).abs() < 3.0, "zentriert: {min:?} {max:?}");

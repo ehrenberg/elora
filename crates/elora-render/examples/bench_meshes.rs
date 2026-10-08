@@ -1,4 +1,4 @@
-//! Benchmark für gecachte Meshes (M5.1): 64 Figuren + 2000 Partikel pro Frame.
+//! Benchmark for cached meshes (M5.1): 64 figures + 2000 particles per frame.
 //!
 //! `cargo run --release -p elora-render --example bench_meshes`
 
@@ -8,7 +8,7 @@ use elora_render::{Affine, Color, MeshBuilder, Paint, ShapeBatch, Tint, ellipse}
 use elora_sim::Vec2;
 
 fn main() {
-    // Figur ähnlich Entwurf B: Körper, Bauch, Augen, Füße mit Konturen
+    // Figure similar to draft B: body, belly, eyes, feet with strokes
     let outline = (5.0, Paint::Solid(Color::hex(0x2b2b2b)));
     let t0 = Instant::now();
     let figure = MeshBuilder::new(0.25)
