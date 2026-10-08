@@ -166,6 +166,7 @@ Continued from **E-200**. Release 1 (E-001 to E-173) is in the
 | E-355 | 2026-10-08 | Intro video for the adventure (playtest) | A **real video**, skippable (Esc/Space), at the start of a new adventure. **Exception to E-295:** the owner creates the video with an external AI tool (licence must allow redistribution); E-295 stays in force otherwise. Playback with a **built-in video decoder** in the client |
 | E-356 | 2026-10-08 | Video decoder for the intro (E-355) | **AV1 via `rav1d`** (BSD-2, pure Rust); `unsafe` is allowed **only** in a small separate crate `elora-video` that wraps its C-style API (exception to the workspace rule); everything else keeps `unsafe_code` denied |
 | E-357 | 2026-10-08 | Intro plan (docs/release-2/intro-plan.md) | **Accepted** with storyboard; music: the existing **Tauwinkel track**; the intro plays at **every new adventure** (always skippable) |
+| E-358 | 2026-10-08 | Scope of the id renaming (RF-10 to RF-13) | One **word dictionary** (`renames.toml`) translates ids word by word; it also drives the migration of saves and old maps. **Map format and network names too** (decor, weather keys, object kinds, multiplayer map names) with **protocol 7** and aliases in the map loader (0.9.x and the new version no longer play together online). **Proper names stay** (characters, places). **Internal ids** (dialog nodes, zone prefixes) are translated as well. Old saves are converted **automatically on load, without a backup** |
 
 ## Open points
 
