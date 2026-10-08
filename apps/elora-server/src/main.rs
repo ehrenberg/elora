@@ -1,6 +1,6 @@
 //! Elora – dedicated server (M3.5, M4). Commands in the terminal: `help`.
 //!
-//! Usage: `elora-server [--config server.toml] [--port 8303] [--map karte.emap]
+//! Usage: `elora-server [--config server.toml] [--port 8303] [--map map.emap]
 //! [--name "…"] [--max-clients 8] [--high-bandwidth] [--key-file server_key.toml]
 //! [--mode dm|tdm|ctf|lms|lts] [--instagib] [--score-limit n] [--time-limit min]
 //! [--no-friendly-fire] [--no-votes]`
@@ -38,9 +38,9 @@ fn register_loop(master: String, port: u16, family: elora_master::client::Family
                 let ok = result.as_ref().is_ok_and(|r| r.ok);
                 if last_ok != Some(ok) {
                     match &result {
-                        Ok(r) if r.ok => tracing::info!(%master, ?family, "beim Master angemeldet"),
+                        Ok(r) if r.ok => tracing::info!(%master, ?family, "registered with master"),
                         Ok(r) => {
-                            tracing::warn!(%master, ?family, reason = %r.message, "Master lehnt ab");
+                            tracing::warn!(%master, ?family, reason = %r.message, "master refused");
                         }
                         Err(e) => tracing::warn!(%master, ?family, "{e:#}"),
                     }
@@ -50,7 +50,7 @@ fn register_loop(master: String, port: u16, family: elora_master::client::Family
             }
         });
     if let Err(e) = spawned {
-        tracing::warn!("Anmeldung beim Master nicht gestartet: {e}");
+        tracing::warn!("master registration not started: {e}");
     }
 }
 
@@ -64,7 +64,7 @@ fn main() -> anyhow::Result<()> {
     let args: Vec<String> = std::env::args().skip(1).collect();
     let mut cfg = match args.iter().position(|a| a == "--config") {
         Some(i) => ServerConfig::load(Path::new(
-            args.get(i + 1).context("--config erwartet einen Pfad")?,
+            args.get(i + 1).context("--config expects a path")?,
         ))?,
         None => ServerConfig::default(),
     };
@@ -78,9 +78,9 @@ fn main() -> anyhow::Result<()> {
     let tuning = match &cfg.tuning {
         Some(p) => {
             let src = std::fs::read_to_string(p)
-                .with_context(|| format!("{} nicht lesbar", p.display()))?;
+                .with_context(|| format!("{} not readable", p.display()))?;
             toml::from_str::<TuningFile>(&src)
-                .with_context(|| format!("{} ist ungültig", p.display()))?
+                .with_context(|| format!("{} is invalid", p.display()))?
                 .physics
         }
         None => Tuning::default(),
@@ -92,7 +92,7 @@ fn main() -> anyhow::Result<()> {
     } else {
         UdpSocket::bind(addr)
     }
-    .with_context(|| format!("Port {addr} nicht verfügbar"))?;
+    .with_context(|| format!("port {addr} not available"))?;
     let families = match (socket.has_ipv4(), socket.has_ipv6()) {
         (true, true) => vec![Family::V4, Family::V6],
         (false, true) => vec![Family::V6],
@@ -106,10 +106,10 @@ fn main() -> anyhow::Result<()> {
         max_clients = cfg.max_clients,
         snapshots_hz = if cfg.high_bandwidth { 50 } else { 25 },
         key = %elora_net::hex(server.endpoint.public_key()),
-        "Server läuft"
+        "server running"
     );
 
-    tracing::info!(maps = %server.map_names().join(", "), mode = %server.rules.cfg.title(), "`help` zeigt die Konsolenbefehle");
+    tracing::info!(maps = %server.map_names().join(", "), mode = %server.rules.cfg.title(), "`help` lists the console commands");
     // one registration per address family the server listens on: whatever the master
     // reaches gets listed (e.g. only IPv6 behind DS-Lite)
     for master in cfg.masters.clone() {
@@ -138,7 +138,7 @@ fn main() -> anyhow::Result<()> {
         std::thread::sleep(wait.min(Duration::from_millis(1)));
     }
     server.shutdown(elora_protocol::reason::SHUTDOWN, Instant::now());
-    tracing::info!("beendet");
+    tracing::info!("stopped");
     Ok(())
 }
 
@@ -150,10 +150,10 @@ fn load_maps(cfg: &ServerConfig) -> anyhow::Result<Vec<MapEntry>> {
             .unwrap_or_default()
     };
     let data = std::fs::read(&cfg.map)
-        .with_context(|| format!("Karte {} nicht lesbar", cfg.map.display()))?;
+        .with_context(|| format!("map {} not readable", cfg.map.display()))?;
     anyhow::ensure!(
         data.len() <= elora_protocol::MAX_MAP,
-        "Karte {} ist größer als {} MiB und kann nicht übertragen werden",
+        "map {} is larger than {} MiB and cannot be transferred",
         cfg.map.display(),
         elora_protocol::MAX_MAP >> 20
     );
@@ -179,14 +179,14 @@ fn load_maps(cfg: &ServerConfig) -> anyhow::Result<Vec<MapEntry>> {
                 maps.push(MapEntry::new(name, data));
             }
             _ => {
-                tracing::warn!(path = %p.display(), "Karte übersprungen (nicht lesbar, ungültig oder zu groß)");
+                tracing::warn!(path = %p.display(), "map skipped (unreadable, invalid or too large)");
             }
         }
     }
     for r in &cfg.rotation {
         anyhow::ensure!(
             maps.iter().any(|m| &m.name == r),
-            "Rotation: Karte `{r}` nicht in {} gefunden",
+            "rotation: map `{r}` not found in {}",
             cfg.maps_dir.display()
         );
     }
@@ -198,7 +198,7 @@ fn load_maps(cfg: &ServerConfig) -> anyhow::Result<Vec<MapEntry>> {
 fn console_input() -> std::io::Result<mpsc::Receiver<String>> {
     let (tx, rx) = mpsc::channel();
     std::thread::Builder::new()
-        .name("konsole".into())
+        .name("console".into())
         .spawn(move || {
             let mut line = String::new();
             loop {

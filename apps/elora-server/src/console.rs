@@ -10,23 +10,23 @@ use elora_sim::Team;
 use crate::GameServer;
 
 pub const HELP: &str = "\
-Befehle:
-  status                      Spieler, Karte, Modus
-  mode <dm|tdm|ctf|lms|lts>   Modus wechseln (neues Match)
-  instagib <on|off>           Instagib für alle Modi (E-076)
-  scorelimit <n>              Siegpunkte (0 = aus)
-  timelimit <min>             Zeitlimit in Minuten (0 = aus)
-  friendlyfire <on|off>       Schaden an Teammitgliedern
-  restart                     Match neu starten
-  map <name>                  Karte wechseln
-  maps                        bekannte Karten
-  kick <slot>                 Spieler trennen
-  ban <slot>                  Spieler trennen und 5 min sperren
-  spectate <slot>             Spieler zu den Zuschauern
-  say <text>                  Nachricht an alle
-  vote cancel                 laufende Abstimmung abbrechen
-  quit                        Server beenden
-  help                        diese Hilfe";
+Commands:
+  status                      players, map, mode
+  mode <dm|tdm|ctf|lms|lts>   change mode (new match)
+  instagib <on|off>           instagib for all modes (E-076)
+  scorelimit <n>              score limit (0 = off)
+  timelimit <min>             time limit in minutes (0 = off)
+  friendlyfire <on|off>       damage to team mates
+  restart                     restart the match
+  map <name>                  change map
+  maps                        known maps
+  kick <slot>                 disconnect a player
+  ban <slot>                  disconnect a player and ban for 5 min
+  spectate <slot>             move a player to the spectators
+  say <text>                  message to everyone
+  vote cancel                 cancel the running vote
+  quit                        stop the server
+  help                        this help";
 
 fn on_off(arg: Option<&str>) -> Option<bool> {
     match arg? {
@@ -55,86 +55,86 @@ impl<S: Socket> GameServer<S> {
                     cfg.mode = m;
                     cfg.score_limit = None;
                     self.set_rules(cfg);
-                    format!("Modus: {}", self.rules.cfg.title())
+                    format!("Mode: {}", self.rules.cfg.title())
                 }
-                None => "Verwendung: mode <dm|tdm|ctf|lms|lts>".into(),
+                None => "Usage: mode <dm|tdm|ctf|lms|lts>".into(),
             },
             "instagib" => match on_off(arg) {
                 Some(on) => {
                     let mut cfg = self.rules.cfg.clone();
                     cfg.instagib = on;
                     self.set_rules(cfg);
-                    format!("Modus: {}", self.rules.cfg.title())
+                    format!("Mode: {}", self.rules.cfg.title())
                 }
-                None => "Verwendung: instagib <on|off>".into(),
+                None => "Usage: instagib <on|off>".into(),
             },
             "scorelimit" => match arg.and_then(|a| a.parse().ok()) {
                 Some(n) => {
                     self.rules.cfg.score_limit = Some(n);
-                    format!("Siegpunkte: {n}")
+                    format!("Score limit: {n}")
                 }
-                None => "Verwendung: scorelimit <n>".into(),
+                None => "Usage: scorelimit <n>".into(),
             },
             "timelimit" => match arg.and_then(|a| a.parse().ok()) {
                 Some(n) => {
                     self.rules.cfg.time_limit = n;
-                    format!("Zeitlimit: {n} min")
+                    format!("Time limit: {n} min")
                 }
-                None => "Verwendung: timelimit <min>".into(),
+                None => "Usage: timelimit <min>".into(),
             },
             "friendlyfire" => match on_off(arg) {
                 Some(on) => {
                     self.rules.cfg.friendly_fire = on;
                     self.world.friendly_fire = on;
-                    format!("Friendly Fire: {}", if on { "an" } else { "aus" })
+                    format!("Friendly Fire: {}", if on { "on" } else { "off" })
                 }
-                None => "Verwendung: friendlyfire <on|off>".into(),
+                None => "Usage: friendlyfire <on|off>".into(),
             },
             "restart" => {
                 let cfg = self.rules.cfg.clone();
                 self.set_rules(cfg);
-                "Match neu gestartet".into()
+                "Match restarted".into()
             }
             "map" => match arg {
                 Some(m) => match self.change_map(m, now) {
-                    Ok(()) => format!("Karte: {m}"),
-                    Err(e) => format!("Fehler: {e:#}"),
+                    Ok(()) => format!("Map: {m}"),
+                    Err(e) => format!("Error: {e:#}"),
                 },
-                None => "Verwendung: map <name>".into(),
+                None => "Usage: map <name>".into(),
             },
             "maps" => self.map_names().join(", "),
             "kick" | "ban" => match slot() {
                 Some(s) if self.kick(s, elora_protocol::reason::KICKED, cmd == "ban", now) => {
-                    format!("Slot {s} getrennt")
+                    format!("Slot {s} disconnected")
                 }
-                _ => "Verwendung: kick <slot> (siehe status)".into(),
+                _ => "Usage: kick <slot> (see status)".into(),
             },
             "spectate" => match slot() {
                 Some(s) if self.world.player(s).is_some() => {
                     self.rules.set_team(&mut self.world, s, Team::Spectator);
-                    format!("Slot {s} schaut zu")
+                    format!("Slot {s} is spectating")
                 }
-                _ => "Verwendung: spectate <slot>".into(),
+                _ => "Usage: spectate <slot>".into(),
             },
             "say" => match arg {
                 Some(text) => {
                     self.chat(None, false, text);
                     String::new()
                 }
-                None => "Verwendung: say <text>".into(),
+                None => "Usage: say <text>".into(),
             },
             "vote" if arg == Some("cancel") => {
                 self.cancel_vote(now);
-                "Abstimmung abgebrochen".into()
+                "Vote cancelled".into()
             }
-            other => format!("Unbekannter Befehl `{other}` – `help` zeigt alle Befehle"),
+            other => format!("Unknown command `{other}` – `help` lists all commands"),
         }
     }
 
     fn status(&self) -> String {
         let r = &self.rules;
         let mut out = format!(
-            "Karte {} · {} · Phase {:?} · Teams {}:{} · Spieler {}\n",
+            "Map {} · {} · phase {:?} · teams {}:{} · players {}\n",
             self.map_name(),
             r.cfg.title(),
             r.phase,
@@ -147,7 +147,7 @@ impl<S: Socket> GameServer<S> {
             let stats = r.stats.get(&i).copied().unwrap_or_default();
             let _ = writeln!(
                 out,
-                "  [{i:2}] {:<16} {:?} Punkte {} ({}/{})",
+                "  [{i:2}] {:<16} {:?} score {} ({}/{})",
                 self.name_of(i),
                 p.team,
                 stats.score,

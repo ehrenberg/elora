@@ -75,28 +75,25 @@ impl ServerConfig {
     /// If the file is unreadable or invalid.
     pub fn load(path: &Path) -> anyhow::Result<Self> {
         let src = std::fs::read_to_string(path)
-            .with_context(|| format!("{} nicht lesbar", path.display()))?;
-        toml::from_str(&src).with_context(|| format!("{} ist ungültig", path.display()))
+            .with_context(|| format!("{} not readable", path.display()))?;
+        toml::from_str(&src).with_context(|| format!("{} is invalid", path.display()))
     }
 
     /// # Errors
     /// If the file cannot be written.
     pub fn save(&self, path: &Path) -> anyhow::Result<()> {
         std::fs::write(path, toml::to_string_pretty(self)?)
-            .with_context(|| format!("{} nicht schreibbar", path.display()))
+            .with_context(|| format!("{} not writable", path.display()))
     }
 
-    /// Applies command-line arguments (`--port 8303`, `--map pfad`, …).
+    /// Applies command-line arguments (`--port 8303`, `--map path`, …).
     ///
     /// # Errors
     /// On unknown arguments or invalid values.
     pub fn apply_args(&mut self, args: &[String]) -> anyhow::Result<()> {
         let mut it = args.iter();
         while let Some(arg) = it.next() {
-            let mut value = || {
-                it.next()
-                    .with_context(|| format!("{arg} erwartet einen Wert"))
-            };
+            let mut value = || it.next().with_context(|| format!("{arg} expects a value"));
             match arg.as_str() {
                 "--name" => self.name.clone_from(value()?),
                 "--bind" => self.bind.clone_from(value()?),
@@ -108,9 +105,8 @@ impl ServerConfig {
                 "--tuning" => self.tuning = Some(PathBuf::from(value()?)),
                 "--mode" => {
                     let v = value()?;
-                    self.rules.mode = Mode::parse(v).with_context(|| {
-                        format!("unbekannter Modus `{v}` (dm, tdm, ctf, lms, lts)")
-                    })?;
+                    self.rules.mode = Mode::parse(v)
+                        .with_context(|| format!("unknown mode `{v}` (dm, tdm, ctf, lms, lts)"))?;
                 }
                 "--instagib" => self.rules.instagib = true,
                 "--score-limit" => {
@@ -132,7 +128,7 @@ impl ServerConfig {
                 "--config" => {
                     value()?; // already evaluated in main
                 }
-                other => anyhow::bail!("unbekanntes Argument `{other}`"),
+                other => anyhow::bail!("unknown argument `{other}`"),
             }
         }
         self.validate()
@@ -143,11 +139,11 @@ impl ServerConfig {
     pub fn validate(&self) -> anyhow::Result<()> {
         anyhow::ensure!(
             (1..=MAX_CLIENTS).contains(&self.max_clients),
-            "max_clients muss 1..={MAX_CLIENTS} sein"
+            "max_clients must be 1..={MAX_CLIENTS}"
         );
         anyhow::ensure!(
             !self.name.trim().is_empty(),
-            "Servername darf nicht leer sein"
+            "server name must not be empty"
         );
         Ok(())
     }
@@ -172,7 +168,7 @@ impl ServerConfig {
         };
         format!("{host}:{}", self.port)
             .parse()
-            .context("ungültige Bind-Adresse")
+            .context("invalid bind address")
     }
 }
 
@@ -183,10 +179,10 @@ struct KeyFile {
 }
 
 fn unhex(s: &str) -> anyhow::Result<Vec<u8>> {
-    anyhow::ensure!(s.len().is_multiple_of(2), "ungerade Hex-Länge");
+    anyhow::ensure!(s.len().is_multiple_of(2), "odd hex length");
     (0..s.len())
         .step_by(2)
-        .map(|i| u8::from_str_radix(&s[i..i + 2], 16).context("ungültiges Hex"))
+        .map(|i| u8::from_str_radix(&s[i..i + 2], 16).context("invalid hex"))
         .collect()
 }
 
@@ -198,7 +194,7 @@ pub fn load_or_create_key(path: &Path) -> anyhow::Result<Keypair> {
     if path.exists() {
         let src = std::fs::read_to_string(path)?;
         let f: KeyFile =
-            toml::from_str(&src).with_context(|| format!("{} ist ungültig", path.display()))?;
+            toml::from_str(&src).with_context(|| format!("{} is invalid", path.display()))?;
         return Ok(Keypair {
             public: unhex(&f.public)?,
             private: unhex(&f.private)?,
@@ -210,17 +206,17 @@ pub fn load_or_create_key(path: &Path) -> anyhow::Result<Keypair> {
         private: elora_net::hex(&kp.private),
     };
     let text = format!(
-        "# Elora – dauerhafter Server-Schlüssel (E-062). Geheim halten!\n\
-         # Clients merken sich den öffentlichen Teil; bei Änderung warnen sie.\n{}",
+        "# Elora – persistent server key (E-062). Keep it secret!\n\
+         # Clients remember the public part and warn if it changes.\n{}",
         toml::to_string(&f)?
     );
-    std::fs::write(path, text).with_context(|| format!("{} nicht schreibbar", path.display()))?;
+    std::fs::write(path, text).with_context(|| format!("{} not writable", path.display()))?;
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt as _;
         let _ = std::fs::set_permissions(path, std::fs::Permissions::from_mode(0o600));
     }
-    tracing::info!(key = %f.public, "neuer Server-Schlüssel erzeugt");
+    tracing::info!(key = %f.public, "new server key created");
     Ok(kp)
 }
 

@@ -159,7 +159,7 @@ impl<S: Socket> GameServer<S> {
         let first = maps
             .first()
             .cloned()
-            .ok_or_else(|| anyhow::anyhow!("keine Karte"))?;
+            .ok_or_else(|| anyhow::anyhow!("no map"))?;
         let mut world = load_world(&first.data, tuning.clone())?;
         let rules = Rules::new(config.rules.clone(), &mut world, true);
         let rotation = if config.rotation.is_empty() {
@@ -282,7 +282,7 @@ impl<S: Socket> GameServer<S> {
         }
         match self.world.player(slot).map(|p| &p.controller) {
             Some(Controller::Dummy { .. }) => format!("Dummy {slot}"),
-            _ => format!("Spieler {slot}"),
+            _ => format!("Player {slot}"),
         }
     }
 
@@ -306,16 +306,16 @@ impl<S: Socket> GameServer<S> {
             ServerEvent::Connected { id, addr } => {
                 self.bans.retain(|_, until| *until > now);
                 if self.bans.contains_key(&addr.ip()) {
-                    tracing::info!(%addr, "gesperrt");
+                    tracing::info!(%addr, "banned");
                     self.endpoint.disconnect(id, reason::BANNED, now);
                     return;
                 }
-                tracing::info!(%addr, id, "Verbindung aufgebaut");
+                tracing::info!(%addr, id, "connected");
                 self.clients.insert(id, Client::new(Some(addr.ip())));
             }
             ServerEvent::Disconnected { id, reason } => {
                 if let Some(c) = self.clients.remove(&id) {
-                    tracing::info!(id, name = %c.name, ?reason, "getrennt");
+                    tracing::info!(id, name = %c.name, ?reason, "disconnected");
                     if let Some(slot) = c.slot {
                         self.world.die(slot, None, elora_sim::DeathCause::Game);
                         self.world.remove(slot);
@@ -336,7 +336,7 @@ impl<S: Socket> GameServer<S> {
             ServerEvent::Message { id, data, .. } => match ClientMsg::decode(&data) {
                 Ok(msg) => self.message(id, msg, now),
                 Err(e) => {
-                    tracing::warn!(id, %e, "ungültige Nachricht");
+                    tracing::warn!(id, %e, "invalid message");
                     self.endpoint.disconnect(id, reason::INVALID_MESSAGE, now);
                 }
             },
@@ -388,7 +388,7 @@ impl<S: Socket> GameServer<S> {
         client.slot = Some(slot);
         let first = !std::mem::replace(&mut client.entered, true);
         let (name, skin) = (client.name.clone(), client.skin);
-        tracing::info!(id, slot, %name, "beigetreten");
+        tracing::info!(id, slot, %name, "joined");
         self.welcome(id);
         let info = ServerMsg::PlayerInfo {
             slot: u32::try_from(slot).unwrap_or(0),
@@ -703,7 +703,7 @@ impl<S: Socket> GameServer<S> {
             .iter()
             .find(|m| m.name == name)
             .cloned()
-            .ok_or_else(|| anyhow::anyhow!("Karte `{name}` unbekannt"))?;
+            .ok_or_else(|| anyhow::anyhow!("map `{name}` unknown"))?;
         let mut world = load_world(&entry.data, self.base_tuning.clone())?;
         // time keeps running: tick of the new world = current server tick
         world.tick = self.world.tick;

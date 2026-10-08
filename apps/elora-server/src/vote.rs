@@ -161,7 +161,7 @@ impl<S: Socket> GameServer<S> {
                 self.send_vote_status(now);
             }
             Outcome::Passed => {
-                let vote = self.vote.take().expect("vorhanden");
+                let vote = self.vote.take().expect("present");
                 self.notice(Message::VotePassed(vote.subject.clone()));
                 self.send_vote_status(now);
                 self.execute(vote.kind, now);
@@ -173,7 +173,7 @@ impl<S: Socket> GameServer<S> {
         match kind {
             VoteKind::Map(m) => {
                 if let Err(e) = self.change_map(&m, now) {
-                    tracing::warn!("Kartenwechsel fehlgeschlagen: {e:#}");
+                    tracing::warn!("map change failed: {e:#}");
                     self.notice(Message::MapChangeFailed { map: m });
                 }
             }
@@ -216,12 +216,12 @@ mod tests {
             1,
             now,
         );
-        assert_eq!(v.outcome(4, now), Outcome::Pending, "1 von 4 Ja");
+        assert_eq!(v.outcome(4, now), Outcome::Pending, "1 of 4 yes");
         v.cast(2, true);
         assert_eq!(
             v.outcome(4, now),
             Outcome::Pending,
-            "2 von 4 ist nicht mehr als die Hälfte"
+            "2 of 4 is not more than half"
         );
         v.cast(3, true);
         assert_eq!(v.outcome(4, now), Outcome::Passed);
@@ -233,7 +233,7 @@ mod tests {
         );
         v.cast(2, false);
         v.cast(3, false);
-        assert_eq!(v.outcome(4, now), Outcome::Failed, "Hälfte Nein");
+        assert_eq!(v.outcome(4, now), Outcome::Failed, "half no");
         let mut v = Vote::new(
             VoteKind::Map("x".into()),
             VoteSubject::Map("x".into()),
@@ -245,7 +245,7 @@ mod tests {
         assert_eq!(
             v.outcome(6, now + VOTE_DURATION),
             Outcome::Passed,
-            "nach Ablauf mehr Ja als Nein"
+            "after expiry more yes than no"
         );
         v.cast(4, false);
         assert_eq!(v.outcome(6, now + VOTE_DURATION), Outcome::Failed);

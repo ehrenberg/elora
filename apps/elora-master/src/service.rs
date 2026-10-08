@@ -35,19 +35,19 @@ impl<S: Socket> Master<S> {
             message: msg.to_owned(),
         };
         let Ok(req) = serde_json::from_str::<RegisterRequest>(body) else {
-            return (400, reply(false, "ungültige Anfrage"));
+            return (400, reply(false, "invalid request"));
         };
         if req.version != elora_protocol::PROTOCOL_VERSION {
-            return (400, reply(false, "falsche Protokollversion"));
+            return (400, reply(false, "wrong protocol version"));
         }
         if req.port == 0 {
-            return (400, reply(false, "ungültiger Port"));
+            return (400, reply(false, "invalid port"));
         }
         let addr = SocketAddr::new(ip, req.port);
         match self.registry.request(addr, now) {
             Ok(()) => {
                 self.probe.query(addr, now);
-                (202, reply(true, "Prüfung läuft"))
+                (202, reply(true, "check running"))
             }
             Err(e) => (429, reply(false, e.message())),
         }
@@ -72,12 +72,12 @@ impl<S: Socket> Master<S> {
         for r in replies {
             let ok = ServerInfo::decode(&r.data).is_ok_and(|i| i.compatible());
             if !ok {
-                tracing::info!(addr = %r.addr, "Server antwortet mit falscher Version");
+                tracing::info!(addr = %r.addr, "server answers with wrong version");
             }
             self.registry.verified(r.addr, ok, now);
         }
         for addr in lost {
-            tracing::info!(%addr, "Server nicht erreichbar – nicht gelistet");
+            tracing::info!(%addr, "server not reachable – not listed");
         }
         self.registry.expire(now);
     }
@@ -98,7 +98,7 @@ fn client_ip(req: &tiny_http::Request, behind_proxy: bool) -> Option<IpAddr> {
 
 fn json(status: u16, body: String) -> tiny_http::Response<std::io::Cursor<Vec<u8>>> {
     let header = tiny_http::Header::from_bytes(&b"Content-Type"[..], &b"application/json"[..])
-        .expect("gültiger Header");
+        .expect("valid header");
     tiny_http::Response::from_string(body)
         .with_status_code(status)
         .with_header(header)
@@ -112,7 +112,7 @@ pub fn run(bind: SocketAddr, behind_proxy: bool) -> anyhow::Result<()> {
     let http = tiny_http::Server::http(bind).map_err(|e| anyhow::anyhow!("{bind}: {e}"))?;
     let udp = elora_net::UdpSocket::bind_dual(0)?;
     let mut master = Master::new(udp);
-    tracing::info!(%bind, behind_proxy, "Master läuft");
+    tracing::info!(%bind, behind_proxy, "master running");
     loop {
         if let Some(mut req) = http.recv_timeout(Duration::from_millis(50))? {
             let now = Instant::now();
@@ -128,17 +128,14 @@ pub fn run(bind: SocketAddr, behind_proxy: bool) -> anyhow::Result<()> {
                             let (status, reply) = master.register(ip, &body, now);
                             json(status, serde_json::to_string(&reply)?)
                         }
-                        _ => json(
-                            400,
-                            "{\"ok\":false,\"message\":\"ungültige Anfrage\"}".into(),
-                        ),
+                        _ => json(400, "{\"ok\":false,\"message\":\"invalid request\"}".into()),
                     }
                 }
                 (tiny_http::Method::Get, "/") => json(200, "{\"service\":\"elora-master\"}".into()),
-                _ => json(404, "{\"ok\":false,\"message\":\"unbekannt\"}".into()),
+                _ => json(404, "{\"ok\":false,\"message\":\"unknown\"}".into()),
             };
             if let Err(e) = req.respond(response) {
-                tracing::debug!("Antwort nicht gesendet: {e}");
+                tracing::debug!("response not sent: {e}");
             }
         }
         master.tick(Instant::now());
@@ -192,10 +189,10 @@ mod tests {
         assert_eq!(
             m.register(ip, &body(8305), now).0,
             202,
-            "niemand hört auf 8305"
+            "nobody listens on 8305"
         );
-        assert_eq!(m.register(ip, &body(8303), now).0, 429, "zu häufig");
-        assert_eq!(m.register(ip, "kein json", now).0, 400);
+        assert_eq!(m.register(ip, &body(8303), now).0, 429, "too often");
+        assert_eq!(m.register(ip, "no json", now).0, 400);
         assert_eq!(
             m.register(ip, "{\"port\":1,\"version\":1}", now).0,
             400,

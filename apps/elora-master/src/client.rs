@@ -61,7 +61,7 @@ pub fn register(
         .post(&endpoint(base, "register"))
         .header("Content-Type", "application/json")
         .send(&body)
-        .with_context(|| format!("Master {base} nicht erreichbar"))?;
+        .with_context(|| format!("master {base} not reachable"))?;
     let status = resp.status();
     let text = resp
         .body_mut()
@@ -79,7 +79,7 @@ pub fn fetch(base: &str) -> anyhow::Result<Vec<SocketAddr>> {
     let mut resp = agent()
         .get(&endpoint(base, "servers"))
         .call()
-        .with_context(|| format!("Master {base} nicht erreichbar"))?;
+        .with_context(|| format!("master {base} not reachable"))?;
     anyhow::ensure!(
         resp.status().is_success(),
         "Master {base}: HTTP {}",

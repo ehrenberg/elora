@@ -22,7 +22,7 @@ fn main() -> anyhow::Result<()> {
         .position(|a| a == "--bind")
         .and_then(|i| args.get(i + 1))
         .map_or(Ok(SocketAddr::from(([0, 0, 0, 0], 8300))), |s| s.parse())
-        .context("--bind erwartet Adresse:Port")?;
+        .context("--bind expects address:port")?;
     let behind_proxy = args.iter().any(|a| a == "--behind-proxy");
     elora_master::service::run(bind, behind_proxy)
 }

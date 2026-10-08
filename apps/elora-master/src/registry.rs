@@ -23,9 +23,9 @@ pub enum Refused {
 impl Refused {
     pub fn message(self) -> &'static str {
         match self {
-            Self::TooOften => "zu häufige Anmeldung",
-            Self::TooManyForIp => "zu viele Server von dieser Adresse",
-            Self::Full => "Liste voll",
+            Self::TooOften => "registering too often",
+            Self::TooManyForIp => "too many servers from this address",
+            Self::Full => "list full",
         }
     }
 }
@@ -104,7 +104,7 @@ mod tests {
         let mut r = Registry::default();
         let t0 = Instant::now();
         r.request(a(8303), t0).unwrap();
-        assert!(r.list().is_empty(), "erst nach der UDP-Prüfung gelistet");
+        assert!(r.list().is_empty(), "listed only after the UDP check");
         r.verified(a(8303), true, t0);
         assert_eq!(r.list(), vec![a(8303)]);
         assert_eq!(
