@@ -1,16 +1,16 @@
-//! Master-Server für die Internet-Serverliste (M7.8, E-112, E-127).
+//! Master server for the internet server list (M7.8, E-112, E-127).
 //!
-//! HTTP mit JSON wie bei `DDNet`:
+//! HTTP with JSON as in `DDNet`:
 //!
-//! - `POST /register` mit `{"port": 8303, "version": 2}` – ein Spielserver meldet sich
-//!   an. Der Master nimmt ihn erst auf, wenn er ihn selbst per UDP-Info-Abfrage
-//!   erreicht und die Protokollversion passt; Einträge laufen nach [`EXPIRY`] ab,
-//!   Server melden sich alle [`REGISTER_INTERVAL`] neu.
-//! - `GET /servers` liefert `{"servers": ["1.2.3.4:8303", …]}`. Details (Name, Karte,
-//!   Ping, Spieler) fragt der Client bei jedem Server selbst ab.
+//! - `POST /register` with `{"port": 8303, "version": 2}` – a game server registers.
+//!   The master only lists it once it reaches the server itself via a UDP info query
+//!   and the protocol version matches; entries expire after [`EXPIRY`], servers
+//!   re-register every [`REGISTER_INTERVAL`].
+//! - `GET /servers` returns `{"servers": ["1.2.3.4:8303", …]}`. The client queries the
+//!   details (name, map, ping, players) from each server itself.
 //!
-//! Öffentlich läuft der Master hinter einem Reverse-Proxy mit HTTPS (E-127); dann
-//! nennt `X-Forwarded-For` die Adresse des Spielservers (nur mit `--behind-proxy`).
+//! In public, the master runs behind a reverse proxy with HTTPS (E-127); then
+//! `X-Forwarded-For` names the address of the game server (only with `--behind-proxy`).
 
 use std::time::Duration;
 
@@ -24,14 +24,14 @@ pub mod client;
 #[cfg(feature = "server")]
 pub mod service;
 
-/// So oft melden sich Spielserver neu an.
+/// Game servers re-register at this interval.
 pub const REGISTER_INTERVAL: Duration = Duration::from_secs(20);
-/// Ohne neue Anmeldung fliegt ein Server nach dieser Zeit aus der Liste.
+/// Without a new registration a server is dropped from the list after this time.
 pub const EXPIRY: Duration = Duration::from_secs(60);
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RegisterRequest {
-    /// UDP-Port des Spielservers (die IP nimmt der Master aus der Verbindung).
+    /// UDP port of the game server (the master takes the IP from the connection).
     pub port: u16,
     pub version: u32,
 }

@@ -1,9 +1,9 @@
-//! `elora-master` – Master-Server für die Internet-Serverliste (E-112).
+//! `elora-master` – master server for the internet server list (E-112).
 //!
-//! Aufruf: `elora-master [--bind 0.0.0.0:8300] [--behind-proxy]`
+//! Usage: `elora-master [--bind 0.0.0.0:8300] [--behind-proxy]`
 //!
-//! Öffentlich hinter einem Reverse-Proxy mit HTTPS betreiben (E-127) und dann
-//! `--behind-proxy` setzen, damit die Absenderadresse aus `X-Forwarded-For` stammt.
+//! In public, run it behind a reverse proxy with HTTPS (E-127) and then set
+//! `--behind-proxy` so that the sender address is taken from `X-Forwarded-For`.
 
 use std::net::SocketAddr;
 

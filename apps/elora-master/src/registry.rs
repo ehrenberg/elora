@@ -1,4 +1,4 @@
-//! Liste der angemeldeten Server – reine Logik ohne Netz (für Tests).
+//! List of registered servers – pure logic without network (for tests).
 
 use std::collections::HashMap;
 use std::net::{IpAddr, SocketAddr};
@@ -6,11 +6,11 @@ use std::time::{Duration, Instant};
 
 use crate::EXPIRY;
 
-/// Mindestabstand zwischen zwei Anmeldungen derselben Adresse.
+/// Minimum interval between two registrations of the same address.
 pub const MIN_REREGISTER: Duration = Duration::from_secs(5);
-/// Höchstens so viele Server je IP-Adresse.
+/// At most this many servers per IP address.
 pub const MAX_PER_IP: usize = 32;
-/// Höchstens so viele Server insgesamt (Schutz vor Überflutung).
+/// At most this many servers in total (protection against flooding).
 pub const MAX_SERVERS: usize = 8192;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -32,18 +32,18 @@ impl Refused {
 
 #[derive(Debug, Default)]
 pub struct Registry {
-    /// Geprüfte Server und wann sie ablaufen.
+    /// Verified servers and when they expire.
     listed: HashMap<SocketAddr, Instant>,
-    /// Letzte Anmeldung je Adresse (Rate-Grenze).
+    /// Last registration per address (rate limit).
     last_request: HashMap<SocketAddr, Instant>,
 }
 
 impl Registry {
-    /// Anmeldung prüfen; bei `Ok` muss der Aufrufer den Server per UDP abfragen und
-    /// das Ergebnis mit [`Registry::verified`] melden.
+    /// Check a registration; on `Ok` the caller must query the server via UDP and
+    /// report the result with [`Registry::verified`].
     ///
     /// # Errors
-    /// Bei zu häufiger Anmeldung oder überschrittenen Grenzen.
+    /// On too frequent registrations or exceeded limits.
     pub fn request(&mut self, addr: SocketAddr, now: Instant) -> Result<(), Refused> {
         if self
             .last_request
@@ -65,21 +65,21 @@ impl Registry {
         Ok(())
     }
 
-    /// Ergebnis der UDP-Prüfung: erreichbar und passende Version → (weiter) gelistet.
+    /// Result of the UDP check: reachable and matching version → listed (further on).
     pub fn verified(&mut self, addr: SocketAddr, ok: bool, now: Instant) {
         if ok {
             self.listed.insert(addr, now + EXPIRY);
         }
     }
 
-    /// Abgelaufene Einträge entfernen.
+    /// Remove expired entries.
     pub fn expire(&mut self, now: Instant) {
         self.listed.retain(|_, until| now < *until);
         self.last_request
             .retain(|_, t| now - *t < MIN_REREGISTER.max(EXPIRY));
     }
 
-    /// Aktuelle Liste (sortiert, damit Antworten stabil sind).
+    /// Current list (sorted so that replies are stable).
     pub fn list(&self) -> Vec<SocketAddr> {
         let mut v: Vec<SocketAddr> = self.listed.keys().copied().collect();
         v.sort();
@@ -111,14 +111,14 @@ mod tests {
             r.request(a(8303), t0 + Duration::from_secs(1)),
             Err(Refused::TooOften)
         );
-        // neu anmelden verlängert
+        // re-registering extends
         r.request(a(8303), t0 + Duration::from_secs(30)).unwrap();
         r.verified(a(8303), true, t0 + Duration::from_secs(30));
         r.expire(t0 + EXPIRY + Duration::from_secs(1));
         assert_eq!(r.list(), vec![a(8303)]);
         r.expire(t0 + Duration::from_secs(30) + EXPIRY);
         assert!(r.list().is_empty());
-        // nicht erreichbar → nicht gelistet
+        // unreachable → not listed
         r.request(a(9000), t0).unwrap();
         r.verified(a(9000), false, t0);
         assert!(r.list().is_empty());
@@ -134,7 +134,7 @@ mod tests {
         }
         assert_eq!(r.request(a(20000), t), Err(Refused::TooManyForIp));
         assert_eq!(r.count_for(a(1).ip()), MAX_PER_IP);
-        // eine andere IP geht weiter
+        // a different IP still works
         let other = SocketAddr::from(([10, 0, 0, 2], 8303));
         assert!(r.request(other, t).is_ok());
     }

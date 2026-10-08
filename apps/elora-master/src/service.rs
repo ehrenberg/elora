@@ -1,4 +1,4 @@
-//! Der Master-Dienst: HTTP-Schnittstelle, UDP-Prüfung der Server, Liste.
+//! The master service: HTTP interface, UDP check of the servers, list.
 
 use std::io::Read as _;
 use std::net::{IpAddr, SocketAddr};
@@ -10,10 +10,10 @@ use elora_protocol::ServerInfo;
 use crate::registry::Registry;
 use crate::{RegisterReply, RegisterRequest, ServerList};
 
-/// Größte angenommene Anfrage.
+/// Largest accepted request.
 const MAX_REQUEST: u64 = 4096;
 
-/// Logik des Dienstes ohne HTTP (testbar mit dem Speichernetz).
+/// Logic of the service without HTTP (testable with the in-memory network).
 #[derive(Debug)]
 pub struct Master<S: Socket> {
     pub registry: Registry,
@@ -28,7 +28,7 @@ impl<S: Socket> Master<S> {
         }
     }
 
-    /// `POST /register` von `ip` mit JSON-`body`. Liefert HTTP-Status und Antwort.
+    /// `POST /register` from `ip` with JSON `body`. Returns HTTP status and reply.
     pub fn register(&mut self, ip: IpAddr, body: &str, now: Instant) -> (u16, RegisterReply) {
         let reply = |ok, msg: &str| RegisterReply {
             ok,
@@ -53,7 +53,7 @@ impl<S: Socket> Master<S> {
         }
     }
 
-    /// `GET /servers` als JSON.
+    /// `GET /servers` as JSON.
     pub fn list_json(&self) -> String {
         let list = ServerList {
             servers: self
@@ -66,7 +66,7 @@ impl<S: Socket> Master<S> {
         serde_json::to_string(&list).unwrap_or_else(|_| "{\"servers\":[]}".into())
     }
 
-    /// UDP-Antworten auswerten, Abgelaufenes entfernen.
+    /// Evaluate UDP replies, remove expired entries.
     pub fn tick(&mut self, now: Instant) {
         let (replies, lost) = self.probe.poll(now);
         for r in replies {
@@ -83,14 +83,14 @@ impl<S: Socket> Master<S> {
     }
 }
 
-/// Absender einer Anfrage: direkt oder – hinter einem Reverse-Proxy – aus `X-Forwarded-For`.
+/// Sender of a request: direct or – behind a reverse proxy – from `X-Forwarded-For`.
 fn client_ip(req: &tiny_http::Request, behind_proxy: bool) -> Option<IpAddr> {
     if behind_proxy {
         let header = req
             .headers()
             .iter()
             .find(|h| h.field.equiv("X-Forwarded-For"))?;
-        // erste Adresse = ursprünglicher Absender
+        // first address = original sender
         return header.value.as_str().split(',').next()?.trim().parse().ok();
     }
     req.remote_addr().map(SocketAddr::ip)
@@ -104,10 +104,10 @@ fn json(status: u16, body: String) -> tiny_http::Response<std::io::Cursor<Vec<u8
         .with_header(header)
 }
 
-/// Dienst starten und bis zum Beenden laufen lassen.
+/// Start the service and keep it running until shutdown.
 ///
 /// # Errors
-/// Wenn Port oder UDP-Socket nicht geöffnet werden können.
+/// If the port or UDP socket cannot be opened.
 pub fn run(bind: SocketAddr, behind_proxy: bool) -> anyhow::Result<()> {
     let http = tiny_http::Server::http(bind).map_err(|e| anyhow::anyhow!("{bind}: {e}"))?;
     let udp = elora_net::UdpSocket::bind_dual(0)?;
