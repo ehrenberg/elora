@@ -202,7 +202,7 @@ mod tests {
     #[test]
     fn subtitles_fade_and_have_texts_in_both_languages() {
         let lines = lines();
-        assert!(lines.len() >= 6);
+        assert!(lines.len() >= 4);
         assert!(subtitle_at(&lines, 0.0).is_none());
         let (l, a) = subtitle_at(&lines, 0.7).expect("first line");
         assert_eq!(l.key, "lands");

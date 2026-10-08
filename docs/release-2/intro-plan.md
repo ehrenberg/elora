@@ -50,80 +50,88 @@ chapter drafts in `docs/release-2/design/` as reference images).
 
 The secret of the sixth spring and the Withered One are deliberately not shown.
 
-## Making the video with Veo (two clips of 30 s)
+## Making the video with Veo (four shots of 8 s)
 
-Veo creates up to 30 s per clip here, so the intro is **two clips**: clip 1 = shots 1–3
-(0–30 s), clip 2 = shots 4–6 (30–60 s). The subtitle times in `assets/intro/intro.toml`
-already follow this split. Use **Frames to Video** with the start and end frame; add the
-reference sheets as ingredients/reference images where the tool allows it.
+Veo in Google AI Studio makes 8-second clips, so the intro is **four shots of 8 s (≈ 32 s)**,
+joined by `cargo xtask intro-import`. Each shot starts from a **start image** (image to video),
+so style and characters stay the same across the cuts. The subtitles in
+`assets/intro/intro.toml` follow these four shots (one line per shot).
 
-Images (in `docs/release-2/design/intro/`, made from the game's assets with
+Images in `docs/release-2/design/intro/` (made from the game's assets with
 `tools/design/intro_keyframes.py`):
 
-| File | Use |
-|---|---|
-| `clip1-start.png` | first frame of clip 1: the colourful Tauland at dawn, five glowing springs, Tauwinkel |
-| `clip1-end.png` | last frame of clip 1: the same view, grey, the springs dry |
-| `clip2-start.png` | first frame of clip 2: the grey well square, Oma Pfütze and Elora |
-| `clip2-end.png` | last frame of clip 2: Elora on a green hill at sunrise |
-| `ref-elora.png`, `ref-oma.png`, `ref-tauwinkel.png` | reference images for characters and style |
+| Shot | Start image | Content | Subtitle |
+|---|---|---|---|
+| 1 (0–8 s) | `shot1-start.png` | the colourful Tauland at dawn, five glowing springs | „Im Tauland singen fünf Quellen …“ |
+| 2 (8–16 s) | `shot2-start.png` | the colourful well square, Oma Pfütze and Elora, drops hop around | „In Tauwinkel … fröhlich und bunt.“ |
+| 3 (16–24 s) | last frame of shot 2 (see below) | the springs fall silent, the colour drains from the square | „Doch eines Morgens verstummt …“ |
+| 4 (24–32 s) | `shot4-start.png` | grey square; Elora decides and swings off with her hook into the sunrise (`shot4-end.png` shows the goal) | „Elora will nicht warten …“ |
 
-### Prompt clip 1 (30 s)
+`ref-elora.png`, `ref-oma.png`, `ref-tauwinkel.png`: reference images, if the tool accepts them.
 
-```text
-Animated children's picture-book film in flat 2D vector style: soft pastel colours, thick
-dark outlines, rounded simple shapes, exactly the style of the start and end frames. 16:9,
-30 seconds, slow and gentle camera, calm and slightly melancholic mood.
+**Last frame of shot 2 as the start image of shot 3** (the square turns grey without a jump):
 
-0–10 s: Dawn over a peaceful fantasy valley. The camera drifts slowly from left to right over
-snowy mountains, a green forest and soft hills. Five magical springs glow and sparkle in five
-colours – green, brown-gold, golden orange, ice blue and violet – tiny light particles rise
-from them like a quiet song. Birds glide past.
-10–20 s: The camera gently moves down to the small village in the hollow: cosy colourful
-cottages, a smithy with smoke from the chimney, trees and an old wooden well with a lid in
-the middle. Tiny round drop creatures without arms hop happily between the houses.
-20–30 s: One after another the springs stop sparkling, their light fades out. A grey shimmer
-slowly creeps over the hills, the forest and the village; colours drain away until everything
-is grey and quiet, as in the end frame. The drop creatures stop and look up worried.
-
-No text, no letters, no logos, no subtitles, no speech, no humans. Characters keep their
-simple shapes: round drop bodies with big eyes and small feet, no arms, no hands, no mouths
-talking. Keep the art style consistent from the first to the last frame.
+```sh
+ffmpeg -sseof -0.05 -i shot2.mp4 -frames:v 1 shot3-start.png
 ```
 
-### Prompt clip 2 (30 s)
+Every prompt starts with the same **style block** so the four shots match:
 
 ```text
 Animated children's picture-book film in flat 2D vector style: soft pastel colours, thick
-dark outlines, rounded simple shapes, exactly the style of the start and end frames and the
-reference images. 16:9, 30 seconds, gentle camera, the mood turns from sad to hopeful.
+dark outlines, rounded simple shapes, exactly the style of the start image. 16:9, 8 seconds,
+slow gentle camera. No text, no letters, no logos, no subtitles, no speech, no humans.
+Characters keep their exact shapes and colours: round drop bodies with big eyes and small
+feet, no arms, no hands, no talking mouths.
+```
 
-0–10 s: A grey, colourless village square with a stone cottage, an old wooden well and a
-workshop. Next to the well stands an old grandmother drop in lilac with a knitted bobble hat,
-round glasses, a red scarf and a walking stick. She looks sadly at the grey houses and sways
-slightly as if remembering old songs. Beside her stands Elora, a small brave yellow drop with
-big eyes and orange feet (see the reference image), listening.
-10–20 s: Elora turns towards the hills, takes a deep breath and gives a determined little
-hop. Close-up on her face: she is brave and ready. The grandmother nods softly.
-20–30 s: Elora hops out of the village; a small grappling hook on a thin chain shoots from
-her body, catches a branch and she swings in a big arc over a little stream towards the green
-hills. The camera follows her. The sun rises, warm light and colour return to the hills and
-flowers around her. She lands on a hilltop and looks into the distance, as in the end frame.
+**Shot 1** (start `shot1-start.png`): style block +
 
-No text, no letters, no logos, no subtitles, no speech, no humans. Characters keep their
-exact shapes and colours from the reference images: round drop bodies, big eyes, small feet,
-no arms, no hands, no talking mouths. Keep the art style consistent throughout.
+```text
+Dawn over a peaceful fantasy valley. The camera drifts slowly from left to right over the
+snowy mountains, the forest and the soft hills. The five magical springs glow and sparkle in
+green, brown-gold, golden orange, ice blue and violet; tiny light particles rise from them
+like a quiet song. A few birds glide past. Calm, warm, magical mood.
+```
+
+**Shot 2** (start `shot2-start.png`): style block +
+
+```text
+A cosy colourful village square with a thatched cottage, an old wooden well and a workshop.
+The lilac grandmother drop with bobble hat, glasses, red scarf and walking stick smiles and
+sways gently; the small yellow drop Elora hops happily beside the well. Two or three other
+small colourful drop creatures hop past in the background. Butterflies, flowers in the
+window box. Cheerful, sunny mood. The camera pushes in very slowly.
+```
+
+**Shot 3** (start: last frame of shot 2): style block +
+
+```text
+The same village square. Suddenly the light changes: a grey shimmer creeps in from the edges
+of the image, and the colours slowly drain from the houses, the trees, the flowers and the
+sky until everything is pale grey. The grandmother drop and Elora stop and look up worried.
+The background drop creatures hide. The camera stays still. Quiet, sad mood.
+```
+
+**Shot 4** (start `shot4-start.png`): style block +
+
+```text
+The grey village square. Elora, the small yellow drop, turns towards the hills, takes a deep
+breath and gives a determined little hop; the grandmother drop nods. Elora hops out of the
+square, a small grappling hook on a thin chain shoots from her body, catches a branch and she
+swings in a big arc towards the green hills while the sun rises and warm colour returns to
+the land around her. The camera follows her. Hopeful, brave mood.
 ```
 
 ### Afterwards
 
-- Download both clips (any format) and run
-  `cargo xtask intro-import clip1.mp4 clip2.mp4` – it joins them in order, drops the sound
-  and checks the result with the game's decoder.
-- If the clips are not exactly 30 s, tell Claude the lengths; the subtitle times in
-  `assets/intro/intro.toml` will be adjusted.
-- Check Google's terms for the generated video (use in a GPL/CC-BY-SA game, visible
-  watermark/SynthID) and note the tool in `assets/SOURCES.md`.
+- Download the four clips and run
+  `cargo xtask intro-import shot1.mp4 shot2.mp4 shot3.mp4 shot4.mp4` – it joins them in
+  order, drops the sound and checks the result with the game's decoder.
+- If a shot is not exactly 8 s, tell Claude the lengths; the subtitle times are adjusted.
+- Try two or three generations per shot and keep the best; the start image keeps the look.
+- Check Google's terms for the generated video (use in a GPL/CC-BY-SA game, watermark,
+  SynthID) and note the tool in `assets/SOURCES.md`.
 
 ## Decided (E-357)
 
