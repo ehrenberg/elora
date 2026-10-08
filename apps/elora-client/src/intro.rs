@@ -205,7 +205,7 @@ mod tests {
         assert!(lines.len() >= 4);
         assert!(subtitle_at(&lines, 0.0).is_none());
         let (l, a) = subtitle_at(&lines, 0.7).expect("first line");
-        assert_eq!(l.key, "lands");
+        assert_eq!(l.key, "silence");
         assert!(a > 0.0 && a < 1.0, "fading in: {a}");
         assert!((subtitle_at(&lines, 4.0).unwrap().1 - 1.0).abs() < 1e-6);
         for w in lines.windows(2) {
