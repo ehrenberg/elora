@@ -90,7 +90,7 @@ listing the 0.9.x servers.
 | RF-21 | Split `elora-client/src/main.rs` (app state, frame loop, look/weather, sound glue) | Removes several `too_many_lines` allows |
 | RF-22 | Split `session.rs` (heat/cold, avalanches, followers, doors, quests glue) into submodules | Heat and cold share one “temperature bar” implementation (RF-23) |
 | RF-23 | Unify heat and cold bars: one `TemperatureBar` with data from `worldmap.toml` (fill/cool times, zone prefixes) instead of constants in code | Today: `HEAT_*`/`COLD_*` constants, two near-identical functions |
-| RF-24 | Protocol: one list of non-networked events instead of two hand-kept `matches!` lists in `msg.rs` | New events had to be added twice |
+| RF-24 ✅ | Protocol: one list of non-networked events instead of two hand-kept `matches!` lists in `msg.rs` | New events had to be added twice |
 | RF-25 | Generate asset lists (decor, creatures, characters, music test lists) from the asset folders in `build.rs` instead of hand-kept arrays | Several were missed or had to be updated in 3 places |
 | RF-26 | Shared test support: one `test_world()`/`CreatureKind` builder for `elora-sim` tests instead of per-file copies | `freeze_ms` had to be added to five initializers |
 | RF-27 | Map generators: move shared helpers (`edge_exit`, `zone`, `big`, `chimney`, `climb_vault`, `stomp_vault`, …) into one `editor/gen` module; document the mirroring of forest maps | Helpers were made `pub(super)` ad hoc |
