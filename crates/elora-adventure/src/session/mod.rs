@@ -510,8 +510,7 @@ impl Session {
             .collect();
         out.extend(self.followers_home(world));
         self.mushroom_daze(world, pos);
-        self.heat(world, pos);
-        self.chill(world, pos);
+        self.temperature(world, pos);
         self.avalanches.tick(&self.map, world, Some(pos));
         out.extend(self.touch(world, pos));
         out.extend(self.areas(pos));

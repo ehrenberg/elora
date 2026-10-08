@@ -1,23 +1,78 @@
-//! Heat bar in hot areas (E-320) and cold bar in cold areas (E-342).
+//! Heat bar in hot areas (E-320) and cold bar in cold areas (E-342): one [`TemperatureBar`]
+//! implementation, its parameters come from `[temperature]` in `worldmap.toml`.
 
-use elora_map::ObjectKind;
+use elora_map::{Map, ObjectKind, WeatherKind};
 use elora_sim::{TILE_SIZE, Tile, Vec2, World};
 
 use super::{Session, inside};
+use crate::data::TemperatureBar;
 
-/// Heat bar (E-320): this long in the sun until full, in the shade and at the oasis until empty.
-const HEAT_FILL_MS: u32 = 20_000;
-const HEAT_SHADE_MS: u32 = 8_000;
-const HEAT_OASIS_MS: u32 = 2_500;
-/// When it is full, Elora stays slower until the bar drops below this fraction again.
-const HEAT_RECOVER: f32 = 0.5;
-/// Cold bar (E-342, D-M24-04): this long outside until full (half as long in a blizzard),
-/// under a roof and at the fire until empty.
-const COLD_FILL_MS: u32 = 60_000;
-const COLD_ROOF_MS: u32 = 10_000;
-const COLD_FIRE_MS: u32 = 3_000;
-/// A roof (solid tile or platform) this many tiles above Elora gives shade.
-const SHADE_TILES: i32 = 10;
+/// A roof (solid tile or platform) this many tiles above Elora gives shelter.
+const ROOF_TILES: i32 = 10;
+
+/// Where Elora stands, as far as a temperature bar cares.
+struct Surroundings<'a> {
+    map: &'a Map,
+    pos: Vec2,
+    roof: bool,
+    arena: bool,
+}
+
+impl Surroundings<'_> {
+    /// Is Elora in a zone whose id starts with one of `prefixes`?
+    fn in_zone(&self, prefixes: &[String]) -> bool {
+        self.map.adventure.objects.iter().any(|o| {
+            prefixes.iter().any(|p| o.id.starts_with(p.as_str()))
+                && matches!(o.kind, ObjectKind::Zone { size } if inside(self.pos, o.pos, size))
+        })
+    }
+
+    fn weather_in(&self, keys: &[String]) -> bool {
+        keys.iter()
+            .any(|k| WeatherKind::from_key(k) == Some(self.map.weather.kind))
+    }
+}
+
+impl TemperatureBar {
+    /// One tick for the bar `level` (0..1) with the full state `full`; `pct` is the equipment
+    /// bonus in percent (negative = fills more slowly). Returns whether Elora is in the open
+    /// (the bar fills).
+    fn tick(&self, level: &mut f32, full: &mut bool, at: &Surroundings<'_>, pct: f32) -> bool {
+        #[allow(clippy::cast_precision_loss)]
+        let step = |ms: u32| 1.0 / elora_sim::tuning::ms_to_ticks(ms).max(1) as f32;
+        let open = if at.in_zone(&self.relief_zones) {
+            *level -= step(self.relief_ms);
+            false
+        } else if at.roof
+            || at.in_zone(&self.shelter_zones)
+            || at.weather_in(&self.shelter_weather)
+            || (self.shelter_arenas && at.arena)
+        {
+            *level -= step(self.shelter_ms);
+            false
+        } else {
+            let faster = if at.weather_in(&self.faster_weather) {
+                self.faster
+            } else {
+                1.0
+            };
+            *level += step(self.fill_ms) * faster * (1.0 + pct / 100.0).max(0.1);
+            true
+        };
+        self.settle(level, full);
+        open
+    }
+
+    /// Clamp the bar; full makes Elora slow until it is below `recover` again.
+    fn settle(&self, level: &mut f32, full: &mut bool) {
+        *level = level.clamp(0.0, 1.0);
+        if *level >= 1.0 {
+            *full = true;
+        } else if *level < self.recover {
+            *full = false;
+        }
+    }
+}
 
 impl Session {
     /// Is the map a hot area (desert, E-320)?
@@ -30,93 +85,42 @@ impl Session {
         self.content.area_of(&self.map_name).is_some_and(|a| a.cold)
     }
 
-    /// Cold bar (E-342): outside it fills up (twice as fast in a blizzard, equipment
-    /// `cold_pct` slows it down), under a roof and at the fire (zones `feuer…`) Elora warms up;
-    /// in the guardians' arenas it rests (warms slowly). Full = slower until it has dropped below
-    /// half.
-    pub(super) fn chill(&mut self, world: &mut World, pos: Vec2) {
-        let fire = self.map.adventure.objects.iter().any(|o| {
-            o.id.starts_with("fire")
-                && matches!(o.kind, ObjectKind::Zone { size } if inside(pos, o.pos, size))
-        });
-        let roof = (1..=SHADE_TILES).any(|k| {
+    /// Heat bar (E-320) and cold bar (E-342) for one tick. Outside their areas the bars are
+    /// empty. Heat and cold slow Elora down equally (A-27).
+    pub(super) fn temperature(&mut self, world: &mut World, pos: Vec2) {
+        let roof = (1..=ROOF_TILES).any(|k| {
             #[allow(clippy::cast_precision_loss)]
             let p = pos - Vec2::new(0.0, (k * TILE_SIZE) as f32);
             let t = world.collision.tile_at(p);
             t.is_solid() || t == Tile::Platform
         });
-        #[allow(clippy::cast_precision_loss)]
-        let step = |ms: u32| 1.0 / elora_sim::tuning::ms_to_ticks(ms).max(1) as f32;
-        if !self.chilly() {
-            self.cold = 0.0;
-        } else if fire {
-            self.cold -= step(COLD_FIRE_MS);
-        } else if roof || self.map_name.ends_with("-arena") {
-            self.cold -= step(COLD_ROOF_MS);
+        let at = Surroundings {
+            map: &self.map,
+            pos,
+            roof,
+            arena: self.map_name.ends_with("-arena"),
+        };
+        let bars = &self.content.temperature;
+        let stats = self.save.stats(&self.content);
+        let (hot, chilly) = (self.hot(), self.chilly());
+        self.in_sun = false;
+        if hot {
+            self.in_sun = bars
+                .heat
+                .tick(&mut self.heat, &mut self.overheated, &at, stats.heat_pct);
         } else {
-            let storm = if self.map.weather.kind == elora_map::WeatherKind::Blizzard {
-                2.0
-            } else {
-                1.0
-            };
-            let pct = self.save.stats(&self.content).cold_pct;
-            self.cold += step(COLD_FILL_MS) * storm * (1.0 + pct / 100.0).max(0.1);
+            self.heat = 0.0;
+            bars.heat.settle(&mut self.heat, &mut self.overheated);
         }
-        self.cold = self.cold.clamp(0.0, 1.0);
-        if self.cold >= 1.0 {
-            self.frozen = true;
-        } else if self.cold < HEAT_RECOVER {
-            self.frozen = false;
+        if chilly {
+            bars.cold
+                .tick(&mut self.cold, &mut self.frozen, &at, stats.cold_pct);
+        } else {
+            self.cold = 0.0;
+            bars.cold.settle(&mut self.cold, &mut self.frozen);
         }
-        // heat and cold slow down equally (A-27)
         if let Some(ch) = world.character_mut(self.player) {
             ch.core.overheated = self.overheated || self.frozen;
-        }
-    }
-
-    /// Heat bar (E-320): sun fills it (equipment `heat_pct` slows it down); shade (roof above
-    /// Elora, zones `schatten…`) and oasis (zones `oase…`) cool. Full = Elora gets slower until
-    /// she has cooled down.
-    pub(super) fn heat(&mut self, world: &mut World, pos: Vec2) {
-        let zone = |prefix: &str| {
-            self.map.adventure.objects.iter().any(|o| {
-                o.id.starts_with(prefix)
-                    && matches!(o.kind, ObjectKind::Zone { size } if inside(pos, o.pos, size))
-            })
-        };
-        let roof = (1..=SHADE_TILES).any(|k| {
-            #[allow(clippy::cast_precision_loss)]
-            let p = pos - Vec2::new(0.0, (k * TILE_SIZE) as f32);
-            let t = world.collision.tile_at(p);
-            t.is_solid() || t == Tile::Platform
-        });
-        #[allow(clippy::cast_precision_loss)]
-        let step = |ms: u32| 1.0 / elora_sim::tuning::ms_to_ticks(ms).max(1) as f32;
-        self.in_sun = false;
-        if !self.hot() {
-            self.heat = 0.0;
-        } else if zone("oasis") {
-            self.heat -= step(HEAT_OASIS_MS);
-        } else if roof
-            || zone("shade")
-            // sand hides the sun (R2-W1)
-            || self.map.weather.kind == elora_map::WeatherKind::Sandstorm
-        {
-            self.heat -= step(HEAT_SHADE_MS);
-        } else {
-            self.in_sun = true;
-            // sun veil: fills more slowly
-            let pct = self.save.stats(&self.content).heat_pct;
-            self.heat += step(HEAT_FILL_MS) * (1.0 + pct / 100.0).max(0.1);
-        }
-        self.heat = self.heat.clamp(0.0, 1.0);
-        if self.heat >= 1.0 {
-            self.overheated = true;
-        } else if self.heat < HEAT_RECOVER {
-            self.overheated = false;
-        }
-        if let Some(ch) = world.character_mut(self.player) {
-            ch.core.overheated = self.overheated;
         }
     }
 }

@@ -101,7 +101,51 @@ pub fn story(c: &Content) -> Result<(), String> {
         }
     }
     dialogs(c)?;
-    quests(c)
+    quests(c)?;
+    temperature(c)
+}
+
+/// Heat and cold bar (`[temperature]` in `worldmap.toml`): times, factors, zone prefixes and
+/// weather keys; an area is hot or cold, not both.
+fn temperature(c: &Content) -> Result<(), String> {
+    let t = &c.temperature;
+    for (name, bar) in [("heat", &t.heat), ("cold", &t.cold)] {
+        let at = format!("worldmap.toml [temperature.{name}]");
+        if bar.fill_ms == 0 || bar.shelter_ms == 0 || bar.relief_ms == 0 {
+            return Err(format!(
+                "{at}: fill_ms, shelter_ms and relief_ms must be above 0"
+            ));
+        }
+        if !(bar.faster.is_finite() && bar.faster > 0.0) {
+            return Err(format!("{at}: faster must be above 0"));
+        }
+        if !(bar.recover > 0.0 && bar.recover <= 1.0) {
+            return Err(format!("{at}: recover must lie in (0, 1]"));
+        }
+        if bar.relief_zones.is_empty() {
+            return Err(format!("{at}: relief_zones missing"));
+        }
+        if let Some(z) = bar
+            .relief_zones
+            .iter()
+            .chain(&bar.shelter_zones)
+            .find(|z| z.trim().is_empty())
+        {
+            return Err(format!("{at}: empty zone prefix `{z}`"));
+        }
+        if let Some(w) = bar
+            .faster_weather
+            .iter()
+            .chain(&bar.shelter_weather)
+            .find(|w| elora_map::WeatherKind::from_key(w).is_none())
+        {
+            return Err(format!("{at}: unknown weather `{w}`"));
+        }
+    }
+    if let Some(a) = c.areas.iter().find(|a| a.hot && a.cold) {
+        return Err(format!("worldmap.toml area `{}`: both hot and cold", a.id));
+    }
+    Ok(())
 }
 
 fn dialogs(c: &Content) -> Result<(), String> {

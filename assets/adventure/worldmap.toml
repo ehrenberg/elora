@@ -1,13 +1,36 @@
 # World map of the Tauland (E-264, world book §2). pos: position 0..1; maps: map names start like this;
-# music: background music assets/music/<name>.ogg (E-285); party_music: at the party (merker fest);
-# spring: the region's spring, freed with merker befreit.<spring>; boss_music: battle music (otherwise boss).
-# hot: hot region with heat bar (E-320); shade under roofs and in zones schatten…, oasis in zones oase….
-# cold: cold region with cold bar (E-342); roofs, guardian arenas and zones feuer… give warmth.
+# music: background music assets/music/<name>.ogg (E-285); party_music: at the party (flag party);
+# spring: the region's spring, freed with flag freed.<spring>; boss_music: battle music (otherwise boss).
+# hot: hot region with heat bar (E-320), cold: cold region with cold bar (E-342) – see [temperature].
 # chapter/guardian: chapter and guardian – after the victory a win screen with victory and the honorary title honor.
 # weather_gloomy / weather: weather on entering (R2-W1) – gloomy while the spring is silent (without a spring:
 # until clears_after_springs springs are freed), otherwise weather; kind, weight, intensity = [from, to], wind = [from, to].
 # Gloomy weather is mostly dry and grey, sometimes rain or a thunderstorm (E-353).
 # guardian arenas (…-arena) stay fair; a map with its own weather from the editor takes precedence.
+
+# Temperature bars (E-320, E-342): heat in hot areas, cold in cold areas. A bar fills in the open
+# within fill_ms (faster times as fast in faster_weather; equipment heat_pct/cold_pct changes it),
+# empties within shelter_ms under a roof (solid tile or platform up to 10 tiles above Elora), in
+# zones shelter_zones…, in shelter_weather and – with shelter_arenas – in the guardian arenas,
+# and within relief_ms in zones relief_zones…. Full = Elora is slower until it is below recover.
+[temperature.heat]
+fill_ms = 20_000
+shelter_ms = 8_000
+shelter_zones = ["shade"]
+shelter_weather = ["sandstorm"] # sand hides the sun (R2-W1)
+relief_ms = 2_500
+relief_zones = ["oasis"]
+recover = 0.5
+
+[temperature.cold]
+fill_ms = 60_000
+faster_weather = ["blizzard"]
+faster = 2.0
+shelter_ms = 10_000
+shelter_arenas = true
+relief_ms = 3_000
+relief_zones = ["fire"]
+recover = 0.5
 
 [[area]]
 id = "tauwinkel"

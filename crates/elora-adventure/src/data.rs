@@ -264,10 +264,10 @@ pub struct Area {
     /// Spring of the area: freed as soon as the flag `befreit.<spring>` is set.
     #[serde(default)]
     pub spring: Option<String>,
-    /// Hot area (desert, E-320): heat bar and shimmer.
+    /// Hot area (desert, E-320): heat bar ([`Temperature::heat`]) and shimmer.
     #[serde(default)]
     pub hot: bool,
-    /// Cold area (Frostspitzen, E-342): cold bar and frost border.
+    /// Cold area (Frostspitzen, E-342): cold bar ([`Temperature::cold`]) and frost border.
     #[serde(default)]
     pub cold: bool,
     /// Chapter of the area and its guardian (kind from `creatures.toml`): defeating it shows
@@ -304,8 +304,48 @@ pub struct WeatherChance {
     pub wind: [f32; 2],
 }
 
+/// The temperature bars of the world map (`[temperature]` in `worldmap.toml`): heat in hot
+/// areas (E-320), cold in cold areas (E-342).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Temperature {
+    pub heat: TemperatureBar,
+    pub cold: TemperatureBar,
+}
+
+/// One temperature bar (0..1): it fills in the open and empties in shelter (a roof above
+/// Elora or a shelter zone) and, faster, in a relief zone. Full = Elora gets slower until the
+/// bar has dropped below `recover` (A-27). Zones are found by the prefix of their id.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct TemperatureBar {
+    /// This long in the open until full (ms).
+    pub fill_ms: u32,
+    /// In these weathers (keys of [`elora_map::WeatherKind`]) it fills `faster` times as fast.
+    #[serde(default)]
+    pub faster_weather: Vec<String>,
+    #[serde(default = "one_f32")]
+    pub faster: f32,
+    /// This long in shelter until empty (ms): roof, zones `shelter_zones…`, weathers
+    /// `shelter_weather`, and the guardians' arenas (`…-arena`) with `shelter_arenas`.
+    pub shelter_ms: u32,
+    #[serde(default)]
+    pub shelter_zones: Vec<String>,
+    #[serde(default)]
+    pub shelter_weather: Vec<String>,
+    #[serde(default)]
+    pub shelter_arenas: bool,
+    /// This long in zones `relief_zones…` until empty (ms).
+    pub relief_ms: u32,
+    pub relief_zones: Vec<String>,
+    /// After being full, Elora stays slower until the bar drops below this fraction.
+    pub recover: f32,
+}
+
 fn one_u32() -> u32 {
     1
+}
+
+fn one_f32() -> f32 {
+    1.0
 }
 
 fn default_intensity() -> [f32; 2] {
@@ -352,6 +392,7 @@ struct ShopsFile {
 }
 #[derive(Debug, Deserialize)]
 struct WorldMapFile {
+    temperature: Temperature,
     area: Vec<Area>,
 }
 #[derive(Debug, Deserialize)]
@@ -476,6 +517,8 @@ pub struct Content {
     pub dialogs: BTreeMap<String, Dialog>,
     /// Areas of the world map (E-264).
     pub areas: Vec<Area>,
+    /// Heat and cold bar of the hot and cold areas.
+    pub temperature: Temperature,
 }
 
 /// Id of the currency.
@@ -598,6 +641,7 @@ impl Content {
                 .collect(),
             dialogs,
             areas: world_map.area,
+            temperature: world_map.temperature,
         };
         c.validate()?;
         crate::check::story(&c).map_err(ContentError::Invalid)?;

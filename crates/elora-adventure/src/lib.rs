@@ -63,4 +63,25 @@ mod tests {
         src.shops = shops;
         assert!(Content::load(&src).is_err());
     }
+
+    #[test]
+    fn broken_temperature_bars_are_rejected() {
+        let builtin = data::Sources::builtin();
+        for (from, to) in [
+            ("relief_zones = [\"oasis\"]", "relief_zones = []"),
+            (
+                "faster_weather = [\"blizzard\"]",
+                "faster_weather = [\"hail\"]",
+            ),
+            ("fill_ms = 20_000", "fill_ms = 0"),
+            ("recover = 0.5", "recover = 1.5"),
+            ("hot = true", "hot = true\ncold = true"),
+        ] {
+            let world_map = builtin.world_map.replacen(from, to, 1);
+            assert_ne!(world_map, builtin.world_map, "{from}");
+            let mut src = data::Sources::builtin();
+            src.world_map = &world_map;
+            assert!(Content::load(&src).is_err(), "{to}");
+        }
+    }
 }
