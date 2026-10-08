@@ -286,31 +286,25 @@ mod music_tests {
 
     #[test]
     fn shipped_music_can_be_streamed() {
-        let dir = concat!(env!("CARGO_MANIFEST_DIR"), "/../../assets/music");
-        for name in [
-            "menu",
-            "tauwinkel",
-            "bluetenwiesen",
-            "boss",
-            "party",
-            "murmelwald",
-            "boss-forest",
-            "desert",
-            "boss-desert",
-            "frost",
-            "boss-frost",
-            "../ambience/rain",
-            "../ambience/wind",
-            "../ambience/sand",
-            "../ambience/thunder",
-            "../ambience/fire",
-        ] {
-            let data: Arc<[u8]> = std::fs::read(format!("{dir}/{name}.ogg")).unwrap().into();
-            assert!(
-                StreamingSoundData::from_cursor(std::io::Cursor::new(data)).is_ok(),
-                "{name}"
-            );
+        // every shipped music and ambience file (the folders are packaged as they are)
+        let assets = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../assets");
+        let mut count = 0;
+        for folder in ["music", "ambience"] {
+            for entry in std::fs::read_dir(assets.join(folder)).unwrap() {
+                let path = entry.unwrap().path();
+                if path.extension().is_none_or(|e| e != "ogg") {
+                    continue;
+                }
+                let data: Arc<[u8]> = std::fs::read(&path).unwrap().into();
+                assert!(
+                    StreamingSoundData::from_cursor(std::io::Cursor::new(data)).is_ok(),
+                    "{}",
+                    path.display()
+                );
+                count += 1;
+            }
         }
+        assert!(count >= 16, "music and ambience found: {count}");
         let junk: Arc<[u8]> = Arc::from(&b"not music"[..]);
         assert!(StreamingSoundData::from_cursor(std::io::Cursor::new(junk)).is_err());
     }

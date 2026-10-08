@@ -7,7 +7,7 @@ All adventure content consists of TOML files under `assets/adventure/`. Texts ar
 | File | Content |
 |---|---|
 | `characters.toml` | Characters with name and picture (`elora` needs no entry) |
-| `dialogs/<id>.toml` | One dialog per file (register new files in `crates/elora-adventure/src/data.rs` under `dialogs!`) |
+| `dialogs/<id>.toml` | One dialog per file (embedded automatically by `crates/elora-adventure/build.rs`) |
 | `quests.toml` | Quests with steps |
 | `items.toml`, `skills.toml`, `upgrades.toml`, `shops.toml`, `progression.toml`, `creatures.toml` | Items, skill tree, weapon upgrades, shops, progression, enemies ([`progression.md`](../release-2/progression.md)) |
 | `worldmap.toml` | Areas of the world map (maps, music, spring, chapter, weather) and the temperature bars |

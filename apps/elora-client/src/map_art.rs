@@ -34,40 +34,9 @@ const MATERIAL_FILES: &[(&str, &[u8])] =
     assets!("materials": "earth", "sand", "snow", "stone", "ice", "climb", "crumble");
 const MATERIALS_TOML: &str = include_str!("../../../assets/map/materials.toml");
 
-/// Built-in decoration (names for [`Art::Builtin`]).
-pub const DECOR_FILES: &[(&str, &[u8])] = assets!("decor":
-    "bush-1", "bush-2", "flower-pink", "flower-yellow", "flower-blue", "grass-1", "grass-2",
-    "rock-1", "rock-2", "mushroom-red", "mushroom-brown", "tree-round", "tree-pine", "fence",
-    "sign-arrow", "sign-board",
-    // thaw angle (A1.9, E-278); flowers, beds, flags faded and colored (E-277)
-    "house-elora", "house-oma", "well", "workshop", "smithy", "shop", "treehouse",
-    "notice_board", "signpost", "window-box-pale", "window-box-colourful", "flower-bed-pale",
-    "flower-bed-colourful", "herb-bed-pale", "herb-bed-colourful", "banner-pale", "banner-colourful",
-    // props and thorns (playtest A1.9, E-283)
-    "thorns", "bench", "lantern", "barrels", "woodpile", "cart", "clothesline", "hay_bale",
-    "wall", "watering_can", "birdhouse", "mailbox", "basket", "pumpkins", "cat", "bird",
-    "butterfly", "smoke", "tree_stump", "fern", "berry_bush", "dandelion", "stepping_stones",
-    "flower-pot-pale", "flower-pot-colourful",
-    // chapter 1 (R2-M2.1)
-    "beehive", "hive_stack", "honey_stand", "giant-flower-pink", "giant-flower-yellow",
-    "giant-flower-lilac", "garland-party", "party-lantern-party", "party-lantern-yellow-party",
-    "blossom-spring-withered", "blossom-spring-freed",
-    // chapter 2 (R2-M2.2)
-    "forest_tree", "forest_house", "hanging_bridge", "glow_mushrooms", "root_arch", "mushroom_ring",
-    "moss-spring-withered", "moss-spring-freed",
-    // chapter 3 (R2-M2.3)
-    "dune", "rock_arch", "pillar", "pillar-broken", "ruin_gate", "cactus", "palm", "oasis", "tent",
-    "camel", "ember-spring-withered", "ember-spring-freed", "grey_trail",
-    // chapter 4 (R2-M2.4)
-    "peak", "fir-snow", "mountain_hut", "rope_bridge", "snowdrift", "glacier", "fireplace",
-    "ice_block", "frost-spring-withered", "frost-spring-freed", "grey-trail-ice",
-);
-
-/// Built-in background graphic (also used via [`Art::Builtin`]).
-pub const BACKGROUND_FILES: &[(&str, &[u8])] = assets!("backgrounds":
-    "cloud-1", "cloud-2", "cloud-3", "hills-far", "hills-near", "mountains", "forest", "stars",
-    "moon",
-);
+/// Built-in decoration and backgrounds (names for [`Art::Builtin`]), generated from the
+/// folders `assets/map/decor/` and `assets/map/backgrounds/` (RF-25).
+pub use crate::asset_files::{BACKGROUND_FILES, DECOR_FILES};
 
 /// Width of the repeatable background strips.
 #[allow(dead_code)] // for tests and the editor (M6.8)

@@ -20,6 +20,7 @@ mod app_net;
 mod app_sound;
 mod app_state;
 mod app_window;
+mod asset_files;
 mod bindings;
 mod browser;
 mod connection;

@@ -51,7 +51,7 @@ mod tests {
         assert_eq!(
             c.dialogs.len(),
             b.dialogs.len(),
-            "all dialogs registered (data.rs)"
+            "all dialog files embedded (build.rs)"
         );
         assert_eq!(c.quests, b.quests);
     }

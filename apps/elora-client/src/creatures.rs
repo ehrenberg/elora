@@ -9,6 +9,8 @@ use elora_client::scene::SceneCreature;
 use elora_render::{Affine, Color, Mesh, ShapeBatch, SvgAsset, Tint};
 use elora_sim::Vec2;
 
+use crate::asset_files::{self, CHARACTER_FILES, CREATURE_FILES, ITEM_FILES, OBJECT_FILES};
+
 /// How long the health bar stays visible after a hit (ticks, E-238).
 const BAR_TICKS: u64 = 150;
 const OUTLINE: Color = Color::hex(0x2b2b2b);
@@ -48,12 +50,6 @@ pub struct CreatureArt {
     objects: HashMap<&'static str, (Mesh, Mesh)>,
 }
 
-macro_rules! adventure_svgs {
-    ($dir:literal: $($name:literal),* $(,)?) => {
-        &[$(($name, include_bytes!(concat!("../../../assets/adventure/", $dir, "/", $name, ".svg")))),*]
-    };
-}
-
 /// Tilt of a kind's flight pose in the graphic (radians, upwards negative) – `None`:
 /// the pose does not rotate along (sand snake and dune worm in the jump, E-328).
 fn flight_tilt(c: &SceneCreature) -> Option<f32> {
@@ -64,93 +60,45 @@ fn flight_tilt(c: &SceneCreature) -> Option<f32> {
     }
 }
 
-const CHARACTER_FILES: &[(&str, &[u8])] = adventure_svgs!("characters": "oma", "klonk", "lotte", "tueftel", "pip", "signpost", "wabe", "bumblebee", "plumm", "mushroom_child", "mushroom_child_happy", "mushroom_mama", "warden", "sirup", "palma", "serpent", "ruin_spring", "flocke", "bolle", "kiesel", "wicke", "kristella");
-/// Figures that share an image (boards, spots of the oasis, R2-M2.3).
-const SHARED_CHARACTER_FILES: &[(&str, &[u8])] = {
-    const TABLET: &[u8] = include_bytes!("../../../assets/adventure/characters/tablet.svg");
-    const DRY: &[u8] = include_bytes!("../../../assets/adventure/characters/watering_spot.svg");
-    const BLOOM: &[u8] =
-        include_bytes!("../../../assets/adventure/characters/watering_spot_blossom.svg");
-    const BOLLE: &[u8] = include_bytes!("../../../assets/adventure/characters/bolle.svg");
-    const KIESEL: &[u8] = include_bytes!("../../../assets/adventure/characters/kiesel.svg");
-    const WICKE: &[u8] = include_bytes!("../../../assets/adventure/characters/wicke.svg");
-    const GREY: &[u8] = include_bytes!("../../../assets/adventure/characters/grey_spot.svg");
-    &[
-        ("tablet-1", TABLET),
-        ("tablet-2", TABLET),
-        ("tablet-chamber", TABLET),
-        ("watering-spot-1", DRY),
-        ("watering-spot-2", DRY),
-        ("watering-spot-3", DRY),
-        ("blossom-1", BLOOM),
-        ("blossom-2", BLOOM),
-        ("blossom-3", BLOOM),
-        ("bolle-hut", BOLLE),
-        ("kiesel-hut", KIESEL),
-        ("wicke-hut", WICKE),
-        ("grey-spot", GREY),
-    ]
-};
-/// Items with their own image (R2-M2.1); all others show `item.svg`.
-const ITEM_FILES: &[(&str, &[u8])] =
-    adventure_svgs!("items": "bee", "spring_spark", "honeycomb_hat", "rune", "waterskin", "water");
-/// Object and the names of its two parts (off, on).
-const OBJECT_FILES: &[(&str, &[u8], [&str; 2])] = &[
-    (
-        "chest",
-        include_bytes!("../../../assets/adventure/objects/chest.svg"),
-        ["closed", "open"],
-    ),
-    (
-        "spring_stone",
-        include_bytes!("../../../assets/adventure/objects/spring_stone.svg"),
-        ["off", "on"],
-    ),
-    (
-        "switch",
-        include_bytes!("../../../assets/adventure/objects/switch.svg"),
-        ["off", "on"],
-    ),
-    (
-        "healing_plant",
-        include_bytes!("../../../assets/adventure/objects/healing_plant.svg"),
-        ["fresh", "used"],
-    ),
+/// Figures that share the image of another figure (boards, spots of the oasis, huts,
+/// R2-M2.3): (character id, file name in `characters/`).
+const SHARED_CHARACTERS: &[(&str, &str)] = &[
+    ("tablet-1", "tablet"),
+    ("tablet-2", "tablet"),
+    ("tablet-chamber", "tablet"),
+    ("watering-spot-1", "watering_spot"),
+    ("watering-spot-2", "watering_spot"),
+    ("watering-spot-3", "watering_spot"),
+    ("blossom-1", "watering_spot_blossom"),
+    ("blossom-2", "watering_spot_blossom"),
+    ("blossom-3", "watering_spot_blossom"),
+    ("bolle-hut", "bolle"),
+    ("kiesel-hut", "kiesel"),
+    ("wicke-hut", "wicke"),
+    ("grey-spot", "grey_spot"),
 ];
+/// Drops of gleam (loot); all other files in `items/` except [`GENERIC_ITEM`] are the
+/// image of the item with the same id (R2-M2.1).
+const GLEAM_DROPS: &str = "gleam_drops";
+/// Image of all items without their own graphic.
+const GENERIC_ITEM: &str = "item";
+
+/// Names of the two parts (off, on) of an object.
+///
+/// # Panics
+/// For an object file without known parts (covered by tests).
+fn object_parts(name: &str) -> [&'static str; 2] {
+    match name {
+        "chest" => ["closed", "open"],
+        "healing_plant" => ["fresh", "used"],
+        "spring_stone" | "switch" => ["off", "on"],
+        _ => panic!("objects/{name}.svg: parts (off, on) unknown"),
+    }
+}
 
 fn load(data: &[u8], file: &str) -> SvgAsset {
     SvgAsset::load(data, 0.08).unwrap_or_else(|e| panic!("assets/adventure/{file}: {e}"))
 }
-
-macro_rules! creatures {
-    ($($name:literal),* $(,)?) => {
-        &[$(($name, include_bytes!(concat!("../../../assets/adventure/creatures/", $name, ".svg")))),*]
-    };
-}
-
-const CREATURE_FILES: &[(&str, &[u8])] = creatures!(
-    "spike_beetle",
-    "pollen_blower",
-    "grasshopper",
-    "straw_dummy",
-    "bumblebear",
-    "dizzy_bee",
-    "root_snake",
-    "squirrel_pirate",
-    "mushroom_imp",
-    "mushroom_child",
-    "root_warden",
-    "sand_crab",
-    "dune_worm",
-    "spark_moth",
-    "sand_serpent",
-    "icicle",
-    "snow_chunk",
-    "snowball_seal",
-    "bat",
-    "frost_ghost",
-    "kristella"
-);
 
 impl CreatureArt {
     /// # Panics
@@ -185,21 +133,26 @@ impl CreatureArt {
                 .cloned()
                 .unwrap_or_else(|| panic!("{file} is empty"))
         };
+        let shared = SHARED_CHARACTERS
+            .iter()
+            .map(|&(id, file)| (id, file, asset_files::get(CHARACTER_FILES, file)));
         let characters = CHARACTER_FILES
             .iter()
-            .chain(SHARED_CHARACTER_FILES)
-            .map(|&(name, data)| {
-                let a = load(data, &format!("characters/{name}.svg"));
+            .map(|&(name, data)| (name, name, data))
+            .chain(shared)
+            .map(|(name, file, data)| {
+                let a = load(data, &format!("characters/{file}.svg"));
                 let m = a
                     .part("figure")
                     .cloned()
-                    .unwrap_or_else(|| panic!("{name}.svg: part `figure` missing"));
+                    .unwrap_or_else(|| panic!("{file}.svg: part `figure` missing"));
                 (name, m)
             })
             .collect();
         let objects = OBJECT_FILES
             .iter()
-            .map(|&(name, data, [off, on])| {
+            .map(|&(name, data)| {
+                let [off, on] = object_parts(name);
                 let a = load(data, &format!("objects/{name}.svg"));
                 let part = |p: &str| {
                     a.part(p)
@@ -214,17 +167,15 @@ impl CreatureArt {
             characters,
             objects,
             gleam_drops: whole(
-                include_bytes!("../../../assets/adventure/items/gleam_drops.svg"),
+                asset_files::get(ITEM_FILES, GLEAM_DROPS),
                 "items/gleam_drops.svg",
             ),
             items: ITEM_FILES
                 .iter()
+                .filter(|(name, _)| ![GLEAM_DROPS, GENERIC_ITEM].contains(name))
                 .map(|&(name, data)| (name, whole(data, &format!("items/{name}.svg"))))
                 .collect(),
-            item: whole(
-                include_bytes!("../../../assets/adventure/items/item.svg"),
-                "items/item.svg",
-            ),
+            item: whole(asset_files::get(ITEM_FILES, GENERIC_ITEM), "items/item.svg"),
         }
     }
 
