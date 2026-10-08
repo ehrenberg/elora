@@ -98,5 +98,6 @@ Per ffmpeg nach Ogg Vorbis umgewandelt (Stereo, 44,1 kHz, Qualität 4); das Spie
 - `intro.ivf` (AV1): four 8-second shots created by the project owner with Google Veo
   (exception to E-295, E-355), started from key frames made from the game's own graphics
   (`docs/release-2/design/intro/`), joined with `cargo xtask intro-import`.
-- `narration-de.ogg`, `narration-en.ogg`: spoken narration supplied by the project owner,
+- `narration-de.ogg`, `narration-en.ogg`: spoken narration created by the project owner with
+  the speech generation of the Google AI Studio playground (exception to E-295, E-359),
   converted with `cargo xtask intro-voice`.
