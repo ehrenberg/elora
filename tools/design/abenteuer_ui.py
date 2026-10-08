@@ -1,10 +1,10 @@
-"""Erzeugt docs/release-2/design/abenteuer-ui.svg – Oberfläche des Abenteuers (R2-M1, A1.0).
+"""Generates docs/release-2/design/abenteuer-ui.svg – user interface of the adventure (R2-M1, A1.0).
 
-Aufruf: python3 tools/design/abenteuer_ui.py && cargo xtask svg-preview \
+Usage: python3 tools/design/abenteuer_ui.py && cargo xtask svg-preview \
         docs/release-2/design/abenteuer-ui.svg docs/release-2/design/abenteuer-ui.png 1400
 
-Sechs Bildschirme (16:9): Spiel mit HUD, Gespräch, Inventar, Fähigkeiten, Aufgaben, Händler.
-Spiel-HUD im Stil der Mehrspieler-Leiste (dunkel, unten), Menüs im Stil „hell & weich“ (E-123).
+Six screens (16:9): game with HUD, conversation, inventory, skills, quests, merchant.
+Game HUD in the style of the multiplayer bar (dark, bottom), menus in the "light & soft" style (E-123).
 """
 import math
 import os
@@ -45,7 +45,7 @@ def bar(x, y, w, h, frac, color, back='#ffffff', back_op=0.25):
 
 
 def world(ox, oy, uid, dim=False):
-    """Blütenwiesen-Ausschnitt: Himmel, Hügel, Boden mit Gras, Blumen."""
+    """Flower meadow excerpt: sky, hills, ground with grass, flowers."""
     s = f'''<defs><linearGradient id="sky{uid}" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#a9cde8"/><stop offset="1" stop-color="#e8f1f7"/></linearGradient>
       <clipPath id="clip{uid}"><rect x="{ox}" y="{oy}" width="{W}" height="{H}" rx="12"/></clipPath></defs>
@@ -71,17 +71,17 @@ def world_end(ox, oy, dim=False):
 
 
 def hud_bar(ox, oy):
-    """Untere Leiste wie im Mehrspieler, ergänzt um Stufe und Erfahrung."""
+    """Bottom bar as in multiplayer, extended by level and experience."""
     x, y, w = ox + W / 2 - 170, oy + H - 50, 340
     s = f'<rect x="{x}" y="{y}" width="{w}" height="40" rx="12" {HUD}/>'
-    # Stufen-Abzeichen
+    # level badge
     s += f'<circle cx="{x + 22}" cy="{y + 20}" r="14" fill="#f2c14e" stroke="{OUT}" stroke-width="2"/>'
     s += text(x + 22, y + 25, '3', 13, TEXT, 'middle', 'bold')
     s += bar(x + 44, y + 9, 110, 7, 0.7, '#e05a7a')
     s += text(x + 158, y + 16, '7/10', 8, '#ffffff', opacity=0.8)
     s += bar(x + 44, y + 24, 110, 6, 0.45, '#7fd99a')
     s += text(x + 158, y + 30, 'EP 45 %', 8, '#ffffff', opacity=0.8)
-    # Waffen
+    # weapons
     s += f'<rect x="{x + 204}" y="{y + 5}" width="30" height="30" rx="8" fill="#ffffff" fill-opacity="0.22"/>'
     s += f'<path d="M {x + 208},{y + 20} L {x + 222},{y + 20}" stroke="#8a6a4a" stroke-width="3.5" stroke-linecap="round"/>'
     s += f'<rect x="{x + 222}" y="{y + 12}" width="8" height="16" rx="3" fill="#c8ced6" stroke="{OUT}" stroke-width="1.5"/>'
@@ -147,7 +147,7 @@ def screen_dialog(ox, oy):
     s += world_end(ox, oy, dim=True)
     x, y, w, h = ox + 24, oy + 176, W - 48, 180
     s += card(x, y, w, h, 18)
-    # Bild der Figur
+    # picture of the figure
     s += f'<circle cx="{x + 64}" cy="{y + 70}" r="48" fill="#b9a3e3" fill-opacity="0.25" stroke="#e7dcc8" stroke-width="1.5"/>'
     s += (f'<g clip-path="url(#portrait)"><defs><clipPath id="portrait"><circle cx="{x + 64}" cy="{y + 70}" r="48"/></clipPath></defs>'
           + g(x + 50, y + 134, 0.95, oma_pfuetze()) + '</g>')
@@ -219,7 +219,7 @@ def icon_material(cx, cy, c='e0b85a'):
 
 def screen_inventory(ox, oy):
     s = menu_frame(ox, oy, 'i', 0)
-    # Ausrüstung um Elora
+    # equipment around Elora
     s += f'<circle cx="{ox + 130}" cy="{oy + 190}" r="70" fill="#f2c14e" fill-opacity="0.15"/>'
     s += g(ox + 130, oy + 250, 0.85, ELORA)
     s += g(ox + 140, oy + 250, 0.85, '<ellipse cx="10" cy="-104" rx="40" ry="8" fill="#a8744a" stroke="#2b2b2b" stroke-width="4"/>'
@@ -231,7 +231,7 @@ def screen_inventory(ox, oy):
         if lbl != 'Umhang':
             s += ic(ox + x + 20, oy + y + 20)
         s += text(ox + x + 20, oy + y + 54, lbl, 9, DIM, 'middle')
-    # Rucksack
+    # backpack
     s += text(ox + 260, oy + 76, 'Rucksack', 13, TEXT, weight='bold')
     items = [(icon_potion, 'e05a7a', '3'), (icon_potion, '5aaee8', '1'), (icon_material, 'e0b85a', '5'), (icon_cape, None, ''),
              (icon_material, 'bfe6f5', '2'), (icon_amulet, None, ''), None, None, None, None, None, None]
@@ -243,7 +243,7 @@ def screen_inventory(ox, oy):
             s += ic(x + 21, y + 21, c) if c else ic(x + 21, y + 21)
             if n:
                 s += text(x + 37, y + 38, n, 9, TEXT, 'end', 'bold')
-    # Beschreibung
+    # description
     s += f'<rect x="{ox + 260}" y="{oy + 190}" width="282" height="110" rx="12" fill="#ffffff" stroke="#e7dcc8"/>'
     s += icon_cape(ox + 284, oy + 216)
     s += text(ox + 304, oy + 212, 'Tauumhang', 13, TEXT, weight='bold')

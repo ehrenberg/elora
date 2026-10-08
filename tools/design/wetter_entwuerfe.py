@@ -1,9 +1,9 @@
-"""Entwürfe für das Wetter (R2-W1, Schritt W1.0, E-329 bis E-336).
+"""Drafts for the weather (R2-W1, step W1.0, E-329 to E-336).
 
-Dieselbe kleine Szene (Hügel, Haus, Baum, Elora) in allen acht Wettern, dazu die Formen der
-Wetterpartikel und die Warnung vor einem Blitzeinschlag.
+The same small scene (hill, house, tree, Elora) in all eight weathers, plus the shapes of the
+weather particles and the warning before a lightning strike.
 
-Aufruf: python3 tools/design/wetter_entwuerfe.py && cargo xtask svg-preview \
+Usage: python3 tools/design/wetter_entwuerfe.py && cargo xtask svg-preview \
         docs/release-2/design/wetter-entwuerfe.svg docs/release-2/design/wetter-entwuerfe.png 1600
 """
 import math
@@ -15,14 +15,14 @@ sys.path.insert(0, os.path.dirname(__file__))
 from abenteuer_figuren import DIM, OUT, TEXT, text  # noqa: E402
 from kapitel1_entwuerfe import card, elora  # noqa: E402
 
-PW, PH = 360, 240  # Größe eines Bildes
+PW, PH = 360, 240  # size of one image
 
 
 def st(w=3.0):
     return f'stroke="{OUT}" stroke-width="{w}" stroke-linejoin="round" stroke-linecap="round"'
 
 
-# Stimmung je Wetter: Himmel oben/unten, Hügel fern/nah, Boden, Abdunkeln (0..1), Tönung
+# mood per weather: sky top/bottom, hills far/near, ground, darkening (0..1), tint
 MOODS = {
     'schoen': ('#8fc3ea', '#e8f3fa', '#a9cf9a', '#7fbf6a', '#8fbf5a', 0.0, None),
     'regen': ('#7d8a99', '#c3cbd3', '#93a89a', '#6f9a6a', '#6f9a52', 0.12, None),
@@ -47,7 +47,7 @@ NAMES = {
 
 
 def scene(kind, lean=0.0):
-    """Grundszene im Bild (0..PW, 0..PH); `lean` neigt den Baum (Wind)."""
+    """Base scene in the image (0..PW, 0..PH); `lean` tilts the tree (wind)."""
     top, bottom, far, near, ground_c, dark, tint = MOODS[kind]
     gid = f'sky-{kind}'
     s = (f'<defs><linearGradient id="{gid}" x1="0" y1="0" x2="0" y2="1">'
@@ -59,14 +59,14 @@ def scene(kind, lean=0.0):
     s += f'<path d="M 0,190 Q 90,160 180,185 Q 270,165 360,180 V 240 H 0 Z" fill="{near}"/>'
     s += f'<rect y="200" width="{PW}" height="40" fill="{ground_c}" {st(0)}/>'
     s += f'<path d="M 0,200 H {PW}" stroke="{OUT}" stroke-width="3"/>'
-    # Haus
+    # house
     roof = '#f2f6f9' if kind.startswith('schnee') else '#c8483a'
     s += f'<rect x="40" y="150" width="70" height="50" fill="#f3e6cc" {st()}/>'
     s += f'<path d="M 32,152 L 75,118 L 118,152 Z" fill="{roof}" {st()}/>'
     s += f'<rect x="66" y="172" width="18" height="28" fill="#a87a52" {st(2.5)}/>'
     window = '#ffe9a0' if dark > 0.2 else '#bfe6f5'
     s += f'<rect x="88" y="160" width="14" height="12" fill="{window}" {st(2)}/>'
-    # Baum (wiegt sich im Wind um den Fuß)
+    # tree (sways in the wind around its base)
     crown = '#e8eef2' if kind.startswith('schnee') else '#5b9d42'
     s += (f'<g transform="rotate({lean} 280 200)"><path d="M 276,200 V 150" stroke="{OUT}" stroke-width="11"/>'
           f'<path d="M 276,200 V 150" stroke="#8a6040" stroke-width="6"/>'
@@ -139,7 +139,7 @@ def bolt(x, y0, y1):
 
 
 def warning(x, y):
-    """Blitz-Warnung: der Boden glimmt, kleine Funken steigen."""
+    """Lightning warning: the ground glows, small sparks rise."""
     s = f'<ellipse cx="{x}" cy="{y}" rx="26" ry="6" fill="#fff0a0" opacity="0.45"/>'
     s += f'<ellipse cx="{x}" cy="{y}" rx="14" ry="3.5" fill="#fff6c8" opacity="0.8"/>'
     for dx, dy in ((-10, -8), (6, -14), (12, -6), (-2, -18)):

@@ -1,7 +1,7 @@
-"""Prüft die Release-Karten und schreibt ihre Layouts nach apps/elora-client/src/editor/release_layouts.rs.
+"""Checks the release maps and writes their layouts to apps/elora-client/src/editor/release_layouts.rs.
 
-Aufruf (aus dem Projektordner): python3 tools/design/release_maps/export.py
-Danach: cargo test -p elora-client --bin elora write_release_maps -- --ignored  (schreibt maps/*.emap)
+Usage (from the project folder): python3 tools/design/release_maps/export.py
+Afterwards: cargo test -p elora-client --bin elora write_release_maps -- --ignored  (writes maps/*.emap)
 """
 import importlib
 import os

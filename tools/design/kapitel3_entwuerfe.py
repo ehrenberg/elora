@@ -1,10 +1,10 @@
-"""Entwürfe für Kapitel 3 „Glutsandwüste“ (R2-M2.3, Schritt M2.3.0, E-315 bis E-320).
+"""Drafts for chapter 3 "Glutsandwüste" (R2-M2.3, step M2.3.0, E-315 to E-320).
 
-Aufruf: python3 tools/design/kapitel3_entwuerfe.py && cargo xtask svg-preview \
+Usage: python3 tools/design/kapitel3_entwuerfe.py && cargo xtask svg-preview \
         docs/release-2/design/kapitel3-entwuerfe.svg docs/release-2/design/kapitel3-entwuerfe.png 1600
 
-Stil wie Kapitel 1 und 2: dunkler Umriss, flache Farben, warme Sand- und Ockertöne; Gegner
-frech, nicht blutig. Die Wüste ist heiß und hell, die Ruinen alt und geheimnisvoll.
+Style like chapters 1 and 2: dark outline, flat colours, warm sand and ochre tones; enemies
+cheeky, not bloody. The desert is hot and bright, the ruins old and mysterious.
 """
 import math
 import os
@@ -32,31 +32,31 @@ def st(w=3.5):
     return f'stroke="{OUT}" stroke-width="{w}" stroke-linejoin="round" stroke-linecap="round"'
 
 
-# ── Figuren ─────────────────────────────────────────────────────────────
+# ── Figures ─────────────────────────────────────────────────────────────
 
 def sirup():
-    """Karawanenführer Sirup: warmer Ockerton, Turban mit Edelstein, Weste, Laternenstab."""
+    """Caravan leader Sirup: warm ochre tone, turban with gemstone, waistcoat, lantern staff."""
     s = '<path d="M 56,-150 V 0" stroke="#5e4430" stroke-width="7"/>'
     s += f'<path d="M 56,-150 V 0" stroke="#a87a52" stroke-width="3.5"/>'
     s += f'<rect x="44" y="-178" width="24" height="28" rx="5" fill="#ffd27a" {st(3)}/><path d="M 44,-178 L 56,-190 L 68,-178" fill="#a87a52" {st(3)}/>'
     s += drop('d9a066', 'a8703c')
-    # Weste mit Bordüre
+    # waistcoat with trim
     s += f'<path d="M -46,-12 Q -50,-34 -34,-44 L -22,-10 Z M 46,-12 Q 50,-34 34,-44 L 22,-10 Z" fill="{TEAL}" {st(3)}/>'
     s += '<path d="M -42,-16 Q -42,-32 -34,-38 M 42,-16 Q 42,-32 34,-38" fill="none" stroke="#f2c14e" stroke-width="3"/>'
-    # Turban
+    # turban
     s += f'<path d="M -48,-112 Q -50,-156 0,-160 Q 50,-156 48,-112 Q 0,-124 -48,-112 Z" fill="#f6efdf" {st(4)}/>'
     for k in range(3):
         y = -150 + k * 12
         s += f'<path d="M {-44 + k * 4},{y + 10} Q 0,{y - 6} {44 - k * 4},{y + 10}" fill="none" stroke="#d8ccb8" stroke-width="2.5"/>'
     s += f'<circle cx="0" cy="-136" r="8" fill="#e8685a" {st(2.5)}/>'
     s += f'<path d="M 0,-144 q 8,-18 20,-20" fill="none" stroke="{TEAL}" stroke-width="5" stroke-linecap="round"/>'
-    # Schnurrbart
+    # moustache
     s += f'<path d="M 18,-44 Q 8,-40 2,-48 Q 8,-38 18,-40 Q 28,-38 34,-48 Q 28,-40 18,-44 Z" fill="#5e4430" {st(1.6)}/>'
     return s
 
 
 def palma():
-    """Oasen-Hüterin Palma: kühles Blau, Kopftuch, Wasserkrug auf der Schulter."""
+    """Oasis keeper Palma: cool blue, headscarf, water jug on the shoulder."""
     s = drop('7fc8e8', '4f9ac0')
     s += f'<path d="M -52,-104 Q -50,-150 0,-152 Q 50,-150 52,-104 Q 54,-80 46,-60 Q 30,-110 0,-112 Q -30,-110 -46,-60 Q -54,-80 -52,-104 Z" fill="#f2c14e" {st(4)}/>'
     for x in (-30, -10, 10, 30):
@@ -68,7 +68,7 @@ def palma():
 
 
 def kamel():
-    """Karawanenkamel (Deko im Lager): freundlich, mit Satteltaschen."""
+    """Caravan camel (decoration in the camp): friendly, with saddlebags."""
     s = ''
     for x in (-50, -26, 30, 54):
         s += f'<path d="M {x},-70 V 0" stroke="{OUT}" stroke-width="13" stroke-linecap="round"/><path d="M {x},-70 V 0" stroke="#d9a066" stroke-width="8" stroke-linecap="round"/>'
@@ -80,26 +80,26 @@ def kamel():
     return s
 
 
-# ── Gegner ──────────────────────────────────────────────────────────────
+# ── Enemies ─────────────────────────────────────────────────────────────
 
 def sandkrabbe():
-    """Sandkrabbe: gepanzert (Panzer an den Seiten, oben weich und hell), große Scheren."""
+    """Sand crab: armoured (shell on the sides, soft and light on top), large pincers."""
     s = ''
     for x in (-30, -14, 14, 30):
         s += f'<path d="M {x},-14 l {6 if x > 0 else -6},14" stroke="{OUT}" stroke-width="5" stroke-linecap="round"/>'
-    # Scheren
+    # pincers
     for side in (-1, 1):
         x = side * 52
         s += f'<path d="M {side * 30},-30 Q {x},-40 {x},-56" fill="none" stroke="{OUT}" stroke-width="9" stroke-linecap="round"/>'
         s += f'<path d="M {side * 30},-30 Q {x},-40 {x},-56" fill="none" stroke="{OCHRE}" stroke-width="5" stroke-linecap="round"/>'
         s += f'<path d="M {x - 14},-56 Q {x},-84 {x + 14},-58 L {x + 4},-58 Q {x},-70 {x - 6},-58 Z" fill="{OCHRE}" {st(3)}/>'
-    # Panzer
+    # shell
     s += f'<path d="M -44,-16 Q -48,-52 0,-56 Q 48,-52 44,-16 Q 0,-8 -44,-16 Z" fill="#b8682a" {st(4.5)}/>'
     for x in (-30, -16, 16, 30):
         s += f'<path d="M {x},-20 Q {x * 1.1},-38 {x * 0.8},-50" fill="none" stroke="#8a4a1e" stroke-width="3"/>'
     s += f'<ellipse cx="0" cy="-46" rx="18" ry="8" fill="{SAND_LIGHT}" {st(2.5)}/>'
     s += f'<path d="M -8,-46 L 8,-46 M 0,-52 V -40" stroke="#c94a4a" stroke-width="2.5" stroke-linecap="round"/>'
-    # Stielaugen
+    # eye stalks
     for x in (-10, 10):
         s += f'<path d="M {x},-54 V -70" stroke="{OUT}" stroke-width="4"/>'
         s += angry_eye(x, -74, 6)
@@ -107,7 +107,7 @@ def sandkrabbe():
 
 
 def duenenwurm(pose='bogen'):
-    """Dünenwurm: segmentiert, Mundzangen; `spur` = Sandwelle, `bogen` = springt heraus."""
+    """Dune worm: segmented, mandibles; `spur` = sand wave, `bogen` = leaps out."""
     if pose == 'spur':
         s = f'<path d="M -60,0 Q -40,-18 -20,-8 Q 0,-22 20,-8 Q 40,-18 60,0 Z" fill="{SAND}" {st(3)}/>'
         for x in (-34, 6, 40):
@@ -140,7 +140,7 @@ def duenenwurm(pose='bogen'):
 
 
 def funkenmotte(sparks=True):
-    """Funkenmotte: glühende Flügel, Funken fallen."""
+    """Spark moth: glowing wings, sparks fall."""
     s = '<circle cx="0" cy="-40" r="46" fill="#ffb84a" opacity="0.18"/>'
     for side in (-1, 1):
         s += f'<path d="M 0,-44 Q {side * 50},-90 {side * 60},-50 Q {side * 52},-24 0,-36 Z" fill="{EMBER}" {st(3.5)}/>'
@@ -154,16 +154,16 @@ def funkenmotte(sparks=True):
     return s
 
 
-# ── Hüter ───────────────────────────────────────────────────────────────
+# ── Warden ──────────────────────────────────────────────────────────────
 
 def sandschlange(pose='bogen'):
-    """Sandschlange: große Schlange mit Sandschuppen und Rautenmuster, gelbe Augen.
-    Posen: spur (nur Sandwelle), auftauchen, bogen (in der Luft), benommen, ruhig."""
+    """Sand serpent: large serpent with sand scales and diamond pattern, yellow eyes.
+    Poses: spur (sand wave only), auftauchen, bogen (in the air), benommen, ruhig."""
     if pose in ('spur', 'beben'):
         s = f'<path d="M -150,0 Q -110,-30 -70,-12 Q -30,-36 10,-12 Q 50,-36 90,-12 Q 130,-30 150,0 Z" fill="{SAND}" {st(4)}/>'
         s += '<path d="M -120,-8 q 20,-10 40,0 M 40,-8 q 20,-10 40,0" fill="none" stroke="#c9a25e" stroke-width="3"/>'
         if pose == 'beben':
-            # Sand wölbt sich und spritzt: gleich schießt sie heraus
+            # sand bulges and splashes: she is about to shoot out
             s += f'<path d="M -70,-12 Q -40,-70 0,-74 Q 40,-70 70,-12 Z" fill="{SAND}" {st(4)}/>'
             s += f'<path d="M -20,-60 l 8,10 l -6,8 M 18,-62 l -6,12 l 8,6" fill="none" stroke="{SAND_DARK}" stroke-width="3"/>'
             for (x, y, r) in ((-60, -60, 7), (50, -84, 6), (-20, -100, 8), (70, -46, 5), (10, -110, 5)):
@@ -174,7 +174,7 @@ def sandschlange(pose='bogen'):
         'bogen': [(-180, 0), (-140, -110), (-60, -190), (40, -200), (120, -150), (170, -60)],
         'benommen': [(-150, -14), (-90, -24), (-30, -14), (30, -24), (90, -16), (140, -24)],
         'ruhig': [(-130, -14), (-70, -30), (-10, -20), (40, -50), (60, -110), (80, -140)],
-        # im Spiel: kompakter Körper im Flug, Kopf voran
+        # in the game: compact body in flight, head first
         'flug': [(-150, 70), (-100, 20), (-40, -10), (20, -10), (80, -40)],
     }[pose]
     s = ''
@@ -208,7 +208,7 @@ def sandschlange(pose='bogen'):
     return s
 
 
-# ── Gegenstände, Quelle, Deko ───────────────────────────────────────────
+# ── Items, spring, decoration ───────────────────────────────────────────
 
 def wasserschlauch(full=True):
     s = f'<path d="M -22,-8 Q -30,-40 -10,-54 L 10,-54 Q 30,-40 22,-8 Q 0,4 -22,-8 Z" fill="{"#a8703c" if full else "#c8a07a"}" {st(3.5)}/>'
@@ -219,7 +219,7 @@ def wasserschlauch(full=True):
 
 
 def steintafel():
-    """Ruinentafel mit eingeritztem grauen Abdruck (Spur des Wesens, das Farbe trinkt)."""
+    """Ruin tablet with an engraved grey imprint (trail of the being that drinks colour)."""
     s = f'<path d="M -40,0 L -36,-90 Q 0,-104 36,-90 L 40,0 Z" fill="{STONE}" {st(4)}/>'
     s += f'<path d="M -28,-74 H 28 M -28,-60 H 16 M -28,-46 H 24" stroke="{STONE_DARK}" stroke-width="3"/>'
     s += '<path d="M -10,-34 q -6,-10 0,-16 q 4,8 10,0 q 6,6 0,16 Z" fill="#8a8a88" stroke="#5a5a58" stroke-width="2"/>'
@@ -228,7 +228,7 @@ def steintafel():
 
 
 def glutquelle(freed=True):
-    """Glutquelle im Sandkessel: Steinbecken, warmes Leuchten; verdorrt = grau und rissig."""
+    """Ember spring in the sand basin: stone basin, warm glow; withered = grey and cracked."""
     s = ''
     if freed:
         s += '<ellipse cx="0" cy="-50" rx="150" ry="80" fill="#ffcf6a" opacity="0.25"/>'
@@ -246,7 +246,7 @@ def glutquelle(freed=True):
 
 
 def ruinenquelle():
-    """Kleine Quelle zwischen den Säulen: Steinring, klares Wasser, das sprudelt."""
+    """Small spring between the pillars: stone ring, clear bubbling water."""
     s = f'<path d="M -60,0 Q -64,-24 -48,-28 H 48 Q 64,-24 60,0 Z" fill="{STONE}" {st(4)}/>'
     for x in (-36, -12, 12, 36):
         s += f'<path d="M {x},-28 V 0" stroke="{STONE_DARK}" stroke-width="2"/>'
@@ -331,7 +331,7 @@ def oase():
 
 
 def giessstelle(bloom=False):
-    """Verdorrte Stelle der Oase / nach dem Gießen aufgeblüht."""
+    """Withered patch of the oasis / blossomed after watering."""
     if not bloom:
         s = f'<ellipse cx="0" cy="-4" rx="40" ry="8" fill="#b89a6a" {st(3)}/>'
         s += f'<path d="M -20,-6 q 4,-20 -4,-28 M 10,-6 q -2,-18 8,-24" fill="none" stroke="#9a8a60" stroke-width="4" stroke-linecap="round"/>'
@@ -344,7 +344,7 @@ def giessstelle(bloom=False):
 
 
 def grauspur():
-    """Graue Fußspuren des Wanderers (E-325): drei Paare, blass wie Asche."""
+    """Grey footprints of the wanderer (E-325): three pairs, pale as ash."""
     s = ''
     for k in range(3):
         x = -60 + k * 50
@@ -354,7 +354,7 @@ def grauspur():
     return s
 
 
-# Deko für die Karten (Welteinheiten, Ursprung unten in der Mitte): Name → (Zeichnung, viewBox)
+# Decoration for the maps (world units, origin at the bottom centre): name → (drawing, viewBox)
 DECOR = {
     'duene': (duene(), '-210 -130 420 134'),
     'felsbogen': (felsbogen(), '-140 -190 280 194'),
@@ -380,7 +380,7 @@ def export_decor():
                     f'  {art}\n</svg>\n')
 
 
-# ── Bogen ───────────────────────────────────────────────────────────────
+# ── Sheet ───────────────────────────────────────────────────────────────
 
 def sheet():
     W, H = 1600, 1880

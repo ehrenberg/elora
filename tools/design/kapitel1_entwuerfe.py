@@ -1,10 +1,10 @@
-"""Entwürfe für Kapitel 1 „Blütenwiesen“ (R2-M2.1, Schritt M2.1.0, E-297 bis E-302).
+"""Drafts for chapter 1 "Blütenwiesen" (R2-M2.1, step M2.1.0, E-297 to E-302).
 
-Aufruf: python3 tools/design/kapitel1_entwuerfe.py && cargo xtask svg-preview \
+Usage: python3 tools/design/kapitel1_entwuerfe.py && cargo xtask svg-preview \
         docs/release-2/design/kapitel1-entwuerfe.svg docs/release-2/design/kapitel1-entwuerfe.png 1600
 
-Stil wie die Figuren (abenteuer_figuren.py) und Gebäude (tauwinkel_gebaeude.py):
-Tropfenwesen, dunkler Umriss, flache Farben; Gegner rund und bunt, böse geguckt, ohne Blut.
+Style like the figures (abenteuer_figuren.py) and buildings (tauwinkel_gebaeude.py):
+drop creatures, dark outline, flat colours; enemies round and colourful, looking grumpy, no blood.
 """
 import math
 import os
@@ -26,40 +26,40 @@ def st(w=3.5):
     return f'stroke="{OUT}" stroke-width="{w}" stroke-linejoin="round" stroke-linecap="round"'
 
 
-# ── Imkerin Wabe ────────────────────────────────────────────────────────
+# ── Beekeeper Wabe ──────────────────────────────────────────────────────
 
 def wabe():
-    """Imkerin: bernsteinfarben, Imkerhut mit hochgeschlagenem Schleier, Smoker, Honigglas."""
+    """Beekeeper: amber, beekeeper hat with turned-up veil, smoker, honey jar."""
     body, feet = 'e8a84a', 'b8742a'
-    # Smoker hinten in der Hand
+    # smoker held at the back
     s = '<path d="M -44,-40 L -60,-30" stroke="#2b2b2b" stroke-width="4"/>'
     s += f'<rect x="-84" y="-44" width="26" height="36" rx="6" fill="#c8ced6" {st()}/>'
     s += f'<path d="M -82,-44 Q -71,-62 -60,-44 Z" fill="#a8b0ba" {st(3)}/>'
     s += f'<path d="M -74,-62 q -6,-10 2,-16 q 8,-6 2,-16" fill="none" stroke="#b8b2aa" stroke-width="5" stroke-linecap="round"/>'
     s += drop(body, feet)
-    # Latzschürze mit Wabenmuster
+    # bib apron with honeycomb pattern
     s += f'<path d="M -38,-34 Q 4,-22 46,-34 L 44,-12 Q 4,-2 -36,-12 Z" fill="#f4ead4" {st(3.5)}/>'
     for (x, y) in ((-16, -22), (0, -19), (16, -22), (32, -24), (-8, -12), (8, -11), (24, -13)):
         pts = ' '.join(f'{x + 5 * math.cos(math.radians(a)):.1f},{y + 5 * math.sin(math.radians(a)):.1f}' for a in range(0, 360, 60))
         s += f'<polygon points="{pts}" fill="{HONEY}" stroke="{HONEY_DARK}" stroke-width="1.4"/>'
-    # Imkerhut mit Schleier
+    # beekeeper hat with veil
     s += f'<ellipse cx="10" cy="-104" rx="52" ry="10" fill="#f0ece4" {st(4)}/>'
     s += f'<path d="M -18,-108 Q -16,-142 12,-144 Q 40,-142 40,-108 Z" fill="#f0ece4" {st(4)}/>'
     s += '<path d="M -42,-100 Q -50,-80 -44,-70 M 62,-100 Q 70,-80 62,-70" fill="none" stroke="#9aa6b0" stroke-width="3" stroke-dasharray="4 3"/>'
     s += '<path d="M -17,-116 Q 12,-110 39,-116" fill="none" stroke="' + HONEY_DARK + '" stroke-width="5"/>'
-    # Honigglas in der Hand vorn
+    # honey jar held in front
     s += f'<rect x="44" y="-52" width="24" height="28" rx="5" fill="{HONEY}" fill-opacity="0.85" {st(3)}/>'
     s += f'<rect x="42" y="-58" width="28" height="8" rx="2" fill="#e8685a" {st(2.5)}/>'
     s += '<path d="M 50,-44 q 4,-2 6,2" fill="none" stroke="#fff6d8" stroke-width="2.5" stroke-linecap="round"/>'
-    # eine Biene kreist um den Hut
+    # a bee circles around the hat
     s += biene(scale=0.38, x=58, y=-140)
     return s
 
 
-# ── Bienen ──────────────────────────────────────────────────────────────
+# ── Bees ────────────────────────────────────────────────────────────────
 
 def biene(scale=1.0, x=0, y=0, angry=False, flip=False):
-    """Kleine Biene: gestreift, zwei Flügel; `angry` = verwirrter Gegner (Spiralaugen)."""
+    """Small bee: striped, two wings; `angry` = confused enemy (spiral eyes)."""
     s = f'<ellipse cx="-6" cy="-30" rx="14" ry="20" fill="{WING}" fill-opacity="0.9" {st(3)} transform="rotate(-25 -6 -30)"/>'
     s += f'<ellipse cx="10" cy="-32" rx="12" ry="18" fill="{WING}" fill-opacity="0.9" {st(3)} transform="rotate(20 10 -32)"/>'
     s += f'<ellipse cx="0" cy="-6" rx="26" ry="20" fill="{HONEY}" {st(4)}/>'
@@ -79,10 +79,10 @@ def biene(scale=1.0, x=0, y=0, angry=False, flip=False):
     return g(x, y, scale, s, flip)
 
 
-# ── Brummbär-Hummel ─────────────────────────────────────────────────────
+# ── Grumble bumblebee ───────────────────────────────────────────────────
 
 def hummel(pose='flug'):
-    """Hüter der Blütenquelle: große, pelzige Hummel. Posen: flug, sturz, benommen, ruhig."""
+    """Warden of the blossom spring: large, furry bumblebee. Poses: flug, sturz, benommen, ruhig."""
     calm = pose == 'ruhig'
     stunned = pose == 'benommen'
     s = ''
@@ -95,7 +95,7 @@ def hummel(pose='flug'):
         s += f'<ellipse cx="-30" cy="-118" rx="40" ry="62" fill="{WING}" fill-opacity="0.85" {st(4)} transform="rotate({-35 + flap} -30 -118)"/>'
         s += f'<ellipse cx="12" cy="-124" rx="34" ry="54" fill="{WING}" fill-opacity="0.85" {st(4)} transform="rotate({20 - flap} 12 -124)"/>'
         s += '<path d="M -40,-150 q 10,20 4,40 M 6,-152 q 6,18 0,36" fill="none" stroke="#b6d4e4" stroke-width="2.5"/>'
-    # Körper: pelzig (gezackter Rand)
+    # body: furry (jagged edge)
     cx, cy, rx, ry = 0, -70 if not stunned else -52, 82, 64 if not stunned else 52
     pts = []
     for i in range(48):
@@ -107,9 +107,9 @@ def hummel(pose='flug'):
         top, bot = cy - ry * 0.92, cy + ry * 0.92
         s += f'<path d="M {dx - 6},{top + 6} Q {dx - 16},{cy} {dx - 6},{bot - 6} L {dx + 12},{bot - 4} Q {dx + 2},{cy} {dx + 12},{top + 4} Z" fill="{STRIPE}"/>'
     s += f'<ellipse cx="{cx - 30}" cy="{cy - ry * 0.55}" rx="22" ry="9" fill="#ffffff" opacity="0.25"/>'
-    # Stachel (stumpf, kindgerecht)
+    # stinger (blunt, child-friendly)
     s += f'<path d="M {cx - rx},{cy + 6} L {cx - rx - 22},{cy + 14} L {cx - rx + 2},{cy + 22} Z" fill="{STRIPE}" {st(3)}/>'
-    # Kopf
+    # head
     hx, hy = cx + 70, cy - 10
     s += f'<circle cx="{hx}" cy="{hy}" r="40" fill="{STRIPE}" {st(5)}/>'
     s += f'<path d="M {hx - 4},{hy - 36} Q {hx - 10},{hy - 76} {hx + 10},{hy - 84} M {hx + 16},{hy - 34} Q {hx + 24},{hy - 70} {hx + 44},{hy - 72}" fill="none" stroke="{OUT}" stroke-width="5" stroke-linecap="round"/>'
@@ -130,7 +130,7 @@ def hummel(pose='flug'):
     else:
         s += angry_eye(hx + 4, hy - 4, 11, 1) + angry_eye(hx + 28, hy - 4, 11, 1)
         s += f'<path d="M {hx + 2},{hy + 20} Q {hx + 16},{hy + 12} {hx + 30},{hy + 20}" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round"/>'
-    # Beinchen
+    # little legs
     if stunned:
         for x in (-30, 0, 30):
             s += f'<path d="M {x},{cy + ry - 4} q 4,10 10,8" fill="none" stroke="{OUT}" stroke-width="6" stroke-linecap="round"/>'
@@ -146,10 +146,10 @@ def pollen(x, y, r=9):
     return s
 
 
-# ── Arena und Kapitelgegenstände ────────────────────────────────────────
+# ── Arena and chapter items ─────────────────────────────────────────────
 
 def hookbluete(fresh=True):
-    """Hookpunkt in der Luft: große Blüte an einer Ranke von oben, Mitte als Ring zum Hooken."""
+    """Hook point in the air: large blossom on a tendril from above, centre as a ring for hooking."""
     petal = PINK if fresh else '#c8b6bc'
     core = '#f2c14e' if fresh else '#b8ac90'
     s = f'<path d="M 0,-130 Q 12,-90 0,-44" fill="none" stroke="{OUT}" stroke-width="9"/>'
@@ -188,7 +188,7 @@ def wabenhut():
 
 
 def bienenstock():
-    """Strohkorb (Bienenkorb) auf einem Holzbock."""
+    """Straw skep (beehive) on a wooden trestle."""
     s = f'<rect x="-34" y="-20" width="68" height="8" fill="#a87a52" {st(3)}/><path d="M -28,-12 V 0 M 28,-12 V 0" stroke="{OUT}" stroke-width="5"/>'
     s += f'<path d="M -30,-20 Q -34,-74 0,-80 Q 34,-74 30,-20 Z" fill="#d9b860" {st(4)}/>'
     for k in range(1, 6):
@@ -200,7 +200,7 @@ def bienenstock():
 
 
 def beutenstapel():
-    """Holzbeuten (Kästen) gestapelt, mit Deckel."""
+    """Wooden hives (boxes) stacked, with lid."""
     s = ''
     for k, c in enumerate(('#e8c070', '#d9a85a', '#e8c070')):
         y = -24 - k * 24
@@ -223,7 +223,7 @@ def honigstand():
 
 
 def riesenblume(color=PINK):
-    """Deko in wiese-2: Blume so hoch wie ein Haus, Blätter als Stufen."""
+    """Decoration in wiese-2: flower as tall as a house, leaves as steps."""
     s = f'<path d="M 0,0 Q -14,-120 6,-250" fill="none" stroke="{OUT}" stroke-width="16"/>'
     s += f'<path d="M 0,0 Q -14,-120 6,-250" fill="none" stroke="{STEM}" stroke-width="9"/>'
     s += f'<path d="M -6,-70 Q -70,-90 -80,-60 Q -40,-50 -6,-70 Z" fill="{LEAF}" {st()}/>'
@@ -258,7 +258,7 @@ def festlaterne(color='#e8685a'):
 
 
 def bluetenquelle(freed=True):
-    """Quelle am Ende der Blütenwiesen: Steinbecken, Wasser, Blüten; verdorrt = grau und trocken."""
+    """Spring at the end of the Blütenwiesen: stone basin, water, blossoms; withered = grey and dry."""
     s = ''
     if freed:
         s += '<ellipse cx="0" cy="-60" rx="140" ry="90" fill="#ffd6ea" opacity="0.35"/>'
@@ -284,7 +284,7 @@ def bluetenquelle(freed=True):
     return s
 
 
-# ── Bogen ───────────────────────────────────────────────────────────────
+# ── Sheet ───────────────────────────────────────────────────────────────
 
 def card(x, y, w, h, title):
     return (f'<rect x="{x + 3}" y="{y + 5}" width="{w}" height="{h}" rx="18" fill="#1e2a36" fill-opacity="0.10"/>'
@@ -310,7 +310,7 @@ def sheet():
          text(40, 78, 'Neue Figur, Hüter, Gegner, Arena, Gegenstände und Deko im Stil der bisherigen Figuren und Gebäude. '
               'Elora klein daneben als Maßstab.', 15, TEXT, 'start')]
 
-    # Wabe und Bienen
+    # Wabe and bees
     o.append(card(30, 100, 760, 390, 'Imkerin Wabe und die Bienen'))
     o.append(ground(60, 400, 260) + g(190, 400, 1.0, wabe()) + elora(320, 400))
     o.append(text(190, 436, 'Imkerin Wabe', 17, TEXT, weight='bold'))
@@ -321,7 +321,7 @@ def sheet():
     o.append(text(650, 436, 'verwirrte Biene (Gegner)', 15, TEXT, weight='bold'))
     o.append(text(650, 456, 'Phase 3, umschwirrt Elora', 12, DIM))
 
-    # Gegenstände
+    # items
     o.append(card(810, 100, 760, 390, 'Gegenstände'))
     o.append(ground(860, 400, 180) + g(950, 400, 1.6, quellfunke()))
     o.append(text(950, 436, 'Quellfunke', 17, TEXT, weight='bold'))
@@ -332,7 +332,7 @@ def sheet():
     o.append(g(1440, 330, 1.2, biene(1.0, 0, 0)) + text(1440, 436, 'Bienensymbol', 15, TEXT, weight='bold'))
     o.append(text(1440, 458, 'Aufgabenbuch, Zähler 0/5', 12, DIM))
 
-    # Hummel
+    # bumblebee
     o.append(card(30, 510, 1540, 470, 'Hüter: Brummbär-Hummel (E-298, E-299)'))
     poses = [
         (240, 860, 'flug', 'Kreisen', 'fliegt hoch, lässt Pollen fallen'),
@@ -349,7 +349,7 @@ def sheet():
     o.append('<ellipse cx="600" cy="902" rx="70" ry="8" fill="#2b2b2b" opacity="0.25"/>')
     o.append(elora(1480, 900))
 
-    # Arena
+    # arena
     o.append(card(30, 1000, 760, 360, 'Arena und Blütenquelle'))
     o.append(g(120, 1250, 0.9, hookbluete(True)) + g(250, 1250, 0.9, hookbluete(False)))
     o.append(text(185, 1316, 'Hook-Blüte frisch / welk', 15, TEXT, weight='bold'))
@@ -358,7 +358,7 @@ def sheet():
     o.append(text(550, 1316, 'Blütenquelle verdorrt / befreit', 15, TEXT, weight='bold'))
     o.append(text(550, 1336, 'Mitte der Arena, Schluss des Kapitels', 12, DIM))
 
-    # Imkerei und Deko
+    # apiary and decoration
     o.append(card(810, 1000, 760, 360, 'Imkerei und Deko (wiese-2)'))
     o.append(ground(840, 1290, 700))
     o.append(g(890, 1290, 1.0, bienenstock()) + g(980, 1290, 1.0, beutenstapel()) + g(1100, 1290, 0.9, honigstand()))
@@ -368,7 +368,7 @@ def sheet():
     o.append(text(1330, 1316, 'Riesenblumen', 15, TEXT, weight='bold'))
     o.append(text(1330, 1336, 'Blätter als Stufen, Blüte als Plattform', 12, DIM))
 
-    # Fest
+    # festival
     o.append(card(30, 1380, 1540, 230, 'Fest in Tauwinkel nach Kapitel 1 (E-301)'))
     o.append(ground(60, 1570, 1480))
     o.append(g(260, 1570, 1.0, girlande()) + g(560, 1570, 1.0, girlande()))
@@ -383,7 +383,7 @@ def sheet():
 
 
 def export():
-    """Spielgrafiken aus den angenommenen Entwürfen (E-303): Hook-Blüte als Tile."""
+    """Game graphics from the accepted drafts (E-303): hook blossom as a tile."""
     parts = ''.join(f'<g id="{k}"><g transform="translate(16,24) scale(0.4)">{hookbluete(v)}</g></g>'
                     for k, v in (('fresh', True), ('wilted', False)))
     with open('assets/map/tiles/hookpoint.svg', 'w') as f:
@@ -392,8 +392,8 @@ def export():
                 f'  {parts}\n</svg>\n')
 
 
-# Deko für die Karten von Kapitel 1 (E-303): Name: (Zeichnung, viewBox), Ursprung unten in der Mitte.
-# `-fest` hängt nur beim Fest, `-verdorrt` wird nach `befreit.<name>` zu `-befreit` (Session).
+# Decoration for the chapter 1 maps (E-303): name: (drawing, viewBox), origin at the bottom centre.
+# `-fest` only hangs during the festival, `-verdorrt` becomes `-befreit` after `befreit.<name>` (session).
 DECOR = {
     'bienenstock': (bienenstock(), '-40 -84 80 86'),
     'beutenstapel': (beutenstapel(), '-40 -88 80 90'),

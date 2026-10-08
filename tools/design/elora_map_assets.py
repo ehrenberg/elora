@@ -1,22 +1,22 @@
-"""Erzeugt die Kartengrafik im Stil A (M6.3, E-139) unter assets/map/.
+"""Generates the map graphics in style A (M6.3, E-139) under assets/map/.
 
-Aufruf: python3 tools/design/elora_map_assets.py
+Usage: python3 tools/design/elora_map_assets.py
 
-Einmaliger Ausgangspunkt: Die erzeugten SVGs sind normale Assets und dürfen danach von Hand
-geändert werden (dann dieses Skript nicht erneut ausführen oder vorher anpassen).
+One-time starting point: the generated SVGs are normal assets and may be edited by hand
+afterwards (then do not run this script again, or adapt it first).
 
-Koordinaten in Welteinheiten (1 Tile = 32):
-- Materialien und Spezial-Tiles: viewBox 0 0 32 32 (ein Tile)
-- Deko: Ursprung unten in der Mitte (steht auf dem Boden, y nach oben negativ)
-- Hintergrund-Streifen: Ursprung unten links, 1024 breit und nahtlos wiederholbar
-- Wolken, Mond: Ursprung in der Mitte; Sterne: Ursprung oben links, 1024 × 640
+Coordinates in world units (1 tile = 32):
+- materials and special tiles: viewBox 0 0 32 32 (one tile)
+- decoration: origin at the bottom centre (stands on the ground, y negative upwards)
+- background strips: origin at the bottom left, 1024 wide and seamlessly repeatable
+- clouds, moon: origin in the centre; stars: origin at the top left, 1024 × 640
 """
 import math
 import os
 
 OUT = '#2b2b2b'
 T = 32
-R = 10  # Rundung der Außenecken (wie materials.toml)
+R = 10  # rounding of the outer corners (as in materials.toml)
 
 
 def write(path, view_box, body, comment):
@@ -37,11 +37,11 @@ def f(v):
     return f'{v:.2f}'.rstrip('0').rstrip('.')
 
 
-# ── Kappen (Oberkante eines Materials) ──────────────────────────────────
+# ── Caps (top edge of a material) ───────────────────────────────────────
 
 def cap_outline(left, right, depth, wave, amp):
-    """Pfad einer Kappe: oben bündig mit dem Tile, Ecken wie der Körper gerundet,
-    unten gewellt (wave = Abstand der Bögen, amp = Tiefe der Bögen)."""
+    """Path of a cap: flush with the tile at the top, corners rounded like the body,
+    wavy at the bottom (wave = spacing of the arcs, amp = depth of the arcs)."""
     d = []
     if left:
         d.append(f'M 0,{f(depth + amp)} L 0,{R} Q 0,0 {R},0')
@@ -51,7 +51,7 @@ def cap_outline(left, right, depth, wave, amp):
         d.append(f'H {T - R} Q {T},0 {T},{R} L {T},{f(depth + amp)}')
     else:
         d.append(f'H {T} V {f(depth)}')
-    # Wellen von rechts nach links
+    # waves from right to left
     x = T
     while x > 0:
         nx = max(0, x - wave)
@@ -62,7 +62,7 @@ def cap_outline(left, right, depth, wave, amp):
 
 
 def rim(left, right, h):
-    """Schmaler Streifen direkt unter der Oberkante (Glanz/Schatten)."""
+    """Narrow strip directly below the top edge (highlight/shadow)."""
     a = f'M 0,{R} Q 0,0 {R},0' if left else 'M 0,0'
     b = f'H {T - R} Q {T},0 {T},{R} L {T - h},{R} Q {T - h},{h} {T - R},{h}' if right else f'H {T} V {h}'
     c = f'H {R} Q {h},{h} {h},{R} Z' if left else 'H 0 Z'
@@ -105,7 +105,7 @@ def stone_cap(left, right):
 
 
 def stone_blocks(rects):
-    """Felsblöcke (x0, y0, x1, y1) mit abgerundeten Ecken: Fläche, Lichtkante oben, Schatten unten."""
+    """Rock blocks (x0, y0, x1, y1) with rounded corners: face, light edge on top, shadow below."""
     out = []
     for x0, y0, x1, y1 in rects:
         w, h = x1 - x0 - 1, y1 - y0 - 1
@@ -119,7 +119,7 @@ def stone_blocks(rects):
 
 
 def rocks(polys):
-    """Unregelmäßige Felsbrocken: Fläche, Lichtkante an der Oberseite, Schatten unten, Fugen dazwischen."""
+    """Irregular boulders: face, light edge on the top side, shadow below, joints in between."""
     out = []
     for pts in polys:
         d = 'M ' + ' L '.join(f'{x},{y}' for x, y in pts) + ' Z'
@@ -173,7 +173,7 @@ def materials():
               [crack('M 13,25 L 21,15 M 19,26 L 23,21', '#ffffff', 2.2)]])
 
 
-# ── Spezial-Tiles ───────────────────────────────────────────────────────
+# ── Special tiles ───────────────────────────────────────────────────────
 
 def specials():
     spikes = []
@@ -225,7 +225,7 @@ def specials():
           'Beschleuniger (Stil A): Gehäuse und Pfeil nach rechts (links = gespiegelt, Pfeil läuft später mit).')
 
 
-# ── Deko ────────────────────────────────────────────────────────────────
+# ── Decoration ──────────────────────────────────────────────────────────
 
 def deco(name, view_box, shapes, comment):
     write(f'assets/map/decor/{name}.svg', view_box, shapes, comment + ' Ursprung unten in der Mitte.')
@@ -236,8 +236,8 @@ def stroke(w=2):
 
 
 def foliage(blobs, dark, light, highlight, leaves=()):
-    """Laubmasse aus Kreisen: erst alle mit Kontur, dann alle ohne darüber → eine Außenkontur.
-    Unterer Teil dunkler (Schatten), oben Lichter und einzelne Blattbögen."""
+    """Foliage mass made of circles: first all with outline, then all without on top → one outer outline.
+    Lower part darker (shadow), highlights on top and individual leaf arcs."""
     out = [f'<circle cx="{x}" cy="{y}" r="{r + 1.2}" fill="{OUT}"/>' for x, y, r in blobs]
     out += [f'<circle cx="{x}" cy="{y}" r="{r}" fill="{dark}"/>' for x, y, r in blobs]
     out += [f'<circle cx="{f(x - r * 0.12)}" cy="{f(y - r * 0.18)}" r="{f(r * 0.8)}" fill="{light}"/>' for x, y, r in blobs]
@@ -318,13 +318,13 @@ def decor():
         '<path d="M -13,-41 H 13 M -13,-34 H 6" stroke="#8a6040" stroke-width="2" stroke-linecap="round"/>'], 'Schild (Stil A).')
 
 
-# ── Hintergründe ────────────────────────────────────────────────────────
+# ── Backgrounds ─────────────────────────────────────────────────────────
 
 W = 1024
 
 
 def strip(name, height, fn, color, extra='', comment=''):
-    """Periodischer Höhenzug über 1024 Einheiten (fn: x → Höhe über dem Boden)."""
+    """Periodic ridge over 1024 units (fn: x → height above the ground)."""
     pts = [f'{x},{f(-fn(x))}' for x in range(0, W + 1, 16)]
     shape = f'<path d="M 0,0 L {" L ".join(pts)} L {W},0 Z" fill="{color}"/>'
     write(f'assets/map/backgrounds/{name}.svg', f'0 {-height} {W} {height}', [shape, extra],
@@ -339,7 +339,7 @@ def backgrounds():
     strip('hills-far', 260, lambda x: 170 + sines(x, [(45, 2, 0.3), (20, 5, 1.1)]), '#b9d6e9', comment='Ferne Hügel (Stil A).')
     strip('hills-near', 200, lambda x: 110 + sines(x, [(40, 3, 2.0), (15, 7, 0.4)]), '#9fc7a0', comment='Nahe Hügel (Stil A).')
 
-    # Berge: weiche Gipfel aus überlagerten Spitzen, Schneekappen
+    # mountains: soft peaks from overlapping spikes, snow caps
     peaks = [(80, 300, 150), (330, 360, 180), (560, 280, 140), (800, 340, 170), (1000, 260, 120)]
 
     def mountain(x):
@@ -358,13 +358,13 @@ def backgrounds():
                     f'Q {f(px + cw * 0.4)},{f(-ph + cw * 0.6)} {px},{f(-ph + cw * 1.0)} Q {f(px - cw * 0.4)},{f(-ph + cw * 0.6)} {f(px - cw)},{f(-ph + cw * 0.9)} Z" fill="#eef4f8"/>')
     strip('mountains', 380, mountain, '#a9bccf', ''.join(caps), 'Bergkette mit Schneekappen (Stil A).')
 
-    # Wald: Reihe runder Baumkronen (Silhouette)
+    # forest: row of round treetops (silhouette)
     trees = []
     for i in range(20):
         x = i * 51.2 + 25
         h = 230 + 40 * math.sin(i * 1.7) + 20 * math.sin(i * 3.1)
         if i % 3 == 1:
-            # Nadelbaum
+            # conifer
             trees.append(f'<rect x="{f(x - 4)}" y="{f(-h * 0.3)}" width="8" height="{f(h * 0.3)}" fill="#55805c"/>')
             for k in range(3):
                 yb, wb = -h * (0.22 + k * 0.2), 40 - k * 9

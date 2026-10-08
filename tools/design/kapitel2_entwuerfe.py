@@ -1,10 +1,10 @@
-"""Entwürfe für Kapitel 2 „Murmelwald“ (R2-M2.2, Schritt M2.2.0, E-306 bis E-311).
+"""Drafts for chapter 2 "Murmelwald" (R2-M2.2, step M2.2.0, E-306 to E-311).
 
-Aufruf: python3 tools/design/kapitel2_entwuerfe.py && cargo xtask svg-preview \
+Usage: python3 tools/design/kapitel2_entwuerfe.py && cargo xtask svg-preview \
         docs/release-2/design/kapitel2-entwuerfe.svg docs/release-2/design/kapitel2-entwuerfe.png 1600
 
-Stil wie Kapitel 1 (kapitel1_entwuerfe.py): dunkler Umriss, flache Farben; Gegner rund und
-frech, ohne Blut. Der Wald ist schattiger, aber freundlich: Moos, leuchtende Pilze, Baumhäuser.
+Style like chapter 1 (kapitel1_entwuerfe.py): dark outline, flat colours; enemies round and
+cheeky, no blood. The forest is shadier but friendly: moss, glowing mushrooms, tree houses.
 """
 import math
 import os
@@ -30,7 +30,7 @@ def st(w=3.5):
 
 
 def blob(cx, cy, rx, ry, fill, n=40, jag=0.05, w=4):
-    """Gezackter Umriss (Fell, Federn, Moos)."""
+    """Jagged outline (fur, feathers, moss)."""
     pts = []
     for i in range(n):
         a = 2 * math.pi * i / n
@@ -39,19 +39,19 @@ def blob(cx, cy, rx, ry, fill, n=40, jag=0.05, w=4):
     return f'<polygon points="{" ".join(pts)}" fill="{fill}" {st(w)}/>'
 
 
-# ── Figuren ─────────────────────────────────────────────────────────────
+# ── Figures ─────────────────────────────────────────────────────────────
 
 def plumm():
-    """Der alte Uhu Plumm: rund, Federohren, Brille, ein Buch voller Geschichten."""
+    """The old eagle owl Plumm: round, feather ears, glasses, a book full of stories."""
     s = blob(0, -62, 52, 62, '#9a7a5a', 44, 0.04)
     s += f'<ellipse cx="0" cy="-44" rx="32" ry="38" fill="#e8d8b8" {st(3)}/>'
     for k in range(4):
         y = -60 + k * 12
         s += f'<path d="M -16,{y} q 4,5 8,0 q 4,5 8,0 q 4,5 8,0" fill="none" stroke="#b8a07a" stroke-width="2"/>'
-    # Federohren
+    # feather ears
     s += f'<path d="M -40,-112 L -50,-142 L -22,-120 Z" fill="#9a7a5a" {st(3.5)}/>'
     s += f'<path d="M 40,-112 L 50,-142 L 22,-120 Z" fill="#9a7a5a" {st(3.5)}/>'
-    # Augen mit Brille
+    # eyes with glasses
     for ex in (-18, 18):
         s += f'<circle cx="{ex}" cy="-96" r="17" fill="#f6efdf" {st(3)}/>'
         s += f'<circle cx="{ex}" cy="-94" r="8" fill="#e8a83a"/><circle cx="{ex}" cy="-94" r="4.5" fill="{OUT}"/>'
@@ -59,19 +59,19 @@ def plumm():
         s += f'<circle cx="{ex}" cy="-96" r="20" fill="none" stroke="#5a4a3a" stroke-width="3"/>'
     s += '<path d="M -2,-96 H 2" stroke="#5a4a3a" stroke-width="3"/>'
     s += f'<path d="M -6,-80 L 0,-68 L 6,-80 Z" fill="#e8a83a" {st(2.5)}/>'
-    # Flügel mit Buch
+    # wings with book
     s += f'<path d="M -48,-70 Q -66,-40 -40,-20 Q -30,-40 -36,-66 Z" fill="#8a6a4a" {st(3.5)}/>'
     s += f'<rect x="20" y="-48" width="40" height="30" rx="3" fill="#5aaee8" {st(3)} transform="rotate(-12 40 -33)"/>'
     s += f'<path d="M 40,-48 V -18" stroke="#ffffff" stroke-width="2" transform="rotate(-12 40 -33)"/>'
     s += f'<path d="M 48,-68 Q 66,-40 44,-24" fill="#8a6a4a" {st(3.5)}/>'
-    # Füße
+    # feet
     for x in (-14, 14):
         s += f'<path d="M {x - 8},0 l 4,-8 l 4,8 l 4,-8 l 4,8" fill="none" stroke="#e8a83a" stroke-width="4" stroke-linejoin="round"/>'
     return s
 
 
 def pilzkind(sad=True):
-    """Kleines Pilzkind: Tropfenkörper mit rotem Pilzhut, verweint oder froh."""
+    """Small mushroom child: drop body with red mushroom cap, tearful or happy."""
     s = drop('f6efdf', 'd8c8a8')
     s += f'<path d="M -70,-92 Q -60,-150 0,-156 Q 60,-150 70,-92 Q 0,-104 -70,-92 Z" fill="#e8685a" {st(4.5)}/>'
     for (x, y, r) in ((-34, -126, 9), (6, -140, 11), (38, -118, 8), (-6, -112, 6)):
@@ -83,7 +83,7 @@ def pilzkind(sad=True):
 
 
 def pilzmama():
-    """Mutter des Pilzkinds: größer, brauner Hut mit hellen Tupfen, Schürze."""
+    """Mother of the mushroom child: larger, brown cap with light dots, apron."""
     s = drop('f6efdf', 'd8c8a8')
     s += f'<path d="M -46,-40 Q 4,-30 52,-40 L 50,-14 Q 4,-6 -44,-14 Z" fill="#7fd99a" {st(3.5)}/>'
     s += f'<path d="M -78,-92 Q -66,-160 0,-166 Q 66,-160 78,-92 Q 0,-106 -78,-92 Z" fill="#a8703c" {st(4.5)}/>'
@@ -92,10 +92,10 @@ def pilzmama():
     return s
 
 
-# ── Gegner ──────────────────────────────────────────────────────────────
+# ── Enemies ─────────────────────────────────────────────────────────────
 
 def wurzelschlange(out=True):
-    """Wurzelschlange: knorrige Wurzel mit Blättern; `out` = aufgetaucht, sonst nur Erdhügel."""
+    """Root snake: gnarled root with leaves; `out` = surfaced, otherwise only a mound of earth."""
     s = f'<path d="M -40,0 Q -36,-14 -20,-16 H 20 Q 36,-14 40,0 Z" fill="#7a5a3e" {st(3.5)}/>'
     for x in (-24, -6, 14, 28):
         s += f'<circle cx="{x}" cy="-16" r="4" fill="#5e4430"/>'
@@ -119,25 +119,25 @@ def nuss(x, y, r=11):
 
 
 def eichhornpirat():
-    """Eichhörnchen mit Kopftuch und Augenklappe, wirft Nüsse."""
+    """Squirrel with headscarf and eye patch, throws nuts."""
     s = f'<path d="M -30,-30 C -90,-40 -96,-130 -40,-130 C -20,-130 -14,-100 -30,-90 C -60,-90 -56,-50 -26,-56" fill="#d9822b" {st(4)}/>'
     s += f'<path d="M -52,-110 q 8,-8 18,-4" fill="none" stroke="#f2b36a" stroke-width="4" stroke-linecap="round"/>'
     s += blob(0, -40, 30, 38, '#d9822b', 30, 0.05)
     s += f'<ellipse cx="6" cy="-30" rx="16" ry="22" fill="#f6dcb0" {st(2.5)}/>'
     s += f'<circle cx="20" cy="-84" r="26" fill="#d9822b" {st(4)}/>'
     s += f'<path d="M 6,-104 L 4,-124 L 18,-108 Z" fill="#d9822b" {st(3)}/>'
-    # Kopftuch
+    # headscarf
     s += f'<path d="M -4,-94 Q 18,-120 44,-96 Q 22,-102 -4,-94 Z" fill="#c8483a" {st(3)}/>'
     s += f'<path d="M -4,-96 L -18,-90 L -10,-84" fill="#c8483a" {st(2.5)}/>'
     for x in (8, 20, 32):
         s += f'<circle cx="{x}" cy="-104" r="2" fill="#ffffff"/>'
-    # Augenklappe und Auge
+    # eye patch and eye
     s += f'<path d="M 0,-92 L 44,-74" stroke="{OUT}" stroke-width="2.5"/><ellipse cx="34" cy="-80" rx="7" ry="8" fill="{OUT}"/>'
     s += angry_eye(14, -82, 6)
     s += f'<circle cx="44" cy="-70" r="3" fill="{OUT}"/>'
     s += f'<path d="M 30,-64 q 6,4 12,0" fill="none" stroke="{OUT}" stroke-width="2.5"/>'
     s += f'<rect x="34" y="-66" width="6" height="7" fill="#ffffff" stroke="{OUT}" stroke-width="1.5"/>'
-    # Pfote mit Nuss
+    # paw with nut
     s += f'<path d="M 18,-52 Q 40,-62 44,-44" fill="none" stroke="{OUT}" stroke-width="9" stroke-linecap="round"/>'
     s += f'<path d="M 18,-52 Q 40,-62 44,-44" fill="none" stroke="#d9822b" stroke-width="5" stroke-linecap="round"/>'
     s += nuss(50, -46, 10)
@@ -147,7 +147,7 @@ def eichhornpirat():
 
 
 def pilzwicht():
-    """Pilzwicht: kleiner frecher Pilz mit lila Hut, stößt bunte Sporen aus."""
+    """Mushroom imp: small cheeky mushroom with a purple cap, puffs out colourful spores."""
     s = f'<path d="M -22,0 Q -26,-34 -18,-48 H 18 Q 26,-34 22,0 Z" fill="#f2e6d0" {st(4)}/>'
     s += angry_eye(-7, -30, 6) + angry_eye(11, -30, 6)
     s += f'<path d="M -6,-14 q 8,6 16,0" fill="none" stroke="{OUT}" stroke-width="3" stroke-linecap="round"/>'
@@ -163,7 +163,7 @@ def pilzwicht():
 
 
 def rausch_elora():
-    """Elora im bunten Rausch (E-311): Regenbogenschimmer, Sternchen, langsamer."""
+    """Elora in a colourful daze (E-311): rainbow shimmer, little stars, slower."""
     colors = ('e8685a', 'f2c14e', '7fd99a', '5aaee8', 'a77be0')
     s = ''
     for k, c in enumerate(colors):
@@ -175,7 +175,7 @@ def rausch_elora():
     return s
 
 
-# ── Hüter ───────────────────────────────────────────────────────────────
+# ── Warden ──────────────────────────────────────────────────────────────
 
 def kern(x, y, r=14, lit=True):
     c = AMBER if lit else '#8a7a5a'
@@ -187,14 +187,14 @@ def kern(x, y, r=14, lit=True):
 
 
 def branch(path, w=22, fill=None):
-    """Ast/Glied: dunkler Umriss, Rinde innen."""
+    """Branch/limb: dark outline, bark inside."""
     fill = fill or BARK
     return (f'<path d="{path}" fill="none" stroke="{OUT}" stroke-width="{w + 8}" stroke-linecap="round" stroke-linejoin="round"/>'
             f'<path d="{path}" fill="none" stroke="{fill}" stroke-width="{w}" stroke-linecap="round" stroke-linejoin="round"/>')
 
 
 def twigs(x, y, ang, n=3, length=34):
-    """Zweig-Finger am Ende eines Arms (Winkel in Grad)."""
+    """Twig fingers at the end of an arm (angle in degrees)."""
     s = ''
     for k in range(n):
         a = math.radians(ang + (k - (n - 1) / 2) * 28)
@@ -206,25 +206,25 @@ def twigs(x, y, ang, n=3, length=34):
 
 
 def wurzelwaechter(pose='schlaf'):
-    """Wurzelwächter: ein uralter, wandelnder Baumriese (Baumhirte) – Wurzelbeine, lange Astarme mit
-    Zweigfingern, Rindengesicht mit schweren Brauen, Knollennase und langem Bart aus Moos und
-    Zweigen, Blätterkrone. Drei Kerne in der Brust.
-    Posen: schlaf, angriff (Arm erhoben, Wurzeln brechen aus dem Boden), offen (ein Kern gezogen),
-    ruhig (nach dem Kampf)."""
+    """Root warden: an ancient, walking giant tree (tree shepherd) – root legs, long branch arms with
+    twig fingers, bark face with heavy brows, bulbous nose and long beard of moss and
+    twigs, crown of leaves. Three cores in the chest.
+    Poses: schlaf, angriff (arm raised, roots burst out of the ground), offen (one core pulled),
+    ruhig (after the fight)."""
     s = ''
-    # Beine aus Wurzeln mit gespreizten Zehen
+    # legs made of roots with spread toes
     for side in (-1, 1):
         x = side * 44
         s += branch(f'M {x},-190 Q {x + side * 10},-100 {x + side * 4},-20', 42)
         for k, dx in enumerate((-30, 0, 30)):
             s += branch(f'M {x + side * 4},-20 Q {x + side * 4 + dx * 0.6},-4 {x + side * 4 + dx * 1.4},0', 12)
-    # Rumpf: hoher, leicht schiefer Stamm
+    # torso: tall, slightly crooked trunk
     s += (f'<path d="M -78,-170 Q -92,-320 -70,-440 Q -40,-470 0,-472 Q 44,-470 72,-440 '
           f'Q 94,-320 80,-170 Q 0,-150 -78,-170 Z" fill="{BARK}" {st(6)}/>')
     for x, c in ((-52, -6), (-20, 4), (18, -4), (50, 6)):
         s += f'<path d="M {x},-180 Q {x + c * 3},-300 {x - c},-440" fill="none" stroke="{BARK_DARK}" stroke-width="3.5"/>'
     s += f'<ellipse cx="34" cy="-210" rx="10" ry="14" fill="{BARK_DARK}" opacity="0.7"/>'
-    # Arme: Schulter bei y −410; lang, knorrig
+    # arms: shoulder at y −410; long, gnarled
     if pose in ('angriff', 'angriff_ohne'):
         left = 'M -70,-410 Q -150,-470 -160,-560'
         lend = (-160, -560, -90)
@@ -248,28 +248,28 @@ def wurzelwaechter(pose='schlaf'):
     for path, end in ((left, lend), (right, rend)):
         s += branch(path, 26)
         s += twigs(*end)
-    # Kerne in der Brust
+    # cores in the chest
     for k, (x, y) in enumerate(((-34, -250), (6, -300), (40, -236))):
         if pose == 'offen' and k == 1:
             s += f'<ellipse cx="{x}" cy="{y}" rx="18" ry="22" fill="#3a2a1a" stroke="{OUT}" stroke-width="3"/>'
             s += f'<ellipse cx="{x}" cy="{y}" rx="10" ry="12" fill="#ffd27a" opacity="0.85"/>'
         else:
             s += kern(x, y, 13, pose != 'ruhig')
-    # Kopf: oberer Teil des Stamms, lang gezogen
+    # head: upper part of the trunk, elongated
     s += f'<path d="M -64,-430 Q -74,-540 -30,-580 Q 0,-596 34,-580 Q 76,-540 66,-430 Z" fill="{BARK}" {st(5)}/>'
-    # Krone aus Blättern und Zweigen wie Haar
+    # crown of leaves and twigs like hair
     for (x, y, rx, ry, c) in ((-46, -590, 46, 30, LEAF), (10, -612, 58, 34, LEAF_LIGHT), (58, -586, 42, 28, LEAF),
                               (-70, -556, 28, 22, MOSS), (78, -552, 26, 20, MOSS)):
         s += blob(x, y, rx, ry, c, 26, 0.14)
     for (x, ang) in ((-30, -120), (20, -80), (50, -60)):
         s += branch(f'M {x},-600 l {30 * math.cos(math.radians(ang)):.0f},{30 * math.sin(math.radians(ang)):.0f}', 6)
-    # schwere Brauen aus Rinde
+    # heavy brows made of bark
     for side in (-1, 1):
         x = side * 26
         lift = -4 if pose.startswith('angriff') else 0
         s += (f'<path d="M {x - side * 26},{-528 + lift * side} Q {x},{-552} {x + side * 26},{-534 - lift * side} '
               f'L {x + side * 24},{-522} Q {x},{-534} {x - side * 22},{-518} Z" fill="{BARK_DARK}" {st(3)}/>')
-    # Augen tief in der Rinde
+    # eyes deep in the bark
     for side in (-1, 1):
         x = side * 26
         s += f'<ellipse cx="{x}" cy="-508" rx="17" ry="12" fill="#3a2a1a" stroke="{OUT}" stroke-width="3"/>'
@@ -280,14 +280,14 @@ def wurzelwaechter(pose='schlaf'):
         else:
             glow = '#ffb84a' if pose.startswith('angriff') else '#ffd27a'
             s += f'<ellipse cx="{x}" cy="-507" rx="7" ry="7" fill="{glow}"/><circle cx="{x + 2}" cy="-506" r="3" fill="{OUT}"/>'
-    # Knollennase
+    # bulbous nose
     s += f'<path d="M -6,-500 Q -14,-470 0,-462 Q 16,-466 10,-500 Z" fill="#9a6e48" {st(3.5)}/>'
-    # Mund im Bart
+    # mouth in the beard
     roar = f'<path d="M -22,-446 Q 0,-466 22,-446 Q 0,-436 -22,-446 Z" fill="#3a2a1a" {st(3)}/>'
     mouth = {'angriff': roar, 'angriff_ohne': roar,
              'offen': f'<ellipse cx="0" cy="-446" rx="12" ry="9" fill="#3a2a1a" {st(3)}/>',
              'ruhig': f'<path d="M -18,-448 Q 0,-436 18,-448" fill="none" stroke="{OUT}" stroke-width="4" stroke-linecap="round"/>'}
-    # langer Bart aus Moos und Zweigen
+    # long beard of moss and twigs
     beard = (f'<path d="M -58,-470 Q -66,-420 -46,-380 Q -40,-350 -24,-336 Q -16,-360 -8,-330 Q 0,-356 10,-328 '
              f'Q 18,-356 26,-336 Q 42,-352 48,-382 Q 68,-420 60,-470 Q 0,-438 -58,-470 Z" fill="{MOSS}" {st(4)}/>')
     s += beard
@@ -304,10 +304,10 @@ def wurzelwaechter(pose='schlaf'):
     return s
 
 
-# ── Quelle, Runen, Deko ─────────────────────────────────────────────────
+# ── Spring, runes, decoration ───────────────────────────────────────────
 
 def rune(lit=True):
-    """Erinnerungsrune: moosiger Stein mit leuchtendem Zeichen."""
+    """Memory rune: mossy stone with a glowing sign."""
     s = f'<path d="M -30,0 Q -36,-50 -18,-70 Q 0,-80 18,-70 Q 36,-50 30,0 Z" fill="#9a958a" {st(4)}/>'
     s += f'<path d="M -30,-8 Q -10,-20 6,-10 Q 20,-2 30,-10" fill="none" stroke="{MOSS}" stroke-width="7" stroke-linecap="round"/>'
     c = GLOW if lit else '#6a6a62'
@@ -318,7 +318,7 @@ def rune(lit=True):
 
 
 def waldquelle(freed=True):
-    """Waldquelle zwischen großen Wurzeln: dunkles Becken; befreit klar und leuchtend."""
+    """Forest spring between large roots: dark basin; when freed clear and glowing."""
     s = ''
     if freed:
         s += '<ellipse cx="0" cy="-60" rx="150" ry="90" fill="#9ff2d8" opacity="0.25"/>'
@@ -338,26 +338,26 @@ def waldquelle(freed=True):
 
 
 def waldbaum():
-    """Hoher Waldbaum (viel Vertikale): breite Wurzeln, gefurchte Rinde mit Astloch und Moos,
-    Seitenäste, Krone aus mehreren Blattwolken mit Licht und Schatten, ein paar Blätter."""
+    """Tall forest tree (lots of verticality): wide roots, furrowed bark with knothole and moss,
+    side branches, crown of several leaf clouds with light and shadow, a few leaves."""
     s = ''
-    # Wurzeln
+    # roots
     for (x, dx) in ((-34, -50), (-20, -26), (22, 30), (34, 54)):
         s += f'<path d="M {x},-40 Q {x + dx * 0.4},-10 {x + dx},4 L {x + dx * 0.7},4 Q {x + dx * 0.2},-6 {x * 0.6},-20 Z" fill="{BARK}" {st(4)}/>'
-    # Stamm, leicht geschwungen
+    # trunk, slightly curved
     s += f'<path d="M -40,0 Q -30,-140 -26,-260 Q -24,-360 -18,-430 H 18 Q 26,-360 28,-260 Q 32,-140 42,0 Z" fill="{BARK}" {st(5)}/>'
-    # Furchen und Licht auf der Rinde
+    # furrows and light on the bark
     for (x0, c, w) in ((-24, -8, 3.5), (-10, 6, 3), (6, -6, 3), (20, 8, 3.5)):
         s += f'<path d="M {x0},-12 Q {x0 + c},-140 {x0 - c * 0.5},-250 Q {x0 + c * 0.6},-330 {x0 * 0.5},-420" fill="none" stroke="{BARK_DARK}" stroke-width="{w}" stroke-linecap="round"/>'
     s += '<path d="M -30,-30 Q -24,-160 -20,-300" fill="none" stroke="#a57a54" stroke-width="5" stroke-linecap="round" opacity="0.7"/>'
-    # Astloch und Moos
+    # knothole and moss
     s += f'<ellipse cx="10" cy="-190" rx="11" ry="15" fill="#4a3222" {st(3)}/><ellipse cx="10" cy="-186" rx="6" ry="9" fill="#2b1e14"/>'
     s += blob(-26, -24, 22, 10, MOSS, 14, 0.25, 3) + blob(30, -110, 14, 8, MOSS, 12, 0.25, 2.5)
-    # Seitenäste
+    # side branches
     for (x, y, dx, dy) in ((-20, -330, -90, -60), (22, -360, 100, -50), (-18, -400, -60, -80)):
         s += f'<path d="M {x},{y} q {dx * 0.5},{dy * 0.2} {dx},{dy}" fill="none" stroke="{OUT}" stroke-width="18" stroke-linecap="round"/>'
         s += f'<path d="M {x},{y} q {dx * 0.5},{dy * 0.2} {dx},{dy}" fill="none" stroke="{BARK}" stroke-width="11" stroke-linecap="round"/>'
-    # Krone: dunkle Schatten hinten, helle Wolken vorn, Lichtkanten
+    # crown: dark shadows behind, light clouds in front, light edges
     back = ((-110, -430, 70, 52), (110, -440, 76, 54), (-60, -520, 84, 62), (60, -530, 90, 64), (0, -600, 86, 56))
     for (x, y, rx, ry) in back:
         s += blob(x, y, rx, ry, '#3f7a30', 32, 0.12)
@@ -366,7 +366,7 @@ def waldbaum():
     for (x, y, rx, ry, c) in front:
         s += blob(x, y, rx, ry, c, 28, 0.12)
         s += f'<path d="M {x - rx * 0.6},{y - ry * 0.3} q {rx * 0.3},{-ry * 0.5} {rx * 0.7},{-ry * 0.4}" fill="none" stroke="#9fdc7a" stroke-width="5" stroke-linecap="round" opacity="0.8"/>'
-    # einzelne Blätter und Beeren
+    # individual leaves and berries
     for (x, y, a) in ((-130, -380, 30), (126, -392, -20), (-40, -620, 10), (70, -620, -30)):
         s += f'<ellipse cx="{x}" cy="{y}" rx="10" ry="5" fill="{LEAF_LIGHT}" stroke="{OUT}" stroke-width="2" transform="rotate({a} {x} {y})"/>'
     for (x, y) in ((-40, -500), (30, -520), (-90, -450), (90, -470)):
@@ -375,7 +375,7 @@ def waldbaum():
 
 
 def baumhaus():
-    """Baumhaus der Siedlung mit Plattform und Tür."""
+    """Tree house of the settlement with platform and door."""
     s = f'<rect x="-90" y="-12" width="180" height="12" fill="#a87a52" {st(4)}/>'
     for x in (-80, 80):
         s += f'<path d="M {x},0 V 40" stroke="{OUT}" stroke-width="8"/><path d="M {x},0 V 40" stroke="#a87a52" stroke-width="4"/>'
@@ -400,8 +400,8 @@ def haengebruecke():
 
 
 def leuchtpilze():
-    """Leuchtpilze: kräftiger Lichtschein, leuchtende Hüte mit hellen Punkten (Sternchen steigen
-    im Spiel als Teilchen auf)."""
+    """Glowing mushrooms: strong glow, luminous caps with light dots (little stars rise
+    as particles in the game)."""
     s = '<ellipse cx="0" cy="-26" rx="70" ry="44" fill="#9ff2ff" opacity="0.22"/>'
     s += '<ellipse cx="0" cy="-22" rx="46" ry="28" fill="#c8f8ff" opacity="0.3"/>'
     for (x, h, r, c) in ((-26, 26, 14, '#5fd8e8'), (0, 40, 19, '#8ff0ff'), (24, 22, 12, '#5fd8e8'), (-12, 14, 8, '#8ff0ff')):
@@ -421,7 +421,7 @@ def wurzelbogen():
     return s
 
 
-# ── Bogen ───────────────────────────────────────────────────────────────
+# ── Sheet ───────────────────────────────────────────────────────────────
 
 def sheet():
     W, H = 1600, 1740
@@ -485,7 +485,7 @@ def sheet():
 
 
 def pilzring():
-    """Ring aus Pilzen (Zuhause der Familie Morchel), flach am Boden."""
+    """Ring of mushrooms (home of the Morchel family), flat on the ground."""
     s = '<ellipse cx="0" cy="-6" rx="120" ry="16" fill="#9ff2d8" opacity="0.2"/>'
     for k, (x, h, r, c) in enumerate(((-110, 18, 12, '#e8685a'), (-80, 26, 15, '#a8703c'), (-46, 20, 12, '#e8685a'),
                                       (-14, 30, 16, '#5fd8c8'), (20, 22, 13, '#a8703c'), (54, 28, 15, '#e8685a'),
@@ -497,7 +497,7 @@ def pilzring():
     return s
 
 
-# Deko für die Karten von Kapitel 2 (E-312): Name: (Zeichnung, viewBox), Ursprung unten in der Mitte.
+# Decoration for the chapter 2 maps (E-312): name: (drawing, viewBox), origin at the bottom centre.
 DECOR = {
     'waldbaum': (waldbaum(), '-200 -680 400 690'),
     'waldhaus': (baumhaus(), '-100 -160 200 204'),

@@ -1,21 +1,21 @@
-"""Erzeugt docs/archive/release-1/design/elora-palette.svg – Paletten-Entwurf für Skins (E-095, E-096).
+"""Generates docs/archive/release-1/design/elora-palette.svg – palette draft for skins (E-095, E-096).
 
-Aufruf: python3 tools/design/elora_palette.py && cargo xtask svg-preview \
+Usage: python3 tools/design/elora_palette.py && cargo xtask svg-preview \
         docs/archive/release-1/design/elora-palette.svg docs/archive/release-1/design/elora-palette.png 1260
 """
 import re
 
-BODY = [  # Körper und Füße (16)
+BODY = [  # body and feet (16)
     ('Sonne', 'f2c14e'), ('Orange', 'f28c3a'), ('Koralle', 'e8685a'), ('Rot', 'd94a4a'),
     ('Rosa', 'ef7fb0'), ('Violett', 'a77be0'), ('Indigo', '6a78e0'), ('Himmel', '5aaee8'),
     ('Türkis', '3fc1b0'), ('Mint', '7fd99a'), ('Grün', '6cbf4a'), ('Limette', 'b8d94a'),
     ('Sand', 'e0c89a'), ('Braun', 'a8744a'), ('Grau', '9aa4ae'), ('Weiß', 'f0ece4'),
 ]
-EYES = [  # Augen (8)
+EYES = [  # eyes (8)
     ('Schwarz', '2b2b2b'), ('Nachtblau', '2e3f86'), ('Tannengrün', '2f6b4a'), ('Kastanie', '6b3a2a'),
     ('Wein', '7a2a4a'), ('Pflaume', '4a2a7a'), ('Petrol', '1f6470'), ('Schiefer', '5a5a5a'),
 ]
-EXAMPLES = [  # (Körper, Füße, Augen) als Indizes
+EXAMPLES = [  # (body, feet, eyes) as indices
     (0, 0, 0), (7, 6, 1), (4, 5, 4), (10, 13, 2), (15, 14, 0), (3, 13, 3), (8, 9, 6), (5, 6, 5),
 ]
 

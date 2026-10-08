@@ -1,16 +1,16 @@
-"""Erzeugt docs/archive/release-1/design/elora-kartenlook.svg – drei Entwürfe für den Kartenlook (M6.0, E-130).
+"""Generates docs/archive/release-1/design/elora-kartenlook.svg – three drafts for the map look (M6.0, E-130).
 
-Aufruf: python3 tools/design/elora_kartenlook.py && cargo xtask svg-preview \
+Usage: python3 tools/design/elora_kartenlook.py && cargo xtask svg-preview \
         docs/archive/release-1/design/elora-kartenlook.svg docs/archive/release-1/design/elora-kartenlook.png 1400
 
-Jede Zeile zeigt dieselbe Szene: Spielfläche mit Außen-/Innenecken, nicht hookbarer
-Stein (U), Tod (x), Plattform (~), Eis (I), Sprungfeld (^), Beschleuniger (>),
-Deko, Hintergrund-Ebenen und Elora als Größenvergleich.
+Each row shows the same scene: playing area with outer/inner corners, unhookable
+stone (U), death (x), platform (~), ice (I), jump pad (^), booster (>),
+decoration, background layers and Elora for size comparison.
 """
 import math
 import re
 
-T = 28            # Pixel je Tile auf dem Blatt (im Spiel 32 Einheiten)
+T = 28            # pixels per tile on the sheet (32 units in the game)
 OUT = '#2b2b2b'
 SCENE = [
     "..........................................",
@@ -24,7 +24,7 @@ SCENE = [
 ]
 W_T, H_T = len(SCENE[0]), len(SCENE)
 SW = W_T * T
-SH = H_T * T + 2 * T   # Luft über der Szene
+SH = H_T * T + 2 * T   # air above the scene
 
 
 def at(x, y):
@@ -49,7 +49,7 @@ def elora(x, y, s, body='f2c14e', feet='d9a43a'):
 
 
 def tile_path(x, y, r, same):
-    """Rechteck des Tiles mit gerundeten Außenecken (konvex, wenn beide Nachbarn frei)."""
+    """Rectangle of the tile with rounded outer corners (convex if both neighbours are free)."""
     px, py = x * T, y * T
     up, down = not same(x, y - 1), not same(x, y + 1)
     left, right = not same(x - 1, y), not same(x + 1, y)
@@ -62,7 +62,7 @@ def tile_path(x, y, r, same):
             f'H {px + bl} Q {px},{py + T} {px},{py + T - bl} V {py + tl} Q {px},{py} {px + tl},{py} Z')
 
 
-# ── Stile ───────────────────────────────────────────────────────────────
+# ── Styles ──────────────────────────────────────────────────────────────
 
 STYLES = {
     'A': dict(title='A – Weich & lebendig', desc='runde Außenecken, Grasnarbe, Erde mit weichen Flecken, Büsche und Blumen',
@@ -81,7 +81,7 @@ def background(st, key):
     s = [f'<defs><linearGradient id="sky{key}" x1="0" y1="0" x2="0" y2="1">'
          f'<stop offset="0" stop-color="{st["sky"][0]}"/><stop offset="1" stop-color="{st["sky"][1]}"/></linearGradient></defs>',
          f'<rect x="0" y="{-2 * T}" width="{SW}" height="{SH}" fill="url(#sky{key})"/>']
-    # ferne und nahe Ebene (Parallax)
+    # far and near layer (parallax)
     if key == 'B':
         pts_far = ' '.join(f'{x},{50 + 30 * math.sin(x / 60) + (x * 7 % 23)}' for x in range(0, SW + 40, 40))
         s.append(f'<polygon points="0,{H_T * T} {pts_far} {SW},{H_T * T}" fill="{st["far"]}"/>')
@@ -105,7 +105,7 @@ def background(st, key):
 def terrain(st, key):
     s = []
     same = solid
-    # Schatten (nur C)
+    # shadow (C only)
     if key == 'C':
         for y in range(H_T):
             for x in range(W_T):
@@ -117,11 +117,11 @@ def terrain(st, key):
             if c not in SOLIDS:
                 continue
             fill = st['stone'] if c == 'U' else st['earth']
-            # dünner Rand in Füllfarbe überdeckt Nähte zwischen Kacheln
+            # thin border in fill colour covers seams between tiles
             s.append(f'<path d="{tile_path(x, y, st["round"], same)}" fill="{fill}" stroke="{fill}" stroke-width="0.8"/>')
             px, py = x * T, y * T
             if c == 'U':
-                # Stein: Risse bzw. Facetten bzw. Schraffur
+                # stone: cracks or facets or hatching, respectively
                 if key == 'A':
                     s.append(f'<path d="M {px + 6},{py + 8} l 6,5 l -2,7 M {px + 18},{py + 4} l -3,6 l 5,4" stroke="{st["stone_dark"]}" stroke-width="2" fill="none" stroke-linecap="round"/>')
                 elif key == 'B':
@@ -134,7 +134,7 @@ def terrain(st, key):
                     s.append(f'<ellipse cx="{px + 10 + (x * 13) % 9}" cy="{py + 14 + (y * 5) % 7}" rx="4" ry="3" fill="{st["earth_dark"]}"/>')
                 if key == 'B' and (x + y) % 2 == 0:
                     s.append(f'<polygon points="{px},{py + T} {px + T},{py} {px + T},{py + T}" fill="{st["earth_dark"]}" opacity="0.6"/>')
-            # Oberkante
+            # top edge
             if not solid(x, y - 1) and c != 'U':
                 if key == 'A':
                     wave = ' '.join(f'Q {px + i + 2},{py + 12} {px + i + 4},{py + 9}' for i in range(0, T, 4))
@@ -145,7 +145,7 @@ def terrain(st, key):
                     s.append(f'<line x1="{px + 4}" y1="{py + 2}" x2="{px + T - 4}" y2="{py + 2}" stroke="#ffffff" stroke-width="1.5" opacity="0.7"/>')
                 else:
                     s.append(f'<rect x="{px}" y="{py}" width="{T}" height="7" fill="{st["top"]}"/>')
-    # Kontur (A, B)
+    # outline (A, B)
     if key in 'AB':
         for y in range(H_T):
             for x in range(W_T):
@@ -156,7 +156,7 @@ def terrain(st, key):
                         if not solid(x + dx, y + dy):
                             r = st['round']
                             x1, y1, x2, y2 = line
-                            # an gerundeten Ecken kürzen
+                            # shorten at rounded corners
                             s.append(f'<line x1="{x1 + (r if dy and not solid(x - 1, y) else 0)}" y1="{y1 + (r if dx and not solid(x, y - 1) else 0)}" '
                                      f'x2="{x2 - (r if dy and not solid(x + 1, y) else 0)}" y2="{y2 - (r if dx and not solid(x, y + 1) else 0)}" '
                                      f'stroke="{OUT}" stroke-width="2.5" stroke-linecap="round"/>')
@@ -169,21 +169,21 @@ def specials(st, key):
         for x in range(W_T):
             c = at(x, y)
             px, py = x * T, y * T
-            if c == '~':      # Plattform
+            if c == '~':      # platform
                 fill = {'A': '#c9955c', 'B': '#cfe9f5', 'C': '#e9b46f'}[key]
                 s.append(f'<rect x="{px}" y="{py}" width="{T}" height="9" rx="{3 if key != "B" else 0}" fill="{fill}" stroke="{OUT}" stroke-width="2"/>')
                 if key == 'A':
                     s.append(f'<line x1="{px + T / 2}" y1="{py + 9}" x2="{px + T / 2}" y2="{py + 16}" stroke="{OUT}" stroke-width="2"/>')
-            elif c == 'I':    # Eis
+            elif c == 'I':    # ice
                 s.append(f'<rect x="{px}" y="{py}" width="{T}" height="{T}" fill="#bfe6f5" stroke="{OUT}" stroke-width="2"/>')
                 s.append(f'<line x1="{px + 5}" y1="{py + 20}" x2="{px + 15}" y2="{py + 8}" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>')
-            elif c == '^':    # Sprungfeld (auf dem Boden)
+            elif c == '^':    # jump pad (on the ground)
                 s.append(f'<rect x="{px + 2}" y="{py + 18}" width="{T - 4}" height="10" rx="4" fill="#ef7fb0" stroke="{OUT}" stroke-width="2"/>')
                 s.append(f'<path d="M {px + 8},{py + 16} L {px + T / 2},{py + 6} L {px + T - 8},{py + 16}" fill="none" stroke="{OUT}" stroke-width="2.5" stroke-linecap="round"/>')
-            elif c == '>':    # Beschleiniger
+            elif c == '>':    # booster
                 s.append(f'<rect x="{px}" y="{py}" width="{T}" height="{T}" fill="#6c7a89" stroke="{OUT}" stroke-width="2"/>')
                 s.append(f'<path d="M {px + 8},{py + 7} L {px + 18},{py + T / 2} L {px + 8},{py + T - 7}" fill="none" stroke="#f2c14e" stroke-width="3" stroke-linecap="round"/>')
-            elif c == 'x':    # Tod
+            elif c == 'x':    # death
                 col = {'A': '#c94f4f', 'B': '#ff5a6e', 'C': '#c0392b'}[key]
                 for k in range(3):
                     bx = px + k * T / 3
@@ -193,7 +193,7 @@ def specials(st, key):
 
 def deko(st, key):
     s = []
-    ground = 6 * T  # Oberkante des Bodens
+    ground = 6 * T  # top edge of the ground
     if key == 'A':
         for x in [60, 280, 700, 1000]:
             s.append(f'<ellipse cx="{x}" cy="{ground - 8}" rx="22" ry="14" fill="#5f9c42" stroke="{OUT}" stroke-width="2"/>')
@@ -237,7 +237,7 @@ def sheet():
         out.append(deko(st, key))
         out.append(terrain(st, key))
         out.append(specials(st, key))
-        scale = 0.36 * T / 32  # wie im Spiel
+        scale = 0.36 * T / 32  # as in the game
         out.append(elora(13 * T, 6 * T, scale))
         out.append(elora(17 * T, 1 * T, scale, body='5aaee8', feet='6a78e0'))
         out.append(labels())

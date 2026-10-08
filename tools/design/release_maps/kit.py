@@ -1,6 +1,6 @@
-"""Baukasten für die Release-Karten: Raster mit Grundformen, Spiegeln, Prüfungen."""
-SOLID = set('#%~!\\/<>')     # fest (inkl. Eis, Sprungfelder, Beschleuniger)
-GROUND = SOLID | {'='}       # darauf kann man stehen
+"""Construction kit for the release maps: grid with basic shapes, mirroring, checks."""
+SOLID = set('#%~!\\/<>')     # solid (incl. ice, jump pads, boosters)
+GROUND = SOLID | {'='}       # can be stood on
 ENTS = set('SRBrbhaLGDWJX')
 
 class Grid:
@@ -23,7 +23,7 @@ class Grid:
     def put(s, x, y, text):
         for i, c in enumerate(text): s.set(x+i, y, c)
     def mirror(s, swap=True):
-        """Rechte Hälfte = gespiegelte linke (Rot ↔ Blau, Richtungen getauscht)."""
+        """Right half = mirrored left half (red ↔ blue, directions swapped)."""
         sw = {'R':'B','B':'R','r':'b','b':'r','\\':'/','/':'\\','<':'>','>':'<'} if swap else {'\\':'/','/':'\\','<':'>','>':'<'}
         for y in range(s.h):
             for x in range(s.w // 2):
@@ -45,15 +45,15 @@ def check(grid, ctf=False, name=''):
                     errs.append(f'{c} bei {x},{y}: kein Platz über dem Spawn')
             if (c == '.' or c in ENTS) and g.at(x, y+1) in GROUND and g.at(x, y-1) not in SOLID:
                 stand.add((x, y))
-    # Erreichbarkeit: von Standplatz zu Standplatz, wenn der Weg (Gerade) frei ist und
-    # höchstens 9 Tiles hoch (Sprung + Doppelsprung) und 9 weit; nach unten beliebig.
+    # Reachability: from standing spot to standing spot if the path (straight line) is clear and
+    # at most 9 tiles high (jump + double jump) and 9 wide; any distance downwards.
     def free(a, b):
         (x0, y0), (x1, y1) = a, b
         n = max(abs(x1-x0), abs(y1-y0), 1)
         for i in range(n+1):
             x = round(x0 + (x1-x0)*i/n); y = round(y0 + (y1-y0)*i/n)
             if g.at(x, y) in SOLID: return False
-            # Kopf: Figur ist etwa ein Tile hoch
+            # head: the figure is about one tile high
         return True
     nodes = sorted(stand)
     import collections
@@ -65,9 +65,9 @@ def check(grid, ctf=False, name=''):
             for m in byx.get(x+dx, []):
                 dy = m[1] - y
                 if m != n and dy >= -9 and (dy >= 0 or abs(dx) <= 9) and free(n, m):
-                    # Sprungfelder werfen weiter nach oben
+                    # jump pads throw further upwards
                     yield m
-        # Sprungfeld unter n: bis 14 Tiles hoch
+        # jump pad below n: up to 14 tiles high
         if g.at(x, y+1) in '!\\/':
             for dx in range(-8, 9):
                 for m in byx.get(x+dx, []):
@@ -82,7 +82,7 @@ def check(grid, ctf=False, name=''):
         for x in range(w):
             c = g.at(x, y)
             if c in ENTS:
-                # Entity muss von einem erreichbaren Standplatz aus in Reichweite sein
+                # entity must be within reach of a reachable standing spot
                 near = any(abs(x-a) <= 2 and 0 <= b - y <= 3 or (a, b) == (x, y) for (a, b) in seen)
                 if not near: errs.append(f'{c} bei {x},{y} nicht erreichbar')
     unreach = [n for n in nodes if n not in seen]

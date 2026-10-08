@@ -1,10 +1,10 @@
-"""Erzeugt docs/archive/release-1/design/elora-hud.svg – drei HUD-Entwürfe (M5.8, E-090 „modern, am Fadenkreuz“).
+"""Generates docs/archive/release-1/design/elora-hud.svg – three HUD drafts (M5.8, E-090 "modern, at the crosshair").
 
-Aufruf: python3 tools/design/elora_hud.py && cargo xtask svg-preview \
+Usage: python3 tools/design/elora_hud.py && cargo xtask svg-preview \
         docs/archive/release-1/design/elora-hud.svg docs/archive/release-1/design/elora-hud.png 1260
 
-Jede Karte zeigt denselben Spielmoment: 7/10 Leben, 4/10 Rüstung, Granate mit 6/10 Munition,
-DM mit 12 Punkten, Timer 3:24.
+Each card shows the same game moment: 7/10 health, 4/10 armour, grenade with 6/10 ammo,
+DM with 12 points, timer 3:24.
 """
 import math
 import re
@@ -12,7 +12,7 @@ import re
 OUT = '#2b2b2b'
 HEALTH, ARMOR = '#e05a7a', '#e0b85a'
 HP, AR, AMMO, MAXV = 7, 4, 6, 10
-W, H = 400, 300  # Kartengröße (Bildschirmausschnitt)
+W, H = 400, 300  # card size (screen excerpt)
 
 
 def elora(x, y, s):
@@ -47,7 +47,7 @@ def segmented_arc(cx, cy, r, a0, a1, value, color, width):
 
 
 def scene(ox, oy):
-    """Gemeinsamer Hintergrund: Himmel, Boden, Elora, Fadenkreuz."""
+    """Shared background: sky, ground, Elora, crosshair."""
     return (f'<rect x="{ox}" y="{oy}" width="{W}" height="{H}" rx="12" fill="#98bfdf"/>'
             f'<rect x="{ox}" y="{oy + 230}" width="{W}" height="70" fill="#5b6b7c"/>'
             f'<rect x="{ox}" y="{oy + 230}" width="{W}" height="4" fill="#2f3944"/>'
@@ -79,7 +79,7 @@ def variant_a(ox, oy):
 def variant_b(ox, oy):
     cx, cy = ox + 260, oy + 150
     s = scene(ox, oy) + crosshair(cx, cy) + top_info(ox, oy)
-    # unten mittig: Leiste mit Balken und Waffen
+    # bottom centre: bar with gauges and weapons
     bx, by = ox + W / 2 - 110, oy + 250
     s += f'<rect x="{bx}" y="{by}" width="220" height="40" rx="12" fill="#1e2a36" opacity="0.6"/>'
     s += f'<rect x="{bx + 12}" y="{by + 10}" width="90" height="8" rx="4" fill="#ffffff" opacity="0.2"/>'
@@ -99,14 +99,14 @@ def variant_b(ox, oy):
 def variant_c(ox, oy):
     cx, cy = ox + 260, oy + 150
     s = scene(ox, oy) + crosshair(cx, cy) + top_info(ox, oy)
-    # dünne durchgehende Bögen am Fadenkreuz, Munition als Ring-Anteil
+    # thin continuous arcs at the crosshair, ammo as a share of the ring
     s += arc(cx, cy, 24, 120, 240, '#ffffff', 3, 0.25)
     s += arc(cx, cy, 24, 240 - 120 * HP / MAXV, 240, HEALTH, 3)
     s += arc(cx, cy, 24, 60, -60, '#ffffff', 3, 0.25)
     s += arc(cx, cy, 24, -60 + 120 * AR / MAXV, -60, ARMOR, 3)
     s += arc(cx, cy, 15, 20, 160, '#ffffff', 2, 0.25)
     s += arc(cx, cy, 15, 160 - 140 * AMMO / MAXV, 160, '#ffffff', 2)
-    # unten mittig nur die Waffe mit Zahl
+    # bottom centre only the weapon with its number
     s += f'<rect x="{ox + W / 2 - 38}" y="{oy + 254}" width="76" height="32" rx="10" fill="#1e2a36" opacity="0.55"/>'
     s += item('grenade', ox + W / 2 - 30, oy + 270, 0.7)
     s += f'<text x="{ox + W / 2 + 26}" y="{oy + 276}" font-size="15" text-anchor="middle" fill="#ffffff">{AMMO}</text>'

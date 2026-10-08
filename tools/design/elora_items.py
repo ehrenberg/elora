@@ -1,9 +1,9 @@
-"""Erzeugt docs/archive/release-1/design/elora-items.svg – Entwürfe für Pickups, Waffen, Flaggen (M5.5).
+"""Generates docs/archive/release-1/design/elora-items.svg – drafts for pickups, weapons, flags (M5.5).
 
-Aufruf: python3 tools/design/elora_items.py && cargo xtask svg-preview \
+Usage: python3 tools/design/elora_items.py && cargo xtask svg-preview \
         docs/archive/release-1/design/elora-items.svg docs/archive/release-1/design/elora-items.png 1260
 
-Alle Motive sind in Welteinheiten gezeichnet und werden auf dem Blatt ×2.5 gezeigt.
+All motifs are drawn in world units and shown ×2.5 on the sheet.
 """
 import re
 
@@ -21,7 +21,7 @@ def g(x, y, body, scale=Z):
     return f'<g transform="translate({x},{y}) scale({scale})">{body}</g>'
 
 
-# --- Stil A: rund, freundlich (passend zu Elora) ---
+# --- Style A: round, friendly (matching Elora) ---
 A = {
     'Leben': f'''<path d="M 0,9 C -13,1 -13,-10 -5.5,-10 C -2.5,-10 0,-7.5 0,-5 C 0,-7.5 2.5,-10 5.5,-10 C 13,-10 13,1 0,9 Z"
         fill="#e05a7a" stroke="{OUT}" stroke-width="1.6" stroke-linejoin="round"/>
@@ -48,7 +48,7 @@ def flag_a(color):
         <path d="M 1.5,-36 C 12,-40 20,-30 32,-30 C 24,-24 12,-20 1.5,-16 Z" fill="{color}" stroke="{OUT}" stroke-width="1.6" stroke-linejoin="round"/>'''
 
 
-# --- Stil B: kantig, technisch (Kontrast zur runden Figur) ---
+# --- Style B: angular, technical (contrast to the round figure) ---
 B = {
     'Leben': f'''<rect x="-11" y="-11" width="22" height="22" rx="5" fill="#ffffff" stroke="{OUT}" stroke-width="1.6"/>
         <path d="M -3,-7 H 3 V -3 H 7 V 3 H 3 V 7 H -3 V 3 H -7 V -3 H -3 Z" fill="#e05a7a"/>''',
@@ -84,7 +84,7 @@ def row(y, title, desc, items, flag):
     out.append(g(880, base + 20, flag('#e0574f')))
     out.append(g(990, base + 20, flag('#4f86e0')))
     out.append(f'<text x="955" y="{base + 70}" font-size="15" text-anchor="middle" fill="#1e2a36">Flaggen</text>')
-    # Größenvergleich: Elora mit Laser
+    # size comparison: Elora with laser
     ground = base + 14 * Z + 30
     out.append(g(1120, ground, elora(), 0.36 * Z))
     out.append(g(1120 + 2 * Z, ground - 12 * Z, items['Laser'], Z))

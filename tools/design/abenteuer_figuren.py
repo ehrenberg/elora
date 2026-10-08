@@ -1,10 +1,10 @@
-"""Erzeugt docs/release-2/design/abenteuer-figuren.svg – NPCs, Gegner und Objekte (R2-M1, A1.0).
+"""Generates docs/release-2/design/abenteuer-figuren.svg – NPCs, enemies and objects (R2-M1, A1.0).
 
-Aufruf: python3 tools/design/abenteuer_figuren.py && cargo xtask svg-preview \
+Usage: python3 tools/design/abenteuer_figuren.py && cargo xtask svg-preview \
         docs/release-2/design/abenteuer-figuren.svg docs/release-2/design/abenteuer-figuren.png 1400
 
-Alle Figuren nutzen Eloras Tropfenform (assets/elora/elora.svg) und dieselbe Linienstärke;
-Zubehör liegt in Eloras Koordinaten (Ursprung = Bodenkontakt, Blick nach rechts).
+All figures use Elora's drop shape (assets/elora/elora.svg) and the same line width;
+accessories are in Elora's coordinates (origin = ground contact, facing right).
 """
 import math
 import re
@@ -69,13 +69,13 @@ def oma_pfuetze():
     s += '<path d="M 58,-4 L 62,-74 Q 64,-90 50,-88" fill="none" stroke="#a8744a" stroke-width="5" stroke-linecap="round"/>'
     s += drop(body, '8a6fb8', mouth=False)
     s += '<circle cx="14" cy="-128" r="12" fill="#e9e6ef" stroke="#2b2b2b" stroke-width="4"/>'
-    # halb geschlossene Lider
+    # half-closed eyelids
     for ex in (2, 26):
         s += f'<path d="M {ex - 7.5},-63 A 7.5,11 0 0 1 {ex + 7.5},-63 Z" fill="#{body}" stroke="#2b2b2b" stroke-width="2.5"/>'
         s += f'<circle cx="{ex}" cy="-63" r="13" fill="#ffffff" fill-opacity="0.18" stroke="#2b2b2b" stroke-width="3"/>'
     s += '<path d="M 15,-64 Q 14,-67 13,-64" fill="none" stroke="#2b2b2b" stroke-width="3"/>'
     s += '<path d="M 10,-43 Q 16,-38 22,-43" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>'
-    # Schultertuch
+    # shoulder shawl
     s += ('<path d="M -49,-50 Q 0,-26 49,-52 L 47,-36 Q 0,-12 -46,-34 Z" fill="#e8685a" stroke="#2b2b2b" '
           'stroke-width="4" stroke-linejoin="round"/>')
     for x in (-30, -12, 6, 24, 40):
@@ -86,16 +86,16 @@ def oma_pfuetze():
 def klonk():
     body, feet = 'a8744a', '6b4a32'
     s = drop(body, feet, mouth=False)
-    # Schürze
+    # apron
     s += '<path d="M -40,-36 L -34,-84 M 44,-36 L 40,-80" fill="none" stroke="#2b2b2b" stroke-width="4"/>'
     s += ('<path d="M -42,-36 L 46,-36 L 46,-18 Q 4,-6 -44,-18 Z" fill="#5a5a5a" stroke="#2b2b2b" '
           'stroke-width="4" stroke-linejoin="round"/>')
     s += '<rect x="-6" y="-32" width="22" height="12" rx="3" fill="#4a4a4a" stroke="#2b2b2b" stroke-width="2.5"/>'
-    # buschige Brauen und Bart
+    # bushy eyebrows and beard
     s += '<path d="M -10,-82 L 12,-76" stroke="#2b2b2b" stroke-width="7" stroke-linecap="round"/>'
     s += '<path d="M 18,-76 L 38,-82" stroke="#2b2b2b" stroke-width="7" stroke-linecap="round"/>'
     s += '<path d="M -4,-46 Q 14,-58 32,-46 Q 26,-38 14,-42 Q 2,-38 -4,-46 Z" fill="#4a3424" stroke="#2b2b2b" stroke-width="3"/>'
-    # Schmiedehammer
+    # smith hammer
     s += '<path d="M 46,-14 L 66,-78" stroke="#2b2b2b" stroke-width="10" stroke-linecap="round"/>'
     s += '<path d="M 46,-14 L 66,-78" stroke="#8a6a4a" stroke-width="5" stroke-linecap="round"/>'
     s += '<rect x="50" y="-98" width="34" height="22" rx="5" fill="#c8ced6" stroke="#2b2b2b" stroke-width="4" transform="rotate(17 67 -87)"/>'
@@ -106,16 +106,16 @@ def lotte():
     body, feet = '8fd0f0', '5aaee8'
     s = '<path d="M -40,-58 L 22,-14" stroke="#2b2b2b" stroke-width="4"/>'
     s += drop(body, feet)
-    # Umhängetasche
+    # shoulder bag
     s += '<path d="M -40,-86 L -52,-50" stroke="#a8744a" stroke-width="6" stroke-linecap="round"/>'
     s += '<rect x="-74" y="-52" width="40" height="32" rx="8" fill="#e0c89a" stroke="#2b2b2b" stroke-width="4"/>'
     s += '<path d="M -74,-42 L -34,-42" stroke="#2b2b2b" stroke-width="3"/>'
     s += star(-54, -30, 7, '#f2c14e')
-    # Glitzerkette
+    # glitter necklace
     for i in range(7):
         x = -26 + i * 9.5
         s += f'<circle cx="{x:.1f}" cy="{-30 + (abs(x - 2) ** 2) * 0.008:.1f}" r="3.6" fill="#{["ef7fb0", "f2c14e", "a77be0"][i % 3]}" stroke="#2b2b2b" stroke-width="1.5"/>'
-    # Sonnenhut mit Blume
+    # sun hat with flower
     s += '<ellipse cx="10" cy="-104" rx="46" ry="9" fill="#f0ece4" stroke="#2b2b2b" stroke-width="4"/>'
     s += '<path d="M -16,-106 Q -14,-142 14,-142 Q 38,-142 38,-106 Z" fill="#f0ece4" stroke="#2b2b2b" stroke-width="4" stroke-linejoin="round"/>'
     s += '<path d="M -15,-114 Q 12,-108 37,-114 L 37,-106 Q 12,-100 -15,-106 Z" fill="#ef7fb0"/>'
@@ -134,16 +134,16 @@ def tueftel():
     s += drop(body, feet, mouth=False)
     s += '<path d="M 10,-41 Q 16,-37 24,-43" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>'
     s += '<path d="M 21,-42 Q 23,-36 26,-41" fill="#e8685a" stroke="#2b2b2b" stroke-width="2"/>'
-    # Schutzbrille auf der Stirn
+    # goggles on the forehead
     s += '<path d="M -36,-94 Q 6,-104 42,-90" fill="none" stroke="#6b4a32" stroke-width="7"/>'
     for ex in (4, 28):
         s += f'<circle cx="{ex}" cy="-96" r="11" fill="#bfe6f5" stroke="#2b2b2b" stroke-width="4"/>'
         s += f'<path d="M {ex - 5},-99 Q {ex - 2},-103 {ex + 2},-102" fill="none" stroke="#ffffff" stroke-width="2.5"/>'
-    # Schraubenschlüssel
+    # wrench
     s += '<path d="M 44,-20 L 62,-62" stroke="#2b2b2b" stroke-width="10" stroke-linecap="round"/>'
     s += '<path d="M 44,-20 L 62,-62" stroke="#c8ced6" stroke-width="5" stroke-linecap="round"/>'
     s += '<path d="M 56,-62 a 11,11 0 1 1 14,4 l -4,-9 l -6,3 Z" fill="#c8ced6" stroke="#2b2b2b" stroke-width="3.5" stroke-linejoin="round"/>'
-    # Ölfleck
+    # oil stain
     s += '<ellipse cx="-24" cy="-62" rx="7" ry="5" fill="#3fa090" opacity="0.7"/>'
     return s
 
@@ -153,17 +153,17 @@ def pip():
     s = drop(body, feet)
     for ex in (2, 26):
         s += f'<circle cx="{ex - 2}" cy="-58" r="1.8" fill="#ffffff"/>'
-    # verkehrt herum getragene Mütze
+    # cap worn backwards
     s += '<path d="M -18,-104 Q -4,-146 36,-112 Z" fill="#5aaee8" stroke="#2b2b2b" stroke-width="4" stroke-linejoin="round"/>'
     s += '<path d="M -18,-104 Q -40,-104 -44,-96 Q -28,-92 -10,-100" fill="#4a8ec8" stroke="#2b2b2b" stroke-width="4" stroke-linejoin="round"/>'
     s += '<circle cx="14" cy="-128" r="4" fill="#f0ece4" stroke="#2b2b2b" stroke-width="2"/>'
-    # Pflaster
+    # plaster
     s += '<rect x="30" y="-58" width="16" height="8" rx="3" fill="#f0ece4" stroke="#2b2b2b" stroke-width="2" transform="rotate(-25 38 -54)"/>'
     s += '<circle cx="-36" cy="-60" r="5" fill="#e8685a" opacity="0.35"/>'
     return s
 
 
-# ── Gegner ──────────────────────────────────────────────────────────────
+# ── Enemies ─────────────────────────────────────────────────────────────
 
 def angry_eye(x, y, r=7, brow=1):
     return (f'<ellipse cx="{x}" cy="{y}" rx="{r}" ry="{r * 1.15:.1f}" fill="#ffffff" stroke="#2b2b2b" stroke-width="2.5"/>'
@@ -178,7 +178,7 @@ def stachelkaefer():
         s += f'<path d="M {x},-14 l -6,12 l -6,0" fill="none" stroke="#2b2b2b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>'
     s += '<path d="M 44,-30 q 10,-24 24,-26" fill="none" stroke="#2b2b2b" stroke-width="3.5"/><circle cx="68" cy="-56" r="4" fill="#2b2b2b"/>'
     s += '<path d="M 48,-28 q 18,-14 30,-10" fill="none" stroke="#2b2b2b" stroke-width="3.5"/><circle cx="78" cy="-18" r="4" fill="#2b2b2b"/>'
-    # Stacheln auf dem Panzer
+    # spikes on the shell
     for i in range(6):
         a = math.radians(200 + i * 28)
         bx, by = 46 * math.cos(a), -14 + 38 * math.sin(a)
@@ -210,9 +210,9 @@ def pollenblaeser(shots=True):
     for dx, dy in ((-12, -10), (10, 12), (-8, 14), (14, -12)):
         s += f'<circle cx="{cx + dx}" cy="{cy + dy}" r="2" fill="#c89a2a"/>'
     s += angry_eye(cx - 8, cy - 4, 5) + angry_eye(cx + 8, cy - 4, 5)
-    # Blasrohr nach rechts
+    # blowpipe pointing right
     s += f'<path d="M {cx + 10},{cy + 4} L {cx + 44},{cy - 2} L {cx + 50},{cy - 12} L {cx + 52},{cy + 14} L {cx + 44},{cy + 8} L {cx + 10},{cy + 12} Z" fill="#e0c89a" stroke="#2b2b2b" stroke-width="3.5" stroke-linejoin="round"/>'
-    # Pollenkugeln (Geschoss)
+    # pollen balls (projectile)
     for i, (px, r) in enumerate(((84, 9), (116, 7)) if shots else ()):
         py = cy + 2 - i * 3
         s += f'<circle cx="{px}" cy="{py}" r="{r + 5}" fill="#f2c14e" opacity="0.35"/>'
@@ -227,7 +227,7 @@ def grashuepfer(jump=False, arc=True):
     s = ''
     if jump and arc:
         s += '<path d="M -80,30 Q -40,-60 10,-30" fill="none" stroke="#8a7a66" stroke-width="3" stroke-dasharray="6 7"/>'
-    # Hinterbein
+    # hind leg
     leg = 'M -20,-34 L -46,-62 L -54,-6 L -36,-4' if not jump else 'M -20,-34 L -60,-46 L -86,-20 L -96,-28'
     s += f'<path d="{leg}" fill="none" stroke="#2b2b2b" stroke-width="11" stroke-linejoin="round" stroke-linecap="round"/>'
     s += f'<path d="{leg}" fill="none" stroke="#5c9a32" stroke-width="6" stroke-linejoin="round" stroke-linecap="round"/>'
@@ -245,7 +245,7 @@ def grashuepfer(jump=False, arc=True):
     return s
 
 
-# ── Objekte ─────────────────────────────────────────────────────────────
+# ── Objects ─────────────────────────────────────────────────────────────
 
 def truhe(open_=False):
     s = '<rect x="-34" y="-40" width="68" height="40" rx="6" fill="#a8744a" stroke="#2b2b2b" stroke-width="4"/>'
@@ -352,7 +352,7 @@ def sheet():
     o.append(g(1316, 386, 0.45, drop('f2c14e', 'd9a43a')))
     o.append(text(1316, 404, 'Elora', 11, DIM))
 
-    # Gegner
+    # Enemies
     o.append(card(30, 510, 1340, 330, 'Gegner der Blütenwiesen'))
     foes = [
         (230, 'Stachelkäfer', 'läuft hin und her · Stacheln oben: nicht draufspringen', g(210, 760, 1.15, stachelkaefer())),
@@ -366,7 +366,7 @@ def sheet():
         o.append(text(x, 816, note, 13, DIM))
     o.append(text(1215, 640, 'Ruhe / Sprung', 12, DIM))
 
-    # Objekte
+    # Objects
     o.append(card(30, 860, 1340, 290, 'Abenteuer-Objekte'))
     objs = [
         ('Truhe', 'zu / offen', g(110, 1060, 1.0, truhe()) + g(210, 1060, 1.0, truhe(True)), 160),

@@ -1,9 +1,9 @@
-"""Erzeugt docs/archive/release-1/design/elora-emotes.svg – Vorschlag für 8 Emoticons und das Emote-Rad (M5.9, E-091).
+"""Generates docs/archive/release-1/design/elora-emotes.svg – proposal for 8 emoticons and the emote wheel (M5.9, E-091).
 
-Aufruf: python3 tools/design/elora_emotes.py && cargo xtask svg-preview \
+Usage: python3 tools/design/elora_emotes.py && cargo xtask svg-preview \
         docs/archive/release-1/design/elora-emotes.svg docs/archive/release-1/design/elora-emotes.png 1260
 
-Emoticons in Welteinheiten (Blase ≈ 24 breit), auf dem Blatt ×3.
+Emoticons in world units (bubble ≈ 24 wide), ×3 on the sheet.
 """
 import math
 import re
@@ -53,7 +53,7 @@ def sheet():
         x, y = 80 + i * 90, 150
         out.append(f'<g transform="translate({x},{y}) scale(3)">{bubble(sym)}</g>')
         out.append(f'<text x="{x}" y="{y + 70}" font-size="15" text-anchor="middle" fill="#1e2a36">{i + 1} {name}</text>')
-    # Rad
+    # wheel
     cx, cy, r = 280, 440, 130
     out.append(f'<circle cx="{cx}" cy="{cy}" r="{r + 40}" fill="#1e2a36" opacity="0.45"/>')
     out.append(f'<circle cx="{cx}" cy="{cy}" r="38" fill="#1e2a36" opacity="0.5"/>')
@@ -71,7 +71,7 @@ def sheet():
     out.append(f'<line x1="{cx + 28}" y1="{cy - 28}" x2="{cx + 60}" y2="{cy - 60}" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>')
     out.append(f'<circle cx="{cx + 60}" cy="{cy - 60}" r="6" fill="#ffffff"/>')
     out.append(f'<text x="{cx}" y="{cy + 5}" font-size="14" text-anchor="middle" fill="#ffffff">E</text>')
-    # Beispiel im Spiel
+    # example in the game
     gx, gy = 900, 560
     out.append(f'<rect x="620" y="300" width="610" height="310" rx="16" fill="#ffffff" opacity="0.35"/>')
     out.append(f'<text x="640" y="330" font-size="18" fill="#1e2a36" font-weight="bold">Im Spiel (×2): Blase über dem Kopf, ca. 2 s</text>')

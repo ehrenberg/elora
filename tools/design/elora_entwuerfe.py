@@ -1,10 +1,10 @@
-"""Erzeugt docs/archive/release-1/design/elora-entwuerfe.svg – drei Tropfen-Entwürfe von Elora (E-085).
+"""Generates docs/archive/release-1/design/elora-entwuerfe.svg – three drop drafts of Elora (E-085).
 
-Aufruf: python3 tools/design/elora_entwuerfe.py && cargo xtask svg-preview \
+Usage: python3 tools/design/elora_entwuerfe.py && cargo xtask svg-preview \
         docs/archive/release-1/design/elora-entwuerfe.svg docs/archive/release-1/design/elora-entwuerfe.png 1260
 
-Maßstab: Figur lokal ~100 breit → Spielgröße 36 Einheiten (E-087), Faktor 0.36.
-Die Füße (lokal y = 67) stehen auf der Hitbox-Unterkante (+14 Einheiten).
+Scale: figure locally ~100 wide → game size 36 units (E-087), factor 0.36.
+The feet (local y = 67) stand on the bottom edge of the hitbox (+14 units).
 """
 
 OUT = '#2b2b2b'; BODY = '#f2c14e'; FEET = '#d9a43a'; LIGHT = '#fbe3a1'
@@ -71,7 +71,7 @@ def sheet():
         svg.append(f'<text x="{cx - 125}" y="560" font-size="14" text-anchor="middle" fill="#1e2a36">Sprung</text>')
         svg.append(f'<g transform="translate({cx - 20},480) scale(0.62)">{figure(kind, 1.22, 0.78)}</g>')
         svg.append(f'<text x="{cx - 20}" y="560" font-size="14" text-anchor="middle" fill="#1e2a36">Landung</text>')
-        # Spielgröße ×2: Hitbox (Mitte gx,gy), Boden-Tile ab Hitbox-Unterkante
+        # game size ×2: hitbox (centre gx,gy), ground tile from the bottom edge of the hitbox
         z = 2.0
         gx, gy = cx + 115, 478
         floor = gy + 14 * z

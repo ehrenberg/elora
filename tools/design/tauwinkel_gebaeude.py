@@ -1,13 +1,13 @@
-"""Entwürfe der Gebäude von Tauwinkel (A1.9, E-274, E-276, E-277) als Karten-Deko im Stil A.
+"""Drafts of the buildings of Tauwinkel (A1.9, E-274, E-276, E-277) as map decoration in style A.
 
-Aufruf: python3 tools/design/tauwinkel_gebaeude.py && cargo xtask svg-preview \
+Usage: python3 tools/design/tauwinkel_gebaeude.py && cargo xtask svg-preview \
         docs/release-2/design/tauwinkel-gebaeude.svg docs/release-2/design/tauwinkel-gebaeude.png 1600
 
-Zweite Fassung: richtige Dächer (Ziegel, Schiefer, Reet, Schindeln), Fachwerk, Stein und Holz;
-zurückhaltende, warme Farben. Jede Figur hat ihre Farbe nur in Details (Fensterläden, Tür,
-Schild). Verblassen (E-277): Blumen, Beete und Fahnen gibt es grau und bunt.
+Second version: proper roofs (tiles, slate, thatch, shingles), half-timbering, stone and wood;
+restrained, warm colours. Each figure shows its colour only in details (shutters, door,
+sign). Fading (E-277): flowers, beds and flags exist in grey and colourful.
 
-Welteinheiten (1 Tile = 32, Elora ≈ 47 hoch), Ursprung unten in der Mitte.
+World units (1 tile = 32, Elora ≈ 47 high), origin at the bottom centre.
 """
 import os
 import re
@@ -38,7 +38,7 @@ def st(w=SW):
 
 
 def gable(cx, base, w, h, color, line, rows=5, overhang=14):
-    """Satteldach (Giebel von vorn) mit Reihen aus Ziegeln/Schindeln."""
+    """Gable roof (gable from the front) with rows of tiles/shingles."""
     l, r, ty = cx - w / 2 - overhang, cx + w / 2 + overhang, base - h
     s = f'<path d="M {l},{base} L {cx},{ty} L {r},{base} Z" fill="{color}" {st()}/>'
     for i in range(1, rows):
@@ -51,7 +51,7 @@ def gable(cx, base, w, h, color, line, rows=5, overhang=14):
 
 
 def side_roof(x0, x1, base, h, color, line, rows=4):
-    """Dach von der Traufseite: Trapez mit Reihen."""
+    """Roof from the eaves side: trapezoid with rows."""
     s = f'<path d="M {x0 - 12},{base} L {x0 + 18},{base - h} H {x1 - 18} L {x1 + 12},{base} Z" fill="{color}" {st()}/>'
     for i in range(1, rows):
         y = base - h * i / rows
@@ -72,7 +72,7 @@ def foundation(x0, x1, base, h=18):
 
 
 def timber(x0, x1, top, bottom, posts=3, braces=True):
-    """Putzwand mit Fachwerk."""
+    """Plaster wall with half-timbering."""
     s = f'<rect x="{x0}" y="{top}" width="{x1 - x0}" height="{bottom - top}" fill="{PLASTER}" {st()}/>'
     s += f'<rect x="{x0 + 2}" y="{bottom - 8}" width="{x1 - x0 - 4}" height="6" fill="{PLASTER_SHADE}"/>'
     for y in (top, bottom):
@@ -128,7 +128,7 @@ def chimney(x, top, w=16, h=46):
 
 
 def hanging_sign(x, y, icon, w=34):
-    """Wandarm mit hängendem Schild."""
+    """Wall bracket with hanging sign."""
     s = f'<path d="M {x - 22},{y - 18} H {x + 4}" stroke="{OUT}" stroke-width="3"/>'
     s += f'<path d="M {x - 8},{y - 18} V {y - 10} M {x + 2},{y - 18} V {y - 10}" stroke="{OUT}" stroke-width="1.4"/>'
     s += f'<rect x="{x - 3 - w / 2}" y="{y - 10}" width="{w}" height="26" rx="3" fill="{WOOD}" {st()}/>'
@@ -157,14 +157,14 @@ def flower_box(x0, x1, y, pale):
     return flowers(xs, y, pale) + s
 
 
-# ---------------------------------------------------------------- Gebäude (Ursprung unten Mitte)
+# ---------------------------------------------------------------- Buildings (origin bottom centre)
 
 def haus_elora(pale=True):
     s = chimney(40, -232)
     s += foundation(-86, 86, 0)
     s += timber(-86, 86, -150, -18, posts=4)
     s += gable(0, -150, 172, 96, TILE, TILE_LINE)
-    s += window(0, -186, 22, 24)  # Giebelfenster
+    s += window(0, -186, 22, 24)  # gable window
     s += door(-40, -18, color='#c9a24a')
     s += window(34, -86, 28, 34, '#d9a93c')
     s += flower_box(16, 52, -64, pale)
@@ -179,10 +179,10 @@ def haus_oma(pale=True):
         s += f'<path d="M {-w},{y} Q 0,{y - 12} {w},{y}" fill="none" stroke="{THATCH_LINE}" stroke-width="1.8"/>'
     s += f'<path d="M -98,-112 Q 0,-122 98,-112" fill="none" stroke="{OUT}" stroke-width="4" stroke-linecap="round"/>'
     s += door(22, 0, 30, 58, '#8f7ab8')
-    # Rundbogenfenster
+    # arched window
     s += f'<path d="M -54,-50 V -80 Q -38,-98 -22,-80 V -50 Z" fill="{GLASS}" {st()}/>'
     s += f'<path d="M -38,-92 V -50 M -54,-66 H -22" stroke="{OUT}" stroke-width="1.8"/>'
-    # Bank und Kräuterbeet
+    # bench and herb bed
     s += f'<rect x="-76" y="-22" width="44" height="6" rx="2" fill="{WOOD}" {st(1.6)}/><path d="M -70,-16 V 0 M -38,-16 V 0" stroke="{OUT}" stroke-width="3"/>'
     s += f'<path d="M 50,0 Q 64,-8 78,0 Z" fill="#7a5a3e" {st(1.6)}/>'
     s += flowers([54, 61, 68, 75], -3, pale)
@@ -191,17 +191,17 @@ def haus_oma(pale=True):
 
 def brunnen(pale=True):
     s = ''
-    # Beet ringsum
+    # bed all around
     s += f'<path d="M -84,0 Q -70,-10 -56,0 Z M 56,0 Q 70,-10 84,0 Z" fill="#7a5a3e" {st(1.6)}/>'
     s += flowers([-80, -73, -66, -59], -3, pale) + flowers([60, 67, 74, 81], -3, pale)
     s += stone_wall(-48, 48, -44, 0)
     s += f'<path d="M -52,-44 H 52" stroke="{OUT}" stroke-width="6" stroke-linecap="round"/>'
-    # verschlossener Deckel mit Eisenbändern und Schloss (Weltbuch §2)
+    # locked lid with iron bands and lock (world book §2)
     s += f'<path d="M -50,-46 Q 0,-62 50,-46 Z" fill="{WOOD}" {st()}/>'
     for x in (-24, 24):
         s += f'<path d="M {x},-56 V -46" stroke="#5a5a5a" stroke-width="4"/>'
     s += f'<rect x="-6" y="-60" width="12" height="11" rx="2" fill="#8a8f96" {st(1.6)}/><path d="M -3,-60 Q 0,-67 3,-60" fill="none" {st(1.6)}/>'
-    # Gestell, Kurbel, Eimer, Schindeldach
+    # frame, crank, bucket, shingle roof
     for x in (-42, 42):
         s += f'<rect x="{x - 5}" y="-128" width="10" height="84" fill="{WOOD}" {st()}/>'
     s += f'<path d="M -42,-104 H 52" stroke="{OUT}" stroke-width="4"/><path d="M 52,-104 V -94 H 60" fill="none" stroke="{OUT}" stroke-width="3"/>'
@@ -213,14 +213,14 @@ def brunnen(pale=True):
 def werkstatt_tueftel(pale=True):
     s = chimney(-60, -250, 18, 60)
     s += f'<path d="M -51,-256 V -276 M -63,-276 L -39,-276" stroke="{OUT}" stroke-width="2.5"/><path d="M -51,-276 l 10,-6 l -10,-6 l -10,6 Z" fill="#c8ced6" {st(1.4)}/>'
-    s += stone_wall(-92, 92, -96, 0, '#b48a6e')  # Ziegel unten
+    s += stone_wall(-92, 92, -96, 0, '#b48a6e')  # bricks at the bottom
     s += timber(-92, 92, -168, -96, posts=4, braces=False)
     s += gable(0, -168, 184, 84, SLATE, SLATE_LINE)
-    # großes Holztor
+    # large wooden gate
     s += f'<rect x="-70" y="-74" width="64" height="74" fill="{WOOD}" {st()}/><path d="M -38,-74 V 0 M -70,-50 H -6 M -70,-24 H -6" stroke="{WOOD_DARK}" stroke-width="2"/>'
     s += window(44, -48, 30, 30, '#3fa38f')
     s += window(-40, -132, 26, 24, '#3fa38f') + window(40, -132, 26, 24, '#3fa38f')
-    # Zahnrad-Schild am Wandarm
+    # gear sign on the wall bracket
     def gear(x, y):
         import math
         pts = []
@@ -239,13 +239,13 @@ def schmiede_klonk(pale=True):
     s += f'<ellipse cx="72" cy="-282" rx="18" ry="9" fill="#d6d6d6" opacity="0.85"/><ellipse cx="80" cy="-300" rx="12" ry="6" fill="#e2e2e2" opacity="0.7"/>'
     s += stone_wall(-96, 96, -140, 0)
     s += side_roof(-96, 96, -140, 62, SLATE, SLATE_LINE)
-    # offene Esse
+    # open forge
     s += f'<path d="M -70,0 V -70 Q -36,-104 -2,-70 V 0 Z" fill="#2f2620" {st()}/>'
     s += f'<ellipse cx="-36" cy="-14" rx="26" ry="10" fill="#f28c3a"/><ellipse cx="-36" cy="-16" rx="14" ry="5" fill="#f8c060"/>'
-    # Amboss auf Klotz
+    # anvil on a block
     s += f'<rect x="26" y="-20" width="34" height="20" fill="{WOOD_DARK}" {st()}/>'
     s += f'<path d="M 18,-20 H 70 Q 76,-34 62,-34 H 34 Q 18,-34 18,-20 Z" fill="#5a5a5a" {st()}/>'
-    # Werkzeugbrett und Schild
+    # tool board and sign
     s += f'<path d="M 74,-96 H 92" stroke="{OUT}" stroke-width="3"/>'
     def hammer(x, y):
         return (f'<path d="M {x - 8},{y + 8} L {x + 6},{y - 6}" stroke="{OUT}" stroke-width="3.5" stroke-linecap="round"/>'
@@ -260,19 +260,19 @@ def laden_lotte(pale=True):
     s += timber(-92, 92, -160, -18, posts=4, braces=False)
     s += gable(0, -160, 184, 90, TILE, TILE_LINE)
     s += window(0, -192, 22, 24)
-    # Schaufenster mit Auslage
+    # shop window with display
     s += f'<rect x="-76" y="-96" width="96" height="58" fill="{GLASS}" {st()}/><path d="M -28,-96 V -38" stroke="{OUT}" stroke-width="2"/>'
     for x, c in ((-64, '#c2506a'), (-50, '#4f96cf'), (-16, '#d9a93c'), (2, '#8a6fb8')):
         s += f'<circle cx="{x}" cy="-48" r="6" fill="{c}" {st(1.4)}/><rect x="{x - 2}" y="-58" width="4" height="5" fill="{WOOD}"/>'
     s += f'<rect x="-80" y="-38" width="104" height="6" fill="{WOOD}" {st(1.6)}/>'
-    # Markise (Stoff, zweifarbig gedeckt)
+    # awning (fabric, two-coloured)
     s += f'<path d="M -84,-112 H 28 L 36,-94 H -92 Z" fill="#3f6f9a" {st()}/>'
     for i in range(6):
         x = -84 + i * 20
         s += f'<path d="M {x + 10},-112 H {x + 20} L {x + 21.5},-94 H {x + 11.5} Z" fill="#e8dfc8"/>'
     s += f'<path d="M -84,-112 H 28 L 36,-94 H -92 Z" fill="none" {st()}/>'
     s += door(58, -18, 30, 58, '#3f6f9a')
-    # Fässer und Kiste
+    # barrels and crate
     s += f'<rect x="-120" y="-30" width="26" height="30" rx="5" fill="{WOOD}" {st()}/><path d="M -120,-20 H -94 M -120,-10 H -94" stroke="{WOOD_DARK}" stroke-width="2"/>'
     s += f'<rect x="96" y="-24" width="26" height="24" fill="#c9955c" {st()}/><path d="M 96,-24 L 122,0 M 122,-24 L 96,0" stroke="{WOOD_DARK}" stroke-width="1.6"/>'
     def potion(x, y):
@@ -291,7 +291,7 @@ def baumhaus_pip(pale=True):
     for (x, y, r, c) in ((-84, -282, 52, '#4f8f3a'), (78, -292, 56, '#4f8f3a'), (-10, -340, 66, '#5b9d42'),
                          (-46, -262, 44, '#5b9d42'), (50, -252, 44, '#5b9d42')):
         s += f'<circle cx="{x}" cy="{y}" r="{r}" fill="{c}"/>'
-    # Plattform (5 Tiles hoch) mit Geländer und Bretterhütte
+    # platform (5 tiles high) with railing and plank hut
     s += f'<rect x="-80" y="-168" width="160" height="10" fill="{WOOD}" {st()}/>'
     s += f'<path d="M -80,-158 L -40,-120 M 80,-158 L 40,-120" stroke="{WOOD_DARK}" stroke-width="5"/>'
     s += f'<rect x="-56" y="-236" width="88" height="68" fill="#b8865a" {st()}/>'
@@ -300,7 +300,7 @@ def baumhaus_pip(pale=True):
     s += side_roof(-56, 32, -236, 30, SHINGLE, SHINGLE_LINE, rows=3)
     s += window(-14, -204, 22, 22, '#e08a3c')
     s += f'<path d="M 58,-168 V -200 M 80,-168 V -200 M 58,-188 H 80" stroke="{WOOD_DARK}" stroke-width="3"/>'
-    # Strickleiter
+    # rope ladder
     s += f'<path d="M 50,-158 V 0 M 66,-158 V 0" stroke="#8a7050" stroke-width="2.5"/>'
     for y in range(-148, 0, 18):
         s += f'<path d="M 50,{y} H 66" stroke="{WOOD_DARK}" stroke-width="3" stroke-linecap="round"/>'
@@ -420,7 +420,7 @@ def sheet():
 
 
 def blumenkasten(pale=True):
-    """Blumenkasten unter einem Fenster (eigene Deko, damit er verblassen kann)."""
+    """Flower box below a window (separate decoration so that it can fade)."""
     return flower_box(-18, 18, -9, pale)
 
 
@@ -429,7 +429,7 @@ def kraeuterbeet(pale=True):
     return s + flowers([-12, -5, 2, 9], -3, pale)
 
 
-# Deko für die Karten (E-278): Gebäude ohne Blumen, Blumen/Beete/Fahnen als Varianten (E-277)
+# Decoration for the maps (E-278): buildings without flowers, flowers/beds/flags as variants (E-277)
 DECOR = {
     'haus-elora': (haus_elora, '-140 -290 280 292'),
     'haus-oma': (haus_oma, '-120 -220 240 222'),

@@ -1,15 +1,15 @@
-"""Erzeugt docs/archive/release-1/design/elora-menue.svg – drei Menü-Entwürfe (M7.0, E-123).
+"""Generates docs/archive/release-1/design/elora-menue.svg – three menu drafts (M7.0, E-123).
 
-Aufruf: python3 tools/design/elora_menu.py && cargo xtask svg-preview \
+Usage: python3 tools/design/elora_menu.py && cargo xtask svg-preview \
         docs/archive/release-1/design/elora-menue.svg docs/archive/release-1/design/elora-menue.png 1400
 
-Je Stil drei Bildschirme (16:9): Hauptmenü, Server-Browser, Einstellungen (Spieler & Skin),
-alle über demselben ruhigen Hintergrundbild (E-113).
+Three screens per style (16:9): main menu, server browser, settings (player & skin),
+all over the same calm background image (E-113).
 """
 import re
 
 OUT = '#2b2b2b'
-W, H = 440, 248            # ein Bildschirm auf dem Blatt
+W, H = 440, 248            # one screen on the sheet
 BODY = ['f2c14e', 'f28c3a', 'e8685a', 'd94a4a', 'ef7fb0', 'a77be0', '6a78e0', '5aaee8',
         '3fc1b0', '7fd99a', '6cbf4a', 'b8d94a', 'e0c89a', 'a8744a', '9aa4ae', 'f0ece4']
 EYES = ['2b2b2b', '2e3f86', '2f6b4a', '6b3a2a', '7a2a4a', '4a2a7a', '1f6470', '5a5a5a']
@@ -41,7 +41,7 @@ def elora(x, y, s, body='f2c14e', feet='d9a43a', eyes='2b2b2b', flip=False):
 
 
 def background(ox, oy, uid, figures=True):
-    """Ruhiges Bild: Himmel-Verlauf, sanfte Hügel, Wolken, Elora groß (nur Hauptmenü)."""
+    """Calm image: sky gradient, gentle hills, clouds, large Elora (main menu only)."""
     figs = (elora(ox + 360, oy + H - 22, 0.55)
             + elora(ox + 300, oy + H - 12, 0.3, body='5aaee8', feet='6a78e0', eyes='2e3f86', flip=True)) if figures else ''
     return f'''<defs><linearGradient id="sky{uid}" x1="0" y1="0" x2="0" y2="1">
@@ -62,7 +62,7 @@ def text(x, y, t, size=11, color='#ffffff', anchor='start', weight='normal'):
     return f'<text x="{x}" y="{y}" font-size="{size}" fill="{color}" text-anchor="{anchor}" font-weight="{weight}">{t}</text>'
 
 
-# ── Stil A: dunkle Karten (HUD-Stil) ────────────────────────────────────
+# ── Style A: dark cards (HUD style) ─────────────────────────────────────
 A_PANEL = 'fill="#1e2a36" fill-opacity="0.72"'
 
 
@@ -132,7 +132,7 @@ def a_settings(ox, oy):
     return s
 
 
-# ── Stil B: hell & weich ────────────────────────────────────────────────
+# ── Style B: light & soft ───────────────────────────────────────────────
 B_PANEL = 'fill="#fffaf0" stroke="#e7dcc8" stroke-width="1.5"'
 B_SHADOW = 'fill="#1e2a36" fill-opacity="0.12"'
 B_TEXT = '#3b3024'
@@ -193,7 +193,7 @@ def b_settings(ox, oy):
     return s
 
 
-# ── Stil C: Leiste oben ─────────────────────────────────────────────────
+# ── Style C: bar at the top ─────────────────────────────────────────────
 C_BAR = 'fill="#1e2a36" fill-opacity="0.85"'
 
 
@@ -289,7 +289,7 @@ def sheet():
     return '\n'.join(out)
 
 
-# ── Gewählt (E-125): Aufbau von C in den Farben und Formen von B ────────
+# ── Chosen (E-125): layout of C in the colours and shapes of B ──────────
 def d_bar(ox, oy, active):
     s = (f'<rect x="{ox}" y="{oy + 4}" width="{W}" height="36" {B_SHADOW}/>'
          f'<rect x="{ox}" y="{oy}" width="{W}" height="36" fill="#fffaf0" stroke="#e7dcc8" stroke-width="1.5"/>')

@@ -1,9 +1,9 @@
-"""Requisiten für Tauwinkel und die Blütenwiesen (Playtest A1.9, E-280 bis E-283) im Stil der Gebäude.
+"""Props for Tauwinkel and the Blütenwiesen (playtest A1.9, E-280 to E-283) in the style of the buildings.
 
-Aufruf: python3 tools/design/tauwinkel_requisiten.py && cargo xtask svg-preview \
+Usage: python3 tools/design/tauwinkel_requisiten.py && cargo xtask svg-preview \
         docs/release-2/design/tauwinkel-requisiten.svg docs/release-2/design/tauwinkel-requisiten.png 1400
 
-Welteinheiten (1 Tile = 32), Ursprung unten in der Mitte.
+World units (1 tile = 32), origin at the bottom centre.
 """
 import os
 import sys
@@ -19,7 +19,7 @@ SPIKE = '#d8ccb0'
 
 
 def dornen():
-    """Dornenranke über einer Grube (E-283), 2 Tiles breit, ein Tile hoch; nebeneinander kachelbar."""
+    """Thorn vine over a pit (E-283), 2 tiles wide, one tile high; tileable side by side."""
     s = ''
     for (x0, k) in ((-32, 0), (0, 1)):
         s += (f'<path d="M {x0},0 C {x0 + 4},-20 {x0 + 14},-30 {x0 + 16},-18 C {x0 + 18},-30 {x0 + 28},-22 '
@@ -102,7 +102,7 @@ def heuballen():
 
 
 def mauer():
-    """Niedrige Feldsteinmauer, 3 Tiles breit."""
+    """Low fieldstone wall, 3 tiles wide."""
     s = f'<path d="M -48,0 V -26 Q -48,-32 -40,-32 H 40 Q 48,-32 48,-26 V 0 Z" fill="{STONE}" {st()}/>'
     for (x, y, w) in ((-44, -22, 20), (-20, -24, 26), (10, -22, 18), (30, -24, 14), (-36, -10, 24), (-8, -12, 22), (18, -10, 24)):
         s += f'<rect x="{x}" y="{y}" width="{w}" height="10" rx="3" fill="#bdb7ac" stroke="{STONE_LINE}" stroke-width="1.4"/>'
@@ -158,7 +158,7 @@ def blumentopf(pale=True):
 
 
 def katze():
-    """Schlafende Katze (auf Bank, Mauer oder Boden)."""
+    """Sleeping cat (on a bench, wall or ground)."""
     s = f'<path d="M -22,0 Q -24,-16 -6,-18 Q 12,-20 18,-8 Q 20,0 12,0 Z" fill="#8a8580" {st()}/>'
     s += f'<path d="M 10,-14 L 12,-24 L 17,-16 L 22,-22 L 22,-10 Q 20,-4 14,-6 Z" fill="#8a8580" {st()}/>'
     s += f'<path d="M 15,-12 q 1.5,1.5 3,0" fill="none" stroke="{OUT}" stroke-width="1.4"/>'
@@ -169,7 +169,7 @@ def katze():
 
 
 def vogel():
-    """Sitzender Vogel (Dachfirst, Zaun)."""
+    """Perched bird (roof ridge, fence)."""
     s = f'<path d="M -8,-2 Q -10,-12 -2,-14 Q 6,-16 8,-8 Q 8,-2 2,-1 Z" fill="#5b7fa6" {st(1.6)}/>'
     s += f'<circle cx="5" cy="-12" r="1.4" fill="{OUT}"/><path d="M 8,-11 l 4,1 l -4,1.5 Z" fill="#e0a23a" {st(1)}/>'
     s += f'<path d="M -8,-4 l -6,-2 l 2,4 Z" fill="#45648a" {st(1)}/><path d="M -1,-1 v 2 M 2,-1 v 2" stroke="{OUT}" stroke-width="1.2"/>'
