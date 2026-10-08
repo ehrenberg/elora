@@ -46,7 +46,7 @@ New and changed code follows the rule immediately; existing code is converted in
 | RF-05 ✅ | Rename German identifiers in code (map generators `kapitel*` → `chapter*`, `wueste_*` → `desert_*`, helpers like `stampf`/`kletter`, test names) | Pure renames, compiler-checked |
 | RF-06 ✅ | Translate log, panic and error messages and `xtask` output | E-352: player-visible errors via `assets/lang`; logs, console, CLI help and xtask English only; `--abenteuer` → `--adventure` |
 | RF-06a | Leftovers from RF-06 for Phase 2/3 | Editor defaults that end up as map data or editor UI (`"Ebene {n}"`, `"Animation {n}"`, background layer names, `"neu"`, `"Ende"`, dialog-test change list) → lang keys or English with the condition language (RF-11); replay text format (`ende`, `tot seit` …) only with a golden-file update; PHP master (`deploy/master-php`) still answers in German |
-| RF-07 | Commit messages in English from the start of the refactoring | Conventional Commits stay |
+| RF-07 ✅ | Commit messages in English from the start of the refactoring | Conventional Commits stay |
 
 ### Phase 2 – data and content language (needs decisions, save-game impact)
 
