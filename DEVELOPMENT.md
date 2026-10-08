@@ -75,7 +75,7 @@ cargo run --bin elora                               # starts in the main menu
 
 ### Sandbox and shortcuts
 
-With a map, `--mode`, `--connect` or `--abenteuer` on the command line you skip the menu and go straight into the game, with the debug panel (F1):
+With a map, `--mode`, `--connect` or `--adventure` on the command line you skip the menu and go straight into the game, with the debug panel (F1):
 
 ```sh
 cargo run --bin elora -- maps/sandbox.emap          # default map
@@ -83,8 +83,8 @@ cargo run --bin elora -- maps/eigene.emap           # another map
 cargo run --bin elora -- maps/ctf-test.emap --mode ctf   # game mode against dummies
 cargo run --bin elora -- maps/look-test.emap         # map look: materials, backgrounds, decoration, animations
 cargo run --bin elora -- maps/tiles-test.emap        # platform, ice, jump pad, conveyor (S = down)
-cargo run --bin elora -- maps/faehigkeiten-test.emap # adventure abilities (F1 → enable „Fähigkeiten“)
-cargo run --bin elora -- --abenteuer 1              # adventure in slot 1 (continue or new)
+cargo run --bin elora -- maps/faehigkeiten-test.emap # adventure abilities (F1 → "Abilities (adventure)")
+cargo run --bin elora -- --adventure 1              # adventure in slot 1 (continue or new)
 cargo run --bin elora -- --connect 127.0.0.1:8303   # straight to a server
 ```
 
