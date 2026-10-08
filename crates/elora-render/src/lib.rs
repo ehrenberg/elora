@@ -7,6 +7,7 @@
 
 mod camera;
 mod mesh;
+mod picture;
 mod shapes;
 mod svg;
 mod text;
@@ -73,6 +74,8 @@ pub struct Renderer {
     msaa: Option<wgpu::TextureView>,
     /// Post-processing of the world (heat shimmer); strength 0 = off.
     post: Post,
+    /// Full-screen picture (intro video, I-2).
+    picture: picture::Picture,
 }
 
 /// Heat shimmer (R2-M2.3, E-320): the world is first drawn into `scene` and then
@@ -214,6 +217,7 @@ impl Renderer {
         let overlay = Layer::new(&device, &layout, "overlay");
         let msaa = create_msaa(&device, &config, samples);
         let post = Post::new(&device, config.format, samples);
+        let picture = picture::Picture::new(&device, config.format, samples);
 
         Ok(Self {
             surface,
@@ -228,6 +232,7 @@ impl Renderer {
             layout,
             msaa,
             post,
+            picture,
         })
     }
 
@@ -254,6 +259,12 @@ impl Renderer {
             self.msaa = create_msaa(&self.device, &self.config, samples);
             self.post.pipeline =
                 create_post_pipeline(&self.device, self.config.format, samples, &self.post.layout);
+            self.picture.pipeline = picture::create_pipeline(
+                &self.device,
+                self.config.format,
+                samples,
+                &self.picture.layout,
+            );
         }
     }
 
@@ -433,6 +444,50 @@ impl Renderer {
         pass.set_pipeline(&self.post.pipeline);
         pass.set_bind_group(0, bind_group, &[]);
         pass.draw(0..3, 0..1);
+    }
+
+    /// Sets the full-screen picture (one video frame): `width × height` RGBA pixels.
+    ///
+    /// # Panics
+    /// If `rgba` is shorter than `width × height × 4` bytes (wgpu validation).
+    pub fn set_picture(&mut self, width: u32, height: u32, rgba: &[u8]) {
+        self.picture
+            .set(&self.device, &self.queue, width, height, rgba);
+    }
+
+    /// Forgets the picture (frees the texture).
+    pub fn clear_picture(&mut self) {
+        self.picture.clear();
+    }
+
+    /// Clears the frame black and draws the picture fitted into the screen (letterbox);
+    /// draw subtitles etc. afterwards with [`Renderer::draw_overlay`].
+    pub fn draw_picture(&mut self, frame: &mut Frame) {
+        let screen = (self.config.width, self.config.height);
+        let bind_group = self.picture.prepare(&self.queue, screen);
+        let mut pass = frame
+            .encoder
+            .begin_render_pass(&wgpu::RenderPassDescriptor {
+                label: Some("picture"),
+                color_attachments: &[Some(wgpu::RenderPassColorAttachment {
+                    view: self.msaa.as_ref().unwrap_or(&frame.view),
+                    depth_slice: None,
+                    resolve_target: self.msaa.as_ref().map(|_| &frame.view),
+                    ops: wgpu::Operations {
+                        load: wgpu::LoadOp::Clear(wgpu::Color::BLACK),
+                        store: wgpu::StoreOp::Store,
+                    },
+                })],
+                depth_stencil_attachment: None,
+                timestamp_writes: None,
+                occlusion_query_set: None,
+                multiview_mask: None,
+            });
+        if let Some(bind_group) = bind_group {
+            pass.set_pipeline(&self.picture.pipeline);
+            pass.set_bind_group(0, bind_group, &[]);
+            pass.draw(0..6, 0..1);
+        }
     }
 
     /// Draws `batch` on top of the current frame (after [`Renderer::draw_shapes`]),
@@ -851,6 +906,7 @@ mod tests {
         for (name, src) in [
             ("shader.wgsl", include_str!("shader.wgsl")),
             ("post.wgsl", include_str!("post.wgsl")),
+            ("picture.wgsl", include_str!("picture.wgsl")),
         ] {
             let module = naga::front::wgsl::parse_str(src)
                 .unwrap_or_else(|e| panic!("{name}: {}", e.emit_to_string(src)));
