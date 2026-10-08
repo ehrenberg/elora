@@ -1,12 +1,12 @@
-//! Karten aus Zeichenrastern bauen – für Tests und Werkzeuge, kein Dateiformat (E-146).
+//! Build maps from character grids – for tests and tools, not a file format (E-146).
 //!
-//! Tiles nutzen dieselben Zeichen wie die Aufzeichnungen ([`Tile::from_char`]), Entities Buchstaben.
+//! Tiles use the same characters as the recordings ([`Tile::from_char`]), entities use letters.
 
 use elora_sim::{DummyPattern, Tile};
 
 use crate::{Entity, EntityKind, Map, MapError};
 
-/// Zeichen der Entities.
+/// Characters of the entities.
 pub const ENTITY_CHARS: [(char, EntityKind); 13] = [
     ('S', EntityKind::Spawn),
     ('R', EntityKind::SpawnRed),
@@ -24,7 +24,7 @@ pub const ENTITY_CHARS: [(char, EntityKind); 13] = [
 ];
 
 impl Map {
-    /// Leere Karte (nur Luft) ohne Aussehen.
+    /// Empty map (air only) without a look.
     pub fn new(name: &str, width: usize, height: usize) -> Self {
         Self {
             name: name.to_owned(),
@@ -46,10 +46,11 @@ impl Map {
         }
     }
 
-    /// Karte aus Zeilen gleicher Länge; ein Entity macht sein Feld zu Luft.
+    /// Map from rows of equal length; an entity turns its cell into air.
     ///
     /// # Errors
-    /// Bei unterschiedlich langen Zeilen, unbekannten Zeichen, zu großem Raster oder unspielbarer Karte.
+    /// On rows of different length, unknown characters, a grid that is too large or an
+    /// unplayable map.
     pub fn from_rows(name: &str, rows: &[&str]) -> Result<Self, MapError> {
         let width = rows.first().map_or(0, |r| r.chars().count());
         let height = rows.len();
@@ -87,7 +88,7 @@ impl Map {
         Ok(map)
     }
 
-    /// Kollision und Entities als Zeichenraster (Gegenstück zu [`Map::from_rows`]).
+    /// Collision and entities as a character grid (counterpart to [`Map::from_rows`]).
     pub fn to_rows(&self) -> Vec<String> {
         let mut rows: Vec<Vec<char>> = self
             .tiles

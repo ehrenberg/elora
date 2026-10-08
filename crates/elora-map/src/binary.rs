@@ -1,7 +1,9 @@
-//! Release-Kartenformat `.emap` (E-129, E-143 bis E-146), beschrieben in `docs/handbook/map-format.md`.
+//! Release map format `.emap` (E-129, E-143 to E-146), described in
+//! `docs/handbook/map-format.md`.
 //!
-//! Datei: `EMAP` + Formatversion (u16) + zlib-komprimierte Abschnitte. Jeder Abschnitt ist
-//! `Kennung (4 Byte) | Länge (u32) | Inhalt`. Zahlen sind Little Endian.
+//! File: `EMAP` + format version (u16) + zlib-compressed sections. Each section is
+//! `identifier (4 bytes) | length (u32) | content`. Numbers are
+//! little endian.
 
 use elora_sim::{BeltDir, DummyPattern, JumpDir, Tile, Vec2};
 
@@ -14,28 +16,28 @@ use crate::look::{
 };
 use crate::{Entity, EntityKind, MAX_SIZE, Map};
 
-/// Kennung am Dateianfang.
+/// Identifier at the start of the file.
 pub const MAGIC: [u8; 4] = *b"EMAP";
-/// Unterstützte Version des Binärformats.
+/// Supported version of the binary format.
 pub const FORMAT_VERSION: u16 = 1;
 
-/// Höchstens so viele Bytes werden entpackt (Schutz vor Zip-Bomben).
+/// At most this many bytes are decompressed (protection against zip bombs).
 pub const MAX_PAYLOAD: usize = 32 << 20;
-/// Größe eines eingebetteten SVGs.
+/// Size of an embedded SVG.
 pub const MAX_IMAGE_BYTES: usize = 512 << 10;
 pub const MAX_IMAGES: usize = 64;
 pub const MAX_MATERIALS: usize = 255;
 pub const MAX_BACKGROUNDS: usize = 16;
-/// Deko-Objekte insgesamt (alle Ebenen).
+/// Decoration objects in total (all layers).
 pub const MAX_DECOR: usize = 20_000;
 pub const MAX_ENVELOPES: usize = 256;
 pub const MAX_ENV_POINTS: usize = 1024;
-/// Länge von Namen und Kennungen in Bytes.
+/// Length of names and identifiers in bytes.
 pub const MAX_NAME: usize = 128;
-/// Länge von Bedingungen im Abenteuer-Abschnitt.
+/// Length of conditions in the adventure section.
 pub const MAX_CONDITION: usize = 1024;
 
-/// Fehler beim Lesen einer Karte.
+/// Error while reading a map.
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
 pub enum MapError {
     #[error("keine Elora-Karte (Kennung fehlt)")]
@@ -78,7 +80,7 @@ pub enum MapError {
 
 type Result<T> = std::result::Result<T, MapError>;
 
-// ---------------------------------------------------------------- Kodierung der Aufzählungen
+// ---------------------------------------------------------------- Encoding of the enums
 
 const TILES: [Tile; 17] = [
     Tile::Air,
@@ -139,7 +141,7 @@ fn lookup<T: Copy>(table: &[T], c: u8, what: &'static str) -> Result<T> {
         .ok_or(MapError::Invalid(what))
 }
 
-// ---------------------------------------------------------------- Schreiben
+// ---------------------------------------------------------------- Writing
 
 #[derive(Default)]
 struct Writer(Vec<u8>);
@@ -183,10 +185,11 @@ impl Writer {
     }
 }
 
-/// Schreibt eine Karte ins Binärformat.
+/// Writes a map in the binary format.
 ///
 /// # Panics
-/// Wenn die Karte die Grenzen des Formats sprengt (z. B. über 4 GB) – [`decode`] lehnt solche Karten ab.
+/// If the map exceeds the limits of the format (e.g. over 4 GB) – [`decode`] rejects such
+/// maps.
 pub fn encode(map: &Map) -> Vec<u8> {
     let mut payload = Writer::default();
 
@@ -227,7 +230,7 @@ pub fn encode(map: &Map) -> Vec<u8> {
     s.rgba(map.sky.bottom);
     payload.section(*b"SKY ", &s);
 
-    // Wetter (R2-W1): nur wenn es welches gibt – alte Programme überspringen den Abschnitt
+    // Weather (R2-W1): only if there is any – old programs skip the section
     if !map.weather.is_clear() {
         let mut s = Writer::default();
         s.u8(code(&WeatherKind::ALL, &map.weather.kind));
@@ -490,7 +493,7 @@ fn put_decor_list(w: &mut Writer, items: &[Decor]) {
     }
 }
 
-// ---------------------------------------------------------------- Lesen
+// ---------------------------------------------------------------- Reading
 
 struct Reader<'a>(&'a [u8]);
 
@@ -536,7 +539,7 @@ impl<'a> Reader<'a> {
     fn vec2(&mut self) -> Result<Vec2> {
         Ok(Vec2::new(self.f32()?, self.f32()?))
     }
-    /// Anzahl/Länge mit Obergrenze.
+    /// Count/length with an upper limit.
     fn len(&mut self, max: usize, what: &'static str) -> Result<usize> {
         let n = usize::try_from(self.u32()?).map_err(|_| MapError::Invalid(what))?;
         if n > max {
@@ -566,7 +569,7 @@ impl<'a> Reader<'a> {
     }
 }
 
-/// Die Abschnitte einer Datei, nach Kennung.
+/// The sections of a file, by identifier.
 #[derive(Default)]
 struct Sections<'a> {
     found: Vec<([u8; 4], &'a [u8])>,
@@ -583,7 +586,7 @@ impl<'a> Sections<'a> {
                     String::from_utf8_lossy(&tag).into_owned(),
                 ));
             }
-            // Unbekannte Abschnitte bleiben liegen (spätere Erweiterungen derselben Version)
+            // Unknown sections are left alone (later extensions of the same version)
             s.found.push((tag, body));
         }
         Ok(s)
@@ -596,7 +599,7 @@ impl<'a> Sections<'a> {
             .map(|(_, b)| Reader(b))
     }
 
-    /// `&'static`, damit die Kennung im Fehler steht.
+    /// `&'static`, so that the identifier appears in the error.
     #[allow(clippy::trivially_copy_pass_by_ref)]
     fn require(&self, tag: &'static [u8; 4]) -> Result<Reader<'a>> {
         self.get(*tag).ok_or(MapError::MissingSection(
@@ -605,22 +608,23 @@ impl<'a> Sections<'a> {
     }
 }
 
-/// Liest eine Karte aus dem Binärformat und prüft sie.
+/// Reads a map from the binary format and checks it.
 ///
 /// # Errors
-/// Bei falscher Kennung oder Version, beschädigten Daten, überschrittenen Grenzen oder einer
-/// unspielbaren Karte (kein Spawn, falsche Flaggen).
+/// On a wrong identifier or version, corrupt data, exceeded limits or an
+/// unplayable map (no spawn, wrong flags).
 pub fn decode(data: &[u8]) -> Result<Map> {
     let map = decode_draft(data)?;
     validate(&map)?;
     Ok(map)
 }
 
-/// Wie [`decode`], aber ohne die Spielbarkeits-Prüfung (Spawn, Flaggen) – für Entwürfe im Editor.
-/// Alle Schutzgrenzen und Verweise werden weiterhin geprüft.
+/// Like [`decode`], but without the playability check (spawn, flags) – for drafts in the
+/// editor.
+/// All protection limits and references are still checked.
 ///
 /// # Errors
-/// Bei falscher Kennung oder Version, beschädigten Daten oder überschrittenen Grenzen.
+/// On a wrong identifier or version, corrupt data or exceeded limits.
 pub fn decode_draft(data: &[u8]) -> Result<Map> {
     let mut head = Reader(data);
     if head.array::<4>().map_err(|_| MapError::BadMagic)? != MAGIC {
@@ -690,7 +694,7 @@ pub fn decode_draft(data: &[u8]) -> Result<Map> {
     Ok(map)
 }
 
-/// Optionale Abschnitte zum Aussehen (Materialien, Himmel, Ebenen, Deko, Animationen, Bilder).
+/// Optional sections for the look (materials, sky, layers, decoration, animations, images).
 fn decode_look(sections: &Sections<'_>, map: &mut Map) -> Result<()> {
     let (width, height) = (map.width, map.height);
     let (materials, material_map) = match sections.get(*b"MATL") {
@@ -800,7 +804,7 @@ fn decode_look(sections: &Sections<'_>, map: &mut Map) -> Result<()> {
     map.images = images;
     Ok(())
 }
-/// Abschnitt `WTHR` (R2-W1): Art, Stärke 0–1, Wind −1–1.
+/// Section `WTHR` (R2-W1): kind, strength 0–1, wind −1–1.
 fn get_weather(mut r: Reader<'_>) -> Result<Weather> {
     let kind = *WeatherKind::ALL
         .get(usize::from(r.u8()?))
@@ -888,7 +892,7 @@ fn get_envelopes(r: &mut Reader<'_>) -> Result<Vec<Envelope>> {
     Ok(list)
 }
 
-/// Verweise auf Animationen und Bilder zeigen auf Vorhandenes der passenden Art.
+/// References to animations and images point to existing entries of the matching kind.
 fn check_references(map: &Map) -> Result<()> {
     let env_ok = |r: Option<EnvRef>, kind: EnvKind| {
         r.is_none_or(|r| {
@@ -916,15 +920,15 @@ fn check_references(map: &Map) -> Result<()> {
     Ok(())
 }
 
-/// Spielbarkeit: mindestens ein Spawn, Flaggen nur paarweise.
+/// Playability: at least one spawn, flags only in pairs.
 ///
 /// # Errors
-/// Ohne Spawn oder mit unpaarigen Flaggen.
+/// Without a spawn or with unpaired flags.
 pub fn validate(map: &Map) -> Result<()> {
     let count = |k| map.entities_of(k).count();
     let spawns =
         count(EntityKind::Spawn) + count(EntityKind::SpawnRed) + count(EntityKind::SpawnBlue);
-    // Abenteuer-Karten dürfen nur Eingänge haben (A1.5)
+    // Adventure maps may only have entrances (A1.5)
     let entrances = map
         .adventure
         .objects
@@ -941,8 +945,8 @@ pub fn validate(map: &Map) -> Result<()> {
     Ok(())
 }
 
-/// Prüfsumme einer Kartendatei (BLAKE2s-256 über die Datei-Bytes), identifiziert Karten
-/// beim Download und im Zwischenspeicher (M6.5).
+/// Checksum of a map file (BLAKE2s-256 over the file bytes), identifies maps
+/// during download and in the cache (M6.5).
 pub fn checksum(data: &[u8]) -> [u8; 32] {
     use blake2::Digest;
     blake2::Blake2s256::digest(data).into()
@@ -953,8 +957,8 @@ mod tests {
     use super::*;
     use crate::look::Curve;
 
-    /// Alle Arten von Abenteuer-Objekten.
-    #[allow(clippy::too_many_lines)] // eine Liste aller Objektarten
+    /// All kinds of adventure objects.
+    #[allow(clippy::too_many_lines)] // a list of all object kinds
     fn adventure_map() -> Map {
         let mut m = Map::from_rows(
             "Wiese",
@@ -1072,7 +1076,7 @@ mod tests {
         let m = adventure_map();
         let back = decode(&encode(&m)).unwrap();
         assert_eq!(back.adventure, m.adventure);
-        // ohne Objekte kein Abschnitt: Mehrspieler-Karten bleiben Byte für Byte gleich
+        // no objects, no section: multiplayer maps stay identical byte for byte
         let mut plain = m.clone();
         plain.adventure = Adventure::default();
         assert!(!encode(&plain).is_empty());
@@ -1132,7 +1136,7 @@ mod tests {
             let e = decode(&encode(&m)).unwrap_err().to_string();
             assert!(e.contains(expected), "{expected}: {e}");
         }
-        // abgeschnittener Abschnitt
+        // truncated section
         let mut w = Writer::default();
         put_adventure(&mut w, &adventure_map().adventure);
         let cut = &w.0[..w.0.len() - 3];
@@ -1141,7 +1145,7 @@ mod tests {
             MapError::Truncated
         );
         let mut bad = w.0.clone();
-        bad[4 + 4 + 7 + 8] = 99; // Art des ersten Objekts
+        bad[4 + 4 + 7 + 8] = 99; // kind of the first object
         assert!(get_adventure(&mut Reader(&bad)).is_err());
     }
 
@@ -1209,15 +1213,15 @@ mod tests {
         let data = encode(&m);
         assert_eq!(&data[..4], b"EMAP");
         assert_eq!(decode(&data).unwrap(), m);
-        // Nur Kollision: optionale Abschnitte fehlen, Standardwerte kommen zurück
+        // Collision only: optional sections are missing, default values come back
         let plain = Map::from_rows("P", &["###", "#S#", "###"]).unwrap();
         assert_eq!(decode(&encode(&plain)).unwrap(), plain);
-        // Gleiche Karte → gleiche Bytes → gleiche Prüfsumme
+        // Same map → same bytes → same checksum
         assert_eq!(checksum(&encode(&m)), checksum(&data));
         assert_ne!(checksum(&encode(&plain)), checksum(&data));
     }
 
-    /// Wetter (R2-W1): hin und zurück; ohne Wetter kein Abschnitt (alte Karten bleiben gleich).
+    /// Weather (R2-W1): round trip; without weather no section (old maps stay the same).
     #[test]
     fn weather_roundtrip_and_absent_section() {
         let plain = Map::from_rows("P", &["###", "#S#", "###"]).unwrap();
@@ -1239,7 +1243,7 @@ mod tests {
                 }
             );
         }
-        // klare Karte: gleiche Bytes wie vor dem Wetter
+        // clear map: same bytes as before weather
         let mut clear = plain.clone();
         clear.weather = Weather::CLEAR;
         assert_eq!(encode(&clear), without);
@@ -1281,7 +1285,7 @@ mod tests {
             decode(&v).unwrap_err(),
             MapError::UnsupportedFormat { found: 9 }
         );
-        // jede Kürzung und jedes gekippte Byte führt zu einem Fehler, nie zu einer Panik
+        // every truncation and every flipped byte leads to an error, never to a panic
         for cut in 0..data.len() {
             assert!(decode(&data[..cut]).is_err(), "gekürzt auf {cut}");
         }
@@ -1292,7 +1296,7 @@ mod tests {
         }
     }
 
-    /// Kodiert eigene Abschnitte, um einzelne Prüfungen gezielt auszulösen.
+    /// Encodes custom sections to trigger individual checks on purpose.
     fn raw(sections: &[(&[u8; 4], Vec<u8>)]) -> Vec<u8> {
         let mut w = Writer::default();
         for (tag, body) in sections {
@@ -1347,7 +1351,7 @@ mod tests {
             ])),
             Err(MapError::DuplicateSection(_))
         ));
-        // unbekannte Abschnitte werden übersprungen
+        // unknown sections are skipped
         assert!(
             decode(&raw(&[
                 ok[0].clone(),
@@ -1406,7 +1410,7 @@ mod tests {
             MapError::Invalid("Verweis auf fehlendes Bild")
         );
         let mut m = rich_map();
-        // Farb-Animation als Bewegung benutzt
+        // color animation used as movement
         m.decor_back[0].pos_env = Some(EnvRef {
             index: 1,
             offset_ms: 0,

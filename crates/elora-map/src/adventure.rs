@@ -1,89 +1,89 @@
-//! Abenteuer-Objekte einer Karte (R2-M1, A1.5, E-252 bis E-259): Gegner, NPCs, Truhen,
-//! Schalter, Türen, Sammelstücke, Speicherpunkte, Heilpflanzen, Eingänge, Übergänge, Zonen
-//! und Kamera-Zonen. Abschnitt `ADVN` im Kartenformat; Mehrspieler-Karten haben keinen.
+//! Adventure objects of a map (R2-M1, A1.5, E-252 to E-259): enemies, NPCs, chests,
+//! switches, doors, collectibles, save points, healing plants, entrances, transitions, zones
+//! and camera zones. Section `ADVN` in the map format; multiplayer maps have none.
 //!
-//! Die Karte prüft nur den Aufbau (eindeutige Ids, Lage, Größen); ob Gegnerarten, Gespräche
-//! oder Zielkarten existieren, prüft das Abenteuer (`elora-adventure`).
+//! The map only checks the structure (unique ids, position, sizes); whether enemy kinds,
+//! dialogues or target maps exist is checked by the adventure (`elora-adventure`).
 
 use elora_sim::{TILE_SIZE, Vec2};
 
-/// Höchstzahl der Objekte einer Karte.
+/// Maximum number of objects on a map.
 pub const MAX_OBJECTS: usize = 4096;
-/// Höchstzahl der Einträge in Listen (Truhen-Inhalt).
+/// Maximum number of entries in lists (chest contents).
 pub const MAX_LIST: usize = 64;
 
-/// Wie ein Schalter ausgelöst wird (E-256).
+/// How a switch is triggered (E-256).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum SwitchTrigger {
-    /// Aktionstaste.
+    /// Action key.
     #[default]
     Interact,
-    /// Hammer-Treffer.
+    /// Hammer hit.
     Hammer,
-    /// Hook mit der Fähigkeit Heranhooken (Zugschalter, R2-M2.2).
+    /// Hook with the pull-hook ability (pull switch, R2-M2.2).
     Hook,
 }
 
-/// Kamera-Zone (E-259).
+/// Camera zone (E-259).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum CameraMode {
-    /// Fester Ausschnitt: die Kamera zeigt die Zone.
+    /// Fixed view: the camera shows the zone.
     #[default]
     Fixed,
-    /// Begrenzen: die Kamera bleibt innerhalb der Zone.
+    /// Clamp: the camera stays inside the zone.
     Bounds,
 }
 
-/// Art eines Objekts mit seinen Einstellungen.
+/// Kind of an object with its settings.
 #[derive(Debug, Clone, PartialEq)]
 pub enum ObjectKind {
-    /// Gegner (`creatures.toml`); `persistent` = Boss/besonders, bleibt besiegt (E-235).
+    /// Enemy (`creatures.toml`); `persistent` = boss/special, stays defeated (E-235).
     Creature { kind: String, persistent: bool },
-    /// Figur mit Gespräch (E-257); `walk` = halbe Länge des Laufwegs (0 = steht).
+    /// Character with dialogue (E-257); `walk` = half the length of its walking path (0 = stands).
     Npc {
         character: String,
         dialog: String,
         facing: i8,
         walk: f32,
     },
-    /// Truhe mit festem Inhalt (E-255); `lock` = Bedingung zum Öffnen (leer = offen).
+    /// Chest with fixed contents (E-255); `lock` = condition to open it (empty = open).
     Chest {
         contents: Vec<(String, u32)>,
         lock: String,
     },
-    /// Hebel oder Treffer-Schalter (E-256): setzt `flag` auf 1/0.
+    /// Lever or hit switch (E-256): sets `flag` to 1/0.
     Switch {
         flag: String,
         once: bool,
         trigger: SwitchTrigger,
     },
-    /// Tür/Tor (E-254): Block aus `size` (Tiles, ab `pos` als linker oberer Ecke), zu wie
-    /// Stein, offen sobald `open_if` gilt.
+    /// Door/gate (E-254): block of `size` (tiles, from `pos` as top-left corner), closed like
+    /// stone, open as soon as `open_if` holds.
     Door { size: (u8, u8), open_if: String },
-    /// Einmaliger Fund (z. B. Glitzerstein).
+    /// One-time find (e.g. glitter stone).
     Collectible { item: String },
-    /// Quellstein (P-31).
+    /// Source stone (P-31).
     SavePoint,
-    /// Heilpflanze (E-258), wächst beim Wiederbetreten nach.
+    /// Healing plant (E-258), grows back when the area is re-entered.
     HealPlant { heal: i32 },
-    /// Eingang: hier erscheint Elora, wenn ein Übergang mit dieser Id ankommt.
+    /// Entrance: Elora appears here when a transition with this id arrives.
     Spawn,
-    /// Übergang zu `map`/`spawn` (E-252); Bereich `size` ab `pos`. `on_touch` = beim
-    /// Hineinlaufen, sonst mit der Aktionstaste.
+    /// Transition to `map`/`spawn` (E-252); area `size` from `pos`. `on_touch` = on
+    /// walking in, otherwise with the action key.
     Exit {
         size: Vec2,
         map: String,
         spawn: String,
         on_touch: bool,
     },
-    /// Auslöser-Zone für Aufgaben („Ort erreichen“); Bereich `size` ab `pos`.
+    /// Trigger zone for quests ("reach a place"); area `size` from `pos`.
     Zone { size: Vec2 },
-    /// Kamera-Zone; Bereich `size` ab `pos`.
+    /// Camera zone; area `size` from `pos`.
     Camera { size: Vec2, mode: CameraMode },
 }
 
 impl ObjectKind {
-    /// Kennung für Editor und Fehlermeldungen.
+    /// Identifier for the editor and error messages.
     pub fn name(&self) -> &'static str {
         match self {
             Self::Creature { .. } => "gegner",
@@ -101,7 +101,7 @@ impl ObjectKind {
         }
     }
 
-    /// Größe eines Bereichs (Übergang, Zone, Kamera, Tür) in Einheiten.
+    /// Size of an area (transition, zone, camera, door) in units.
     pub fn area(&self) -> Option<Vec2> {
         match self {
             Self::Exit { size, .. } | Self::Zone { size } | Self::Camera { size, .. } => {
@@ -117,17 +117,17 @@ impl ObjectKind {
     }
 }
 
-/// Ein Objekt. `id` ist auf der Karte eindeutig und Schlüssel im Spielstand
-/// (z. B. geöffnete Truhe `wiese-1:truhe-3`).
+/// An object. `id` is unique on the map and a key in the save game
+/// (e.g. opened chest `wiese-1:truhe-3`).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Object {
     pub id: String,
-    /// Mitte (Figuren, Gegenstände) bzw. linke obere Ecke (Bereiche, Türen) in Einheiten.
+    /// Center (characters, items) or top-left corner (areas, doors) in units.
     pub pos: Vec2,
     pub kind: ObjectKind,
 }
 
-/// Abenteuer-Teil einer Karte.
+/// Adventure part of a map.
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct Adventure {
     pub objects: Vec<Object>,
@@ -138,10 +138,10 @@ impl Adventure {
         self.objects.iter().find(|o| o.id == id)
     }
 
-    /// Aufbau prüfen (Karte `w`×`h` Tiles).
+    /// Check the structure (map `w`×`h` tiles).
     ///
     /// # Errors
-    /// Mit dem ersten Fehler und der Id des Objekts.
+    /// With the first error and the id of the object.
     pub fn validate(&self, w: usize, h: usize) -> Result<(), String> {
         #[allow(clippy::cast_precision_loss)]
         let (ts, mw, mh) = (

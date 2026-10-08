@@ -1,10 +1,10 @@
-//! Aussehen einer Karte (E-130 bis E-132): Materialien, Deko, Hintergrund-Ebenen, Animationen.
+//! Look of a map (E-130 to E-132): materials, decoration, background layers, animations.
 //!
-//! Die Simulation sieht davon nichts; nur der Client zeichnet es.
+//! The simulation sees none of it; only the client draws it.
 
 use elora_sim::Vec2;
 
-/// Farbe mit 8 Bit je Kanal (nicht vormultipliziert).
+/// Color with 8 bits per channel (not premultiplied).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Rgba(pub [u8; 4]);
 
@@ -17,19 +17,19 @@ impl Rgba {
     }
 }
 
-/// Art des Wetters (R2-W1, E-333).
+/// Kind of weather (R2-W1, E-333).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum WeatherKind {
-    /// Kein Wetter (wie bisher).
+    /// No weather (as before).
     #[default]
     Clear,
     Rain,
-    /// Gewitter: Regen, Böen und Blitze.
+    /// Thunderstorm: rain, gusts and lightning.
     Storm,
     Fog,
-    /// Wind mit Blättern.
+    /// Wind with leaves.
     Leaves,
-    /// Wind mit Blütenblättern.
+    /// Wind with petals.
     Petals,
     Sandstorm,
     Snow,
@@ -49,7 +49,7 @@ impl WeatherKind {
         Self::Blizzard,
     ];
 
-    /// Schlüssel für Daten und Übersetzung (`assets/adventure/worldmap.toml`, `weather.<key>`).
+    /// Key for data and translation (`assets/adventure/worldmap.toml`, `weather.<key>`).
     pub fn key(self) -> &'static str {
         match self {
             Self::Clear => "schoen",
@@ -69,8 +69,8 @@ impl WeatherKind {
     }
 }
 
-/// Wetter einer Karte (R2-W1, E-329): Art, Stärke (0 = kaum, 1 = voll) und Wind
-/// (−1 = stark nach links, 1 = stark nach rechts).
+/// Weather of a map (R2-W1, E-329): kind, strength (0 = barely, 1 = full) and wind
+/// (−1 = strongly to the left, 1 = strongly to the right).
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct Weather {
     pub kind: WeatherKind,
@@ -85,13 +85,13 @@ impl Weather {
         wind: 0.0,
     };
 
-    /// Gibt es überhaupt Wetter?
+    /// Is there any weather at all?
     pub fn is_clear(&self) -> bool {
         self.kind == WeatherKind::Clear
     }
 }
 
-/// Himmel: senkrechter Verlauf hinter allem.
+/// Sky: vertical gradient behind everything.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Sky {
     pub top: Rgba,
@@ -99,7 +99,7 @@ pub struct Sky {
 }
 
 impl Default for Sky {
-    /// Bisheriger Himmel (E-089).
+    /// Previous sky (E-089).
     fn default() -> Self {
         Self {
             top: Rgba::hex(0xa9cde8),
@@ -108,39 +108,40 @@ impl Default for Sky {
     }
 }
 
-/// Grafik eines Deko-Objekts.
+/// Graphic of a decoration object.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Art {
-    /// Eingebaute Grafik aus Eloras Satz (Stil A, M6.3), z. B. `"bush-1"`.
+    /// Built-in graphic from Elora's set (style A, M6.3), e.g. `"bush-1"`.
     Builtin(String),
-    /// In die Karte eingebettetes SVG (Index in [`crate::Map::images`]).
+    /// SVG embedded in the map (index into [`crate::Map::images`]).
     Image(u16),
 }
 
-/// Verweis auf eine Animation mit Zeitversatz.
+/// Reference to an animation with a time offset.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct EnvRef {
-    /// Index in [`crate::Map::envelopes`].
+    /// Index into [`crate::Map::envelopes`].
     pub index: u16,
-    /// Versatz in Millisekunden (gleiche Animation, andere Phase).
+    /// Offset in milliseconds (same animation, different phase).
     pub offset_ms: i32,
 }
 
-/// Frei platziertes Vektor-Objekt (Deko vor/hinter der Spielfläche oder in einer Hintergrund-Ebene).
+/// Freely placed vector object (decoration in front of/behind the playing field or in a
+/// background layer).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Decor {
     pub art: Art,
-    /// Mittelpunkt in Welteinheiten (in Hintergrund-Ebenen relativ zur Ebene).
+    /// Center in world units (in background layers relative to the layer).
     pub pos: Vec2,
     pub scale: f32,
-    /// Drehung in Grad, im Uhrzeigersinn.
+    /// Rotation in degrees, clockwise.
     pub rotation: f32,
     pub flip_x: bool,
-    /// Färbung (multipliziert), Weiß = unverändert.
+    /// Tint (multiplied), white = unchanged.
     pub tint: Rgba,
-    /// Bewegung und Drehung (Envelope der Art [`EnvKind::Position`]).
+    /// Movement and rotation (envelope of kind [`EnvKind::Position`]).
     pub pos_env: Option<EnvRef>,
-    /// Farbe (Envelope der Art [`EnvKind::Color`]).
+    /// Color (envelope of kind [`EnvKind::Color`]).
     pub color_env: Option<EnvRef>,
 }
 
@@ -159,29 +160,29 @@ impl Decor {
     }
 }
 
-/// Hintergrund-Ebene mit Parallax (E-131).
+/// Background layer with parallax (E-131).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Background {
     pub name: String,
-    /// Wie stark die Ebene der Kamera folgt: 1 = wie die Spielfläche, 0 = fest.
+    /// How strongly the layer follows the camera: 1 = like the playing field, 0 = fixed.
     pub parallax: Vec2,
     pub offset: Vec2,
-    /// Inhalt waagerecht wiederholen (Wolken, Hügel); Abstand in Welteinheiten.
+    /// Repeat the content horizontally (clouds, hills); spacing in world units.
     pub repeat_x: Option<f32>,
     pub items: Vec<Decor>,
 }
 
-/// Was eine Animation verändert (wie im Original).
+/// What an animation changes (as in the original).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum EnvKind {
-    /// Versatz x, y (Welteinheiten) und Drehung (Grad).
+    /// Offset x, y (world units) and rotation (degrees).
     Position,
-    /// Farbe r, g, b, a (0 bis 1, multipliziert).
+    /// Color r, g, b, a (0 to 1, multiplied).
     Color,
 }
 
 impl EnvKind {
-    /// Wert ohne Wirkung.
+    /// Value without effect.
     pub fn neutral(self) -> [f32; 4] {
         match self {
             Self::Position => [0.0; 4],
@@ -190,21 +191,21 @@ impl EnvKind {
     }
 }
 
-/// Übergang von einem Punkt zum nächsten (wie im Original).
+/// Transition from one point to the next (as in the original).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Curve {
     Step,
     Linear,
-    /// langsam beginnen
+    /// start slowly
     Slow,
-    /// schnell beginnen
+    /// start quickly
     Fast,
-    /// weich an beiden Enden
+    /// smooth at both ends
     Smooth,
 }
 
 impl Curve {
-    /// Anteil 0..=1 des Wegs zum nächsten Punkt.
+    /// Fraction 0..=1 of the way to the next point.
     pub fn ease(self, t: f32) -> f32 {
         let t = t.clamp(0.0, 1.0);
         match self {
@@ -221,28 +222,29 @@ impl Curve {
 pub struct EnvPoint {
     pub time_ms: u32,
     pub value: [f32; 4],
-    /// Übergang zum nächsten Punkt.
+    /// Transition to the next point.
     pub curve: Curve,
 }
 
-/// Animation (Envelope, E-132): Punkte mit Kurven, läuft in Schleife.
+/// Animation (envelope, E-132): points with curves, runs in a loop.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Envelope {
     pub name: String,
     pub kind: EnvKind,
-    /// An die Spielzeit des Servers gebunden (alle sehen dieselbe Phase) statt an die Uhr des Clients.
+    /// Bound to the server's game time (everyone sees the same phase) instead of the client's
+    /// clock.
     pub synced: bool,
-    /// Nach Zeit aufsteigend sortiert.
+    /// Sorted by time, ascending.
     pub points: Vec<EnvPoint>,
 }
 
 impl Envelope {
-    /// Länge einer Schleife.
+    /// Length of one loop.
     pub fn duration_ms(&self) -> u32 {
         self.points.last().map_or(0, |p| p.time_ms)
     }
 
-    /// Wert zur Zeit `time_ms` (läuft in Schleife).
+    /// Value at time `time_ms` (runs in a loop).
     pub fn eval(&self, time_ms: i64) -> [f32; 4] {
         let (Some(first), Some(last)) = (self.points.first(), self.points.last()) else {
             return self.kind.neutral();
@@ -269,9 +271,10 @@ impl Envelope {
     }
 }
 
-/// In die Karte eingebettetes SVG (eigene Deko des Kartenbauers).
+/// SVG embedded in the map (the map maker's own decoration).
 ///
-/// Die Karte prüft nur Größe und Name; das Parsen (ohne externe Verweise) macht der Client.
+/// The map only checks size and name; parsing (without external references) is done by the
+/// client.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Image {
     pub name: String,
@@ -308,9 +311,9 @@ mod tests {
         ]);
         assert_eq!(e.eval(0)[0], 0.0);
         assert_eq!(e.eval(500)[0], 5.0);
-        // Step hält den Wert bis zum nächsten Punkt
+        // Step holds the value until the next point
         assert_eq!(e.eval(1500)[0], 10.0);
-        // Schleife, auch für negative Zeiten (Versatz)
+        // Loop, also for negative times (offset)
         assert_eq!(e.eval(2500)[0], 5.0);
         assert_eq!(e.eval(-1500)[0], 5.0);
         assert_eq!(env(&[]).eval(10), [0.0; 4]);
