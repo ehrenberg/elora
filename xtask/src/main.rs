@@ -22,8 +22,9 @@ Commands:
                  sounds (procedural + files) as WAV to target/sounds/ (listening test, M5.7)
   sound-import <name> <input> [start_s] [length_s]
                  sound file via ffmpeg to assets/sounds/files/<name>.wav (add the source to assets/SOURCES.md!)
-  intro-import <video> [--crf N]
-                 video via ffmpeg (AV1) to assets/intro/intro.ivf: 1280×720, 24 fps, no sound
+  intro-import <video> [<video> …] [--crf N]
+                 videos via ffmpeg (AV1), joined in order, to assets/intro/intro.ivf:
+                 1280×720, 24 fps, no sound
                  (E-355; name the tool and licence in assets/SOURCES.md!)
   package [--archive]
                  release package in dist/ (programs, maps, licenses; macOS: Elora.app),
@@ -263,12 +264,21 @@ fn sound_preview(names: &[String]) -> Result<(), String> {
 /// Converts the intro video for the game (I-4, E-355): AV1 in IVF, 1280×720 with black bars
 /// if needed, 24 fps, BT.709, no audio (the game plays the Tauwinkel music, E-357).
 fn intro_import(args: &[String]) -> Result<(), String> {
-    let usage = "Usage: cargo xtask intro-import <video> [--crf N]";
-    let input = args.first().filter(|a| !a.starts_with("--")).ok_or(usage)?;
-    let crf = match args.iter().position(|a| a == "--crf") {
+    let usage = "Usage: cargo xtask intro-import <video> [<video> …] [--crf N]";
+    let crf_at = args.iter().position(|a| a == "--crf");
+    let crf = match crf_at {
         Some(i) => args.get(i + 1).ok_or(usage)?.clone(),
         None => "36".to_owned(),
     };
+    let inputs: Vec<&String> = args
+        .iter()
+        .enumerate()
+        .filter(|(i, _)| crf_at.is_none_or(|c| *i != c && *i != c + 1))
+        .map(|(_, a)| a)
+        .collect();
+    if inputs.is_empty() {
+        return Err(usage.into());
+    }
     let encoders = Command::new("ffmpeg")
         .args(["-hide_banner", "-encoders"])
         .output()
@@ -280,10 +290,25 @@ fn intro_import(args: &[String]) -> Result<(), String> {
         .ok_or("ffmpeg has no AV1 encoder (libsvtav1 or libaom-av1)")?;
     let out = std::path::Path::new("assets/intro/intro.ivf");
     std::fs::create_dir_all("assets/intro").map_err(|e| e.to_string())?;
-    let filter = "scale=1280:720:force_original_aspect_ratio=decrease,\
-                  pad=1280:720:(ow-iw)/2:(oh-ih)/2,fps=24,format=yuv420p";
+    // every clip letterboxed to 1280×720 at 24 fps, then all joined in order
+    let mut filter = String::new();
+    for i in 0..inputs.len() {
+        let _ = write!(
+            filter,
+            "[{i}:v]scale=1280:720:force_original_aspect_ratio=decrease,\
+             pad=1280:720:(ow-iw)/2:(oh-ih)/2,fps=24,format=yuv420p,setsar=1[v{i}];"
+        );
+    }
+    for i in 0..inputs.len() {
+        let _ = write!(filter, "[v{i}]");
+    }
+    let _ = write!(filter, "concat=n={}:v=1:a=0[out]", inputs.len());
     let mut cmd = Command::new("ffmpeg");
-    cmd.args(["-v", "error", "-y", "-i", input, "-an", "-vf", filter]);
+    cmd.args(["-v", "error", "-y"]);
+    for input in &inputs {
+        cmd.args(["-i", input.as_str()]);
+    }
+    cmd.args(["-filter_complex", &filter, "-map", "[out]", "-an"]);
     cmd.args(["-c:v", encoder, "-crf", &crf]);
     if encoder == "libsvtav1" {
         cmd.args(["-preset", "5", "-g", "240"]);
