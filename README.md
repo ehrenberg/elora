@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://github.com/ehrenberg/elora/releases"><b>Download</b></a> ·
   <a href="https://elora.bastianswelt.de">Project page and live servers</a> ·
-  <a href="docs/releases/v0.9.2.md">What's new in 0.9.2?</a> ·
+  <a href="docs/releases/v0.10.0.md">What's new in 0.10.0?</a> ·
   <a href="https://github.com/ehrenberg/elora/issues">Report a bug</a>
 </p>
 
@@ -22,7 +22,7 @@ Elora is a fast 2D game in the style of the genre's great classics: nimble movem
 swing with and a handful of weapons you understand in seconds and master over weeks. Elora is
 also the name of the heroine – a small, brave drop.
 
-**Version 0.9.2 Beta** · free and open source · Linux, Windows, macOS · English and German
+**Version 0.10.0 Beta** · free and open source · Linux, Windows, macOS · English and German
 
 ## What to expect
 
@@ -49,7 +49,8 @@ slower software renderer. There is no package for Intel Macs yet.
 
 ## First steps
 
-After starting you land in the main menu:
+On the very first start Elora asks for your name, the language and Elora's colours. After
+that you land in the main menu:
 
 | Menu | What you do there |
 |---|---|
@@ -66,6 +67,8 @@ In game, **Esc** opens the pause menu: choose a team, spectate, vote, settings.
 
 The springs of the Tauland are falling silent, and the colors are fading from the village of
 Tauwinkel. Elora sets out to find out why.
+
+A new adventure starts with a short, narrated intro (skip it with Esc or Space).
 
 - **Prologue – Tauwinkel:** Oma Pfütze, Tüftel, Klonk, Lotte and Pip show you what you need
 - **Chapter 1 – Blütenwiesen:** lost bees and a very grumpy Bumblebear

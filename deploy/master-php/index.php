@@ -331,7 +331,7 @@ footer .logo { font-family: var(--head); font-weight: 900; font-size: 34px; colo
   <div class="layer hills-near" data-depth="0.5"></div>
 
   <div class="intro">
-    <span class="badge"><b>Version 0.9.2 Beta</b> · Neu: Frostspitzen und Wetter · Open Source · Linux, Windows, macOS</span>
+    <span class="badge"><b>Version 0.10.0 Beta</b> · Neu: Intro und Willkommensbildschirm · Open Source · Linux, Windows, macOS</span>
     <h1 class="title">Elora</h1>
     <p class="tagline">Schnelles 2D-Multiplayer: hooken, schwingen, sprengen – mit Freunden im Internet oder im LAN. Und jetzt auch allein im Abenteuer.</p>
     <div class="buttons">
@@ -411,7 +411,7 @@ footer .logo { font-family: var(--head); font-weight: 900; font-size: 34px; colo
 <section id="abenteuer" style="background:#fff">
   <div class="wrap editor">
     <div>
-      <span class="new reveal">Neu in 0.9.2 · Kapitel 4 und Wetter</span>
+      <span class="new reveal">Neu in 0.10.0 · Intro und bessere Wegweiser</span>
       <h2 class="reveal">Das Abenteuer: Die verstummten Quellen</h2>
       <p class="lead reveal">Die Quellen des Taulands verstummen, und die Farben weichen aus dem Dorf Tauwinkel. Elora zieht los – allein, mit Hook, Hammer und einer Menge Mut.</p>
       <div class="chapters">
@@ -422,6 +422,7 @@ footer .logo { font-family: var(--head); font-weight: 900; font-size: 34px; colo
         <div class="card chapter reveal"><span class="tag" style="background:#8fd0f0">4</span><div><b>Frostspitzen</b><p>Bergführerin Flocke, dünnes Eis, Lawinen, beißende Kälte und Eiskönigin Kristella.</p></div></div>
       </div>
       <ul class="ticks reveal" style="margin-top:22px">
+        <li><b>Intro</b> zu Beginn jedes Abenteuers – erzählt auf Deutsch oder Englisch</li>
         <li><b>Neue Fähigkeiten</b> aus jeder Quelle: Hook-Ruck, Heranhooken, Stampfen, Eisgriff</li>
         <li><b>Wetter</b>: Regen, Gewitter, Nebel, Wind, Sandsturm und Schnee – im Abenteuer spürbar, in den Mehrspieler-Karten als Stimmung</li>
         <li><b>Stufen, Fähigkeitenbaum, Ausrüstung</b> und Waffen-Ausbau bei Klonk</li>

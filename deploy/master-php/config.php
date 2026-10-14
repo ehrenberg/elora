@@ -3,7 +3,7 @@
 return [
     // Protokollversion des Spiels; nur Server mit genau dieser Version kommen in die Liste.
     // Bei einer neuen Spielversion mit anderem Protokoll hier anpassen.
-    'protocol_version' => 6,
+    'protocol_version' => 7,
 
     // Server per UDP prüfen, bevor sie gelistet werden (empfohlen). Manche Webhoster
     // sperren ausgehendes UDP – dann hier false setzen (Liste ungeprüft, siehe LIESMICH.md).
