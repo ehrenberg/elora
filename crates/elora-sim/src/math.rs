@@ -5,29 +5,37 @@
 
 use std::ops::{Add, AddAssign, Div, Mul, MulAssign, Neg, Sub, SubAssign};
 
+/// 2D vector in world units (y pointing down).
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 #[must_use]
 pub struct Vec2 {
+    /// Horizontal component.
     pub x: f32,
+    /// Vertical component (pointing down).
     pub y: f32,
 }
 
 impl Vec2 {
+    /// Zero vector.
     pub const ZERO: Self = Self::new(0.0, 0.0);
 
+    /// Vector from its components.
     pub const fn new(x: f32, y: f32) -> Self {
         Self { x, y }
     }
 
+    /// Dot product.
     pub fn dot(self, other: Self) -> f32 {
         self.x * other.x + self.y * other.y
     }
 
+    /// Euclidean length.
     pub fn length(self) -> f32 {
         self.dot(self).sqrt()
     }
 
+    /// Euclidean distance to `other`.
     pub fn distance(self, other: Self) -> f32 {
         (self - other).length()
     }

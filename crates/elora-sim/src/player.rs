@@ -10,9 +10,13 @@ use crate::weapon::Arsenal;
 /// A living character: physics, health and weapons.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Character {
+    /// Physics, hook and abilities.
     pub core: CharacterCore,
+    /// Current health.
     pub health: i32,
+    /// Current armor (absorbs damage first).
     pub armor: i32,
+    /// Owned weapons and ammo.
     pub arsenal: Arsenal,
     /// In the adventure, invulnerable until this tick after a hit (E-234).
     pub invulnerable_until: u64,
@@ -41,7 +45,9 @@ pub enum Team {
     /// No team (DM, LMS, sandbox).
     #[default]
     None,
+    /// Red team.
     Red,
+    /// Blue team.
     Blue,
     /// Spectator: never spawns.
     Spectator,
@@ -57,6 +63,7 @@ impl Team {
         }
     }
 
+    /// Opposing team (`None` and spectators stay unchanged).
     #[must_use]
     pub fn other(self) -> Self {
         match self {
@@ -82,8 +89,11 @@ pub enum Controller {
     Remote,
     /// Training dummy with a fixed movement pattern (E-053); respawns at `home`.
     Dummy {
+        /// Movement pattern.
         pattern: DummyPattern,
+        /// Respawn point.
         home: Vec2,
+        /// State of the pattern.
         brain: DummyBrain,
     },
 }
@@ -91,10 +101,13 @@ pub enum Controller {
 /// A player slot. Exists even while the character is dead.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Player {
+    /// Who controls the slot.
     pub controller: Controller,
+    /// Living character; `None` while dead.
     pub character: Option<Character>,
     /// Current and previous input (for click detection).
     pub input: PlayerInput,
+    /// Input of the previous tick.
     pub prev_input: PlayerInput,
     /// Tick of the last death.
     pub die_tick: u64,
@@ -102,6 +115,7 @@ pub struct Player {
     pub respawn_tick: u64,
     /// Respawn requested (fire key or auto-respawn).
     pub spawning: bool,
+    /// Team of the player.
     pub team: Team,
     /// No respawn (survival modes during a round).
     pub respawn_disabled: bool,
@@ -114,6 +128,7 @@ pub struct Player {
 }
 
 impl Player {
+    /// Empty slot without a character that spawns at the next opportunity.
     pub fn new(controller: Controller) -> Self {
         Self {
             controller,
@@ -130,6 +145,7 @@ impl Player {
         }
     }
 
+    /// Training dummy?
     pub fn is_dummy(&self) -> bool {
         matches!(self.controller, Controller::Dummy { .. })
     }

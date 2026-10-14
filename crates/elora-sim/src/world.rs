@@ -34,13 +34,19 @@ const PICKUP_RADIUS: f32 = 20.0;
 #[derive(Debug, Clone)]
 #[allow(clippy::struct_excessive_bools)] // independent states of the world
 pub struct World {
+    /// Physics and weapon values.
     pub tuning: Tuning,
+    /// Collision grid of the map.
     pub collision: Collision,
+    /// Current tick (50 per second).
     pub tick: u64,
     /// One slot per player; `None` = unoccupied.
     pub players: Vec<Option<Player>>,
+    /// Grenades in flight.
     pub projectiles: Vec<Projectile>,
+    /// Active laser beams.
     pub lasers: Vec<Laser>,
+    /// Pickups on the map.
     pub pickups: Vec<Pickup>,
     /// Neutral spawn points for human players.
     pub spawn_points: Vec<Vec2>,
@@ -65,21 +71,26 @@ pub struct World {
     pub adventure: bool,
     /// Enemy kinds (A1.2); creatures refer to them by index.
     pub creature_kinds: Vec<CreatureKind>,
+    /// Living enemies.
     pub creatures: Vec<Creature>,
+    /// Enemy projectiles in flight.
     pub creature_shots: Vec<CreatureShot>,
     /// Temporarily placed tiles (root walls): tile position, original tile, end (tick).
     pub temp_tiles: Vec<(i32, i32, crate::Tile, u64)>,
     /// Thin ice with cracks (R2-M2.4): tile position and the tick at which it breaks.
     pub cracking: Vec<(i32, i32, u64)>,
+    /// Loot lying around.
     pub loot: Vec<Loot>,
     /// Next id for creatures and loot.
     pub next_id: u32,
     /// Weather (R2-W1, adventure only; set by the session) and lightning state.
     pub weather: Option<crate::weather::WeatherEnv>,
+    /// Lightning state of the thunderstorm (R2-W1).
     pub lightning: crate::weather::Lightning,
 }
 
 impl World {
+    /// Empty world at tick 0 on the given map, with friendly fire and pickups on.
     pub fn new(tuning: Tuning, collision: Collision) -> Self {
         Self {
             tuning,
@@ -148,6 +159,7 @@ impl World {
         i
     }
 
+    /// Places a pickup at `pos`.
     pub fn add_pickup(&mut self, kind: PickupKind, pos: Vec2) {
         self.pickups.push(Pickup {
             kind,
@@ -156,20 +168,24 @@ impl World {
         });
     }
 
+    /// Frees player slot `index` (the character disappears without an event).
     pub fn remove(&mut self, index: usize) {
         if let Some(slot) = self.players.get_mut(index) {
             *slot = None;
         }
     }
 
+    /// Player in slot `i`, if occupied.
     pub fn player(&self, i: usize) -> Option<&Player> {
         self.players.get(i)?.as_ref()
     }
 
+    /// Living character in slot `i`.
     pub fn character(&self, i: usize) -> Option<&Character> {
         self.player(i)?.character.as_ref()
     }
 
+    /// Living character in slot `i`, mutable.
     pub fn character_mut(&mut self, i: usize) -> Option<&mut Character> {
         self.players.get_mut(i)?.as_mut()?.character.as_mut()
     }

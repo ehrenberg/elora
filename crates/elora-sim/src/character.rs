@@ -17,10 +17,15 @@ const MAX_VELOCITY: f32 = 6000.0;
 
 /// Events of a tick (e.g. for sounds and effects).
 pub mod events {
+    /// Jumped off the ground.
     pub const GROUND_JUMP: u16 = 1 << 0;
+    /// Air jump (double jump) used.
     pub const AIR_JUMP: u16 = 1 << 1;
+    /// Hook grabbed another character.
     pub const HOOK_ATTACH_PLAYER: u16 = 1 << 2;
+    /// Hook grabbed a wall or hook point.
     pub const HOOK_ATTACH_GROUND: u16 = 1 << 3;
+    /// Hook hit an unhookable tile and bounces back.
     pub const HOOK_HIT_UNHOOKABLE: u16 = 1 << 4;
     /// Launched by a jump pad (M6.1).
     pub const JUMP_PAD: u16 = 1 << 5;
@@ -43,11 +48,14 @@ pub mod events {
 pub enum HookState {
     /// Retracted, hook key still pressed – only releasing allows a new shot.
     Retracted,
+    /// Ready: the hook can be fired.
     #[default]
     Idle,
     /// Retracting, step 1 to 3.
     Retracting(u8),
+    /// Flying towards the target.
     Flying,
+    /// Attached to a wall, hook point, character or creature.
     Grabbed,
 }
 
@@ -55,16 +63,23 @@ pub enum HookState {
 #[derive(Debug, Clone, PartialEq, Default)]
 #[allow(clippy::struct_excessive_bools)] // independent states, no state machine
 pub struct CharacterCore {
+    /// Position of the box center (world units).
     pub pos: Vec2,
+    /// Velocity (world units per tick).
     pub vel: Vec2,
+    /// Position of the hook tip (world units).
     pub hook_pos: Vec2,
+    /// Flight direction of the hook (unit vector).
     pub hook_dir: Vec2,
+    /// Current state of the hook.
     pub hook_state: HookState,
+    /// Ticks since the hook was fired or grabbed (a hooked target is released after `player_hook_ticks`).
     pub hook_tick: u32,
     /// Index of the hooked character in the world.
     pub hooked_player: Option<usize>,
     /// Bit 0: jump performed with the current key press; bit 1: air jump used up.
     pub jumped: u8,
+    /// Walking direction of the last input: -1 left, 0 none, 1 right.
     pub direction: i8,
     /// View angle in 1/256 radians.
     pub angle: i32,
@@ -111,6 +126,7 @@ pub struct CharacterCore {
 }
 
 impl CharacterCore {
+    /// Character at rest at `pos` with an idle hook.
     pub fn new(pos: Vec2) -> Self {
         Self {
             pos,

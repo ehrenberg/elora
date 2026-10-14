@@ -8,8 +8,11 @@ pub const TILE_SIZE: i32 = 32;
 /// Direction of a jump pad (T-34).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum JumpDir {
+    /// Straight up.
     Up,
+    /// Diagonally up and to the left.
     UpLeft,
+    /// Diagonally up and to the right.
     UpRight,
 }
 
@@ -28,11 +31,14 @@ impl JumpDir {
 /// Running direction of an accelerator.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum BeltDir {
+    /// Moves characters to the left.
     Left,
+    /// Moves characters to the right.
     Right,
 }
 
 impl BeltDir {
+    /// -1 for left, 1 for right.
     pub fn sign(self) -> f32 {
         match self {
             Self::Left => -1.0,
@@ -44,8 +50,10 @@ impl BeltDir {
 /// Collision kind of a tile.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Tile {
+    /// Empty space.
     #[default]
     Air,
+    /// Solid wall the hook grabs.
     Solid,
     /// Wall the hook does not grab.
     Unhookable,
@@ -111,6 +119,7 @@ impl Tile {
             .map_or('.', |(c, _)| *c)
     }
 
+    /// Tile for a map character (see [`Tile::to_char`]); `None` for unknown characters.
     pub fn from_char(c: char) -> Option<Self> {
         TILE_CHARS.iter().find(|(ch, _)| *ch == c).map(|(_, t)| *t)
     }
@@ -143,6 +152,7 @@ pub struct LineHit {
     pub pos: Vec2,
     /// Last free point before it.
     pub before: Vec2,
+    /// Kind of the hit tile.
     pub tile: Tile,
 }
 
@@ -158,6 +168,7 @@ pub struct Collision {
     /// Weather of this tick (R2-W1, adventure only): wind with gusts (−1..1) and wetness of the
     /// ground (0..1); 0 in multiplayer.
     pub wind: f32,
+    /// Wetness of the ground (0..1, R2-W1): reduces the grip.
     pub wet: f32,
 }
 
@@ -209,10 +220,12 @@ impl Collision {
         None
     }
 
+    /// Width of the grid in tiles.
     pub fn width(&self) -> usize {
         self.width
     }
 
+    /// Height of the grid in tiles.
     pub fn height(&self) -> usize {
         self.height
     }

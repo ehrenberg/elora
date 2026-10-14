@@ -24,6 +24,7 @@ pub enum Ability {
 }
 
 impl Ability {
+    /// All abilities in region order.
     pub const ALL: [Self; 5] = [
         Self::HookJerk,
         Self::Pull,
@@ -38,13 +39,17 @@ impl Ability {
 }
 
 impl Abilities {
+    /// No ability unlocked (multiplayer).
     pub const NONE: Self = Self(0);
+    /// Every ability unlocked.
     pub const ALL: Self = Self(0b1_1111);
 
+    /// Is `a` unlocked?
     pub fn has(self, a: Ability) -> bool {
         self.0 & a.bit() != 0
     }
 
+    /// Unlocks (`on`) or locks `a`.
     pub fn set(&mut self, a: Ability, on: bool) {
         if on {
             self.0 |= a.bit();
@@ -53,6 +58,7 @@ impl Abilities {
         }
     }
 
+    /// Copy with `a` unlocked.
     #[must_use]
     pub fn with(mut self, a: Ability) -> Self {
         self.set(a, true);
@@ -65,6 +71,7 @@ impl Abilities {
         Self(self.0 | other.0)
     }
 
+    /// Raw bits (one per [`Ability`], for saving and the network).
     pub fn bits(self) -> u8 {
         self.0
     }

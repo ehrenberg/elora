@@ -6,14 +6,19 @@ use crate::tuning::{Tuning, ms_to_ticks};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub enum Weapon {
+    /// Melee weapon, always unlimited (key 1).
     Hammer,
+    /// Grenade launcher (key 2).
     Grenade,
+    /// Laser rifle (key 3).
     Laser,
 }
 
 impl Weapon {
+    /// All weapons in key order.
     pub const ALL: [Self; 3] = [Self::Hammer, Self::Grenade, Self::Laser];
 
+    /// Index into weapon tables (0..3).
     pub fn index(self) -> usize {
         self as usize
     }
@@ -41,14 +46,18 @@ impl Weapon {
 /// Ammo: `None` = unlimited (hammer).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct WeaponSlot {
+    /// Owned.
     pub got: bool,
+    /// Ammo; `None` = unlimited.
     pub ammo: Option<i32>,
 }
 
 /// Weapon state of a character.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Arsenal {
+    /// One slot per [`Weapon`], indexed by [`Weapon::index`].
     pub slots: [WeaponSlot; 3],
+    /// Weapon currently in hand.
     pub active: Weapon,
     /// Desired weapon; the switch only happens once the reload timer has expired.
     pub queued: Option<Weapon>,
@@ -74,10 +83,12 @@ impl Default for Arsenal {
 }
 
 impl Arsenal {
+    /// Slot of weapon `w`.
     pub fn slot(&self, w: Weapon) -> &WeaponSlot {
         &self.slots[w.index()]
     }
 
+    /// Is weapon `w` owned?
     pub fn has(&self, w: Weapon) -> bool {
         self.slot(w).got
     }

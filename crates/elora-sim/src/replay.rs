@@ -17,8 +17,10 @@ pub const RECORDING_FORMAT: u32 = 2;
 /// Every how many ticks the state is logged.
 const DUMP_INTERVAL: u64 = 25;
 
+/// Self-contained input recording (`.erec.toml`).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Recording {
+    /// Format version, see [`RECORDING_FORMAT`].
     pub format: u32,
     /// Collision grid, characters see [`Tile::to_char`].
     pub tiles: String,
@@ -26,22 +28,30 @@ pub struct Recording {
     pub spawn_points: Vec<[f32; 2]>,
     /// Player slots in order; `dummy = None` is the recorded human.
     pub players: Vec<RecordedPlayer>,
+    /// Pickups on the map.
     pub pickups: Vec<RecordedPickup>,
     /// Inputs of the human, one line per tick:
     /// `richtung ziel_x ziel_y sprung hook feuer waffe nächste vorige`.
     pub inputs: String,
+    /// Tuning values during the recording.
     pub tuning: Tuning,
 }
 
+/// Player slot of a recording.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RecordedPlayer {
+    /// Spawn position (world units).
     pub pos: [f32; 2],
+    /// Movement pattern of a dummy; `None` = the recorded human.
     pub dummy: Option<DummyPattern>,
 }
 
+/// Pickup of a recording.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct RecordedPickup {
+    /// Kind of the pickup.
     pub kind: PickupKind,
+    /// Position (world units).
     pub pos: [f32; 2],
 }
 
@@ -135,6 +145,7 @@ impl Recording {
         }
     }
 
+    /// Appends the input of one tick.
     pub fn push(&mut self, input: &PlayerInput) {
         let _ = writeln!(
             self.inputs,
@@ -152,10 +163,12 @@ impl Recording {
         );
     }
 
+    /// Number of recorded ticks.
     pub fn len(&self) -> usize {
         self.inputs.lines().count()
     }
 
+    /// No ticks recorded yet?
     pub fn is_empty(&self) -> bool {
         self.inputs.is_empty()
     }

@@ -12,23 +12,29 @@ pub type ShotKey = (usize, u64);
 /// direction and time – no accumulation of rounding errors.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Projectile {
+    /// Player slot of the shooter.
     pub owner: usize,
     /// Start position (rounded to whole units).
     pub pos: Vec2,
     /// Direction (rounded to 0.01, as in the network format of the original).
     pub dir: Vec2,
+    /// Tick of the shot.
     pub start_tick: u64,
+    /// Remaining lifetime in ticks.
     pub lifespan: i32,
+    /// Damage at the center of the explosion.
     pub damage: i32,
     /// Wind at launch (R2-W1, adventure only): deflects the trajectory sideways.
     pub wind: f32,
 }
 
 impl Projectile {
+    /// Unique key of this shot.
     pub fn key(&self) -> ShotKey {
         (self.owner, self.start_tick)
     }
 
+    /// Grenade with start position and direction rounded like the original.
     pub fn new(
         owner: usize,
         pos: Vec2,
@@ -63,12 +69,17 @@ impl Projectile {
 /// Laser beam (reference: `CLaser`). The visible part is `from`–`pos`.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Laser {
+    /// Player slot of the shooter.
     pub owner: usize,
+    /// Current head of the beam.
     pub pos: Vec2,
+    /// Start of the current segment.
     pub from: Vec2,
+    /// Direction of the current segment (unit vector).
     pub dir: Vec2,
     /// Remaining range; < 0 = extinguished.
     pub energy: f32,
+    /// Wall bounces so far.
     pub bounces: u32,
     /// Tick of the last segment.
     pub eval_tick: u64,
@@ -77,10 +88,12 @@ pub struct Laser {
 }
 
 impl Laser {
+    /// Unique key of this shot.
     pub fn key(&self) -> ShotKey {
         (self.owner, self.start_tick)
     }
 
+    /// Beam starting at `pos` with range `energy`, fired in `tick`.
     pub fn new(owner: usize, pos: Vec2, dir: Vec2, energy: f32, tick: u64) -> Self {
         Self {
             owner,
@@ -98,12 +111,16 @@ impl Laser {
 /// Pickup on the map. `respawn_tick = Some(t)`: picked up, back after tick `t`.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Pickup {
+    /// What the pickup grants.
     pub kind: PickupKind,
+    /// Position (world units).
     pub pos: Vec2,
+    /// `Some(t)`: picked up, available again after tick `t`.
     pub respawn_tick: Option<u64>,
 }
 
 impl Pickup {
+    /// Can it be picked up right now?
     pub fn available(&self) -> bool {
         self.respawn_tick.is_none()
     }
@@ -112,13 +129,21 @@ impl Pickup {
 /// Flag of a team (CTF, reference: `CFlag`).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Flag {
+    /// Team the flag belongs to.
     pub team: crate::Team,
+    /// Position of the flag stand.
     pub stand: Vec2,
+    /// Current position (world units).
     pub pos: Vec2,
+    /// Velocity while falling (world units per tick).
     pub vel: Vec2,
+    /// Player slot of the carrier.
     pub carrier: Option<usize>,
+    /// At the stand (not carried, not dropped).
     pub at_stand: bool,
+    /// Tick of the last drop (for the automatic return).
     pub drop_tick: u64,
+    /// Tick of the grab from the stand (capture time); 0 = not carried.
     pub grab_tick: u64,
 }
 
@@ -128,6 +153,7 @@ impl Flag {
     /// Return after this many seconds on the ground (original: 30).
     pub const RETURN_SECS: u64 = 30;
 
+    /// Flag at its stand.
     pub fn new(team: crate::Team, stand: Vec2) -> Self {
         Self {
             team,
@@ -141,6 +167,7 @@ impl Flag {
         }
     }
 
+    /// Back to the stand without a carrier.
     pub fn reset(&mut self) {
         self.carrier = None;
         self.at_stand = true;

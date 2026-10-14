@@ -14,6 +14,7 @@ pub struct CreatureKind {
     pub name: String,
     /// Collision box (width, height) in units; origin in the center.
     pub size: [f32; 2],
+    /// Maximum health.
     pub health: i32,
     /// Damage on contact (E-232).
     #[cfg_attr(feature = "serde", serde(default))]
@@ -27,6 +28,7 @@ pub struct CreatureKind {
     /// Experience for defeating it (evaluated by the adventure).
     #[cfg_attr(feature = "serde", serde(default))]
     pub xp: u32,
+    /// Drops on defeat.
     #[cfg_attr(feature = "serde", serde(default))]
     pub loot: Vec<LootEntry>,
     /// Contact triggers the colorful rush (this many ms, E-311): Elora walks slower.
@@ -39,10 +41,12 @@ pub struct CreatureKind {
     /// above (strike, grenade on top) and stomp take effect.
     #[cfg_attr(feature = "serde", serde(default))]
     pub armor: bool,
+    /// Behavior pattern with its values.
     pub behavior: Behavior,
 }
 
 impl CreatureKind {
+    /// Collision box as a vector (width, height).
     pub fn size(&self) -> Vec2 {
         Vec2::new(self.size[0], self.size[1])
     }
@@ -59,19 +63,32 @@ impl CreatureKind {
 #[cfg_attr(feature = "serde", serde(tag = "type", rename_all = "snake_case"))]
 pub enum Behavior {
     /// Walks back and forth, turns at walls and (if desired) at edges.
-    Walker { speed: f32, turn_at_edges: bool },
+    Walker {
+        /// Walking speed (world units per tick).
+        speed: f32,
+        /// Also turns at ledges instead of walking off.
+        turn_at_edges: bool,
+    },
     /// Waits on the ground and leaps at Elora as soon as she is in sight.
     Hopper {
+        /// Waits this long on the ground between leaps.
         wait_ms: u32,
+        /// Horizontal leap velocity (world units per tick).
         jump_x: f32,
+        /// Vertical leap velocity (world units per tick).
         jump_y: f32,
+        /// Sight range (world units).
         sight: f32,
     },
     /// Stands still and shoots at Elora when she is in range and in sight.
     Turret {
+        /// Time between shots.
         interval_ms: u32,
+        /// Firing range (world units).
         range: f32,
+        /// Speed of the shots (world units per tick).
         shot_speed: f32,
+        /// Damage per shot.
         shot_damage: i32,
         /// Throws in an arc (gravity) instead of shooting straight (squirrel pirate, R2-M2.2).
         #[cfg_attr(feature = "serde", serde(default))]
@@ -81,14 +98,20 @@ pub enum Behavior {
     /// this high above her and drops a spark every `drop_ms` that glows on the ground for
     /// `glow_ms` (spark moth, R2-M2.3).
     Flyer {
+        /// Flight speed (world units per tick).
         speed: f32,
+        /// Sight range (world units).
         sight: f32,
+        /// Hover height above Elora (world units, 0 = chase directly).
         #[cfg_attr(feature = "serde", serde(default))]
         hover: f32,
+        /// Interval of the sparks (0 = none).
         #[cfg_attr(feature = "serde", serde(default))]
         drop_ms: u32,
+        /// Damage of a spark.
         #[cfg_attr(feature = "serde", serde(default))]
         drop_damage: i32,
+        /// Glow time of a spark on the ground.
         #[cfg_attr(feature = "serde", serde(default))]
         glow_ms: u32,
     },
@@ -102,9 +125,13 @@ pub enum Behavior {
     /// afterwards waits hidden for at least `hide_ms`.
     /// When emerging it grows out of the ground for `rise_ms` (still harmless).
     Burrower {
+        /// Emerges when Elora is closer than this (world units).
         sight: f32,
+        /// Time out of the ground.
         out_ms: u32,
+        /// Minimum time hidden.
         hide_ms: u32,
+        /// Growth time when emerging.
         #[cfg_attr(feature = "serde", serde(default))]
         rise_ms: u32,
     },
@@ -115,7 +142,12 @@ pub enum Behavior {
     Warden(Box<WardenDef>),
     /// Companion (mushroom child, E-308): follows Elora on the ground, jumps over steps, waits
     /// at gaps and hazards; invulnerable and harmless.
-    Follower { speed: f32, jump: f32 },
+    Follower {
+        /// Walking speed (world units per tick).
+        speed: f32,
+        /// Jump velocity for steps (world units per tick).
+        jump: f32,
+    },
     /// Guardian in the sand (Sand Serpent, R2-M2.3, E-316): moves towards Elora as a sand trail,
     /// the sand quakes, then it shoots out in an arc and lies dazed on the ground after landing –
     /// **vulnerable only in the arc and while dazed**. From `enrage_at` faster and quicksand in
@@ -125,42 +157,72 @@ pub enum Behavior {
     /// for `warn_ms` and leaps at her in an arc (dune worm, R2-M2.3); after landing
     /// it dives in and rests for `rest_ms`. **Vulnerable and dangerous only mid-leap.**
     Leaper {
+        /// Sight range (world units).
         sight: f32,
+        /// Speed under the sand (world units per tick).
         speed: f32,
+        /// Warning before the leap.
         warn_ms: u32,
+        /// Horizontal leap velocity (world units per tick).
         jump_x: f32,
+        /// Vertical leap velocity (world units per tick).
         jump_y: f32,
+        /// Rest time after landing.
         rest_ms: u32,
     },
     /// Icicle on the ceiling (R2-M2.4, E-343): hangs harmlessly, trembles for `warn_ms` as soon
     /// as Elora is below it (horizontally up to `sight`, vertically up to `reach`, clear line of
     /// sight), then falls and shatters on the ground or on Elora. **Dangerous only while falling.**
     Icicle {
+        /// Horizontal trigger range (world units).
         sight: f32,
+        /// Vertical trigger range (world units).
         reach: f32,
+        /// Trembling before the fall.
         warn_ms: u32,
     },
     /// Snow chunk of an avalanche (R2-M2.4): rolls downhill with `speed` in its facing direction
     /// and bursts at a wall, on Elora or after `life_ms`.
-    Roller { speed: f32, life_ms: u32 },
+    Roller {
+        /// Rolling speed (world units per tick).
+        speed: f32,
+        /// Bursts after this lifetime.
+        life_ms: u32,
+    },
     /// Snowball seal (R2-M2.4): slides closer on its belly with `speed` until Elora is closer
     /// than `range`, rears up and throws a snowball in an arc every `interval_ms`.
     Seal {
+        /// Sight range (world units).
         sight: f32,
+        /// Sliding speed (world units per tick).
         speed: f32,
+        /// Throws once Elora is closer than this (world units).
         range: f32,
+        /// Time between throws.
         interval_ms: u32,
+        /// Speed of the snowballs (world units per tick).
         shot_speed: f32,
+        /// Damage per snowball.
         shot_damage: i32,
     },
     /// Ice-spike bat (R2-M2.4): hangs asleep from the ceiling, swoops down on Elora with `speed`
     /// as soon as she is below it (like the icicle), and flutters back.
-    Bat { sight: f32, reach: f32, speed: f32 },
+    Bat {
+        /// Horizontal trigger range (world units).
+        sight: f32,
+        /// Vertical trigger range (world units).
+        reach: f32,
+        /// Swoop speed (world units per tick).
+        speed: f32,
+    },
     /// Frost ghost (R2-M2.4, D-M24-07): floats through walls towards Elora with `speed`; after
     /// a touch (freezing for the kind's `freeze_ms`) it retreats for `flee_ms`.
     Ghost {
+        /// Sight range (world units).
         sight: f32,
+        /// Float speed (world units per tick).
         speed: f32,
+        /// Retreat time after a touch.
         flee_ms: u32,
     },
     /// Guardian of Frostspitzen (Ice Queen Kristella, R2-M2.4, E-341): floats above the
@@ -185,7 +247,9 @@ pub struct QueenDef {
     pub waves: u32,
     /// Speed of the wave front (units/tick) and length of the fresh frost behind it.
     pub wave_speed: f32,
+    /// Length of the fresh frost behind the front (world units).
     pub fresh_len: f32,
+    /// Damage of fresh frost.
     pub wave_damage: i32,
     /// Exhausted on the ground: vulnerable.
     pub stun_ms: u32,
@@ -193,6 +257,7 @@ pub struct QueenDef {
     /// `icicles` icicles above Elora; 0 = never.
     #[cfg_attr(feature = "serde", serde(default))]
     pub enrage_at: f32,
+    /// Icicles per enraged wave pause.
     #[cfg_attr(feature = "serde", serde(default))]
     pub icicles: u32,
     /// Blizzard in the hall from this share of health (the session sets the weather).
@@ -211,19 +276,23 @@ pub struct DiverDef {
     pub sight: f32,
     /// Circle above the start point: half width and height, speed (units/tick).
     pub circle: [f32; 2],
+    /// Circle speed (world units per tick).
     pub speed: f32,
     /// Circle this long before taking aim.
     pub circle_ms: u32,
     /// Warning before the dive (stands still and trembles).
     pub aim_ms: u32,
+    /// Dive speed (world units per tick).
     pub dive_speed: f32,
     /// Dazed on the ground.
     pub stun_ms: u32,
     /// Projectiles while circling (fall downwards); 0 = none.
     #[cfg_attr(feature = "serde", serde(default))]
     pub drop_ms: u32,
+    /// Fall speed of the projectiles (world units per tick).
     #[cfg_attr(feature = "serde", serde(default))]
     pub drop_speed: f32,
+    /// Damage of a projectile.
     #[cfg_attr(feature = "serde", serde(default))]
     pub drop_damage: i32,
     /// Enraged from this share of health (1.35× speed, double dive); 0 = never.
@@ -232,10 +301,13 @@ pub struct DiverDef {
     /// From this share of health it calls `summon` (kind), at most `summon_max` at once.
     #[cfg_attr(feature = "serde", serde(default))]
     pub summon_at: f32,
+    /// Kind name of the helpers (empty = none).
     #[cfg_attr(feature = "serde", serde(default))]
     pub summon: String,
+    /// At most this many helpers at once.
     #[cfg_attr(feature = "serde", serde(default))]
     pub summon_max: u32,
+    /// Interval between two summons.
     #[cfg_attr(feature = "serde", serde(default))]
     pub summon_ms: u32,
 }
@@ -248,13 +320,17 @@ pub struct WardenDef {
     pub sight: f32,
     /// Interval of the root thrusts and warning time before them (ground quakes).
     pub attack_ms: u32,
+    /// Warning time before a root thrust (ground quakes).
     pub warn_ms: u32,
     /// Root thrust: width and height of the hit zone, damage.
     pub spike_width: f32,
+    /// Height of the hit zone (world units).
     pub spike_height: f32,
+    /// Damage of a root thrust.
     pub spike_damage: i32,
     /// Pull away from the warden this long until a core comes loose; it is then open this long.
     pub pull_ms: u32,
+    /// Time a pulled core stays open (vulnerable).
     pub open_ms: u32,
     /// Cores in the bark (grow back once all are pulled).
     pub cores: u32,
@@ -264,8 +340,10 @@ pub struct WardenDef {
     /// Root wall: every `wall_every_ms`, stands for `wall_ms`, this many tiles high.
     #[cfg_attr(feature = "serde", serde(default))]
     pub wall_every_ms: u32,
+    /// Lifetime of a root wall.
     #[cfg_attr(feature = "serde", serde(default))]
     pub wall_ms: u32,
+    /// Height of a root wall in tiles.
     #[cfg_attr(feature = "serde", serde(default))]
     pub wall_height: u32,
 }
@@ -278,11 +356,13 @@ pub struct SerpentDef {
     pub sight: f32,
     /// Speed of the sand trail (units/tick) and minimum time under the sand.
     pub speed: f32,
+    /// Minimum time under the sand.
     pub trail_ms: u32,
     /// Sand quakes this long before it shoots out.
     pub warn_ms: u32,
     /// Leap: horizontal (towards the center of the basin) and upwards.
     pub jump_x: f32,
+    /// Upward leap velocity (world units per tick).
     pub jump_y: f32,
     /// Dazed on the ground after landing.
     pub stun_ms: u32,
@@ -295,8 +375,10 @@ pub struct SerpentDef {
     /// Quicksand: every `sand_every_ms` for `sand_ms`, this many tiles wide.
     #[cfg_attr(feature = "serde", serde(default))]
     pub sand_every_ms: u32,
+    /// Lifetime of the quicksand.
     #[cfg_attr(feature = "serde", serde(default))]
     pub sand_ms: u32,
+    /// Width of the quicksand in tiles.
     #[cfg_attr(feature = "serde", serde(default))]
     pub sand_width: u32,
     /// After this many hits during one opening it dives immediately (0 = never).
@@ -305,12 +387,14 @@ pub struct SerpentDef {
     /// Landing flings sand: damage in the radius (units, 0 = off).
     #[cfg_attr(feature = "serde", serde(default))]
     pub land_damage: i32,
+    /// Radius of the landing damage (world units).
     #[cfg_attr(feature = "serde", serde(default))]
     pub land_radius: f32,
 }
 
 /// State of the guardian in the sand (in [`Creature::mode`]).
 pub mod serpent {
+    /// Waits until Elora comes.
     pub const SLEEP: u8 = 0;
     /// Under the sand, only the trail is visible.
     pub const TRAIL: u8 = 1;
@@ -324,7 +408,9 @@ pub mod serpent {
 
 /// State of the guardian on the ground (in [`Creature::mode`]).
 pub mod warden {
+    /// Waits until Elora comes.
     pub const SLEEP: u8 = 0;
+    /// Awake, between two root thrusts.
     pub const IDLE: u8 = 1;
     /// Ground quakes at [`super::Creature::goal`], the root thrust is about to come.
     pub const WARN: u8 = 2;
@@ -336,8 +422,11 @@ pub mod warden {
 pub mod diver {
     /// Waits until Elora comes.
     pub const SLEEP: u8 = 0;
+    /// Circles above the start point (may drop projectiles).
     pub const CIRCLE: u8 = 1;
+    /// Takes aim at Elora (stands still and trembles).
     pub const AIM: u8 = 2;
+    /// Dives towards [`super::Creature::goal`].
     pub const DIVE: u8 = 3;
     /// Dazed on the ground: vulnerable.
     pub const STUNNED: u8 = 4;
@@ -347,7 +436,9 @@ pub mod diver {
 
 /// State of the root snake (in [`Creature::mode`]).
 pub mod burrow {
+    /// Hidden in the ground: harmless, invulnerable.
     pub const HIDDEN: u8 = 0;
+    /// Out of the ground: dangerous and vulnerable.
     pub const OUT: u8 = 1;
     /// Currently growing out of the ground (harmless, not vulnerable).
     pub const RISING: u8 = 2;
@@ -365,6 +456,7 @@ pub mod leaper {
 
 /// State of an icicle (in [`Creature::mode`]).
 pub mod icicle {
+    /// Hangs harmlessly on the ceiling.
     pub const HANG: u8 = 0;
     /// Trembles: about to fall.
     pub const SHAKE: u8 = 1;
@@ -374,6 +466,7 @@ pub mod icicle {
 
 /// State of the snowball seal (in [`Creature::mode`]).
 pub mod seal {
+    /// Slides closer on its belly.
     pub const SLIDE: u8 = 0;
     /// Reared up, throws.
     pub const THROW: u8 = 1;
@@ -383,14 +476,18 @@ pub mod seal {
 pub mod bat {
     /// Sleeps on the ceiling: harmless.
     pub const HANG: u8 = 0;
+    /// Swoops down on Elora.
     pub const DIVE: u8 = 1;
+    /// Flutters back to the ceiling.
     pub const RETURN: u8 = 2;
 }
 
 /// State of the guardian of Frostspitzen (in [`Creature::mode`]); the wave front is stored in
 /// [`Creature::goal`] (x = front, y = floor of the hall), the direction in `facing`.
 pub mod queen {
+    /// Waits until Elora comes.
     pub const SLEEP: u8 = 0;
+    /// Hovers between two waves.
     pub const HOVER: u8 = 1;
     /// Frost wave runs across the floor.
     pub const WAVE: u8 = 2;
@@ -402,6 +499,7 @@ pub mod queen {
 
 /// State of the frost ghost (in [`Creature::mode`]).
 pub mod ghost {
+    /// Chases Elora (through walls).
     pub const CHASE: u8 = 0;
     /// Retreats after a touch: harmless.
     pub const FLEE: u8 = 1;
@@ -411,9 +509,13 @@ pub mod ghost {
 #[derive(Debug, Clone, PartialEq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct LootEntry {
+    /// Item key.
     pub item: String,
+    /// Minimum number of pieces.
     pub min: u32,
+    /// Maximum number of pieces.
     pub max: u32,
+    /// Drop probability (0..1, default 1).
     #[cfg_attr(feature = "serde", serde(default = "one"))]
     pub chance: f32,
 }
@@ -430,9 +532,13 @@ pub struct Creature {
     pub id: u32,
     /// Index into [`crate::World::creature_kinds`].
     pub kind: usize,
+    /// Center position (world units).
     pub pos: Vec2,
+    /// Velocity (world units per tick).
     pub vel: Vec2,
+    /// Spawn point (patrols, circles and returns relate to it).
     pub home: Vec2,
+    /// Current health.
     pub health: i32,
     /// Facing direction: -1 left, 1 right.
     pub facing: i8,
@@ -442,6 +548,7 @@ pub struct Creature {
     pub stun: u32,
     /// Tick of the last hit (health bar, E-238).
     pub hit_tick: Option<u64>,
+    /// Standing on the ground.
     pub grounded: bool,
     /// State of multi-stage behaviors (guardians, [`diver`]).
     pub mode: u8,
@@ -452,6 +559,7 @@ pub struct Creature {
     pub count: u32,
     /// Tug of war on the Root Warden (ticks) and timing of the root walls.
     pub tug: u32,
+    /// Timer of the root walls (Root Warden) and the quicksand (Sand Serpent).
     pub wall_timer: u32,
     /// Hits since the last opening (Sand Serpent: dives after `open_hits`).
     pub hits: u32,
@@ -521,10 +629,15 @@ impl Creature {
 /// Projectile of an enemy (e.g. pollen ball): flies straight.
 #[derive(Debug, Clone, PartialEq)]
 pub struct CreatureShot {
+    /// Id of the shooting creature.
     pub owner: u32,
+    /// Position (world units).
     pub pos: Vec2,
+    /// Velocity (world units per tick).
     pub vel: Vec2,
+    /// Damage on hit.
     pub damage: i32,
+    /// Age in ticks (removed after a fixed lifetime).
     pub ticks: u32,
     /// Gravity per tick (0 = flies straight; nuts in an arc).
     pub gravity: f32,
@@ -537,10 +650,15 @@ pub struct CreatureShot {
 /// Loot lying around (E-236).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Loot {
+    /// Unique id (shared counter with creatures).
     pub id: u32,
+    /// Item key.
     pub item: String,
+    /// Number of pieces.
     pub count: u32,
+    /// Position (world units).
     pub pos: Vec2,
+    /// Velocity (world units per tick).
     pub vel: Vec2,
     /// Age in ticks (can only be collected after a short time).
     pub age: u32,
@@ -549,9 +667,13 @@ pub struct Loot {
 /// Target for the hook (creatures from a character's point of view).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct HookTarget {
+    /// Creature id.
     pub id: u32,
+    /// Center position (world units).
     pub pos: Vec2,
+    /// Hit radius (world units).
     pub radius: f32,
+    /// Small: the pull hook pulls it towards Elora.
     pub small: bool,
     /// Firmly anchored (Root Warden): the hook holds, but does not pull Elora there.
     pub anchor: bool,

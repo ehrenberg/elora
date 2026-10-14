@@ -17,8 +17,11 @@ pub struct PlayerInput {
     pub direction: i8,
     /// Target point relative to the character (world units).
     pub target_x: i32,
+    /// Target point relative to the character, y (world units, pointing down).
     pub target_y: i32,
+    /// Jump key held.
     pub jump: bool,
+    /// Hook key held.
     pub hook: bool,
     /// Fire counter (odd = pressed).
     pub fire: u8,

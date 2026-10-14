@@ -4,6 +4,8 @@
 //! (see `docs/handbook/architecture.md`). Server, client prediction and tests use
 //! the same code.
 
+#![warn(missing_docs)]
+
 pub mod ability;
 pub mod character;
 pub mod collision;
