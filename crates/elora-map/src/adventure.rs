@@ -38,48 +38,85 @@ pub enum CameraMode {
 #[derive(Debug, Clone, PartialEq)]
 pub enum ObjectKind {
     /// Enemy (`creatures.toml`); `persistent` = boss/special, stays defeated (E-235).
-    Creature { kind: String, persistent: bool },
+    Creature {
+        /// Enemy kind.
+        kind: String,
+        /// Stays defeated.
+        persistent: bool,
+    },
     /// Character with dialogue (E-257); `walk` = half the length of its walking path (0 = stands).
     Npc {
+        /// Character id (portrait, name).
         character: String,
+        /// Dialogue id.
         dialog: String,
+        /// Viewing direction: −1 = left, 1 = right.
         facing: i8,
+        /// Half the length of the walking path in units (0 = stands).
         walk: f32,
     },
     /// Chest with fixed contents (E-255); `lock` = condition to open it (empty = open).
     Chest {
+        /// Items and counts.
         contents: Vec<(String, u32)>,
+        /// Condition to open it (empty = open).
         lock: String,
     },
     /// Lever or hit switch (E-256): sets `flag` to 1/0.
     Switch {
+        /// Flag that is set.
         flag: String,
+        /// Can only be used once.
         once: bool,
+        /// How the switch is triggered.
         trigger: SwitchTrigger,
     },
     /// Door/gate (E-254): block of `size` (tiles, from `pos` as top-left corner), closed like
     /// stone, open as soon as `open_if` holds.
-    Door { size: (u8, u8), open_if: String },
+    Door {
+        /// Width and height in tiles.
+        size: (u8, u8),
+        /// Condition under which the door is open.
+        open_if: String,
+    },
     /// One-time find (e.g. glitter stone).
-    Collectible { item: String },
+    Collectible {
+        /// Item id.
+        item: String,
+    },
     /// Source stone (P-31).
     SavePoint,
     /// Healing plant (E-258), grows back when the area is re-entered.
-    HealPlant { heal: i32 },
+    HealPlant {
+        /// Health restored.
+        heal: i32,
+    },
     /// Entrance: Elora appears here when a transition with this id arrives.
     Spawn,
     /// Transition to `map`/`spawn` (E-252); area `size` from `pos`. `on_touch` = on
     /// walking in, otherwise with the action key.
     Exit {
+        /// Size of the area in units.
         size: Vec2,
+        /// Target map.
         map: String,
+        /// Entrance id on the target map.
         spawn: String,
+        /// Trigger on walking in instead of with the action key.
         on_touch: bool,
     },
     /// Trigger zone for quests ("reach a place"); area `size` from `pos`.
-    Zone { size: Vec2 },
+    Zone {
+        /// Size of the area in units.
+        size: Vec2,
+    },
     /// Camera zone; area `size` from `pos`.
-    Camera { size: Vec2, mode: CameraMode },
+    Camera {
+        /// Size of the area in units.
+        size: Vec2,
+        /// How the camera uses the zone.
+        mode: CameraMode,
+    },
 }
 
 impl ObjectKind {
@@ -120,19 +157,23 @@ impl ObjectKind {
 /// (e.g. opened chest `wiese-1:truhe-3`).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Object {
+    /// Unique id on the map.
     pub id: String,
     /// Center (characters, items) or top-left corner (areas, doors) in units.
     pub pos: Vec2,
+    /// Kind and settings.
     pub kind: ObjectKind,
 }
 
 /// Adventure part of a map.
 #[derive(Debug, Clone, PartialEq, Default)]
 pub struct Adventure {
+    /// All objects of the map.
     pub objects: Vec<Object>,
 }
 
 impl Adventure {
+    /// Object with this id.
     pub fn object(&self, id: &str) -> Option<&Object> {
         self.objects.iter().find(|o| o.id == id)
     }

@@ -245,7 +245,7 @@ impl Editor {
         self.status = Some((key, arg.into()));
     }
 
-    /// Begin a brush stroke; returns its key for [`Editor::paint`].
+    /// Begin a brush stroke; returns its key for the edit kind of [`Editor::fill_cells`].
     pub fn start_stroke(&mut self) -> u32 {
         self.end_edit();
         self.next_stroke += 1;

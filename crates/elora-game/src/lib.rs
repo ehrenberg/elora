@@ -5,6 +5,8 @@
 //! Reference: Teeworlds 0.7 `gamecontroller.cpp` and `gamemodes/*` (analysis §8),
 //! with the deviations E-066 to E-079.
 
+#![warn(missing_docs)]
+
 use std::collections::BTreeMap;
 
 use elora_sim::entities::Flag;
@@ -15,17 +17,24 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, Default)]
 #[serde(rename_all = "lowercase")]
 pub enum Mode {
+    /// Deathmatch: everyone against everyone.
     #[default]
     Dm,
+    /// Team deathmatch.
     Tdm,
+    /// Capture the flag.
     Ctf,
+    /// Last man standing: no respawn during a round.
     Lms,
+    /// Last team standing: no respawn during a round.
     Lts,
 }
 
 impl Mode {
+    /// All modes in index order.
     pub const ALL: [Self; 5] = [Self::Dm, Self::Tdm, Self::Ctf, Self::Lms, Self::Lts];
 
+    /// Played in teams?
     pub fn teams(self) -> bool {
         matches!(self, Self::Tdm | Self::Ctf | Self::Lts)
     }
@@ -35,10 +44,12 @@ impl Mode {
         matches!(self, Self::Lms | Self::Lts)
     }
 
+    /// Played with flags?
     pub fn flags(self) -> bool {
         self == Self::Ctf
     }
 
+    /// Short name, e.g. "CTF".
     pub fn name(self) -> &'static str {
         match self {
             Self::Dm => "DM",
@@ -49,6 +60,7 @@ impl Mode {
         }
     }
 
+    /// Mode for a short name (case-insensitive).
     pub fn parse(s: &str) -> Option<Self> {
         Self::ALL
             .into_iter()
@@ -60,10 +72,12 @@ impl Mode {
         if self == Self::Ctf { 5 } else { 20 }
     }
 
+    /// Index for the network protocol.
     pub fn index(self) -> u8 {
         self as u8
     }
 
+    /// Mode for a protocol index.
     pub fn from_index(i: u8) -> Option<Self> {
         Self::ALL.get(usize::from(i)).copied()
     }
@@ -73,6 +87,7 @@ impl Mode {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct RulesConfig {
+    /// Game mode.
     pub mode: Mode,
     /// Laser only, one hit kills, no pickups (E-026, E-076).
     pub instagib: bool,
@@ -115,6 +130,7 @@ impl Default for RulesConfig {
 }
 
 impl RulesConfig {
+    /// Effective score limit (0 = no limit).
     pub fn score_limit(&self) -> u32 {
         self.score_limit
             .unwrap_or_else(|| self.mode.default_score_limit())
@@ -135,17 +151,24 @@ impl RulesConfig {
 pub enum Phase {
     /// Warmup; `until = None`: waiting for enough players.
     Warmup {
+        /// End tick of the warmup.
         until: Option<u64>,
     },
     /// World frozen until `until`.
     Countdown {
+        /// Tick at which the countdown ends.
         until: u64,
     },
+    /// Match running, points count.
     Running,
+    /// Round ended, the next round starts at `until`.
     RoundOver {
+        /// Tick at which the next round starts.
         until: u64,
     },
+    /// Match ended, results shown until `until`.
     MatchOver {
+        /// Tick at which the next match starts.
         until: u64,
     },
 }
@@ -171,30 +194,43 @@ impl Phase {
 /// Score of a player.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct Stats {
+    /// Points.
     pub score: i32,
+    /// Kills.
     pub kills: u32,
+    /// Deaths.
     pub deaths: u32,
 }
 
 /// Winner of a round or a match.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Winner {
+    /// A single player (slot).
     Player(usize),
+    /// A team.
     Team(Team),
+    /// Nobody won.
     Draw,
 }
 
 /// Events of the rules (for display and server).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum GameEvent {
+    /// A new match begins.
     MatchStarted,
+    /// A new round begins.
     RoundStarted,
+    /// A round ended.
     RoundOver(Winner),
+    /// A match ended.
     MatchOver(Winner),
+    /// Tie at the end of the match: the next point decides.
     SuddenDeath,
     /// Player was moved to the other team for balancing.
     TeamChanged {
+        /// Moved player slot.
         player: usize,
+        /// New team.
         team: Team,
     },
     /// Rotation: load the next map (server).
@@ -208,15 +244,22 @@ fn secs(s: u64) -> u64 {
     s * u64::from(TICKS_PER_SECOND)
 }
 
+/// Rule engine of a match: game state, scores, rounds.
 #[derive(Debug, Clone)]
 pub struct Rules {
+    /// Settings.
     pub cfg: RulesConfig,
+    /// Current game state.
     pub phase: Phase,
+    /// Score per player slot.
     pub stats: BTreeMap<usize, Stats>,
     /// Team scores (red, blue); in CTF captures (E-067).
     pub team_score: [i32; 2],
+    /// Sudden death active (tie at the end of the match).
     pub sudden_death: bool,
+    /// Tick at which the current match started.
     pub match_start_tick: u64,
+    /// Matches played on this map.
     pub match_count: u32,
     base_tuning: Tuning,
     unbalanced_since: Option<u64>,
@@ -329,6 +372,7 @@ impl Rules {
         }
     }
 
+    /// A player left: forget their score.
     pub fn on_leave(&mut self, i: usize) {
         self.stats.remove(&i);
     }

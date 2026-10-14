@@ -18,8 +18,11 @@ use crate::Color;
 /// Affine 2D transformation: `p' = x_axis * p.x + y_axis * p.y + offset`.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Affine {
+    /// Image of the x axis.
     pub x_axis: Vec2,
+    /// Image of the y axis.
     pub y_axis: Vec2,
+    /// Translation.
     pub offset: Vec2,
 }
 
@@ -30,12 +33,14 @@ impl Default for Affine {
 }
 
 impl Affine {
+    /// No transformation.
     pub const IDENTITY: Self = Self {
         x_axis: Vec2::new(1.0, 0.0),
         y_axis: Vec2::new(0.0, 1.0),
         offset: Vec2::new(0.0, 0.0),
     };
 
+    /// Translation by `offset`.
     pub const fn translate(offset: Vec2) -> Self {
         Self {
             offset,
@@ -43,6 +48,7 @@ impl Affine {
         }
     }
 
+    /// Scaling around the origin.
     pub const fn scale(sx: f32, sy: f32) -> Self {
         Self {
             x_axis: Vec2::new(sx, 0.0),
@@ -71,10 +77,12 @@ impl Affine {
         }
     }
 
+    /// Transforms a point.
     pub fn apply(&self, p: Vec2) -> Vec2 {
         self.apply_vector(p) + self.offset
     }
 
+    /// Transforms a direction (without translation).
     pub fn apply_vector(&self, v: Vec2) -> Vec2 {
         self.x_axis * v.x + self.y_axis * v.y
     }
@@ -87,16 +95,28 @@ pub enum Paint {
     Solid(Color),
     /// Linear gradient from `from` (color `a`) to `to` (color `b`), local coordinates.
     Linear {
+        /// Start point.
         from: Vec2,
+        /// End point.
         to: Vec2,
+        /// Color at the start.
         a: Color,
+        /// Color at the end.
         b: Color,
     },
     /// Color from the [`Tint`] at draw time; `shade` > 0 lightens, < 0 darkens (−1..=1).
-    Key { slot: u8, shade: f32, alpha: f32 },
+    Key {
+        /// Key (1-based in [`Tint::colors`]).
+        slot: u8,
+        /// Lightening (> 0) or darkening (< 0).
+        shade: f32,
+        /// Opacity.
+        alpha: f32,
+    },
 }
 
 impl Paint {
+    /// Unshaded, opaque key color.
     pub const fn key(slot: u8) -> Self {
         Self::Key {
             slot,
@@ -105,6 +125,7 @@ impl Paint {
         }
     }
 
+    /// Opaque key color, lightened or darkened by `shade`.
     pub const fn key_shaded(slot: u8, shade: f32) -> Self {
         Self::Key {
             slot,
@@ -141,6 +162,7 @@ impl Paint {
 /// missing keys are drawn magenta so they stand out.
 #[derive(Debug, Clone, Default, PartialEq)]
 pub struct Tint {
+    /// Color per key (index 0 = key 1).
     pub colors: Vec<Color>,
     /// Opacity for the whole mesh (fading out, invisibility).
     pub alpha: Option<f32>,
@@ -149,6 +171,7 @@ pub struct Tint {
 }
 
 impl Tint {
+    /// Key colors without alpha or multiply.
     pub fn new(colors: impl Into<Vec<Color>>) -> Self {
         Self {
             colors: colors.into(),
@@ -191,6 +214,7 @@ pub fn shade(c: Color, amount: f32) -> Color {
     }
 }
 
+/// Linear interpolation of all components (`t` = 0..1).
 pub fn lerp_color(a: Color, b: Color, t: f32) -> Color {
     let mut out = [0.0; 4];
     for (i, o) in out.iter_mut().enumerate() {
@@ -221,14 +245,17 @@ impl Mesh {
         Self { vertices, indices }
     }
 
+    /// Number of vertices.
     pub fn vertex_count(&self) -> usize {
         self.vertices.len()
     }
 
+    /// Number of triangles.
     pub fn triangle_count(&self) -> usize {
         self.indices.len() / 3
     }
 
+    /// Whether there is nothing to draw.
     pub fn is_empty(&self) -> bool {
         self.indices.is_empty()
     }
@@ -292,10 +319,12 @@ impl MeshBuilder {
         }
     }
 
+    /// Fill with the non-zero rule.
     pub fn fill_path(&mut self, path: &Path, paint: Paint) -> &mut Self {
         self.fill_path_with_rule(path, paint, FillRule::NonZero)
     }
 
+    /// Fill with the given fill rule.
     pub fn fill_path_with_rule(&mut self, path: &Path, paint: Paint, rule: FillRule) -> &mut Self {
         let _ = self.fill.tessellate_path(
             path,
@@ -329,10 +358,12 @@ impl MeshBuilder {
             .stroke_path(path, outline.0, outline.1)
     }
 
+    /// Filled ellipse.
     pub fn fill_ellipse(&mut self, center: Vec2, radii: Vec2, paint: Paint) -> &mut Self {
         self.fill_path(&ellipse(center, radii), paint)
     }
 
+    /// Returns the mesh and empties the builder.
     pub fn build(&mut self) -> Mesh {
         let g = std::mem::replace(&mut self.geometry, VertexBuffers::new());
         Mesh {

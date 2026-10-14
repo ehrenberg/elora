@@ -3,6 +3,8 @@
 //! Release format `.emap` (binary, E-129, E-143 to E-146), described in
 //! `docs/handbook/map-format.md`.
 
+#![warn(missing_docs)]
+
 pub mod adventure;
 mod ascii;
 mod binary;
@@ -26,14 +28,23 @@ pub const MAX_SIZE: usize = 1000;
 /// Kind of an entity on the map.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum EntityKind {
+    /// Neutral spawn point.
     Spawn,
+    /// Spawn point of team red.
     SpawnRed,
+    /// Spawn point of team blue.
     SpawnBlue,
+    /// Flag stand of team red.
     FlagRed,
+    /// Flag stand of team blue.
     FlagBlue,
+    /// Health pickup.
     Health,
+    /// Armour pickup.
     Armor,
+    /// Laser pickup.
     Laser,
+    /// Grenade launcher pickup.
     Grenade,
     /// Training dummy (E-053, E-054), only for the sandbox.
     Dummy(DummyPattern),
@@ -42,8 +53,11 @@ pub enum EntityKind {
 /// An entity, sits in the center of its tile.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Entity {
+    /// What sits here.
     pub kind: EntityKind,
+    /// Tile column.
     pub tx: usize,
+    /// Tile row.
     pub ty: usize,
 }
 
@@ -72,18 +86,24 @@ pub struct SupportedModes {
 /// A loaded map.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Map {
+    /// Display name.
     pub name: String,
+    /// Author, if known.
     pub author: Option<String>,
+    /// Width in tiles.
     pub width: usize,
+    /// Height in tiles.
     pub height: usize,
     /// Row by row, starting at the top left.
     pub tiles: Vec<Tile>,
+    /// Spawn points, flags, pickups and dummies.
     pub entities: Vec<Entity>,
     /// Names of the materials used (built-in sets, M6.3).
     pub materials: Vec<String>,
     /// Material per tile: 0 = default of the tile kind, otherwise index + 1 into `materials`.
     /// Empty if the map does not define materials.
     pub material_map: Vec<u8>,
+    /// Sky gradient.
     pub sky: Sky,
     /// Weather of the map (R2-W1); in the adventure the region can replace it.
     pub weather: Weather,
@@ -93,7 +113,9 @@ pub struct Map {
     pub decor_back: Vec<Decor>,
     /// Decoration in front of the playing field.
     pub decor_front: Vec<Decor>,
+    /// Animations.
     pub envelopes: Vec<Envelope>,
+    /// Embedded SVG images.
     pub images: Vec<Image>,
     /// Adventure objects (A1.5); empty for multiplayer maps.
     pub adventure: adventure::Adventure,
@@ -146,10 +168,12 @@ impl Map {
         world
     }
 
+    /// Entities of one kind.
     pub fn entities_of(&self, kind: EntityKind) -> impl Iterator<Item = &Entity> {
         self.entities.iter().filter(move |e| e.kind == kind)
     }
 
+    /// Game modes the entities allow.
     pub fn supported_modes(&self) -> SupportedModes {
         let count = |k| self.entities_of(k).count();
         let team = count(EntityKind::SpawnRed) > 0 && count(EntityKind::SpawnBlue) > 0;

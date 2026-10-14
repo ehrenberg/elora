@@ -13,13 +13,18 @@ pub const SAMPLE_RATE: u32 = 44_100;
 /// Longest allowed sound (protection against typos in the file).
 const MAX_SECONDS: f32 = 5.0;
 
+/// Waveform of a layer.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Wave {
+    /// Square wave (duty cycle adjustable).
     #[default]
     Square,
+    /// Sawtooth wave.
     Saw,
+    /// Sine wave.
     Sine,
+    /// Triangle wave.
     Triangle,
     /// Noise whose "pitch" sets the frequency (as in sfxr).
     Noise,
@@ -29,6 +34,7 @@ pub enum Wave {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct Layer {
+    /// Waveform.
     pub wave: Wave,
     /// Start frequency (Hz).
     pub freq: f32,
@@ -40,23 +46,31 @@ pub struct Layer {
     pub min_freq: f32,
     /// Vibrato: depth (fraction of the frequency) and rate (Hz).
     pub vibrato: f32,
+    /// Vibrato rate (Hz).
     pub vibrato_hz: f32,
     /// Arpeggio: after `arp_after` s the frequency is multiplied by `arp`.
     pub arp: f32,
+    /// Delay of the arpeggio (s).
     pub arp_after: f32,
     /// Repeat: reset the pitch every `repeat` s (0 = off).
     pub repeat: f32,
     /// Envelope (s): attack, sustain, decay; `punch` boosts the sustain (0..1).
     pub attack: f32,
+    /// Sustain time (s).
     pub sustain: f32,
+    /// Sustain boost (0..1).
     pub punch: f32,
+    /// Decay time (s).
     pub decay: f32,
     /// Duty cycle of the square wave (0..1) and its change per second.
     pub duty: f32,
+    /// Duty cycle change per second.
     pub duty_sweep: f32,
     /// Low-pass (Hz, 0 = off), change as a factor per second, resonance (0..1).
     pub lowpass: f32,
+    /// Low-pass change as a factor per second.
     pub lowpass_sweep: f32,
+    /// Low-pass resonance (0..1).
     pub resonance: f32,
     /// High-pass (Hz, 0 = off).
     pub highpass: f32,
@@ -221,7 +235,9 @@ impl Layer {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(default, deny_unknown_fields)]
 pub struct SoundDef {
+    /// Overall volume (0..1).
     pub volume: f32,
+    /// Layers, mixed together.
     #[serde(rename = "layer")]
     pub layers: Vec<Layer>,
 }
@@ -236,6 +252,7 @@ impl Default for SoundDef {
 }
 
 impl SoundDef {
+    /// Length in seconds (longest layer).
     pub fn duration(&self) -> f32 {
         self.layers
             .iter()

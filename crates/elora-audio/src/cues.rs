@@ -8,39 +8,67 @@ use elora_sim::{CreatureAct, Event, HookState, PickupKind, Team, Vec2, Weapon};
 /// `assets/sounds/sounds.toml`.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub enum Sound {
+    /// Hammer swing.
     HammerFire,
+    /// Hammer hits a target.
     HammerHit,
+    /// Grenade launched.
     GrenadeFire,
+    /// Grenade explodes.
     GrenadeExplode,
+    /// Laser shot.
     LaserFire,
+    /// Laser bounces off a wall.
     LaserBounce,
+    /// Fire without ammo.
     NoAmmo,
+    /// Weapon switched.
     WeaponSwitch,
+    /// Hook shot.
     HookFire,
+    /// Hook grabs the ground.
     HookAttachGround,
+    /// Hook grabs a player.
     HookAttachPlayer,
+    /// Hook reaches its end without grabbing.
     HookNoAttach,
+    /// Ground jump.
     Jump,
+    /// Air jump.
     AirJump,
+    /// Landing on the ground.
     Land,
+    /// Little damage taken.
     PainShort,
+    /// Heavy damage taken.
     PainLong,
+    /// A character dies.
     Death,
+    /// A character spawns.
     Spawn,
+    /// Health picked up.
     PickupHealth,
+    /// Armour picked up.
     PickupArmor,
+    /// Weapon picked up.
     PickupWeapon,
+    /// A pickup respawns.
     PickupRespawn,
     /// Own hit (hit confirmation).
     HitConfirm,
+    /// Chat message received.
     Chat,
+    /// Emote shown.
     Emote,
     /// The own flag was taken.
     FlagGrabOwn,
     /// The own team has the enemy flag.
     FlagGrabEnemy,
+    /// A flag was dropped.
     FlagDrop,
+    /// A flag returns to its base.
     FlagReturn,
+    /// A flag was captured.
     FlagCapture,
     /// Click on a button or answer (E-285).
     UiClick,
@@ -111,6 +139,7 @@ pub enum Sound {
 }
 
 impl Sound {
+    /// All sounds in declaration order.
     pub const ALL: [Self; 64] = [
         Self::HammerFire,
         Self::HammerHit,
@@ -178,6 +207,7 @@ impl Sound {
         Self::ChestOpen,
     ];
 
+    /// Key in `sounds.toml` (`snake_case`).
     pub fn name(self) -> &'static str {
         match self {
             Self::HammerFire => "hammer_fire",
@@ -247,6 +277,7 @@ impl Sound {
         }
     }
 
+    /// Sound for a `sounds.toml` key.
     pub fn from_name(name: &str) -> Option<Self> {
         Self::ALL.into_iter().find(|s| s.name() == name)
     }
@@ -255,13 +286,16 @@ impl Sound {
 /// A sound to play; `pos = None`: not spatial (hints, UI).
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Cue {
+    /// Which sound.
     pub sound: Sound,
+    /// World position, `None` for non-spatial sounds.
     pub pos: Option<Vec2>,
     /// Playback speed (1 = unchanged, 2 = one octave higher).
     pub pitch: f32,
 }
 
 impl Cue {
+    /// Spatial sound at a world position.
     pub fn at(sound: Sound, pos: Vec2) -> Self {
         Self {
             sound,
@@ -270,6 +304,7 @@ impl Cue {
         }
     }
 
+    /// Non-spatial sound (hints, UI).
     pub fn global(sound: Sound) -> Self {
         Self {
             sound,
@@ -288,7 +323,9 @@ impl Cue {
 /// Who is listening: own slot and own team (for hit confirmation and CTF).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub struct Listener {
+    /// Own player slot, if any.
     pub local: Option<usize>,
+    /// Own team.
     pub team: Team,
 }
 

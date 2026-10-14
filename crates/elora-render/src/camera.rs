@@ -51,6 +51,7 @@ pub struct Camera {
 }
 
 impl Camera {
+    /// Camera at `center` with the view size from the settings.
     pub fn new(center: Vec2, settings: &ViewSettings, aspect: f32) -> Self {
         Self {
             center,

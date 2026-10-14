@@ -225,7 +225,7 @@ fn cause_weapon(cause: DeathCause) -> Option<Weapon> {
     }
 }
 
-/// Killfeed at the top right: "killer [weapon] victim".
+/// Killfeed at the top right: "killer \[weapon\] victim".
 fn killfeed(
     batch: &mut ShapeBatch,
     font: &Font,

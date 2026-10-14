@@ -16,6 +16,7 @@ use lyon::path::builder::WithSvg;
 use crate::mesh::{Affine, Mesh, MeshBuilder, Paint, Tint};
 use crate::{Color, ShapeBatch};
 
+/// Font file cannot be parsed.
 #[derive(Debug, thiserror::Error)]
 #[error("font not readable: {0}")]
 pub struct FontError(#[from] ttf_parser::FaceParsingError);
@@ -23,9 +24,12 @@ pub struct FontError(#[from] ttf_parser::FaceParsingError);
 /// Alignment of a line relative to the anchor point.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
 pub enum Align {
+    /// Anchor at the start of the line.
     #[default]
     Left,
+    /// Anchor in the middle of the line.
     Center,
+    /// Anchor at the end of the line.
     Right,
 }
 

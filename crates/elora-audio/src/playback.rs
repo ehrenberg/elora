@@ -84,6 +84,7 @@ impl Audio {
         }
     }
 
+    /// Whether an audio device is open.
     pub fn has_device(&self) -> bool {
         self.manager.is_some()
     }

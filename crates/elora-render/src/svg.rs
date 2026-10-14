@@ -27,10 +27,13 @@ use usvg::tiny_skia_path::{PathSegment, Transform};
 use crate::Color;
 use crate::mesh::{Mesh, MeshBuilder, Paint};
 
+/// Error while loading an SVG.
 #[derive(Debug, thiserror::Error)]
 pub enum SvgError {
+    /// SVG cannot be parsed.
     #[error("SVG not readable: {0}")]
     Parse(#[from] usvg::Error),
+    /// SVG uses an unsupported feature.
     #[error("SVG feature not supported: {0}")]
     Unsupported(String),
 }
@@ -38,6 +41,7 @@ pub enum SvgError {
 /// A loaded SVG, split by top-level groups.
 #[derive(Debug, Clone, Default)]
 pub struct SvgAsset {
+    /// Meshes by group id (empty id = ungrouped rest).
     pub parts: Vec<(String, Mesh)>,
 }
 
@@ -109,6 +113,7 @@ impl SvgAsset {
         Ok(asset)
     }
 
+    /// Mesh of a group.
     pub fn part(&self, name: &str) -> Option<&Mesh> {
         self.parts.iter().find(|(n, _)| n == name).map(|(_, m)| m)
     }

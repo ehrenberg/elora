@@ -41,42 +41,75 @@ pub const MAX_CONDITION: usize = 1024;
 /// Error while reading a map.
 #[derive(Debug, thiserror::Error, PartialEq, Eq)]
 pub enum MapError {
+    /// Magic bytes missing.
     #[error("not an Elora map (magic missing)")]
     BadMagic,
+    /// Format version not supported.
     #[error("unsupported format version {found} (supported: {FORMAT_VERSION})")]
-    UnsupportedFormat { found: u16 },
+    UnsupportedFormat {
+        /// Version in the file.
+        found: u16,
+    },
+    /// Decompression failed.
     #[error("map data is corrupt (decompression failed)")]
     Compression,
+    /// Unpacked data larger than allowed.
     #[error("map data is too large (over {MAX_PAYLOAD} bytes unpacked)")]
     PayloadTooLarge,
+    /// Data ends too early.
     #[error("map data ends too early")]
     Truncated,
+    /// Required section missing.
     #[error("section `{0}` missing")]
     MissingSection(&'static str),
+    /// Section appears twice.
     #[error("section `{0}` appears twice")]
     DuplicateSection(String),
+    /// Invalid content.
     #[error("invalid map data: {0}")]
     Invalid(&'static str),
+    /// Grid larger than [`MAX_SIZE`].
     #[error("grid {width}×{height} is larger than allowed ({MAX_SIZE}×{MAX_SIZE})")]
-    TooLarge { width: usize, height: usize },
+    TooLarge {
+        /// Width in tiles.
+        width: usize,
+        /// Height in tiles.
+        height: usize,
+    },
+    /// Text row has the wrong length.
     #[error("line {line}: length {found}, expected {expected}")]
     RaggedRow {
+        /// Line number.
         line: usize,
+        /// Actual length.
         found: usize,
+        /// Expected length.
         expected: usize,
     },
+    /// Unknown character in the text format.
     #[error("line {line}, column {column}: unknown character `{symbol}`")]
     UnknownSymbol {
+        /// Line number.
         line: usize,
+        /// Column number.
         column: usize,
+        /// The character.
         symbol: char,
     },
+    /// Invalid adventure objects.
     #[error("adventure objects: {0}")]
     Adventure(String),
+    /// No spawn point.
     #[error("map has no spawn point")]
     NoSpawn,
+    /// Wrong number of flags.
     #[error("flags: {red}× red, {blue}× blue – exactly one each for CTF, otherwise none")]
-    InvalidFlags { red: usize, blue: usize },
+    InvalidFlags {
+        /// Red flags.
+        red: usize,
+        /// Blue flags.
+        blue: usize,
+    },
 }
 
 type Result<T> = std::result::Result<T, MapError>;

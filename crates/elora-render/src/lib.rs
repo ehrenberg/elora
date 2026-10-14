@@ -5,6 +5,8 @@
 //! [`Mesh`]es and only transformed (M5.1). Edges are smoothed via MSAA.
 //! Further passes (e.g. egui) can hook in via [`Frame`].
 
+#![warn(missing_docs)]
+
 mod camera;
 mod mesh;
 mod picture;
@@ -28,12 +30,16 @@ use shapes::Vertex;
 /// Error while setting up the renderer.
 #[derive(Debug, thiserror::Error)]
 pub enum RenderError {
+    /// Surface could not be created.
     #[error("could not create surface: {0}")]
     Surface(#[from] wgpu::CreateSurfaceError),
+    /// No suitable graphics adapter.
     #[error("no suitable graphics adapter found: {0}")]
     Adapter(#[from] wgpu::RequestAdapterError),
+    /// Graphics device could not be created.
     #[error("could not create graphics device: {0}")]
     Device(#[from] wgpu::RequestDeviceError),
+    /// Surface not supported by the adapter.
     #[error("surface not supported by the adapter")]
     UnsupportedSurface,
 }
@@ -103,17 +109,20 @@ struct Post {
 pub struct Grade {
     /// Color to multiply with, and its share (0 = no tint).
     pub tint: [f32; 3],
+    /// Share of the tint (0..1).
     pub tint_amount: f32,
     /// 0 = unchanged, 1 = black.
     pub darken: f32,
     /// Fog color and density (full at the bottom, a good third at the top).
     pub fog: [f32; 3],
+    /// Fog density (0..1).
     pub fog_density: f32,
     /// Lightning: brightens the image (0..1).
     pub flash: f32,
 }
 
 impl Grade {
+    /// No grading.
     pub const NONE: Self = Self {
         tint: [1.0; 3],
         tint_amount: 0.0,
@@ -134,7 +143,9 @@ impl Grade {
 /// A running frame: target texture and command encoder.
 #[derive(Debug)]
 pub struct Frame {
+    /// Command encoder of the frame.
     pub encoder: wgpu::CommandEncoder,
+    /// Target texture view.
     pub view: wgpu::TextureView,
     texture: wgpu::SurfaceTexture,
 }
@@ -294,14 +305,17 @@ impl Renderer {
         self.samples
     }
 
+    /// Graphics device.
     pub fn device(&self) -> &wgpu::Device {
         &self.device
     }
 
+    /// Command queue.
     pub fn queue(&self) -> &wgpu::Queue {
         &self.queue
     }
 
+    /// Texture format of the surface.
     pub fn format(&self) -> wgpu::TextureFormat {
         self.config.format
     }
@@ -316,6 +330,7 @@ impl Renderer {
         self.config.width as f32 / self.config.height as f32
     }
 
+    /// Adapts the surface to a new window size (pixels).
     pub fn resize(&mut self, width: u32, height: u32) {
         if width == 0 || height == 0 {
             return;

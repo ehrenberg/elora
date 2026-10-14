@@ -8,6 +8,8 @@
 //! - [`Audio`]: playback with kira – volume by distance to the camera,
 //!   stereo panning, master volume. Without an audio device the game keeps running muted.
 
+#![warn(missing_docs)]
+
 pub mod cues;
 pub mod synth;
 
@@ -38,12 +40,16 @@ const RANGE: f32 = 1400.0;
 /// From this lateral distance on, fully left or right (clamped to ±0.8).
 const PAN_RANGE: f32 = 900.0;
 
+/// Error while loading the sound bank.
 #[derive(Debug, thiserror::Error)]
 pub enum BankError {
+    /// `sounds.toml` cannot be parsed.
     #[error("sounds.toml is invalid: {0}")]
     Parse(#[from] toml::de::Error),
+    /// Unknown sound name.
     #[error("unknown sound `{0}`")]
     Unknown(String),
+    /// Sound file cannot be read (name, reason).
     #[error("sound file `{0}`: {1}")]
     Wav(String, &'static str),
 }
@@ -54,10 +60,16 @@ pub enum Source {
     /// Procedural from `sounds.toml`.
     Synth(SoundDef),
     /// Sound file (mono, [`SAMPLE_RATE`]) with volume from `[gain]` in `sounds.toml`.
-    File { samples: Vec<f32>, gain: f32 },
+    File {
+        /// Samples.
+        samples: Vec<f32>,
+        /// Volume factor.
+        gain: f32,
+    },
 }
 
 impl Source {
+    /// Samples at [`SAMPLE_RATE`], with gain applied.
     pub fn samples(&self) -> Vec<f32> {
         match self {
             Self::Synth(def) => def.render(),
@@ -65,6 +77,7 @@ impl Source {
         }
     }
 
+    /// Length in seconds.
     pub fn duration(&self) -> f32 {
         match self {
             Self::Synth(def) => def.duration(),
@@ -72,6 +85,7 @@ impl Source {
         }
     }
 
+    /// Whether the sound comes from a file.
     pub fn is_file(&self) -> bool {
         matches!(self, Self::File { .. })
     }
@@ -80,6 +94,7 @@ impl Source {
 /// All sounds by name.
 #[derive(Debug, Clone, Default)]
 pub struct Bank {
+    /// Source per sound.
     pub sounds: BTreeMap<Sound, Source>,
     /// Volume per sound file (section `[gain]` in `sounds.toml`, default 1).
     gains: BTreeMap<Sound, f32>,
@@ -230,6 +245,7 @@ pub fn spatial(pos: Vec2, ear: Vec2) -> Option<(f32, f32)> {
 pub struct AudioSettings {
     /// Master volume 0..1.
     pub volume: f32,
+    /// All sounds off.
     pub muted: bool,
     /// Volume of the menu music 0..1 (E-121), in addition to the master volume.
     pub music_volume: f32,

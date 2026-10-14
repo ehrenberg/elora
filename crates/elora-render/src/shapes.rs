@@ -13,10 +13,12 @@ use lyon::tessellation::{
 pub struct Color(pub [f32; 4]);
 
 impl Color {
+    /// Opaque color.
     pub const fn rgb(r: f32, g: f32, b: f32) -> Self {
         Self([r, g, b, 1.0])
     }
 
+    /// Color with opacity.
     pub const fn rgba(r: f32, g: f32, b: f32, a: f32) -> Self {
         Self([r, g, b, a])
     }
@@ -68,11 +70,13 @@ impl Default for ShapeBatch {
 }
 
 impl ShapeBatch {
+    /// Removes all shapes.
     pub fn clear(&mut self) {
         self.geometry.vertices.clear();
         self.geometry.indices.clear();
     }
 
+    /// Whether the batch is empty.
     pub fn is_empty(&self) -> bool {
         self.geometry.indices.is_empty()
     }
@@ -147,6 +151,7 @@ impl ShapeBatch {
         ]);
     }
 
+    /// Filled circle.
     pub fn fill_circle(&mut self, center: Vec2, radius: f32, color: Color) {
         let options = FillOptions::tolerance(self.tolerance);
         let c = color.0;
@@ -303,10 +308,12 @@ impl ShapeBatch {
         self.geometry.indices.len() / 3
     }
 
+    /// Line with round caps.
     pub fn stroke_line(&mut self, from: Vec2, to: Vec2, width: f32, color: Color) {
         self.stroke_polyline(&[from, to], width, color);
     }
 
+    /// Circle outline.
     pub fn stroke_circle(&mut self, center: Vec2, radius: f32, width: f32, color: Color) {
         let c = color.0;
         let _ = self.stroke.tessellate_circle(

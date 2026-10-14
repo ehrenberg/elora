@@ -9,8 +9,10 @@ use elora_sim::Vec2;
 pub struct Rgba(pub [u8; 4]);
 
 impl Rgba {
+    /// Opaque white.
     pub const WHITE: Self = Self([255, 255, 255, 255]);
 
+    /// Opaque color from `0xRRGGBB`.
     pub const fn hex(rgb: u32) -> Self {
         let [_, r, g, b] = rgb.to_be_bytes();
         Self([r, g, b, 255])
@@ -23,20 +25,26 @@ pub enum WeatherKind {
     /// No weather (as before).
     #[default]
     Clear,
+    /// Rain.
     Rain,
     /// Thunderstorm: rain, gusts and lightning.
     Storm,
+    /// Fog.
     Fog,
     /// Wind with leaves.
     Leaves,
     /// Wind with petals.
     Petals,
+    /// Sandstorm.
     Sandstorm,
+    /// Snow.
     Snow,
+    /// Blizzard: snow with strong wind.
     Blizzard,
 }
 
 impl WeatherKind {
+    /// All kinds in display order.
     pub const ALL: [Self; 9] = [
         Self::Clear,
         Self::Rain,
@@ -64,6 +72,7 @@ impl WeatherKind {
         }
     }
 
+    /// Kind for a data key.
     pub fn from_key(key: &str) -> Option<Self> {
         Self::ALL.into_iter().find(|k| k.key() == key)
     }
@@ -73,12 +82,16 @@ impl WeatherKind {
 /// (−1 = strongly to the left, 1 = strongly to the right).
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct Weather {
+    /// Kind of weather.
     pub kind: WeatherKind,
+    /// Strength: 0 = barely, 1 = full.
     pub intensity: f32,
+    /// Wind: −1 = strongly to the left, 1 = strongly to the right.
     pub wind: f32,
 }
 
 impl Weather {
+    /// No weather.
     pub const CLEAR: Self = Self {
         kind: WeatherKind::Clear,
         intensity: 0.0,
@@ -94,7 +107,9 @@ impl Weather {
 /// Sky: vertical gradient behind everything.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Sky {
+    /// Color at the top.
     pub top: Rgba,
+    /// Color at the bottom.
     pub bottom: Rgba,
 }
 
@@ -130,12 +145,15 @@ pub struct EnvRef {
 /// background layer).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Decor {
+    /// Graphic.
     pub art: Art,
     /// Center in world units (in background layers relative to the layer).
     pub pos: Vec2,
+    /// Size factor (1 = original size).
     pub scale: f32,
     /// Rotation in degrees, clockwise.
     pub rotation: f32,
+    /// Mirrored horizontally.
     pub flip_x: bool,
     /// Tint (multiplied), white = unchanged.
     pub tint: Rgba,
@@ -146,6 +164,7 @@ pub struct Decor {
 }
 
 impl Decor {
+    /// Object without transformation, tint or animation.
     pub fn new(art: Art, pos: Vec2) -> Self {
         Self {
             art,
@@ -163,12 +182,15 @@ impl Decor {
 /// Background layer with parallax (E-131).
 #[derive(Debug, Clone, PartialEq)]
 pub struct Background {
+    /// Name in the editor.
     pub name: String,
     /// How strongly the layer follows the camera: 1 = like the playing field, 0 = fixed.
     pub parallax: Vec2,
+    /// Offset of the layer in world units.
     pub offset: Vec2,
     /// Repeat the content horizontally (clouds, hills); spacing in world units.
     pub repeat_x: Option<f32>,
+    /// Objects of the layer.
     pub items: Vec<Decor>,
 }
 
@@ -194,7 +216,9 @@ impl EnvKind {
 /// Transition from one point to the next (as in the original).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Curve {
+    /// Jump to the next value only at the next point.
     Step,
+    /// Constant speed.
     Linear,
     /// start slowly
     Slow,
@@ -218,9 +242,12 @@ impl Curve {
     }
 }
 
+/// Point of an animation.
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct EnvPoint {
+    /// Time since the start of the loop.
     pub time_ms: u32,
+    /// Value (meaning depends on [`EnvKind`]).
     pub value: [f32; 4],
     /// Transition to the next point.
     pub curve: Curve,
@@ -229,7 +256,9 @@ pub struct EnvPoint {
 /// Animation (envelope, E-132): points with curves, runs in a loop.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Envelope {
+    /// Name in the editor.
     pub name: String,
+    /// What the animation changes.
     pub kind: EnvKind,
     /// Bound to the server's game time (everyone sees the same phase) instead of the client's
     /// clock.
@@ -275,7 +304,9 @@ impl Envelope {
 /// client.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Image {
+    /// File name.
     pub name: String,
+    /// SVG source.
     pub svg: Vec<u8>,
 }
 
