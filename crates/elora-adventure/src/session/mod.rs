@@ -49,42 +49,53 @@ const SECOND_CHANCE_HEALTH: i32 = 3;
 /// What the caller should do or show.
 #[derive(Debug, Clone, PartialEq)]
 pub enum SessionEvent {
+    /// Message for the player.
     Notice(Notice),
     /// Open shop, smithy or tree.
     Open(Open),
     /// Start a dialog (the caller runs [`crate::Conversation`]).
     Talk {
+        /// Object id of the character.
         npc: String,
+        /// Dialog id.
         dialog: String,
     },
     /// Call as a speech bubble above the character.
     Bark {
+        /// Object id of the character.
         npc: String,
+        /// Text of the call.
         text: Text,
     },
     /// Chest is locked.
     Locked {
+        /// Object id of the chest.
         object: String,
     },
     /// A chest was opened at `pos` (sparkles and sound in the client).
     ChestOpened {
+        /// Position of the chest.
         pos: Vec2,
     },
     /// Enter another map (the caller loads it and calls [`Session::enter`]).
     Travel {
+        /// Map id.
         map: String,
+        /// Entrance in the map.
         spawn: String,
     },
     /// Write the save game now (save point).
     Save,
     /// Elora is exhausted (E-261); `lost` gleam drops (E-220).
     Died {
+        /// Lost gleam drops.
         lost: u32,
     },
     /// Tiles of the world have changed (door, crumble floor) – update the graphics.
     TilesChanged,
     /// Guardian of a chapter calmed: victory screen for the area `area`.
     ChapterDone {
+        /// Area id.
         area: String,
     },
 }
@@ -92,19 +103,28 @@ pub enum SessionEvent {
 /// What the action key helps with (display „E …“).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Prompt {
+    /// Talk to a character.
     Talk,
+    /// Open a chest.
     Open,
+    /// Use a switch.
     Use,
+    /// Go through an exit.
     Enter,
+    /// Rest at a save point.
     Rest,
 }
 
 /// A character to draw.
 #[derive(Debug, Clone, PartialEq)]
 pub struct NpcView {
+    /// Object id.
     pub id: String,
+    /// Character id.
     pub character: String,
+    /// Current position.
     pub pos: Vec2,
+    /// Looking direction (-1 = left, 1 = right).
     pub facing: i8,
 }
 
@@ -112,9 +132,11 @@ pub struct NpcView {
 #[derive(Debug, Clone)]
 #[allow(clippy::struct_excessive_bools)] // independent states of the session
 pub struct Session {
+    /// Content of the adventure.
     pub content: Content,
     /// Working state; it is only written on [`SessionEvent::Save`] and map changes.
     pub save: SaveGame,
+    /// Id of the current map.
     pub map_name: String,
     /// Map with the current state of doors and crumble floor.
     pub map: Map,
@@ -142,6 +164,7 @@ pub struct Session {
     gloomy: bool,
     /// Avalanche slopes of the map (R2-M2.4).
     avalanches: crate::avalanche::Avalanches,
+    /// Character id of Elora in the world.
     pub player: usize,
     /// Enemy id of the world → object id of the map.
     creatures: BTreeMap<u32, String>,
@@ -155,6 +178,7 @@ pub struct Session {
     /// Current position of the NPCs (walking path), id → position.
     npc_pos: BTreeMap<String, Vec2>,
     pending: Vec<SessionEvent>,
+    /// Elora is exhausted (until the next [`Session::enter`]).
     pub dead: bool,
 }
 

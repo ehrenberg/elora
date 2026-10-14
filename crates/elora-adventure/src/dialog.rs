@@ -14,15 +14,20 @@ use crate::state::SaveGame;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Tone {
+    /// Kind answer.
     Friendly,
+    /// Asking answer.
     Curious,
+    /// Cheeky answer.
     Cheeky,
 }
 
 /// A character that speaks.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct CharacterDef {
+    /// Character id.
     pub id: String,
+    /// Display name.
     pub name: Text,
     /// Picture of the character in the dialog panel (graphic name).
     #[serde(default)]
@@ -38,8 +43,10 @@ pub struct CharacterDef {
     /// set and it stays there.
     #[serde(default)]
     pub follower: Option<String>,
+    /// Condition under which the companion follows Elora.
     #[serde(default)]
     pub follow_if: Option<String>,
+    /// Zone where the companion stays (sets `<id>.daheim`).
     #[serde(default)]
     pub home_zone: Option<String>,
     /// Pitch of the babble sounds (E-286): 1 = medium, smaller = lower; 0 = mute (signs).
@@ -51,33 +58,44 @@ fn default_voice() -> f32 {
     1.0
 }
 
+/// Entry of a dialog.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Start {
+    /// Condition for this entry.
     #[serde(default, rename = "if")]
     pub cond: Option<String>,
+    /// First node.
     pub node: String,
 }
 
+/// An answer Elora can choose.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Choice {
+    /// Tone of the answer.
     #[serde(default)]
     pub tone: Option<Tone>,
+    /// The answer is only shown while this condition holds.
     #[serde(default, rename = "if")]
     pub cond: Option<String>,
+    /// Text of the answer.
     pub text: Text,
     /// Next node; if missing, the dialog ends.
     #[serde(default)]
     pub next: Option<String>,
+    /// Effects when choosing it.
     #[serde(default, rename = "do")]
     pub actions: Vec<String>,
 }
 
+/// A node of a dialog: one line of a speaker.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Node {
+    /// Node id.
     pub id: String,
     /// Speaker; if missing, the dialog's speaker, `elora` for Elora herself.
     #[serde(default)]
     pub speaker: Option<String>,
+    /// What is said.
     pub text: Text,
     /// Next node without a choice; if missing (and without choices), the dialog ends.
     #[serde(default)]
@@ -85,6 +103,7 @@ pub struct Node {
     /// Effects when reaching the node.
     #[serde(default, rename = "do")]
     pub actions: Vec<String>,
+    /// Answers.
     #[serde(default)]
     pub choice: Vec<Choice>,
 }
@@ -92,11 +111,14 @@ pub struct Node {
 /// Short call as a speech bubble (E-222).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Bark {
+    /// Condition for this call.
     #[serde(default, rename = "if")]
     pub cond: Option<String>,
+    /// Text of the speech bubble.
     pub text: Text,
 }
 
+/// A dialog (`dialogs/<id>.toml`).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Dialog {
     /// From the file name.
@@ -106,16 +128,20 @@ pub struct Dialog {
     pub speaker: String,
     /// Entries: the first whose condition holds.
     pub start: Vec<Start>,
+    /// All nodes.
     pub node: Vec<Node>,
+    /// Short calls as speech bubbles.
     #[serde(default)]
     pub bark: Vec<Bark>,
 }
 
 impl Dialog {
+    /// Node by id.
     pub fn node(&self, id: &str) -> Option<&Node> {
         self.node.iter().find(|n| n.id == id)
     }
 
+    /// Speaker of a node.
     pub fn speaker_of<'a>(&'a self, n: &'a Node) -> &'a str {
         n.speaker.as_deref().unwrap_or(&self.speaker)
     }
@@ -124,7 +150,9 @@ impl Dialog {
 /// A running dialog.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Conversation {
+    /// Dialog id.
     pub dialog: String,
+    /// Current node.
     pub node: String,
 }
 
@@ -133,6 +161,7 @@ pub struct Conversation {
 pub struct Turn {
     /// `false`: the dialog is over.
     pub open: bool,
+    /// Effects for the UI.
     pub outcomes: Vec<Outcome>,
 }
 
@@ -179,6 +208,7 @@ impl Conversation {
         }
     }
 
+    /// Current dialog and node.
     pub fn current<'c>(&self, content: &'c Content) -> Option<(&'c Dialog, &'c Node)> {
         let d = content.dialog(&self.dialog)?;
         Some((d, d.node(&self.node)?))

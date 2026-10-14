@@ -34,11 +34,17 @@ use elora_sim::{Ability, Weapon};
 /// Comparison.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Cmp {
+    /// `=`
     Eq,
+    /// `!=`
     Ne,
+    /// `<`
     Lt,
+    /// `<=`
     Le,
+    /// `>`
     Gt,
+    /// `>=`
     Ge,
 }
 
@@ -55,6 +61,7 @@ impl Cmp {
         })
     }
 
+    /// Does `a <op> b` hold?
     pub fn holds(self, a: i64, b: i64) -> bool {
         match self {
             Self::Eq => a == b,
@@ -70,56 +77,91 @@ impl Cmp {
 /// State of a quest in conditions.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum QuestCheck {
+    /// Not started yet.
     New,
+    /// Running.
     Active,
+    /// Done.
     Done,
+    /// Failed.
     Failed,
+    /// Running and at this step.
     Step(String),
 }
 
+/// A condition (`if`).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Cond {
+    /// `level <op> n`
     Level(Cmp, i64),
+    /// `gleam <op> n`: gleam drops.
     Gleam(Cmp, i64),
+    /// `quest <id> <state>`
     Quest(String, QuestCheck),
+    /// `flag <key> <op> n`: world state.
     Flag(String, Cmp, i64),
+    /// `affection <who> <op> n`
     Affection(String, Cmp, i64),
+    /// `has <item> n`: at least `n` of the item.
     Has(String, u32),
+    /// `ability <a>`: Elora has the area ability.
     Ability(Ability),
+    /// `weapon <w>`: Elora owns the weapon.
     Weapon(Weapon),
+    /// `not …`
     Not(Box<Cond>),
+    /// `… and …`: all hold.
     All(Vec<Cond>),
 }
 
 /// Control of a quest.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum QuestOp {
+    /// `start`
     Start,
+    /// `advance`: current step done.
     Advance,
+    /// `finish`
     Finish,
+    /// `fail`
     Fail,
 }
 
 /// What the UI should open.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Open {
+    /// Shop with this id.
     Shop(String),
+    /// Klonk's smithy.
     Forge,
+    /// Skill tree.
     Skills,
 }
 
+/// An effect (`do`).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Action {
+    /// `quest <id> <op>`
     Quest(String, QuestOp),
+    /// `affection <who> ±n`
     Affection(String, i32),
+    /// `flag <key> = n`
     SetFlag(String, i64),
+    /// `flag <key> ±n`
     AddFlag(String, i64),
+    /// `give <item> n`
     Give(String, u32),
+    /// `take <item> n`
     Take(String, u32),
+    /// `xp n`: experience.
     Xp(u32),
+    /// `points n`: dewdrop points.
     Points(u32),
+    /// `ability <a>`: unlock an area ability.
     Ability(Ability),
+    /// `weapon <w>`: hand out a weapon.
     Weapon(Weapon),
+    /// `shop <id>`, `forge`, `skills`
     Open(Open),
 }
 

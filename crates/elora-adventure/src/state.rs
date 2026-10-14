@@ -17,17 +17,22 @@ pub const STRONG_GRIP_CLIMB: f32 = 1.6;
 /// Place in the adventure: map and save point or entrance.
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct Location {
+    /// Map id.
     pub map: String,
+    /// Save point or entrance in the map.
     pub spawn: String,
 }
 
 /// Everything a save game contains (P-33).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SaveGame {
+    /// Level (from 1).
     pub level: u32,
     /// Experience within the current level.
     pub xp: u32,
+    /// Current health.
     pub health: i32,
+    /// Gleam drops (currency).
     pub gleam_drops: u32,
     /// Collected since the last save point (lost on death, E-220).
     pub gleam_since_save: u32,
@@ -35,7 +40,9 @@ pub struct SaveGame {
     pub bonus_points: u32,
     /// Learned nodes with rank.
     pub skills: BTreeMap<String, u8>,
+    /// Items in the bag: id → count.
     pub inventory: BTreeMap<String, u32>,
+    /// Worn equipment per slot.
     pub equipped: BTreeMap<Slot, String>,
     /// Owned weapons with upgrade level (0 = not upgraded).
     pub weapons: BTreeMap<Weapon, u8>,
@@ -47,7 +54,9 @@ pub struct SaveGame {
     pub broken: BTreeMap<String, BTreeSet<(i32, i32)>>,
     /// Defeated bosses and special enemies (E-235), e.g. `wiese-3:hummel`.
     pub defeated: BTreeSet<String>,
+    /// Where the game continues.
     pub location: Location,
+    /// Play time in seconds.
     pub play_time_secs: u64,
     /// Started quests (A1.4).
     #[serde(default)]
@@ -63,40 +72,67 @@ pub struct SaveGame {
 /// What the player should see (display, sound).
 #[derive(Debug, Clone, PartialEq)]
 pub enum Notice {
-    LevelUp { level: u32 },
+    /// Level up.
+    LevelUp {
+        /// New level.
+        level: u32,
+    },
+    /// Experience gained.
     Xp(u32),
-    Item { id: String, count: u32 },
+    /// Item received.
+    Item {
+        /// Item id.
+        id: String,
+        /// Number received.
+        count: u32,
+    },
+    /// Quest started.
     QuestStarted(String),
+    /// Quest step done.
     QuestStep(String),
+    /// Quest done.
     QuestDone(String),
+    /// Quest failed.
     QuestFailed(String),
 }
 
 /// Why something is not possible.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, thiserror::Error)]
 pub enum Refusal {
+    /// Unknown id.
     #[error("unknown")]
     Unknown,
+    /// No dewdrop points left.
     #[error("no points")]
     NoPoints,
+    /// Highest rank reached.
     #[error("highest rank reached")]
     MaxRank,
+    /// Node above is missing.
     #[error("node above missing")]
     Locked,
+    /// Area ability missing.
     #[error("area ability missing")]
     NeedsAbility,
+    /// Not enough gleam drops.
     #[error("not enough gleam drops")]
     TooExpensive,
+    /// Material missing.
     #[error("material missing")]
     MissingMaterial,
+    /// Item not owned.
     #[error("not owned")]
     NotOwned,
+    /// Wrong kind of item.
     #[error("wrong kind")]
     WrongKind,
+    /// Bag full.
     #[error("bag full")]
     Full,
+    /// Weapon missing.
     #[error("weapon missing")]
     NoWeapon,
+    /// Highest level reached.
     #[error("highest level reached")]
     MaxLevel,
 }
@@ -127,20 +163,24 @@ impl SaveGame {
         }
     }
 
+    /// Area abilities as a set.
     pub fn abilities(&self) -> Abilities {
         Abilities::from_bits(self.abilities)
     }
 
+    /// Unlock an area ability.
     pub fn grant_ability(&mut self, a: Ability) {
         let mut set = self.abilities();
         set.set(a, true);
         self.abilities = set.bits();
     }
 
+    /// Value of a flag (0 if unset).
     pub fn flag(&self, key: &str) -> i64 {
         self.flags.get(key).copied().unwrap_or(0)
     }
 
+    /// Set a flag; 0 removes it.
     pub fn set_flag(&mut self, key: &str, value: i64) {
         if value == 0 {
             self.flags.remove(key);
@@ -149,6 +189,7 @@ impl SaveGame {
         }
     }
 
+    /// How many of an item Elora has (gleam drops included).
     pub fn count(&self, item: &str) -> u32 {
         if item == GLEAM_DROPS {
             self.gleam_drops
@@ -360,6 +401,7 @@ impl SaveGame {
         Ok(())
     }
 
+    /// Take off the item in a slot (back into the bag).
     pub fn unequip(&mut self, content: &Content, slot: Slot) {
         if let Some(old) = self.equipped.remove(&slot) {
             *self.inventory.entry(old).or_insert(0) += 1;
@@ -433,6 +475,7 @@ impl SaveGame {
         Ok(price)
     }
 
+    /// Hand out a weapon (keeps the upgrade level if already owned).
     pub fn give_weapon(&mut self, w: Weapon) {
         self.weapons.entry(w).or_insert(0);
     }

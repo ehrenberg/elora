@@ -1,5 +1,5 @@
 //! Content as data (`assets/adventure/*.toml`): items, skill tree, weapon upgrades, shops and
-//! progression values ([`docs/release-2/progression.md`]).
+//! progression values (`docs/release-2/progression.md`).
 
 use std::collections::BTreeMap;
 
@@ -12,7 +12,9 @@ use crate::quest::QuestDef;
 /// Text in both languages (E-217).
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct Text {
+    /// German text.
     pub de: String,
+    /// English text.
     pub en: String,
 }
 
@@ -27,13 +29,18 @@ impl Text {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Slot {
+    /// Head slot.
     Hat,
+    /// Back slot.
     Cape,
+    /// Feet slot.
     Boots,
+    /// Neck slot.
     Pendant,
 }
 
 impl Slot {
+    /// All slots in display order.
     pub const ALL: [Self; 4] = [Self::Hat, Self::Cape, Self::Boots, Self::Pendant];
 }
 
@@ -41,9 +48,12 @@ impl Slot {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Rarity {
+    /// Ordinary item from shops and chests.
     #[default]
     Common,
+    /// Rare find.
     Rare,
+    /// Reward from a guardian.
     Guardian,
 }
 
@@ -52,7 +62,9 @@ pub enum Rarity {
 #[derive(Debug, Clone, Copy, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Bonus {
+    /// Additional maximum health.
     MaxHealth(i32),
+    /// Armor: less damage per hit.
     Armor(i32),
     /// Damage of all weapons in percent.
     DamagePct(f32),
@@ -60,6 +72,7 @@ pub enum Bonus {
     FireDelayPct(f32),
     /// Knockback on enemies in percent.
     KnockbackPct(f32),
+    /// Additional maximum ammunition.
     Ammo(i32),
     /// Loot magnet (units, A-15).
     Magnet(f32),
@@ -73,9 +86,11 @@ pub enum Bonus {
     SecondChance(i32),
     /// Hook jerk cooldown (ms, negative = shorter, A-02).
     JerkCooldownMs(i32),
+    /// Hook length in percent.
     HookLengthPct(f32),
     /// Shock wave of the stomp (units, A-05).
     StompRadius(f32),
+    /// Additional stomp damage.
     StompDamage(i32),
     /// Ice grip hold time (ms, A-06).
     GripMs(i32),
@@ -83,13 +98,17 @@ pub enum Bonus {
     GlideFall(f32),
     /// Hammer stuns enemies (ms).
     HammerStunMs(i32),
+    /// Additional hammer damage.
     HammerDamage(i32),
+    /// Hammer reach in percent.
     HammerReachPct(f32),
     /// Hammer hits all enemies around Elora.
     HammerShockwave(i32),
+    /// Explosion radius in percent.
     ExplosionPct(f32),
     /// Small after-explosions of the grenade.
     GrenadeShards(i32),
+    /// Additional laser bounces.
     LaserBounces(i32),
     /// Laser hits up to this many additional enemies.
     LaserPierce(i32),
@@ -121,15 +140,22 @@ pub enum Effect {
 pub enum ItemKind {
     /// The currency gleam drops.
     Currency,
+    /// Wearable item for a slot.
     Equipment {
+        /// Slot it is worn in.
         slot: Slot,
+        /// Rarity of the item.
         #[serde(default)]
         rarity: Rarity,
+        /// Bonuses while it is worn.
         bonuses: Vec<Bonus>,
     },
+    /// Item that is used up (potions, fruit …).
     Consumable {
+        /// What using it does.
         effect: Effect,
     },
+    /// Material for weapon upgrades at Klonk.
     Material,
     /// Keys and quest items: not sellable.
     Key,
@@ -137,19 +163,25 @@ pub enum ItemKind {
     Collectible,
     /// Ammunition from chests (E-243): refills the weapon, does not go into the inventory.
     Ammo {
+        /// Weapon that gets the ammunition.
         weapon: Weapon,
     },
 }
 
+/// An item (`items.toml`).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ItemDef {
+    /// Item id.
     pub id: String,
+    /// Display name.
     pub name: Text,
+    /// Description in the inventory and shop.
     #[serde(default)]
     pub desc: Text,
     /// Purchase price in gleam drops (0 = not in the shop).
     #[serde(default)]
     pub price: u32,
+    /// Kind with its kind-specific values.
     #[serde(flatten)]
     pub kind: ItemKind,
 }
@@ -158,19 +190,27 @@ pub struct ItemDef {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Branch {
+    /// Movement skills (need the area abilities).
     Movement,
+    /// Combat skills.
     Combat,
+    /// Skills of the spring.
     Spring,
 }
 
 /// Node of the skill tree (E-242).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SkillNode {
+    /// Node id.
     pub id: String,
+    /// Branch the node belongs to.
     pub branch: Branch,
+    /// Display name.
     pub name: Text,
+    /// Description in the skill tree.
     #[serde(default)]
     pub desc: Text,
+    /// Highest rank.
     pub ranks: u8,
     /// Node above (requires at least rank 1).
     #[serde(default)]
@@ -185,40 +225,54 @@ pub struct SkillNode {
 /// Amount of a material.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Cost {
+    /// Item id.
     pub item: String,
+    /// Number needed.
     pub count: u32,
 }
 
 /// Upgrade level of a weapon at Klonk (P-12, P-13).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Upgrade {
+    /// Weapon that is upgraded.
     pub weapon: Weapon,
+    /// Upgrade level (1 = first).
     pub level: u8,
+    /// Display name.
     pub name: Text,
+    /// Description in the smithy.
     #[serde(default)]
     pub desc: Text,
+    /// Price in gleam drops.
     pub gleam_drops: u32,
+    /// Required materials.
     #[serde(default)]
     pub materials: Vec<Cost>,
+    /// Bonuses of this level.
     pub bonuses: Vec<Bonus>,
 }
 
 /// Discount from a certain affection to the shop owner (E-248).
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Discount {
+    /// Affection needed for the discount.
     pub affection: i32,
+    /// Discount in percent.
     pub pct: u32,
 }
 
 /// Shop (e.g. Lotte).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Shop {
+    /// Shop id (`shop <id>` in dialogs).
     pub id: String,
     /// Character whose affection determines the discount.
     #[serde(default)]
     pub owner: Option<String>,
+    /// Discounts by affection to the owner.
     #[serde(default)]
     pub discount: Vec<Discount>,
+    /// Items always on offer.
     pub stock: Vec<String>,
     /// Items that are only on offer under a condition, e.g. once Elora can use them (E-354).
     #[serde(default)]
@@ -228,23 +282,34 @@ pub struct Shop {
 /// Progression values (P-01, P-02, P-05, P-25, P-26, P-30).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Progression {
+    /// Highest level (P-01).
     pub max_level: u32,
+    /// Experience to the next level: `xp_base + xp_per_level × level` (P-02).
     pub xp_base: u32,
+    /// Additional experience per level (P-02).
     pub xp_per_level: u32,
+    /// Health at level 1 (E-239).
     pub base_health: i32,
     /// +1 health every this many levels.
     pub health_every: u32,
+    /// Most consumables of one kind in the bag (P-25).
     pub consumable_max: u32,
+    /// Selling price in percent of the purchase price (P-26).
     pub sell_pct: u32,
+    /// Share of the gleam drops since the last save point lost on death (P-30).
     pub death_loss_pct: u32,
+    /// Map of a new game (under `maps/adventure/`).
     pub start_map: String,
+    /// Entrance on the start map.
     pub start_spawn: String,
 }
 
 /// Area on the world map (E-264).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Area {
+    /// Area id.
     pub id: String,
+    /// Display name.
     pub name: Text,
     /// Position on the map (0..1, top left = 0, 0).
     pub pos: [f32; 2],
@@ -274,15 +339,19 @@ pub struct Area {
     /// the victory screen with `victory` and the title of honour `honor`.
     #[serde(default)]
     pub chapter: Option<u32>,
+    /// Guardian of the area (creature kind).
     #[serde(default)]
     pub guardian: Option<String>,
+    /// Text of the victory screen.
     #[serde(default)]
     pub victory: Option<Text>,
+    /// Title of honour for the victory.
     #[serde(default)]
     pub honor: Option<Text>,
     /// Weather on entering (R2-W1, E-331): gloomy while the spring is silent, otherwise `weather`.
     #[serde(default)]
     pub weather: Vec<WeatherChance>,
+    /// Weather on entering while the spring is silent.
     #[serde(default)]
     pub weather_gloomy: Vec<WeatherChance>,
     /// Without its own spring (Tauwinkel): gloomy until this many springs are freed.
@@ -296,10 +365,13 @@ pub struct WeatherChance {
     /// `schoen`, `regen`, `gewitter`, `nebel`, `blaetter`, `blueten`, `sandsturm`, `schnee`,
     /// `schneesturm` (siehe [`elora_map::WeatherKind::key`]).
     pub kind: String,
+    /// Weight of this weather in the roll.
     #[serde(default = "one_u32")]
     pub weight: u32,
+    /// Range of the strength (0..1).
     #[serde(default = "default_intensity")]
     pub intensity: [f32; 2],
+    /// Range of the wind (negative = to the left).
     #[serde(default = "default_wind")]
     pub wind: [f32; 2],
 }
@@ -308,7 +380,9 @@ pub struct WeatherChance {
 /// areas (E-320), cold in cold areas (E-342).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Temperature {
+    /// Heat bar of the hot areas.
     pub heat: TemperatureBar,
+    /// Cold bar of the cold areas.
     pub cold: TemperatureBar,
 }
 
@@ -322,19 +396,24 @@ pub struct TemperatureBar {
     /// In these weathers (keys of [`elora_map::WeatherKind`]) it fills `faster` times as fast.
     #[serde(default)]
     pub faster_weather: Vec<String>,
+    /// Factor for `faster_weather`.
     #[serde(default = "one_f32")]
     pub faster: f32,
     /// This long in shelter until empty (ms): roof, zones `shelter_zones…`, weathers
     /// `shelter_weather`, and the guardians' arenas (`…-arena`) with `shelter_arenas`.
     pub shelter_ms: u32,
+    /// Prefixes of the shelter zones.
     #[serde(default)]
     pub shelter_zones: Vec<String>,
+    /// Weathers in which it empties as in shelter.
     #[serde(default)]
     pub shelter_weather: Vec<String>,
+    /// The guardians' arenas count as shelter.
     #[serde(default)]
     pub shelter_arenas: bool,
     /// This long in zones `relief_zones…` until empty (ms).
     pub relief_ms: u32,
+    /// Prefixes of the relief zones (oasis …).
     pub relief_zones: Vec<String>,
     /// After being full, Elora stays slower until the bar drops below this fraction.
     pub recover: f32,
@@ -369,7 +448,14 @@ impl Area {
 #[derive(Debug, thiserror::Error)]
 pub enum ContentError {
     #[error("{file}: {msg}")]
-    Parse { file: &'static str, msg: String },
+    /// A file could not be parsed.
+    Parse {
+        /// File name.
+        file: &'static str,
+        /// Parser message.
+        msg: String,
+    },
+    /// Broken reference or invalid value.
     #[error("{0}")]
     Invalid(String),
 }
@@ -410,16 +496,25 @@ include!(concat!(env!("OUT_DIR"), "/dialogs.rs"));
 /// Sources of the content files.
 #[derive(Debug, Clone, Copy)]
 pub struct Sources<'a> {
+    /// `items.toml`.
     pub items: &'a str,
+    /// `skills.toml`.
     pub skills: &'a str,
+    /// `upgrades.toml`.
     pub upgrades: &'a str,
+    /// `shops.toml`.
     pub shops: &'a str,
+    /// `progression.toml`.
     pub progression: &'a str,
+    /// `creatures.toml`.
     pub creatures: &'a str,
+    /// `quests.toml`.
     pub quests: &'a str,
+    /// `characters.toml`.
     pub characters: &'a str,
     /// Dialogs: id and content.
     pub dialogs: &'a [(&'a str, &'a str)],
+    /// `worldmap.toml`.
     pub world_map: &'a str,
 }
 
@@ -444,14 +539,23 @@ impl Sources<'static> {
 /// All content of the adventure.
 #[derive(Debug, Clone)]
 pub struct Content {
+    /// Items by id.
     pub items: BTreeMap<String, ItemDef>,
+    /// Nodes of the skill tree.
     pub skills: Vec<SkillNode>,
+    /// Weapon upgrades at Klonk.
     pub upgrades: Vec<Upgrade>,
+    /// Shops by id.
     pub shops: BTreeMap<String, Shop>,
+    /// Progression values.
     pub progression: Progression,
+    /// Creature kinds (enemies, terrain, guardians).
     pub creatures: Vec<CreatureKind>,
+    /// All quests.
     pub quests: Vec<QuestDef>,
+    /// Speaking characters by id.
     pub characters: BTreeMap<String, CharacterDef>,
+    /// Dialogs by id.
     pub dialogs: BTreeMap<String, Dialog>,
     /// Areas of the world map (E-264).
     pub areas: Vec<Area>,
@@ -687,22 +791,27 @@ impl Content {
         self.areas.iter().find(|a| map.starts_with(&a.maps))
     }
 
+    /// Quest by id.
     pub fn quest(&self, id: &str) -> Option<&QuestDef> {
         self.quests.iter().find(|q| q.id == id)
     }
 
+    /// Dialog by id.
     pub fn dialog(&self, id: &str) -> Option<&Dialog> {
         self.dialogs.get(id)
     }
 
+    /// Item by id.
     pub fn item(&self, id: &str) -> Option<&ItemDef> {
         self.items.get(id)
     }
 
+    /// Skill tree node by id.
     pub fn skill(&self, id: &str) -> Option<&SkillNode> {
         self.skills.iter().find(|n| n.id == id)
     }
 
+    /// Upgrade level `level` of a weapon.
     pub fn upgrade(&self, weapon: Weapon, level: u8) -> Option<&Upgrade> {
         self.upgrades
             .iter()

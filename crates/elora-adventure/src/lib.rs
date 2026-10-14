@@ -5,6 +5,8 @@
 //! The simulation (`elora-sim`) gets a tuning, the abilities and the state of the character from
 //! it; world events flow back via [`SaveGame::on_event`].
 
+#![warn(missing_docs)]
+
 pub mod avalanche;
 pub mod check;
 pub mod data;

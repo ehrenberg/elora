@@ -11,8 +11,10 @@ use crate::state::{Notice, SaveGame};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum QuestKind {
+    /// Main quest.
     #[default]
     Main,
+    /// Side quest.
     Side,
 }
 
@@ -21,31 +23,49 @@ pub enum QuestKind {
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum Goal {
     /// Talk to a character.
-    Talk { who: String },
+    Talk {
+        /// Character id.
+        who: String,
+    },
     /// Reach a map (and optionally a zone in it).
     Reach {
+        /// Map id.
         map: String,
+        /// Zone in the map.
         #[serde(default)]
         zone: Option<String>,
     },
     /// Defeat enemies of a kind, optionally only on one map.
     Defeat {
+        /// Enemy kind.
         kind: String,
+        /// Number of enemies.
         count: u32,
+        /// Only on this map.
         #[serde(default)]
         map: Option<String>,
     },
     /// Have items.
-    Collect { item: String, count: u32 },
+    Collect {
+        /// Item id.
+        item: String,
+        /// Number of items.
+        count: u32,
+    },
     /// Hand over items to a character.
     Bring {
+        /// Item id.
         item: String,
+        /// Number of items.
         count: u32,
+        /// Character who receives them.
         to: String,
     },
     /// Flag in the world state (switch, chest, door …).
     Flag {
+        /// Flag name.
         flag: String,
+        /// Value the flag needs (at least).
         #[serde(default = "one")]
         value: i64,
     },
@@ -57,19 +77,27 @@ fn one() -> i64 {
     1
 }
 
+/// Step of a quest.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Step {
+    /// Step id (`quest x step <id>`).
     pub id: String,
+    /// Text in the quest book.
     pub text: Text,
+    /// Goal of the step.
     pub goal: Goal,
 }
 
+/// Reward of a quest.
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
 pub struct Reward {
+    /// Experience.
     #[serde(default)]
     pub xp: u32,
+    /// Gleam drops.
     #[serde(default)]
     pub gleam_drops: u32,
+    /// Items.
     #[serde(default)]
     pub items: Vec<Cost>,
     /// Dewdrop points.
@@ -77,18 +105,25 @@ pub struct Reward {
     pub points: u32,
 }
 
+/// A quest (`quests.toml`).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct QuestDef {
+    /// Quest id.
     pub id: String,
+    /// Main or side quest.
     #[serde(default)]
     pub kind: QuestKind,
     /// Who gives the quest (shown in the quest book).
     #[serde(default)]
     pub giver: Option<String>,
+    /// Display name.
     pub name: Text,
+    /// Description in the quest book.
     #[serde(default)]
     pub desc: Text,
+    /// Steps in order.
     pub step: Vec<Step>,
+    /// Reward when done.
     #[serde(default)]
     pub reward: Reward,
     /// Fails as soon as this condition holds (E-250).
@@ -103,13 +138,18 @@ pub struct QuestDef {
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum QuestStatus {
+    /// Running.
     Active,
+    /// Done.
     Done,
+    /// Failed.
     Failed,
 }
 
+/// Progress of a started quest.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub struct QuestState {
+    /// State of the quest.
     pub status: QuestStatus,
     /// Index of the current step.
     pub step: usize,
@@ -120,15 +160,19 @@ pub struct QuestState {
 /// Result of an effect for the UI.
 #[derive(Debug, Clone, PartialEq)]
 pub enum Outcome {
+    /// Message for the player.
     Notice(Notice),
+    /// Open a shop, the smithy or the skill tree.
     Open(Open),
 }
 
 impl SaveGame {
+    /// State of a quest; `None` if not started.
     pub fn quest(&self, id: &str) -> Option<&QuestState> {
         self.quests.get(id)
     }
 
+    /// Affection of a character (0 if unknown).
     pub fn affection(&self, who: &str) -> i32 {
         self.affection.get(who).copied().unwrap_or(0)
     }
@@ -139,6 +183,7 @@ impl SaveGame {
         Cond::parse(src).is_ok_and(|c| self.check(content, &c))
     }
 
+    /// Does the parsed condition hold?
     pub fn check(&self, content: &Content, c: &Cond) -> bool {
         match c {
             Cond::Level(op, n) => op.holds(i64::from(self.level), *n),
@@ -427,4 +472,5 @@ impl SaveGame {
 
 /// Affection per character from −10 to 10 (E-248).
 pub const AFFECTION_MIN: i32 = -10;
+/// Highest affection (E-248).
 pub const AFFECTION_MAX: i32 = 10;

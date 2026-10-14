@@ -8,37 +8,66 @@ use crate::data::Bonus;
 /// Sum of all bonuses.
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct Stats {
+    /// Additional maximum health.
     pub max_health: i32,
+    /// Armor.
     pub armor: i32,
+    /// Damage of all weapons in percent.
     pub damage_pct: f32,
+    /// Fire delay in percent.
     pub fire_delay_pct: f32,
+    /// Knockback on enemies in percent.
     pub knockback_pct: f32,
+    /// Additional maximum ammunition.
     pub ammo: i32,
+    /// Loot magnet (units).
     pub magnet: f32,
+    /// More gleam drops in percent.
     pub drops_pct: f32,
+    /// Additional protection after a hit (ms).
     pub invulnerable_ms: i32,
+    /// Additional healing of healing plants.
     pub heal_bonus: i32,
+    /// Health after a second chance (0 = none).
     pub second_chance: i32,
+    /// Hook jerk cooldown change (ms).
     pub jerk_cooldown_ms: i32,
+    /// Hook length in percent.
     pub hook_length_pct: f32,
+    /// Additional stomp radius (units).
     pub stomp_radius: f32,
+    /// Additional stomp damage.
     pub stomp_damage: i32,
+    /// Additional ice grip hold time (ms).
     pub grip_ms: i32,
+    /// Change of the glide fall speed (units/tick).
     pub glide_fall: f32,
+    /// Hammer stun time (ms).
     pub hammer_stun_ms: i32,
+    /// Additional hammer damage.
     pub hammer_damage: i32,
+    /// Hammer reach in percent.
     pub hammer_reach_pct: f32,
+    /// Hammer hits all enemies around Elora.
     pub hammer_shockwave: bool,
+    /// Explosion radius in percent.
     pub explosion_pct: f32,
+    /// Additional grenade shards.
     pub grenade_shards: i32,
+    /// Additional laser bounces.
     pub laser_bounces: i32,
+    /// Additional enemies the laser goes through.
     pub laser_pierce: i32,
+    /// Laser charge time in percent.
     pub laser_delay_pct: f32,
+    /// Filling of the heat bar in percent.
     pub heat_pct: f32,
+    /// Filling of the cold bar in percent.
     pub cold_pct: f32,
 }
 
 impl Stats {
+    /// Add a bonus.
     pub fn add(&mut self, b: &Bonus) {
         match *b {
             Bonus::MaxHealth(v) => self.max_health += v,

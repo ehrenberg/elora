@@ -20,20 +20,28 @@ const MAX_PAYLOAD: usize = 4 * 1024 * 1024;
 /// Number of slots (E-219).
 pub const SLOTS: usize = 3;
 
+/// Error when reading or writing a save game.
 #[derive(Debug, thiserror::Error)]
 pub enum SaveError {
+    /// Not an Elora save game.
     #[error("not an Elora save game")]
     NotASave,
+    /// Unsupported format version.
     #[error("format version {0} is not supported")]
     Version(u16),
+    /// Checksum mismatch: the file is damaged.
     #[error("checksum mismatch – the save game is damaged")]
     Checksum,
+    /// Content not readable.
     #[error("content not readable: {0}")]
     Content(String),
+    /// Save slot is damaged and is not overwritten.
     #[error("save slot {0} is damaged and will not be overwritten")]
     Damaged(usize),
+    /// Save slot does not exist.
     #[error("save slot {0} does not exist")]
     NoSlot(usize),
+    /// File system error.
     #[error(transparent)]
     Io(#[from] std::io::Error),
 }
@@ -105,8 +113,11 @@ fn migrate(value: &mut toml::Value) {
 /// State of a slot.
 #[derive(Debug)]
 pub enum SlotState {
+    /// No save game yet.
     Empty,
+    /// Readable save game.
     Ok(Box<SaveGame>),
+    /// Save game cannot be read.
     Damaged(SaveError),
 }
 
@@ -117,10 +128,12 @@ pub struct Slots {
 }
 
 impl Slots {
+    /// Save slots in the directory `dir`.
     pub fn new(dir: impl Into<PathBuf>) -> Self {
         Self { dir: dir.into() }
     }
 
+    /// File of a save slot (`slot-<n>.esav`).
     pub fn path(&self, slot: usize) -> PathBuf {
         self.dir.join(format!("slot-{}.esav", slot + 1))
     }
@@ -220,6 +233,7 @@ impl Slots {
         }
     }
 
+    /// Directory of the save slots.
     pub fn dir(&self) -> &Path {
         &self.dir
     }
