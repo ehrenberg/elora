@@ -30,7 +30,7 @@ Weapons & content, community run in between
 | R2-M1 | Adventure foundation | Abilities, enemies, progression, save games, NPCs, dialogues, quests, editor; acceptance with the prologue – plan: [`a1-plan.md`](a1-plan.md) |
 | R2-M2 | Story & adventure | Tauwinkel, five areas, bosses, finale, side quests ([`world-book.md`](world-book.md)); sub-milestones per chapter: M2.1 Blütenwiesen ([`m2-1-plan.md`](m2-1-plan.md)), M2.2 Murmelwald ([`m2-2-plan.md`](m2-2-plan.md)), M2.3 Glutsandwüste ([`m2-3-plan.md`](m2-3-plan.md)), M2.4 Frostspitzen ([`m2-4-plan.md`](m2-4-plan.md), accepted E-349), M2.5 Sternschlucht, M2.6 finale |
 | R2-W1 ✅ | Weather | Rain, thunderstorm, fog, wind, sandstorm, snow in the adventure and as a map property; light gameplay effect in the adventure (E-329 to E-335) – **accepted** (E-339) – plan: [`w1-plan.md`](w1-plan.md) |
-| R2-RF | Refactoring | Before the next release: English throughout (E-348) and cleanup of large files, duplicated logic and lint allows – plan: [`refactoring-plan.md`](refactoring-plan.md) |
+| R2-RF ✅ | Refactoring | Before the next release: English throughout (E-348) and cleanup of large files, duplicated logic and lint allows – plan: [`refactoring-plan.md`](refactoring-plan.md) |
 | R2-M3 | Teammate bots | Pathfinding, combat and hook behaviour, difficulty levels, bots on servers and in training |
 | R2-M4 | Weapons & content | More weapons, sounds in maps, new themes and maps |
 | R2-M5 | Role-playing PvP mode | “Quellenkampf”: levels, upgrades and loot during the match (E-204) |

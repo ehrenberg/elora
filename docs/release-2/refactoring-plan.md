@@ -1,6 +1,6 @@
 # Refactoring before the next release – plan
 
-Status: **Decided, ready to start** (E-348, E-350) · Scope: whole workspace (`crates/`, `apps/`, `xtask/`, `docs/`, `assets/`)
+Status: **Done** (accepted 2026-10-14, E-361; E-348, E-350) · Scope: whole workspace (`crates/`, `apps/`, `xtask/`, `docs/`, `assets/`)
 
 ## Goal
 
@@ -108,9 +108,9 @@ listing the 0.9.x servers.
 
 | # | Task | Notes |
 |---|---|---|
-| RF-40 | Golden tests, replays and all shipped maps unchanged after each phase | `cargo xtask check` after every commit |
-| RF-41 | Old save games from 0.9.x load | Keep sample saves as test fixtures |
-| RF-42 | Short playtest of every chapter after Phase 3 | |
+| RF-40 ✅ | Golden tests, replays and all shipped maps unchanged after each phase | `cargo xtask check` after every commit |
+| RF-41 ✅ | Old save games from 0.9.x load | Keep sample saves as test fixtures |
+| RF-42 ✅ | Short playtest of every chapter after Phase 3 | |
 
 ## Decisions (E-350)
 
