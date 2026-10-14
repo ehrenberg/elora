@@ -1,20 +1,20 @@
-# cargo-deny (E-040). Projektlizenz: GPL-3.0-only (E-020).
+# cargo-deny (E-040). Project licence: GPL-3.0-only (E-020).
 
 [graph]
 all-features = true
 
 [advisories]
 version = 2
-# „unmaintained“-Meldungen werden von `cargo xtask check` per `-W unmaintained`
-# nur als Warnung ausgegeben (E-048).
+# "unmaintained" advisories are only warnings in `cargo xtask check` (`-W unmaintained`,
+# E-048).
 yanked = "deny"
 
 [licenses]
 version = 2
 confidence-threshold = 0.9
-# Liste ist bewusst vorab gepflegt; noch nicht genutzte Einträge nicht melden
+# the list is kept ahead on purpose; do not report entries that are not used yet
 unused-allowed-license = "allow"
-# GPL-3.0-kompatible Lizenzen für Abhängigkeiten
+# GPL-3.0 compatible licences of dependencies
 allow = [
     "MIT",
     "Apache-2.0",
@@ -27,7 +27,7 @@ allow = [
     "MPL-2.0",
     "BSL-1.0",
     "CC0-1.0",
-    # webpki-roots: Mozilla-Stammzertifikate für HTTPS zum Master (E-127)
+    # webpki-roots: Mozilla root certificates for HTTPS to the master (E-127)
     "CDLA-Permissive-2.0",
     "GPL-3.0-only",
     "GPL-3.0-or-later",
@@ -40,7 +40,7 @@ ignore = true
 [bans]
 multiple-versions = "warn"
 wildcards = "deny"
-# interne Pfad-Abhängigkeiten (publish = false) sind erlaubt
+# internal path dependencies (publish = false) are allowed
 allow-wildcard-paths = true
 
 [sources]
