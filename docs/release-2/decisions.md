@@ -170,6 +170,13 @@ Continued from **E-200**. Release 1 (E-001 to E-173) is in the
 | E-359 | 2026-10-08 | Intro narration | Spoken narration (de/en) instead of subtitles, created by the owner with the **speech generation of the Google AI Studio playground** – like the video a **second exception to E-295**, limited to the intro; Tauwinkel music at 35 % underneath |
 | E-360 | 2026-10-08 | Setup screen draft (RF-30) | Draft `docs/release-2/design/setup-screen.png` **accepted**; the screen starts in the **system language** (German if the system is German, otherwise English) |
 | E-361 | 2026-10-14 | Refactoring R2-RF | **Accepted** after the playtest of all chapters (RF-42); phases 1–4 done |
+| E-362 | 2026-10-14 | Chapter 5 climax | **Protect Luma:** the Withered One drains the Star Spring in rounds, Elora keeps his shadows away from Luma until her song is finished; then he flees towards Tauwinkel (no fight) |
+| E-363 | 2026-10-14 | Gliding | From **Luma in the middle of chapter 5** (star cape); the star spark strengthens it afterwards |
+| E-364 | 2026-10-14 | Chapter 5 mechanics | Darkness and light, floating star islands, star bridges from note stones, updrafts |
+| E-365 | 2026-10-14 | Chapter 5 enemies | Shadow moths, stone goblins, echoes |
+| E-366 | 2026-10-14 | End of chapter 5 | A star spark is saved: Tüftel strengthens gliding, `springs_freed = 5`; only the old well stays grey |
+| E-367 | 2026-10-14 | Way to the Sternschlucht | Gorge entrance at the far east of the Blütenwiesen, opens after chapter 4 |
+| E-368 | 2026-10-14 | Chapter 5 side quests | “Star fragments” and “Luma's song” |
 
 ## Open points
 
