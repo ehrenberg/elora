@@ -21,17 +21,29 @@ const MAX_NAME: usize = 128;
 /// Winner of a round or a match.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum WinnerName {
+    /// A player won.
     Player(String),
+    /// A team won.
     Team(Team),
+    /// Nobody won.
     Nobody,
 }
 
 /// Subject of a vote, as it is displayed.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum VoteSubject {
+    /// Change to the named map.
     Map(String),
-    Mode { mode: Mode, instagib: bool },
+    /// Change the game mode (with or without instagib).
+    Mode {
+        /// New mode.
+        mode: Mode,
+        /// With instagib.
+        instagib: bool,
+    },
+    /// Kick the named player.
     Kick(String),
+    /// Move the named player to the spectators.
     Spectate(String),
 }
 
@@ -40,62 +52,101 @@ pub enum VoteSubject {
 pub enum Message {
     /// Free text (e.g. console); not translated.
     Text(String),
+    /// A player joined the game.
     Joined {
+        /// Player name.
         name: String,
     },
+    /// A player left the game.
     Left {
+        /// Player name.
         name: String,
     },
     /// Player changes team on their own (also to the spectators or into free play).
     TeamJoined {
+        /// Player name.
         name: String,
+        /// New team.
         team: Team,
     },
     /// Balancing by the server.
     TeamBalanced {
+        /// Player name.
         name: String,
+        /// New team.
         team: Team,
     },
+    /// A match started.
     MatchStarted {
+        /// Mode name.
         mode: String,
     },
+    /// A round was won.
     RoundWon(WinnerName),
+    /// A round ended in a draw.
     RoundDraw,
+    /// The match was won.
     MatchWon(WinnerName),
+    /// Sudden death started.
     SuddenDeath,
+    /// The map was changed.
     MapChanged {
+        /// Map name.
         map: String,
     },
+    /// The game mode was changed.
     ModeChanged {
+        /// Mode name.
         mode: String,
     },
+    /// A vote was started.
     VoteStarted {
+        /// Who started the vote.
         who: String,
+        /// What is being voted on.
         subject: VoteSubject,
     },
+    /// The vote failed.
     VoteFailed(VoteSubject),
+    /// The vote passed.
     VotePassed(VoteSubject),
+    /// The vote was cancelled.
     VoteCancelled,
+    /// Votes are disabled on this server.
     VotesDisabled,
+    /// A vote is already running.
     VoteRunning,
+    /// The requested map does not exist.
     UnknownMap {
+        /// Map name.
         map: String,
     },
+    /// The requested player does not exist.
     InvalidPlayer,
+    /// The map could not be loaded.
     MapChangeFailed {
+        /// Map name.
         map: String,
     },
 }
 
 /// Disconnect reasons as codes (pass through `elora-net` as text).
 pub mod reason {
+    /// Banned from the server.
     pub const BANNED: &str = "#banned";
+    /// Sent a malformed message.
     pub const INVALID_MESSAGE: &str = "#invalid-message";
+    /// Protocol version does not match.
     pub const WRONG_VERSION: &str = "#wrong-version";
+    /// Left the game.
     pub const LEFT: &str = "#left";
+    /// The server shuts down.
     pub const SHUTDOWN: &str = "#shutdown";
+    /// Kicked by a vote.
     pub const KICKED_BY_VOTE: &str = "#kicked-by-vote";
+    /// Kicked by the server.
     pub const KICKED: &str = "#kicked";
+    /// No free slot.
     pub const SERVER_FULL: &str = "#server-full";
 
     /// All codes (for tests of the translations).

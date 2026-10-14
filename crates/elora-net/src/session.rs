@@ -24,8 +24,10 @@ const MAX_ASSEMBLIES: usize = 32;
 /// Error caused by malformed or malicious packets; the connection is closed.
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 pub enum SessionError {
+    /// Packet could not be parsed.
     #[error("malformed packet")]
     Malformed,
+    /// Message exceeds the size limit.
     #[error("message too large")]
     TooLarge,
 }
@@ -33,8 +35,11 @@ pub enum SessionError {
 /// What the peer sent.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum Delivery {
+    /// Message over the reliable channel (in order).
     Reliable(Vec<u8>),
+    /// Message over the unreliable channel.
     Unreliable(Vec<u8>),
+    /// The peer closed the connection, with a reason.
     Disconnect(String),
 }
 
@@ -67,12 +72,17 @@ pub struct Stats {
     pub rtt: Duration,
     /// Share of unacknowledged packets (0..1) among the most recent packets.
     pub loss: f32,
+    /// Bytes sent in total.
     pub bytes_sent: u64,
+    /// Bytes received in total.
     pub bytes_received: u64,
+    /// Packets sent in total.
     pub packets_sent: u64,
+    /// Packets received in total.
     pub packets_received: u64,
 }
 
+/// Reliability layer of one connection: acks, resends, ordering and fragments.
 #[derive(Debug)]
 pub struct Session {
     sent: VecDeque<SentPacket>,
@@ -89,6 +99,7 @@ pub struct Session {
     next_fragment_msg: u64,
     assemblies: HashMap<u64, Assembly>,
     disconnect: Option<String>,
+    /// Measurements of this connection.
     pub stats: Stats,
     rtt_known: bool,
     last_send: Option<Instant>,
@@ -160,6 +171,7 @@ impl Cursor<'_> {
 }
 
 impl Session {
+    /// New session without any traffic.
     pub fn new() -> Self {
         Self {
             sent: VecDeque::new(),

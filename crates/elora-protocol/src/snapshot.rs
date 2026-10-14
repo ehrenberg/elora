@@ -41,6 +41,7 @@ const MAX_OBJECTS: usize = 4096;
 /// A snapshot: per object kind a table key → fields.
 #[derive(Debug, Clone, PartialEq, Eq, Default)]
 pub struct Snapshot {
+    /// Tick the snapshot belongs to.
     pub tick: u64,
     objects: [BTreeMap<u64, Vec<i64>>; KINDS],
 }
@@ -587,19 +588,30 @@ fn player_from(v: &[i64], controller: Controller) -> Player {
 /// Game state from the snapshot (display in the client).
 #[derive(Debug, Clone, PartialEq)]
 pub struct GameView {
+    /// Game mode.
     pub mode: Mode,
+    /// With instagib.
     pub instagib: bool,
+    /// Current phase (warmup, countdown, running, …).
     pub phase: Phase,
+    /// Score per team.
     pub team_score: [i32; 2],
+    /// Whether sudden death is running.
     pub sudden_death: bool,
+    /// Score limit, 0 = none.
     pub score_limit: u32,
+    /// Time limit in minutes, 0 = none.
     pub time_limit: u32,
+    /// Tick at which the match started.
     pub match_start_tick: u64,
+    /// Whether team members can damage each other.
     pub friendly_fire: bool,
+    /// Match statistics per slot.
     pub stats: BTreeMap<usize, Stats>,
 }
 
 impl GameView {
+    /// Display name of the mode, e.g. `iDM`.
     pub fn title(&self) -> String {
         format!(
             "{}{}",

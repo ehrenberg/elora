@@ -12,6 +12,7 @@ const EOF: usize = 256;
 /// Longest allowed code (limited by smoothing the frequencies).
 const MAX_LEN: u8 = 24;
 
+/// Canonical Huffman code over the 256 byte values plus an end marker.
 #[derive(Debug, Clone)]
 pub struct Huffman {
     /// Code and length per symbol.
@@ -74,6 +75,7 @@ impl Huffman {
         }
     }
 
+    /// Compresses `data` (including the end marker).
     pub fn encode(&self, data: &[u8]) -> Vec<u8> {
         let mut out = Vec::with_capacity(data.len());
         let (mut acc, mut bits) = (0u64, 0u32);

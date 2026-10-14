@@ -3,6 +3,8 @@
 //!
 //! Knows nothing about game content – bytes in, bytes out.
 
+#![warn(missing_docs)]
+
 pub mod endpoint;
 pub mod info;
 pub mod session;

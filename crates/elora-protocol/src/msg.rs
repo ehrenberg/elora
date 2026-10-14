@@ -40,21 +40,31 @@ const MAX_EVENTS: usize = 1024;
 /// Subject of a vote (E-077).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum VoteKind {
+    /// Change to the named map.
     Map(String),
+    /// Change the game mode.
     Mode {
+        /// New mode.
         mode: elora_game::Mode,
+        /// With instagib.
         instagib: bool,
     },
+    /// Kick the player in this slot.
     Kick(u32),
+    /// Move the player in this slot to the spectators.
     Spectate(u32),
 }
 
 /// Running vote.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct VoteInfo {
+    /// What is being voted on.
     pub subject: crate::text::VoteSubject,
+    /// Yes votes so far.
     pub yes: u32,
+    /// No votes so far.
     pub no: u32,
+    /// Players allowed to vote.
     pub voters: u32,
     /// Remaining time in seconds.
     pub seconds_left: u32,
@@ -64,8 +74,11 @@ pub struct VoteInfo {
 /// Only the client knows the colors themselves.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Default)]
 pub struct Skin {
+    /// Palette number of the body.
     pub body: u8,
+    /// Palette number of the feet.
     pub feet: u8,
+    /// Palette number of the eyes.
     pub eyes: u8,
 }
 
@@ -75,6 +88,7 @@ impl Skin {
     /// Colors for the eyes.
     pub const EYE_COLORS: u8 = 8;
 
+    /// Whether all palette numbers are in range.
     pub fn is_valid(self) -> bool {
         self.body < Self::BODY_COLORS
             && self.feet < Self::BODY_COLORS
@@ -107,27 +121,42 @@ pub const EMOTES: u8 = 8;
 /// Maximum length of a chat message (characters).
 pub const MAX_CHAT: usize = 200;
 
+/// Message from the client to the server.
 #[derive(Debug, Clone, PartialEq)]
 pub enum ClientMsg {
+    /// First message after connecting.
     Join {
+        /// Protocol version of the client.
         version: u32,
+        /// Player name.
         name: String,
+        /// Look of the player.
         skin: Skin,
     },
     /// Inputs with their target tick, newest last. `ack` = tick of the last
     /// completely received snapshot (base for the next delta).
     Input {
+        /// Tick of the last completely received snapshot.
         ack: Option<u64>,
+        /// Inputs with their target tick.
         inputs: Vec<(u64, PlayerInput)>,
     },
+    /// Leave the game.
     Leave,
+    /// Chat message.
     Chat {
+        /// Only to the own team.
         team: bool,
+        /// Message text (at most [`MAX_CHAT`] characters).
         text: String,
     },
+    /// Join a team (or the spectators).
     SetTeam(Team),
+    /// Suicide.
     Kill,
+    /// Start a vote.
     CallVote(VoteKind),
+    /// Vote yes (`true`) or no.
     Vote(bool),
     /// Change the skin during the game.
     SetSkin(Skin),
@@ -135,50 +164,74 @@ pub enum ClientMsg {
     Emote(u8),
     /// Request chunk `chunk` of the map from [`ServerMsg::MapInfo`] (M6.5).
     MapRequest {
+        /// Chunk index.
         chunk: u32,
     },
     /// Map is available (cache, `maps/` or download) – now into the game.
     MapReady,
 }
 
+/// Message from the server to the client.
 #[derive(Debug, Clone, PartialEq)]
 pub enum ServerMsg {
+    /// Accepted into the game.
     Welcome {
+        /// Slot of the own player.
         slot: u32,
+        /// Current server tick.
         tick: u64,
+        /// Name of the map.
         map_name: String,
         /// Checksum of the map from [`ServerMsg::MapInfo`].
         map_checksum: MapChecksum,
+        /// Physics values of the server.
         tuning: Tuning,
+        /// Snapshot every tick instead of every second tick.
         high_bandwidth: bool,
     },
     /// Snapshot as a delta against `base` (whose tick the client has acknowledged).
     Snapshot {
+        /// Tick of the snapshot.
         tick: u64,
+        /// Tick of the base snapshot; `None` = full snapshot.
         base: Option<u64>,
+        /// Checksum of the complete snapshot (detects broken deltas).
         checksum: u32,
+        /// Encoded delta.
         delta: Vec<u8>,
+        /// Events since the last snapshot.
         events: Vec<Event>,
     },
     /// Time (ms) the input for `tick` arrived before it was processed (negative = too late).
     InputTiming {
+        /// Target tick of the input.
         tick: u64,
+        /// Time left before processing in ms.
         time_left_ms: i32,
     },
+    /// Changed physics values.
     Tuning(Tuning),
+    /// Removed from the server.
     Kick {
+        /// Reason (a code from [`crate::text::reason`] or free text).
         reason: String,
     },
     /// Chat; `from = None`: server.
     Chat {
+        /// Slot of the sender.
         from: Option<u32>,
+        /// Only to the team.
         team: bool,
+        /// Message text.
         text: String,
     },
     /// Name and skin of a slot; `name = None`: player has left.
     PlayerInfo {
+        /// Slot of the player.
         slot: u32,
+        /// Player name.
         name: Option<String>,
+        /// Look of the player.
         skin: Skin,
     },
     /// State of the vote; `None` = none.
@@ -188,19 +241,26 @@ pub enum ServerMsg {
     Notice(crate::text::Message),
     /// Player in `slot` shows an emote.
     Emote {
+        /// Slot of the player.
         slot: u32,
+        /// Emote number (`0..EMOTES`).
         emote: u8,
     },
     /// Map of the round (before `Welcome`, also on map change): the client loads it from the
     /// cache or requests it in chunks with [`ClientMsg::MapRequest`] (E-136).
     MapInfo {
+        /// Name of the map.
         name: String,
+        /// Checksum of the map file.
         checksum: MapChecksum,
+        /// Size of the map file in bytes.
         size: u32,
     },
     /// Chunk `index` of the map file ([`MAP_CHUNK`] bytes, the last one possibly shorter).
     MapChunk {
+        /// Chunk index.
         index: u32,
+        /// Chunk bytes.
         data: Vec<u8>,
     },
 }

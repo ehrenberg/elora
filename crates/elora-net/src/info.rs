@@ -27,8 +27,11 @@ const RESEND: Duration = Duration::from_millis(500);
 /// Reply of a server.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InfoReply {
+    /// Address of the server.
     pub addr: SocketAddr,
+    /// Round-trip time of the query.
     pub ping: Duration,
+    /// Info data of the server (opaque to the network layer).
     pub data: Vec<u8>,
 }
 
@@ -70,6 +73,7 @@ fn token_request() -> Vec<u8> {
 }
 
 impl<S: Socket> InfoProbe<S> {
+    /// New probe on `socket`; `seed` initialises the nonce generator.
     pub fn new(socket: S, seed: u64) -> Self {
         Self {
             socket,
@@ -80,6 +84,7 @@ impl<S: Socket> InfoProbe<S> {
         }
     }
 
+    /// Underlying socket (e.g. to change the simulated conditions).
     pub fn socket_mut(&mut self) -> &mut S {
         &mut self.socket
     }

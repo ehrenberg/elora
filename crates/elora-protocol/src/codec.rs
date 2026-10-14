@@ -3,38 +3,50 @@
 /// Error while decoding. Every faulty packet is rejected, never "guessed".
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 pub enum DecodeError {
+    /// The data ends in the middle of a value.
     #[error("data too short")]
     UnexpectedEnd,
+    /// A number does not fit into its type.
     #[error("number too large")]
     Overflow,
+    /// A value is out of range (names the field).
     #[error("invalid value: {0}")]
     Invalid(&'static str),
+    /// A string is not valid UTF-8.
     #[error("invalid UTF-8")]
     Utf8,
+    /// Bytes are left over after the message.
     #[error("trailing bytes at the end")]
     TrailingBytes,
 }
 
+/// Result of a decoding step.
 pub type DecodeResult<T> = Result<T, DecodeError>;
 
+/// Appends encoded values to a byte buffer.
 #[derive(Debug, Default, Clone)]
 pub struct Writer {
+    /// Encoded bytes so far.
     pub buf: Vec<u8>,
 }
 
 impl Writer {
+    /// Empty writer.
     pub fn new() -> Self {
         Self::default()
     }
 
+    /// The encoded bytes.
     pub fn into_bytes(self) -> Vec<u8> {
         self.buf
     }
 
+    /// One raw byte.
     pub fn u8(&mut self, v: u8) {
         self.buf.push(v);
     }
 
+    /// Boolean as one byte (0 or 1).
     pub fn bool(&mut self, v: bool) {
         self.buf.push(u8::from(v));
     }
@@ -58,20 +70,24 @@ impl Writer {
         self.uvar(((v << 1) ^ (v >> 63)) as u64);
     }
 
+    /// Byte string with its length in front.
     pub fn bytes(&mut self, v: &[u8]) {
         self.uvar(v.len() as u64);
         self.buf.extend_from_slice(v);
     }
 
+    /// UTF-8 string with its length in front.
     pub fn str(&mut self, v: &str) {
         self.bytes(v.as_bytes());
     }
 
+    /// Float as 4 bytes (little endian bit pattern).
     pub fn f32(&mut self, v: f32) {
         self.buf.extend_from_slice(&v.to_bits().to_le_bytes());
     }
 }
 
+/// Reads encoded values from a byte slice.
 #[derive(Debug, Clone)]
 pub struct Reader<'a> {
     data: &'a [u8],
@@ -79,10 +95,12 @@ pub struct Reader<'a> {
 }
 
 impl<'a> Reader<'a> {
+    /// Reader at the start of `data`.
     pub fn new(data: &'a [u8]) -> Self {
         Self { data, pos: 0 }
     }
 
+    /// Whether all bytes have been read.
     pub fn is_empty(&self) -> bool {
         self.pos >= self.data.len()
     }

@@ -4,22 +4,32 @@
 /// What the IVF file header says.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Header {
+    /// Length of the file header in bytes.
     pub header_len: u16,
+    /// Codec identifier (`AV01` for AV1).
     pub fourcc: [u8; 4],
+    /// Frame width in pixels.
     pub width: u16,
+    /// Frame height in pixels.
     pub height: u16,
     /// Time base: `rate / scale` frames per second.
     pub rate: u32,
+    /// Time base divisor.
     pub scale: u32,
+    /// Number of frames.
     pub frames: u32,
 }
 
+/// The IVF data cannot be read.
 #[derive(Debug, Clone, PartialEq, Eq, thiserror::Error)]
 pub enum IvfError {
+    /// The `DKIF` signature is missing.
     #[error("not an IVF file")]
     NotIvf,
+    /// The codec is not AV1.
     #[error("codec `{0}` is not AV1")]
     NotAv1(String),
+    /// A frame extends past the end of the data.
     #[error("frame at byte {0} is cut off")]
     Truncated(usize),
 }

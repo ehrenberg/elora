@@ -12,34 +12,45 @@ pub const MAX_LISTED: usize = 32;
 const MAX_NAME: usize = 64;
 const MAX_TEXT: usize = 128;
 
+/// One player in the server info.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct InfoPlayer {
+    /// Player name.
     pub name: String,
+    /// Current score.
     pub score: i32,
+    /// Team (or spectator).
     pub team: Team,
+    /// Whether the player is a server-side dummy.
     pub dummy: bool,
 }
 
+/// Reply to an info query (server browser).
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ServerInfo {
     /// Protocol version of the server; connecting only works if they are equal.
     pub version: u32,
+    /// Server name.
     pub name: String,
+    /// Name of the current map.
     pub map: String,
     /// Mode for display, e.g. `CTF` or `iDM`.
     pub mode: String,
     /// Connected humans (without dummies, spectators included).
     pub clients: u32,
+    /// Maximum number of clients.
     pub max_clients: u32,
     /// Player list (at most [`MAX_LISTED`]).
     pub players: Vec<InfoPlayer>,
 }
 
 impl ServerInfo {
+    /// Whether the client can connect (same protocol version).
     pub fn compatible(&self) -> bool {
         self.version == PROTOCOL_VERSION
     }
 
+    /// Encodes the info for the network.
     pub fn encode(&self) -> Vec<u8> {
         let mut w = Writer::new();
         w.uvar(u64::from(self.version));

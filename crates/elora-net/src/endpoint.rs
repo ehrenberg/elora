@@ -19,6 +19,7 @@ use snow::{HandshakeState, StatelessTransportState};
 use crate::session::{Delivery, Session, Stats};
 use crate::socket::{MAX_DATAGRAM, Socket};
 
+/// Noise pattern and primitives of the handshake.
 pub const NOISE_PARAMS: &str = "Noise_XX_25519_ChaChaPoly_BLAKE2s";
 /// Protocol identifier in the token request.
 pub(crate) const MAGIC: &[u8; 8] = b"ELORA\0\0\x01";
@@ -45,7 +46,9 @@ const INFO_RATE: u32 = 20;
 /// Static key of a server.
 #[derive(Clone, PartialEq, Eq)]
 pub struct Keypair {
+    /// Private key (never leaves the server).
     pub private: Vec<u8>,
+    /// Public key (the fingerprint clients store).
     pub public: Vec<u8>,
 }
 
@@ -89,6 +92,7 @@ fn builder() -> snow::Builder<'static> {
 /// Reason of a disconnection.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum DisconnectReason {
+    /// No packet from the peer within the timeout.
     Timeout,
     /// Closed by the peer, with a reason.
     Remote(String),
@@ -96,7 +100,9 @@ pub enum DisconnectReason {
     Rejected(String),
     /// Server key does not match the stored one (E-062).
     KeyMismatch {
+        /// Key stored from an earlier connection.
         expected: Vec<u8>,
+        /// Key the server presented now.
         got: Vec<u8>,
     },
     /// Malformed data or crypto error.
@@ -190,17 +196,27 @@ impl Link {
 /// Events of the server.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ServerEvent {
+    /// A client completed the handshake.
     Connected {
+        /// Connection id of the client.
         id: u32,
+        /// Address of the client.
         addr: SocketAddr,
     },
+    /// A message from a client.
     Message {
+        /// Connection id of the sender.
         id: u32,
+        /// Whether it arrived over the reliable channel.
         reliable: bool,
+        /// Payload.
         data: Vec<u8>,
     },
+    /// A client connection ended.
     Disconnected {
+        /// Connection id of the client.
         id: u32,
+        /// Why the connection ended.
         reason: DisconnectReason,
     },
 }
@@ -249,6 +265,7 @@ fn unix_secs() -> u64 {
 }
 
 impl<S: Socket> ServerEndpoint<S> {
+    /// New server on `socket` that accepts at most `max_clients` connections.
     pub fn new(socket: S, keypair: Keypair, max_clients: usize) -> Self {
         Self {
             socket,
@@ -296,26 +313,32 @@ impl<S: Socket> ServerEndpoint<S> {
         self.socket.send_to(&out, addr, now);
     }
 
+    /// Underlying socket (e.g. to change the simulated conditions).
     pub fn socket_mut(&mut self) -> &mut S {
         &mut self.socket
     }
 
+    /// Local address of the socket.
     pub fn local_addr(&self) -> SocketAddr {
         self.socket.local_addr()
     }
 
+    /// Public static key of the server.
     pub fn public_key(&self) -> &[u8] {
         &self.keypair.public
     }
 
+    /// Number of connected clients.
     pub fn client_count(&self) -> usize {
         self.conns.len()
     }
 
+    /// Address of the client with connection id `id`.
     pub fn addr(&self, id: u32) -> Option<SocketAddr> {
         self.by_id.get(&id).copied()
     }
 
+    /// Connection measurements of the client with connection id `id`.
     pub fn stats(&self, id: u32) -> Option<Stats> {
         Some(self.conns.get(self.by_id.get(&id)?)?.link.session.stats)
     }
@@ -549,12 +572,17 @@ impl<S: Socket> ServerEndpoint<S> {
 pub enum ClientEvent {
     /// Handshake done. Store `server_key` for TOFU (E-062).
     Connected {
+        /// Public static key of the server.
         server_key: Vec<u8>,
     },
+    /// A message from the server.
     Message {
+        /// Whether it arrived over the reliable channel.
         reliable: bool,
+        /// Payload.
         data: Vec<u8>,
     },
+    /// The connection ended.
     Disconnected(DisconnectReason),
 }
 
@@ -595,6 +623,7 @@ impl<S: Socket> std::fmt::Debug for ClientEndpoint<S> {
 }
 
 impl<S: Socket> ClientEndpoint<S> {
+    /// Starts connecting to `server`; `expected_key` is the stored server key (TOFU otherwise).
     pub fn connect(
         socket: S,
         server: SocketAddr,
@@ -612,14 +641,17 @@ impl<S: Socket> ClientEndpoint<S> {
         }
     }
 
+    /// Underlying socket (e.g. to change the simulated conditions).
     pub fn socket_mut(&mut self) -> &mut S {
         &mut self.socket
     }
 
+    /// Whether the handshake is done and the connection is open.
     pub fn is_connected(&self) -> bool {
         matches!(self.state, ClientState::Connected(_))
     }
 
+    /// Connection measurements, once connected.
     pub fn stats(&self) -> Option<Stats> {
         match &self.state {
             ClientState::Connected(l) => Some(l.session.stats),
@@ -627,6 +659,7 @@ impl<S: Socket> ClientEndpoint<S> {
         }
     }
 
+    /// Queues `data` for the server; ignored while not connected.
     pub fn send(&mut self, data: &[u8], reliable: bool) {
         if let ClientState::Connected(link) = &mut self.state {
             let s = &mut link.session;

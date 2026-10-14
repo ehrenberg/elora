@@ -12,9 +12,13 @@ use std::time::{Duration, Instant};
 /// Largest datagram buffer.
 pub const MAX_DATAGRAM: usize = 1500;
 
+/// Datagram socket with explicit time (real UDP or in-memory).
 pub trait Socket {
+    /// Sends one datagram to `addr` (may be delayed or dropped by the simulator).
     fn send_to(&mut self, data: &[u8], addr: SocketAddr, now: Instant);
+    /// Receives the next datagram into `buf`: its length and sender, if any.
     fn recv_from(&mut self, buf: &mut [u8], now: Instant) -> Option<(usize, SocketAddr)>;
+    /// Local address of the socket.
     fn local_addr(&self) -> SocketAddr;
 }
 
@@ -32,6 +36,7 @@ pub struct Conditions {
 }
 
 impl Conditions {
+    /// Whether no delay, loss or duplication is simulated.
     pub fn is_ideal(&self) -> bool {
         self.latency.is_zero() && self.jitter.is_zero() && self.loss <= 0.0 && self.duplicate <= 0.0
     }
@@ -40,12 +45,14 @@ impl Conditions {
 /// Delays and drops packets according to [`Conditions`].
 #[derive(Debug)]
 pub struct Conditioner {
+    /// Link properties applied to outgoing packets.
     pub conditions: Conditions,
     queue: Vec<(Instant, Vec<u8>, SocketAddr)>,
     rng: u64,
 }
 
 impl Conditioner {
+    /// New conditioner; `seed` initialises the random generator.
     pub fn new(conditions: Conditions, seed: u64) -> Self {
         Self {
             conditions,
@@ -61,6 +68,7 @@ impl Conditioner {
         (self.rng >> 40) as f32 / (1u64 << 24) as f32
     }
 
+    /// Queues a packet (or drops/duplicates it) according to the conditions.
     pub fn push(&mut self, data: &[u8], addr: SocketAddr, now: Instant) {
         let c = self.conditions;
         if self.rand() < c.loss {
@@ -92,6 +100,7 @@ impl Conditioner {
 pub struct UdpSocket {
     v4: Option<std::net::UdpSocket>,
     v6: Option<std::net::UdpSocket>,
+    /// Simulator for outgoing packets.
     pub conditioner: Conditioner,
 }
 
@@ -278,6 +287,7 @@ pub struct MemNetwork {
 }
 
 impl MemNetwork {
+    /// New empty network.
     pub fn new() -> Self {
         Self::default()
     }
@@ -296,10 +306,12 @@ impl MemNetwork {
     }
 }
 
+/// Socket in a [`MemNetwork`].
 #[derive(Debug)]
 pub struct MemSocket {
     addr: SocketAddr,
     net: MemNetwork,
+    /// Simulator for outgoing packets.
     pub conditioner: Conditioner,
 }
 

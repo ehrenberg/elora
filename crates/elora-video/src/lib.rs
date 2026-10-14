@@ -2,8 +2,10 @@
 //!
 //! [`Video`] reads an IVF file (the simple container ffmpeg writes with `-f ivf`) and decodes
 //! its AV1 frames one after another into RGBA images. Decoding uses `rav1d`, whose API is the
-//! C API of dav1d; the small wrapper in [`av1`] is the **only** place in the workspace where
+//! C API of dav1d; the small wrapper in `av1` is the **only** place in the workspace where
 //! `unsafe` is allowed (E-356).
+
+#![warn(missing_docs)]
 
 mod av1;
 mod ivf;
@@ -14,18 +16,24 @@ pub use ivf::{Header, IvfError};
 /// One decoded image: `width × height` pixels, RGBA, row after row.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Frame {
+    /// Width in pixels.
     pub width: u32,
+    /// Height in pixels.
     pub height: u32,
+    /// Pixels, 4 bytes each.
     pub rgba: Vec<u8>,
 }
 
 /// Something went wrong while reading or decoding the video.
 #[derive(Debug, thiserror::Error)]
 pub enum VideoError {
+    /// Invalid IVF container.
     #[error(transparent)]
     Ivf(#[from] IvfError),
+    /// The AV1 decoder reported an error.
     #[error("AV1 decoder: {0}")]
     Decoder(String),
+    /// The picture format is not supported.
     #[error("unsupported picture: {0}")]
     Unsupported(String),
 }
@@ -60,6 +68,7 @@ impl Video {
         })
     }
 
+    /// IVF file header.
     pub fn header(&self) -> &Header {
         &self.header
     }

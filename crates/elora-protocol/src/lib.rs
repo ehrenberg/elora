@@ -3,6 +3,8 @@
 //! Knows no sockets – transport, encryption and reliability live in
 //! `elora-net`.
 
+#![warn(missing_docs)]
+
 pub mod codec;
 pub mod huffman;
 mod huffman_table;
