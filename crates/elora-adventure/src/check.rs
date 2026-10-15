@@ -342,6 +342,16 @@ pub fn map_objects(c: &Content, map: &elora_map::Map) -> Vec<String> {
             K::Door { open_if, .. } => push(cond(c, open_if, &at)),
             K::Collectible { item: i } => push(item(i)),
             K::HealPlant { heal } if *heal <= 0 => push(Err(format!("{at}: does not heal"))),
+            // note stones (M2.5.3): the pitch comes from the id
+            K::Zone { .. }
+                if o.id.starts_with(elora_map::islands::NOTE)
+                    && !o.id.contains(elora_map::islands::BRIDGE)
+                    && elora_sim::notes::pitch(&o.id).is_none() =>
+            {
+                push(Err(format!(
+                    "{at}: note stone without pitch (`note-<c d e f g a b>[2]…`)"
+                )));
+            }
             _ => {}
         }
     }

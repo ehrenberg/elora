@@ -136,6 +136,7 @@ Only in the adventure and in the spring fight (E-223). Starting values for playt
 | A-47 | Updraft lift while gliding | **0.85** units/tick² (playtest, previously 1.1) | Beats gravity (0.5): gliding Elora rises | R2-M2.5, E-364 |
 | A-48 | Updraft: fastest rise while gliding | **5** units/tick (playtest, previously 7) | Without gliding half of it | R2-M2.5 |
 | A-49 | Updraft lift without gliding | **0.62** units/tick² (playtest, previously 0.25 = only braking) | Elora rises slowly without gliding too | R2-M2.5 |
+| A-50 | Note stone and star bridges stay lit | **6000 ms** | After touching the stone; stone and bridges flicker in the last 1.5 s | R2-M2.5, E-364 |
 
 ## F. Rules from follow-up decisions
 

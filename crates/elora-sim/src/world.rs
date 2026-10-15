@@ -92,13 +92,17 @@ pub struct World {
     pub lights: Vec<(Vec2, f32)>,
     /// Floating star islands (R2-M2.5, M2.5.2); set by the session via [`World::set_islands`].
     pub islands: Vec<crate::Island>,
+    /// Note stones (R2-M2.5, M2.5.3); set via [`World::set_notes`].
+    pub note_stones: Vec<crate::NoteStone>,
+    /// Star bridges lit by the note stones.
+    pub bridges: Vec<crate::StarBridge>,
 }
 
 impl World {
-    /// Is `pos` inside one of the light sources of the map? (M2.5.1; always `false` on maps
-    /// without lights.)
+    /// Is `pos` inside one of the light sources of the map, near a lit note stone or an active
+    /// star bridge? (M2.5.1, M2.5.3; always `false` on maps without lights.)
     pub fn is_lit(&self, pos: Vec2) -> bool {
-        self.lights.iter().any(|&(c, r)| c.distance(pos) <= r)
+        self.lights.iter().any(|&(c, r)| c.distance(pos) <= r) || self.note_light(pos)
     }
 
     /// Empty world at tick 0 on the given map, with friendly fire and pickups on.
@@ -131,6 +135,8 @@ impl World {
             weather: None,
             lights: Vec::new(),
             islands: Vec::new(),
+            note_stones: Vec::new(),
+            bridges: Vec::new(),
             lightning: crate::weather::Lightning::default(),
         }
     }
@@ -257,6 +263,7 @@ impl World {
         self.update_hook_wilt();
         self.tick_weather();
         self.tick_terrain();
+        self.tick_notes();
         self.tick_islands();
         self.tick_characters();
         self.tick_flags_physics();

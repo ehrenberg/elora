@@ -17,6 +17,7 @@ pub mod event;
 pub mod input;
 pub mod island;
 pub mod math;
+pub mod notes;
 pub mod player;
 #[cfg(feature = "serde")]
 pub mod replay;
@@ -35,6 +36,7 @@ pub use event::{CreatureAct, DeathCause, Event, PickupKind};
 pub use input::PlayerInput;
 pub use island::Island;
 pub use math::Vec2;
+pub use notes::{NoteStone, StarBridge};
 pub use player::{Character, Controller, Player, Team};
 pub use tuning::Tuning;
 pub use weapon::Weapon;

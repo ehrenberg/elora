@@ -397,6 +397,7 @@ fn get_pickup(r: &mut Reader<'_>) -> DecodeResult<PickupKind> {
 /// events (abilities, terrain, creatures, loot, weather) only exist locally; abilities
 /// only exist online in the source battle (E-223). Those write nothing and return
 /// `false`; all others are encoded and return `true`.
+#[allow(clippy::too_many_lines)] // one arm per event, deliberately without a wildcard
 fn put_event(w: &mut Writer, e: &Event) -> bool {
     match *e {
         Event::Fire {
@@ -489,6 +490,7 @@ fn put_event(w: &mut Writer, e: &Event) -> bool {
         | Event::TileBroken { .. }
         | Event::TileSet { .. }
         | Event::IceCrack { .. }
+        | Event::Note { .. }
         | Event::CreatureHit { .. }
         | Event::CreatureDeath { .. }
         | Event::CreatureFire { .. }

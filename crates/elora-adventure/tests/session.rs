@@ -718,3 +718,32 @@ fn island_and_updraft_zones_become_part_of_the_world() {
     assert_eq!(w.islands[0].end, spawn + Vec2::new(400.0, -64.0));
     assert_eq!(w.collision.movers.updrafts.len(), 1);
 }
+
+/// The session remembers the notes Elora plays (R2-M2.5, M2.5.3) for Luma's song.
+#[test]
+fn played_notes_are_remembered_for_lumas_song() {
+    let map = load("meadow-1");
+    let mut s = Session::new_game(Content::builtin());
+    let mut w = s.enter("meadow-1", map.clone(), "west", &Tuning::default());
+    for note in [0, 4, 7, 4, 12] {
+        w.events.push(elora_sim::Event::Note {
+            player: s.player,
+            note,
+            pos: Vec2::ZERO,
+        });
+        s.tick(&mut w, false);
+        w.events.clear();
+    }
+    assert!(s.played(&[7, 4, 12]));
+    assert!(!s.played(&[0, 4, 7]), "only the last notes count");
+    // another figure's notes do not count, a new map starts afresh
+    w.events.push(elora_sim::Event::Note {
+        player: s.player + 1,
+        note: 2,
+        pos: Vec2::ZERO,
+    });
+    s.tick(&mut w, false);
+    assert!(s.played(&[4, 12]));
+    s.enter("meadow-1", map, "west", &Tuning::default());
+    assert!(s.notes.is_empty());
+}

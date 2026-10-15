@@ -134,13 +134,15 @@ pub enum Sound {
     Freeze,
     /// Kristella's frost breath: the wave begins.
     FrostWave,
+    /// A note stone sounds (R2-M2.5, M2.5.3), pitched to its note; placeholder until M2.5.9.
+    NoteStone,
     /// A chest opens (playtest: chests need feedback).
     ChestOpen,
 }
 
 impl Sound {
     /// All sounds in declaration order.
-    pub const ALL: [Self; 64] = [
+    pub const ALL: [Self; 65] = [
         Self::HammerFire,
         Self::HammerHit,
         Self::GrenadeFire,
@@ -204,6 +206,7 @@ impl Sound {
         Self::BatScreech,
         Self::Freeze,
         Self::FrostWave,
+        Self::NoteStone,
         Self::ChestOpen,
     ];
 
@@ -273,6 +276,7 @@ impl Sound {
             Self::BatScreech => "bat_screech",
             Self::Freeze => "freeze",
             Self::FrostWave => "frost_wave",
+            Self::NoteStone => "note_stone",
             Self::ChestOpen => "chest_open",
         }
     }
@@ -333,6 +337,7 @@ pub struct Listener {
 const PAIN_LONG_FROM: i32 = 3;
 
 /// Sounds for a simulation event; `pos_of` returns the position of a character.
+#[allow(clippy::too_many_lines)] // one arm per event
 pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>) -> Vec<Cue> {
     let at_player = |sound, player| pos_of(player).map(|p| Cue::at(sound, p));
     match *e {
@@ -394,6 +399,10 @@ pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>)
         Event::FlagReturn { .. } => vec![Cue::global(Sound::FlagReturn)],
         Event::FlagCapture { .. } => vec![Cue::global(Sound::FlagCapture)],
         Event::TileBroken { .. } | Event::TileSet { .. } => Vec::new(),
+        // note stone (M2.5.3): a bell, pitched to its note
+        Event::Note { note, pos, .. } => {
+            vec![Cue::at(Sound::NoteStone, pos).pitched(2f32.powf(f32::from(note) / 12.0))]
+        }
         // thin ice (R2-M2.4): cracks, breaks (own sounds follow with M2.4.8)
         Event::IceCrack { tx, ty, broken } => {
             let pos = Vec2::new(

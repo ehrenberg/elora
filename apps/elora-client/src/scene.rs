@@ -127,8 +127,31 @@ pub struct Scene {
     pub islands: Vec<(Vec2, Vec2, bool)>,
     /// Updrafts: top-left corner and size.
     pub updrafts: Vec<(Vec2, Vec2)>,
+    /// Note stones (M2.5.3): top-left corner, size and light (0..1).
+    pub note_stones: Vec<(Vec2, Vec2, f32)>,
+    /// Star bridges: top-left corner, size and light (0 = off).
+    pub bridges: Vec<(Vec2, Vec2, f32)>,
     /// Camera centre.
     pub camera: Vec2,
+}
+
+/// Last ticks of a note light: the stone and its bridges flicker as a warning (M2.5.3).
+const LIGHT_WARN_TICKS: u64 = 75;
+
+/// Light of a note stone or star bridge lit from `since` until `until`: fades in briefly,
+/// flickers in the last [`LIGHT_WARN_TICKS`], 0 when off.
+fn fading_light(tick: u64, since: u64, until: u64) -> f32 {
+    if tick >= until {
+        return 0.0;
+    }
+    let fade_in = ((tick - since.min(tick)) as f32 / 8.0).min(1.0);
+    let left = until - tick;
+    let flicker = if left < LIGHT_WARN_TICKS && (left / 5) % 2 == 1 {
+        0.35
+    } else {
+        1.0
+    };
+    fade_in.max(0.2) * flicker
 }
 
 impl Scene {
@@ -246,6 +269,17 @@ impl Scene {
             .map(|i| (i.prev.lerp(i.pos, alpha), i.size, i.sinks))
             .collect();
         self.updrafts.clone_from(&world.collision.movers.updrafts);
+        let tick = world.tick;
+        self.note_stones = world
+            .note_stones
+            .iter()
+            .map(|s| (s.at, s.size, fading_light(tick, 0, s.lit_until)))
+            .collect();
+        self.bridges = world
+            .bridges
+            .iter()
+            .map(|b| (b.at, b.size, fading_light(tick, b.since, b.until)))
+            .collect();
     }
 
     pub fn add_pickups(&mut self, world: &World) {

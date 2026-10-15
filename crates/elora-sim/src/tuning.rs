@@ -216,9 +216,12 @@ pub struct Tuning {
     /// A-49: updraft lifts a character that does not glide (units/tick², rises at most half as
     /// fast as A-48)
     pub updraft_push: f32,
+    /// A-50: a touched note stone and its star bridges stay lit this long (ms, R2-M2.5)
+    pub note_light_time: u32,
 }
 
 impl Default for Tuning {
+    #[allow(clippy::too_many_lines)] // one line per value
     fn default() -> Self {
         Self {
             ground_control_speed: 10.5,
@@ -319,6 +322,7 @@ impl Default for Tuning {
             updraft_lift: 0.85,
             updraft_rise_speed: 5.0,
             updraft_push: 0.62,
+            note_light_time: 6000,
         }
     }
 }

@@ -57,6 +57,13 @@ fn islands(batch: &mut ShapeBatch, scene: &Scene, art: &crate::map_art::MapArt, 
     for &(min, size, sinks) in &scene.islands {
         crate::map_art::draw_island(batch, art, min, size, sinks);
     }
+    // note stones and their star bridges (M2.5.3)
+    for &(min, size, light) in &scene.bridges {
+        crate::map_art::draw_star_bridge(batch, min, size, light, time);
+    }
+    for &(min, size, light) in &scene.note_stones {
+        crate::map_art::draw_note_stone(batch, art, min, size, light);
+    }
 }
 
 pub fn scene(
@@ -470,12 +477,13 @@ mod tests {
         )
         .unwrap();
     }
-    /// Small test map with star islands and an updraft over a spike pit (M2.5.2), for trying
-    /// them in the editor: `cargo test -p elora-client --bin elora islands_demo_map -- --ignored`
-    /// writes `target/islands-demo.emap`.
+    /// Small test map of the Sternschlucht mechanics over a spike pit: star islands, an updraft
+    /// (M2.5.2), note stones and a star bridge (M2.5.3). For trying them out:
+    /// `cargo test -p elora-client --bin elora gorge_demo_map -- --ignored` writes
+    /// `target/gorge-demo.emap`.
     #[test]
     #[ignore = "only writes a file for trying it out"]
-    fn islands_demo_map() {
+    fn gorge_demo_map() {
         let (w, h) = (64, 30);
         let rows: Vec<String> = (0..h)
             .map(|y| {
@@ -490,7 +498,7 @@ mod tests {
             })
             .collect();
         let refs: Vec<&str> = rows.iter().map(String::as_str).collect();
-        let mut map = elora_map::Map::from_rows("islands-demo", &refs).unwrap();
+        let mut map = elora_map::Map::from_rows("gorge-demo", &refs).unwrap();
         let ts = 32.0;
         let zone = |id: &str, x: f32, y: f32, w: f32, h: f32| elora_map::Object {
             id: id.into(),
@@ -505,10 +513,14 @@ mod tests {
             zone("island-drift-to", 29.0, 21.0, 5.0, 1.0),
             zone("island-sink", 36.0, 22.0, 4.0, 1.0),
             zone("updraft-1", 43.0, 8.0, 4.0, 19.0),
+            zone("note-e-1", 8.0, 20.0, 2.0, 2.0),
+            zone("note-e-1-bridge", 12.0, 25.0, 40.0, 0.5),
+            zone("note-g-1", 56.0, 20.0, 2.0, 2.0),
+            zone("note-c2-1", 58.0, 10.0, 2.0, 2.0),
         ];
         map.save(std::path::Path::new(concat!(
             env!("CARGO_MANIFEST_DIR"),
-            "/../../target/islands-demo.emap"
+            "/../../target/gorge-demo.emap"
         )))
         .unwrap();
     }
@@ -548,6 +560,23 @@ mod tests {
                 Color::hex(0xff0000),
             );
         }
+        // note stones dark, lit and flickering, a star bridge
+        for (x, light) in [(80.0, 0.0), (180.0, 1.0), (280.0, 0.35)] {
+            crate::map_art::draw_note_stone(
+                &mut batch,
+                &art,
+                Vec2::new(x, 400.0),
+                Vec2::new(64.0, 64.0),
+                light,
+            );
+        }
+        crate::map_art::draw_star_bridge(
+            &mut batch,
+            Vec2::new(380.0, 440.0),
+            Vec2::new(400.0, 16.0),
+            1.0,
+            0.3,
+        );
         let svg = batch.debug_svg(Vec2::ZERO, Vec2::new(1200.0, 500.0), BACKGROUND);
         std::fs::write(
             concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/islands.svg"),

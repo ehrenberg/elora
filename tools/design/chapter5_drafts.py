@@ -333,6 +333,12 @@ def island_tile(sinking=False):
 
 
 def export_tiles():
+    with open('assets/map/tiles/note-stone.svg', 'w') as f:
+        f.write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="-50 -90 100 92">\n'
+                '  <!-- Note stone (R2-M2.5, M2.5.3, from tools/design/chapter5_drafts.py): dark and lit '
+                '(the glow is drawn by the game). Origin bottom centre. -->\n'
+                f'  <g id="dark">{note_stone(False)}</g>\n'
+                f'  <g id="lit">{note_stone(True).replace(glow_circle(0, -40, 46, STARLIGHT, 0.35), "")}</g>\n</svg>\n')
     with open('assets/map/tiles/star-island.svg', 'w') as f:
         f.write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="-96 -10 192 104">\n'
                 '  <!-- Star island (R2-M2.5, M2.5.2, from tools/design/chapter5_drafts.py): drifting and '

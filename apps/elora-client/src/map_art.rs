@@ -84,6 +84,8 @@ struct Specials {
     hook_point: [Mesh; 2],
     /// Star island drifting and sinking (R2-M2.5, M2.5.2).
     island: [Mesh; 2],
+    /// Note stone dark and lit (M2.5.3).
+    note_stone: [Mesh; 2],
 }
 
 /// All built-in map graphics.
@@ -177,6 +179,10 @@ impl MapArt {
             include_bytes!("../../../assets/map/tiles/star-island.svg"),
             "star-island",
         );
+        let note = svg(
+            include_bytes!("../../../assets/map/tiles/note-stone.svg"),
+            "note-stone",
+        );
         let specials = Specials {
             spikes: part(&death, "up", &file("death")),
             planks: ["mid", "left", "right", "single"].map(|p| part(&plank, p, &file("platform"))),
@@ -186,6 +192,7 @@ impl MapArt {
             belt_arrow: part(&belt, "arrow", &file("conveyor")),
             hook_point: ["fresh", "wilted"].map(|p| part(&hook, p, &file("hookpoint"))),
             island: ["drift", "sink"].map(|p| part(&island, p, &file("star-island"))),
+            note_stone: ["dark", "lit"].map(|p| part(&note, p, &file("note-stone"))),
         };
         let builtin = DECOR_FILES
             .iter()
@@ -673,6 +680,77 @@ pub fn draw_island(batch: &mut ShapeBatch, art: &MapArt, min: Vec2, size: Vec2, 
         &Tint::default(),
     );
 }
+
+/// Size of a note stone in the world (its graphic is about 60 × 84).
+const NOTE_STONE_SCALE: f32 = 0.8;
+
+/// Note stone (M2.5.3) standing at the bottom centre of its touch area; `light` 0..1 (lit,
+/// fading, flickering before it goes out).
+pub fn draw_note_stone(batch: &mut ShapeBatch, art: &MapArt, min: Vec2, size: Vec2, light: f32) {
+    let foot = min + Vec2::new(size.x / 2.0, size.y);
+    if light > 0.0 {
+        let centre = foot - Vec2::new(0.0, 40.0 * NOTE_STONE_SCALE);
+        let mut glow = STARLIGHT;
+        glow.0[3] = 0.3 * light;
+        batch.fill_circle(centre, 46.0 * NOTE_STONE_SCALE, glow);
+        glow.0[3] = 0.25 * light;
+        batch.fill_circle(centre, 30.0 * NOTE_STONE_SCALE, glow);
+    }
+    let t = Affine::translate(foot).then(Affine::scale(NOTE_STONE_SCALE, NOTE_STONE_SCALE));
+    let mesh = &art.specials.note_stone[usize::from(light > 0.5)];
+    batch.draw_mesh(mesh, &t, &Tint::default());
+}
+
+/// Star bridge (M2.5.3): glowing translucent plank with sparkles along the top edge of its
+/// area; `light` 0..1 (fading in, flickering before it goes out).
+pub fn draw_star_bridge(batch: &mut ShapeBatch, min: Vec2, size: Vec2, light: f32, time: f32) {
+    if light <= 0.0 {
+        return;
+    }
+    let max = Vec2::new(min.x + size.x, min.y + 14.0);
+    let mut glow = STARLIGHT;
+    glow.0[3] = 0.25 * light;
+    batch.fill_rounded_rect(
+        min - Vec2::new(8.0, 10.0),
+        max + Vec2::new(8.0, 12.0),
+        16.0,
+        glow,
+    );
+    let mut edge = OUTLINE;
+    edge.0[3] = 0.8 * light;
+    batch.fill_rounded_rect(
+        min - Vec2::new(1.5, 1.5),
+        max + Vec2::new(1.5, 1.5),
+        8.5,
+        edge,
+    );
+    let mut plank = STARLIGHT;
+    plank.0[3] = 0.85 * light;
+    batch.fill_rounded_rect(min, max, 7.0, plank);
+    let mut x = min.x + 20.0;
+    while x < max.x - 10.0 {
+        let twinkle = 0.6 + 0.4 * (time * 3.0 + x * 0.05).sin();
+        let star = Color([1.0, 1.0, 1.0, light * twinkle]);
+        let r = 6.5 * twinkle;
+        let c = Vec2::new(x, min.y + 7.0);
+        batch.fill_polygon(
+            &[
+                c + Vec2::new(0.0, -r),
+                c + Vec2::new(r * 0.3, -r * 0.3),
+                c + Vec2::new(r, 0.0),
+                c + Vec2::new(r * 0.3, r * 0.3),
+                c + Vec2::new(0.0, r),
+                c + Vec2::new(-r * 0.3, r * 0.3),
+                c + Vec2::new(-r, 0.0),
+                c + Vec2::new(-r * 0.3, -r * 0.3),
+            ],
+            star,
+        );
+        x += 40.0;
+    }
+}
+
+const STARLIGHT: Color = Color::hex(0xfff3b0);
 
 /// Updraft (M2.5.2): a light violet column with arcs drifting upwards.
 pub fn draw_updraft(batch: &mut ShapeBatch, min: Vec2, size: Vec2, time: f32) {

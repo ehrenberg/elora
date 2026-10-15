@@ -124,7 +124,7 @@ impl crate::World {
     /// Islands before the characters (M2.5.2): move along the path, sink or rise, carry
     /// whoever stands on them.
     pub(crate) fn tick_islands(&mut self) {
-        if self.islands.is_empty() {
+        if self.islands.is_empty() && self.bridges.is_empty() {
             return;
         }
         let t = &self.tuning;
@@ -201,7 +201,24 @@ impl crate::World {
                 }
             }
         }
-        self.collision.movers.islands = self.islands.iter().map(|i| (i.pos, i.size)).collect();
+        self.update_movers();
+    }
+
+    /// Collision boxes of the islands and the lit star bridges.
+    fn update_movers(&mut self) {
+        // lit star bridges carry like fixed islands (M2.5.3)
+        let tick = self.tick;
+        self.collision.movers.islands = self
+            .islands
+            .iter()
+            .map(|i| (i.pos, i.size))
+            .chain(
+                self.bridges
+                    .iter()
+                    .filter(|b| b.active(tick))
+                    .map(|b| (b.at, b.size)),
+            )
+            .collect();
     }
 
     /// Put islands and updrafts into the world (the session, on entering a map).

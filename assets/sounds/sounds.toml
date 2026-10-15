@@ -442,3 +442,25 @@ attack = 0.15
 sustain = 0.3
 decay = 0.5
 volume = 0.35
+
+[note_stone]           # note stone: soft bell (c), pitched to the note of the stone (R2-M2.5)
+volume = 0.45
+[[note_stone.layer]]
+wave = "sine"
+freq = 523
+attack = 0.005
+sustain = 0.05
+decay = 1.1
+[[note_stone.layer]]
+wave = "sine"
+freq = 1046
+attack = 0.005
+sustain = 0.02
+decay = 0.5
+volume = 0.35
+[[note_stone.layer]]
+wave = "triangle"
+freq = 1569
+sustain = 0.01
+decay = 0.25
+volume = 0.15

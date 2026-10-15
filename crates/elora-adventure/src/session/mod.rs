@@ -128,6 +128,9 @@ pub struct NpcView {
     pub facing: i8,
 }
 
+/// How many of the last played notes the session keeps (M2.5.3).
+pub const NOTES_KEPT: usize = 16;
+
 /// The running adventure.
 #[derive(Debug, Clone)]
 #[allow(clippy::struct_excessive_bools)] // independent states of the session
@@ -142,6 +145,9 @@ pub struct Session {
     pub map: Map,
     /// Hook tip in the last tick (pull hook checks the whole flight path).
     last_hook: Option<Vec2>,
+    /// The last notes Elora played on note stones on this map, oldest first (M2.5.3; at most
+    /// [`NOTES_KEPT`]).
+    pub notes: Vec<u8>,
     /// Elora has been standing in glow mushrooms for this many ticks (colourful daze after 1.2 s).
     in_mushrooms: u32,
     /// Heat bar 0..1 (E-320); only in hot areas.
@@ -238,6 +244,7 @@ impl Session {
             cold: 0.0,
             frozen: false,
             last_hook: None,
+            notes: Vec::new(),
             pending: Vec::new(),
             dead: false,
         }
@@ -284,6 +291,7 @@ impl Session {
         adapt_decor(&mut map, &self.save);
         self.base_weather = map.weather;
         self.avalanches = crate::avalanche::Avalanches::default();
+        self.notes.clear();
         self.gloomy = c.area_of(name).is_some_and(|a| self.gloomy(a));
         map.weather = self.pick_weather(name);
         let tuning = self.save.tuning(c, base);
@@ -493,6 +501,12 @@ impl Session {
         out.extend(n.into_iter().map(SessionEvent::Notice));
     }
 
+    /// Did Elora just play `tune` on the note stones (the last notes, in this order)? For
+    /// Luma's song (M2.5.3, content in M2.5.6).
+    pub fn played(&self, tune: &[u8]) -> bool {
+        !tune.is_empty() && self.notes.ends_with(tune)
+    }
+
     /// After every world tick; `interact` = action key pressed in this tick.
     pub fn tick(&mut self, world: &mut World, interact: bool) -> Vec<SessionEvent> {
         let mut out = std::mem::take(&mut self.pending);
@@ -506,6 +520,17 @@ impl Session {
             self.save.play_time_secs += 1;
         }
         let me = self.player;
+        // note stones (M2.5.3): remember the tune for Luma's song
+        for e in &world.events {
+            if let elora_sim::Event::Note { player, note, .. } = *e
+                && player == me
+            {
+                self.notes.push(note);
+                if self.notes.len() > NOTES_KEPT {
+                    self.notes.remove(0);
+                }
+            }
+        }
         if self.world_events(world, &mut out) {
             return out;
         }

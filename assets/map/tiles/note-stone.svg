@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-50 -90 100 92">
+  <!-- Note stone (R2-M2.5, M2.5.3, from tools/design/chapter5_drafts.py): dark and lit (the glow is drawn by the game). Origin bottom centre. -->
+  <g id="dark"><path d="M -26,0 L -30,-60 Q 0,-84 30,-60 L 26,0 Z" fill="#77728f" stroke="#2b2b2b" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><g transform="translate(-2,-36) scale(1.4)"><ellipse cx="0" cy="0" rx="7" ry="5.5" fill="#4f4a68" stroke="#2b2b2b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" transform="rotate(-20)"/><path d="M 6,-2 V -24 Q 14,-20 16,-12" fill="none" stroke="#2b2b2b" stroke-width="2.5"/></g></g>
+  <g id="lit"><path d="M -26,0 L -30,-60 Q 0,-84 30,-60 L 26,0 Z" fill="#9893b0" stroke="#2b2b2b" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><g transform="translate(-2,-36) scale(1.4)"><ellipse cx="0" cy="0" rx="7" ry="5.5" fill="#fff3b0" stroke="#2b2b2b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" transform="rotate(-20)"/><path d="M 6,-2 V -24 Q 14,-20 16,-12" fill="none" stroke="#2b2b2b" stroke-width="2.5"/></g></g>
+</svg>

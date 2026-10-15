@@ -9,17 +9,34 @@ use crate::{App, draw, figure, skins};
 /// Faint glow of the star islands in the dark (M2.5.2).
 const ISLAND_GLOW: f32 = 0.55;
 
-/// Star islands glow faintly from their star crystals so the way stays visible in the dark
-/// (M2.5.2, drawing only): centre, radius and intensity.
+/// Light in the dark besides the decoration (drawing only): star islands glow faintly from
+/// their star crystals (M2.5.2), lit note stones and star bridges shine (M2.5.3). Centre, radius
+/// and intensity.
 fn glows(world: &elora_sim::World) -> Vec<(elora_sim::Vec2, f32, f32)> {
-    world
+    let mut out: Vec<_> = world
         .islands
         .iter()
         .map(|island| {
             let at = crate::map_art::island_crystal(island.pos, island.size);
             (at, island.size.x * 0.5 + 40.0, ISLAND_GLOW)
         })
-        .collect()
+        .collect();
+    let tick = world.tick;
+    for stone in world.note_stones.iter().filter(|s| s.lit(tick)) {
+        out.push((stone.centre(), elora_sim::notes::STONE_LIGHT, 1.0));
+    }
+    for bridge in world.bridges.iter().filter(|b| b.active(tick)) {
+        let mut x = bridge.at.x;
+        while x <= bridge.at.x + bridge.size.x {
+            out.push((
+                elora_sim::Vec2::new(x, bridge.at.y),
+                elora_sim::notes::BRIDGE_LIGHT * 1.4,
+                0.8,
+            ));
+            x += elora_sim::notes::BRIDGE_LIGHT;
+        }
+    }
+    out
 }
 
 /// Saturation of the adventure world by number of freed springs (E-328): pale, then vivid.

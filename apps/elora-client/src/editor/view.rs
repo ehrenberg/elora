@@ -153,8 +153,8 @@ pub fn draw(
     }
 }
 
-/// Star islands and updrafts of the zones (M2.5.2): the island at its place, its path as a
-/// line to the end, where its surface is outlined.
+/// Star islands, updrafts, note stones and star bridges of the zones (M2.5.2, M2.5.3): the
+/// island at its place, its path as a line to the end, where its surface is outlined.
 fn islands(
     batch: &mut ShapeBatch,
     map: &elora_map::Map,
@@ -164,6 +164,14 @@ fn islands(
 ) {
     for (at, size) in elora_map::islands::map_updrafts(map) {
         crate::map_art::draw_updraft(batch, at, size, time);
+    }
+    // note stones and (pale) their star bridges (M2.5.3)
+    let (stones, bridges) = elora_map::islands::map_notes(map);
+    for b in bridges {
+        crate::map_art::draw_star_bridge(batch, b.at, b.size, 0.35, time);
+    }
+    for s in stones {
+        crate::map_art::draw_note_stone(batch, art, s.at, s.size, 0.0);
     }
     for i in elora_map::islands::map_islands(map) {
         crate::map_art::draw_island(batch, art, i.start, i.size, i.sinks);
