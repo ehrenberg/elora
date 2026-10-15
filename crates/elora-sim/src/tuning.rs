@@ -213,7 +213,8 @@ pub struct Tuning {
     pub updraft_lift: f32,
     /// A-48: updraft: highest rising speed while gliding (units/tick)
     pub updraft_rise_speed: f32,
-    /// A-49: updraft pushes a character that does not glide (units/tick²)
+    /// A-49: updraft lifts a character that does not glide (units/tick², rises at most half as
+    /// fast as A-48)
     pub updraft_push: f32,
 }
 
@@ -315,9 +316,9 @@ impl Default for Tuning {
             island_sink_speed: 0.8,
             island_rise_speed: 0.5,
             island_sink_depth: 160.0,
-            updraft_lift: 1.1,
-            updraft_rise_speed: 7.0,
-            updraft_push: 0.25,
+            updraft_lift: 0.85,
+            updraft_rise_speed: 5.0,
+            updraft_push: 0.62,
         }
     }
 }

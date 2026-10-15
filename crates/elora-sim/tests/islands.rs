@@ -144,7 +144,11 @@ fn updraft_lifts_gliding_elora() {
 }
 
 #[test]
-fn updraft_only_slows_elora_without_gliding() {
+fn updraft_lifts_elora_without_gliding_too_but_slower() {
     let v = fall_in_updraft(Abilities::NONE);
-    assert!(v > 0.0, "still falls: {v}");
+    let t = Tuning::default();
+    assert!(v < 0.0, "rises without gliding: {v}");
+    assert!(v >= -t.updraft_rise_speed * 0.5 - 0.01, "{v}");
+    let glide = fall_in_updraft(Abilities::NONE.with(Ability::Glide));
+    assert!(v > glide, "{v} vs gliding {glide}");
 }

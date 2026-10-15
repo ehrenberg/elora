@@ -133,9 +133,9 @@ Only in the adventure and in the spring fight (E-223). Starting values for playt
 | A-44 | Sinking island: sinking speed | **0.8** units/tick | While someone stands on it (`sink` in the id) | R2-M2.5 |
 | A-45 | Sinking island: rising speed | **0.5** units/tick | When nobody stands on it any more | R2-M2.5 |
 | A-46 | Sinking island: deepest point | **160** units | Below its path | R2-M2.5 |
-| A-47 | Updraft lift while gliding | **1.1** units/tick² | Beats gravity (0.5): gliding Elora rises | R2-M2.5, E-364 |
-| A-48 | Updraft: fastest rise while gliding | **7** units/tick | | R2-M2.5 |
-| A-49 | Updraft push without gliding | **0.25** units/tick² | Only slows the fall | R2-M2.5 |
+| A-47 | Updraft lift while gliding | **0.85** units/tick² (playtest, previously 1.1) | Beats gravity (0.5): gliding Elora rises | R2-M2.5, E-364 |
+| A-48 | Updraft: fastest rise while gliding | **5** units/tick (playtest, previously 7) | Without gliding half of it | R2-M2.5 |
+| A-49 | Updraft lift without gliding | **0.62** units/tick² (playtest, previously 0.25 = only braking) | Elora rises slowly without gliding too | R2-M2.5 |
 
 ## F. Rules from follow-up decisions
 

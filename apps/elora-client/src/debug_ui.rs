@@ -1237,7 +1237,7 @@ fn islands(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
     );
     slider(
         ui,
-        "Updraft push (no glide)",
+        "Updraft lift (no glide)",
         &mut t.updraft_push,
         0.0..=1.0,
         d.updraft_push,

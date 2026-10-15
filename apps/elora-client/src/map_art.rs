@@ -651,11 +651,21 @@ pub fn draw_hook_point(batch: &mut ShapeBatch, art: &MapArt, min: Vec2, active: 
 /// Width of the star island graphic (units).
 const ISLAND_ART_WIDTH: f32 = 180.0;
 
+/// Vertical scale of the star island graphic for an island of width `w`.
+fn island_scale(w: f32) -> (f32, f32) {
+    let sx = w / ISLAND_ART_WIDTH;
+    (sx, sx.clamp(0.6, 1.3))
+}
+
+/// Where the glowing star crystal hangs below an island (its light, M2.5.2).
+pub fn island_crystal(min: Vec2, size: Vec2) -> Vec2 {
+    min + Vec2::new(size.x / 2.0, 66.0 * island_scale(size.x).1)
+}
+
 /// Star island (M2.5.2): `min` = top-left corner of the island (walkable surface), stretched to
 /// its width; thin islands keep a little depth.
 pub fn draw_island(batch: &mut ShapeBatch, art: &MapArt, min: Vec2, size: Vec2, sinks: bool) {
-    let sx = size.x / ISLAND_ART_WIDTH;
-    let sy = sx.clamp(0.6, 1.3);
+    let (sx, sy) = island_scale(size.x);
     let t = Affine::translate(min + Vec2::new(size.x / 2.0, 0.0)).then(Affine::scale(sx, sy));
     batch.draw_mesh(
         &art.specials.island[usize::from(sinks)],

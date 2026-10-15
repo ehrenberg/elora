@@ -6,35 +6,20 @@ use elora_sim::{Collision, Event};
 
 use crate::{App, draw, figure, skins};
 
-/// Faint glow of the star islands and updrafts in the dark (M2.5.2).
+/// Faint glow of the star islands in the dark (M2.5.2).
 const ISLAND_GLOW: f32 = 0.55;
-const UPDRAFT_GLOW: f32 = 0.4;
 
-/// Star islands and updrafts glow faintly so the way stays visible in the dark (M2.5.2,
-/// drawing only): centre, radius and intensity.
+/// Star islands glow faintly from their star crystals so the way stays visible in the dark
+/// (M2.5.2, drawing only): centre, radius and intensity.
 fn glows(world: &elora_sim::World) -> Vec<(elora_sim::Vec2, f32, f32)> {
-    let mut out: Vec<_> = world
+    world
         .islands
         .iter()
         .map(|island| {
-            let centre = island.pos + elora_sim::Vec2::new(island.size.x / 2.0, island.size.y);
-            (centre, island.size.x * 0.5 + 40.0, ISLAND_GLOW)
+            let at = crate::map_art::island_crystal(island.pos, island.size);
+            (at, island.size.x * 0.5 + 40.0, ISLAND_GLOW)
         })
-        .collect();
-    for &(at, size) in &world.collision.movers.updrafts {
-        // a chain of soft lights up the column
-        let radius = (size.x * 0.7).max(48.0);
-        let mut y = at.y + radius / 2.0;
-        while y < at.y + size.y {
-            out.push((
-                elora_sim::Vec2::new(at.x + size.x / 2.0, y),
-                radius,
-                UPDRAFT_GLOW,
-            ));
-            y += radius;
-        }
-    }
-    out
+        .collect()
 }
 
 /// Saturation of the adventure world by number of freed springs (E-328): pale, then vivid.

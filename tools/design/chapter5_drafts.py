@@ -300,24 +300,41 @@ def star_island(sinking=False):
     return s
 
 
+def crystal(cx, cy, h, w, color=STARLIGHT):
+    """A glowing star crystal pointing down (hangs under the islands)."""
+    return (f'<path d="M {cx - w},{cy} L {cx},{cy - h * 0.25} L {cx + w},{cy} L {cx},{cy + h} Z" '
+            f'fill="{color}" {st(2.5)}/>'
+            f'<path d="M {cx - w * 0.4},{cy + h * 0.05} L {cx},{cy + h * 0.6}" stroke="#ffffff" stroke-width="2" '
+            f'stroke-linecap="round" opacity="0.9"/>')
+
+
 def island_tile(sinking=False):
     """Star island for the game (M2.5.2): origin in the middle of the walkable surface, 180 wide;
-    the client stretches it to the width of the island zone."""
-    s = f'<ellipse cx="0" cy="34" rx="78" ry="30" fill="{GLOW}" opacity="0.22"/>'
-    s += f'<g transform="translate(0,14)">'
-    if sinking:
-        for x in (-30, 0, 30):
-            s += f'<path d="M {x},40 v 18" stroke="{STONE_LIGHT}" stroke-width="4" stroke-linecap="round" opacity="0.7"/>'
+    the client stretches it to the width of the island zone. The light comes from the star
+    crystals that grew into the rock and hang below it; a sinking island has a cracked crystal
+    that only flickers."""
+    core = GOLD if sinking else STARLIGHT
+    s = f'<g transform="translate(0,14)">'
+    # halo around the crystals (the reason for the glow)
+    s += f'<ellipse cx="0" cy="52" rx="56" ry="34" fill="{core}" opacity="{0.16 if sinking else 0.28}"/>'
+    s += f'<ellipse cx="0" cy="56" rx="30" ry="20" fill="{core}" opacity="{0.2 if sinking else 0.35}"/>'
     s += f'<path d="M -90,0 Q -80,-12 -60,-14 L 60,-14 Q 84,-12 90,0 Q 60,30 20,40 Q 0,60 -20,40 Q -60,30 -90,0 Z" fill="{STONE}" {st(4)}/>'
     s += f'<path d="M -86,-6 Q 0,-20 86,-6" fill="none" stroke="#6fbf8a" stroke-width="7" stroke-linecap="round"/>'
-    for (x, y) in ((-40, 18), (10, 30), (40, 10)):
-        s += f'<circle cx="{x}" cy="{y}" r="4" fill="{GLOW}"/>'
+    # crystals hanging below
+    s += crystal(-24, 36, 22, 7, core) + crystal(22, 34, 20, 6, core) + crystal(0, 46, 34, 10, core)
+    # small crystal tips in the rock
+    for (x, y) in ((-52, 14), (48, 12)):
+        s += f'<path d="M {x - 4},{y + 3} L {x},{y - 6} L {x + 4},{y + 3} Z" fill="{core}" {st(1.5)}/>'
+    if sinking:
+        # cracks in the rock and in the big crystal
+        s += f'<path d="M -30,-4 L -24,8 L -32,18 M 34,-2 L 28,10" fill="none" stroke="{OUT}" stroke-width="2.5" stroke-linecap="round"/>'
+        s += f'<path d="M -4,52 L 3,60 L -2,68" fill="none" stroke="{OUT}" stroke-width="2"/>'
     return s + '</g>'
 
 
 def export_tiles():
     with open('assets/map/tiles/star-island.svg', 'w') as f:
-        f.write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="-96 -10 192 92">\n'
+        f.write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="-96 -10 192 104">\n'
                 '  <!-- Star island (R2-M2.5, M2.5.2, from tools/design/chapter5_drafts.py): drifting and '
                 'sinking. Origin in the middle of the walkable surface. -->\n'
                 f'  <g id="drift">{island_tile(False)}</g>\n  <g id="sink">{island_tile(True)}</g>\n</svg>\n')
