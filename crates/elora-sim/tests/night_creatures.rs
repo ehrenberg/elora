@@ -2,7 +2,7 @@
 
 mod support;
 
-use elora_sim::creature::{echo, goblin, moth};
+use elora_sim::creature::{echo, goblin, mirror, moth};
 use elora_sim::{Abilities, Behavior, Event, PlayerInput, Tile, Vec2, World};
 use support::{FLOOR, adventure_arena, creature, idle, input, kind, run, spawn_vulnerable};
 
@@ -11,7 +11,7 @@ const H: usize = 30;
 
 const MOTH: usize = 0;
 const GOBLIN: usize = 1;
-const ECHO: usize = 2;
+const MIRROR: usize = 3;
 
 fn world(edit: impl FnOnce(&mut Vec<Tile>)) -> World {
     let kinds = vec![
@@ -42,13 +42,23 @@ fn world(edit: impl FnOnce(&mut Vec<Tile>)) -> World {
         kind(
             "echo",
             Behavior::Echo {
-                sight: 320.0,
                 delay_ms: 1500,
                 fade_ms: 700,
             },
         )
         .size(28.0, 28.0)
         .touch_damage(1)
+        .build(),
+        kind(
+            "echo_mirror",
+            Behavior::Mirror {
+                sight: 320.0,
+                spawn: "echo".into(),
+                rest_ms: 4000,
+            },
+        )
+        .size(28.0, 28.0)
+        .touch_damage(0)
         .build(),
     ];
     adventure_arena(W, H, kinds, edit)
@@ -189,14 +199,23 @@ fn rolling_goblin_is_dazed_by_a_wall() {
 
 // ---------------------------------------------------------------- Echo
 
+/// The echo sent out by the mirror `mirror_id`.
+fn echo_of(w: &World, mirror_id: u32) -> Option<&elora_sim::Creature> {
+    let m = creature(w, mirror_id);
+    (m.mode == mirror::OUT)
+        .then(|| w.creatures.iter().find(|c| c.id == m.count))
+        .flatten()
+}
+
 #[test]
-fn echo_steps_out_of_its_mirror_and_walks_elora_path_behind_her() {
+fn mirror_sends_an_echo_that_walks_elora_path_behind_her() {
     let mut w = world(|_| {});
     spawn_vulnerable(&mut w, standing(18), Abilities::NONE);
-    let mirror = Vec2::new(10.0 * 32.0, floor_y(28.0));
-    let id = w.add_creature(ECHO, mirror).unwrap();
+    let at = Vec2::new(10.0 * 32.0, floor_y(28.0));
+    let m = w.add_creature(MIRROR, at).unwrap();
     run(&mut w, idle(), 2);
-    assert_eq!(creature(&w, id).mode, echo::FOLLOW, "sees Elora");
+    let id = echo_of(&w, m).expect("an echo steps out").id;
+    assert_eq!(creature(&w, id).mode, echo::FOLLOW);
     // Elora walks right; remember where she was
     let mut path = Vec::new();
     for _ in 0..150 {
@@ -208,30 +227,46 @@ fn echo_steps_out_of_its_mirror_and_walks_elora_path_behind_her() {
     let back = path[path.len() - 76];
     assert!(c.pos.distance(back) < 12.0, "{:?} vs {:?}", c.pos, back);
     assert!(c.pos.x < elora(&w).x - 100.0, "behind her");
-    // weapons pass through
+    // weapons pass through echo and mirror; the mirror stays where it is
     w.hurt_creature(id, 5);
+    w.hurt_creature(m, 5);
     assert!(w.creatures.iter().any(|c| c.id == id));
+    assert_eq!(creature(&w, m).pos, at);
+    assert_eq!(w.creatures.len(), 2, "only one echo at a time");
 }
 
 #[test]
-fn echo_waits_in_the_mirror_and_fades_in_the_light() {
+fn echo_fades_in_the_light_and_the_mirror_sends_a_new_one_later() {
     let mut w = world(|_| {});
     spawn_vulnerable(&mut w, standing(60), Abilities::NONE);
-    let mirror = Vec2::new(10.0 * 32.0, floor_y(28.0));
-    let id = w.add_creature(ECHO, mirror).unwrap();
+    let at = Vec2::new(10.0 * 32.0, floor_y(28.0));
+    let m = w.add_creature(MIRROR, at).unwrap();
     run(&mut w, idle(), 50);
-    assert_eq!(creature(&w, id).mode, echo::MIRROR, "Elora is far away");
+    assert_eq!(creature(&w, m).mode, mirror::READY, "Elora is far away");
     // Elora comes close and stands in a lantern's light: the echo reaches the light and fades
     w.spawn_character(0, standing(16));
     w.lights = vec![(standing(16), 140.0)];
+    run(&mut w, PlayerInput::default(), 2);
+    let id = echo_of(&w, m).unwrap().id;
     let mut ev = Vec::new();
     for _ in 0..200 {
         ev.extend(run(&mut w, PlayerInput::default(), 1));
     }
-    assert!(!w.creatures.iter().any(|c| c.id == id), "gone");
+    assert!(!w.creatures.iter().any(|c| c.id == id), "the echo is gone");
     assert!(
         ev.iter()
             .any(|e| matches!(e, Event::CreatureDeath { id: i, killer: Some(0), .. } if *i == id)),
         "counts as defeated by Elora"
     );
+    assert_eq!(
+        creature(&w, m).mode,
+        mirror::REST,
+        "the mirror stays and rests"
+    );
+    let mut again = false;
+    for _ in 0..260 {
+        run(&mut w, PlayerInput::default(), 1);
+        again |= echo_of(&w, m).is_some_and(|e| e.id != id);
+    }
+    assert!(again, "a new echo after the rest");
 }

@@ -35,9 +35,19 @@ mod tests {
         assert!(c.items.len() >= 10);
         assert_eq!(c.skills.len(), 16, "E-242: 16 nodes");
         assert_eq!(c.upgrades.len(), 9, "3 weapons × 3 levels");
+        // dark mirrors send out existing kinds (R2-M2.5)
+        for k in &c.creatures {
+            if let elora_sim::Behavior::Mirror { spawn, .. } = &k.behavior {
+                assert!(
+                    c.creatures.iter().any(|o| &o.name == spawn),
+                    "{}: unknown kind `{spawn}`",
+                    k.name
+                );
+            }
+        }
         assert_eq!(
             c.creatures.len(),
-            24,
+            25,
             "up to chapter 5 with terrain, enemies, Kristella and the creatures of the night"
         );
     }

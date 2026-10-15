@@ -205,16 +205,7 @@ impl CreatureArt {
             draw_frost_wave(batch, c.goal, c.facing, hall, time);
         }
         if let Some(look) = self.looks.get(c.kind.as_str()) {
-            use elora_sim::creature::{diver, echo};
-            // the echo's mirror stays at its place while the echo walks (m3 = empty mirror)
-            if c.kind == "echo"
-                && c.mode != echo::MIRROR
-                && let Some(mirror) = look.modes.get(&3)
-            {
-                let h = mirror.bounds().map_or(0.0, |(_, max)| max.y);
-                let foot = c.goal + Vec2::new(0.0, c.size.y / 2.0 - h);
-                batch.draw_mesh(mirror, &Affine::translate(foot), &Tint::default());
-            }
+            use elora_sim::creature::diver;
             // shadow moth: wing beats (idle and air alternate)
             let wings = (c.kind == "shadow_moth").then(|| {
                 look.air
@@ -222,11 +213,7 @@ impl CreatureArt {
                     .filter(|_| (phase * 22.0).sin() > 0.0)
                     .unwrap_or(&look.idle)
             });
-            let mesh = wings.or_else(|| {
-                look.modes
-                    .get(&c.mode)
-                    .filter(|_| c.kind != "echo" || c.mode == echo::MIRROR)
-            });
+            let mesh = wings.or_else(|| look.modes.get(&c.mode));
             let mesh = mesh
                 .or(match c.mode {
                     elora_sim::creature::burrow::HIDDEN => look.hidden.as_ref(),
@@ -423,8 +410,8 @@ fn placement(c: &SceneCreature, h: f32, hidden: bool, phase: f32, time: f32) -> 
         Affine::translate(c.pos + Vec2::new(0.0, -bump.abs() * 2.0))
             .then(Affine::rotate(bump * 0.12))
             .then(Affine::scale(flip, 1.0))
-    } else if c.kind == "stone_goblin" && c.mode == goblin::ROCK {
-        // a rock does not breathe
+    } else if c.kind == "echo_mirror" || (c.kind == "stone_goblin" && c.mode == goblin::ROCK) {
+        // a rock and a mirror do not breathe
         Affine::translate(c.pos).then(Affine::scale(flip, 1.0))
     } else if c.kind == "icicle" {
         // hangs still, trembles before the fall (R2-M2.4)
@@ -655,8 +642,9 @@ mod tests {
         for mode in 0..4 {
             put("stone_goblin", false, mode == 3, None, -1, mode);
         }
+        put("echo_mirror", false, false, None, 1, 0);
+        put("echo_mirror", false, false, None, 1, 1);
         put("echo", false, false, None, 1, 0);
-        put("echo", false, false, None, 1, 1);
         for mode in [0, 1, 2, 3] {
             put("kristella", mode != 3, false, None, 1, mode);
         }

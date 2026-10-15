@@ -276,8 +276,17 @@ xp = 8
 loot = [{ item = "gleam_drops", min = 2, max = 4 }]
 behavior = { type = "goblin", sight = 220.0, wake_ms = 600, speed = 5.5, daze_ms = 2000 }
 
-# echo: steps out of its dark mirror and walks Elora's path 1.5 s behind her; weapons pass
-# through it, only light makes it fade
+# dark mirror: cannot be defeated; sends out an echo when Elora comes close, rests after the
+# echo is gone. Place it standing on the ground.
+[[creature]]
+name = "echo_mirror"
+size = [28.0, 28.0]
+health = 1
+touch_damage = 0
+behavior = { type = "mirror", sight = 320.0, spawn = "echo", rest_ms = 4000 }
+
+# echo: walks Elora's path 1.5 s behind her; weapons pass through it, only light makes it
+# fade (counts as defeated)
 [[creature]]
 name = "echo"
 size = [28.0, 28.0]
@@ -285,4 +294,4 @@ health = 1
 touch_damage = 1
 xp = 10
 loot = [{ item = "gleam_drops", min = 2, max = 4 }]
-behavior = { type = "echo", sight = 320.0, delay_ms = 1500, fade_ms = 700 }
+behavior = { type = "echo", delay_ms = 1500, fade_ms = 700 }

@@ -142,55 +142,61 @@ pub(super) fn daze(c: &mut crate::creature::Creature, daze_ms: u32, events: &mut
     });
 }
 
-/// Waits in its mirror, walks Elora's path with a delay, fades in the light
+/// Sends out one echo when Elora is in sight, rests after it is gone
+/// ([`Behavior::Mirror`](crate::creature::Behavior::Mirror)).
+pub(super) fn mirror(cx: &mut Ctx, sight: f32, spawn: &str, rest_ms: u32) -> Step {
+    use crate::creature::mirror::{OUT, READY};
+    let c = &mut *cx.creature;
+    c.vel = Vec2::ZERO;
+    c.pos = c.home;
+    match c.mode {
+        READY => {
+            if let Some((_, d)) = cx.target
+                && d <= sight
+            {
+                c.mode = OUT;
+                cx.fx.echoes.push((c.id, spawn.to_owned(), c.pos));
+            }
+        }
+        OUT => {}
+        _ => {
+            c.timer += 1;
+            if c.timer >= ms_to_ticks(rest_ms) {
+                c.mode = READY;
+            }
+        }
+    }
+    Step::Hold
+}
+
+/// Walks Elora's path with a delay, fades in the light
 /// ([`Behavior::Echo`](crate::creature::Behavior::Echo)).
-pub(super) fn echo(cx: &mut Ctx, sight: f32, delay_ms: u32, fade_ms: u32) -> Step {
-    use crate::creature::echo::{FADE, FOLLOW, MIRROR};
+pub(super) fn echo(cx: &mut Ctx, delay_ms: u32, fade_ms: u32) -> Step {
+    use crate::creature::echo::FOLLOW;
     let c = &mut *cx.creature;
     let delay = ms_to_ticks(delay_ms).max(1) as usize;
     let before = c.pos;
-    // the mirror stays where it is (drawn at `goal`)
-    c.goal = c.home;
-    match c.mode {
-        MIRROR => {
-            c.pos = c.home;
-            if cx.active
-                && let Some((_, d)) = cx.target
-                && d <= sight
-            {
-                c.mode = FOLLOW;
-                c.timer = 0;
-                c.trail.clear();
-                cx.events.push(Event::CreatureAct {
-                    id: c.id,
-                    pos: c.pos,
-                    act: CreatureAct::Wake,
-                });
-            }
+    if c.mode == FOLLOW {
+        if let Some((p, _)) = cx.target {
+            c.trail.push_back(p);
         }
-        FOLLOW => {
-            if let Some((p, _)) = cx.target {
-                c.trail.push_back(p);
+        if c.trail.len() > delay {
+            if let Some(next) = c.trail.pop_front() {
+                c.pos = next;
             }
-            if c.trail.len() > delay {
-                if let Some(next) = c.trail.pop_front() {
-                    c.pos = next;
-                }
-            } else if let Some(&first) = c.trail.front() {
-                // steps out of the mirror to where Elora was when it saw her
-                let left = (delay + 1 - c.trail.len()) as f32;
-                c.pos = c.pos + (first - c.pos) / left;
-            }
-            if lit(cx.lights, c.pos) {
-                c.mode = FADE;
-                c.timer = 0;
-            }
+        } else if let Some(&first) = c.trail.front() {
+            // steps out of the mirror to where Elora was when it saw her
+            let left = (delay + 1 - c.trail.len()) as f32;
+            c.pos = c.pos + (first - c.pos) / left;
         }
-        _ => {
-            c.timer += 1;
-            if c.timer >= ms_to_ticks(fade_ms) {
-                cx.fx.defeated.push(c.id);
-            }
+        if lit(cx.lights, c.pos) {
+            c.mode = crate::creature::echo::FADE;
+            c.timer = 0;
+        }
+    } else {
+        c.timer += 1;
+        if c.timer >= ms_to_ticks(fade_ms) {
+            cx.fx.defeated.push(c.id);
         }
     }
     c.vel = c.pos - before;

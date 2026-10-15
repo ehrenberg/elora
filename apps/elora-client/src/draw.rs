@@ -533,7 +533,7 @@ mod tests {
             enemy("moth-2", "shadow_moth", 49.0, 6.0),
             enemy("moth-3", "shadow_moth", 48.0, 4.0),
             enemy("goblin-1", "stone_goblin", 59.0, 22.0 - 15.0 / ts),
-            enemy("echo-1", "echo", 61.0, 12.0 - 15.0 / ts),
+            enemy("mirror-1", "echo_mirror", 61.0, 12.0 - 15.0 / ts),
         ]);
         map.decor_back.push(elora_map::Decor::new(
             elora_map::Art::Builtin("lantern".into()),

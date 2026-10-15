@@ -250,12 +250,21 @@ pub enum Behavior {
         /// Dazed after being stopped.
         daze_ms: u32,
     },
-    /// Echo (R2-M2.5, E-365): waits in a dark mirror (its start point); once Elora is in sight
-    /// it steps out and walks her path `delay_ms` behind her, through everything. Touching it
-    /// hurts; weapons pass through it – **light makes it fade** within `fade_ms`.
-    Echo {
+    /// Dark mirror (R2-M2.5, E-365): stands there, cannot be defeated and is harmless; once
+    /// Elora is in sight it sends out one `spawn` (the echo) and waits until it is gone, then
+    /// rests for `rest_ms`.
+    Mirror {
         /// Sight range (world units).
         sight: f32,
+        /// Kind of the figure it sends out.
+        spawn: String,
+        /// Rest after its echo is gone.
+        rest_ms: u32,
+    },
+    /// Echo (R2-M2.5, E-365): sent out by a dark mirror, walks Elora's path `delay_ms` behind
+    /// her, through everything. Touching it hurts; weapons pass through it – **light makes it
+    /// fade** within `fade_ms` (counts as defeated).
+    Echo {
         /// Delay behind Elora.
         delay_ms: u32,
         /// In the light this long until it is gone.
@@ -555,14 +564,23 @@ pub mod goblin {
     pub const DAZED: u8 = 3;
 }
 
-/// State of the echo (in [`Creature::mode`]); the mirror is [`Creature::home`].
+/// State of the echo (in [`Creature::mode`]).
 pub mod echo {
-    /// Waits in the mirror: harmless, invisible.
-    pub const MIRROR: u8 = 0;
-    /// Steps out and walks Elora's path.
-    pub const FOLLOW: u8 = 1;
+    /// Steps out of the mirror and walks Elora's path.
+    pub const FOLLOW: u8 = 0;
     /// Fades in the light: harmless.
-    pub const FADE: u8 = 2;
+    pub const FADE: u8 = 1;
+}
+
+/// State of the dark mirror (in [`Creature::mode`]); the id of its echo is in
+/// [`Creature::count`].
+pub mod mirror {
+    /// An echo waits in it.
+    pub const READY: u8 = 0;
+    /// Its echo is out.
+    pub const OUT: u8 = 1;
+    /// Rests after its echo is gone.
+    pub const REST: u8 = 2;
 }
 
 /// State of the frost ghost (in [`Creature::mode`]).
@@ -642,7 +660,7 @@ impl Creature {
             Behavior::Diver(_) => self.mode == diver::STUNNED,
             Behavior::Burrower { .. } => self.mode == burrow::OUT,
             Behavior::Warden(_) => self.mode == warden::OPEN,
-            Behavior::Follower { .. } | Behavior::Echo { .. } => false,
+            Behavior::Follower { .. } | Behavior::Echo { .. } | Behavior::Mirror { .. } => false,
             Behavior::Leaper { .. } => self.mode == leaper::LEAP,
             Behavior::Serpent(_) => matches!(self.mode, serpent::LEAP | serpent::STUNNED),
             Behavior::Queen(_) => self.mode == queen::TIRED,
@@ -657,7 +675,7 @@ impl Creature {
             Behavior::Diver(_) => self.mode != diver::STUNNED,
             Behavior::Burrower { .. } => self.mode == burrow::OUT,
             Behavior::Warden(_) => !matches!(self.mode, warden::OPEN | warden::SLEEP),
-            Behavior::Follower { .. } => false,
+            Behavior::Follower { .. } | Behavior::Mirror { .. } => false,
             Behavior::Leaper { .. } => self.mode == leaper::LEAP,
             Behavior::Serpent(_) => self.mode == serpent::LEAP,
             Behavior::Icicle { .. } => self.mode == icicle::FALL,
@@ -687,7 +705,8 @@ impl Creature {
             | Behavior::Icicle { .. }
             | Behavior::Roller { .. }
             | Behavior::Ghost { .. }
-            | Behavior::Echo { .. } => false,
+            | Behavior::Echo { .. }
+            | Behavior::Mirror { .. } => false,
             Behavior::Goblin { .. } => self.mode != goblin::ROCK,
             Behavior::Leaper { .. } => self.mode == leaper::LEAP,
             Behavior::Serpent(_) => matches!(self.mode, serpent::LEAP | serpent::STUNNED),

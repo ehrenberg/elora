@@ -162,7 +162,7 @@ pub fn panel(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
                 if cx.cursor_grabbed {
                     ui.label("Press F1 twice to free the mouse for the panel");
                 } else {
-                    ui.label("Click into the game to keep playing; F1 closes the panel");
+                    ui.label("F1 closes the panel and returns to the game");
                 }
                 ui.separator();
                 action = network(ui, cx);

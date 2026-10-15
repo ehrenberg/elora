@@ -95,15 +95,18 @@ CREATURES = {
                               'm2': kristella('hauch', False), 'm3': kristella('erschoepft', False)}),
     # Chapter 5 (R2-M2.5): shadow moth with two wing beats (idle / air, the client alternates);
     # stone goblin m0 rock, m1 awake, m2 rolling (the client rotates it), m3 dazed
-    # (creature::goblin); echo: idle walks, m0 waits in its dark mirror, m3 the empty mirror
+    # (creature::goblin); echo; its dark mirror: idle with an echo waiting in it, m1/m2 empty
+    # (creature::mirror)
     'shadow_moth': (20, 0.4, {'idle': f'<g transform="translate(0,8)">{shadow_moth(0)}</g>',
                               'air': f'<g transform="translate(0,8)">{shadow_moth(1)}</g>'}),
     'stone_goblin': (30, 0.5, {'idle': stone_goblin('wach'), 'm0': stone_goblin('fels'),
                                'm1': stone_goblin('wach'), 'm2': stone_goblin('rollt'),
                                'm3': stone_goblin('wach')}),
     # (the echo is Elora's size: scale 0.36 like assets/elora/elora.svg; the mirror about 64 high)
-    'echo': (28, 0.36, {'idle': echo(), 'm0': f'<g transform="scale(2.2)">{dark_mirror(True)}</g>',
-                        'm3': f'<g transform="scale(2.2)">{dark_mirror(False)}</g>'}),
+    'echo': (28, 0.36, {'idle': echo()}),
+    'echo_mirror': (28, 0.36, {'idle': f'<g transform="scale(2.2)">{dark_mirror(True)}</g>',
+                               'm1': f'<g transform="scale(2.2)">{dark_mirror(False)}</g>',
+                               'm2': f'<g transform="scale(2.2)">{dark_mirror(False)}</g>'}),
 }
 
 
