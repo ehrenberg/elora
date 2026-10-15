@@ -192,6 +192,9 @@ impl Session {
             spawn: id.to_owned(),
         };
         self.save.rest(&self.content, at);
+        // the world map shows the spring stones Elora has rested at (R2-WM)
+        self.save
+            .set_flag(&format!("rested:{}:{id}", self.map_name), 1);
         let max = world_max_health(&self.save, &self.content);
         let armor = self.save.stats(&self.content).armor.max(0);
         if let Some(ch) = world.character_mut(self.player) {

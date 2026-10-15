@@ -142,6 +142,8 @@ fn prologue_from_start_to_the_meadow_edge_and_back() {
     go_to(&mut s, &mut w, "spring_stone", -36.0);
     let ev = step(&mut s, &mut w, PlayerInput::default(), true);
     assert!(ev.contains(&SessionEvent::Save), "{ev:?}");
+    // the world map shows the spring stone (R2-WM)
+    assert_eq!(s.save.flag("rested:meadow-1:spring_stone"), 1);
     let file = save::encode(&s.save);
     let loaded = save::decode(&file).unwrap();
     assert_eq!(loaded, s.save);

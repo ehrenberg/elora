@@ -747,3 +747,53 @@ fn played_notes_are_remembered_for_lumas_song() {
     s.enter("meadow-1", map, "west", &Tuning::default());
     assert!(s.notes.is_empty());
 }
+
+/// World map (R2-WM, E-370): Elora's section and her place along it.
+#[test]
+fn map_spot_follows_elora_along_her_section() {
+    let map = load("meadow-1");
+    let mut s = Session::new_game(Content::builtin());
+    let mut w = s.enter("meadow-1", map.clone(), "west", &Tuning::default());
+    let start = s.map_spot(&w).expect("on the world map");
+    assert_eq!(
+        (start.area.as_str(), start.map.as_str()),
+        ("bluetenwiesen", "meadow-1")
+    );
+    assert!(
+        start.along < 0.2,
+        "enters from the side of Tauwinkel: {}",
+        start.along
+    );
+    let section = s.content.areas[1].section("meadow-1").unwrap().clone();
+    let first = section.path[0];
+    assert!((start.point[0] - first[0]).abs() < 0.05 && (start.point[1] - first[1]).abs() < 0.05);
+    // further right in the map = further along the path
+    let far = Vec2::new(map.width as f32 * 32.0 - 100.0, 100.0);
+    w.character_mut(s.player).unwrap().core.pos = far;
+    let end = s.map_spot(&w).unwrap();
+    assert!(end.along > 0.9);
+    let last = section.path[section.path.len() - 1];
+    assert!((end.point[0] - last[0]).abs() < 0.03 && (end.point[1] - last[1]).abs() < 0.03);
+}
+
+#[test]
+fn every_adventure_map_with_a_file_has_a_section() {
+    let c = Content::builtin();
+    let dir = concat!(env!("CARGO_MANIFEST_DIR"), "/../../maps/adventure");
+    for e in std::fs::read_dir(dir).unwrap() {
+        let name = e
+            .unwrap()
+            .path()
+            .file_stem()
+            .unwrap()
+            .to_string_lossy()
+            .into_owned();
+        let area = c
+            .area_of(&name)
+            .unwrap_or_else(|| panic!("{name}: no area"));
+        assert!(
+            area.section(&name).is_some(),
+            "{name}: no section on the world map"
+        );
+    }
+}

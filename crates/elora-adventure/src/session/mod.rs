@@ -11,6 +11,9 @@ mod objects;
 mod quests;
 mod temperature;
 mod weather;
+mod world_map;
+
+pub use world_map::MapSpot;
 
 pub use decor::{PARTY, SPRINGS_FREED};
 pub use weather::weather_env;

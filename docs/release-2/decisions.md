@@ -182,6 +182,7 @@ Continued from **E-200**. Release 1 (E-001 to E-173) is in the
 | E-371 | 2026-10-15 | World map: undiscovered parts | **Clouds/fog:** unvisited sections lie under clouds; areas can be guessed as outlines, their names appear after the first visit |
 | E-372 | 2026-10-15 | World map: markers | **Spring stones (saving), quest goal, springs and guardians, shops and characters** |
 | E-373 | 2026-10-15 | World map: key M | **Own full-screen map** on M (bindable, default M; pauses the game; M or Esc closes); the tab “Map” of the adventure menu shows the same view |
+| E-374 | 2026-10-15 | World map drafts (WM.0) | **Accepted** ([`design/world-map-drafts.png`](design/world-map-drafts.png)): **look A “storybook”** (parchment, muted area colours, dashed borders, brown ink); markers, clouds, path pieces, detail window and full-screen layout as drawn |
 
 ## Open points
 

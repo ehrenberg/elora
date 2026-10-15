@@ -341,6 +341,9 @@ pub struct Area {
     /// Darkness of single maps of the area, overriding `darkness` (e.g. a pitch-black cave).
     #[serde(default)]
     pub map_darkness: BTreeMap<String, f32>,
+    /// Map sections on the world map (R2-WM, E-370), `[[area.section]]`.
+    #[serde(default, rename = "section")]
+    pub sections: Vec<Section>,
     /// Chapter of the area and its guardian (kind from `creatures.toml`): defeating it shows
     /// the victory screen with `victory` and the title of honour `honor`.
     #[serde(default)]
@@ -441,7 +444,65 @@ fn default_wind() -> [f32; 2] {
     [-0.3, 0.3]
 }
 
+/// A map section on the world map (R2-WM, E-370): where the map lies on the overview.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+pub struct Section {
+    /// Map id.
+    pub map: String,
+    /// Polyline on the overview (0..1, like [`Area::pos`]) from the map's start (its left end,
+    /// or its bottom with `axis = "y"`) to its end; a single point for an arena or a village.
+    pub path: Vec<[f32; 2]>,
+    /// Elora's place along the path follows her `x` (default) or, for maps that are climbed,
+    /// her height (`"y"`).
+    #[serde(default)]
+    pub axis: Axis,
+}
+
+/// Which coordinate of Elora's position counts along a [`Section`].
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum Axis {
+    /// Left to right.
+    #[default]
+    X,
+    /// Bottom to top.
+    Y,
+}
+
+impl Section {
+    /// Point on the path at `t` (0..1), measured along its length.
+    pub fn point(&self, t: f32) -> [f32; 2] {
+        let p = &self.path;
+        match p.len() {
+            0 => [0.0, 0.0],
+            1 => p[0],
+            _ => {
+                let len = |a: [f32; 2], b: [f32; 2]| (b[0] - a[0]).hypot(b[1] - a[1]);
+                let total: f32 = p.windows(2).map(|w| len(w[0], w[1])).sum();
+                let mut left = t.clamp(0.0, 1.0) * total;
+                for w in p.windows(2) {
+                    let l = len(w[0], w[1]);
+                    if left <= l && l > 0.0 {
+                        let k = left / l;
+                        return [
+                            w[0][0] + (w[1][0] - w[0][0]) * k,
+                            w[0][1] + (w[1][1] - w[0][1]) * k,
+                        ];
+                    }
+                    left -= l;
+                }
+                p[p.len() - 1]
+            }
+        }
+    }
+}
+
 impl Area {
+    /// The section of map `map`.
+    pub fn section(&self, map: &str) -> Option<&Section> {
+        self.sections.iter().find(|s| s.map == map)
+    }
+
     /// Is the spring of this area freed?
     pub fn freed(&self, save: &crate::SaveGame) -> bool {
         self.spring

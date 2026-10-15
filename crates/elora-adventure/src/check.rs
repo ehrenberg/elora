@@ -107,6 +107,27 @@ pub fn story(c: &Content) -> Result<(), String> {
 
 /// Heat and cold bar (`[temperature]` in `worldmap.toml`): times, factors, zone prefixes and
 /// weather keys; an area is hot or cold, not both.
+/// Map sections of the world map (R2-WM): a path inside 0..1, maps of the own area, each map
+/// once.
+fn sections(c: &Content) -> Result<(), String> {
+    let mut seen = std::collections::BTreeSet::new();
+    for a in &c.areas {
+        for s in &a.sections {
+            let at = format!("worldmap.toml area `{}`, section `{}`", a.id, s.map);
+            if !s.map.starts_with(&a.maps) {
+                return Err(format!("{at}: map does not belong to the area"));
+            }
+            if s.path.is_empty() || s.path.iter().flatten().any(|v| !(0.0..=1.0).contains(v)) {
+                return Err(format!("{at}: path empty or outside 0..1"));
+            }
+            if !seen.insert(s.map.as_str()) {
+                return Err(format!("{at}: map has two sections"));
+            }
+        }
+    }
+    Ok(())
+}
+
 fn temperature(c: &Content) -> Result<(), String> {
     if let Some(a) = c.areas.iter().find(|a| {
         std::iter::once(&a.darkness)
@@ -118,6 +139,7 @@ fn temperature(c: &Content) -> Result<(), String> {
             a.id
         ));
     }
+    sections(c)?;
     let t = &c.temperature;
     for (name, bar) in [("heat", &t.heat), ("cold", &t.cold)] {
         let at = format!("worldmap.toml [temperature.{name}]");

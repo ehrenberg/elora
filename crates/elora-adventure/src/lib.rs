@@ -21,7 +21,7 @@ pub mod stats;
 pub use data::{Content, GLEAM_DROPS};
 pub use dialog::{Conversation, Turn};
 pub use quest::Outcome;
-pub use session::{Session, SessionEvent};
+pub use session::{MapSpot, Session, SessionEvent};
 pub use state::{Location, Notice, Refusal, SaveGame};
 pub use stats::Stats;
 
