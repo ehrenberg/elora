@@ -177,6 +177,7 @@ Continued from **E-200**. Release 1 (E-001 to E-173) is in the
 | E-366 | 2026-10-14 | End of chapter 5 | A star spark is saved: Tüftel strengthens gliding, `springs_freed = 5`; only the old well stays grey |
 | E-367 | 2026-10-14 | Way to the Sternschlucht | Gorge entrance at the far east of the Blütenwiesen, opens after chapter 4 |
 | E-368 | 2026-10-14 | Chapter 5 side quests | “Star fragments” and “Luma's song” |
+| E-369 | 2026-10-15 | Chapter 5 drafts (M2.5.0) | **Accepted** ([`design/chapter5-drafts.png`](design/chapter5-drafts.png)): **Luma variant B** (moth wings, feelers, woven shawl), **the Withered One variant A** (cracked grey drop with twig arms); everything else as drawn |
 
 ## Open points
 
