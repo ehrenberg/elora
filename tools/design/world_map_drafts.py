@@ -363,6 +363,116 @@ def sheet():
     return '\n'.join(o)
 
 
+def blob_points(cx, cy, r, seed, wob=0.18, n=48, squash=1.0, per=6):
+    """Points along `smooth_blob` (for borders drawn in pieces)."""
+    rnd = random.Random(seed)
+    ph = [rnd.uniform(0, 6.3) for _ in range(3)]
+    pts = []
+    for i in range(n):
+        a = 2 * math.pi * i / n
+        k = 1 + wob * (0.6 * math.sin(3 * a + ph[0]) + 0.3 * math.sin(5 * a + ph[1]) + 0.2 * math.sin(7 * a + ph[2]))
+        pts.append((cx + r * k * math.cos(a), cy + r * squash * k * math.sin(a)))
+    out = []
+    for i in range(n):
+        p0, p1, p2 = pts[i - 1], pts[i], pts[(i + 1) % n]
+        a0 = ((p0[0] + p1[0]) / 2, (p0[1] + p1[1]) / 2)
+        a2 = ((p1[0] + p2[0]) / 2, (p1[1] + p2[1]) / 2)
+        for k in range(per):
+            t = k / per
+            out.append(((1 - t) ** 2 * a0[0] + 2 * (1 - t) * t * p1[0] + t * t * a2[0],
+                        (1 - t) ** 2 * a0[1] + 2 * (1 - t) * t * p1[1] + t * t * a2[1]))
+    return out + out[:1]
+
+
+def dashes(points, dash, gap, color, width):
+    """A polyline drawn as dashes (the game's SVG loader has no dash arrays)."""
+    o, run, on, cur = '', 0.0, True, [points[0]]
+    for p, q in zip(points, points[1:]):
+        seg = math.hypot(q[0] - p[0], q[1] - p[1])
+        pos = 0.0
+        while seg - pos > 1e-6:
+            left = (dash if on else gap) - run
+            step = min(left, seg - pos)
+            pos += step
+            run += step
+            t = pos / seg
+            pt = (p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t)
+            if on:
+                cur.append(pt)
+            if run >= (dash if on else gap) - 1e-6:
+                if on and len(cur) > 1:
+                    o += '<path d="M ' + ' L '.join(f'{x:.1f},{y:.1f}' for x, y in cur) + f'" fill="none" stroke="{color}" stroke-width="{width}" stroke-linecap="round" stroke-linejoin="round"/>'
+                on, run, cur = not on, 0.0, [pt]
+    if on and len(cur) > 1:
+        o += '<path d="M ' + ' L '.join(f'{x:.1f},{y:.1f}' for x, y in cur) + f'" fill="none" stroke="{color}" stroke-width="{width}" stroke-linecap="round"/>'
+    return o
+
+
+def base_map():
+    """Painted ground of the world map in the game (look A, E-374): sea, land, areas with their
+    details, river, lake and roads. The game draws path pieces, clouds, markers, names and
+    Elora on top. viewBox = the overview space (x 0..1480, y 0..800 = 0..1 in worldmap.toml)."""
+    W, H = 1480, 800
+    look = LOOKS['A']
+    rnd = random.Random(7)
+    o = f'<rect x="0" y="0" width="{W}" height="{H}" fill="{look["sea"]}"/>'
+    for _ in range(40):
+        x, y = rnd.uniform(10, W - 50), rnd.uniform(10, H - 10)
+        o += f'<path d="M {x:.0f},{y:.0f} q 8,-6 16,0 q 8,6 16,0" fill="none" stroke="{look["sea_line"]}" stroke-width="2" stroke-linecap="round"/>'
+    o += f'<path d="{smooth_blob(W * 0.5, H * 0.5, W * 0.43, 3, 0.1, squash=0.6)}" fill="{look["land"]}" stroke="{look["land_edge"]}" stroke-width="4"/>'
+    for _ in range(34):
+        x, y = rnd.uniform(0.12, 0.88) * W, rnd.uniform(0.15, 0.85) * H
+        if any(math.hypot(x - W * a[2][0], (y - H * a[2][1]) / 0.7) < 190 for a in AREAS):
+            continue
+        if rnd.random() < 0.5:
+            o += f'<path d="M {x - 26:.0f},{y:.0f} Q {x:.0f},{y - 22:.0f} {x + 26:.0f},{y:.0f}" fill="none" stroke="{look["land_edge"]}" stroke-width="2.5" stroke-linecap="round" opacity="0.7"/>'
+        else:
+            o += f'<circle cx="{x:.0f}" cy="{y:.0f}" r="7" fill="#9cc77a" stroke="{look["ink"]}" stroke-width="1.4"/>'
+    o += f'<path d="{smooth_blob(W * 0.36, H * 0.5, 42, 9, 0.2, squash=0.6)}" fill="{look["sea"]}" stroke="{look["land_edge"]}" stroke-width="2.5"/>'
+    for aid, name, (px, py), col, n in AREAS:
+        cx, cy = W * px, H * py
+        r = 78 if aid == 'tauwinkel' else 170
+        seed = sum(map(ord, aid)) % 100
+        o += f'<path d="{smooth_blob(cx, cy, r, seed, 0.2, squash=0.72)}" fill="{mix(col, look["region_mix"])}"/>'
+        o += dashes(blob_points(cx, cy, r, seed, 0.2, squash=0.72), 6, 5, darker(col, 0.25), 2.5)
+        o += decoration(aid, cx, cy, look, random.Random(sum(map(ord, aid))))
+    o += (f'<path d="M {W * 0.8},{H * 0.36} Q {W * 0.66},{H * 0.42} {W * 0.6},{H * 0.56} '
+          f'Q {W * 0.55},{H * 0.72} {W * 0.58},{H}" fill="none" stroke="#6fb8e0" stroke-width="10" stroke-linecap="round"/>')
+    hub, sections = section_paths(W, H, 0, 0)
+    for aid, (start, _, _) in sections.items():
+        dx, dy = start[0] - hub[0], start[1] - hub[1]
+        ln = math.hypot(dx, dy)
+        edge = (hub[0] + dx / ln * 62, hub[1] + dy / ln * 48)
+        o += dashes([edge, start], 10, 8, look['road'], 5)
+    return (f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}">\n'
+            '  <!-- World map ground (R2-WM, look A, E-374; from tools/design/world_map_drafts.py). -->\n'
+            f'  {o}\n</svg>\n')
+
+
+def icons_svg():
+    """Markers of the world map as parts for the game (origin in the middle of each marker; the
+    pin's tip and the cloud's centre at 0,0)."""
+    pin = elora_pin(0, 0, 1.0).replace(g(0, -24, 0.26, drop('f2c14e', 'd9a43a')), '')
+    parts = {
+        'spring_stone': icon_spring_stone(0, 0),
+        'quest': icon_quest(0, 0),
+        'spring_silent': icon_spring(0, 0, False),
+        'spring_freed': icon_spring(0, 0, True),
+        'guardian': icon_guardian(0, 0, False),
+        'guardian_calm': icon_guardian(0, 0, True),
+        'shop': icon_shop(0, 0),
+        'person': icon_person(0, 0),
+        'cloud': cloud(0, 0, 1.0, 1.0),
+        'pin': pin,
+    }
+    body = ''.join(f'<g id="{k}">{v}</g>' for k, v in parts.items())
+    return ('<svg xmlns="http://www.w3.org/2000/svg" viewBox="-60 -70 120 100">\n'
+            '  <!-- World map markers (R2-WM, E-372; from tools/design/world_map_drafts.py). -->\n'
+            f'  {body}\n</svg>\n')
+
+
 if __name__ == '__main__':
     os.makedirs('docs/release-2/design', exist_ok=True)
     open('docs/release-2/design/world-map-drafts.svg', 'w').write(sheet())
+    open('assets/adventure/world-map.svg', 'w').write(base_map())
+    open('assets/adventure/world-map-icons.svg', 'w').write(icons_svg())

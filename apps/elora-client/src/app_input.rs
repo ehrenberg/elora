@@ -209,6 +209,12 @@ impl App {
                     self.toggle_adventure_menu();
                 }
             }
+            // world map (R2-WM, E-373)
+            GameAction::Map if self.adventure.is_some() => {
+                if down {
+                    self.toggle_world_map();
+                }
+            }
             // scoreboard while held (E-078)
             GameAction::Scoreboard => self.scoreboard = down,
             GameAction::QuickHeal if down => self.quick_heal(),

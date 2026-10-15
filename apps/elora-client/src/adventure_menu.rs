@@ -66,6 +66,8 @@ pub struct MenuData<'a> {
     pub figure: &'a FigureArt,
     pub tint: &'a Tint,
     pub screen: Vec2,
+    /// The world map (R2-WM); without it the tab shows the simple area map.
+    pub world: Option<&'a crate::world_map::View<'a>>,
 }
 
 const TAB_COLORS: [Color; 4] = [ui::ORANGE, ui::GREEN, ui::BLUE, ui::VIOLET];
@@ -381,7 +383,10 @@ pub fn draw(ui: &mut Ui<'_>, d: &MenuData<'_>, st: &mut MenuState) -> Option<Com
         Panel::Skills => skills(ui, d, st, body),
         Panel::Quests => quests(ui, d, st, body),
         Panel::Map => {
-            world_map(ui, d, body);
+            match d.world {
+                Some(v) => crate::world_map::draw(ui, body, v),
+                None => world_map(ui, d, body),
+            }
             None
         }
         Panel::Shop(id) => shop(ui, d, st, body, id),
@@ -1320,40 +1325,7 @@ mod tests {
         let art = CreatureArt::load();
         let figure = FigureArt::load();
         let c = Content::builtin();
-        let mut save = SaveGame::new(
-            &c,
-            Location {
-                map: "meadow-1".into(),
-                spawn: "west".into(),
-            },
-        );
-        save.add_xp(&c, 400);
-        save.grant_ability(elora_sim::Ability::HookJerk);
-        save.learn(&c, "quick_jerk").unwrap();
-        save.learn(&c, "power").unwrap();
-        save.learn(&c, "power").unwrap();
-        for (id, n) in [
-            ("gleam_drops", 140),
-            ("healing_potion", 3),
-            ("amber", 2),
-            ("dew_cape", 1),
-            ("glitter_stone", 1),
-            ("straw_hat", 1),
-        ] {
-            save.add_item(&c, id, n).unwrap();
-        }
-        save.equip(&c, "straw_hat").unwrap();
-        save.give_weapon(Weapon::Grenade);
-        save.set_flag("visited:tauwinkel", 1);
-        save.set_flag("visited:meadow-1", 1);
-        save.run(
-            &c,
-            &[
-                "quest well start".into(),
-                "quest well advance".into(),
-                "quest pips_stone start".into(),
-            ],
-        );
+        let save = example_save(&c);
         let tint = crate::skins::tint(
             elora_protocol::Skin::default(),
             elora_sim::Team::None,
@@ -1361,6 +1333,32 @@ mod tests {
             crate::draw::team_color,
         );
         let screen = Vec2::new(1280.0, 720.0);
+        let atlas = example_atlas();
+        let here = atlas.maps.iter().find(|(n, _)| n == "forest-2").unwrap();
+        let elora_pos = Vec2::new(here.1.width as f32 * 32.0 * 0.6, 300.0);
+        let spring = c.areas[2].section("forest-2").unwrap().point(0.6);
+        let map_art = crate::world_map::WorldMapArt::load();
+        let view = crate::world_map::View {
+            art: &map_art,
+            atlas: &atlas,
+            content: &c,
+            save: &save,
+            lang: &lang,
+            code: "de",
+            figure: &figure,
+            tint: &tint,
+            spot: Some(elora_adventure::MapSpot {
+                area: c.areas[2].id.clone(),
+                map: "forest-2".into(),
+                along: 0.6,
+                point: spring,
+            }),
+            goal: elora_adventure::world_map::quest_goal(&c, &save, &atlas.refs(), "forest-2"),
+            here: Some(("forest-2", &here.1, elora_pos)),
+            time: 0.3,
+        };
+        // full-screen world map (key M)
+        write_full_map(&font, &view, screen);
         for (name, panel) in [
             ("inventory", Panel::Inventory),
             ("abilities", Panel::Skills),
@@ -1390,6 +1388,7 @@ mod tests {
                 figure: &figure,
                 tint: &tint,
                 screen,
+                world: Some(&view),
             };
             let mut st = MenuState {
                 panel,
@@ -1408,5 +1407,101 @@ mod tests {
             )
             .unwrap();
         }
+    }
+
+    /// Example save for the sheets: experience, items, quests and the world map state (R2-WM:
+    /// meadows and forest visited, desert started).
+    fn example_save(c: &Content) -> SaveGame {
+        let mut save = SaveGame::new(
+            c,
+            Location {
+                map: "meadow-1".into(),
+                spawn: "west".into(),
+            },
+        );
+        save.add_xp(c, 400);
+        save.grant_ability(elora_sim::Ability::HookJerk);
+        save.learn(c, "quick_jerk").unwrap();
+        save.learn(c, "power").unwrap();
+        save.learn(c, "power").unwrap();
+        for (id, n) in [
+            ("gleam_drops", 140),
+            ("healing_potion", 3),
+            ("amber", 2),
+            ("dew_cape", 1),
+            ("glitter_stone", 1),
+            ("straw_hat", 1),
+        ] {
+            save.add_item(c, id, n).unwrap();
+        }
+        save.equip(c, "straw_hat").unwrap();
+        save.give_weapon(Weapon::Grenade);
+        save.set_flag("visited:tauwinkel", 1);
+        // world map (R2-WM): meadows and forest visited, desert started
+        for m in [
+            "meadow-1",
+            "meadow-2",
+            "meadow-3",
+            "meadow-arena",
+            "forest-1",
+            "forest-2",
+            "desert-1",
+        ] {
+            save.set_flag(&format!("visited:{m}"), 1);
+        }
+        save.set_flag("rested:meadow-1:spring_stone", 1);
+        save.set_flag("defeated.bumblebear", 1);
+        save.set_flag("freed.blossom_spring", 1);
+        save.run(
+            c,
+            &[
+                "quest well start".into(),
+                "quest well advance".into(),
+                "quest pips_stone start".into(),
+            ],
+        );
+        save
+    }
+
+    /// All shipped adventure maps.
+    fn example_atlas() -> crate::world_map::Atlas {
+        let dir = concat!(env!("CARGO_MANIFEST_DIR"), "/../../maps/adventure");
+        let mut maps: Vec<(String, elora_map::Map)> = std::fs::read_dir(dir)
+            .unwrap()
+            .map(|e| {
+                let p = e.unwrap().path();
+                let n = p.file_stem().unwrap().to_string_lossy().into_owned();
+                (n, elora_map::Map::load(&p).unwrap())
+            })
+            .collect();
+        maps.sort_by(|a, b| a.0.cmp(&b.0));
+        crate::world_map::Atlas { maps }
+    }
+
+    /// Writes the full-screen world map (key M) to `target/adventure-world-map.svg`.
+    fn write_full_map(font: &Font, view: &crate::world_map::View<'_>, screen: Vec2) {
+        let mut batch = ShapeBatch::default();
+        batch.fill_rect(Vec2::ZERO, screen, Color::hex(0x8fbf7a));
+        let input = crate::ui::UiInput::default();
+        let mut state = crate::ui::UiState::default();
+        let mut ui = Ui {
+            batch: &mut batch,
+            font,
+            input: &input,
+            state: &mut state,
+            s: 1.0,
+        };
+        ui.begin(0.016);
+        crate::app_adventure::full_map(&mut ui, view, screen);
+        ui.end();
+        let svg = batch.debug_svg(Vec2::ZERO, screen, Color::hex(0x8fbf7a));
+        std::fs::write(
+            concat!(
+                env!("CARGO_MANIFEST_DIR"),
+                "/../../target/adventure-world-map.svg"
+            ),
+            svg,
+        )
+        .unwrap();
     }
 }

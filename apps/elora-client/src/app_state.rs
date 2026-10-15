@@ -67,6 +67,8 @@ impl App {
             figure_art: figure::FigureArt::load(),
             item_art: items::ItemArt::load(),
             creature_art: creatures::CreatureArt::load(),
+            world_map_art: crate::world_map::WorldMapArt::load(),
+            atlas: None,
             map_view: map_view::MapView::default(),
             no_skins: BTreeMap::new(),
             last_frame: Instant::now(),

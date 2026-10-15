@@ -1,6 +1,6 @@
 # R2-WM – World map – implementation plan (interim task)
 
-Status: **in progress** (WM.0 accepted, E-374; WM.1 and WM.2 done) · Decisions E-370 to E-373 · Interrupts R2-M2.5 after M2.5.4 (M2.5.5 is
+Status: **in progress** (WM.0 accepted, E-374; WM.1 to WM.5 done, acceptance open) · Decisions E-370 to E-373 · Interrupts R2-M2.5 after M2.5.4 (M2.5.5 is
 parked as work in progress) · Basis: E-264 (world map in the adventure menu)
 
 ## Goal
@@ -28,9 +28,9 @@ she walks; undiscovered sections lie under clouds; markers are right.
 | WM.0 ✅ | Drafts | Painted overview of the Tauland (Tauwinkel in the middle; meadows, forest, desert, frost peaks, gorge in their colours, paths, river), path pieces per section, clouds over undiscovered parts, icons (spring stone, quest star, spring grey/colourful, guardian arena, shop/character), look of the detail window, Elora marker; python script in `tools/design/`, no AI (E-295) | Your selection |
 | WM.1 ✅ | Data and location | `worldmap.toml`: per area a list of **sections** `[[area.section]] map = "meadow-1", path = [[x, y], …]` (polyline 0..1 on the overview; arena as a point); optional `axis = "y"` for maps that run upwards. Check: every adventure map has a section. Session: `map_location()` = section + fraction along it (Elora's x in the map, or y with `axis`); visited sections; **visited spring stones** remembered (new flag `rested:<map>:<id>`) | Tests |
 | WM.2 ✅ | Quest goal | Place of the current main quest step derived from the goal: `talk`/`bring` → map with that character, `defeat` → map with that enemy kind, `collect` → map with that collectible or chest, `reach` → map with that zone; optional `map = "…"` on a step overrides it; otherwise no star | Tests |
-| WM.3 | Overview | Painted base, path pieces (visited: in the area colour, current one highlighted), clouds over unvisited sections and unknown areas (names only after the first visit), Elora marker moving along her section, markers per E-372 with a small legend | Visual check |
-| WM.4 | Detail window | Current section drawn small from its tiles (solid ground, platforms, water/thorns tinted), Elora as a dot, exits as arrows with the target area, spring stones, characters/shops, quest star if the goal is on this map; cached per map | Visual check |
-| WM.5 | Key M | New bindable action `map` (default M) in the settings; M opens the full-screen map (game pauses), M or Esc closes; the tab “Map” uses the same view; German and English texts | Tests + your playtest |
+| WM.3 ✅ | Overview | Painted base, path pieces (visited: in the area colour, current one highlighted), clouds over unvisited sections and unknown areas (names only after the first visit), Elora marker moving along her section, markers per E-372 with a small legend | Visual check |
+| WM.4 ✅ | Detail window | Current section drawn small from its tiles (solid ground, platforms, water/thorns tinted), Elora as a dot, exits as arrows with the target area, spring stones, characters/shops, quest star if the goal is on this map; cached per map | Visual check |
+| WM.5 ✅ | Key M | New bindable action `map` (default M) in the settings; M opens the full-screen map (game pauses), M or Esc closes; the tab “Map” uses the same view; German and English texts | Tests + your playtest |
 | WM.6 | Acceptance | Open the map in every area, walk, check markers and clouds | Your acceptance |
 
 ## Considerations
