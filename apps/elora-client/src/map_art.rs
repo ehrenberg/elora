@@ -682,7 +682,7 @@ pub fn draw_island(batch: &mut ShapeBatch, art: &MapArt, min: Vec2, size: Vec2, 
 }
 
 /// Size of a note stone in the world (its graphic is about 60 × 84).
-const NOTE_STONE_SCALE: f32 = 0.8;
+const NOTE_STONE_SCALE: f32 = 0.6;
 
 /// Note stone (M2.5.3) standing at the bottom centre of its touch area; `light` 0..1 (lit,
 /// fading, flickering before it goes out).

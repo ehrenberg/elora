@@ -8,6 +8,8 @@ use crate::{App, draw, figure, skins};
 
 /// Faint glow of the star islands in the dark (M2.5.2).
 const ISLAND_GLOW: f32 = 0.55;
+/// Light around a flying note of a note stone (M2.5.3, units).
+const NOTE_GLOW_RADIUS: f32 = 64.0;
 
 /// Light in the dark besides the decoration (drawing only): star islands glow faintly from
 /// their star crystals (M2.5.2), lit note stones and star bridges shine (M2.5.3). Centre, radius
@@ -105,6 +107,13 @@ impl App {
                     .map(|(p, r)| (p, r, 1.0)),
             )
             .chain(glows(&self.sandbox.world))
+            // notes flying off note stones glow too (M2.5.3)
+            .chain(
+                self.effects
+                    .glowing_notes()
+                    .into_iter()
+                    .map(|p| (p, NOTE_GLOW_RADIUS, 0.9)),
+            )
             .map(|(pos, r, intensity)| elora_render::Light {
                 pos: camera.world_to_screen(pos, screen),
                 radius: r / per_px,

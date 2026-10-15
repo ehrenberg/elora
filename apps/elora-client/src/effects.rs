@@ -186,6 +186,8 @@ pub struct Effects {
     roots: Vec<(Vec2, f32)>,
     /// Thin ice with cracks (R2-M2.4): corner of the tile, age (s).
     cracks: Vec<(Vec2, f32)>,
+    /// Glowing notes flying off a touched note stone (M2.5.3): start, age (s), drift (−1..1).
+    notes: Vec<(Vec2, f32, f32)>,
     rng: u64,
     trail: f32,
     shake: f32,
@@ -204,6 +206,7 @@ impl Default for Effects {
             flashes: Vec::new(),
             roots: Vec::new(),
             cracks: Vec::new(),
+            notes: Vec::new(),
             rng: 0x9e37_79b9_7f4a_7c15,
             trail: 0.0,
             shake: 0.0,
@@ -255,6 +258,11 @@ const CRACK_LIFE: f32 = 2.0;
 const SPORE: Color = Color::rgba(0.55, 0.85, 1.0, 0.95);
 /// How long a root strike stands (s).
 const ROOT_LIFE: f32 = 0.7;
+/// A note from a note stone is visible this long (s, M2.5.3).
+const NOTE_LIFE: f32 = 1.6;
+const NOTE_GLOW: Color = Color::rgba(1.0, 0.97, 0.75, 0.3);
+const NOTE_FILL: Color = Color::hex(0xfff3b0);
+const NOTE_OUTLINE: Color = Color::hex(0x2b2b2b);
 
 impl Effects {
     pub fn with_settings(settings: EffectSettings) -> Self {
@@ -555,6 +563,13 @@ impl Effects {
                 }
                 _ => {}
             },
+            // note stone (M2.5.3): a glowing note flies off its top, a little sparkle
+            Event::Note { pos, .. } => {
+                let top = pos - Vec2::new(0.0, 24.0);
+                let drift = self.range(-1.0, 1.0);
+                self.notes.push((top, 0.0, drift));
+                self.burst(top, GLITTER, &PICKUP_GLITTER);
+            }
             // thin ice (R2-M2.4): cracks, then shards
             Event::IceCrack { tx, ty, broken } => self.ice_crack(tx, ty, broken),
             // broken floor and root walls crumble
@@ -597,8 +612,27 @@ impl Effects {
             c.1 += dt;
         }
         self.cracks.retain(|c| c.1 < CRACK_LIFE);
+        for n in &mut self.notes {
+            n.1 += dt;
+        }
+        self.notes.retain(|n| n.1 < NOTE_LIFE);
         self.shake = (self.shake - SHAKE_DECAY * dt).max(0.0);
         self.hit_marker = (self.hit_marker - dt).max(0.0);
+    }
+
+    /// Where a note from a note stone is now (rises, slows down, sways and drifts aside), its
+    /// size (pops up) and opacity (fades out at the end).
+    fn note_at(&(start, age, drift): &(Vec2, f32, f32)) -> (Vec2, f32, f32) {
+        let rise = 110.0 * (1.0 - (-age * 1.6).exp());
+        let sway = (age * 5.0).sin() * 10.0 + drift * 45.0 * age;
+        let size = (age / 0.15).min(1.0) * 1.25;
+        let fade = (1.0 - (age - (NOTE_LIFE - 0.6)).max(0.0) / 0.6).clamp(0.0, 1.0);
+        (start + Vec2::new(sway, -rise), size, fade)
+    }
+
+    /// Positions of the glowing notes in flight (light at night).
+    pub fn glowing_notes(&self) -> Vec<Vec2> {
+        self.notes.iter().map(|n| Self::note_at(n).0).collect()
     }
 
     /// Camera displacement from shake (square of the strength, smooth oscillations).
@@ -653,6 +687,10 @@ impl Effects {
                 batch.fill_polygon(&outline, Color::hex(0x2b2b2b));
                 batch.fill_polygon(&fill, Color::hex(0x8a6040));
             }
+        }
+        for n in &self.notes {
+            let (pos, size, fade) = Self::note_at(n);
+            draw_note(batch, pos, size, fade, n.2 * 0.25);
         }
         for f in &self.flashes {
             let t = f.age / f.life;
@@ -717,6 +755,51 @@ impl Effects {
     }
 }
 
+/// A glowing music note centred on its head at `pos` (scale `size`, opacity `alpha`, tilted).
+fn draw_note(batch: &mut ShapeBatch, pos: Vec2, size: f32, alpha: f32, tilt: f32) {
+    let with = |c: Color, a: f32| Color::rgba(c.0[0], c.0[1], c.0[2], c.0[3] * a);
+    let t = Affine::translate(pos)
+        .then(Affine::rotate(tilt))
+        .then(Affine::scale(size, size));
+    let at = |x: f32, y: f32| t.apply(Vec2::new(x, y));
+    let pulse = 1.0 + 0.08 * (pos.x * 0.1 + pos.y * 0.07).sin();
+    batch.fill_circle(at(4.0, -10.0), 26.0 * size * pulse, with(NOTE_GLOW, alpha));
+    batch.fill_circle(
+        at(4.0, -10.0),
+        16.0 * size * pulse,
+        with(NOTE_GLOW, alpha * 1.6),
+    );
+    let head = |r: f32| -> Vec<Vec2> {
+        (0..16)
+            .map(|i| {
+                let a = i as f32 / 16.0 * std::f32::consts::TAU;
+                let (x, y) = (a.cos() * r * 1.3, a.sin() * r);
+                // tilted oval like a written note head
+                at(x * 0.94 + y * 0.34, y * 0.94 - x * 0.34)
+            })
+            .collect()
+    };
+    let (stem_foot, stem_top, flag) = (at(7.5, -2.0), at(7.5, -26.0), at(17.0, -14.0));
+    batch.stroke_polyline(
+        &[stem_foot, stem_top],
+        5.5 * size,
+        with(NOTE_OUTLINE, alpha),
+    );
+    batch.stroke_polyline(
+        &[stem_top, at(14.0, -22.0), flag],
+        5.5 * size,
+        with(NOTE_OUTLINE, alpha),
+    );
+    batch.fill_polygon(&head(7.5), with(NOTE_OUTLINE, alpha));
+    batch.fill_polygon(&head(5.5), with(NOTE_FILL, alpha));
+    batch.stroke_polyline(&[stem_foot, stem_top], 2.5 * size, with(NOTE_FILL, alpha));
+    batch.stroke_polyline(
+        &[stem_top, at(14.0, -22.0), flag],
+        2.5 * size,
+        with(NOTE_FILL, alpha),
+    );
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -773,9 +856,19 @@ mod tests {
                 player: 0,
                 pos: Vec2::default(),
             },
+            Event::Note {
+                player: 0,
+                note: 4,
+                pos: Vec2::new(0.0, 60.0),
+            },
         ];
         for (row, e) in cases.iter().enumerate() {
-            for (col, t) in [0.03_f32, 0.12, 0.3].iter().enumerate() {
+            let times: &[f32] = if row == cases.len() - 1 {
+                &[0.1, 0.6, 1.3]
+            } else {
+                &[0.03, 0.12, 0.3]
+            };
+            for (col, t) in times.iter().enumerate() {
                 let mut fx = Effects::default();
                 fx.colors.insert(1, Color::hex(0x5aaee8));
                 fx.update(0.001, std::slice::from_ref(e), &scene, &[], |_| WHITE);
@@ -791,13 +884,16 @@ mod tests {
                 for f in &mut fx.flashes {
                     f.pos += offset;
                 }
+                for n in &mut fx.notes {
+                    n.0 += offset;
+                }
                 fx.draw(&mut batch);
             }
         }
         let svg = batch.debug_svg(
             Vec2::default(),
-            Vec2::new(900.0, 800.0),
-            Color::hex(0x8fb8d9),
+            Vec2::new(900.0, 1000.0),
+            Color::hex(0x2f3778),
         );
         std::fs::write(
             concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/effects.svg"),
