@@ -625,7 +625,7 @@ impl Effects {
     fn note_at(&(start, age, drift): &(Vec2, f32, f32)) -> (Vec2, f32, f32) {
         let rise = 110.0 * (1.0 - (-age * 1.6).exp());
         let sway = (age * 5.0).sin() * 10.0 + drift * 45.0 * age;
-        let size = (age / 0.15).min(1.0) * 1.25;
+        let size = (age / 0.15).min(1.0) * 0.625;
         let fade = (1.0 - (age - (NOTE_LIFE - 0.6)).max(0.0) / 0.6).clamp(0.0, 1.0);
         (start + Vec2::new(sway, -rise), size, fade)
     }
