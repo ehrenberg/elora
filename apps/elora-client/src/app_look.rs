@@ -13,7 +13,13 @@ impl App {
     /// Post-processing of the world for this frame: heat shimmer in the desert (E-320, stronger in
     /// the blazing sun and with the heat) and colour that returns with the springs
     /// (E-328, more colourful per freed spring; the change glides over a few seconds).
-    pub(crate) fn world_look(&mut self, dt: f32, tick: u64, camera: &Camera) {
+    pub(crate) fn world_look(
+        &mut self,
+        dt: f32,
+        tick: u64,
+        camera: &Camera,
+        elora: Option<elora_sim::Vec2>,
+    ) {
         let session = self.adventure.as_ref().map(|a| &a.session);
         let haze = session
             .filter(|s| s.hot())
@@ -36,12 +42,13 @@ impl App {
             gfx.renderer.set_frost(frost);
             gfx.renderer.set_grade(self.weather.grade());
         }
-        self.night(camera);
+        self.night(camera, elora);
     }
 
     /// Night of dark areas (R2-M2.5, M2.5.1): darkness of the area (or the debug preview),
-    /// Elora's light and the glowing decoration in view.
-    fn night(&mut self, camera: &Camera) {
+    /// Elora's light and the glowing decoration in view. `elora` is her drawn (interpolated)
+    /// position, so the light moves exactly with her and the camera.
+    fn night(&mut self, camera: &Camera, elora: Option<elora_sim::Vec2>) {
         let session = self.adventure.as_ref().map(|a| &a.session);
         let darkness = session
             .map_or(0.0, elora_adventure::Session::darkness)
@@ -56,11 +63,7 @@ impl App {
         #[allow(clippy::cast_precision_loss)]
         let screen = elora_sim::Vec2::new(w as f32, h as f32);
         let per_px = camera.units_per_pixel(screen).max(0.0001);
-        let elora = self
-            .sandbox
-            .world
-            .character(self.sandbox.player)
-            .map(|c| (c.core.pos, elora_map::lights::elora_radius()));
+        let elora = elora.map(|pos| (pos, elora_map::lights::elora_radius()));
         let lights: Vec<elora_render::Light> = elora
             .into_iter()
             .chain(elora_map::lights::map_lights(&self.sandbox.map))

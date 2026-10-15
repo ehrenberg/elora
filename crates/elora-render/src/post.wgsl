@@ -88,8 +88,9 @@ fn fs_main(in: VertexOut) -> @location(0) vec4<f32> {
     if (night > 0.0) {
         let lit = light_at(uv, aspect);
         let shade = night * (1.0 - lit);
-        rgb = mix(rgb, rgb * vec3<f32>(0.55, 0.62, 1.0), night * 0.5);
-        rgb = rgb * (1.0 - shade * 0.92);
+        rgb = mix(rgb, rgb * vec3<f32>(0.6, 0.66, 1.0), night * 0.45);
+        // full night is almost black outside the lights (light falls off softly towards it)
+        rgb = rgb * mix(1.0, 0.025, shade * shade * (3.0 - 2.0 * shade));
     }
     // Frost border: frost flowers grow in from the edges and corners, the world gets cooler
     let frost = post.extra.z;
