@@ -519,6 +519,7 @@ impl Sandbox {
         }
         scene.add_shots(&self.world, alpha, 1.0, |_| true);
         scene.add_creatures(&self.world, &self.prev_creatures, alpha);
+        scene.add_islands(&self.world, alpha);
         scene.add_pickups(&self.world);
         scene.add_flags(&self.world);
         scene

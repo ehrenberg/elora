@@ -82,6 +82,8 @@ struct Specials {
     belt_arrow: Mesh,
     /// Hook flower fresh and wilted (R2-M2.1).
     hook_point: [Mesh; 2],
+    /// Star island drifting and sinking (R2-M2.5, M2.5.2).
+    island: [Mesh; 2],
 }
 
 /// All built-in map graphics.
@@ -171,6 +173,10 @@ impl MapArt {
             include_bytes!("../../../assets/map/tiles/hookpoint.svg"),
             "hookpoint",
         );
+        let island = svg(
+            include_bytes!("../../../assets/map/tiles/star-island.svg"),
+            "star-island",
+        );
         let specials = Specials {
             spikes: part(&death, "up", &file("death")),
             planks: ["mid", "left", "right", "single"].map(|p| part(&plank, p, &file("platform"))),
@@ -179,6 +185,7 @@ impl MapArt {
             belt: part(&belt, "base", &file("conveyor")),
             belt_arrow: part(&belt, "arrow", &file("conveyor")),
             hook_point: ["fresh", "wilted"].map(|p| part(&hook, p, &file("hookpoint"))),
+            island: ["drift", "sink"].map(|p| part(&island, p, &file("star-island"))),
         };
         let builtin = DECOR_FILES
             .iter()
@@ -640,6 +647,61 @@ pub fn draw_hook_point(batch: &mut ShapeBatch, art: &MapArt, min: Vec2, active: 
     let mesh = &art.specials.hook_point[usize::from(!active)];
     batch.draw_mesh(mesh, &t, &Tint::default());
 }
+
+/// Width of the star island graphic (units).
+const ISLAND_ART_WIDTH: f32 = 180.0;
+
+/// Star island (M2.5.2): `min` = top-left corner of the island (walkable surface), stretched to
+/// its width; thin islands keep a little depth.
+pub fn draw_island(batch: &mut ShapeBatch, art: &MapArt, min: Vec2, size: Vec2, sinks: bool) {
+    let sx = size.x / ISLAND_ART_WIDTH;
+    let sy = sx.clamp(0.6, 1.3);
+    let t = Affine::translate(min + Vec2::new(size.x / 2.0, 0.0)).then(Affine::scale(sx, sy));
+    batch.draw_mesh(
+        &art.specials.island[usize::from(sinks)],
+        &t,
+        &Tint::default(),
+    );
+}
+
+/// Updraft (M2.5.2): a light violet column with arcs drifting upwards.
+pub fn draw_updraft(batch: &mut ShapeBatch, min: Vec2, size: Vec2, time: f32) {
+    let max = min + size;
+    batch.fill_rect_vgradient(min, max, UPDRAFT_TOP, UPDRAFT_BOTTOM);
+    let gap = 56.0;
+    let columns = (size.x / 64.0).ceil().max(1.0);
+    let step = size.x / columns;
+    let half_width = (step * 0.3).min(22.0);
+    let mut y = max.y - (time * 70.0) % gap;
+    let mut odd = false;
+    while y > min.y + 8.0 {
+        // fade in at the bottom and out at the top
+        let height = ((y - min.y) / size.y).clamp(0.0, 1.0);
+        let mut color = UPDRAFT_ARC;
+        color.0[3] = (height * (1.0 - height) * 4.0).min(1.0) * 0.55;
+        let mut column = 0.0;
+        while column < columns {
+            let centre = min.x + step * (column + 0.5) + if odd { 6.0 } else { -6.0 };
+            let arc: Vec<Vec2> = (0..=8)
+                .map(|i| {
+                    let along = i as f32 / 8.0;
+                    Vec2::new(
+                        centre - half_width + 2.0 * half_width * along,
+                        y - (along * std::f32::consts::PI).sin() * half_width * 0.8,
+                    )
+                })
+                .collect();
+            batch.stroke_polyline(&arc, 3.0, color);
+            column += 1.0;
+        }
+        y -= gap;
+        odd = !odd;
+    }
+}
+
+const UPDRAFT_TOP: Color = Color([0.85, 0.78, 0.97, 0.0]);
+const UPDRAFT_BOTTOM: Color = Color([0.85, 0.78, 0.97, 0.16]);
+const UPDRAFT_ARC: Color = Color([0.65, 0.48, 0.88, 1.0]);
 
 /// Effect of the animations on a decoration object.
 #[derive(Debug, Clone, Copy)]

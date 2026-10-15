@@ -300,6 +300,29 @@ def star_island(sinking=False):
     return s
 
 
+def island_tile(sinking=False):
+    """Star island for the game (M2.5.2): origin in the middle of the walkable surface, 180 wide;
+    the client stretches it to the width of the island zone."""
+    s = f'<ellipse cx="0" cy="34" rx="78" ry="30" fill="{GLOW}" opacity="0.22"/>'
+    s += f'<g transform="translate(0,14)">'
+    if sinking:
+        for x in (-30, 0, 30):
+            s += f'<path d="M {x},40 v 18" stroke="{STONE_LIGHT}" stroke-width="4" stroke-linecap="round" opacity="0.7"/>'
+    s += f'<path d="M -90,0 Q -80,-12 -60,-14 L 60,-14 Q 84,-12 90,0 Q 60,30 20,40 Q 0,60 -20,40 Q -60,30 -90,0 Z" fill="{STONE}" {st(4)}/>'
+    s += f'<path d="M -86,-6 Q 0,-20 86,-6" fill="none" stroke="#6fbf8a" stroke-width="7" stroke-linecap="round"/>'
+    for (x, y) in ((-40, 18), (10, 30), (40, 10)):
+        s += f'<circle cx="{x}" cy="{y}" r="4" fill="{GLOW}"/>'
+    return s + '</g>'
+
+
+def export_tiles():
+    with open('assets/map/tiles/star-island.svg', 'w') as f:
+        f.write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="-96 -10 192 92">\n'
+                '  <!-- Star island (R2-M2.5, M2.5.2, from tools/design/chapter5_drafts.py): drifting and '
+                'sinking. Origin in the middle of the walkable surface. -->\n'
+                f'  <g id="drift">{island_tile(False)}</g>\n  <g id="sink">{island_tile(True)}</g>\n</svg>\n')
+
+
 # ── Spring and decoration ───────────────────────────────────────────────
 
 def star_spring(spark=False):
@@ -481,3 +504,4 @@ def sheet():
 if __name__ == '__main__':
     os.makedirs('docs/release-2/design', exist_ok=True)
     open('docs/release-2/design/chapter5-drafts.svg', 'w').write(sheet())
+    export_tiles()

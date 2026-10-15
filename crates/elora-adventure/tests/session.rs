@@ -692,3 +692,29 @@ fn night_maps_are_dark_and_glowing_decoration_lights_them() {
     s.enter("gorge-3", map, "west", &Tuning::default());
     assert!((s.darkness() - 1.0).abs() < 1e-6);
 }
+
+/// Star islands and updrafts (R2-M2.5, M2.5.2) come from the zones of the map.
+#[test]
+fn island_and_updraft_zones_become_part_of_the_world() {
+    let mut map = load("meadow-1");
+    let spawn = map.adventure.object("west").unwrap().pos;
+    for (id, at) in [
+        ("island-sink-a", spawn + Vec2::new(200.0, -64.0)),
+        ("island-sink-a-to", spawn + Vec2::new(400.0, -64.0)),
+        ("updraft-a", spawn + Vec2::new(600.0, -300.0)),
+    ] {
+        map.adventure.objects.push(elora_map::Object {
+            id: id.into(),
+            pos: at,
+            kind: elora_map::ObjectKind::Zone {
+                size: Vec2::new(128.0, 32.0),
+            },
+        });
+    }
+    let mut s = Session::new_game(Content::builtin());
+    let w = s.enter("meadow-1", map, "west", &Tuning::default());
+    assert_eq!(w.islands.len(), 1);
+    assert!(w.islands[0].sinks);
+    assert_eq!(w.islands[0].end, spawn + Vec2::new(400.0, -64.0));
+    assert_eq!(w.collision.movers.updrafts.len(), 1);
+}

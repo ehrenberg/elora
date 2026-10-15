@@ -123,6 +123,10 @@ pub struct Scene {
     pub lasers: Vec<SceneLaser>,
     pub pickups: Vec<(PickupKind, Vec2)>,
     pub spawns: Vec<Vec2>,
+    /// Star islands (M2.5.2): top-left corner, size, sinks.
+    pub islands: Vec<(Vec2, Vec2, bool)>,
+    /// Updrafts: top-left corner and size.
+    pub updrafts: Vec<(Vec2, Vec2)>,
     /// Camera centre.
     pub camera: Vec2,
 }
@@ -232,6 +236,16 @@ impl Scene {
                 )
             })
             .collect();
+    }
+
+    /// Star islands between the last two ticks, and the updrafts (M2.5.2).
+    pub fn add_islands(&mut self, world: &World, alpha: f32) {
+        self.islands = world
+            .islands
+            .iter()
+            .map(|i| (i.prev.lerp(i.pos, alpha), i.size, i.sinks))
+            .collect();
+        self.updrafts.clone_from(&world.collision.movers.updrafts);
     }
 
     pub fn add_pickups(&mut self, world: &World) {

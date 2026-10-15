@@ -6,6 +6,37 @@ use elora_sim::{Collision, Event};
 
 use crate::{App, draw, figure, skins};
 
+/// Faint glow of the star islands and updrafts in the dark (M2.5.2).
+const ISLAND_GLOW: f32 = 0.55;
+const UPDRAFT_GLOW: f32 = 0.4;
+
+/// Star islands and updrafts glow faintly so the way stays visible in the dark (M2.5.2,
+/// drawing only): centre, radius and intensity.
+fn glows(world: &elora_sim::World) -> Vec<(elora_sim::Vec2, f32, f32)> {
+    let mut out: Vec<_> = world
+        .islands
+        .iter()
+        .map(|island| {
+            let centre = island.pos + elora_sim::Vec2::new(island.size.x / 2.0, island.size.y);
+            (centre, island.size.x * 0.5 + 40.0, ISLAND_GLOW)
+        })
+        .collect();
+    for &(at, size) in &world.collision.movers.updrafts {
+        // a chain of soft lights up the column
+        let radius = (size.x * 0.7).max(48.0);
+        let mut y = at.y + radius / 2.0;
+        while y < at.y + size.y {
+            out.push((
+                elora_sim::Vec2::new(at.x + size.x / 2.0, y),
+                radius,
+                UPDRAFT_GLOW,
+            ));
+            y += radius;
+        }
+    }
+    out
+}
+
 /// Saturation of the adventure world by number of freed springs (E-328): pale, then vivid.
 const SATURATION_BY_SPRINGS: [f32; 6] = [0.62, 0.74, 0.84, 0.92, 0.97, 1.0];
 
@@ -63,14 +94,19 @@ impl App {
         #[allow(clippy::cast_precision_loss)]
         let screen = elora_sim::Vec2::new(w as f32, h as f32);
         let per_px = camera.units_per_pixel(screen).max(0.0001);
-        let elora = elora.map(|pos| (pos, elora_map::lights::elora_radius()));
+        let elora = elora.map(|pos| (pos, elora_map::lights::elora_radius(), 1.0));
         let lights: Vec<elora_render::Light> = elora
             .into_iter()
-            .chain(elora_map::lights::map_lights(&self.sandbox.map))
-            .map(|(pos, r)| elora_render::Light {
+            .chain(
+                elora_map::lights::map_lights(&self.sandbox.map)
+                    .into_iter()
+                    .map(|(p, r)| (p, r, 1.0)),
+            )
+            .chain(glows(&self.sandbox.world))
+            .map(|(pos, r, intensity)| elora_render::Light {
                 pos: camera.world_to_screen(pos, screen),
                 radius: r / per_px,
-                intensity: 1.0,
+                intensity,
             })
             .filter(|l| {
                 l.pos.x > -l.radius

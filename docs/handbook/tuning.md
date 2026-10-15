@@ -129,6 +129,13 @@ Only in the adventure and in the spring fight (E-223). Starting values for playt
 | A-40 | Interval between snowballs | **350 ms** | | D-M24-06 |
 | A-41 | Rest after an avalanche | **8000 ms** | Before the same slope goes off again | D-M24-06 |
 | A-42 | Pulling up on the climbing wall | **0** (strengthened **1.6** units/tick) | After Tüftel's work with the spring spark of the frost spring (flag `eisgriff.stark`): pressing towards the wall pulls Elora up, ice grip cling duration A-06 doubled | D-M24-03 |
+| A-43 | Drifting speed of the star islands | **1.2** units/tick | Back and forth between the island zone and `<id>-to`, slower at both ends | R2-M2.5, E-364 |
+| A-44 | Sinking island: sinking speed | **0.8** units/tick | While someone stands on it (`sink` in the id) | R2-M2.5 |
+| A-45 | Sinking island: rising speed | **0.5** units/tick | When nobody stands on it any more | R2-M2.5 |
+| A-46 | Sinking island: deepest point | **160** units | Below its path | R2-M2.5 |
+| A-47 | Updraft lift while gliding | **1.1** units/tick² | Beats gravity (0.5): gliding Elora rises | R2-M2.5, E-364 |
+| A-48 | Updraft: fastest rise while gliding | **7** units/tick | | R2-M2.5 |
+| A-49 | Updraft push without gliding | **0.25** units/tick² | Only slows the fall | R2-M2.5 |
 
 ## F. Rules from follow-up decisions
 

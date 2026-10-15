@@ -49,6 +49,16 @@ const ARMOR: Color = Color::hex(0xe0b85a);
 const SPAWN: Color = Color::rgba(1.0, 1.0, 1.0, 0.35);
 
 /// Draws map, pickups, figures, projectiles, lasers, effects and crosshair.
+/// Updrafts and star islands (M2.5.2), behind the figures.
+fn islands(batch: &mut ShapeBatch, scene: &Scene, art: &crate::map_art::MapArt, time: f32) {
+    for &(min, size) in &scene.updrafts {
+        crate::map_art::draw_updraft(batch, min, size, time);
+    }
+    for &(min, size, sinks) in &scene.islands {
+        crate::map_art::draw_island(batch, art, min, size, sinks);
+    }
+}
+
 pub fn scene(
     batch: &mut ShapeBatch,
     scene: &Scene,
@@ -82,6 +92,7 @@ pub fn scene(
     if let Some(map) = map {
         ground_shadows(batch, map, scene);
     }
+    islands(batch, scene, &map_view.art, time);
     // weather behind the figures: particles of the back layer, splashes (R2-W1)
     weather.draw_back(batch);
     spawns_and_pickups(batch, scene, items, time);
@@ -455,6 +466,91 @@ mod tests {
         let svg = batch.debug_svg(tl, tl + camera.size, BACKGROUND);
         std::fs::write(
             concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/world.svg"),
+            svg,
+        )
+        .unwrap();
+    }
+    /// Small test map with star islands and an updraft over a spike pit (M2.5.2), for trying
+    /// them in the editor: `cargo test -p elora-client --bin elora islands_demo_map -- --ignored`
+    /// writes `target/islands-demo.emap`.
+    #[test]
+    #[ignore = "only writes a file for trying it out"]
+    fn islands_demo_map() {
+        let (w, h) = (64, 30);
+        let rows: Vec<String> = (0..h)
+            .map(|y| {
+                (0..w)
+                    .map(|x| match (x, y) {
+                        (4, 21) => 'S',
+                        (0 | 63, _) | (_, 0 | 29) | (1..=11 | 52..=62, 22..) | (52..=62, 12) => '#',
+                        (12..=51, 28) => '^',
+                        _ => '.',
+                    })
+                    .collect()
+            })
+            .collect();
+        let refs: Vec<&str> = rows.iter().map(String::as_str).collect();
+        let mut map = elora_map::Map::from_rows("islands-demo", &refs).unwrap();
+        let ts = 32.0;
+        let zone = |id: &str, x: f32, y: f32, w: f32, h: f32| elora_map::Object {
+            id: id.into(),
+            pos: Vec2::new(x * ts, y * ts),
+            kind: elora_map::ObjectKind::Zone {
+                size: Vec2::new(w * ts, h * ts),
+            },
+        };
+        map.adventure.objects = vec![
+            zone("island-fixed", 13.0, 22.0, 4.0, 1.0),
+            zone("island-drift", 19.0, 21.0, 5.0, 1.0),
+            zone("island-drift-to", 29.0, 21.0, 5.0, 1.0),
+            zone("island-sink", 36.0, 22.0, 4.0, 1.0),
+            zone("updraft-1", 43.0, 8.0, 4.0, 19.0),
+        ];
+        map.save(std::path::Path::new(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../target/islands-demo.emap"
+        )))
+        .unwrap();
+    }
+
+    /// Star islands and an updraft (M2.5.2) for visual inspection:
+    /// `cargo test -p elora-client --bin elora islands_sheet -- --ignored`, then
+    /// `cargo xtask svg-preview target/islands.svg target/islands.png 1200`.
+    #[test]
+    #[ignore = "only writes a file for visual inspection"]
+    fn islands_sheet() {
+        let art = crate::map_art::MapArt::load();
+        let mut batch = ShapeBatch::default();
+        batch.fill_rect(Vec2::ZERO, Vec2::new(1200.0, 500.0), Color::hex(0x2f3778));
+        crate::map_art::draw_updraft(
+            &mut batch,
+            Vec2::new(860.0, 40.0),
+            Vec2::new(128.0, 420.0),
+            0.3,
+        );
+        for (x, y, w, sinks) in [
+            (60.0, 300.0, 96.0, false),
+            (240.0, 260.0, 160.0, false),
+            (480.0, 320.0, 256.0, true),
+        ] {
+            crate::map_art::draw_island(
+                &mut batch,
+                &art,
+                Vec2::new(x, y),
+                Vec2::new(w, 32.0),
+                sinks,
+            );
+            // walkable surface
+            batch.stroke_line(
+                Vec2::new(x, y),
+                Vec2::new(x + w, y),
+                1.0,
+                Color::hex(0xff0000),
+            );
+        }
+        let svg = batch.debug_svg(Vec2::ZERO, Vec2::new(1200.0, 500.0), BACKGROUND);
+        std::fs::write(
+            concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/islands.svg"),
             svg,
         )
         .unwrap();

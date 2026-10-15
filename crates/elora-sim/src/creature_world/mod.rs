@@ -51,7 +51,7 @@ fn sign(v: f32) -> i8 {
 /// Is there something solid (or a platform) below the point?
 fn floor_at(col: &Collision, p: Vec2) -> bool {
     let t = col.tile_at(p);
-    t.is_solid() || t == Tile::Platform
+    t.is_solid() || t == Tile::Platform || col.movers.island_at(p)
 }
 
 /// Arcing throw from `from` to `to`: horizontal with `speed`, vertical such that the

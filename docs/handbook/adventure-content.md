@@ -116,6 +116,8 @@ goal = { type = "talk", who = "tueftel" }
 
 The quest book shows completed steps and the current one, further ones as “?” (E-251).
 
+**Night (R2-M2.5, M2.5.1):** `darkness = 0.9` on an area makes its maps dark outside the lights of `assets/map/lights.toml` (0 = day, 1 = pitch black); `map_darkness = { "gorge-3" = 1.0 }` overrides it for single maps.
+
 ## Temperature bars (`worldmap.toml`, E-320, E-342)
 
 Areas with `hot = true` get the **heat bar**, areas with `cold = true` the **cold bar** (not both). Both bars work alike; their values are in `[temperature.heat]` and `[temperature.cold]`:
@@ -138,7 +140,7 @@ The heat bar fills in 20 s, cools in 8 s in the shade (roof, zones `shade…`, s
 
 ## Terrain with state (R2-M2.4)
 
-- **Zones with a fixed name prefix:** `shade…` and `oasis…` cool the heat bar (E-320), `fire…` warms up the cold bar within a few seconds (E-342; roofs warm more slowly, in the guardian arenas it is paused). The prefixes and times come from `[temperature]` in `worldmap.toml` (see below). `avalanche…` is an **avalanche slope**: a stomp or a grenade in it, or a step into the zone `<hang>-step` (e.g. `avalanche-ridge` and `avalanche-ridge-step`), makes A-39 snowballs roll downhill from the higher end at an interval of A-40; afterwards the slope rests for A-41.
+- **Zones with a fixed name prefix:** `shade…` and `oasis…` cool the heat bar (E-320), `fire…` warms up the cold bar within a few seconds (E-342; roofs warm more slowly, in the guardian arenas it is paused). The prefixes and times come from `[temperature]` in `worldmap.toml` (see below). `avalanche…` is an **avalanche slope**: a stomp or a grenade in it, or a step into the zone `<hang>-step` (e.g. `avalanche-ridge` and `avalanche-ridge-step`), makes A-39 snowballs roll downhill from the higher end at an interval of A-40; afterwards the slope rests for A-41. `island…` is a **floating star island** (R2-M2.5, E-364): the zone is its body, the top edge the walkable surface (one-way like a platform; it carries Elora and enemies). A second zone `<id>-to` makes it drift back and forth between its place and the top-left corner of that zone (A-43); with `sink` in the id it sinks while someone stands on it and rises again (A-44 to A-46). `updraft…` is an **updraft**: it lifts a gliding Elora (A-47, A-48) and only slows her fall otherwise (A-49).
 - **Icicles** are enemies of the kind `icicle` (behavior `icicle`): place them on the ceiling; they tremble as soon as Elora is below, fall and shatter. No experience, no loot.
 
 ## Adventure maps in the editor (A1.8)

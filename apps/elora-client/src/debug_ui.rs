@@ -858,6 +858,9 @@ fn tuning(ui: &mut egui::Ui, t: &mut Tuning) {
     section(ui, "Abilities & enemies (A-01 to A-15)", false, |ui| {
         ability_values(ui, t, &d);
     });
+    section(ui, "Star islands & updrafts (A-43 to A-49)", false, |ui| {
+        islands(ui, t, &d);
+    });
     section(ui, "Weapons (T-18 to T-27)", false, |ui| {
         weapons(ui, t, &d);
         weapons_grenade(ui, t, &d);
@@ -1186,6 +1189,58 @@ fn ability_values(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
         &mut t.glide_control_speed,
         0.5..=20.0,
         d.glide_control_speed,
+    );
+}
+
+fn islands(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
+    slider(
+        ui,
+        "Island speed",
+        &mut t.island_speed,
+        0.0..=6.0,
+        d.island_speed,
+    );
+    slider(
+        ui,
+        "Sinking speed",
+        &mut t.island_sink_speed,
+        0.0..=4.0,
+        d.island_sink_speed,
+    );
+    slider(
+        ui,
+        "Rising speed",
+        &mut t.island_rise_speed,
+        0.0..=4.0,
+        d.island_rise_speed,
+    );
+    slider(
+        ui,
+        "Sinking depth",
+        &mut t.island_sink_depth,
+        0.0..=640.0,
+        d.island_sink_depth,
+    );
+    slider(
+        ui,
+        "Updraft lift",
+        &mut t.updraft_lift,
+        0.0..=4.0,
+        d.updraft_lift,
+    );
+    slider(
+        ui,
+        "Updraft max. rise",
+        &mut t.updraft_rise_speed,
+        0.0..=20.0,
+        d.updraft_rise_speed,
+    );
+    slider(
+        ui,
+        "Updraft push (no glide)",
+        &mut t.updraft_push,
+        0.0..=1.0,
+        d.updraft_push,
     );
 }
 

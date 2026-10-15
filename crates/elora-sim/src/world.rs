@@ -90,6 +90,8 @@ pub struct World {
     /// Light sources of a dark map (R2-M2.5, M2.5.1): centre and radius in world units; empty =
     /// not dark. Set by the session; creatures of the night avoid light.
     pub lights: Vec<(Vec2, f32)>,
+    /// Floating star islands (R2-M2.5, M2.5.2); set by the session via [`World::set_islands`].
+    pub islands: Vec<crate::Island>,
 }
 
 impl World {
@@ -128,6 +130,7 @@ impl World {
             next_id: 1,
             weather: None,
             lights: Vec::new(),
+            islands: Vec::new(),
             lightning: crate::weather::Lightning::default(),
         }
     }
@@ -254,6 +257,7 @@ impl World {
         self.update_hook_wilt();
         self.tick_weather();
         self.tick_terrain();
+        self.tick_islands();
         self.tick_characters();
         self.tick_flags_physics();
         self.tick_characters_deferred();

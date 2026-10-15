@@ -201,6 +201,20 @@ pub struct Tuning {
     /// A-42: pulling up on the climbing wall (units/tick, 0 = sliding only); the session sets
     /// it after the spring spark of the frost spring (D-M24-03)
     pub grip_climb: f32,
+    /// A-43: drifting speed of the star islands (units/tick, R2-M2.5)
+    pub island_speed: f32,
+    /// A-44: sinking island: sinks this fast while someone stands on it (units/tick)
+    pub island_sink_speed: f32,
+    /// A-45: sinking island: rises this fast again (units/tick)
+    pub island_rise_speed: f32,
+    /// A-46: sinking island: sinks at most this deep (units)
+    pub island_sink_depth: f32,
+    /// A-47: updraft lifts a gliding character (units/tick²)
+    pub updraft_lift: f32,
+    /// A-48: updraft: highest rising speed while gliding (units/tick)
+    pub updraft_rise_speed: f32,
+    /// A-49: updraft pushes a character that does not glide (units/tick²)
+    pub updraft_push: f32,
 }
 
 impl Default for Tuning {
@@ -297,6 +311,13 @@ impl Default for Tuning {
             avalanche_gap: 350,
             avalanche_rest: 8000,
             grip_climb: 0.0,
+            island_speed: 1.2,
+            island_sink_speed: 0.8,
+            island_rise_speed: 0.5,
+            island_sink_depth: 160.0,
+            updraft_lift: 1.1,
+            updraft_rise_speed: 7.0,
+            updraft_push: 0.25,
         }
     }
 }

@@ -15,6 +15,7 @@ pub mod dummy;
 pub mod entities;
 pub mod event;
 pub mod input;
+pub mod island;
 pub mod math;
 pub mod player;
 #[cfg(feature = "serde")]
@@ -32,6 +33,7 @@ pub use creature::{Behavior, Creature, CreatureKind, DiverDef, LootEntry, QueenD
 pub use dummy::DummyPattern;
 pub use event::{CreatureAct, DeathCause, Event, PickupKind};
 pub use input::PlayerInput;
+pub use island::Island;
 pub use math::Vec2;
 pub use player::{Character, Controller, Player, Team};
 pub use tuning::Tuning;

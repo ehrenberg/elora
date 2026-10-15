@@ -1,6 +1,6 @@
 # R2-M2.5 – Chapter 5: Sternschlucht – implementation plan
 
-Status: **in progress** (M2.5.0 done, E-369) · Decisions E-362 to E-369 · Basis: [`world-book.md`](world-book.md) §4.5 and §5, [`m2-4-plan.md`](m2-4-plan.md), E-228, E-354
+Status: **in progress** (M2.5.0 to M2.5.2 done) · Decisions E-362 to E-369 · Basis: [`world-book.md`](world-book.md) §4.5 and §5, [`m2-4-plan.md`](m2-4-plan.md), E-228, E-354
 
 ## Goal
 
@@ -50,7 +50,7 @@ continuing in between.
 |---|---|---|---|
 | M2.5.0 ✅ | Drafts | Luma (weaving, weak, singing, relieved), the Withered One (first appearance: grey, thin, sad – draining, fleeing), shadow moth, stone goblin (rock/awake/rolling), echo (Elora silhouette, translucent), star cape, star islands, note stones (dark/lit), star bridge, star lantern, updraft, Star Spring ruins (dark/one spark), gorge decoration: night rocks, crystal stars, glowing mushrooms, ruin arches | Your selection |
 | M2.5.1 ✅ | Darkness and light | Night maps get a **darkness layer** (Sternschlucht `darkness = 0.9`, single maps may override up to 1.0 via `map_darkness`) in the renderer: a soft light circle around Elora plus light sources (glow mushrooms, star lanterns, lit note stones, star bridges); light strength as map/area setting; the simulation knows **light zones** so shadow enemies can flee from light. Setting “gentle” for players who find it too dark | Tests + visual check |
-| M2.5.2 | Star islands and updrafts | **Moving platforms** in the simulation (deterministic): islands drift on a path, some sink slowly under Elora and rise again; they carry characters and creatures. **Updraft zones** lift gliding figures (and push non-gliding ones a little) | Tests + sandbox |
+| M2.5.2 ✅ | Star islands and updrafts | **Moving platforms** in the simulation (deterministic): islands drift on a path, some sink slowly under Elora and rise again; they carry characters and creatures. **Updraft zones** lift gliding figures (and push non-gliding ones a little). Built as zones `island…` (+ `<id>-to`, `sink` in the id) and `updraft…`, values A-43 to A-49 | Tests + sandbox |
 | M2.5.3 | Note stones and star bridges | Touching a note stone plays a note and lights a star bridge (temporary platform tiles, visible light) for a few seconds; note stones in the right order are part of “Luma's song” | Tests |
 | M2.5.4 | New enemies | **Shadow moth**: flies in small swarms, avoids light, attacks in the dark. **Stone goblin**: looks like a rock until Elora is close, then rolls towards her; stomp or hammer stops it. **Echo**: appears from a dark mirror, repeats Elora's movements with a delay; touch hurts, light makes it fade | Tests + sandbox |
 | M2.5.5 | Climax tech | **“Protect Luma”** (see below): rounds of grey shadows towards Luma, star lanterns to light, song progress, failure → back to the spring stone; the Withered One as a scripted figure (appears, drains, flees) | Tests + sandbox |
