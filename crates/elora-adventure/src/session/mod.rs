@@ -291,6 +291,10 @@ impl Session {
         world.creature_kinds.clone_from(&c.creatures);
         world.adventure = true;
         world.weather = weather_env(map.weather);
+        // night: the glowing decoration lights the dark (M2.5.1)
+        if c.area_of(name).is_some_and(|a| a.darkness > 0.0) {
+            world.lights = elora_map::lights::map_lights(&map);
+        }
 
         let objects = &map.adventure.objects;
         let pos = objects

@@ -108,6 +108,12 @@ pub fn story(c: &Content) -> Result<(), String> {
 /// Heat and cold bar (`[temperature]` in `worldmap.toml`): times, factors, zone prefixes and
 /// weather keys; an area is hot or cold, not both.
 fn temperature(c: &Content) -> Result<(), String> {
+    if let Some(a) = c.areas.iter().find(|a| !(0.0..=1.0).contains(&a.darkness)) {
+        return Err(format!(
+            "worldmap.toml area `{}`: darkness must be 0 to 1",
+            a.id
+        ));
+    }
     let t = &c.temperature;
     for (name, bar) in [("heat", &t.heat), ("cold", &t.cold)] {
         let at = format!("worldmap.toml [temperature.{name}]");

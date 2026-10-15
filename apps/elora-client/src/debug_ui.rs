@@ -790,6 +790,7 @@ fn weather(ui: &mut egui::Ui, s: &mut Sandbox) {
             }
             ui.add(egui::Slider::new(&mut w.intensity, 0.0..=1.0).text("Intensity"));
             ui.add(egui::Slider::new(&mut w.wind, -1.0..=1.0).text("Wind"));
+            ui.add(egui::Slider::new(&mut s.night_preview, 0.0..=1.0).text("Night (preview)"));
         });
 }
 

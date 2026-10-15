@@ -87,9 +87,18 @@ pub struct World {
     pub weather: Option<crate::weather::WeatherEnv>,
     /// Lightning state of the thunderstorm (R2-W1).
     pub lightning: crate::weather::Lightning,
+    /// Light sources of a dark map (R2-M2.5, M2.5.1): centre and radius in world units; empty =
+    /// not dark. Set by the session; creatures of the night avoid light.
+    pub lights: Vec<(Vec2, f32)>,
 }
 
 impl World {
+    /// Is `pos` inside one of the light sources of the map? (M2.5.1; always `false` on maps
+    /// without lights.)
+    pub fn is_lit(&self, pos: Vec2) -> bool {
+        self.lights.iter().any(|&(c, r)| c.distance(pos) <= r)
+    }
+
     /// Empty world at tick 0 on the given map, with friendly fire and pickups on.
     pub fn new(tuning: Tuning, collision: Collision) -> Self {
         Self {
@@ -118,6 +127,7 @@ impl World {
             loot: Vec::new(),
             next_id: 1,
             weather: None,
+            lights: Vec::new(),
             lightning: crate::weather::Lightning::default(),
         }
     }

@@ -660,3 +660,22 @@ fn kristellas_storm_fills_the_hall_until_she_is_calmed() {
     s.tick(&mut w, false);
     assert!(s.map.weather.is_clear());
 }
+
+/// Night in the Sternschlucht (R2-M2.5, M2.5.1): the area is dark, glowing decoration lights it.
+#[test]
+fn night_maps_are_dark_and_glowing_decoration_lights_them() {
+    let mut map = load("meadow-1");
+    let spawn = map.adventure.object("west").unwrap().pos;
+    map.decor_back.push(elora_map::Decor::new(
+        elora_map::Art::Builtin("lantern".into()),
+        spawn + Vec2::new(64.0, 0.0),
+    ));
+    let mut s = Session::new_game(Content::builtin());
+    let w = s.enter("gorge-1", map.clone(), "west", &Tuning::default());
+    assert!(s.darkness() > 0.5, "the Sternschlucht is night");
+    assert!(w.is_lit(spawn + Vec2::new(64.0, 0.0)));
+    assert!(!w.is_lit(spawn + Vec2::new(2000.0, 0.0)));
+    // a day map has no lights at all
+    let w = s.enter("meadow-1", map, "west", &Tuning::default());
+    assert!(s.darkness() == 0.0 && w.lights.is_empty());
+}

@@ -79,6 +79,13 @@ impl Session {
         self.content.area_of(&self.map_name).is_some_and(|a| a.hot)
     }
 
+    /// Darkness of the map (night, R2-M2.5, M2.5.1): 0 = daylight, 1 = black outside the lights.
+    pub fn darkness(&self) -> f32 {
+        self.content
+            .area_of(&self.map_name)
+            .map_or(0.0, |a| a.darkness.clamp(0.0, 1.0))
+    }
+
     /// Is the map a cold area (Frostspitzen, E-342)?
     pub fn chilly(&self) -> bool {
         self.content.area_of(&self.map_name).is_some_and(|a| a.cold)

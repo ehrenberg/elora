@@ -25,6 +25,7 @@ pub use svg::{SvgAsset, SvgError};
 pub use text::{Align, Font, FontError};
 pub use wgpu;
 
+use elora_sim::Vec2;
 use shapes::Vertex;
 
 /// Error while setting up the renderer.
@@ -102,6 +103,26 @@ struct Post {
     frost: f32,
     /// Color grading of the weather.
     grade: Grade,
+    /// Night (R2-M2.5, M2.5.1): 0 = off, 1 = black outside the lights.
+    darkness: f32,
+    /// Light sources of the night in screen pixels, at most [`MAX_LIGHTS`].
+    lights: Vec<Light>,
+    /// Uniform buffer of the lights (count + positions).
+    light_buffer: wgpu::Buffer,
+}
+
+/// Lights the shader can draw at once; more are dropped, the nearest to the screen centre win.
+pub const MAX_LIGHTS: usize = 32;
+
+/// A light of the night (M2.5.1): centre and radius in screen pixels, intensity 0..1.
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub struct Light {
+    /// Centre in screen pixels.
+    pub pos: Vec2,
+    /// Radius in screen pixels (fully dark beyond it).
+    pub radius: f32,
+    /// Brightness 0..1 in the centre.
+    pub intensity: f32,
 }
 
 /// Color grading of the world by the weather (R2-W1): tint, darkening, fog, lightning.
@@ -295,6 +316,19 @@ impl Renderer {
         self.post.frost = frost.clamp(0.0, 1.0);
     }
 
+    /// Night for the next frames (M2.5.1): `darkness` 0 = off, 1 = black outside the lights;
+    /// `lights` in screen pixels (only the [`MAX_LIGHTS`] nearest to the screen centre count).
+    pub fn set_darkness(&mut self, darkness: f32, lights: &[Light]) {
+        self.post.darkness = darkness.clamp(0.0, 1.0);
+        self.post.lights.clear();
+        self.post.lights.extend_from_slice(lights);
+        let centre = Vec2::new(self.config.width as f32, self.config.height as f32) * 0.5;
+        self.post
+            .lights
+            .sort_by(|a, b| a.pos.distance(centre).total_cmp(&b.pos.distance(centre)));
+        self.post.lights.truncate(MAX_LIGHTS);
+    }
+
     /// Weather color grading for the next frames ([`Grade::NONE`] = off).
     pub fn set_grade(&mut self, grade: Grade) {
         self.post.grade = grade;
@@ -383,6 +417,7 @@ impl Renderer {
         if self.post.strength <= 0.0
             && self.post.saturation >= 0.999
             && self.post.frost <= 0.0
+            && self.post.darkness <= 0.0
             && self.post.grade.is_none()
         {
             self.draw_layer(frame, false, camera, batch, Some(clear));
@@ -433,10 +468,17 @@ impl Renderer {
             gr.darken,
             gr.flash,
             self.post.frost,
-            0.0,
+            self.post.darkness,
         ];
         self.queue
             .write_buffer(&self.post.uniform, 0, bytemuck::cast_slice(&params));
+        let lights = light_uniform(
+            &self.post.lights,
+            self.config.width as f32,
+            self.config.height as f32,
+        );
+        self.queue
+            .write_buffer(&self.post.light_buffer, 0, bytemuck::cast_slice(&lights));
         let mut pass = frame
             .encoder
             .begin_render_pass(&wgpu::RenderPassDescriptor {
@@ -561,6 +603,23 @@ impl Renderer {
         self.queue.submit([frame.encoder.finish()]);
         self.queue.present(frame.texture);
     }
+}
+
+/// Lights for the shader: `[count, 0, 0, 0]`, then per light `[u, v, radius, intensity]` with
+/// the position in 0..1 of the screen and the radius in units of the screen height.
+fn light_uniform(lights: &[Light], width: f32, height: f32) -> Vec<f32> {
+    let mut out = vec![0.0; 4 * (MAX_LIGHTS + 1)];
+    let n = lights.len().min(MAX_LIGHTS);
+    out[0] = n as f32;
+    let h = height.max(1.0);
+    for (i, l) in lights.iter().take(n).enumerate() {
+        let k = 4 * (i + 1);
+        out[k] = l.pos.x / width.max(1.0);
+        out[k + 1] = l.pos.y / h;
+        out[k + 2] = l.radius / h;
+        out[k + 3] = l.intensity.clamp(0.0, 1.0);
+    }
+    out
 }
 
 /// Pipeline for colored shapes plus uniform buffer for the view area.
@@ -744,6 +803,16 @@ impl Post {
                     },
                     count: None,
                 },
+                wgpu::BindGroupLayoutEntry {
+                    binding: 3,
+                    visibility: wgpu::ShaderStages::FRAGMENT,
+                    ty: wgpu::BindingType::Buffer {
+                        ty: wgpu::BufferBindingType::Uniform,
+                        has_dynamic_offset: false,
+                        min_binding_size: None,
+                    },
+                    count: None,
+                },
             ],
         });
         let filter = device.create_sampler(&wgpu::SamplerDescriptor {
@@ -759,6 +828,14 @@ impl Post {
             layout,
             sampler: filter,
             uniform: create_buffer(device, "post", 64, wgpu::BufferUsages::UNIFORM),
+            light_buffer: create_buffer(
+                device,
+                "lights",
+                16 * (MAX_LIGHTS as u64 + 1),
+                wgpu::BufferUsages::UNIFORM,
+            ),
+            darkness: 0.0,
+            lights: Vec::new(),
             scene: None,
             strength: 0.0,
             time: 0.0,
@@ -806,6 +883,10 @@ impl Post {
                 wgpu::BindGroupEntry {
                     binding: 2,
                     resource: self.uniform.as_entire_binding(),
+                },
+                wgpu::BindGroupEntry {
+                    binding: 3,
+                    resource: self.light_buffer.as_entire_binding(),
                 },
             ],
         });
@@ -914,6 +995,22 @@ fn ensure_capacity(
 
 #[cfg(test)]
 mod tests {
+    /// Lights for the shader: count, then position and radius relative to the screen.
+    #[test]
+    fn lights_are_packed_for_the_shader() {
+        use super::{Light, MAX_LIGHTS, Vec2, light_uniform};
+        let l = Light {
+            pos: Vec2::new(960.0, 270.0),
+            radius: 108.0,
+            intensity: 2.0,
+        };
+        let u = light_uniform(&[l], 1920.0, 1080.0);
+        assert_eq!(u.len(), 4 * (MAX_LIGHTS + 1));
+        assert_eq!(&u[..8], &[1.0, 0.0, 0.0, 0.0, 0.5, 0.25, 0.1, 1.0]);
+        let many = vec![l; MAX_LIGHTS + 5];
+        assert!((light_uniform(&many, 1920.0, 1080.0)[0] - MAX_LIGHTS as f32).abs() < 1e-6);
+    }
+
     /// Parse and validate the shader like wgpu does (without a graphics card).
     #[test]
     fn shaders_are_valid() {

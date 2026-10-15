@@ -177,3 +177,16 @@ fn lightning_warns_then_strikes_and_hurts() {
     let ev = run(&mut w, PlayerInput::default(), 3000);
     assert!(!ev.iter().any(|e| matches!(e, Event::Lightning { .. })));
 }
+
+/// Light sources of a dark map (R2-M2.5, M2.5.1).
+#[test]
+fn light_sources_light_their_circle() {
+    let mut w = support::test_world(|_| {});
+    assert!(
+        !w.is_lit(elora_sim::Vec2::new(100.0, 100.0)),
+        "no lights: nothing lit"
+    );
+    w.lights.push((elora_sim::Vec2::new(100.0, 100.0), 64.0));
+    assert!(w.is_lit(elora_sim::Vec2::new(140.0, 100.0)));
+    assert!(!w.is_lit(elora_sim::Vec2::new(170.0, 100.0)));
+}

@@ -8,6 +8,7 @@
 pub mod adventure;
 mod ascii;
 mod binary;
+pub mod lights;
 pub mod look;
 pub mod rename;
 

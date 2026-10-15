@@ -44,6 +44,8 @@ pub struct Sandbox {
     watcher: Option<MapWatcher>,
     /// Result of the last hot reload (error text for an invalid map).
     pub reload_error: Option<String>,
+    /// Night to try out on any map (debug panel, M2.5.1): 0 = off.
+    pub night_preview: f32,
     /// Running input recording (M1.6).
     pub recording: Option<Recording>,
     /// Events since the last fetch (for effects).
@@ -81,6 +83,7 @@ impl Sandbox {
             accumulator: Duration::ZERO,
             watcher,
             reload_error: None,
+            night_preview: 0.0,
             recording: None,
             pending_events: Vec::new(),
             prev_creatures: std::collections::HashMap::new(),

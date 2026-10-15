@@ -829,6 +829,7 @@ dependencies = [
  "blake2",
  "elora-sim",
  "miniz_oxide 0.9.1",
+ "serde",
  "thiserror 2.0.21",
  "toml",
 ]

@@ -67,7 +67,7 @@ impl App {
         } else {
             None
         };
-        self.world_look(dt, info.tick);
+        self.world_look(dt, info.tick, &camera);
         if !self.present(&camera, screen, &info) {
             return;
         }

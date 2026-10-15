@@ -203,6 +203,40 @@ pub struct GraphicsSettings {
     pub ui_scale: f32,
     /// Weather: full, gentle or off (E-335).
     pub weather: WeatherQuality,
+    /// Night of dark areas: full or gentle (brighter) (R2-M2.5, M2.5.1).
+    #[serde(default)]
+    pub night: NightQuality,
+}
+
+/// How dark the night of the Sternschlucht looks (M2.5.1); only the look, not the game.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
+pub enum NightQuality {
+    #[default]
+    Full,
+    /// Clearly brighter, for players who find the night too dark.
+    Gentle,
+}
+
+impl NightQuality {
+    /// All choices in the settings.
+    pub const ALL: [Self; 2] = [Self::Full, Self::Gentle];
+
+    /// Language key of the choice.
+    pub fn label_key(self) -> &'static str {
+        match self {
+            Self::Full => "settings.night_full",
+            Self::Gentle => "settings.night_gentle",
+        }
+    }
+
+    /// Factor on the darkness of the area.
+    pub fn factor(self) -> f32 {
+        match self {
+            Self::Full => 1.0,
+            Self::Gentle => 0.55,
+        }
+    }
 }
 
 /// How much weather is visible (E-335); the effect in the adventure stays the same.
@@ -236,6 +270,7 @@ impl Default for GraphicsSettings {
             msaa: true,
             ui_scale: 1.0,
             weather: WeatherQuality::Full,
+            night: NightQuality::Full,
         }
     }
 }

@@ -382,6 +382,29 @@ fn graphics(ui: &mut Ui<'_>, cx: &MenuCtx<'_>, page: Rect, edit: &mut SettingsEd
         g.weather = modes[i];
         changed = true;
     }
+    // night of dark areas: full or gentle (M2.5.1)
+    let ny = wy + 46.0 * s;
+    ui.label(
+        lang.t("settings.night"),
+        Vec2::new(x, ny),
+        11.0,
+        TEXT_DIM,
+        Align::Left,
+    );
+    let nights = crate::settings::NightQuality::ALL;
+    let names: Vec<&str> = nights.iter().map(|m| lang.t(m.label_key())).collect();
+    let current = nights.iter().position(|m| *m == g.night).unwrap_or(0);
+    if let Some(i) = ui.tabs(
+        "night",
+        Vec2::new(x, ny + 10.0 * s),
+        24.0 * s,
+        &names,
+        current,
+        &[BLUE],
+    ) {
+        g.night = nights[i];
+        changed = true;
+    }
     changed
 }
 

@@ -13,7 +13,7 @@ impl App {
     /// Post-processing of the world for this frame: heat shimmer in the desert (E-320, stronger in
     /// the blazing sun and with the heat) and colour that returns with the springs
     /// (E-328, more colourful per freed spring; the change glides over a few seconds).
-    pub(crate) fn world_look(&mut self, dt: f32, tick: u64) {
+    pub(crate) fn world_look(&mut self, dt: f32, tick: u64, camera: &Camera) {
         let session = self.adventure.as_ref().map(|a| &a.session);
         let haze = session
             .filter(|s| s.hot())
@@ -36,6 +36,47 @@ impl App {
             gfx.renderer.set_frost(frost);
             gfx.renderer.set_grade(self.weather.grade());
         }
+        self.night(camera);
+    }
+
+    /// Night of dark areas (R2-M2.5, M2.5.1): darkness of the area (or the debug preview),
+    /// Elora's light and the glowing decoration in view.
+    fn night(&mut self, camera: &Camera) {
+        let session = self.adventure.as_ref().map(|a| &a.session);
+        let darkness = session
+            .map_or(0.0, elora_adventure::Session::darkness)
+            .max(self.sandbox.night_preview)
+            * self.settings.graphics.night.factor();
+        let Some(gfx) = &mut self.gfx else { return };
+        if darkness <= 0.0 {
+            gfx.renderer.set_darkness(0.0, &[]);
+            return;
+        }
+        let (w, h) = gfx.renderer.size();
+        #[allow(clippy::cast_precision_loss)]
+        let screen = elora_sim::Vec2::new(w as f32, h as f32);
+        let per_px = camera.units_per_pixel(screen).max(0.0001);
+        let elora = self
+            .sandbox
+            .world
+            .character(self.sandbox.player)
+            .map(|c| (c.core.pos, elora_map::lights::elora_radius()));
+        let lights: Vec<elora_render::Light> = elora
+            .into_iter()
+            .chain(elora_map::lights::map_lights(&self.sandbox.map))
+            .map(|(pos, r)| elora_render::Light {
+                pos: camera.world_to_screen(pos, screen),
+                radius: r / per_px,
+                intensity: 1.0,
+            })
+            .filter(|l| {
+                l.pos.x > -l.radius
+                    && l.pos.y > -l.radius
+                    && l.pos.x < screen.x + l.radius
+                    && l.pos.y < screen.y + l.radius
+            })
+            .collect();
+        gfx.renderer.set_darkness(darkness, &lights);
     }
 
     /// Weather of the map (online: sent along by the server) – rendering only (R2-W1).

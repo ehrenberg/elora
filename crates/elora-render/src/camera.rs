@@ -79,6 +79,15 @@ impl Camera {
         self.top_left() + Vec2::new(rel.x * self.size.x, rel.y * self.size.y)
     }
 
+    /// World point → screen point (pixels).
+    pub fn world_to_screen(&self, world: Vec2, screen_size: Vec2) -> Vec2 {
+        let rel = world - self.top_left();
+        Vec2::new(
+            rel.x / self.size.x * screen_size.x,
+            rel.y / self.size.y * screen_size.y,
+        )
+    }
+
     /// World units per screen pixel.
     pub fn units_per_pixel(&self, screen_size: Vec2) -> f32 {
         self.size.x / screen_size.x
@@ -108,5 +117,17 @@ mod tests {
         let s = ViewSettings::default().view_size(21.0 / 9.0);
         assert!((s.x - 1500.0).abs() < 0.01);
         assert!(s.y < 1050.0);
+    }
+
+    #[test]
+    fn world_to_screen_is_the_inverse_of_screen_to_world() {
+        let cam = Camera {
+            center: Vec2::new(500.0, 300.0),
+            size: Vec2::new(1280.0, 720.0),
+        };
+        let screen = Vec2::new(1920.0, 1080.0);
+        let p = Vec2::new(321.0, 456.0);
+        let back = cam.screen_to_world(cam.world_to_screen(p, screen), screen);
+        assert!(back.distance(p) < 1e-3, "{back:?}");
     }
 }

@@ -335,6 +335,9 @@ pub struct Area {
     /// Cold area (Frostspitzen, E-342): cold bar ([`Temperature::cold`]) and frost border.
     #[serde(default)]
     pub cold: bool,
+    /// Night (R2-M2.5, M2.5.1): 0 = daylight, 1 = black outside the lights (`assets/map/lights.toml`).
+    #[serde(default)]
+    pub darkness: f32,
     /// Chapter of the area and its guardian (kind from `creatures.toml`): defeating it shows
     /// the victory screen with `victory` and the title of honour `honor`.
     #[serde(default)]
