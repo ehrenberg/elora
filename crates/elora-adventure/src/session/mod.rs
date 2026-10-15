@@ -292,7 +292,9 @@ impl Session {
         world.adventure = true;
         world.weather = weather_env(map.weather);
         // night: the glowing decoration lights the dark (M2.5.1)
-        if c.area_of(name).is_some_and(|a| a.darkness > 0.0) {
+        if c.area_of(name)
+            .is_some_and(|a| a.darkness > 0.0 || a.map_darkness.values().any(|d| *d > 0.0))
+        {
             world.lights = elora_map::lights::map_lights(&map);
         }
 

@@ -108,7 +108,11 @@ pub fn story(c: &Content) -> Result<(), String> {
 /// Heat and cold bar (`[temperature]` in `worldmap.toml`): times, factors, zone prefixes and
 /// weather keys; an area is hot or cold, not both.
 fn temperature(c: &Content) -> Result<(), String> {
-    if let Some(a) = c.areas.iter().find(|a| !(0.0..=1.0).contains(&a.darkness)) {
+    if let Some(a) = c.areas.iter().find(|a| {
+        std::iter::once(&a.darkness)
+            .chain(a.map_darkness.values())
+            .any(|d| !(0.0..=1.0).contains(d))
+    }) {
         return Err(format!(
             "worldmap.toml area `{}`: darkness must be 0 to 1",
             a.id

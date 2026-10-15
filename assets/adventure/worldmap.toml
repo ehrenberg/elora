@@ -153,5 +153,6 @@ name = { de = "Sternschlucht", en = "Sternschlucht" }
 pos = [0.8, 0.74]
 color = "#a77be0"
 maps = "gorge-"
-# night (R2-M2.5, M2.5.1): dark outside the lights of assets/map/lights.toml
-darkness = 0.85
+# night (R2-M2.5, M2.5.1): dark outside the lights of assets/map/lights.toml; single maps can
+# override it, e.g. map_darkness = { "gorge-3" = 1.0 }
+darkness = 0.9

@@ -676,6 +676,19 @@ fn night_maps_are_dark_and_glowing_decoration_lights_them() {
     assert!(w.is_lit(spawn + Vec2::new(64.0, 0.0)));
     assert!(!w.is_lit(spawn + Vec2::new(2000.0, 0.0)));
     // a day map has no lights at all
-    let w = s.enter("meadow-1", map, "west", &Tuning::default());
+    let w = s.enter("meadow-1", map.clone(), "west", &Tuning::default());
     assert!(s.darkness() == 0.0 && w.lights.is_empty());
+    // a single map can be darker than its area
+    let mut content = Content::builtin();
+    let gorge = content
+        .areas
+        .iter_mut()
+        .find(|a| a.id == "sternschlucht")
+        .unwrap();
+    gorge.map_darkness.insert("gorge-3".into(), 1.0);
+    let mut s = Session::new_game(content);
+    s.enter("gorge-1", map.clone(), "west", &Tuning::default());
+    assert!((s.darkness() - 0.9).abs() < 1e-6);
+    s.enter("gorge-3", map, "west", &Tuning::default());
+    assert!((s.darkness() - 1.0).abs() < 1e-6);
 }
