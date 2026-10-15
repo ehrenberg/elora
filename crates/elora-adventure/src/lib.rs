@@ -17,6 +17,7 @@ pub mod script;
 pub mod session;
 pub mod state;
 pub mod stats;
+pub mod world_map;
 
 pub use data::{Content, GLEAM_DROPS};
 pub use dialog::{Conversation, Turn};

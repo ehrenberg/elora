@@ -86,6 +86,9 @@ pub struct Step {
     pub text: Text,
     /// Goal of the step.
     pub goal: Goal,
+    /// Map of the goal on the world map (R2-WM); otherwise it is derived from the goal.
+    #[serde(default)]
+    pub map: Option<String>,
 }
 
 /// Reward of a quest.
