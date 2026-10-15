@@ -178,6 +178,10 @@ Continued from **E-200**. Release 1 (E-001 to E-173) is in the
 | E-367 | 2026-10-14 | Way to the Sternschlucht | Gorge entrance at the far east of the Blütenwiesen, opens after chapter 4 |
 | E-368 | 2026-10-14 | Chapter 5 side quests | “Star fragments” and “Luma's song” |
 | E-369 | 2026-10-15 | Chapter 5 drafts (M2.5.0) | **Accepted** ([`design/chapter5-drafts.png`](design/chapter5-drafts.png)): **Luma variant B** (moth wings, feelers, woven shawl), **the Withered One variant A** (cracked grey drop with twig arms); everything else as drawn |
+| E-370 | 2026-10-15 | World map: where Elora is (interim task R2-WM) | **Overview + section map:** a painted overview of the Tauland with Elora on the path piece of her map section (roughly where she is inside it), plus a small detail window of the current section drawn from its real tiles (terrain outline, Elora, exits) |
+| E-371 | 2026-10-15 | World map: undiscovered parts | **Clouds/fog:** unvisited sections lie under clouds; areas can be guessed as outlines, their names appear after the first visit |
+| E-372 | 2026-10-15 | World map: markers | **Spring stones (saving), quest goal, springs and guardians, shops and characters** |
+| E-373 | 2026-10-15 | World map: key M | **Own full-screen map** on M (bindable, default M; pauses the game; M or Esc closes); the tab “Map” of the adventure menu shows the same view |
 
 ## Open points
 
