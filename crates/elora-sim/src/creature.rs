@@ -225,6 +225,42 @@ pub enum Behavior {
         /// Retreat time after a touch.
         flee_ms: u32,
     },
+    /// Shadow moth (R2-M2.5, E-365): flutters around its start point in a small swarm, attacks
+    /// Elora with `speed` while she is in sight **and in the dark**, and flees from light (lamps,
+    /// glowing mushrooms, lit note stones; Elora's own light does not count).
+    Moth {
+        /// Sight range (world units).
+        sight: f32,
+        /// Flight speed (world units per tick).
+        speed: f32,
+        /// Radius of the fluttering around the start point (world units).
+        flutter: f32,
+    },
+    /// Stone goblin (R2-M2.5, E-365): lies there as a harmless, invulnerable rock until Elora is
+    /// closer than `sight`, wakes up for `wake_ms` and rolls at her with `speed`. A hit, a stomp
+    /// or a wall stops it: dazed for `daze_ms` – **vulnerable while rolling and dazed** – then it
+    /// becomes a rock again.
+    Goblin {
+        /// Wakes up when Elora is closer than this (world units).
+        sight: f32,
+        /// Waking up (trembling) before it rolls.
+        wake_ms: u32,
+        /// Rolling speed (world units per tick).
+        speed: f32,
+        /// Dazed after being stopped.
+        daze_ms: u32,
+    },
+    /// Echo (R2-M2.5, E-365): waits in a dark mirror (its start point); once Elora is in sight
+    /// it steps out and walks her path `delay_ms` behind her, through everything. Touching it
+    /// hurts; weapons pass through it – **light makes it fade** within `fade_ms`.
+    Echo {
+        /// Sight range (world units).
+        sight: f32,
+        /// Delay behind Elora.
+        delay_ms: u32,
+        /// In the light this long until it is gone.
+        fade_ms: u32,
+    },
     /// Guardian of Frostspitzen (Ice Queen Kristella, R2-M2.4, E-341): floats above the
     /// hall and sends frost waves across the floor (fresh frost hurts, whoever hangs on the
     /// wall or jumps stays unharmed); after `waves` waves she sinks down exhausted –
@@ -497,6 +533,38 @@ pub mod queen {
     pub const RISE: u8 = 4;
 }
 
+/// State of the shadow moth (in [`Creature::mode`]).
+pub mod moth {
+    /// Flutters around the start point.
+    pub const FLUTTER: u8 = 0;
+    /// Attacks Elora in the dark.
+    pub const ATTACK: u8 = 1;
+    /// Flees from the light: harmless.
+    pub const FLEE: u8 = 2;
+}
+
+/// State of the stone goblin (in [`Creature::mode`]).
+pub mod goblin {
+    /// Looks like a rock: harmless and invulnerable.
+    pub const ROCK: u8 = 0;
+    /// Wakes up and trembles: harmless.
+    pub const WAKE: u8 = 1;
+    /// Rolls at Elora.
+    pub const ROLL: u8 = 2;
+    /// Stopped and dazed (the time runs in [`super::Creature::stun`]).
+    pub const DAZED: u8 = 3;
+}
+
+/// State of the echo (in [`Creature::mode`]); the mirror is [`Creature::home`].
+pub mod echo {
+    /// Waits in the mirror: harmless, invisible.
+    pub const MIRROR: u8 = 0;
+    /// Steps out and walks Elora's path.
+    pub const FOLLOW: u8 = 1;
+    /// Fades in the light: harmless.
+    pub const FADE: u8 = 2;
+}
+
 /// State of the frost ghost (in [`Creature::mode`]).
 pub mod ghost {
     /// Chases Elora (through walls).
@@ -563,6 +631,8 @@ pub struct Creature {
     pub wall_timer: u32,
     /// Hits since the last opening (Sand Serpent: dives after `open_hits`).
     pub hits: u32,
+    /// Elora's recent positions, oldest first (echo, R2-M2.5).
+    pub trail: std::collections::VecDeque<Vec2>,
 }
 
 impl Creature {
@@ -572,10 +642,11 @@ impl Creature {
             Behavior::Diver(_) => self.mode == diver::STUNNED,
             Behavior::Burrower { .. } => self.mode == burrow::OUT,
             Behavior::Warden(_) => self.mode == warden::OPEN,
-            Behavior::Follower { .. } => false,
+            Behavior::Follower { .. } | Behavior::Echo { .. } => false,
             Behavior::Leaper { .. } => self.mode == leaper::LEAP,
             Behavior::Serpent(_) => matches!(self.mode, serpent::LEAP | serpent::STUNNED),
             Behavior::Queen(_) => self.mode == queen::TIRED,
+            Behavior::Goblin { .. } => matches!(self.mode, goblin::ROLL | goblin::DAZED),
             _ => true,
         }
     }
@@ -593,6 +664,9 @@ impl Creature {
             Behavior::Bat { .. } => self.mode != bat::HANG,
             Behavior::Ghost { .. } => self.mode == ghost::CHASE,
             Behavior::Queen(_) => !matches!(self.mode, queen::TIRED | queen::SLEEP),
+            Behavior::Moth { .. } => self.mode != moth::FLEE,
+            Behavior::Goblin { .. } => self.mode == goblin::ROLL,
+            Behavior::Echo { .. } => self.mode == echo::FOLLOW,
             _ => true,
         }
     }
@@ -612,7 +686,9 @@ impl Creature {
             Behavior::Follower { .. }
             | Behavior::Icicle { .. }
             | Behavior::Roller { .. }
-            | Behavior::Ghost { .. } => false,
+            | Behavior::Ghost { .. }
+            | Behavior::Echo { .. } => false,
+            Behavior::Goblin { .. } => self.mode != goblin::ROCK,
             Behavior::Leaper { .. } => self.mode == leaper::LEAP,
             Behavior::Serpent(_) => matches!(self.mode, serpent::LEAP | serpent::STUNNED),
             _ => true,

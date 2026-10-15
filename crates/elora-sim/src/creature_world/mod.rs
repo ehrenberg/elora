@@ -11,6 +11,7 @@ mod diver;
 mod effects;
 mod ground;
 mod leaper;
+mod night;
 mod queen;
 mod serpent;
 mod turret;
@@ -128,6 +129,7 @@ impl World {
             tug: 0,
             wall_timer: 0,
             hits: 0,
+            trail: std::collections::VecDeque::new(),
         });
         Some(id)
     }

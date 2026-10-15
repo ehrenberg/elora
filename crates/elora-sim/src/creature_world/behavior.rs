@@ -1,6 +1,6 @@
 //! Behaviour dispatch: one tick per creature, then movement and the collected effects.
 
-use super::{air, diver, ground, grounded, leaper, queen, serpent, turret, warden};
+use super::{air, diver, ground, grounded, leaper, night, queen, serpent, turret, warden};
 use crate::collision::Collision;
 use crate::creature::{Behavior, Creature, CreatureKind, CreatureShot};
 use crate::event::Event;
@@ -21,6 +21,10 @@ pub(super) struct Ctx<'a> {
     pub(super) chars: &'a [(usize, Vec2)],
     /// Creatures currently pulled on by a player (Root Warden tug of war).
     pub(super) tuggers: &'a [u32],
+    /// Light spots of the night (R2-M2.5): centre and radius.
+    pub(super) lights: &'a [(Vec2, f32)],
+    /// Current tick (hits of this tick).
+    pub(super) tick: u64,
     pub(super) shots: &'a mut Vec<CreatureShot>,
     pub(super) events: &'a mut Vec<Event>,
     pub(super) fx: &'a mut Effects,
@@ -31,6 +35,8 @@ pub(super) struct Ctx<'a> {
 pub(super) struct Effects {
     /// Creatures that die without loot (shattered, burst, fell into death tiles).
     pub(super) died: Vec<u32>,
+    /// Creatures defeated without a hit (echo faded in the light): loot for the nearest figure.
+    pub(super) defeated: Vec<u32>,
     /// Helpers of the guardians: owner, kind name, at most this many, position.
     pub(super) summons: Vec<(u32, String, u32, Vec2)>,
     /// Root thrusts (centre on the ground, width, height, damage).
@@ -55,6 +61,8 @@ pub(super) enum Step {
 impl World {
     pub(super) fn tick_behavior(&mut self, chars: &[(usize, Vec2)]) {
         let tuggers = self.tuggers();
+        let lights = self.light_spots();
+        let tick = self.tick;
         let Self {
             creatures,
             creature_kinds,
@@ -85,6 +93,8 @@ impl World {
                 collision,
                 chars,
                 tuggers: &tuggers,
+                lights: &lights,
+                tick,
                 shots: creature_shots,
                 events,
                 fx: &mut fx,
@@ -106,6 +116,14 @@ impl World {
             if matches!(kind.behavior, Behavior::Roller { .. }) && wanted_x != 0.0 && vel.x == 0.0 {
                 fx.died.push(c.id);
             }
+            // a rolling stone goblin bumps into the wall and is dazed
+            if let Behavior::Goblin { daze_ms, .. } = kind.behavior
+                && c.mode == crate::creature::goblin::ROLL
+                && wanted_x != 0.0
+                && vel.x == 0.0
+            {
+                night::daze(c, daze_ms, events);
+            }
             c.pos = pos;
             c.vel = vel;
             c.grounded = grounded(collision, pos, size);
@@ -116,6 +134,16 @@ impl World {
         for id in fx.died {
             if let Some(i) = self.creature_index(id) {
                 self.kill_creature(i, None, false);
+            }
+        }
+        for id in fx.defeated {
+            if let Some(i) = self.creature_index(id) {
+                let at = self.creatures[i].pos;
+                let by = chars
+                    .iter()
+                    .min_by(|a, b| a.1.distance(at).total_cmp(&b.1.distance(at)))
+                    .map(|&(slot, _)| slot);
+                self.kill_creature(i, by, true);
             }
         }
         self.root_spikes(&fx.spikes, chars);
@@ -217,5 +245,21 @@ fn dispatch(cx: &mut Ctx) -> Step {
             drop_damage,
             glow_ms,
         } => air::flyer(cx, speed, sight, hover, drop_ms, drop_damage, glow_ms),
+        Behavior::Moth {
+            sight,
+            speed,
+            flutter,
+        } => night::moth(cx, sight, speed, flutter),
+        Behavior::Goblin {
+            sight,
+            wake_ms,
+            speed,
+            daze_ms,
+        } => night::goblin(cx, sight, wake_ms, speed, daze_ms),
+        Behavior::Echo {
+            sight,
+            delay_ms,
+            fade_ms,
+        } => night::echo(cx, sight, delay_ms, fade_ms),
     }
 }

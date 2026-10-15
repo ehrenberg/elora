@@ -518,11 +518,49 @@ mod tests {
             zone("note-g-1", 56.0, 20.0, 2.0, 2.0),
             zone("note-c2-1", 58.0, 10.0, 2.0, 2.0),
         ];
-        map.save(std::path::Path::new(concat!(
+        // creatures of the night (M2.5.4): moths at the top of the updraft, a stone goblin on
+        // the right, an echo mirror on the high ledge; a lantern gives them light to avoid
+        let enemy = |id: &str, kind: &str, x: f32, y: f32| elora_map::Object {
+            id: id.into(),
+            pos: Vec2::new(x * ts, y * ts),
+            kind: elora_map::ObjectKind::Creature {
+                kind: kind.into(),
+                persistent: false,
+            },
+        };
+        map.adventure.objects.extend([
+            enemy("moth-1", "shadow_moth", 47.0, 5.0),
+            enemy("moth-2", "shadow_moth", 49.0, 6.0),
+            enemy("moth-3", "shadow_moth", 48.0, 4.0),
+            enemy("goblin-1", "stone_goblin", 59.0, 22.0 - 15.0 / ts),
+            enemy("echo-1", "echo", 61.0, 12.0 - 15.0 / ts),
+        ]);
+        map.decor_back.push(elora_map::Decor::new(
+            elora_map::Art::Builtin("lantern".into()),
+            Vec2::new(54.0 * ts, 22.0 * ts),
+        ));
+        let path = std::path::Path::new(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/../../target/gorge-demo.emap"
-        )))
-        .unwrap();
+        ));
+        map.save(path).unwrap();
+        // loads again and runs for 20 s with all creatures
+        let back = elora_map::Map::load(path).unwrap();
+        let mut world = back.world(Tuning::default());
+        world.creature_kinds = crate::sandbox::creature_kinds();
+        world.lights = elora_map::lights::map_lights(&back);
+        let me = world.join();
+        world.spawn_character(me, world.best_spawn().unwrap());
+        for o in &back.adventure.objects {
+            if let elora_map::ObjectKind::Creature { kind, .. } = &o.kind {
+                let k = world.creature_kind(kind).unwrap();
+                world.add_creature(k, o.pos).unwrap();
+            }
+        }
+        for _ in 0..1000 {
+            world.step(&[]);
+        }
+        assert!(world.creatures.len() >= 5);
     }
 
     /// Star islands and an updraft (M2.5.2) for visual inspection:

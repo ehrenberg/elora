@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-48 -48 96 96">
+  <!-- echo (A1.2, aus tools/design/abenteuer_assets.py). Ursprung = Boxmitte, Blick nach rechts. -->
+  <g id="idle"><g transform="translate(0,14.0) scale(0.36)"><g transform="translate(-28,6)" opacity="0.25">
+  
+  <g id="foot-back">
+    <ellipse cx="-20" cy="-8" rx="14" ry="8" fill="#8a70c8" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse cx="22" cy="-8" rx="14" ry="8" fill="#8a70c8" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#b9a0e8" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#d8cbf2"/>
+  </g>
+  <g id="eyes">
+    <ellipse cx="2" cy="-63" rx="6.5" ry="11" fill="#4a3a7a"/>
+    <ellipse cx="26" cy="-63" rx="6.5" ry="11" fill="#4a3a7a"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    <path d="M 10,-41 Q 16,-36 22,-41" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</g><g transform="translate(-56,12)" opacity="0.15">
+  
+  <g id="foot-back">
+    <ellipse cx="-20" cy="-8" rx="14" ry="8" fill="#8a70c8" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse cx="22" cy="-8" rx="14" ry="8" fill="#8a70c8" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#b9a0e8" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#d8cbf2"/>
+  </g>
+  <g id="eyes">
+    <ellipse cx="2" cy="-63" rx="6.5" ry="11" fill="#4a3a7a"/>
+    <ellipse cx="26" cy="-63" rx="6.5" ry="11" fill="#4a3a7a"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    <path d="M 10,-41 Q 16,-36 22,-41" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</g><g transform="translate(-84,18)" opacity="0.08">
+  
+  <g id="foot-back">
+    <ellipse cx="-20" cy="-8" rx="14" ry="8" fill="#8a70c8" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse cx="22" cy="-8" rx="14" ry="8" fill="#8a70c8" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#b9a0e8" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#d8cbf2"/>
+  </g>
+  <g id="eyes">
+    <ellipse cx="2" cy="-63" rx="6.5" ry="11" fill="#4a3a7a"/>
+    <ellipse cx="26" cy="-63" rx="6.5" ry="11" fill="#4a3a7a"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    <path d="M 10,-41 Q 16,-36 22,-41" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</g><g opacity="0.75">
+  
+  <g id="foot-back">
+    <ellipse cx="-20" cy="-8" rx="14" ry="8" fill="#8a70c8" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse cx="22" cy="-8" rx="14" ry="8" fill="#8a70c8" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#b9a0e8" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#d8cbf2"/>
+  </g>
+  <g id="eyes">
+    <ellipse cx="2" cy="-63" rx="6.5" ry="11" fill="#4a3a7a"/>
+    <ellipse cx="26" cy="-63" rx="6.5" ry="11" fill="#4a3a7a"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    <path d="M 10,-41 Q 16,-36 22,-41" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</g></g></g><g id="m0"><g transform="translate(0,14.0) scale(0.36)"><g transform="scale(2.2)"><path d="M -30,0 L -26,-8 L 26,-8 L 30,0 Z" fill="#4f4a68" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="0" cy="-44" rx="26" ry="38" fill="#77728f" stroke="#2b2b2b" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="0" cy="-44" rx="18" ry="30" fill="#1f2452" stroke="#2b2b2b" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M -10,-62 Q -4,-68 4,-66" fill="none" stroke="#4a55a8" stroke-width="3" stroke-linecap="round"/><ellipse cx="0" cy="-40" rx="10" ry="12" fill="#a77be0" opacity="0.45"/><circle cx="-4" cy="-42" r="2" fill="#fff3b0" opacity="0.8"/><circle cx="4" cy="-42" r="2" fill="#fff3b0" opacity="0.8"/><polygon points="20.0,-82.0 21.1,-79.1 24.0,-78.0 21.1,-76.9 20.0,-74.0 18.9,-76.9 16.0,-78.0 18.9,-79.1" fill="#d9c6f7" stroke="#2b2b2b" stroke-width="1.2" stroke-linejoin="round"/></g></g></g><g id="m3"><g transform="translate(0,14.0) scale(0.36)"><g transform="scale(2.2)"><path d="M -30,0 L -26,-8 L 26,-8 L 30,0 Z" fill="#4f4a68" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="0" cy="-44" rx="26" ry="38" fill="#77728f" stroke="#2b2b2b" stroke-width="4" stroke-linejoin="round" stroke-linecap="round"/><ellipse cx="0" cy="-44" rx="18" ry="30" fill="#1f2452" stroke="#2b2b2b" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M -10,-62 Q -4,-68 4,-66" fill="none" stroke="#4a55a8" stroke-width="3" stroke-linecap="round"/><polygon points="20.0,-82.0 21.1,-79.1 24.0,-78.0 21.1,-76.9 20.0,-74.0 18.9,-76.9 16.0,-78.0 18.9,-79.1" fill="#d9c6f7" stroke="#2b2b2b" stroke-width="1.2" stroke-linejoin="round"/></g></g></g>
+</svg>

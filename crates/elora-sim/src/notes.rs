@@ -131,6 +131,24 @@ impl crate::World {
                 .any(|b| b.active(self.tick) && b.distance(pos) <= BRIDGE_LIGHT)
     }
 
+    /// All light spots of the night for the creatures (centre, radius): the light sources of
+    /// the map, lit note stones and points along the active star bridges.
+    pub(crate) fn light_spots(&self) -> Vec<(Vec2, f32)> {
+        let mut out = self.lights.clone();
+        let tick = self.tick;
+        for s in self.note_stones.iter().filter(|s| s.lit(tick)) {
+            out.push((s.centre(), STONE_LIGHT));
+        }
+        for b in self.bridges.iter().filter(|b| b.active(tick)) {
+            let mut x = b.at.x;
+            while x < b.at.x + b.size.x + BRIDGE_LIGHT {
+                out.push((Vec2::new(x.min(b.at.x + b.size.x), b.at.y), BRIDGE_LIGHT));
+                x += BRIDGE_LIGHT;
+            }
+        }
+        out
+    }
+
     /// Before the islands: touched note stones sound and light their bridges.
     pub(crate) fn tick_notes(&mut self) {
         if self.note_stones.is_empty() {

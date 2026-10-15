@@ -546,6 +546,8 @@ pub fn creature_kinds() -> Vec<elora_sim::CreatureKind> {
 fn fresh_world(map: &Map, tuning: Tuning) -> (World, usize) {
     let mut world = map.world(tuning);
     world.creature_kinds = creature_kinds();
+    // glowing decoration: the creatures of the night react to it (M2.5.4)
+    world.lights = elora_map::lights::map_lights(map);
     let player = world.join();
     if let Some(pos) = world.best_spawn() {
         world.spawn_character(player, pos);

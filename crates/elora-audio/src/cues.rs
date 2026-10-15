@@ -512,6 +512,22 @@ pub fn for_creature(e: &Event, kind: &str) -> Option<Vec<Cue>> {
             _ => None,
         },
         ("sand_crab", &Event::CreatureHit { pos, damage: 0, .. }) => one(Sound::ShellClack, pos),
+        // Sternschlucht (R2-M2.5): placeholders from existing sounds until M2.5.9
+        ("stone_goblin", &Event::CreatureAct { act, pos, .. }) => match act {
+            Warn => Some(vec![Cue::at(Sound::SandRumble, pos).pitched(1.25)]),
+            Wake => Some(vec![Cue::at(Sound::SnowCrunch, pos).pitched(0.6)]),
+            Land => Some(vec![Cue::at(Sound::BossLand, pos).pitched(1.7)]),
+            _ => None,
+        },
+        ("stone_goblin", &Event::CreatureHit { pos, damage: 0, .. }) => {
+            Some(vec![Cue::at(Sound::ShellClack, pos).pitched(0.7)])
+        }
+        ("echo", &Event::CreatureAct { act: Wake, pos, .. }) => {
+            Some(vec![Cue::at(Sound::Freeze, pos).pitched(0.7)])
+        }
+        ("echo", &Event::CreatureDeath { pos, .. }) => {
+            Some(vec![Cue::at(Sound::Freeze, pos).pitched(1.3)])
+        }
         _ => None,
     }
 }

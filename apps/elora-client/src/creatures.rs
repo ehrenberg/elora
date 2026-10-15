@@ -182,12 +182,17 @@ impl CreatureArt {
     /// Enemies with a health bar after hits; unknown kinds as a circle. They breathe when standing,
     /// bob when walking, hover in the air and tilt flight poses into the flight direction (E-328).
     pub fn draw(&self, batch: &mut ShapeBatch, c: &SceneCreature, time: f32) {
-        let flip = if c.facing < 0 { -1.0 } else { 1.0 };
         let phase = time + c.id as f32 * 1.37;
         let flash = c.since_hit.is_some_and(|t| t < 6);
-        let tint = if flash {
+        // echo fading in the light: flickers away (R2-M2.5)
+        let fading = c.kind == "echo" && c.mode == elora_sim::creature::echo::FADE;
+        let tint = if flash || fading {
             Tint {
-                alpha: Some(0.6),
+                alpha: Some(if fading {
+                    0.25 + 0.2 * (time * 30.0).sin()
+                } else {
+                    0.6
+                }),
                 ..Tint::default()
             }
         } else {
@@ -200,10 +205,29 @@ impl CreatureArt {
             draw_frost_wave(batch, c.goal, c.facing, hall, time);
         }
         if let Some(look) = self.looks.get(c.kind.as_str()) {
-            use elora_sim::creature::diver;
-            let mesh = look
-                .modes
-                .get(&c.mode)
+            use elora_sim::creature::{diver, echo};
+            // the echo's mirror stays at its place while the echo walks (m3 = empty mirror)
+            if c.kind == "echo"
+                && c.mode != echo::MIRROR
+                && let Some(mirror) = look.modes.get(&3)
+            {
+                let h = mirror.bounds().map_or(0.0, |(_, max)| max.y);
+                let foot = c.goal + Vec2::new(0.0, c.size.y / 2.0 - h);
+                batch.draw_mesh(mirror, &Affine::translate(foot), &Tint::default());
+            }
+            // shadow moth: wing beats (idle and air alternate)
+            let wings = (c.kind == "shadow_moth").then(|| {
+                look.air
+                    .as_ref()
+                    .filter(|_| (phase * 22.0).sin() > 0.0)
+                    .unwrap_or(&look.idle)
+            });
+            let mesh = wings.or_else(|| {
+                look.modes
+                    .get(&c.mode)
+                    .filter(|_| c.kind != "echo" || c.mode == echo::MIRROR)
+            });
+            let mesh = mesh
                 .or(match c.mode {
                     elora_sim::creature::burrow::HIDDEN => look.hidden.as_ref(),
                     diver::DIVE | diver::AIM => look.dive.as_ref(),
@@ -218,57 +242,7 @@ impl CreatureArt {
             let hidden = look.hidden.as_ref().is_some_and(|m| std::ptr::eq(m, mesh))
                 || (c.kind == "sand_serpent" && c.mode <= 2)
                 || (c.kind == "dune_worm" && c.mode <= 1);
-            let t = if c.kind == "icicle" {
-                // hangs still, trembles before the fall (R2-M2.4)
-                let shake = if c.mode == elora_sim::creature::icicle::SHAKE {
-                    (time * 70.0).sin() * 1.6
-                } else {
-                    0.0
-                };
-                Affine::translate(c.pos + Vec2::new(shake, 0.0))
-            } else if c.kind == "bat" && c.mode == elora_sim::creature::bat::HANG {
-                // sleeps upside down: no hovering
-                Affine::translate(c.pos).then(Affine::scale(flip, 1.0))
-            } else if c.kind == "snow_chunk" {
-                // rolls: rotates with the distance travelled
-                Affine::translate(c.pos).then(Affine::rotate(c.pos.x / 18.0))
-            } else if c.grow < 1.0 {
-                // the root snake grows slowly out of the ground
-                Affine::translate(c.pos + Vec2::new(0.0, h))
-                    .then(Affine::scale(flip, c.grow.max(0.05)))
-                    .then(Affine::translate(Vec2::new(0.0, -h)))
-            } else if let Some(tilt) = flight_tilt(c) {
-                // the flight pose points in the flight direction
-                let pitch = c.vel.y.atan2(c.vel.x.abs().max(0.5));
-                let a = ((pitch - tilt) * flip).clamp(-1.2, 1.2);
-                Affine::translate(c.pos)
-                    .then(Affine::rotate(a))
-                    .then(Affine::scale(flip, 1.0))
-            } else if hidden {
-                Affine::translate(c.pos).then(Affine::scale(flip, 1.0))
-            } else if c.airborne {
-                // flyers hover up and down, jumpers tilt slightly
-                let bob = (phase * 3.1).sin() * 2.5;
-                let lean = (c.vel.x * 0.03).clamp(-0.25, 0.25);
-                Affine::translate(c.pos + Vec2::new(0.0, bob))
-                    .then(Affine::rotate(lean))
-                    .then(Affine::scale(flip, 1.0))
-            } else if c.vel.x.abs() > 0.3 {
-                // gait: bobs with the steps
-                let step = c.pos.x * 0.22;
-                let bob = -step.sin().abs() * 2.5;
-                let rock = step.sin() * 0.05;
-                Affine::translate(c.pos + Vec2::new(0.0, h + bob))
-                    .then(Affine::rotate(rock))
-                    .then(Affine::scale(flip, 1.0))
-                    .then(Affine::translate(Vec2::new(0.0, -h)))
-            } else {
-                // breathing: height and width in opposite directions, the area stays
-                let sy = 1.0 + (phase * 2.4).sin() * 0.03;
-                Affine::translate(c.pos + Vec2::new(0.0, h))
-                    .then(Affine::scale(flip / sy, sy))
-                    .then(Affine::translate(Vec2::new(0.0, -h)))
-            };
+            let t = placement(c, h, hidden, phase, time);
             batch.draw_mesh(mesh, &t, &tint);
         } else {
             batch.fill_circle(c.pos, 16.0, OUTLINE);
@@ -434,6 +408,77 @@ impl CreatureArt {
 
 /// Frost wave: behind the front fresh frost as ice spikes (deals damage), in front of it
 /// hoarfrost creeps as a warning; only inside the hall (`hall` = edges, fresh frost length).
+/// Placement of a creature graphic: breathing, gait, hovering, flight tilt and the special
+/// poses (trembling, rolling, growing); `h` = bottom edge of the graphic.
+fn placement(c: &SceneCreature, h: f32, hidden: bool, phase: f32, time: f32) -> Affine {
+    use elora_sim::creature::goblin;
+    let flip = if c.facing < 0 { -1.0 } else { 1.0 };
+    if c.kind == "stone_goblin" && c.mode == goblin::WAKE {
+        // wakes up: trembles in place
+        let shake = (time * 60.0).sin() * 1.5;
+        Affine::translate(c.pos + Vec2::new(shake, 0.0)).then(Affine::scale(flip, 1.0))
+    } else if c.kind == "stone_goblin" && c.mode == goblin::ROLL {
+        // rolls: the drawing has speed lines, so it only rocks and bumps
+        let bump = (c.pos.x / 9.0).sin();
+        Affine::translate(c.pos + Vec2::new(0.0, -bump.abs() * 2.0))
+            .then(Affine::rotate(bump * 0.12))
+            .then(Affine::scale(flip, 1.0))
+    } else if c.kind == "stone_goblin" && c.mode == goblin::ROCK {
+        // a rock does not breathe
+        Affine::translate(c.pos).then(Affine::scale(flip, 1.0))
+    } else if c.kind == "icicle" {
+        // hangs still, trembles before the fall (R2-M2.4)
+        let shake = if c.mode == elora_sim::creature::icicle::SHAKE {
+            (time * 70.0).sin() * 1.6
+        } else {
+            0.0
+        };
+        Affine::translate(c.pos + Vec2::new(shake, 0.0))
+    } else if c.kind == "bat" && c.mode == elora_sim::creature::bat::HANG {
+        // sleeps upside down: no hovering
+        Affine::translate(c.pos).then(Affine::scale(flip, 1.0))
+    } else if c.kind == "snow_chunk" {
+        // rolls: rotates with the distance travelled
+        Affine::translate(c.pos).then(Affine::rotate(c.pos.x / 18.0))
+    } else if c.grow < 1.0 {
+        // the root snake grows slowly out of the ground
+        Affine::translate(c.pos + Vec2::new(0.0, h))
+            .then(Affine::scale(flip, c.grow.max(0.05)))
+            .then(Affine::translate(Vec2::new(0.0, -h)))
+    } else if let Some(tilt) = flight_tilt(c) {
+        // the flight pose points in the flight direction
+        let pitch = c.vel.y.atan2(c.vel.x.abs().max(0.5));
+        let a = ((pitch - tilt) * flip).clamp(-1.2, 1.2);
+        Affine::translate(c.pos)
+            .then(Affine::rotate(a))
+            .then(Affine::scale(flip, 1.0))
+    } else if hidden {
+        Affine::translate(c.pos).then(Affine::scale(flip, 1.0))
+    } else if c.airborne {
+        // flyers hover up and down, jumpers tilt slightly
+        let bob = (phase * 3.1).sin() * 2.5;
+        let lean = (c.vel.x * 0.03).clamp(-0.25, 0.25);
+        Affine::translate(c.pos + Vec2::new(0.0, bob))
+            .then(Affine::rotate(lean))
+            .then(Affine::scale(flip, 1.0))
+    } else if c.vel.x.abs() > 0.3 {
+        // gait: bobs with the steps
+        let step = c.pos.x * 0.22;
+        let bob = -step.sin().abs() * 2.5;
+        let rock = step.sin() * 0.05;
+        Affine::translate(c.pos + Vec2::new(0.0, h + bob))
+            .then(Affine::rotate(rock))
+            .then(Affine::scale(flip, 1.0))
+            .then(Affine::translate(Vec2::new(0.0, -h)))
+    } else {
+        // breathing: height and width in opposite directions, the area stays
+        let sy = 1.0 + (phase * 2.4).sin() * 0.03;
+        Affine::translate(c.pos + Vec2::new(0.0, h))
+            .then(Affine::scale(flip / sy, sy))
+            .then(Affine::translate(Vec2::new(0.0, -h)))
+    }
+}
+
 fn draw_frost_wave(
     batch: &mut ShapeBatch,
     front: Vec2,
@@ -604,6 +649,14 @@ mod tests {
         put("bat", true, false, None, 1, 0);
         put("bat", true, false, None, 1, 1);
         put("frost_ghost", true, false, None, 1, 0);
+        // chapter 5 (R2-M2.5): moth, goblin rock / awake / rolling / dazed, echo in the mirror
+        // and walking
+        put("shadow_moth", true, false, None, 1, 0);
+        for mode in 0..4 {
+            put("stone_goblin", false, mode == 3, None, -1, mode);
+        }
+        put("echo", false, false, None, 1, 0);
+        put("echo", false, false, None, 1, 1);
         for mode in [0, 1, 2, 3] {
             put("kristella", mode != 3, false, None, 1, mode);
         }

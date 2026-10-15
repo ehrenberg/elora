@@ -252,3 +252,37 @@ size = [36.0, 36.0]
 health = 1
 touch_damage = 2
 behavior = { type = "roller", speed = 5.0, life_ms = 6000 }
+
+# Chapter 5 (R2-M2.5, E-365): creatures of the night.
+# shadow moth: flutters in small swarms, attacks Elora in the dark, flees from light
+[[creature]]
+name = "shadow_moth"
+size = [24.0, 20.0]
+health = 1
+touch_damage = 1
+small = true
+xp = 3
+loot = [{ item = "gleam_drops", min = 1, max = 2 }]
+behavior = { type = "moth", sight = 360.0, speed = 3.2, flutter = 36.0 }
+
+# stone goblin: a rock until Elora comes close, then rolls at her; a hit, a stomp or a wall
+# stops it (dazed and vulnerable)
+[[creature]]
+name = "stone_goblin"
+size = [40.0, 30.0]
+health = 3
+touch_damage = 2
+xp = 8
+loot = [{ item = "gleam_drops", min = 2, max = 4 }]
+behavior = { type = "goblin", sight = 220.0, wake_ms = 600, speed = 5.5, daze_ms = 2000 }
+
+# echo: steps out of its dark mirror and walks Elora's path 1.5 s behind her; weapons pass
+# through it, only light makes it fade
+[[creature]]
+name = "echo"
+size = [28.0, 28.0]
+health = 1
+touch_damage = 1
+xp = 10
+loot = [{ item = "gleam_drops", min = 2, max = 4 }]
+behavior = { type = "echo", sight = 320.0, delay_ms = 1500, fade_ms = 700 }

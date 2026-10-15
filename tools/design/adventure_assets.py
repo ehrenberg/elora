@@ -22,6 +22,7 @@ from chapter3_drafts import (dune_worm, spark_moth, watering_spot, palma, ruin_s
                                 sand_crab, sand_serpent, sirup, stone_tablet, water_skin)
 from chapter4_drafts import (icicle_enemy, bat, flocke, frost_ghost, grey_trail_ice,  # noqa: E402
                                 climber, kristella, seal, snow_boulder)
+from chapter5_drafts import dark_mirror, echo, shadow_moth, stone_goblin  # noqa: E402
 
 
 def straw_dummy():
@@ -92,6 +93,17 @@ CREATURES = {
     # Warden (female): m0 sleeps (calm), idle floats, m2 frost breath, m3 exhausted (creature::queen)
     'kristella': (110, 0.36, {'idle': kristella('schwebend', False), 'm0': kristella('ruhig', False),
                               'm2': kristella('hauch', False), 'm3': kristella('erschoepft', False)}),
+    # Chapter 5 (R2-M2.5): shadow moth with two wing beats (idle / air, the client alternates);
+    # stone goblin m0 rock, m1 awake, m2 rolling (the client rotates it), m3 dazed
+    # (creature::goblin); echo: idle walks, m0 waits in its dark mirror, m3 the empty mirror
+    'shadow_moth': (20, 0.4, {'idle': f'<g transform="translate(0,8)">{shadow_moth(0)}</g>',
+                              'air': f'<g transform="translate(0,8)">{shadow_moth(1)}</g>'}),
+    'stone_goblin': (30, 0.5, {'idle': stone_goblin('wach'), 'm0': stone_goblin('fels'),
+                               'm1': stone_goblin('wach'), 'm2': stone_goblin('rollt'),
+                               'm3': stone_goblin('wach')}),
+    # (the echo is Elora's size: scale 0.36 like assets/elora/elora.svg; the mirror about 64 high)
+    'echo': (28, 0.36, {'idle': echo(), 'm0': f'<g transform="scale(2.2)">{dark_mirror(True)}</g>',
+                        'm3': f'<g transform="scale(2.2)">{dark_mirror(False)}</g>'}),
 }
 
 

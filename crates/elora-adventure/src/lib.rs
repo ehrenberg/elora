@@ -37,8 +37,8 @@ mod tests {
         assert_eq!(c.upgrades.len(), 9, "3 weapons × 3 levels");
         assert_eq!(
             c.creatures.len(),
-            21,
-            "up to chapter 4 with terrain, enemies and Kristella"
+            24,
+            "up to chapter 5 with terrain, enemies, Kristella and the creatures of the night"
         );
     }
 

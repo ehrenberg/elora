@@ -8,6 +8,8 @@ use crate::{App, draw, figure, skins};
 
 /// Faint glow of the star islands in the dark (M2.5.2).
 const ISLAND_GLOW: f32 = 0.55;
+/// Glow of a shadow moth's eyes in the dark (M2.5.4, units).
+const MOTH_EYES: f32 = 22.0;
 /// Light around a flying note of a note stone (M2.5.3, units).
 const NOTE_GLOW_RADIUS: f32 = 40.0;
 
@@ -23,6 +25,12 @@ fn glows(world: &elora_sim::World) -> Vec<(elora_sim::Vec2, f32, f32)> {
             (at, island.size.x * 0.5 + 40.0, ISLAND_GLOW)
         })
         .collect();
+    // the eyes of the shadow moths glow in the dark (M2.5.4)
+    for c in &world.creatures {
+        if world.creature_kinds[c.kind].name == "shadow_moth" {
+            out.push((c.pos, MOTH_EYES, 0.7));
+        }
+    }
     let tick = world.tick;
     for stone in world.note_stones.iter().filter(|s| s.lit(tick)) {
         out.push((stone.centre(), elora_sim::notes::STONE_LIGHT, 1.0));

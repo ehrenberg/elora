@@ -231,6 +231,20 @@ def echo():
     return trail + f'<g opacity="0.75">{inner}</g>'
 
 
+def dark_mirror(face=True):
+    """Dark mirror the echo steps out of (M2.5.4): stone frame, night glass; with a faint
+    Elora face inside while the echo waits."""
+    s = f'<path d="M -30,0 L -26,-8 L 26,-8 L 30,0 Z" fill="{STONE_DARK}" {st(3)}/>'
+    s += f'<ellipse cx="0" cy="-44" rx="26" ry="38" fill="{STONE}" {st(4)}/>'
+    s += f'<ellipse cx="0" cy="-44" rx="18" ry="30" fill="{NIGHT}" {st(2.5)}/>'
+    s += f'<path d="M -10,-62 Q -4,-68 4,-66" fill="none" stroke="{NIGHT_LIGHT}" stroke-width="3" stroke-linecap="round"/>'
+    if face:
+        s += f'<ellipse cx="0" cy="-40" rx="10" ry="12" fill="{VIOLET}" opacity="0.45"/>'
+        s += f'<circle cx="-4" cy="-42" r="2" fill="{STARLIGHT}" opacity="0.8"/><circle cx="4" cy="-42" r="2" fill="{STARLIGHT}" opacity="0.8"/>'
+    s += sparkle(20, -78, 4, VIOLET_LIGHT)
+    return s
+
+
 # ── Items and objects ───────────────────────────────────────────────────
 
 def star_cape():
