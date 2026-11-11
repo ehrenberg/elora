@@ -102,7 +102,7 @@ hit_marker = "Treffer-Marker"
 volume = "Gesamtlautstärke: {n} %"
 music = "Musik: {n} %"
 muted = "Stumm"
-no_device = "Kein Audiogerät gefunden – das Spiel bleibt stumm."
+no_device = "Kein Audiogerät gefunden – das Spiel bleibt stumm. Linux: pipewire-pulse oder pipewire-alsa installieren."
 language_note = "Meldungen, die der Server schickt, bleiben in seiner Sprache."
 
 [keys]

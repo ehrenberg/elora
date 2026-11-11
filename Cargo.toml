@@ -41,6 +41,10 @@ ureq = { version = "3.4.2", default-features = false, features = ["rustls"] }
 tiny_http = "0.12.0"
 elora-master = { path = "apps/elora-master", default-features = false }
 kira = { version = "0.12.5", default-features = false, features = ["cpal", "ogg", "vorbis", "wav"] }
+# icon and version information in the Windows .exe (E-376)
+winresource = { version = "0.1.34", default-features = false }
+# only to switch on the PulseAudio host on Linux (also served by PipeWire), E-375
+cpal = { version = "0.18.2", default-features = false }
 thiserror = "2.0.21"
 chrono = { version = "0.4", default-features = false, features = ["clock", "std"] }
 miniz_oxide = { version = "0.9.1", features = ["with-alloc"] }

@@ -102,7 +102,7 @@ hit_marker = "Hit marker"
 volume = "Master volume: {n} %"
 music = "Music: {n} %"
 muted = "Mute"
-no_device = "No audio device found – the game stays silent."
+no_device = "No audio device found – the game stays silent. Linux: install pipewire-pulse or pipewire-alsa."
 language_note = "Messages sent by the server stay in its language."
 
 [keys]

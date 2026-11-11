@@ -15,10 +15,15 @@ toml.workspace = true
 thiserror.workspace = true
 tracing.workspace = true
 
+# PulseAudio host (pure Rust protocol, also served by PipeWire): sound without `pipewire-alsa`
+# (E-375); ALSA stays the fallback
+[target.'cfg(target_os = "linux")'.dependencies]
+cpal = { workspace = true, optional = true, features = ["pulseaudio"] }
+
 [features]
 default = ["playback"]
 # playback with kira (audio device); without: only generator, mapping and WAV export
-playback = ["dep:kira"]
+playback = ["dep:kira", "dep:cpal"]
 
 [lints]
 workspace = true
