@@ -10,3 +10,7 @@ lantern = 170
 party-lantern-party = 150
 party-lantern-yellow-party = 150
 fireplace = 210
+# chapter 5 (M2.5.7)
+crystal_star = 150
+light_threads = 110
+star-spring-freed = 220

@@ -1,6 +1,6 @@
 # R2-M2.5 – Chapter 5: Sternschlucht – implementation plan
 
-Status: **in progress** (M2.5.0 to M2.5.5 done) · Decisions E-362 to E-369 · Basis: [`world-book.md`](world-book.md) §4.5 and §5, [`m2-4-plan.md`](m2-4-plan.md), E-228, E-354
+Status: **in progress** (M2.5.0 to M2.5.5 done; M2.5.6 content drafted in [`m2-5-content.md`](m2-5-content.md), waiting for approval; M2.5.7 maps built without the content objects) · Decisions E-362 to E-369 · Basis: [`world-book.md`](world-book.md) §4.5 and §5, [`m2-4-plan.md`](m2-4-plan.md), E-228, E-354
 
 ## Goal
 
@@ -55,7 +55,7 @@ continuing in between.
 | M2.5.4 ✅ | New enemies | **Shadow moth**: flies in small swarms, avoids light, attacks in the dark. **Stone goblin**: looks like a rock until Elora is close, then rolls towards her; stomp or hammer stops it. **Echo**: appears from a dark mirror, repeats Elora's movements with a delay; touch hurts, light makes it fade | Tests + sandbox |
 | M2.5.5 ✅ | Climax tech | **“Protect Luma”** (see below): rounds of grey shadows towards Luma, star lanterns to light, song progress, failure → back to the spring stone; the Withered One as a scripted figure (appears, drains, flees) | Tests + sandbox |
 | M2.5.6 | Content | Character Luma; main quest from the gorge entrance up to the star spark with the star cape in the middle; side quests **“Star fragments”** and **“Luma's song”**; dialogues of the village after chapter 5; the finale is announced (the well) | Tests |
-| M2.5.7 | Maps | Gorge entrance at the east end of the meadows (opens after chapter 4); `gorge-1` to `gorge-3` and `gorge-spring` (climax at the ruins) | Visual check + run-through test |
+| M2.5.7 (in progress) | Maps | Gorge entrance at the east end of the meadows (opens after chapter 4); `gorge-1` to `gorge-3` and `gorge-spring` (climax at the ruins) | Visual check + run-through test |
 | M2.5.8 | Spark and village | Victory → star spark → Tüftel strengthens gliding; gliding spots in chapters 1–4 (going back pays off); `springs_freed = 5`, celebration, world map; the well stays grey | Tests + visual check |
 | M2.5.9 | Music and sounds | Music for the Sternschlucht and the climax (CC0, presented for listening), sounds for moths, goblins, echoes, note stones, star bridges, updrafts, star cape, the Withered One | Your listening test |
 | M2.5.10 | Acceptance | Play through chapter 5, save, continue | Your acceptance |
@@ -117,3 +117,13 @@ continuing in between.
   1.5 s.
 - **Climax:** session logic in `session/` (like avalanches and temperature), the Withered One as
   a scripted NPC with states (appear, drain, move, flee).
+
+**Status M2.5.7 (maps without content):** `gorge-1` to `gorge-3` and `gorge-spring` from
+`apps/elora-client/src/editor/chapter5.rs` (night theme on stone, crystal stars, lanterns and
+glowing mushrooms as light); the crack at the east end of `meadow-3` opens with
+`quest frostspitzen done`. Star islands, updrafts, note stones with bridges, creatures of the
+night, the climax zones and lanterns are placed; the gliding chasms (60 and 50 tiles, nothing to
+hook) need the star cape. Places for Luma, Glimmer, light threads, star fragments, note tablets
+and signs are marked in the generator and follow once the content (M2.5.6) is approved. World map
+sections for all four maps. The dark ruins decoration `star-spring-withered` stands in the basin;
+the freed spring follows with M2.5.8.

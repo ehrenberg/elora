@@ -435,6 +435,7 @@ mod tests {
         all.extend(super::super::chapter2::maps());
         all.extend(maps());
         all.extend(super::super::chapter4::maps());
+        all.extend(super::super::chapter5::maps());
         for (name, m) in &all {
             let back = elora_map::decode(&elora_map::encode(m)).expect("map valid");
             let errors = map_objects(&c, &back);

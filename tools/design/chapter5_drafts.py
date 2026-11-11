@@ -424,6 +424,27 @@ def hanging_threads():
     return s
 
 
+# Decoration of the gorge maps (M2.5.7): art, view box; origin bottom centre (light threads:
+# top centre, they hang from the ceiling)
+DECOR = {
+    'night_rock': (night_rock(), '-86 -136 172 140'),
+    'crystal_star': (crystal_star(), '-46 -120 92 124'),
+    'ruin_arch': (ruin_arch(), '-76 -182 152 186'),
+    'light_threads': (hanging_threads(), '-70 -4 140 196'),
+    'star-spring-withered': (star_spring(False), '-148 -186 296 190'),
+    'star-spring-freed': (star_spring(True), '-148 -186 296 190'),
+}
+
+
+def export_decor():
+    for name, (art, vb) in DECOR.items():
+        origin = 'oben in der Mitte' if name == 'light_threads' else 'unten in der Mitte'
+        with open(f'assets/map/decor/{name}.svg', 'w') as f:
+            f.write(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{vb}">\n'
+                    f'  <!-- Kapitel 5: {name} (R2-M2.5, aus tools/design/chapter5_drafts.py). Ursprung {origin}. -->\n'
+                    f'  {art}\n</svg>\n')
+
+
 # ── Night scene (darkness and light, M2.5.1) ───────────────────────────
 
 def night_scene(x0, y0, w, h):
@@ -548,3 +569,4 @@ if __name__ == '__main__':
     os.makedirs('docs/release-2/design', exist_ok=True)
     open('docs/release-2/design/chapter5-drafts.svg', 'w').write(sheet())
     export_tiles()
+    export_decor()

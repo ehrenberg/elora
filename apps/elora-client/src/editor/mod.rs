@@ -13,6 +13,8 @@ mod chapter2;
 mod chapter3;
 #[cfg(test)]
 mod chapter4;
+#[cfg(test)]
+mod chapter5;
 pub mod look;
 #[cfg(test)]
 mod mapgen;

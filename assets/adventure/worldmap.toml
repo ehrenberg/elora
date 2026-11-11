@@ -234,3 +234,20 @@ maps = "gorge-"
 # night (R2-M2.5, M2.5.1): dark outside the lights of assets/map/lights.toml; single maps can
 # override it, e.g. map_darkness = { "gorge-3" = 1.0 }
 darkness = 0.9
+
+# chapter 5 maps (M2.5.7): into the gorge from the west, the ruins in the east
+[[area.section]]
+map = "gorge-1"
+path = [[0.745, 0.700], [0.765, 0.715], [0.780, 0.725]]
+
+[[area.section]]
+map = "gorge-2"
+path = [[0.780, 0.725], [0.795, 0.738], [0.810, 0.745]]
+
+[[area.section]]
+map = "gorge-3"
+path = [[0.810, 0.745], [0.828, 0.756], [0.845, 0.766]]
+
+[[area.section]]
+map = "gorge-spring"
+path = [[0.858, 0.775]]

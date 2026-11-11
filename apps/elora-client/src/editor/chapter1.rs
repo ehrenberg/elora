@@ -195,6 +195,10 @@ pub fn meadow_3() -> Map {
     // out at the top to the arena
     g.ground(176, 199, 26);
     g.ground(200, w - 1, 24);
+    // overhanging rock with the crack to the Sternschlucht (E-367); its floor is a door that
+    // opens after chapter 4
+    g.fill((186, 199), (8, 21), '%');
+    g.fill((192, 194), (15, 20), '.');
     let mut m = g.map("Blütenwiesen 3");
     m.adventure.objects = vec![
         edge_exit("path-meadow-2", 0, h, "meadow-2", "east"),
@@ -217,6 +221,26 @@ pub fn meadow_3() -> Map {
         creature("hopper-2", "grasshopper", 168, 52, 28.0),
         plant("flower-2", 162, 52),
         creature("beetle-3", "spike_beetle", 205, 24, 26.0),
+        // crack to the Sternschlucht (R2-M2.5): the grey trail ends here
+        o(
+            "crack",
+            corner(192, 21),
+            ObjectKind::Door {
+                size: (3, 1),
+                open_if: "quest frostspitzen done".into(),
+            },
+        ),
+        o(
+            "path-gorge",
+            corner(192, 15),
+            ObjectKind::Exit {
+                size: Vec2::new(3.0 * T, 5.0 * T),
+                map: "gorge-1".into(),
+                spawn: "west".into(),
+                on_touch: true,
+            },
+        ),
+        o("gorge", at(189, 26, 28.0), ObjectKind::Spawn),
         o("east", at(214, 24, 28.0), ObjectKind::Spawn),
         edge_exit("path-arena", w - 2, h, "meadow-arena", "west"),
     ];
@@ -236,6 +260,8 @@ pub fn meadow_3() -> Map {
         decor("berry_bush", 128.0, 57),
         decor("fern", 165.0, 52),
         decor("dandelion", 203.0, 24),
+        big("grey_trail", 182.0, 26, 2.2),
+        big("grey_trail", 189.0, 26, 2.2),
         decor("fern", 40.0, 30),
         decor("berry_bush", 90.0, 30),
         decor("dandelion", 130.0, 30),
@@ -345,6 +371,7 @@ mod tests {
         linked.extend(super::super::chapter2::maps());
         linked.extend(super::super::chapter3::maps());
         linked.extend(super::super::chapter4::maps());
+        linked.extend(super::super::chapter5::maps());
         let refs: Vec<(&str, &Map)> = linked.iter().map(|(n, m)| (*n, m)).collect();
         let errors = map_links(&refs);
         assert!(errors.is_empty(), "{errors:?}");
