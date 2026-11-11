@@ -57,7 +57,7 @@ continuing in between.
 | M2.5.6 | Content | Character Luma; main quest from the gorge entrance up to the star spark with the star cape in the middle; side quests **“Star fragments”** and **“Luma's song”**; dialogues of the village after chapter 5; the finale is announced (the well) | Tests |
 | M2.5.7 (in progress) | Maps | Gorge entrance at the east end of the meadows (opens after chapter 4); `gorge-1` to `gorge-3` and `gorge-spring` (climax at the ruins) | Visual check + run-through test |
 | M2.5.8 | Spark and village | Victory → star spark → Tüftel strengthens gliding; gliding spots in chapters 1–4 (going back pays off); `springs_freed = 5`, celebration, world map; the well stays grey | Tests + visual check |
-| M2.5.9 | Music and sounds | Music for the Sternschlucht and the climax (CC0, presented for listening), sounds for moths, goblins, echoes, note stones, star bridges, updrafts, star cape, the Withered One | Your listening test |
+| M2.5.9 (in progress) | Music and sounds | Music for the Sternschlucht and the climax (CC0, presented for listening), sounds for moths, goblins, echoes, note stones, star bridges, updrafts, star cape, the Withered One | Your listening test |
 | M2.5.10 | Acceptance | Play through chapter 5, save, continue | Your acceptance |
 
 ## Course of chapter 5 (proposal)
@@ -127,3 +127,10 @@ hook) need the star cape. Places for Luma, Glimmer, light threads, star fragment
 and signs are marked in the generator and follow once the content (M2.5.6) is approved. World map
 sections for all four maps. The dark ruins decoration `star-spring-withered` stands in the basin;
 the freed spring follows with M2.5.8.
+
+**Status M2.5.9 (sounds, first part):** procedural sounds instead of the placeholders for stone
+goblins (`stone_rumble`, `stone_thud`), echoes (`echo_shimmer`), star lanterns (`lantern_on`,
+`lantern_out`) and dissolving grey shadows (`shade_dissolve`); listen with
+`cargo xtask sound-preview <name>`. Still open: music for the gorge and the climax (CC0, to be
+chosen together), sounds for moths, updrafts, the star cape and the Withered One (they need new
+events), the note stone bell stays as it is unless the listening test says otherwise.

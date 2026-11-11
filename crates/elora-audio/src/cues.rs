@@ -134,15 +134,27 @@ pub enum Sound {
     Freeze,
     /// Kristella's frost breath: the wave begins.
     FrostWave,
-    /// A note stone sounds (R2-M2.5, M2.5.3), pitched to its note; placeholder until M2.5.9.
+    /// A note stone sounds (R2-M2.5, M2.5.3), pitched to its note.
     NoteStone,
     /// A chest opens (playtest: chests need feedback).
     ChestOpen,
+    /// A stone goblin stirs and rolls (R2-M2.5, M2.5.9).
+    StoneRumble,
+    /// A stone goblin hits a wall or lands.
+    StoneThud,
+    /// An echo steps out of its mirror, glassy.
+    EchoShimmer,
+    /// A star lantern lights up.
+    LanternOn,
+    /// A star lantern goes out.
+    LanternOut,
+    /// A grey shadow dissolves in the light.
+    ShadeDissolve,
 }
 
 impl Sound {
     /// All sounds in declaration order.
-    pub const ALL: [Self; 65] = [
+    pub const ALL: [Self; 71] = [
         Self::HammerFire,
         Self::HammerHit,
         Self::GrenadeFire,
@@ -208,6 +220,12 @@ impl Sound {
         Self::FrostWave,
         Self::NoteStone,
         Self::ChestOpen,
+        Self::StoneRumble,
+        Self::StoneThud,
+        Self::EchoShimmer,
+        Self::LanternOn,
+        Self::LanternOut,
+        Self::ShadeDissolve,
     ];
 
     /// Key in `sounds.toml` (`snake_case`).
@@ -278,6 +296,12 @@ impl Sound {
             Self::FrostWave => "frost_wave",
             Self::NoteStone => "note_stone",
             Self::ChestOpen => "chest_open",
+            Self::StoneRumble => "stone_rumble",
+            Self::StoneThud => "stone_thud",
+            Self::EchoShimmer => "echo_shimmer",
+            Self::LanternOn => "lantern_on",
+            Self::LanternOut => "lantern_out",
+            Self::ShadeDissolve => "shade_dissolve",
         }
     }
 
@@ -399,10 +423,15 @@ pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>)
         Event::FlagReturn { .. } => vec![Cue::global(Sound::FlagReturn)],
         Event::FlagCapture { .. } => vec![Cue::global(Sound::FlagCapture)],
         Event::TileBroken { .. } | Event::TileSet { .. } => Vec::new(),
-        // star lantern (M2.5.5): lights up with a high bell, goes out with a low one
-        Event::Lantern { pos, lit } => {
-            vec![Cue::at(Sound::NoteStone, pos).pitched(if lit { 1.5 } else { 0.5 })]
-        }
+        // star lantern (M2.5.5)
+        Event::Lantern { pos, lit } => vec![Cue::at(
+            if lit {
+                Sound::LanternOn
+            } else {
+                Sound::LanternOut
+            },
+            pos,
+        )],
         // note stone (M2.5.3): a bell, pitched to its note
         Event::Note { note, pos, .. } => {
             vec![Cue::at(Sound::NoteStone, pos).pitched(2f32.powf(f32::from(note) / 12.0))]
@@ -516,22 +545,21 @@ pub fn for_creature(e: &Event, kind: &str) -> Option<Vec<Cue>> {
             _ => None,
         },
         ("sand_crab", &Event::CreatureHit { pos, damage: 0, .. }) => one(Sound::ShellClack, pos),
-        // Sternschlucht (R2-M2.5): placeholders from existing sounds until M2.5.9
+        // Sternschlucht (R2-M2.5, M2.5.9)
         ("stone_goblin", &Event::CreatureAct { act, pos, .. }) => match act {
-            Warn => Some(vec![Cue::at(Sound::SandRumble, pos).pitched(1.25)]),
-            Wake => Some(vec![Cue::at(Sound::SnowCrunch, pos).pitched(0.6)]),
-            Land => Some(vec![Cue::at(Sound::BossLand, pos).pitched(1.7)]),
+            Warn => one(Sound::StoneRumble, pos),
+            Wake => Some(vec![Cue::at(Sound::StoneRumble, pos).pitched(1.3)]),
+            Land => one(Sound::StoneThud, pos),
             _ => None,
         },
         ("stone_goblin", &Event::CreatureHit { pos, damage: 0, .. }) => {
             Some(vec![Cue::at(Sound::ShellClack, pos).pitched(0.7)])
         }
-        ("echo", &Event::CreatureAct { act: Wake, pos, .. }) => {
-            Some(vec![Cue::at(Sound::Freeze, pos).pitched(0.7)])
-        }
+        ("echo", &Event::CreatureAct { act: Wake, pos, .. }) => one(Sound::EchoShimmer, pos),
         ("echo", &Event::CreatureDeath { pos, .. }) => {
-            Some(vec![Cue::at(Sound::Freeze, pos).pitched(1.3)])
+            Some(vec![Cue::at(Sound::EchoShimmer, pos).pitched(1.5)])
         }
+        ("grey_shade", &Event::CreatureDeath { pos, .. }) => one(Sound::ShadeDissolve, pos),
         _ => None,
     }
 }
