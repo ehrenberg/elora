@@ -42,5 +42,8 @@ elora-master = { workspace = true, features = ["client"] }
 # local time for the time of day in the main menu (E-291)
 chrono.workspace = true
 
+[build-dependencies]
+winresource.workspace = true
+
 [lints]
 workspace = true

@@ -183,6 +183,8 @@ Continued from **E-200**. Release 1 (E-001 to E-173) is in the
 | E-372 | 2026-10-15 | World map: markers | **Spring stones (saving), quest goal, springs and guardians, shops and characters** |
 | E-373 | 2026-10-15 | World map: key M | **Own full-screen map** on M (bindable, default M; pauses the game; M or Esc closes); the tab “Map” of the adventure menu shows the same view |
 | E-374 | 2026-10-15 | World map drafts (WM.0) | **Accepted** ([`design/world-map-drafts.png`](design/world-map-drafts.png)): **look A “storybook”** (parchment, muted area colours, dashed borders, brown ink); markers, clouds, path pieces, detail window and full-screen layout as drawn |
+| E-375 | 2026-11-11 | No sound on Linux (player report) | Audio output on Linux uses cpal's **PulseAudio host** (pure Rust, also served by PipeWire through `pipewire-pulse`), so `pipewire-alsa` is no longer needed; ALSA stays the fallback (default device, then every output device in turn); the main menu says once when the game stays silent |
+| E-376 | 2026-11-11 | Windows Defender / SmartScreen blocks Elora (player report) | Short term: README section with the cause (unsigned, new program) and what to do; report false positives to Microsoft per release. **Code signing is decided by the project owner** (open point O-210) |
 
 ## Open points
 
@@ -209,3 +211,4 @@ Recorded for the future:
 
 - [ ] **O-208 Persistent world** – a server with an ongoing world on which player characters keep their progress (small online RPG; needs accounts and server-side storage) – after Release 2
 - [ ] **O-209 Times of day and weather** (weather implemented and accepted with R2-W1, E-329 to E-339; times of day stay open, E-332) – time of day (morning, day, evening, night) and weather (rain, wind, fog, snow, thunderstorm) in the adventure and maps: sky, light, decoration tinting and particles; in the adventure possibly with a gameplay effect (enemies only at night, glowing mushrooms, slippery ground in rain). Basis: times of day in the main menu (E-291), day/night templates in the editor – open, after R2-M2.1
+- [ ] **O-210 Code signing for Windows** (e.g. Azure Trusted Signing, about 10 €/month with identity check; removes the SmartScreen warning over time) – owner decides, see E-376
