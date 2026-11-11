@@ -64,6 +64,10 @@ fn islands(batch: &mut ShapeBatch, scene: &Scene, art: &crate::map_art::MapArt, 
     for &(min, size, light) in &scene.note_stones {
         crate::map_art::draw_note_stone(batch, art, min, size, light);
     }
+    // star lanterns of the climax (M2.5.5)
+    for &(min, size, light) in &scene.lanterns {
+        crate::map_art::draw_lantern(batch, art, min, size, light);
+    }
 }
 
 pub fn scene(
@@ -478,7 +482,8 @@ mod tests {
         .unwrap();
     }
     /// Small test map of the Sternschlucht mechanics over a spike pit: star islands, an updraft
-    /// (M2.5.2), note stones and a star bridge (M2.5.3). For trying them out:
+    /// (M2.5.2), note stones and a star bridge (M2.5.3), creatures of the night (M2.5.4) and star
+    /// lanterns (M2.5.5). For trying them out:
     /// `cargo test -p elora-client --bin elora gorge_demo_map -- --ignored` writes
     /// `target/gorge-demo.emap`.
     #[test]
@@ -517,6 +522,9 @@ mod tests {
             zone("note-e-1-bridge", 12.0, 25.0, 40.0, 0.5),
             zone("note-g-1", 56.0, 20.0, 2.0, 2.0),
             zone("note-c2-1", 58.0, 10.0, 2.0, 2.0),
+            // star lanterns of the climax (M2.5.5): one at the start, one on the high ledge
+            zone("lantern-start", 6.0, 20.0, 1.0, 2.0),
+            zone("lantern-ledge", 54.0, 10.0, 1.0, 2.0),
         ];
         // creatures of the night (M2.5.4): moths at the top of the updraft, a stone goblin on
         // the right, an echo mirror on the high ledge; a lantern gives them light to avoid
@@ -561,6 +569,7 @@ mod tests {
             world.step(&[]);
         }
         assert!(world.creatures.len() >= 5);
+        assert_eq!(world.lanterns.len(), 2);
     }
 
     /// Star islands and an updraft (M2.5.2) for visual inspection:
@@ -615,6 +624,16 @@ mod tests {
             1.0,
             0.3,
         );
+        // star lanterns dark and lit (M2.5.5)
+        for (x, light) in [(1040.0, 0.0), (1120.0, 1.0)] {
+            crate::map_art::draw_lantern(
+                &mut batch,
+                &art,
+                Vec2::new(x, 400.0),
+                Vec2::new(32.0, 64.0),
+                light,
+            );
+        }
         let svg = batch.debug_svg(Vec2::ZERO, Vec2::new(1200.0, 500.0), BACKGROUND);
         std::fs::write(
             concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/islands.svg"),

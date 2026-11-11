@@ -22,7 +22,7 @@ from chapter3_drafts import (dune_worm, spark_moth, watering_spot, palma, ruin_s
                                 sand_crab, sand_serpent, sirup, stone_tablet, water_skin)
 from chapter4_drafts import (icicle_enemy, bat, flocke, frost_ghost, grey_trail_ice,  # noqa: E402
                                 climber, kristella, seal, snow_boulder)
-from chapter5_drafts import dark_mirror, echo, shadow_moth, stone_goblin  # noqa: E402
+from chapter5_drafts import dark_mirror, echo, grey_shadow, shadow_moth, stone_goblin, withered_one  # noqa: E402
 
 
 def straw_dummy():
@@ -107,6 +107,11 @@ CREATURES = {
     'echo_mirror': (28, 0.36, {'idle': f'<g transform="scale(2.2)">{dark_mirror(True)}</g>',
                                'm1': f'<g transform="scale(2.2)">{dark_mirror(False)}</g>',
                                'm2': f'<g transform="scale(2.2)">{dark_mirror(False)}</g>'}),
+    # climax “Protect Luma” (M2.5.5): grey shadow (the client lets it fade in the light); the
+    # Withered One (draft A, E-369) m0 drains, m1 looks at Elora, m2 flees (session::withered)
+    'grey_shade': (28, 0.5, {'idle': grey_shadow()}),
+    'withered': (90, 0.36, {'idle': withered_one('A', 'saugt'), 'm0': withered_one('A', 'saugt'),
+                            'm1': withered_one('A', 'blickt'), 'm2': withered_one('A', 'flieht')}),
 }
 
 

@@ -5,6 +5,7 @@
 //! Pure logic: loading the maps and writing the save games is done by the caller
 //! ([`SessionEvent::Travel`], [`SessionEvent::Save`]).
 
+pub(crate) mod climax;
 mod decor;
 mod followers;
 mod objects;
@@ -13,6 +14,7 @@ mod temperature;
 mod weather;
 mod world_map;
 
+pub use climax::{Climax, LUMA_PROTECTED, LUMA_SONG, Phase as ClimaxPhase, VERSES, withered};
 pub use world_map::MapSpot;
 
 pub use decor::{PARTY, SPRINGS_FREED};
@@ -173,6 +175,8 @@ pub struct Session {
     gloomy: bool,
     /// Avalanche slopes of the map (R2-M2.4).
     avalanches: crate::avalanche::Avalanches,
+    /// Running climax “Protect Luma” (R2-M2.5, M2.5.5).
+    pub climax: Option<Climax>,
     /// Character id of Elora in the world.
     pub player: usize,
     /// Enemy id of the world → object id of the map.
@@ -239,6 +243,7 @@ impl Session {
             base_weather: elora_map::Weather::CLEAR,
             gloomy: false,
             avalanches: crate::avalanche::Avalanches::default(),
+            climax: None,
             followers: BTreeMap::new(),
             in_mushrooms: 0,
             heat: 0.0,
@@ -294,6 +299,7 @@ impl Session {
         adapt_decor(&mut map, &self.save);
         self.base_weather = map.weather;
         self.avalanches = crate::avalanche::Avalanches::default();
+        self.climax = None;
         self.notes.clear();
         self.gloomy = c.area_of(name).is_some_and(|a| self.gloomy(a));
         map.weather = self.pick_weather(name);
@@ -592,6 +598,11 @@ impl Session {
         self.avalanches.tick(&self.map, world, Some(pos));
         out.extend(self.touch(world, pos));
         out.extend(self.areas(pos));
+        self.maybe_start_climax(world);
+        self.tick_climax(world, &mut out);
+        if self.dead {
+            return out;
+        }
         out.extend(self.barks(pos));
         if interact && let Some((id, _)) = self.interactable(pos) {
             out.extend(self.interact(world, &id));

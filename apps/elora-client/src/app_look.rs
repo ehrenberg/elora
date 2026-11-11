@@ -6,6 +6,11 @@ use elora_sim::{Collision, Event};
 
 use crate::{App, draw, figure, skins};
 
+/// Radius of Luma's light at full strength in the climax (M2.5.5).
+const LUMA_GLOW: f32 = 160.0;
+/// Extra darkness while a grey shadow has stopped Luma's song.
+const CLIMAX_DIM: f32 = 0.08;
+
 /// Faint glow of the star islands in the dark (M2.5.2).
 const ISLAND_GLOW: f32 = 0.55;
 /// Glow of a shadow moth's eyes in the dark (M2.5.4, units).
@@ -14,8 +19,8 @@ const MOTH_EYES: f32 = 22.0;
 const NOTE_GLOW_RADIUS: f32 = 40.0;
 
 /// Light in the dark besides the decoration (drawing only): star islands glow faintly from
-/// their star crystals (M2.5.2), lit note stones and star bridges shine (M2.5.3). Centre, radius
-/// and intensity.
+/// their star crystals (M2.5.2), lit note stones and star bridges shine (M2.5.3), so do lit star
+/// lanterns (M2.5.5). Centre, radius and intensity.
 fn glows(world: &elora_sim::World) -> Vec<(elora_sim::Vec2, f32, f32)> {
     let mut out: Vec<_> = world
         .islands
@@ -34,6 +39,9 @@ fn glows(world: &elora_sim::World) -> Vec<(elora_sim::Vec2, f32, f32)> {
     let tick = world.tick;
     for stone in world.note_stones.iter().filter(|s| s.lit(tick)) {
         out.push((stone.centre(), elora_sim::notes::STONE_LIGHT, 1.0));
+    }
+    for lantern in world.lanterns.iter().filter(|l| l.lit(tick)) {
+        out.push((lantern.centre(), elora_sim::notes::LANTERN_LIGHT, 1.0));
     }
     for bridge in world.bridges.iter().filter(|b| b.active(tick)) {
         let mut x = bridge.at.x;
@@ -93,9 +101,15 @@ impl App {
     /// position, so the light moves exactly with her and the camera.
     fn night(&mut self, camera: &Camera, elora: Option<elora_sim::Vec2>) {
         let session = self.adventure.as_ref().map(|a| &a.session);
-        let darkness = session
+        // climax (M2.5.5): Luma shines with her light; a shadow on her dims the arena
+        let climax = session.and_then(|s| s.climax.as_ref());
+        let dimmed = climax.is_some_and(|c| c.paused(self.sandbox.world.tick));
+        let luma = climax.map(|c| (c.luma, LUMA_GLOW * (0.4 + 0.6 * c.light), 0.9));
+        let darkness = (session
             .map_or(0.0, elora_adventure::Session::darkness)
             .max(self.sandbox.night_preview)
+            + if dimmed { CLIMAX_DIM } else { 0.0 })
+        .min(1.0)
             * self.settings.graphics.night.factor();
         let Some(gfx) = &mut self.gfx else { return };
         if darkness <= 0.0 {
@@ -115,6 +129,7 @@ impl App {
                     .map(|(p, r)| (p, r, 1.0)),
             )
             .chain(glows(&self.sandbox.world))
+            .chain(luma)
             // notes flying off note stones glow too (M2.5.3)
             .chain(
                 self.effects

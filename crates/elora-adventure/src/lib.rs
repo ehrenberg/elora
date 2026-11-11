@@ -48,8 +48,9 @@ mod tests {
         }
         assert_eq!(
             c.creatures.len(),
-            25,
-            "up to chapter 5 with terrain, enemies, Kristella and the creatures of the night"
+            27,
+            "up to chapter 5 with terrain, enemies, Kristella, the creatures of the night and the \
+             climax figures"
         );
     }
 

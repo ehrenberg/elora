@@ -36,7 +36,7 @@ pub use event::{CreatureAct, DeathCause, Event, PickupKind};
 pub use input::PlayerInput;
 pub use island::Island;
 pub use math::Vec2;
-pub use notes::{NoteStone, StarBridge};
+pub use notes::{Lantern, NoteStone, StarBridge};
 pub use player::{Character, Controller, Player, Team};
 pub use tuning::Tuning;
 pub use weapon::Weapon;

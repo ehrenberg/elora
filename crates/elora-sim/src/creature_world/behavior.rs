@@ -253,6 +253,8 @@ fn dispatch(cx: &mut Ctx) -> Step {
             rest_ms,
         } => night::mirror(cx, sight, spawn, rest_ms),
         Behavior::Echo { delay_ms, fade_ms } => night::echo(cx, delay_ms, fade_ms),
+        Behavior::Shade { speed, fade_ms } => night::shade(cx, speed, fade_ms),
+        Behavior::Puppet => Step::Hold,
     }
 }
 

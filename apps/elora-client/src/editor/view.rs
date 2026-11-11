@@ -173,6 +173,10 @@ fn islands(
     for s in stones {
         crate::map_art::draw_note_stone(batch, art, s.at, s.size, 0.0);
     }
+    // star lanterns (M2.5.5)
+    for l in elora_map::islands::map_lanterns(map) {
+        crate::map_art::draw_lantern(batch, art, l.at, l.size, 0.0);
+    }
     for i in elora_map::islands::map_islands(map) {
         crate::map_art::draw_island(batch, art, i.start, i.size, i.sinks);
         if i.end != i.start {

@@ -205,3 +205,38 @@ pub(super) fn echo(cx: &mut Ctx, delay_ms: u32, fade_ms: u32) -> Step {
     }
     Step::Hold
 }
+
+/// Drifts towards Luma, dissolves in the light
+/// ([`Behavior::Shade`](crate::creature::Behavior::Shade)).
+pub(super) fn shade(cx: &mut Ctx, speed: f32, fade_ms: u32) -> Step {
+    use crate::creature::shade::{DRIFT, FADE};
+    let c = &mut *cx.creature;
+    c.timer = c.timer.wrapping_add(1);
+    let factor = if c.count == 0 {
+        1.0
+    } else {
+        c.count as f32 / 100.0
+    };
+    if c.mode == DRIFT {
+        let to = c.goal - c.pos;
+        // drifts with a slow sway
+        let sway = Vec2::new(0.0, (c.timer as f32 * 0.06 + c.id as f32).sin() * 0.6);
+        let want = to.normalize() * speed * factor + sway;
+        c.vel = c.vel * 0.92 + want * 0.08;
+        if lit(cx.lights, c.pos) {
+            c.mode = FADE;
+            c.timer = 0;
+        }
+    } else {
+        // dissolving: slows down and is gone after `fade_ms`
+        c.vel *= 0.85;
+        if c.timer >= ms_to_ticks(fade_ms) {
+            cx.fx.died.push(c.id);
+        }
+    }
+    c.pos += c.vel;
+    if c.vel.x.abs() > 0.2 {
+        c.facing = sign(c.vel.x);
+    }
+    Step::Hold
+}

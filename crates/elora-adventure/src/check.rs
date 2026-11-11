@@ -377,7 +377,32 @@ pub fn map_objects(c: &Content, map: &elora_map::Map) -> Vec<String> {
             _ => {}
         }
     }
+    errors.extend(climax_zones(map));
     errors
+}
+
+/// Climax “Protect Luma” (M2.5.5): a map with `climax-start` needs Luma's place, at least one
+/// shadow spawn zone and the Withered One's first place.
+fn climax_zones(map: &elora_map::Map) -> Vec<String> {
+    use crate::session::climax as z;
+    let has = |id: &str| {
+        map.adventure
+            .objects
+            .iter()
+            .any(|o| o.id.starts_with(id) && matches!(o.kind, elora_map::ObjectKind::Zone { .. }))
+    };
+    if !has(z::START_ZONE) {
+        return Vec::new();
+    }
+    [
+        (z::LUMA_ZONE, "Luma's place"),
+        (z::SPAWN_ZONE, "a zone for the grey shadows"),
+        ("withered-1", "the Withered One's first place"),
+    ]
+    .into_iter()
+    .filter(|(id, _)| !has(id))
+    .map(|(id, what)| format!("map `{}`: climax without {what} (zone `{id}…`)", map.name))
+    .collect()
 }
 
 /// Check transitions between maps: target map and target entrance must exist.

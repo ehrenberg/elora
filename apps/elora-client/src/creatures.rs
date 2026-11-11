@@ -184,8 +184,9 @@ impl CreatureArt {
     pub fn draw(&self, batch: &mut ShapeBatch, c: &SceneCreature, time: f32) {
         let phase = time + c.id as f32 * 1.37;
         let flash = c.since_hit.is_some_and(|t| t < 6);
-        // echo fading in the light: flickers away (R2-M2.5)
-        let fading = c.kind == "echo" && c.mode == elora_sim::creature::echo::FADE;
+        // echo and grey shadow fading in the light: flicker away (R2-M2.5)
+        let fading = (c.kind == "echo" && c.mode == elora_sim::creature::echo::FADE)
+            || (c.kind == "grey_shade" && c.mode == elora_sim::creature::shade::FADE);
         let tint = if flash || fading {
             Tint {
                 alpha: Some(if fading {
@@ -645,6 +646,18 @@ mod tests {
         put("echo_mirror", false, false, None, 1, 0);
         put("echo_mirror", false, false, None, 1, 1);
         put("echo", false, false, None, 1, 0);
+        // climax (M2.5.5): grey shadow, the Withered One drains, looks, flees
+        put("grey_shade", true, false, None, 1, 0);
+        for mode in 0..3 {
+            put(
+                "withered",
+                false,
+                false,
+                None,
+                if mode == 2 { -1 } else { 1 },
+                mode,
+            );
+        }
         for mode in [0, 1, 2, 3] {
             put("kristella", mode != 3, false, None, 1, mode);
         }

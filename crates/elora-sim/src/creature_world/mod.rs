@@ -345,6 +345,12 @@ impl World {
         ) {
             c.vel += force;
         }
+        // grey shadows are only pushed back, never hurt (E-362)
+        let damage = if matches!(kind.behavior, Behavior::Shade { .. }) {
+            0
+        } else {
+            damage
+        };
         c.health -= damage;
         c.hits = c.hits.saturating_add(1);
         c.hit_tick = Some(tick);
@@ -356,6 +362,13 @@ impl World {
         });
         if c.health <= 0 {
             self.kill_creature(i, from, true);
+        }
+    }
+
+    /// Removes a creature without loot and without a winner (dissolved, burst).
+    pub fn remove_creature(&mut self, id: u32) {
+        if let Some(i) = self.creature_index(id) {
+            self.kill_creature(i, None, false);
         }
     }
 

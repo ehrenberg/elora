@@ -86,6 +86,8 @@ struct Specials {
     island: [Mesh; 2],
     /// Note stone dark and lit (M2.5.3).
     note_stone: [Mesh; 2],
+    /// Star lantern dark and lit (M2.5.5).
+    lantern: [Mesh; 2],
 }
 
 /// All built-in map graphics.
@@ -183,6 +185,10 @@ impl MapArt {
             include_bytes!("../../../assets/map/tiles/note-stone.svg"),
             "note-stone",
         );
+        let lantern = svg(
+            include_bytes!("../../../assets/map/tiles/star-lantern.svg"),
+            "star-lantern",
+        );
         let specials = Specials {
             spikes: part(&death, "up", &file("death")),
             planks: ["mid", "left", "right", "single"].map(|p| part(&plank, p, &file("platform"))),
@@ -193,6 +199,7 @@ impl MapArt {
             hook_point: ["fresh", "wilted"].map(|p| part(&hook, p, &file("hookpoint"))),
             island: ["drift", "sink"].map(|p| part(&island, p, &file("star-island"))),
             note_stone: ["dark", "lit"].map(|p| part(&note, p, &file("note-stone"))),
+            lantern: ["dark", "lit"].map(|p| part(&lantern, p, &file("star-lantern"))),
         };
         let builtin = DECOR_FILES
             .iter()
@@ -698,6 +705,27 @@ pub fn draw_note_stone(batch: &mut ShapeBatch, art: &MapArt, min: Vec2, size: Ve
     }
     let t = Affine::translate(foot).then(Affine::scale(NOTE_STONE_SCALE, NOTE_STONE_SCALE));
     let mesh = &art.specials.note_stone[usize::from(light > 0.5)];
+    batch.draw_mesh(mesh, &t, &Tint::default());
+}
+
+/// Height of the star lantern drawing (`assets/map/tiles/star-lantern.svg`, units).
+const LANTERN_HEIGHT: f32 = 140.0;
+
+/// Star lantern (M2.5.5) filling the height of its touch area, standing at its bottom centre;
+/// `light` 0..1 (lit, fading, flickering before it goes out).
+pub fn draw_lantern(batch: &mut ShapeBatch, art: &MapArt, min: Vec2, size: Vec2, light: f32) {
+    let foot = min + Vec2::new(size.x / 2.0, size.y);
+    let scale = size.y / LANTERN_HEIGHT;
+    if light > 0.0 {
+        let centre = foot - Vec2::new(0.0, 100.0 * scale);
+        let mut glow = STARLIGHT;
+        glow.0[3] = 0.25 * light;
+        batch.fill_circle(centre, 70.0 * scale, glow);
+        glow.0[3] = 0.3 * light;
+        batch.fill_circle(centre, 36.0 * scale, glow);
+    }
+    let t = Affine::translate(foot).then(Affine::scale(scale, scale));
+    let mesh = &art.specials.lantern[usize::from(light > 0.5)];
     batch.draw_mesh(mesh, &t, &Tint::default());
 }
 

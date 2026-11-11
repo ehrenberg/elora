@@ -491,6 +491,7 @@ fn put_event(w: &mut Writer, e: &Event) -> bool {
         | Event::TileSet { .. }
         | Event::IceCrack { .. }
         | Event::Note { .. }
+        | Event::Lantern { .. }
         | Event::CreatureHit { .. }
         | Event::CreatureDeath { .. }
         | Event::CreatureFire { .. }

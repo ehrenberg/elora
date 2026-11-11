@@ -197,6 +197,13 @@ pub enum Event {
         /// Centre of the stone.
         pos: Vec2,
     },
+    /// A star lantern lights up (`lit`) or a grey shadow puts it out (R2-M2.5, M2.5.5).
+    Lantern {
+        /// Centre of the lantern.
+        pos: Vec2,
+        /// Lit up (otherwise put out).
+        lit: bool,
+    },
     /// A tile was temporarily placed or reset (root wall, R2-M2.2).
     TileSet {
         /// Tile column.

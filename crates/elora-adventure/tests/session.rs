@@ -797,3 +797,188 @@ fn every_adventure_map_with_a_file_has_a_section() {
         );
     }
 }
+
+// ---------------------------------------------------------------- Climax (M2.5.5)
+
+/// `meadow-1` without enemies, with the zones of “Protect Luma”: Elora starts inside
+/// `climax-start`, Luma stands in the middle, shadows come from the right, a lantern next to
+/// Luma.
+fn climax_map() -> elora_map::Map {
+    let mut map = load("meadow-1");
+    map.adventure
+        .objects
+        .retain(|o| !matches!(o.kind, elora_map::ObjectKind::Creature { .. }));
+    let zone = |id: &str, x: f32, y: f32, w: f32, h: f32| elora_map::Object {
+        id: id.into(),
+        pos: Vec2::new(x * 32.0, y * 32.0),
+        kind: elora_map::ObjectKind::Zone {
+            size: Vec2::new(w * 32.0, h * 32.0),
+        },
+    };
+    map.adventure.objects.extend([
+        zone("climax-start", 0.0, 10.0, 12.0, 12.0),
+        zone("climax-luma", 40.0, 19.0, 2.0, 2.0),
+        zone("shade-spawn-1", 70.0, 10.0, 10.0, 4.0),
+        zone("withered-1", 60.0, 8.0, 2.0, 3.0),
+        zone("withered-2", 20.0, 8.0, 2.0, 3.0),
+        zone("lantern-1", 41.0, 19.0, 1.0, 2.0),
+    ]);
+    map
+}
+
+fn climax_start() -> (Session, World) {
+    let mut s = Session::new_game(Content::builtin());
+    let w = s.enter("meadow-1", climax_map(), "west", &Tuning::default());
+    (s, w)
+}
+
+/// Steps until `done` holds (at most `ticks`); the lantern burns while `lantern` is set.
+fn climax_run(
+    s: &mut Session,
+    w: &mut World,
+    ticks: u32,
+    lantern: bool,
+    mut done: impl FnMut(&Session, &[SessionEvent]) -> bool,
+) -> Vec<SessionEvent> {
+    let mut all = Vec::new();
+    for _ in 0..ticks {
+        if lantern {
+            w.lanterns[0].lit_until = w.tick + 100;
+        }
+        let ev = step(s, w, PlayerInput::default(), false);
+        let stop = done(s, &ev);
+        all.extend(ev);
+        if stop {
+            break;
+        }
+    }
+    all
+}
+
+#[test]
+fn climax_starts_in_its_zone_with_the_withered_one() {
+    let (mut s, mut w) = climax_start();
+    assert!(s.climax.is_none());
+    step(&mut s, &mut w, PlayerInput::default(), false);
+    let c = s.climax.as_ref().expect("Elora stands in climax-start");
+    assert_eq!((c.verse, c.light), (0, 1.0));
+    assert_eq!(c.luma, Vec2::new(41.0 * 32.0, 20.0 * 32.0));
+    let withered = w.creature_kind("withered").unwrap();
+    assert!(w.creatures.iter().any(|x| x.kind == withered));
+    // shadows come and drift towards Luma
+    climax_run(&mut s, &mut w, 200, true, |_, _| false);
+    let shade = w.creature_kind("grey_shade").unwrap();
+    assert!(
+        w.creatures
+            .iter()
+            .any(|x| x.kind == shade && x.goal == c_luma(&s))
+    );
+}
+
+fn c_luma(s: &Session) -> Vec2 {
+    s.climax.as_ref().unwrap().luma
+}
+
+#[test]
+fn shadows_on_luma_put_her_light_out_and_send_elora_back_without_loss() {
+    let (mut s, mut w) = climax_start();
+    s.save.gleam_drops = 40;
+    s.save.gleam_since_save = 40;
+    let mut dimmed = false;
+    let ev = climax_run(&mut s, &mut w, 60 * 50, false, |s, ev| {
+        if let Some(c) = &s.climax
+            && c.light < 1.0
+        {
+            dimmed = true;
+        }
+        ev.iter().any(|e| matches!(e, SessionEvent::Died { .. }))
+    });
+    assert!(dimmed, "Luma's light went down shadow by shadow");
+    assert!(ev.contains(&SessionEvent::Died { lost: 0 }));
+    assert!(s.dead && s.climax.is_none());
+    assert_eq!(s.save.gleam_drops, 40, "no loss (E-362)");
+    assert_eq!(s.save.flag(elora_adventure::session::LUMA_PROTECTED), 0);
+    let shade = w.creature_kind("grey_shade").unwrap();
+    assert!(w.creatures.iter().all(|x| x.kind != shade), "shadows gone");
+    // back at the spring stone the climax is ready again
+    let loc = s.save.location.clone();
+    let mut w = s.enter(&loc.map, climax_map(), &loc.spawn, &Tuning::default());
+    step(&mut s, &mut w, PlayerInput::default(), false);
+    assert!(s.climax.is_some());
+}
+
+#[test]
+fn lit_lanterns_protect_luma_through_three_verses_then_he_flees() {
+    use elora_adventure::session::{ClimaxPhase, LUMA_PROTECTED};
+    let (mut s, mut w) = climax_start();
+    let mut phases = Vec::new();
+    let kind = w.creature_kind("withered").unwrap();
+    climax_run(&mut s, &mut w, 140 * 50, true, |s, _| {
+        if let Some(c) = &s.climax {
+            let p = std::mem::discriminant(&c.phase);
+            if phases.last() != Some(&p) {
+                phases.push(p);
+            }
+        }
+        s.climax.is_none()
+    });
+    assert!(s.climax.is_none(), "over");
+    assert_eq!(s.save.flag(LUMA_PROTECTED), 1);
+    let names = [
+        ClimaxPhase::Song,
+        ClimaxPhase::Moving(0),
+        ClimaxPhase::Song,
+        ClimaxPhase::Moving(0),
+        ClimaxPhase::Song,
+        ClimaxPhase::Looking(0),
+        ClimaxPhase::Fleeing(0),
+    ]
+    .map(|p| std::mem::discriminant(&p));
+    assert_eq!(phases, names);
+    assert!(w.creatures.iter().all(|x| x.kind != kind), "he is gone");
+    // walking into the zone again does not start it again
+    climax_run(&mut s, &mut w, 10, false, |_, _| false);
+    assert!(s.climax.is_none());
+}
+
+#[test]
+fn withered_one_moves_to_his_next_place_between_verses() {
+    use elora_adventure::session::ClimaxPhase;
+    let (mut s, mut w) = climax_start();
+    climax_run(&mut s, &mut w, 60 * 50, true, |s, _| {
+        s.climax
+            .as_ref()
+            .is_some_and(|c| c.verse == 1 && c.phase == ClimaxPhase::Song)
+    });
+    let kind = w.creature_kind("withered").unwrap();
+    let him = w.creatures.iter().find(|x| x.kind == kind).unwrap();
+    let place = Vec2::new(21.0 * 32.0, 9.5 * 32.0);
+    assert!(
+        him.pos.distance(place) < 1.0,
+        "at withered-2: {:?}",
+        him.pos
+    );
+}
+
+#[test]
+fn complete_song_makes_the_verse_faster() {
+    let song_after = |bonus: bool| {
+        let (mut s, mut w) = climax_start();
+        if bonus {
+            s.save.set_flag(elora_adventure::session::LUMA_SONG, 1);
+        }
+        climax_run(&mut s, &mut w, 500, true, |_, _| false);
+        s.climax.as_ref().unwrap().song
+    };
+    let (plain, strong) = (song_after(false), song_after(true));
+    assert!(strong > plain * 1.4, "{plain} → {strong}");
+}
+
+#[test]
+fn leaving_the_map_ends_a_running_climax() {
+    let (mut s, mut w) = climax_start();
+    step(&mut s, &mut w, PlayerInput::default(), false);
+    assert!(s.climax.is_some());
+    s.enter("tauwinkel", load("tauwinkel"), "west", &Tuning::default());
+    assert!(s.climax.is_none());
+}

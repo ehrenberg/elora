@@ -13,6 +13,43 @@ use crate::tuning::ms_to_ticks;
 pub const STONE_LIGHT: f32 = 150.0;
 /// Light reaching out from a lit star bridge (units).
 pub const BRIDGE_LIGHT: f32 = 80.0;
+/// Light radius of a lit star lantern (units).
+pub const LANTERN_LIGHT: f32 = 170.0;
+/// A grey shadow this close to a lit lantern puts it out (units).
+pub const LANTERN_REACH: f32 = 28.0;
+
+/// A star lantern (R2-M2.5, M2.5.5): touching it lights it for A-51; its circle of light
+/// dissolves grey shadows; a shadow that reaches it puts it out.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Lantern {
+    /// Top-left corner of the touch area (units).
+    pub at: Vec2,
+    /// Size of the touch area.
+    pub size: Vec2,
+    /// Lit until this tick.
+    pub lit_until: u64,
+}
+
+impl Lantern {
+    /// Unlit lantern.
+    pub fn new(at: Vec2, size: Vec2) -> Self {
+        Self {
+            at,
+            size,
+            lit_until: 0,
+        }
+    }
+
+    /// Centre of the lantern (where it glows).
+    pub fn centre(&self) -> Vec2 {
+        self.at + self.size * 0.5
+    }
+
+    /// Is it lit at `tick`?
+    pub fn lit(&self, tick: u64) -> bool {
+        tick < self.lit_until
+    }
+}
 
 /// A note stone.
 #[derive(Debug, Clone, PartialEq)]
@@ -120,11 +157,20 @@ impl crate::World {
         self.bridges = bridges;
     }
 
-    /// Is a lit note stone or an active star bridge near `pos`?
+    /// Sets the star lanterns of the map (M2.5.5), all unlit.
+    pub fn set_lanterns(&mut self, lanterns: Vec<Lantern>) {
+        self.lanterns = lanterns;
+    }
+
+    /// Is a lit note stone, a lit star lantern or an active star bridge near `pos`?
     pub(crate) fn note_light(&self, pos: Vec2) -> bool {
         self.note_stones
             .iter()
             .any(|s| s.lit(self.tick) && s.centre().distance(pos) <= STONE_LIGHT)
+            || self
+                .lanterns
+                .iter()
+                .any(|l| l.lit(self.tick) && l.centre().distance(pos) <= LANTERN_LIGHT)
             || self
                 .bridges
                 .iter()
@@ -139,6 +185,9 @@ impl crate::World {
         for s in self.note_stones.iter().filter(|s| s.lit(tick)) {
             out.push((s.centre(), STONE_LIGHT));
         }
+        for l in self.lanterns.iter().filter(|l| l.lit(tick)) {
+            out.push((l.centre(), LANTERN_LIGHT));
+        }
         for b in self.bridges.iter().filter(|b| b.active(tick)) {
             let mut x = b.at.x;
             while x < b.at.x + b.size.x + BRIDGE_LIGHT {
@@ -149,8 +198,10 @@ impl crate::World {
         out
     }
 
-    /// Before the islands: touched note stones sound and light their bridges.
+    /// Before the islands: touched note stones sound and light their bridges; touched star
+    /// lanterns light up.
     pub(crate) fn tick_notes(&mut self) {
+        self.tick_lanterns();
         if self.note_stones.is_empty() {
             return;
         }
@@ -189,6 +240,64 @@ impl crate::World {
                 });
             }
             stone.touched = by.is_some();
+        }
+    }
+}
+
+impl crate::World {
+    /// Star lanterns (M2.5.5): a character touching one lights it (again), a grey shadow
+    /// reaching a lit one puts it out and dissolves.
+    fn tick_lanterns(&mut self) {
+        if self.lanterns.is_empty() {
+            return;
+        }
+        let half = crate::PHYS_SIZE / 2.0;
+        let bodies: Vec<Vec2> = self
+            .players
+            .iter()
+            .filter_map(|p| Some(p.as_ref()?.character.as_ref()?.core.pos))
+            .collect();
+        let until = self.tick + u64::from(ms_to_ticks(self.tuning.lantern_time));
+        let tick = self.tick;
+        for l in &mut self.lanterns {
+            let touched = bodies.iter().any(|p| {
+                p.x + half > l.at.x
+                    && p.x - half < l.at.x + l.size.x
+                    && p.y + half > l.at.y
+                    && p.y - half < l.at.y + l.size.y
+            });
+            if touched {
+                if !l.lit(tick) {
+                    self.events.push(Event::Lantern {
+                        pos: l.centre(),
+                        lit: true,
+                    });
+                }
+                l.lit_until = until;
+            }
+        }
+        // grey shadows put lit lanterns out
+        let mut gone = Vec::new();
+        for l in &mut self.lanterns {
+            if !l.lit(tick) {
+                continue;
+            }
+            if let Some(c) = self.creatures.iter().find(|c| {
+                matches!(
+                    self.creature_kinds[c.kind].behavior,
+                    crate::creature::Behavior::Shade { .. }
+                ) && c.pos.distance(l.centre()) <= LANTERN_REACH
+            }) {
+                l.lit_until = tick;
+                gone.push(c.id);
+                self.events.push(Event::Lantern {
+                    pos: l.centre(),
+                    lit: false,
+                });
+            }
+        }
+        for id in gone {
+            self.remove_creature(id);
         }
     }
 }

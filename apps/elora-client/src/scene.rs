@@ -131,6 +131,8 @@ pub struct Scene {
     pub note_stones: Vec<(Vec2, Vec2, f32)>,
     /// Star bridges: top-left corner, size and light (0 = off).
     pub bridges: Vec<(Vec2, Vec2, f32)>,
+    /// Star lanterns (M2.5.5): top-left corner, size and light (0..1).
+    pub lanterns: Vec<(Vec2, Vec2, f32)>,
     /// Camera centre.
     pub camera: Vec2,
 }
@@ -279,6 +281,11 @@ impl Scene {
             .bridges
             .iter()
             .map(|b| (b.at, b.size, fading_light(tick, b.since, b.until)))
+            .collect();
+        self.lanterns = world
+            .lanterns
+            .iter()
+            .map(|l| (l.at, l.size, fading_light(tick, 0, l.lit_until)))
             .collect();
     }
 

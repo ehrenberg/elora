@@ -1,6 +1,6 @@
 # R2-M2.5 – Chapter 5: Sternschlucht – implementation plan
 
-Status: **in progress** (M2.5.0 to M2.5.4 done) · Decisions E-362 to E-369 · Basis: [`world-book.md`](world-book.md) §4.5 and §5, [`m2-4-plan.md`](m2-4-plan.md), E-228, E-354
+Status: **in progress** (M2.5.0 to M2.5.5 done) · Decisions E-362 to E-369 · Basis: [`world-book.md`](world-book.md) §4.5 and §5, [`m2-4-plan.md`](m2-4-plan.md), E-228, E-354
 
 ## Goal
 
@@ -53,7 +53,7 @@ continuing in between.
 | M2.5.2 ✅ | Star islands and updrafts | **Moving platforms** in the simulation (deterministic): islands drift on a path, some sink slowly under Elora and rise again; they carry characters and creatures. **Updraft zones** lift gliding figures (and push non-gliding ones a little). Built as zones `island…` (+ `<id>-to`, `sink` in the id) and `updraft…`, values A-43 to A-49 | Tests + sandbox |
 | M2.5.3 ✅ | Note stones and star bridges | Touching a note stone plays a note and lights a star bridge (visible light) for a few seconds; note stones in the right order are part of “Luma's song”. Built as zones `note-<pitch>…` and `<stone>-bridge…`; the bridges carry like fixed star islands while lit (no new tile kind); A-50; placeholder bell sound until M2.5.9 | Tests |
 | M2.5.4 ✅ | New enemies | **Shadow moth**: flies in small swarms, avoids light, attacks in the dark. **Stone goblin**: looks like a rock until Elora is close, then rolls towards her; stomp or hammer stops it. **Echo**: appears from a dark mirror, repeats Elora's movements with a delay; touch hurts, light makes it fade | Tests + sandbox |
-| M2.5.5 | Climax tech | **“Protect Luma”** (see below): rounds of grey shadows towards Luma, star lanterns to light, song progress, failure → back to the spring stone; the Withered One as a scripted figure (appears, drains, flees) | Tests + sandbox |
+| M2.5.5 ✅ | Climax tech | **“Protect Luma”** (see below): rounds of grey shadows towards Luma, star lanterns to light, song progress, failure → back to the spring stone; the Withered One as a scripted figure (appears, drains, flees) | Tests + sandbox |
 | M2.5.6 | Content | Character Luma; main quest from the gorge entrance up to the star spark with the star cape in the middle; side quests **“Star fragments”** and **“Luma's song”**; dialogues of the village after chapter 5; the finale is announced (the well) | Tests |
 | M2.5.7 | Maps | Gorge entrance at the east end of the meadows (opens after chapter 4); `gorge-1` to `gorge-3` and `gorge-spring` (climax at the ruins) | Visual check + run-through test |
 | M2.5.8 | Spark and village | Victory → star spark → Tüftel strengthens gliding; gliding spots in chapters 1–4 (going back pays off); `springs_freed = 5`, celebration, world map; the well stays grey | Tests + visual check |
@@ -88,7 +88,9 @@ continuing in between.
   touching them. Hammer and grenades push shadows back; the laser does not hurt them.
 - **Song progress:** a bar above Luma fills while no shadow touches her; a shadow on Luma stops
   the song for a moment and dims the arena. Three verses (rounds) with more and faster shadows;
-  between the verses the Withered One moves to another place and the islands drift differently.
+  between the verses the Withered One moves to another place and the islands drift differently
+  (built in M2.5.5 without the island change: the islands keep their paths, the map in M2.5.7
+  places lanterns so that the routes change with the Withered One's place).
 - **Side quest bonus:** with Luma's song complete (all note stones found) Luma sings stronger:
   the bar fills faster.
 - **End:** after the third verse the Withered One stops, looks at Elora – no fight – and flees

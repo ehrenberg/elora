@@ -358,6 +358,12 @@ def export_tiles():
                 '  <!-- Star island (R2-M2.5, M2.5.2, from tools/design/chapter5_drafts.py): drifting and '
                 'sinking. Origin in the middle of the walkable surface. -->\n'
                 f'  <g id="drift">{island_tile(False)}</g>\n  <g id="sink">{island_tile(True)}</g>\n</svg>\n')
+    with open('assets/map/tiles/star-lantern.svg', 'w') as f:
+        f.write('<svg xmlns="http://www.w3.org/2000/svg" viewBox="-30 -146 60 150">\n'
+                '  <!-- Star lantern (R2-M2.5, M2.5.5, from tools/design/chapter5_drafts.py): dark and lit '
+                '(the glow is drawn by the game). Origin bottom centre. -->\n'
+                f'  <g id="dark">{star_lantern(False)}</g>\n'
+                f'  <g id="lit">{star_lantern(True).replace(glow_circle(0, -100, 70, STARLIGHT, 0.3), "")}</g>\n</svg>\n')
 
 
 # ── Spring and decoration ───────────────────────────────────────────────

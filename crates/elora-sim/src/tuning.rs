@@ -218,6 +218,8 @@ pub struct Tuning {
     pub updraft_push: f32,
     /// A-50: a touched note stone and its star bridges stay lit this long (ms, R2-M2.5)
     pub note_light_time: u32,
+    /// A-51: a touched star lantern stays lit this long (ms, R2-M2.5 climax)
+    pub lantern_time: u32,
 }
 
 impl Default for Tuning {
@@ -323,6 +325,7 @@ impl Default for Tuning {
             updraft_rise_speed: 5.0,
             updraft_push: 0.62,
             note_light_time: 6000,
+            lantern_time: 12_000,
         }
     }
 }

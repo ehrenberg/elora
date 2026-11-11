@@ -270,6 +270,18 @@ pub enum Behavior {
         /// In the light this long until it is gone.
         fade_ms: u32,
     },
+    /// Grey shadow of the Withered One (R2-M2.5, E-362): drifts through everything towards its
+    /// [`Creature::goal`] (Luma) with `speed` (times [`Creature::count`] percent when set);
+    /// light dissolves it within `fade_ms`. Hammer and grenades push it back, nothing hurts it.
+    Shade {
+        /// Drift speed (world units per tick).
+        speed: f32,
+        /// In the light this long until it is gone.
+        fade_ms: u32,
+    },
+    /// Figure moved by a script (R2-M2.5: the Withered One): does nothing by itself, cannot be
+    /// hurt or hooked and does not hurt; the session sets position, facing and mode.
+    Puppet,
     /// Guardian of Frostspitzen (Ice Queen Kristella, R2-M2.4, E-341): floats above the
     /// hall and sends frost waves across the floor (fresh frost hurts, whoever hangs on the
     /// wall or jumps stays unharmed); after `waves` waves she sinks down exhausted –
@@ -572,6 +584,14 @@ pub mod echo {
     pub const FADE: u8 = 1;
 }
 
+/// State of a grey shadow (in [`Creature::mode`]).
+pub mod shade {
+    /// Drifts towards its goal.
+    pub const DRIFT: u8 = 0;
+    /// Dissolves in the light.
+    pub const FADE: u8 = 1;
+}
+
 /// State of the dark mirror (in [`Creature::mode`]); the id of its echo is in
 /// [`Creature::count`].
 pub mod mirror {
@@ -660,7 +680,10 @@ impl Creature {
             Behavior::Diver(_) => self.mode == diver::STUNNED,
             Behavior::Burrower { .. } => self.mode == burrow::OUT,
             Behavior::Warden(_) => self.mode == warden::OPEN,
-            Behavior::Follower { .. } | Behavior::Echo { .. } | Behavior::Mirror { .. } => false,
+            Behavior::Follower { .. }
+            | Behavior::Echo { .. }
+            | Behavior::Mirror { .. }
+            | Behavior::Puppet => false,
             Behavior::Leaper { .. } => self.mode == leaper::LEAP,
             Behavior::Serpent(_) => matches!(self.mode, serpent::LEAP | serpent::STUNNED),
             Behavior::Queen(_) => self.mode == queen::TIRED,
@@ -675,7 +698,10 @@ impl Creature {
             Behavior::Diver(_) => self.mode != diver::STUNNED,
             Behavior::Burrower { .. } => self.mode == burrow::OUT,
             Behavior::Warden(_) => !matches!(self.mode, warden::OPEN | warden::SLEEP),
-            Behavior::Follower { .. } | Behavior::Mirror { .. } => false,
+            Behavior::Follower { .. }
+            | Behavior::Mirror { .. }
+            | Behavior::Shade { .. }
+            | Behavior::Puppet => false,
             Behavior::Leaper { .. } => self.mode == leaper::LEAP,
             Behavior::Serpent(_) => self.mode == serpent::LEAP,
             Behavior::Icicle { .. } => self.mode == icicle::FALL,
@@ -706,7 +732,9 @@ impl Creature {
             | Behavior::Roller { .. }
             | Behavior::Ghost { .. }
             | Behavior::Echo { .. }
-            | Behavior::Mirror { .. } => false,
+            | Behavior::Mirror { .. }
+            | Behavior::Shade { .. }
+            | Behavior::Puppet => false,
             Behavior::Goblin { .. } => self.mode != goblin::ROCK,
             Behavior::Leaper { .. } => self.mode == leaper::LEAP,
             Behavior::Serpent(_) => matches!(self.mode, serpent::LEAP | serpent::STUNNED),

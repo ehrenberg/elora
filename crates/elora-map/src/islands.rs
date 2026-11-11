@@ -7,8 +7,9 @@
 //! - A zone `note-<pitch>…` is a note stone (M2.5.3, pitch `c d e f g a b`, `2` for the octave
 //!   above, see [`elora_sim::notes::pitch`]); zones `<stone id>-bridge…` are the star bridges it
 //!   lights.
+//! - A zone `lantern…` is a star lantern (M2.5.5): touching it lights it for a while.
 
-use elora_sim::{Island, NoteStone, StarBridge, Vec2};
+use elora_sim::{Island, Lantern, NoteStone, StarBridge, Vec2};
 
 use crate::Map;
 use crate::adventure::ObjectKind;
@@ -23,6 +24,8 @@ pub const UPDRAFT: &str = "updraft";
 pub const NOTE: &str = "note-";
 /// Marks a star bridge zone: `<stone id>-bridge…`.
 pub const BRIDGE: &str = "-bridge";
+/// Start of the id of a star lantern zone.
+pub const LANTERN: &str = "lantern";
 
 fn zones(map: &Map) -> impl Iterator<Item = (&str, Vec2, Vec2)> {
     map.adventure.objects.iter().filter_map(|o| match o.kind {
@@ -41,6 +44,14 @@ pub fn map_islands(map: &Map) -> Vec<Island> {
                 .map_or(pos, |(_, to, _)| to);
             Island::new(pos, end, size, id.contains("sink"))
         })
+        .collect()
+}
+
+/// The star lanterns of a map (M2.5.5), unlit.
+pub fn map_lanterns(map: &Map) -> Vec<Lantern> {
+    zones(map)
+        .filter(|(id, ..)| id.starts_with(LANTERN))
+        .map(|(_, pos, size)| Lantern::new(pos, size))
         .collect()
 }
 
@@ -132,5 +143,20 @@ mod tests {
         assert_eq!((stones[1].note, stones[1].bridges.len()), (12, 0));
         assert_eq!(bridges.len(), 2);
         assert_eq!(bridges[1].at, Vec2::new(500.0, 320.0));
+    }
+
+    #[test]
+    fn zones_become_lanterns() {
+        let mut map = Map::new("t", 40, 20);
+        map.adventure.objects = vec![
+            zone("lantern-1", 64.0, 320.0),
+            zone("lantern-high", 512.0, 96.0),
+            zone("island-1", 0.0, 0.0),
+        ];
+        let lanterns = map_lanterns(&map);
+        assert_eq!(lanterns.len(), 2);
+        assert_eq!(lanterns[1].at, Vec2::new(512.0, 96.0));
+        assert!(lanterns.iter().all(|l| l.lit_until == 0));
+        assert_eq!(map.world(elora_sim::Tuning::default()).lanterns.len(), 2);
     }
 }

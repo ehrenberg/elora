@@ -399,6 +399,10 @@ pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>)
         Event::FlagReturn { .. } => vec![Cue::global(Sound::FlagReturn)],
         Event::FlagCapture { .. } => vec![Cue::global(Sound::FlagCapture)],
         Event::TileBroken { .. } | Event::TileSet { .. } => Vec::new(),
+        // star lantern (M2.5.5): lights up with a high bell, goes out with a low one
+        Event::Lantern { pos, lit } => {
+            vec![Cue::at(Sound::NoteStone, pos).pitched(if lit { 1.5 } else { 0.5 })]
+        }
         // note stone (M2.5.3): a bell, pitched to its note
         Event::Note { note, pos, .. } => {
             vec![Cue::at(Sound::NoteStone, pos).pitched(2f32.powf(f32::from(note) / 12.0))]

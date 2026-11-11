@@ -1378,9 +1378,20 @@ fn world_hud(
     if a.conversation.is_none() && a.dead.is_none() && a.menu.is_none() {
         status_bars(ui, refs, session, secs);
     }
-    // health bar of an awake guardian (R2-M2.1)
+    // health bar of an awake guardian (R2-M2.1), or Luma's song in the climax (M2.5.5)
     if a.conversation.is_none() && a.menu.is_none() {
-        boss_health(ui, refs, world);
+        if let Some(c) = &session.climax {
+            crate::adventure_hud::song_bar(
+                ui,
+                refs.lang,
+                c,
+                c.paused(world.tick),
+                secs,
+                refs.screen,
+            );
+        } else {
+            boss_health(ui, refs, world);
+        }
     }
     // shouts above the characters
     let npcs = session.npcs(world);

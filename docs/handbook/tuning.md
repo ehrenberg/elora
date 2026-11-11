@@ -137,6 +137,7 @@ Only in the adventure and in the spring fight (E-223). Starting values for playt
 | A-48 | Updraft: fastest rise while gliding | **5** units/tick (playtest, previously 7) | Without gliding half of it | R2-M2.5 |
 | A-49 | Updraft lift without gliding | **0.62** units/tick² (playtest, previously 0.25 = only braking) | Elora rises slowly without gliding too | R2-M2.5 |
 | A-50 | Note stone and star bridges stay lit | **6000 ms** | After touching the stone; stone and bridges flicker in the last 1.5 s | R2-M2.5, E-364 |
+| A-51 | Star lantern stays lit | **12000 ms** | After touching it; flickers in the last 1.5 s; its light (170 units) dissolves grey shadows | R2-M2.5, E-362 |
 
 ## F. Rules from follow-up decisions
 

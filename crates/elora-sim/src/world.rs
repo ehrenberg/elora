@@ -96,6 +96,8 @@ pub struct World {
     pub note_stones: Vec<crate::NoteStone>,
     /// Star bridges lit by the note stones.
     pub bridges: Vec<crate::StarBridge>,
+    /// Star lanterns (R2-M2.5, M2.5.5).
+    pub lanterns: Vec<crate::notes::Lantern>,
 }
 
 impl World {
@@ -137,6 +139,7 @@ impl World {
             islands: Vec::new(),
             note_stones: Vec::new(),
             bridges: Vec::new(),
+            lanterns: Vec::new(),
             lightning: crate::weather::Lightning::default(),
         }
     }
