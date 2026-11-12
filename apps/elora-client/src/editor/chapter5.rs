@@ -562,6 +562,62 @@ mod tests {
         assert_eq!(world.lanterns.len(), 4);
     }
 
+    /// Gliding spots in chapters 1–4 (M2.5.8): one flap arch per chapter, each in an open,
+    /// flat place, so only the strengthened star cape reaches its chest (the arch itself is
+    /// checked in `crates/elora-sim/tests/abilities.rs`).
+    #[test]
+    fn every_chapter_has_a_gliding_spot() {
+        use crate::editor::mapgen::flap_spot_clear;
+        let mut all = super::super::chapter1::all_maps();
+        all.extend(super::super::chapter2::maps());
+        all.extend(super::super::chapter3::maps());
+        all.extend(super::super::chapter4::maps());
+        for (map, id, x0, floor) in [
+            ("meadow-3", "meadow3-flap", 64, 30),
+            ("forest-3", "forest3-flap", 140, 30),
+            ("desert-2", "desert2-flap", 180, 40),
+            ("frost-3", "frost3-flap", 127, 14),
+        ] {
+            let m = &all.iter().find(|(n, _)| *n == map).unwrap().1;
+            assert!(
+                m.adventure.object(&format!("{id}-chest")).is_some(),
+                "{map}: chest"
+            );
+            if let Err(e) = flap_spot_clear(m, x0, floor) {
+                panic!("{map}: {e}");
+            }
+        }
+    }
+
+    /// Finds open, flat places for flap pillars in chapters 1–4 (M2.5.8):
+    /// `… flap_spots -- --ignored --nocapture`.
+    #[test]
+    #[ignore = "only prints candidates"]
+    fn flap_spots() {
+        use crate::editor::mapgen::flap_spot_clear;
+        let mut all = super::super::chapter1::all_maps();
+        all.extend(super::super::chapter2::maps());
+        all.extend(super::super::chapter3::maps());
+        all.extend(super::super::chapter4::maps());
+        for (name, m) in &all {
+            let mut runs: Vec<(usize, usize, usize)> = Vec::new();
+            for x in 0..m.width {
+                // ground: first solid tile from the top
+                let Some(floor) = (1..m.height).find(|&y| m.tiles[y * m.width + x].is_solid())
+                else {
+                    continue;
+                };
+                if floor > 11 && flap_spot_clear(m, x, floor).is_ok() {
+                    match runs.last_mut() {
+                        Some((_, x1, f)) if *x1 + 1 == x && *f == floor => *x1 = x,
+                        _ => runs.push((x, x, floor)),
+                    }
+                }
+            }
+            println!("{name}: {runs:?}");
+        }
+    }
+
     #[test]
     fn shipped_gorge_maps_are_current() {
         assert_current(ADVENTURE, maps(), "write_chapter5_maps");

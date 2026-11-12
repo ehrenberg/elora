@@ -16,7 +16,7 @@ use elora_sim::{TILE_SIZE, Vec2};
 
 use super::mapgen::{
     Grid, T, animate, at, big, chest, chimney, collectible, corner, creature, decor, edge_exit,
-    finish, npc, o, plant, sign, zone,
+    finish, flap_pillar, flap_pillar_decor, npc, o, plant, sign, zone,
 };
 use super::release::{self, Theme};
 
@@ -275,6 +275,14 @@ pub fn frost_3() -> Map {
     g.ground(201, 220, 10);
     g.ground(221, w - 1, 10);
     g.fill((228, 228), (2, 9), '#');
+    // gliding spot: only the strengthened star cape reaches the chest (R2-M2.5, M2.5.8)
+    let flap = flap_pillar(
+        &mut g,
+        "frost3-flap",
+        127,
+        14,
+        &[("gleam_drops", 80), ("healing_potion", 1)],
+    );
     let mut m = g.map("Gipfelgrat");
     m.weather = Weather {
         kind: WeatherKind::Blizzard,
@@ -282,6 +290,7 @@ pub fn frost_3() -> Map {
         wind: 0.5,
     };
     m.adventure.objects = vec![
+        flap,
         edge_exit("path-mountain-village", 0, h, "frost-2", "east"),
         o("west", at(4, 20, 28.0), ObjectKind::Spawn),
         sign("sign-avalanche", 18, 20),
@@ -322,6 +331,7 @@ pub fn frost_3() -> Map {
         big("snowdrift", 250.0, 10, 0.6),
     ]);
     traces(&mut m, &[(140.0, 14), (225.0, 10), (268.0, 10)]);
+    m.decor_back.extend(flap_pillar_decor(127, 14));
     winter(m)
 }
 

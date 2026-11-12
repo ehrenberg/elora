@@ -4,7 +4,7 @@
 //! - [`Grid`]: character grid in the text format of [`Map::from_rows`] (`#` ground, `.` air,
 //!   `%` unhookable, `|` climbing wall, `:` crumbling floor, `*` hook flower, `^` thorns, …).
 //! - Ability spots carved into the grid: [`jerk_gate`], [`pull_vault`], [`stomp_vault`],
-//!   [`climb_vault`], [`chimney`].
+//!   [`climb_vault`], [`chimney`], [`flap_pillar`].
 //! - Positions in tiles: [`at`] (on the ground), [`corner`] (top left corner of a tile).
 //! - Adventure objects: [`o`], [`npc`], [`sign`], [`creature`], [`chest`], [`plant`],
 //!   [`collectible`], [`edge_exit`], [`zone`].
@@ -173,6 +173,77 @@ pub(super) fn climb_vault(
     g.fill((x0 + 4, x0 + 4), (floor - 18, floor - 5), '|');
     g.fill((x0 + 5, x0 + 8), (floor - 19, floor - 19), '%');
     chest(&format!("{id}-chest"), x0 + 7, floor - 19, contents)
+}
+
+/// Height of a flap pillar above the ground (rows): a jump with the air jump and gliding reach
+/// about 10, the strengthened star cape's flap about 12 (A-52).
+pub(super) const FLAP_PILLAR: usize = 11;
+/// Free columns on each side of a flap pillar: further than the hook reaches (400 units) plus a
+/// little, so nothing nearby lifts Elora up.
+pub(super) const FLAP_CLEAR: usize = 16;
+
+/// Gliding spot (R2-M2.5, M2.5.8): a free-standing unhookable stone arch (columns
+/// `x0..=x0+2`) whose top edge lies [`FLAP_PILLAR`] rows above the ground, with a chest on top –
+/// only reachable with the strengthened star cape (jump, air jump, then one flap upwards).
+/// Underneath a passage four rows high keeps the way free.
+/// Checked in `crates/elora-sim/tests/abilities.rs` (`flap_pillar_needs_the_strengthened_star_cape`);
+/// the place must be open and flat ([`flap_spot_clear`]). Returns the chest `<id>-chest`.
+pub(super) fn flap_pillar(
+    g: &mut Grid,
+    id: &str,
+    x0: usize,
+    floor: usize,
+    contents: &[(&str, u32)],
+) -> Object {
+    g.fill((x0, x0 + 2), (floor - FLAP_PILLAR, floor - 5), '%');
+    chest(
+        &format!("{id}-chest"),
+        x0 + 1,
+        floor - FLAP_PILLAR,
+        contents,
+    )
+}
+
+/// Decoration of a flap pillar ([`flap_pillar`]): two columns under its ends that seem to carry
+/// it (back layer, not solid – the passage stays free).
+pub(super) fn flap_pillar_decor(x0: usize, floor: usize) -> [Decor; 2] {
+    // the passage is four rows high, the column graphic 222 units
+    let scale = 4.0 * T / 222.0;
+    [
+        big("pillar", x0 as f32, floor, scale),
+        big("pillar", (x0 + 2) as f32, floor, scale),
+    ]
+}
+
+/// Is the place of a flap pillar at `x0` on ground `floor` open and flat? Within
+/// [`FLAP_CLEAR`] columns on both sides there is nothing solid or walkable above the ground
+/// (no higher ground, platforms, hook points or climbing walls) except the pillar itself.
+#[cfg(test)]
+pub(super) fn flap_spot_clear(map: &Map, x0: usize, floor: usize) -> Result<(), String> {
+    use elora_sim::Tile;
+    let (l, r) = (
+        x0.checked_sub(FLAP_CLEAR)
+            .ok_or("too close to the left edge")?,
+        x0 + 2 + FLAP_CLEAR,
+    );
+    if r >= map.width {
+        return Err("too close to the right edge".into());
+    }
+    for x in l..=r {
+        let pillar = (x0..=x0 + 2).contains(&x);
+        for y in 0..floor {
+            let t = map.tiles[y * map.width + x];
+            let free = !t.is_solid() && t != Tile::Platform;
+            let arch = pillar && (floor - FLAP_PILLAR..floor - 4).contains(&y);
+            if !(free || arch) {
+                return Err(format!("{t:?} at {x},{y}"));
+            }
+        }
+        if pillar && !map.tiles[floor * map.width + x].is_solid() {
+            return Err(format!("no ground under the pillar at {x},{floor}"));
+        }
+    }
+    Ok(())
 }
 
 /// Center above the ground (top edge of row `ty`) in column `tx` for an object of height `h`.

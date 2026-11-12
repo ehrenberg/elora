@@ -1,6 +1,6 @@
 # R2-M2.5 – Chapter 5: Sternschlucht – implementation plan
 
-Status: **in progress** (M2.5.0 to M2.5.7 done – content [`m2-5-content.md`](m2-5-content.md) approved with E-377 and built in; M2.5.8 done except the gliding spots in chapters 1–4; M2.5.9 sounds done, music open) · Decisions E-362 to E-369 · Basis: [`world-book.md`](world-book.md) §4.5 and §5, [`m2-4-plan.md`](m2-4-plan.md), E-228, E-354
+Status: **in progress** (M2.5.0 to M2.5.7 done – content [`m2-5-content.md`](m2-5-content.md) approved with E-377 and built in; M2.5.8 done; M2.5.9 sounds done, music open) · Decisions E-362 to E-369 · Basis: [`world-book.md`](world-book.md) §4.5 and §5, [`m2-4-plan.md`](m2-4-plan.md), E-228, E-354
 
 ## Goal
 
@@ -56,7 +56,7 @@ continuing in between.
 | M2.5.5 ✅ | Climax tech | **“Protect Luma”** (see below): rounds of grey shadows towards Luma, star lanterns to light, song progress, failure → back to the spring stone; the Withered One as a scripted figure (appears, drains, flees) | Tests + sandbox |
 | M2.5.6 ✅ | Content | Character Luma; main quest from the gorge entrance up to the star spark with the star cape in the middle; side quests **“Star fragments”** and **“Luma's song”**; dialogues of the village after chapter 5; the finale is announced (the well) | Tests |
 | M2.5.7 ✅ | Maps | Gorge entrance at the east end of the meadows (opens after chapter 4); `gorge-1` to `gorge-3` and `gorge-spring` (climax at the ruins) | Visual check + run-through test |
-| M2.5.8 (gliding spots open) | Spark and village | Victory → star spark → Tüftel strengthens gliding; gliding spots in chapters 1–4 (going back pays off); `springs_freed = 5`, celebration, world map; the well stays grey | Tests + visual check |
+| M2.5.8 ✅ | Spark and village | Victory → star spark → Tüftel strengthens gliding; gliding spots in chapters 1–4 (going back pays off); `springs_freed = 5`, celebration, world map; the well stays grey | Tests + visual check |
 | M2.5.9 (sounds done, music open) | Music and sounds | Music for the Sternschlucht and the climax (CC0, presented for listening), sounds for moths, goblins, echoes, note stones, star bridges, updrafts, star cape, the Withered One | Your listening test |
 | M2.5.10 | Acceptance | Play through chapter 5, save, continue | Your acceptance |
 
@@ -172,8 +172,18 @@ Run-through test `chapter_five_runs_from_the_gorge_to_the_old_well` (tests/story
 **Status M2.5.8 (village):** Tüftel's dialogue sets `glide.strong`, `springs_freed = 5`,
 `freed.star_spring` (the ruins show `star-spring-freed`) and the party; Oma's celebration hums
 the beginning of the well song, then “The Old Well” starts; calls of Pip, Lotte, Klonk, Tüftel
-and Glimmer by the well. **Open:** gliding spots in chapters 1–4 (rewards that need the
-strengthened cape); a victory screen for chapter 5 – chapters 1–4 show one when the guardian
+and Glimmer by the well. **Open:** a victory screen for chapter 5 – chapters 1–4 show one when the guardian
 falls, chapter 5 has no fight and the approved texts have no victory line (proposal for the
 owner: show it when the Withered One has fled, text e.g. „Lumas Lied klingt wieder – und ein
 Sternenfunke leuchtet in der Dunkelheit.“, title of honour „Sternenhüterin“).
+
+**Status M2.5.8 (gliding spots in chapters 1–4):** one **flap arch** per chapter – an
+unhookable stone block on two (decorative) columns whose top lies 11 rows above the ground, a
+chest on top, a passage four rows high underneath so the way stays free: `meadow-3`
+(column 64), `forest-3` (140), `desert-2` (180) and `frost-3` on the summit ridge (127).
+Jump, air jump and gliding reach about 10 rows, the strengthened cape's flap about 12; the
+simulation test `flap_pillar_needs_the_strengthened_star_cape` (elora-sim, abilities.rs) checks
+it with every other ability, `every_chapter_has_a_gliding_spot` (chapter5.rs) that nothing to
+hook or stand on lies within 16 columns of an arch (`flap_spot_clear`). Helpers `flap_pillar`
+and `flap_pillar_decor` in `editor/mapgen.rs`; candidate places can be listed with the ignored
+test `flap_spots`.

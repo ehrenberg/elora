@@ -15,7 +15,8 @@ use elora_sim::Vec2;
 
 use super::mapgen::{
     Grid, T, animate, at, big, chest, climb_vault, collectible, corner, creature, decor, edge_exit,
-    finish, jerk_gate, mirror, npc, o, plant, sign, stomp_vault, thorn_decor,
+    finish, flap_pillar, flap_pillar_decor, jerk_gate, mirror, npc, o, plant, sign, stomp_vault,
+    thorn_decor,
 };
 use super::release;
 
@@ -214,6 +215,7 @@ pub fn forest_2() -> Map {
 /// Murmelwald 3, 200 × 70: down into the root caves, thorns, crumbling floor, hanging
 /// roots; pull switch chamber with a rune (only with the pull hook), hook jerk spot with a rune,
 /// at the end up to the forest spring.
+#[allow(clippy::too_many_lines)] // map layout with its objects
 pub fn forest_3() -> Map {
     let (w, h) = (200, 70);
     let mut g = Grid::new(w, h, 30);
@@ -254,8 +256,17 @@ pub fn forest_3() -> Map {
         57,
         &[("gleam_drops", 70), ("dew_potion", 1)],
     );
+    // gliding spot: only the strengthened star cape reaches the chest (R2-M2.5, M2.5.8)
+    let flap = flap_pillar(
+        &mut g,
+        "forest3-flap",
+        140,
+        30,
+        &[("gleam_drops", 60), ("healing_potion", 1)],
+    );
     let mut m = g.map("Murmelwald 3");
     m.adventure.objects = vec![
+        flap,
         edge_exit("path-forest-2", 0, h, "forest-2", "west"),
         o("east", at(5, 30, 28.0), ObjectKind::Spawn),
         creature("serpent-1", "root_snake", 36, 57, 110.0),
@@ -318,6 +329,7 @@ pub fn forest_3() -> Map {
     thorn_decor(&mut m, 60, 51, 62);
     thorn_decor(&mut m, 60, 91, 98);
     thorn_decor(&mut m, 60, 131, 144);
+    m.decor_back.extend(flap_pillar_decor(140, 30));
     forest(m)
 }
 
