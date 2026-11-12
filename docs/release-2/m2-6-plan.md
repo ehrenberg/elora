@@ -77,7 +77,7 @@ the owner decides.
 
 | # | Step | Content | Check |
 |---|---|---|---|
-| M2.6.0 | Drafts | Born (two variants), the Withered One curled up and in his colour stages, colour drops (five), the Origin Cave (well shaft, colour veins, heart before/after), the open well and the Origin Spring, dew crown, the ending scene (key pictures) | Your selection |
+| M2.6.0 ✅ (E-382, Born variant B) | Drafts | Born (two variants), the Withered One curled up and in his colour stages, colour drops (five), the Origin Cave (well shaft, colour veins, heart before/after), the open well and the Origin Spring, dew crown, the ending scene (key pictures) | Your selection |
 | M2.6.1 | Way to the well | Depending on D-M26-01: guardians remember their lines (dialogues after their chapter), Oma sings at the well, the lid opens (decor `well-sealed` → `well-open`), entrance to `well-shaft` | Tests |
 | M2.6.2 | Colour drops | Collectible colour drops that **float behind Elora** while carried (companion), are dropped by a hit and fly back to their place; delivering one at a zone counts it | Tests + sandbox |
 | M2.6.3 | Finale tech | `session/finale.rs` from the climax module: five rounds with grey waves and shadows, a drop per round at an ability spot, cave changes per colour (decor and light by flag), stage 2 with five note stones and the well song tune, failure back to the spring stone (colours stay) | Tests + sandbox |
