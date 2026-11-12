@@ -281,11 +281,10 @@ impl Session {
         }
         // the song
         if !c.paused(world.tick) {
-            let bonus = if self.save.flag(LUMA_SONG) != 0 {
-                SONG_BONUS
-            } else {
-                1.0
-            };
+            // the side quest counts even if its last talk opened another node of Luma (E-379)
+            let song = self.save.flag(LUMA_SONG) != 0
+                || self.save.holds(&self.content, "quest luma_song done");
+            let bonus = if song { SONG_BONUS } else { 1.0 };
             c.song += bonus / ms_to_ticks(VERSE_MS) as f32;
         }
         if c.song >= 1.0 {

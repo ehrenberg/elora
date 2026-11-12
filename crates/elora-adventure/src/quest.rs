@@ -434,18 +434,66 @@ impl SaveGame {
                     changed = true;
                     continue;
                 }
-                let done = match &step.goal {
-                    Goal::Collect { item, count } => self.count(item) >= *count,
-                    Goal::Flag { flag, value } => self.flag(flag) == *value,
-                    _ => false,
-                };
-                if done {
+                if self.goal_met(content, &step.goal) {
                     out.extend(self.advance_quest(content, &id));
                     changed = true;
                 }
             }
             if !changed {
                 break;
+            }
+        }
+        out
+    }
+
+    /// Is the goal already fulfilled by the state of the save game (E-379)? Goals that leave a
+    /// trace count even when they were reached before their step became active: items held,
+    /// flags, maps and quest zones visited, guardians defeated. Talking, handing over and
+    /// defeating ordinary enemies stay events – they can be repeated at any time.
+    pub fn goal_met(&self, content: &Content, goal: &Goal) -> bool {
+        match goal {
+            Goal::Collect { item, count } => self.count(item) >= *count,
+            Goal::Flag { flag, value } => self.flag(flag) >= *value,
+            Goal::Reach { map, zone: None } => self.flag(&visited_flag(map)) != 0,
+            Goal::Reach { map, zone: Some(z) } => self.flag(&reached_flag(map, z)) != 0,
+            Goal::Defeat { kind, count, .. } => {
+                *count == 1 && is_guardian(content, kind) && self.flag(&defeated_flag(kind)) != 0
+            }
+            Goal::Talk { .. } | Goal::Bring { .. } | Goal::Manual => false,
+        }
+    }
+
+    /// Repair a loaded save game (E-379): steps whose goal was reached before the step was
+    /// active (older versions waited for the event forever) are completed, and a key item that
+    /// a guardian dropped and that a later step needs comes back if it got lost.
+    pub fn repair_quests(&mut self, content: &Content) -> Vec<Outcome> {
+        let mut out = self.update_quests(content);
+        for (id, step) in self.active_steps(content) {
+            let Goal::Bring { item, count, .. } = &step.goal else {
+                continue;
+            };
+            let Some(def) = content.quest(&id) else {
+                continue;
+            };
+            let key = content
+                .item(item)
+                .is_some_and(|i| matches!(i.kind, crate::data::ItemKind::Key));
+            let dropped = def.step.iter().any(|s| match &s.goal {
+                Goal::Defeat { kind, .. } => {
+                    self.flag(&defeated_flag(kind)) != 0
+                        && content.creatures.iter().any(|k| {
+                            &k.name == kind && k.boss && k.loot.iter().any(|l| &l.item == item)
+                        })
+                }
+                _ => false,
+            });
+            let have = self.count(item);
+            if key && dropped && have < *count && self.add_item(content, item, count - have).is_ok()
+            {
+                out.push(Outcome::Notice(Notice::Item {
+                    id: item.clone(),
+                    count: count - have,
+                }));
             }
         }
         out
@@ -468,8 +516,20 @@ impl SaveGame {
         out
     }
 
-    /// Map or zone reached.
+    /// Map or zone reached; remembers the map (world map, E-264) and zones that are quest goals
+    /// (E-379), so a later step still counts them.
     pub fn on_reach(&mut self, content: &Content, map: &str, zone: Option<&str>) -> Vec<Outcome> {
+        match zone {
+            None => self.set_flag(&visited_flag(map), 1),
+            Some(z) => {
+                let goal = content.quests.iter().flat_map(|q| &q.step).any(|s| {
+                    matches!(&s.goal, Goal::Reach { map: m, zone: Some(gz) } if m == map && gz == z)
+                });
+                if goal {
+                    self.set_flag(&reached_flag(map, z), 1);
+                }
+            }
+        }
         let mut out = Vec::new();
         for (id, step) in self.active_steps(content) {
             if let Goal::Reach { map: m, zone: z } = &step.goal
@@ -483,8 +543,11 @@ impl SaveGame {
         out
     }
 
-    /// Enemy of kind `kind` defeated on map `map`.
+    /// Enemy of kind `kind` defeated on map `map`; a guardian also sets `defeated.<kind>`.
     pub fn on_defeat(&mut self, content: &Content, kind: &str, map: &str) -> Vec<Outcome> {
+        if is_guardian(content, kind) {
+            self.set_flag(&defeated_flag(kind), 1);
+        }
         let mut out = Vec::new();
         for (id, step) in self.active_steps(content) {
             if let Goal::Defeat {
@@ -505,6 +568,26 @@ impl SaveGame {
         out.extend(self.update_quests(content));
         out
     }
+}
+
+/// Flag of a visited map (world map E-264, quest goals E-379).
+pub fn visited_flag(map: &str) -> String {
+    format!("visited:{map}")
+}
+
+/// Flag of a reached zone that is the goal of a quest step (E-379).
+pub fn reached_flag(map: &str, zone: &str) -> String {
+    format!("reached:{map}:{zone}")
+}
+
+/// Flag of a defeated guardian (doors, dialogs, quests; R2-M2.1).
+pub fn defeated_flag(kind: &str) -> String {
+    format!("defeated.{kind}")
+}
+
+/// Is `kind` a guardian (boss)? Guardians stay defeated, so their defeat is state (E-379).
+pub fn is_guardian(content: &Content, kind: &str) -> bool {
+    content.creatures.iter().any(|k| k.name == kind && k.boss)
 }
 
 /// Affection per character from −10 to 10 (E-248).

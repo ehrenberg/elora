@@ -54,6 +54,8 @@ const MUSHROOM_DELAY_MS: u32 = 1200;
 const HOOK_PICK_RANGE: f32 = 28.0;
 /// Health after „Zweite Chance“ (node, P-xx).
 const SECOND_CHANCE_HEALTH: i32 = 3;
+/// A guardian's key loot this close to where it died goes straight into the bag (E-379).
+const GUARDIAN_LOOT_RANGE: f32 = 64.0;
 
 /// What the caller should do or show.
 #[derive(Debug, Clone, PartialEq)]
@@ -232,8 +234,10 @@ fn inside(p: Vec2, at: Vec2, size: Vec2) -> bool {
 }
 
 impl Session {
-    /// Session for a save game; afterwards [`Self::enter`] with `save.location`.
-    pub fn new(content: Content, save: SaveGame) -> Self {
+    /// Session for a save game; afterwards [`Self::enter`] with `save.location`. Quests stuck in
+    /// older save games are repaired first (E-379).
+    pub fn new(content: Content, mut save: SaveGame) -> Self {
+        let repaired = outcomes(save.repair_quests(&content));
         Self {
             content,
             save,
@@ -264,7 +268,7 @@ impl Session {
             frozen: false,
             last_hook: None,
             notes: Vec::new(),
-            pending: Vec::new(),
+            pending: repaired,
             dead: false,
         }
     }
@@ -409,8 +413,9 @@ impl Session {
         let events = world.events.clone();
         for e in &events {
             match e {
-                Event::CreatureDeath { id, kind, .. } => {
+                Event::CreatureDeath { id, kind, pos, .. } => {
                     self.creature_died(world, *id, *kind, e, out);
+                    self.guardian_keys(world, *kind, *pos, out);
                 }
                 // Kristella calls a blizzard into the hall (E-341)
                 Event::CreatureAct {
@@ -519,6 +524,47 @@ impl Session {
             .save
             .on_event(&self.content, &world.creature_kinds, me, e);
         out.extend(n.into_iter().map(SessionEvent::Notice));
+    }
+
+    /// A guardian's key items (the spring spark) go straight into the bag instead of lying
+    /// around as loot: the guardian stays defeated, so lost loot could never come back (E-379).
+    fn guardian_keys(
+        &mut self,
+        world: &mut World,
+        kind: usize,
+        pos: Vec2,
+        out: &mut Vec<SessionEvent>,
+    ) {
+        let Some(k) = world.creature_kinds.get(kind).filter(|k| k.boss) else {
+            return;
+        };
+        let keys: Vec<String> = k
+            .loot
+            .iter()
+            .filter(|l| {
+                self.content
+                    .item(&l.item)
+                    .is_some_and(|i| matches!(i.kind, crate::data::ItemKind::Key))
+            })
+            .map(|l| l.item.clone())
+            .collect();
+        let me = self.player;
+        let (taken, kept): (Vec<_>, Vec<_>) = std::mem::take(&mut world.loot)
+            .into_iter()
+            .partition(|l| keys.contains(&l.item) && l.pos.distance(pos) < GUARDIAN_LOOT_RANGE);
+        world.loot = kept;
+        for l in taken {
+            let e = Event::LootCollect {
+                player: me,
+                item: l.item,
+                count: l.count,
+                pos: l.pos,
+            };
+            let n = self
+                .save
+                .on_event(&self.content, &world.creature_kinds, me, &e);
+            out.extend(n.into_iter().map(SessionEvent::Notice));
+        }
     }
 
     /// After every world tick; `interact` = action key pressed in this tick.

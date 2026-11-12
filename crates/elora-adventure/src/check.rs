@@ -102,6 +102,7 @@ pub fn story(c: &Content) -> Result<(), String> {
     }
     dialogs(c)?;
     quests(c)?;
+    quest_order(c)?;
     tunes(c)?;
     temperature(c)
 }
@@ -350,6 +351,41 @@ fn quests(c: &Content) -> Result<(), String> {
             return Err(format!(
                 "characters.toml `{id}`: follower `{k}` does not exist"
             ));
+        }
+    }
+    Ok(())
+}
+
+/// Order of quest steps (E-379): every goal must still be reachable when the player did it
+/// before its step was active. State goals (collect, flag, reach, guardian) are checked against
+/// the save game when the step starts; event goals must be repeatable – a guardian counts only
+/// once, and the character of a talk or bring goal always has a dialog that opens.
+fn quest_order(c: &Content) -> Result<(), String> {
+    for q in &c.quests {
+        for s in &q.step {
+            let at = format!("quests.toml `{}` step `{}`", q.id, s.id);
+            match &s.goal {
+                Goal::Defeat { kind, count, .. }
+                    if *count != 1 && crate::quest::is_guardian(c, kind) =>
+                {
+                    return Err(format!(
+                        "{at}: guardian `{kind}` stays defeated – count must be 1"
+                    ));
+                }
+                Goal::Talk { who } | Goal::Bring { to: who, .. } => {
+                    // (whether a map places the character is up to the map check)
+                    let mut own = c.dialogs.values().filter(|d| &d.speaker == who).peekable();
+                    let opens = own.peek().is_none()
+                        || own.any(|d| d.start.iter().any(|e| e.cond.is_none()));
+                    if !opens {
+                        return Err(format!(
+                            "{at}: no dialog of `{who}` opens without a condition – the step \
+                             could be missed"
+                        ));
+                    }
+                }
+                _ => {}
+            }
         }
     }
     Ok(())
