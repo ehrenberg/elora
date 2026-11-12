@@ -220,6 +220,10 @@ impl Session {
                     if let Some(id) = c.withered {
                         remove(world, id);
                     }
+                    // chapter done: victory screen of the area (E-384)
+                    if let Some(a) = self.content.area_of(&self.map_name) {
+                        out.push(SessionEvent::ChapterDone { area: a.id.clone() });
+                    }
                     false
                 } else {
                     c.phase = Phase::Fleeing(t + 1);

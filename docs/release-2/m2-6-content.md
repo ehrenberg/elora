@@ -185,8 +185,11 @@ do not know where the song begins and send Elora to the one before.
 - Text: „Born singt wieder – und mit ihm das ganze Tauland.“
 - Title of honour: **„Quellenhüterin“**
 
+**Too early** (fixed order, E-383): every guardian except the Bumblebear says, with the name of the
+guardian before: „Ein Lied? Ich weiß nur ein Stück aus der Mitte – ohne den Anfang finde ich es
+nicht. Frag zuerst {Hummel / Wurzelwächter / Sandschlange / Kristella}.“ (approved 2026-11-12)
+
 ## 7. Approved
 
-All texts and the choices D-M26C-01 to D-M26C-04 (E-383, 2026-11-12). Still to be written when
-building (short, from the approved style, shown to the owner at the acceptance): the guardians'
-“not yet” line for the fixed order.
+All texts and the choices D-M26C-01 to D-M26C-04 (E-383, 2026-11-12). The “too early” line of the
+guardians was approved separately (above).
