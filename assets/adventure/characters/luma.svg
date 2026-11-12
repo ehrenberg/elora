@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-60 -80 120 90">
+  <!-- luma (A1.7, aus tools/design/abenteuer_assets.py). Ursprung = Boden, Blick nach rechts. -->
+  <g id="figure"><g transform="scale(0.34199999999999997)"><path d="M -20,-90 Q -110,-170 -96,-70 Q -80,-40 -20,-60 Z" fill="#d9c6f7" fill-opacity="0.45" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="-70" cy="-100" r="9" fill="#fff3b0" stroke="#2b2b2b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M 20,-90 Q 110,-170 96,-70 Q 80,-40 20,-60 Z" fill="#d9c6f7" fill-opacity="0.45" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><circle cx="70" cy="-100" r="9" fill="#fff3b0" stroke="#2b2b2b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+  
+  <g id="foot-back">
+    <ellipse cx="-20" cy="-8" rx="14" ry="8" fill="#5e4690" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="foot-front">
+    <ellipse cx="22" cy="-8" rx="14" ry="8" fill="#5e4690" stroke="#2b2b2b" stroke-width="4"/>
+  </g>
+  <g id="body">
+    <path d="M 19.8,-131 C 25.9,-107 50,-85 50,-55 C 50,-27 28,-9 0,-9 C -28,-9 -50,-27 -50,-55 C -50,-85 -6.1,-107 19.8,-131 Z"
+          fill="#8a6ac0" stroke="#2b2b2b" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M -34,-41 C -30,-21 -12,-15 4,-15 C 22,-15 36,-25 40,-41 C 26,-33 -18,-31 -34,-41 Z" fill="#bfaddc"/>
+  </g>
+  <g id="eyes">
+    <ellipse cx="2" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <ellipse cx="26" cy="-63" rx="6.5" ry="11" fill="#2b2b2b"/>
+    <circle cx="4" cy="-68" r="2.6" fill="#ffffff"/>
+    <circle cx="28" cy="-68" r="2.6" fill="#ffffff"/>
+    
+  </g>
+<ellipse cx="2" cy="-63" rx="9" ry="13" fill="#8a6ac0"/><ellipse cx="26" cy="-63" rx="9" ry="13" fill="#8a6ac0"/><path d="M -6,-62 q 8,6 16,0 M 18,-62 q 8,6 16,0" fill="none" stroke="#2b2b2b" stroke-width="3.5" stroke-linecap="round"/><path d="M 8,-40 q 6,-4 12,0" fill="none" stroke="#2b2b2b" stroke-width="3" stroke-linecap="round"/><path d="M -10,-126 Q -30,-170 -48,-168" fill="none" stroke="#2b2b2b" stroke-width="3"/><circle cx="-50" cy="-168" r="6" fill="#c9c9cf" stroke="#2b2b2b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M 10,-126 Q 30,-170 48,-168" fill="none" stroke="#2b2b2b" stroke-width="3"/><circle cx="50" cy="-168" r="6" fill="#c9c9cf" stroke="#2b2b2b" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/><path d="M -46,-58 Q 0,-34 46,-58 L 40,-40 Q 0,-20 -40,-40 Z" fill="#4a55a8" stroke="#2b2b2b" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/><polygon points="-28.0,-50.0 -26.9,-47.1 -24.0,-46.0 -26.9,-44.9 -28.0,-42.0 -29.1,-44.9 -32.0,-46.0 -29.1,-47.1" fill="#fff3b0" stroke="#2b2b2b" stroke-width="1.2" stroke-linejoin="round"/><polygon points="-10.0,-50.0 -8.9,-47.1 -6.0,-46.0 -8.9,-44.9 -10.0,-42.0 -11.1,-44.9 -14.0,-46.0 -11.1,-47.1" fill="#fff3b0" stroke="#2b2b2b" stroke-width="1.2" stroke-linejoin="round"/><polygon points="8.0,-50.0 9.1,-47.1 12.0,-46.0 9.1,-44.9 8.0,-42.0 6.9,-44.9 4.0,-46.0 6.9,-47.1" fill="#fff3b0" stroke="#2b2b2b" stroke-width="1.2" stroke-linejoin="round"/><polygon points="26.0,-50.0 27.1,-47.1 30.0,-46.0 27.1,-44.9 26.0,-42.0 24.9,-44.9 22.0,-46.0 24.9,-47.1" fill="#fff3b0" stroke="#2b2b2b" stroke-width="1.2" stroke-linejoin="round"/></g></g>
+</svg>

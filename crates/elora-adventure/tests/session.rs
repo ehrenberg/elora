@@ -967,6 +967,7 @@ fn climax_map() -> elora_map::Map {
 
 fn climax_start() -> (Session, World) {
     let mut s = Session::new_game(Content::builtin());
+    s.save.set_flag(elora_adventure::session::LUMA_SINGS, 1);
     let w = s.enter("meadow-1", climax_map(), "west", &Tuning::default());
     (s, w)
 }
@@ -992,6 +993,23 @@ fn climax_run(
         }
     }
     all
+}
+
+#[test]
+fn climax_waits_until_luma_is_ready_to_sing() {
+    let (mut s, mut w) = climax_start();
+    s.save.set_flag(elora_adventure::session::LUMA_SINGS, 0);
+    step(&mut s, &mut w, PlayerInput::default(), false);
+    assert!(
+        s.climax.is_none(),
+        "Elora has not talked to Luma at the ruins yet"
+    );
+    s.save.set_flag(elora_adventure::session::LUMA_SINGS, 1);
+    step(&mut s, &mut w, PlayerInput::default(), false);
+    assert!(
+        s.climax.is_some(),
+        "standing in the zone is enough afterwards"
+    );
 }
 
 #[test]

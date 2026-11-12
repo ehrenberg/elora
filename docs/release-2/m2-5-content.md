@@ -1,6 +1,6 @@
 # R2-M2.5 – Chapter 5 content (draft, M2.5.6)
 
-Status: **draft – waiting for approval** · Basis: [`m2-5-plan.md`](m2-5-plan.md), [`world-book.md`](world-book.md) §4.5 and §5, E-362 to E-369
+Status: **approved (E-377), built in** · Basis: [`m2-5-plan.md`](m2-5-plan.md), [`world-book.md`](world-book.md) §4.5 and §5, E-362 to E-369
 
 As for chapter 4 (E-346), the **German texts are up for approval**; the English ones are added when
 building them in. Conditions and effects use the notation of the content files

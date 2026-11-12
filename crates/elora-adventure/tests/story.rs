@@ -364,8 +364,8 @@ fn climax_needs_lumas_place_shadows_and_the_withered_one() {
         ],
     );
     assert!(map_objects(&c, &full).is_empty());
-    // without the start zone nothing is required
-    assert!(map_objects(&c, &small("gorge-1", vec![zone("climax-luma")])).is_empty());
+    // without the start zone nothing is required (a test map without tunes)
+    assert!(map_objects(&c, &small("test-ruins", vec![zone("climax-luma")])).is_empty());
 }
 
 #[test]
@@ -373,7 +373,7 @@ fn a_tune_needs_its_note_stones_on_its_map() {
     let mut c = Content::builtin();
     c.tunes.push(elora_adventure::quest::TuneDef {
         id: "verse-1".into(),
-        map: "gorge-1".into(),
+        map: "test-notes".into(),
         notes: vec!["e".into(), "g".into(), "e".into()],
         cond: None,
         actions: Vec::new(),
@@ -386,13 +386,13 @@ fn a_tune_needs_its_note_stones_on_its_map() {
             },
         )
     };
-    let errors = map_objects(&c, &small("gorge-1", vec![zone("note-e-1")]));
+    let errors = map_objects(&c, &small("test-notes", vec![zone("note-e-1")]));
     assert_eq!(errors.len(), 1, "{errors:?}");
     assert!(errors[0].contains("tune `verse-1`") && errors[0].contains("`g`"));
     let stones = vec![zone("note-e-1"), zone("note-g"), zone("note-g-bridge")];
-    assert!(map_objects(&c, &small("gorge-1", stones)).is_empty());
+    assert!(map_objects(&c, &small("test-notes", stones)).is_empty());
     // other maps are not concerned
-    assert!(map_objects(&c, &small("gorge-2", Vec::new())).is_empty());
+    assert!(map_objects(&c, &small("test-other", Vec::new())).is_empty());
 }
 
 #[test]
@@ -924,4 +924,111 @@ fn buried_chamber_sign_waits_for_the_stomp() {
     g.run(&c, &["ability stomp".into()]);
     let (talk, _) = Conversation::start(&c, &mut g, "sign-chamber").expect("sign");
     assert_eq!(talk.node, "text");
+}
+
+/// Chapter 5 (R2-M2.5, M2.5.6): from the crack in the rocks to the party at the well, with
+/// both side quests and the strengthened star cape.
+#[test]
+fn chapter_five_runs_from_the_gorge_to_the_old_well() {
+    let (c, mut g) = game();
+    g.run(
+        &c,
+        &[
+            "quest frostspitzen start".into(),
+            "quest frostspitzen finish".into(),
+        ],
+    );
+    assert!(g.holds(&c, "quest sternschlucht step departure"));
+    assert!(
+        !g.stock(&c, "lotte").contains(&"night_tea"),
+        "night tea only after the first visit"
+    );
+    let (conv, _) = Conversation::start(&c, &mut g, "sign-gorge").unwrap();
+    assert_eq!(conv.node, "text");
+    g.on_reach(&c, "gorge-1", None);
+    assert!(g.holds(&c, "quest sternschlucht step luma"));
+    assert!(g.stock(&c, "lotte").contains(&"night_tea"));
+    // Glimmer at the entrance
+    let (mut conv, _) = Conversation::start(&c, &mut g, "glimmer").unwrap();
+    assert_eq!(conv.node, "greeting");
+    conv.choose(&c, &mut g, 0);
+    assert_eq!(g.flag("withered_one.gorge"), 1);
+    // Luma: greeting → threads
+    let (mut conv, _) = Conversation::start(&c, &mut g, "luma").unwrap();
+    assert_eq!(conv.node, "greeting");
+    assert!(g.holds(&c, "quest sternschlucht step threads"));
+    conv.advance(&c, &mut g);
+    conv.choose(&c, &mut g, 0);
+    assert_eq!(conv.node, "threads");
+    let (conv, _) = Conversation::start(&c, &mut g, "luma").unwrap();
+    assert_eq!(conv.node, "reminder");
+    g.add_item(&c, "light_thread", 3).unwrap();
+    g.update_quests(&c); // as when picking them up in the session
+    assert!(g.holds(&c, "quest sternschlucht step cape"));
+    let (mut conv, _) = Conversation::start(&c, &mut g, "luma").unwrap();
+    assert_eq!(conv.node, "cape");
+    assert!(g.abilities().has(elora_sim::Ability::Glide));
+    assert_eq!(g.count("light_thread"), 0, "woven into the cape");
+    assert!(g.holds(&c, "quest sternschlucht step heights"));
+    conv.choose(&c, &mut g, 1);
+    assert_eq!(conv.node, "going");
+    conv.advance(&c, &mut g);
+    assert_eq!(conv.node, "side");
+    conv.choose(&c, &mut g, 0);
+    assert!(g.holds(&c, "quest star_fragments active"));
+    assert!(g.holds(&c, "quest luma_song active"));
+    assert_eq!(g.flag("luma.at_ruins"), 1);
+    // Luma's song: one verse per map (the session counts it, see `tunes_*` in session.rs)
+    g.run(&c, &["flag luma_song.verses = 3".into()]);
+    assert!(g.holds(&c, "quest luma_song step sing"));
+    g.on_reach(&c, "gorge-3", None);
+    g.on_reach(&c, "gorge-spring", None);
+    assert!(g.holds(&c, "quest sternschlucht step protect"));
+    let (conv, _) = Conversation::start(&c, &mut g, "luma").unwrap();
+    assert_eq!(conv.node, "song_complete");
+    assert!(g.holds(&c, "quest luma_song done"));
+    assert_eq!(g.flag("luma_song"), 1, "Luma sings stronger in the climax");
+    assert_eq!(g.count("song_pendant"), 1);
+    g.add_item(&c, "star_fragment", 8).unwrap();
+    g.update_quests(&c);
+    let (conv, _) = Conversation::start(&c, &mut g, "luma").unwrap();
+    assert_eq!(conv.node, "fragments");
+    assert!(g.holds(&c, "quest star_fragments done"));
+    assert_eq!(g.count("star_shawl"), 1);
+    let (conv, _) = Conversation::start(&c, &mut g, "luma").unwrap();
+    assert_eq!(conv.node, "ruins");
+    assert_eq!(g.flag("luma.sings"), 1, "now the climax may start");
+    // the climax sets the flag (session.rs); then Luma hands over the spark
+    g.run(&c, &["flag luma_protected = 1".into()]);
+    assert!(g.holds(&c, "quest sternschlucht step spark"));
+    let (mut conv, _) = Conversation::start(&c, &mut g, "luma").unwrap();
+    assert_eq!(conv.node, "after_climax");
+    conv.advance(&c, &mut g);
+    assert_eq!(conv.node, "well_song");
+    assert_eq!(g.count("spring_spark"), 1);
+    let (conv, _) = Conversation::start(&c, &mut g, "luma").unwrap();
+    assert_eq!(conv.node, "farewell");
+    let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
+    assert_eq!(conv.node, "spark");
+    let (conv, _) = Conversation::start(&c, &mut g, "tueftel").unwrap();
+    assert_eq!(conv.node, "spark5");
+    assert_eq!(g.flag("glide.strong"), 1);
+    assert_eq!(g.flag("springs_freed"), 5);
+    assert_eq!(g.flag("freed.star_spring"), 1);
+    assert_eq!(g.count("spring_spark"), 0);
+    let (mut conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
+    assert_eq!(conv.node, "party5");
+    conv.advance(&c, &mut g);
+    assert_eq!(conv.node, "party5_song");
+    assert!(g.holds(&c, "quest sternschlucht done"));
+    assert!(g.holds(&c, "quest finale active"));
+    let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
+    assert_eq!(conv.node, "party5_song");
+    // village after chapter 5
+    assert!(bark(&c, &g, "pip").unwrap().de.contains("FLIEGEN"));
+    assert!(bark(&c, &g, "lotte").unwrap().de.contains("Nachttee"));
+    assert!(bark(&c, &g, "klonk").unwrap().de.contains("Brunnen"));
+    assert!(bark(&c, &g, "tueftel").unwrap().de.contains("Version zwei"));
+    let (conv, _) = Conversation::start(&c, &mut g, "glimmer").unwrap();
+    assert_eq!(conv.node, "village");
 }

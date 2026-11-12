@@ -241,6 +241,7 @@ pub fn meadow_3() -> Map {
             },
         ),
         o("gorge", at(189, 26, 28.0), ObjectKind::Spawn),
+        sign("sign-gorge", 186, 26),
         o("east", at(214, 24, 28.0), ObjectKind::Spawn),
         edge_exit("path-arena", w - 2, h, "meadow-arena", "west"),
     ];

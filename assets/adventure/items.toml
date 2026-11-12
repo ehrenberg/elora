@@ -261,3 +261,42 @@ rarity = "rare"
 bonuses = [{ laser_bounces = 1 }]
 name = { de = "Lichtkristall", en = "Light crystal" }
 desc = { de = "Von Klonk geschliffen. Der Laser prallt einmal mehr ab.", en = "Cut by Klonk. The laser bounces once more." }
+
+# Chapter 5 – Sternschlucht (R2-M2.5, docs/release-2/m2-5-content.md)
+[[item]]
+id = "light_thread"
+type = "collectible"
+name = { de = "Lichtfaden", en = "Light thread" }
+desc = { de = "Warm und leicht wie ein Sonnenstrahl, den jemand aufgewickelt hat.", en = "Warm and light as a sunbeam that someone has wound up." }
+
+[[item]]
+id = "star_fragment"
+type = "collectible"
+name = { de = "Sternsplitter", en = "Star fragment" }
+desc = { de = "Ein Stück Himmel, kaum größer als ein Tautropfen. Es summt leise.", en = "A piece of sky, hardly bigger than a dewdrop. It hums softly." }
+
+[[item]]
+id = "star_shawl"
+type = "equipment"
+slot = "cape"
+rarity = "rare"
+bonuses = [{ glide_fall = -0.6 }, { max_health = 1 }]
+name = { de = "Sternenschal", en = "Star shawl" }
+desc = { de = "Von Luma aus acht Sternsplittern gewebt. Beim Gleiten fällst du noch sanfter.", en = "Woven by Luma from eight star fragments. You fall even more gently while gliding." }
+
+[[item]]
+id = "song_pendant"
+type = "equipment"
+slot = "pendant"
+rarity = "rare"
+bonuses = [{ lantern_pct = 50.0 }]
+name = { de = "Liedanhänger", en = "Song pendant" }
+desc = { de = "In ihm klingt Lumas Lied nach. Sternenlaternen brennen länger.", en = "Luma's song lingers in it. Star lanterns burn longer." }
+
+[[item]]
+id = "night_tea"
+type = "consumable"
+effect = { glow = 2 }
+price = 18
+name = { de = "Nachttee", en = "Night tea" }
+desc = { de = "Stellt 2 Leben her und lässt dein Licht 30 Sekunden lang doppelt so weit scheinen.", en = "Restores 2 health and makes your light shine twice as far for 30 seconds." }

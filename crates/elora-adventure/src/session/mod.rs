@@ -15,7 +15,9 @@ mod temperature;
 mod weather;
 mod world_map;
 
-pub use climax::{Climax, LUMA_PROTECTED, LUMA_SONG, Phase as ClimaxPhase, VERSES, withered};
+pub use climax::{
+    Climax, LUMA_PROTECTED, LUMA_SINGS, LUMA_SONG, Phase as ClimaxPhase, VERSES, withered,
+};
 pub use night::NOTES_KEPT;
 pub use world_map::MapSpot;
 

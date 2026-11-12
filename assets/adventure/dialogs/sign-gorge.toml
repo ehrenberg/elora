@@ -1,0 +1,18 @@
+# Signpost (E-273, R2-M2.5): at the crack in the rocks at the east end of the Blütenwiesen
+speaker = "signpost"
+
+[[start]]
+if = "quest frostspitzen done"
+node = "text"
+
+[[start]]
+node = "later"
+
+[[node]]
+id = "text"
+text = { de = "→ Sternschlucht. Licht mitnehmen!", en = "→ Sternschlucht. Bring a light!" }
+
+# before the crack opens (E-354)
+[[node]]
+id = "later"
+text = { de = "Sternschlucht – gesperrt. Steinschlag.", en = "Sternschlucht – closed. Rockfall." }

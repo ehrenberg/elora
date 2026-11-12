@@ -5,8 +5,11 @@
 //! the rocks at the east end of `meadow-3` that opens after chapter 4 (E-367). Night maps:
 //! light comes from crystal stars, lanterns and glowing mushrooms (`assets/map/lights.toml`).
 //!
-//! Characters, collectibles and signs of chapter 5 follow with the content (M2.5.6,
-//! `docs/release-2/m2-5-content.md`); the places for them are kept free (marked below).
+//! Characters, collectibles and signs of chapter 5 come from the content (M2.5.6,
+//! `docs/release-2/m2-5-content.md`): Glimmer, Luma in her hollow and at the ruins, the three
+//! light threads at the ends of star bridges (D-M25-01), eight star fragments only reachable by
+//! gliding, a note tablet per map with its verse of Luma's song (D-M25-02) and the grey stones
+//! of the Withered One.
 //!
 //! `cargo test -p elora-client --bin elora write_chapter5_maps -- --ignored` writes
 //! `maps/adventure/*.emap`.
@@ -19,8 +22,8 @@ use elora_sim::Vec2;
 
 use super::look::Preset;
 use super::mapgen::{
-    Grid, T, animate, at, big, chest, corner, creature, decor, decor_px, edge_exit, finish_with, o,
-    plant, zone,
+    Grid, T, animate, at, big, chest, collectible, corner, creature, decor, decor_px, edge_exit,
+    finish_with, npc, o, plant, sign, zone,
 };
 use super::release::{self, Theme};
 
@@ -78,6 +81,30 @@ fn bridge(stone: &str, x0: usize, x1: usize, ty: usize) -> Object {
 /// Star lantern (zone `lantern…`, M2.5.5), 1 × 2 tiles standing on row `ty`.
 fn lantern(id: &str, tx: usize, ty: usize) -> Object {
     zone(id, (tx, tx), (ty - 2, ty - 1))
+}
+
+/// Character in a second place (`luma-ruins`, …) that speaks the dialog of its first one.
+fn npc_with(id: &str, dialog: &str, tx: usize, ty: usize, facing: i8) -> Object {
+    o(
+        id,
+        at(tx, ty, 28.0),
+        ObjectKind::Npc {
+            character: id.into(),
+            dialog: dialog.into(),
+            facing,
+            walk: 0.0,
+        },
+    )
+}
+
+/// Light thread for Luma (D-M25-01) on the ground of row `ty`.
+fn thread(id: &str, tx: usize, ty: usize) -> Object {
+    collectible(id, "light_thread", tx, ty)
+}
+
+/// Star fragment (side quest “Star fragments”) on the ground of row `ty` (or in the air).
+fn fragment(id: &str, tx: usize, ty: usize) -> Object {
+    collectible(id, "star_fragment", tx, ty)
 }
 
 fn goblin(id: &str, tx: usize, ty: usize) -> Object {
@@ -147,20 +174,28 @@ pub fn gorge_1() -> Map {
     m.adventure.objects = vec![
         edge_exit("path-meadow", 0, h, "meadow-3", "gorge"),
         o("west", at(4, 20, 28.0), ObjectKind::Spawn),
-        // reserved: Glimmer (around 14, 20), sign `sign-dark` (around 20, 20)
+        npc("glimmer", 14, 20, -1, 0.0),
+        sign("sign-dark", 20, 20),
+        npc("grey-stone-1", 60, 36, 1, 0.0),
         goblin("goblin-1", 56, 36),
         rest("dusk-rest", 72, 36),
         plant("flower-1", 76, 36),
         island("island-fixed-1", 98, 36, 5),
         island("island-drift-1", 108, 35, 5),
         island("island-drift-1-to", 118, 35, 5),
+        // in the air above the chasm, 11+ tiles above everything near it (a jump with the air
+        // jump reaches about 10): only gliding down from the high steps gets there
+        fragment("fragment-1", 128, 24),
         goblin("goblin-2", 140, 36),
+        npc("tablet-song-1", 145, 36, 1, 0.0),
         note("note-e-1", 160, 36),
         bridge("note-e-1", 166, 212, 36),
         note("note-c2-1", 158, 16),
         bridge("note-c2-1", 161, 194, 16),
         chest("chest-ledge", 198, 16, &[("gleam_drops", 40)]),
+        thread("thread-1", 196, 16),
         note("note-g-1", 215, 36),
+        thread("thread-2", 219, 36),
         bridge("note-g-1", 166, 212, 36),
         goblin("goblin-3", 236, 36),
         o("east", at(255, 36, 28.0), ObjectKind::Spawn),
@@ -224,7 +259,12 @@ pub fn gorge_2() -> Map {
         mirror("mirror-2", 98, 44),
         rest("hollow", 116, 48),
         plant("flower-1", 120, 48),
-        // reserved: Luma (around 132, 48)
+        // verse 2 of Luma's song on three stones in her hollow
+        note("note-c-2", 122, 48),
+        note("note-e-2", 125, 48),
+        note("note-g-2", 128, 48),
+        npc("luma", 133, 48, -1, 0.0),
+        npc("tablet-song-2", 138, 48, -1, 0.0),
         note("note-a-1", 143, 48),
         bridge("note-a-1", 117, 149, 34),
         chest(
@@ -233,13 +273,17 @@ pub fn gorge_2() -> Map {
             34,
             &[("gleam_drops", 30), ("healing_potion", 1)],
         ),
-        // reserved: sign `sign-glide` (around 160, 40)
+        thread("thread-3", 115, 34),
+        sign("sign-glide", 160, 40),
         updraft("updraft-1", (185, 189), 18, 67),
+        fragment("fragment-2", 187, 20),
         island("island-sink-1", 205, 41, 5),
+        fragment("fragment-3", 207, 41),
         rest("cliff", 232, 40),
         goblin("goblin-2", 240, 40),
         island("island-drift-2", 252, 38, 5),
         island("island-drift-2-to", 272, 38, 5),
+        fragment("fragment-4", 265, 30),
         o("east", at(295, 36, 28.0), ObjectKind::Spawn),
         edge_exit("path-heights", w - 2, h, "gorge-3", "west"),
     ];
@@ -297,21 +341,25 @@ pub fn gorge_3() -> Map {
         island("island-drift-1", 56, 50, 5),
         island("island-drift-1-to", 70, 46, 5),
         updraft("updraft-1", (80, 84), 16, 77),
+        fragment("fragment-5", 82, 18),
         goblin("goblin-1", 100, 44),
+        npc("tablet-song-3", 107, 44, 1, 0.0),
         note("note-c-3", 112, 44),
         note("note-e-3", 118, 44),
         note("note-g-3", 124, 44),
         bridge("note-g-3", 131, 175, 44),
         island("island-sink-1", 145, 45, 5),
+        fragment("fragment-6", 147, 45),
         island("island-sink-2", 160, 43, 5),
         rest("heights-rest", 184, 40),
+        npc("grey-stone-2", 191, 40, -1, 0.0),
         plant("flower-1", 188, 40),
         goblin("goblin-2", 194, 40),
         mirror("mirror-1", 202, 40),
         updraft("updraft-2", (222, 226), 8, 39),
+        fragment("fragment-7", 224, 9),
         goblin("goblin-3", 244, 24),
-        // reserved: star fragments (above updraft-1, on the sinking islands, high above the last
-        // chasm)
+        fragment("fragment-8", 275, 14),
         o("east", at(315, 24, 28.0), ObjectKind::Spawn),
         edge_exit("path-ruins", w - 2, h, "gorge-spring", "west"),
     ];
@@ -365,9 +413,10 @@ pub fn gorge_spring() -> Map {
             &[("ammo_grenade", 1), ("ammo_laser", 1)],
         ),
         // climax “Protect Luma” (M2.5.5)
-        zone("climax-start", (23, 32), (32, 45)),
+        // starts once Luma has asked for the lanterns (flag `luma.sings`), anywhere in the basin
+        zone("climax-start", (23, 97), (20, 45)),
         zone("climax-luma", (59, 60), (44, 45)),
-        // reserved: Luma at the ruins (around 60, 46)
+        npc_with("luma-ruins", "luma", 60, 46, -1),
         zone("shade-spawn-west", (2, 12), (34, 44)),
         zone("shade-spawn-east", (106, 116), (34, 44)),
         zone("shade-spawn-sky", (45, 75), (2, 6)),

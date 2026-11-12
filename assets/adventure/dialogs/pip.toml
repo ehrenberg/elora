@@ -109,6 +109,10 @@ id = "offended"
 text = { de = "Du hast mich bei Oma verpetzt. Ich rede nicht mit dir. … Na gut, ein bisschen. Aber nur ein bisschen.", en = "You told on me to Oma. I'm not talking to you. … Oh, all right, a little. But only a little." }
 
 [[bark]]
+if = "ability glide"
+text = { de = "Du kannst FLIEGEN? Fast fliegen? Nimmst du mich mal mit?", en = "You can FLY? Almost fly? Will you take me with you some time?" }
+
+[[bark]]
 if = "flag defeated.kristella"
 text = { de = "Hast du Kristella gesehen? Ist sie wirklich aus Eis? Ganz?", en = "Did you see Kristella? Is she really made of ice? All of her?" }
 

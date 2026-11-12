@@ -157,6 +157,10 @@ do = ["affection klonk +1"]
 next = "smithy"
 
 [[bark]]
+if = "quest sternschlucht done"
+text = { de = "Der Brunnen ist grau. Den hab ich nicht geschmiedet. Hmpf. Den hat keiner geschmiedet.", en = "The well is grey. I didn't forge that one. Hmph. Nobody forged that one." }
+
+[[bark]]
 if = "flag party"
 text = { de = "*klong* … Festlaternen schmieden ist auch Arbeit.", en = "*clang* … forging party lanterns is work too." }
 

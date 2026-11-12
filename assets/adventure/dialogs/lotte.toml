@@ -80,6 +80,10 @@ next = "shop_desert"
 do = ["give cactus_fruit 2", "flag lotte.desert = 1"]
 
 [[bark]]
+if = "quest sternschlucht done"
+text = { de = "Nachttee! Frisch aus der Schlucht. Na ja, frisch gemischt.", en = "Night tea! Fresh from the gorge. Well, freshly mixed." }
+
+[[bark]]
 if = "quest frostspitzen done"
 text = { de = "Kräutertee aus den Bergen – jetzt auch bei mir!", en = "Herbal tea from the mountains – now at my shop too!" }
 

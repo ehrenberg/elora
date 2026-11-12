@@ -1,7 +1,8 @@
 //! Climax of chapter 5, “Protect Luma” (R2-M2.5, M2.5.5, E-362).
 //!
 //! Built from map zones:
-//! - `climax-start`: walking in starts the climax (unless Luma was already protected);
+//! - `climax-start`: walking in starts the climax once Luma has asked Elora to light the
+//!   lanterns (flag `luma.sings`, her dialog at the ruins) and unless she was already protected;
 //! - `climax-luma`: Luma's place, the goal of the grey shadows (centre of the zone);
 //! - `shade-spawn…`: where grey shadows come out of the dark;
 //! - `withered-1` … `withered-3`: where the Withered One stands in each verse;
@@ -28,6 +29,8 @@ pub const SPAWN_ZONE: &str = "shade-spawn";
 pub const WITHERED_ZONE: &str = "withered-";
 /// Flag: Luma was protected, the climax does not start again.
 pub const LUMA_PROTECTED: &str = "luma_protected";
+/// Flag: Luma is ready to sing (set by her dialog at the ruins); before it the climax waits.
+pub const LUMA_SINGS: &str = "luma.sings";
 /// Flag: Luma's song is complete (side quest “Luma's song”, M2.5.6) – she sings stronger.
 pub const LUMA_SONG: &str = "luma_song";
 
@@ -138,10 +141,12 @@ impl Session {
             .find_map(|n| self.zone_centre(&format!("{WITHERED_ZONE}{n}")))
     }
 
-    /// Starts the climax when Elora walks into `climax-start` (only once until it is won).
+    /// Starts the climax when Elora is inside `climax-start` after talking to Luma at the ruins
+    /// (only once until it is won).
     pub(super) fn maybe_start_climax(&mut self, world: &mut World) {
         if self.climax.is_some()
             || self.save.flag(LUMA_PROTECTED) != 0
+            || self.save.flag(LUMA_SINGS) == 0
             || !self.inside.contains(START_ZONE)
         {
             return;

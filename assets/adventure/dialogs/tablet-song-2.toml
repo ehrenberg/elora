@@ -1,0 +1,9 @@
+# Note tablet (R2-M2.5, D-M25-02): verse 2 of Luma's song in the colours of the note stones
+speaker = "tablet-song-2"
+
+[[start]]
+node = "text"
+
+[[node]]
+id = "text"
+text = { de = "Lumas Lied, Strophe 2: Rot – Gelb – Blau.", en = "Luma's song, verse 2: red – yellow – blue." }

@@ -259,3 +259,73 @@ name = { de = "Graue Stelle", en = "Grey patch" }
 portrait = "grey-spot"
 fixed = true
 voice = 0.0
+
+# Chapter 5 – Sternschlucht (R2-M2.5, docs/release-2/m2-5-content.md)
+# Luma in her hollow until she leaves for the ruins, then at the ruins (both speak the dialog
+# `luma`)
+[[character]]
+id = "luma"
+name = { de = "Sternenweberin Luma", en = "Luma the star weaver" }
+portrait = "luma"
+voice = 1.15
+show_if = "not flag luma.at_ruins"
+
+[[character]]
+id = "luma-ruins"
+name = { de = "Sternenweberin Luma", en = "Luma the star weaver" }
+portrait = "luma"
+voice = 1.15
+show_if = "flag luma.at_ruins"
+
+# Glimmer at the gorge entrance; after the chapter he lives by the village well (dialog
+# `glimmer`)
+[[character]]
+id = "glimmer"
+name = { de = "Glühwürmchen Glimmer", en = "Glimmer the glow-worm" }
+portrait = "glimmer"
+voice = 1.3
+show_if = "not quest sternschlucht done"
+
+[[character]]
+id = "glimmer-village"
+name = { de = "Glühwürmchen Glimmer", en = "Glimmer the glow-worm" }
+portrait = "glimmer"
+voice = 1.3
+show_if = "quest sternschlucht done"
+
+# where the Withered One sat down (fixed, mute)
+[[character]]
+id = "grey-stone-1"
+name = { de = "Grauer Stein", en = "Grey stone" }
+portrait = "grey-stone-1"
+fixed = true
+voice = 0.0
+
+[[character]]
+id = "grey-stone-2"
+name = { de = "Grauer Stein", en = "Grey stone" }
+portrait = "grey-stone-2"
+fixed = true
+voice = 0.0
+
+# note tablets with the verses of Luma's song (fixed, mute)
+[[character]]
+id = "tablet-song-1"
+name = { de = "Notentafel", en = "Note tablet" }
+portrait = "tablet-song-1"
+fixed = true
+voice = 0.0
+
+[[character]]
+id = "tablet-song-2"
+name = { de = "Notentafel", en = "Note tablet" }
+portrait = "tablet-song-2"
+fixed = true
+voice = 0.0
+
+[[character]]
+id = "tablet-song-3"
+name = { de = "Notentafel", en = "Note tablet" }
+portrait = "tablet-song-3"
+fixed = true
+voice = 0.0
