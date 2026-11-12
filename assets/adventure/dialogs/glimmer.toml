@@ -1,0 +1,67 @@
+# Glimmer the glow-worm (R2-M2.5, chapter 5): at the gorge entrance; after the chapter he lives
+# by the village well (characters `glimmer` and `glimmer-village`)
+speaker = "glimmer"
+
+[[start]]
+if = "quest sternschlucht done"
+node = "village"
+
+[[start]]
+if = "flag glimmer.knows"
+node = "again"
+
+[[start]]
+node = "greeting"
+
+[[node]]
+id = "greeting"
+text = { de = "*(blinkt hell auf)* Huch! Ach, du bist es nur. Also – jemand. Ein Tropfen. Entschuldige, wenn ich mich erschrecke, leuchte ich. Und ich erschrecke mich hier ständig.", en = "*(flashes brightly)* Eek! Oh, it's only you. Well – someone. A drop. Sorry, when I get a fright I light up. And I get a fright here all the time." }
+do = ["flag glimmer.knows = 1"]
+
+[[node.choice]]
+tone = "curious"
+text = { de = "Was ist hier unten so gruselig?", en = "What is so scary down here?" }
+next = "dark"
+
+[[node.choice]]
+tone = "friendly"
+text = { de = "Ich bring dich hier raus.", en = "I'll get you out of here." }
+next = "follow"
+
+[[node.choice]]
+tone = "cheeky"
+text = { de = "Du bist doch die Lampe. Geh du vor!", en = "You're the lamp, aren't you? You go first!" }
+next = "lamp"
+do = ["affection glimmer +1"]
+
+[[node]]
+id = "dark"
+text = { de = "Es ist dunkel geworden. Richtig dunkel. Früher hat die Sternquelle die ganze Schlucht beleuchtet, aber jetzt … Und manchmal sitzt da hinten etwas Graues und seufzt.", en = "It has gone dark. Really dark. The Star Spring used to light up the whole gorge, but now … And sometimes something grey sits back there and sighs." }
+do = ["flag withered_one.gorge = 1"]
+
+[[node]]
+id = "follow"
+text = { de = "Wirklich? Dann geh ich einfach hinter dir. Ganz dicht. Nicht umdrehen.", en = "Really? Then I'll just walk behind you. Very close. Don't turn around." }
+
+[[node]]
+id = "lamp"
+text = { de = "Ich? Vorgehen? *(blinkt dreimal)* … Nein.", en = "Me? Go first? *(blinks three times)* … No." }
+
+[[node]]
+id = "again"
+text = { de = "Hast du das auch gehört?", en = "Did you hear that too?" }
+
+[[node]]
+id = "village"
+text = { de = "Hier ist es hell. Ich bleib hier. Für immer. Oder bis morgen.", en = "It's bright here. I'm staying. Forever. Or until tomorrow." }
+
+[[bark]]
+if = "quest sternschlucht done"
+text = { de = "Hier ist es hell. Ich bleib hier. Für immer. Oder bis morgen.", en = "It's bright here. I'm staying. Forever. Or until tomorrow." }
+
+[[bark]]
+if = "flag glimmer.knows"
+text = { de = "Die Pilze leuchten, ich leuchte – wir sind ein Team.", en = "The mushrooms glow, I glow – we're a team." }
+
+[[bark]]
+text = { de = "Nicht umdrehen!", en = "Don't turn around!" }

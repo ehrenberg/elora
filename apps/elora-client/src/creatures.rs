@@ -76,6 +76,14 @@ const SHARED_CHARACTERS: &[(&str, &str)] = &[
     ("kiesel-hut", "kiesel"),
     ("wicke-hut", "wicke"),
     ("grey-spot", "grey_spot"),
+    // chapter 5 (R2-M2.5): second places of Luma and Glimmer, grey stones, note tablets
+    ("luma-ruins", "luma"),
+    ("glimmer-village", "glimmer"),
+    ("grey-stone-1", "grey_stone"),
+    ("grey-stone-2", "grey_stone"),
+    ("tablet-song-1", "tablet"),
+    ("tablet-song-2", "tablet"),
+    ("tablet-song-3", "tablet"),
 ];
 /// Drops of gleam (loot); all other files in `items/` except [`GENERIC_ITEM`] are the
 /// image of the item with the same id (R2-M2.1).
@@ -261,6 +269,7 @@ impl CreatureArt {
             "watering_spot",
             "blossom",
             "grey-spot",
+            "grey-stone",
         ]
         .iter()
         .any(|p| id.starts_with(p))

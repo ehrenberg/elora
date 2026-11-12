@@ -1,6 +1,6 @@
 # R2-M2.5 – Chapter 5: Sternschlucht – implementation plan
 
-Status: **in progress** (M2.5.0 to M2.5.5 done; M2.5.6 content drafted in [`m2-5-content.md`](m2-5-content.md), waiting for approval; M2.5.7 maps built without the content objects) · Decisions E-362 to E-369 · Basis: [`world-book.md`](world-book.md) §4.5 and §5, [`m2-4-plan.md`](m2-4-plan.md), E-228, E-354
+Status: **in progress** (M2.5.0 to M2.5.7 done – content [`m2-5-content.md`](m2-5-content.md) approved with E-377 and built in; M2.5.8 done; M2.5.9 sounds done, music open) · Decisions E-362 to E-369 · Basis: [`world-book.md`](world-book.md) §4.5 and §5, [`m2-4-plan.md`](m2-4-plan.md), E-228, E-354
 
 ## Goal
 
@@ -54,10 +54,10 @@ continuing in between.
 | M2.5.3 ✅ | Note stones and star bridges | Touching a note stone plays a note and lights a star bridge (visible light) for a few seconds; note stones in the right order are part of “Luma's song”. Built as zones `note-<pitch>…` and `<stone>-bridge…`; the bridges carry like fixed star islands while lit (no new tile kind); A-50; placeholder bell sound until M2.5.9 | Tests |
 | M2.5.4 ✅ | New enemies | **Shadow moth**: flies in small swarms, avoids light, attacks in the dark. **Stone goblin**: looks like a rock until Elora is close, then rolls towards her; stomp or hammer stops it. **Echo**: appears from a dark mirror, repeats Elora's movements with a delay; touch hurts, light makes it fade | Tests + sandbox |
 | M2.5.5 ✅ | Climax tech | **“Protect Luma”** (see below): rounds of grey shadows towards Luma, star lanterns to light, song progress, failure → back to the spring stone; the Withered One as a scripted figure (appears, drains, flees) | Tests + sandbox |
-| M2.5.6 | Content | Character Luma; main quest from the gorge entrance up to the star spark with the star cape in the middle; side quests **“Star fragments”** and **“Luma's song”**; dialogues of the village after chapter 5; the finale is announced (the well) | Tests |
-| M2.5.7 (in progress) | Maps | Gorge entrance at the east end of the meadows (opens after chapter 4); `gorge-1` to `gorge-3` and `gorge-spring` (climax at the ruins) | Visual check + run-through test |
-| M2.5.8 | Spark and village | Victory → star spark → Tüftel strengthens gliding; gliding spots in chapters 1–4 (going back pays off); `springs_freed = 5`, celebration, world map; the well stays grey | Tests + visual check |
-| M2.5.9 (in progress) | Music and sounds | Music for the Sternschlucht and the climax (CC0, presented for listening), sounds for moths, goblins, echoes, note stones, star bridges, updrafts, star cape, the Withered One | Your listening test |
+| M2.5.6 ✅ | Content | Character Luma; main quest from the gorge entrance up to the star spark with the star cape in the middle; side quests **“Star fragments”** and **“Luma's song”**; dialogues of the village after chapter 5; the finale is announced (the well) | Tests |
+| M2.5.7 ✅ | Maps | Gorge entrance at the east end of the meadows (opens after chapter 4); `gorge-1` to `gorge-3` and `gorge-spring` (climax at the ruins) | Visual check + run-through test |
+| M2.5.8 ✅ | Spark and village | Victory → star spark → Tüftel strengthens gliding; gliding spots in chapters 1–4 (going back pays off); `springs_freed = 5`, celebration, world map; the well stays grey | Tests + visual check |
+| M2.5.9 (sounds done, music open) | Music and sounds | Music for the Sternschlucht and the climax (CC0, presented for listening), sounds for moths, goblins, echoes, note stones, star bridges, updrafts, star cape, the Withered One | Your listening test |
 | M2.5.10 | Acceptance | Play through chapter 5, save, continue | Your acceptance |
 
 ## Course of chapter 5 (proposal)
@@ -128,9 +128,62 @@ and signs are marked in the generator and follow once the content (M2.5.6) is ap
 sections for all four maps. The dark ruins decoration `star-spring-withered` stands in the basin;
 the freed spring follows with M2.5.8.
 
-**Status M2.5.9 (sounds, first part):** procedural sounds instead of the placeholders for stone
-goblins (`stone_rumble`, `stone_thud`), echoes (`echo_shimmer`), star lanterns (`lantern_on`,
-`lantern_out`) and dissolving grey shadows (`shade_dissolve`); listen with
+**Status M2.5.6 (tech for the content):** built and tested without the texts, which wait for
+approval: **tunes** (`[[tune]]` in `quests.toml`: a melody on the note stones of a map runs
+effects once, with a sparkle of notes and a fanfare), the consumable effect **`glow`** (night tea:
+Elora's light reaches twice as far for 30 s) and the equipment bonus **`lantern_pct`** (song
+pendant: star lanterns burn longer). Characters, dialogues, quests, items and the three verses
+follow with the approval of [`m2-5-content.md`](m2-5-content.md) (D-M25-01 to D-M25-04).
+
+**Status M2.5.8 (spark and village, first part):** the **strengthened star cape** is built as
+proposed in D-M25-04: with the flag `glide.strong` (set by Tüftel's dialogue once the content is
+approved) Elora flaps upwards once per flight (A-52: jump again once the double jump is used up)
+and rises one and a half times as fast in updrafts while gliding (A-53); it applies right after
+the dialogue and on every map. Sound (the cape, higher) and stardust at the flap. Still open:
+gliding spots in chapters 1–4, `springs_freed = 5`, the celebration, the freed spring decoration
+and the village after chapter 5 (they follow with the content).
+
+**Status M2.5.9 (sounds):** procedural sounds instead of the placeholders for stone goblins
+(`stone_rumble`, `stone_thud`), echoes (`echo_shimmer`), star lanterns (`lantern_on`,
+`lantern_out`) and dissolving grey shadows (`shade_dissolve`). Second part: shadow moths
+(`moth_flutter` when a moth starts an attack, the same higher when it flees from light; every
+moth of a swarm slightly different, at most one call per 1.5 s), updrafts (`updraft` when a
+figure gets into one), the star cape (`cape_unfurl` when gliding starts) and the Withered One
+(`withered_sigh` when he appears, `withered_drift` when he moves on between the verses, both
+lower when he flees; he looks at Elora in silence). Listen with
 `cargo xtask sound-preview <name>`. Still open: music for the gorge and the climax (CC0, to be
-chosen together), sounds for moths, updrafts, the star cape and the Withered One (they need new
-events), the note stone bell stays as it is unless the listening test says otherwise.
+chosen together); the note stone bell stays as it is unless the listening test says otherwise.
+
+**Status M2.5.6/M2.5.7 (content built in, E-377):** characters Luma (hollow in `gorge-2`, then
+`luma-ruins` at the ruins, draft B), Glimmer (gorge entrance, after the chapter by the village
+well), two grey stones and three note tablets; images `luma`, `glimmer` and `grey_stone` from
+`tools/design/chapter5_drafts.py` (Glimmer and the grey stone newly drawn in the style of the
+drafts). Main quest “The Song of the Stars” with the star cape from Luma, side quests “Star
+fragments” and “Luma's song” with the three verses as tunes (verse 2 got three note stones
+`c e g` in Luma's hollow), items, night tea at Lotte, the teaser quest “The Old Well”
+(`finale`). Maps: Glimmer, signs `sign-gorge` (east end of `meadow-3`), `sign-dark`,
+`sign-glide`, light threads at the ends of the star bridges (high ledge and far side in
+`gorge-1`, alcove in `gorge-2`), eight star fragments behind the first gliding chasm or only
+reachable gliding down from the high steps in `gorge-1`. **Change to the climax:** it starts
+only after Luma's words at the ruins (flag `luma.sings`), anywhere in the basin – before, the
+start zone lay in front of Luma and the climax began before she could ask for the lanterns.
+Run-through test `chapter_five_runs_from_the_gorge_to_the_old_well` (tests/story.rs).
+
+**Status M2.5.8 (village):** Tüftel's dialogue sets `glide.strong`, `springs_freed = 5`,
+`freed.star_spring` (the ruins show `star-spring-freed`) and the party; Oma's celebration hums
+the beginning of the well song, then “The Old Well” starts; calls of Pip, Lotte, Klonk, Tüftel
+and Glimmer by the well. **Open:** a victory screen for chapter 5 – chapters 1–4 show one when the guardian
+falls, chapter 5 has no fight and the approved texts have no victory line (proposal for the
+owner: show it when the Withered One has fled, text e.g. „Lumas Lied klingt wieder – und ein
+Sternenfunke leuchtet in der Dunkelheit.“, title of honour „Sternenhüterin“).
+
+**Status M2.5.8 (gliding spots in chapters 1–4):** one **flap arch** per chapter – an
+unhookable stone block on two (decorative) columns whose top lies 11 rows above the ground, a
+chest on top, a passage four rows high underneath so the way stays free: `meadow-3`
+(column 64), `forest-3` (140), `desert-2` (180) and `frost-3` on the summit ridge (127).
+Jump, air jump and gliding reach about 10 rows, the strengthened cape's flap about 12; the
+simulation test `flap_pillar_needs_the_strengthened_star_cape` (elora-sim, abilities.rs) checks
+it with every other ability, `every_chapter_has_a_gliding_spot` (chapter5.rs) that nothing to
+hook or stand on lies within 16 columns of an arch (`flap_spot_clear`). Helpers `flap_pillar`
+and `flap_pillar_decor` in `editor/mapgen.rs`; candidate places can be listed with the ignored
+test `flap_spots`.

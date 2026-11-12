@@ -185,6 +185,7 @@ Continued from **E-200**. Release 1 (E-001 to E-173) is in the
 | E-374 | 2026-10-15 | World map drafts (WM.0) | **Accepted** ([`design/world-map-drafts.png`](design/world-map-drafts.png)): **look A “storybook”** (parchment, muted area colours, dashed borders, brown ink); markers, clouds, path pieces, detail window and full-screen layout as drawn |
 | E-375 | 2026-11-11 | No sound on Linux (player report) | Audio output on Linux uses cpal's **PulseAudio host** (pure Rust, also served by PipeWire through `pipewire-pulse`), so `pipewire-alsa` is no longer needed; ALSA stays the fallback (default device, then every output device in turn); the main menu says once when the game stays silent |
 | E-376 | 2026-11-11 | Windows Defender / SmartScreen blocks Elora (player report) | Short term: README section with the cause (unsigned, new program) and what to do; report false positives to Microsoft per release. **Code signing is decided by the project owner** (open point O-210) |
+| E-377 | 2026-11-12 | Chapter 5 texts (M2.5.6) | **Approved** ([`m2-5-content.md`](m2-5-content.md)) with the proposals D-M25-01 to D-M25-04 (light threads at the ends of star bridges, three-note verses `e g c2` / `c e g` / `g e c`, night tea at Lotte after the first visit to the gorge, strengthened star cape) | Project owner decision |
 
 ## Open points
 

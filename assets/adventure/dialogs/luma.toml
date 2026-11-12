@@ -1,0 +1,175 @@
+# Luma the star weaver (R2-M2.5, chapter 5): in her hollow in gorge-2 and, once she has woven
+# the star cape, at the ruins of the Star Spring (characters `luma` and `luma-ruins`)
+speaker = "luma"
+
+[[start]]
+if = "flag luma_protected and not flag luma.spark"
+node = "after_climax"
+
+[[start]]
+if = "quest star_fragments step bring and has star_fragment 8"
+node = "fragments"
+
+[[start]]
+if = "quest luma_song step sing"
+node = "song_complete"
+
+[[start]]
+if = "flag luma.spark"
+node = "farewell"
+
+[[start]]
+if = "flag luma.at_ruins"
+node = "ruins"
+
+[[start]]
+if = "quest sternschlucht step cape and has light_thread 3"
+node = "cape"
+
+[[start]]
+if = "flag luma.knows"
+node = "reminder"
+
+[[start]]
+node = "greeting"
+
+[[node]]
+id = "greeting"
+text = { de = "Ein Tropfen … mit Farbe. Wie lange habe ich so etwas nicht gesehen. Ich bin Luma. Früher habe ich Lieder aus Sternenlicht gewebt. Jetzt reichen meine Fäden kaum noch für mich selbst.", en = "A drop … with colour. How long it has been since I saw one. I am Luma. I used to weave songs out of starlight. Now my threads are barely enough for myself." }
+next = "grey"
+do = ["flag luma.knows = 1"]
+
+[[node]]
+id = "grey"
+text = { de = "Der Graue war hier. Er hat aus meiner Quelle getrunken, bis nur noch ein Schimmer übrig war. Und er hat dabei geweint.", en = "The grey one was here. He drank from my spring until only a shimmer was left. And he wept as he did." }
+
+[[node.choice]]
+tone = "friendly"
+text = { de = "Kann ich dir helfen?", en = "Can I help you?" }
+next = "threads"
+
+[[node.choice]]
+tone = "curious"
+text = { de = "Der Graue weint?", en = "The grey one weeps?" }
+next = "weeps"
+
+[[node.choice]]
+tone = "cheeky"
+text = { de = "Du siehst aus, als bräuchtest du selber Hilfe.", en = "You look as if you could use some help yourself." }
+next = "laughs"
+do = ["affection luma +1"]
+
+[[node]]
+id = "weeps"
+text = { de = "Er sucht etwas. Ich glaube, er weiß selbst nicht mehr, was. Wer so lange allein ist, vergisst, wonach er sucht.", en = "He is looking for something. I think he no longer knows what himself. Whoever is alone for so long forgets what he is looking for." }
+next = "threads"
+
+[[node]]
+id = "laughs"
+text = { de = "*(lacht leise)* Das stimmt. Dann helfen wir uns gegenseitig.", en = "*(laughs softly)* That is true. Then we shall help each other." }
+next = "threads"
+
+[[node]]
+id = "threads"
+text = { de = "In der Schlucht hängen noch drei Lichtfäden – am Ende der Sternbrücken. Spiel die Notensteine, dann tragen dich die Brücken hin. Bring mir die Fäden, und ich webe dir etwas, mit dem du fliegen kannst. Fast.", en = "Three light threads still hang in the gorge – at the end of the star bridges. Play the note stones and the bridges will carry you there. Bring me the threads and I will weave you something to fly with. Almost." }
+
+[[node.choice]]
+tone = "friendly"
+text = { de = "Ich hol sie.", en = "I'll get them." }
+
+[[node]]
+id = "reminder"
+text = { de = "Die Notensteine singen, die Brücken hören zu. Drei Fäden, kleiner Tropfen.", en = "The note stones sing, the bridges listen. Three threads, little drop." }
+
+[[node]]
+id = "cape"
+text = { de = "Drei Fäden. Das reicht für einen Umhang. Halt still … *(summt)* … So. Der Sternenumhang. Wenn du in der Luft bist, halt {taste:jump} gedrückt – dann trägt er dich. Weit. Bis zu den dunklen Höhen.", en = "Three threads. That is enough for a cape. Hold still … *(hums)* … There. The star cape. When you are in the air, hold {taste:jump} – then it carries you. Far. All the way to the dark heights." }
+do = ["ability glide", "affection luma +1"]
+
+[[node.choice]]
+tone = "friendly"
+text = { de = "Danke, Luma!", en = "Thank you, Luma!" }
+next = "side"
+
+[[node.choice]]
+tone = "curious"
+text = { de = "Und du?", en = "And you?" }
+next = "going"
+
+[[node]]
+id = "going"
+text = { de = "Ich gehe zu den Ruinen der Quelle. Mit dem letzten Schimmer kann ich vielleicht ein letztes Lied singen. Komm nach, wenn du kannst.", en = "I am going to the ruins of the spring. With the last shimmer I may be able to sing one last song. Follow me if you can." }
+next = "side"
+
+[[node]]
+id = "side"
+text = { de = "Zwei Dinge noch. Der Graue hat Sternsplitter verstreut, als er trank – acht Stück, an Stellen, die man nur fliegend erreicht. Und mein Lied … ich habe die Strophen vergessen. Sie stehen noch auf den Notentafeln der Schlucht. Spielst du sie für mich?", en = "Two more things. The grey one scattered star fragments as he drank – eight of them, in places you can only reach by flying. And my song … I have forgotten the verses. They are still written on the note tablets of the gorge. Will you play them for me?" }
+
+[[node.choice]]
+tone = "friendly"
+text = { de = "Ich halte die Augen offen.", en = "I'll keep my eyes open." }
+do = ["quest star_fragments start", "quest luma_song start", "flag luma.at_ruins = 1"]
+
+[[node.choice]]
+text = { de = "Vielleicht später.", en = "Maybe later." }
+do = ["flag luma.at_ruins = 1"]
+
+[[node]]
+id = "fragments"
+text = { de = "Acht Stück Himmel. Daraus webe ich dir einen Schal – damit fällst du noch sanfter.", en = "Eight pieces of sky. I shall weave you a shawl from them – with it you will fall even more gently." }
+do = ["affection luma +1"]
+
+[[node]]
+id = "song_complete"
+text = { de = "*(hört zu, die Augen geschlossen)* Ja … so ging es. Jetzt weiß ich es wieder. Mit diesem Lied kann ich viel länger singen. Hier – damit deine Laternen länger brennen.", en = "*(listens, eyes closed)* Yes … that is how it went. Now I remember. With this song I can sing much longer. Here – so that your lanterns burn longer." }
+do = ["flag luma_song = 1", "affection luma +1"]
+
+[[node]]
+id = "ruins"
+text = { de = "Hier war meine Quelle. Siehst du den letzten Funken? Ich werde singen, um ihn zu halten. Der Graue wird kommen – er wird es spüren. Zünde die Sternenlaternen an. Ihr Licht hält seine Schatten fern.", en = "This was my spring. Do you see the last spark? I shall sing to hold on to it. The grey one will come – he will feel it. Light the star lanterns. Their light keeps his shadows away." }
+do = ["flag luma.sings = 1"]
+
+[[node.choice]]
+tone = "friendly"
+text = { de = "Ich passe auf dich auf.", en = "I'll watch over you." }
+
+[[node.choice]]
+tone = "curious"
+if = "quest star_fragments new"
+text = { de = "Du wolltest mich noch um zwei Dinge bitten.", en = "You wanted to ask me for two more things." }
+next = "side"
+
+[[node]]
+id = "after_climax"
+text = { de = "Er hat dich angesehen. Nicht böse – traurig. Er nimmt die Farben nicht für sich. Er sucht etwas, das er verloren hat.", en = "He looked at you. Not angry – sad. He is not taking the colours for himself. He is looking for something he lost." }
+next = "well_song"
+
+[[node]]
+id = "well_song"
+text = { de = "Und weißt du, welches Lied er gesummt hat, als er ging? Ein Brunnenlied. Ein sehr altes. Er ist nach Westen gegangen. Nach Tauwinkel. Nimm den Funken, kleiner Tropfen – und geh nach Hause.", en = "And do you know which song he hummed as he left? A well song. A very old one. He went west. To Tauwinkel. Take the spark, little drop – and go home." }
+do = ["give spring_spark 1", "flag luma.spark = 1", "flag withered_one.well_song = 1"]
+
+[[node]]
+id = "farewell"
+text = { de = "Er ist nach Westen gegangen. Nach Tauwinkel. Geh nach Hause, kleiner Tropfen.", en = "He went west. To Tauwinkel. Go home, little drop." }
+
+[[node.choice]]
+tone = "friendly"
+text = { de = "Mach's gut, Luma.", en = "Take care, Luma." }
+
+[[node.choice]]
+tone = "curious"
+if = "quest star_fragments new"
+text = { de = "Du wolltest mich noch um zwei Dinge bitten.", en = "You wanted to ask me for two more things." }
+next = "side"
+
+[[bark]]
+if = "flag luma_protected"
+text = { de = "Ein Brunnenlied …", en = "A well song …" }
+
+[[bark]]
+if = "flag luma.at_ruins"
+text = { de = "Zünde die Sternenlaternen an.", en = "Light the star lanterns." }
+
+[[bark]]
+text = { de = "Drei Fäden, kleiner Tropfen.", en = "Three threads, little drop." }

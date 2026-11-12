@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-60 -80 120 90">
+  <!-- grey_stone (A1.7, aus tools/design/abenteuer_assets.py). Ursprung = Boden, Blick nach rechts. -->
+  <g id="figure"><g transform="scale(0.49999999999999994)"><ellipse cx="10" cy="-5" rx="86" ry="12" fill="#a3a3ab" opacity="0.8"/><path d="M -64,-6 Q -70,-46 -36,-60 Q -4,-70 12,-44 Q 22,-24 16,-6 Z" fill="#c9c9cf" stroke="#2b2b2b" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/><path d="M -40,-52 l 8,14 l -6,10 M -10,-58 l -4,16" fill="none" stroke="#6c6c76" stroke-width="2.5"/><path d="M 30,-6 Q 54,-22 80,-6 Z" fill="#6c6c76" opacity="0.6"/><ellipse cx="96" cy="-3" rx="9" ry="3.5" fill="#6c6c76" opacity="0.7"/><ellipse cx="130" cy="-3" rx="9" ry="3.5" fill="#6c6c76" opacity="0.7"/><ellipse cx="164" cy="-3" rx="9" ry="3.5" fill="#6c6c76" opacity="0.7"/></g></g>
+</svg>

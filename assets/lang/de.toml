@@ -648,6 +648,7 @@ laser_pierce = "Durchschlag {n} Gegner"
 laser_delay_pct = "{n} % Laser-Ladezeit"
 heat_pct = "{n} % Hitze in der Sonne"
 cold_pct = "{n} % Kälte draußen"
+lantern_pct = "{n} % Brenndauer der Sternenlaternen"
 
 [refusal]
 unknown = "unbekannt"

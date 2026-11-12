@@ -1,0 +1,10 @@
+# Grey stone at the descent (R2-M2.5): this is where the Withered One sat down
+speaker = "grey-stone-1"
+
+[[start]]
+node = "text"
+
+[[node]]
+id = "text"
+text = { de = "Der Fels hier ist grau und stumpf, als hätte jemand alles Sternenlicht herausgetrunken. Daneben eine Mulde im Staub – hier hat jemand lange gesessen.", en = "The rock here is grey and dull, as if someone had drunk all the starlight out of it. Next to it, a hollow in the dust – someone sat here for a long time." }
+do = ["flag withered_one.gorge_rest = 1"]

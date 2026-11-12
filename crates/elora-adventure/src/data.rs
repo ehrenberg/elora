@@ -7,7 +7,7 @@ use elora_sim::{Ability, CreatureKind, Weapon};
 use serde::{Deserialize, Serialize};
 
 use crate::dialog::{CharacterDef, Dialog};
-use crate::quest::QuestDef;
+use crate::quest::{QuestDef, TuneDef};
 
 /// Text in both languages (E-217).
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
@@ -118,6 +118,8 @@ pub enum Bonus {
     HeatPct(f32),
     /// Filling of the cold bar in percent (negative = slower, E-342).
     ColdPct(f32),
+    /// Burning time of star lanterns in percent (A-51, R2-M2.5).
+    LanternPct(f32),
 }
 
 /// Consumable (P-25).
@@ -132,6 +134,9 @@ pub enum Effect {
     Cool(i32),
     /// Refill health and empty the cold bar (herbal tea, E-342).
     Warm(i32),
+    /// Refill health and let Elora's light reach further in the dark for a while (night tea,
+    /// R2-M2.5).
+    Glow(i32),
 }
 
 /// Kind of an item (tab in the inventory, P-24).
@@ -551,6 +556,8 @@ struct WorldMapFile {
 #[derive(Debug, Deserialize)]
 struct QuestsFile {
     quest: Vec<QuestDef>,
+    #[serde(default)]
+    tune: Vec<TuneDef>,
 }
 #[derive(Debug, Deserialize)]
 struct CharactersFile {
@@ -620,6 +627,8 @@ pub struct Content {
     pub creatures: Vec<CreatureKind>,
     /// All quests.
     pub quests: Vec<QuestDef>,
+    /// Tunes for the note stones (R2-M2.5).
+    pub tunes: Vec<TuneDef>,
     /// Speaking characters by id.
     pub characters: BTreeMap<String, CharacterDef>,
     /// Dialogs by id.
@@ -743,6 +752,7 @@ impl Content {
             progression,
             creatures,
             quests: quests.quest,
+            tunes: quests.tune,
             characters: characters
                 .character
                 .into_iter()

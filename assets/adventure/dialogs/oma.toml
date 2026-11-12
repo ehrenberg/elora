@@ -2,6 +2,18 @@
 speaker = "oma"
 
 [[start]]
+if = "quest finale active"
+node = "party5_song"
+
+[[start]]
+if = "quest sternschlucht step party"
+node = "party5"
+
+[[start]]
+if = "quest sternschlucht active and flag luma_protected"
+node = "spark"
+
+[[start]]
 if = "quest sternschlucht active"
 node = "star"
 
@@ -263,7 +275,16 @@ text = { de = "… Einsam. Wie ein Brunnen ohne Lied. Ach, warum fällt mir das 
 
 [[node]]
 id = "star"
-text = { de = "Die Sternschlucht … der Weg dorthin ist noch verschlossen. Ruh dich aus, Kind – bald geht's weiter.", en = "The Sternschlucht … the way there is still closed. Rest, dear – soon we'll go on." }
+text = { de = "In der Schlucht ist es dunkel, Liebes. Bleib bei den Pilzen. Und hab keine Angst vor dem Dunkeln – es ist nur Licht, das gerade schläft.", en = "It's dark in the gorge, dear. Stay close to the mushrooms. And don't be afraid of the dark – it's only light that is sleeping for a while." }
+
+[[node]]
+id = "party5"
+text = { de = "Alles bunt! Fast alles. Nur der alte Brunnen … der bleibt grau, egal, wie viele Quellen wir befreien.", en = "Everything's colourful! Almost everything. Only the old well … it stays grey, however many springs we free." }
+next = "party5_song"
+
+[[node]]
+id = "party5_song"
+text = { de = "Ein Brunnenlied, hat Luma gesagt? Warte … *(summt)* … „Tief unten, wo das Wasser schläft, …“ – wie ging es weiter? Ich weiß es nicht mehr. Aber ich weiß, dass meine Mutter es gesungen hat. Genau hier.", en = "A well song, Luma said? Wait … *(hums)* … “Deep down, where the water sleeps, …” – how did it go on? I don't remember. But I know my mother sang it. Right here." }
 
 [[bark]]
 if = "flag party"

@@ -623,7 +623,7 @@ fn state(ui: &mut egui::Ui, s: &Sandbox, fps: f32, frames: &FrameStats) {
                 } else {
                     "no"
                 };
-                let double = if c.jumped & 2 == 0 {
+                let double = if c.jumped & elora_sim::character::jumped::AIR_USED == 0 {
                     "available"
                 } else {
                     "used"
@@ -1175,6 +1175,11 @@ fn ability_values(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
         0.0..=400.0,
         d.loot_magnet,
     );
+    glide_values(ui, t, d);
+}
+
+/// Gliding (A-09, A-10) and the strengthened star cape (A-52, A-53).
+fn glide_values(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
     ui.label("Glide");
     slider(
         ui,
@@ -1189,6 +1194,21 @@ fn ability_values(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
         &mut t.glide_control_speed,
         0.5..=20.0,
         d.glide_control_speed,
+    );
+    ui.label("Strengthened star cape (0 / 1 = off)");
+    slider(
+        ui,
+        "Flap upwards",
+        &mut t.glide_flap,
+        0.0..=15.0,
+        d.glide_flap,
+    );
+    slider(
+        ui,
+        "Updraft factor",
+        &mut t.glide_updraft,
+        1.0..=3.0,
+        d.glide_updraft,
     );
 }
 

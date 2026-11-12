@@ -224,6 +224,26 @@ fn unlocks_from_dialogs_reach_the_running_world() {
     assert!(ch.arsenal.has(elora_sim::Weapon::Grenade));
 }
 
+/// The star spark (D-M25-04): Tüftel's work on the star cape applies right away and stays.
+#[test]
+fn strengthened_star_cape_reaches_the_running_world_and_later_ones() {
+    use elora_adventure::state::{STRONG_GLIDE, STRONG_GLIDE_FLAP, STRONG_GLIDE_UPDRAFT};
+    let (mut s, mut w) = start();
+    let base = Tuning::default();
+    assert!(w.tuning.glide_flap.abs() < f32::EPSILON, "no flap yet");
+    assert!((w.tuning.glide_updraft - base.glide_updraft).abs() < f32::EPSILON);
+    let c = s.content.clone();
+    s.save.run(&c, &[format!("flag {STRONG_GLIDE} = 1")]);
+    s.sync_world(&mut w);
+    let strong = |w: &World| {
+        (w.tuning.glide_flap - STRONG_GLIDE_FLAP).abs() < f32::EPSILON
+            && (w.tuning.glide_updraft - STRONG_GLIDE_UPDRAFT).abs() < f32::EPSILON
+    };
+    assert!(strong(&w), "right after Tüftel's work");
+    let w = s.enter("meadow-1", load("meadow-1"), "west", &base);
+    assert!(strong(&w), "and on every map afterwards");
+}
+
 /// Pull hook (R2-M2.2): collectibles on the hook are collected, loot flies to Elora.
 #[test]
 fn pulling_hook_grabs_collectibles_and_loot() {
@@ -798,6 +818,125 @@ fn every_adventure_map_with_a_file_has_a_section() {
     }
 }
 
+// ---------------------------------------------------------------- Tunes (M2.5.6)
+
+/// The bundled content plus one tune on `meadow-1`: e g c2 counts `luma_song.verses` up.
+fn content_with_tune(cond: &str) -> Content {
+    let mut c = Content::builtin();
+    c.tunes.push(elora_adventure::quest::TuneDef {
+        id: "verse-1".into(),
+        map: "meadow-1".into(),
+        notes: vec!["e".into(), "g".into(), "c2".into()],
+        cond: (!cond.is_empty()).then(|| cond.to_owned()),
+        actions: vec!["flag luma_song.verses +1".into()],
+    });
+    c
+}
+
+/// Elora touches note stones with these pitches, one per tick.
+fn play(s: &mut Session, w: &mut World, notes: &[u8]) -> Vec<SessionEvent> {
+    let mut all = Vec::new();
+    for &note in notes {
+        w.events.push(elora_sim::Event::Note {
+            player: s.player,
+            note,
+            pos: Vec2::ZERO,
+        });
+        all.extend(s.tick(w, false));
+        w.events.clear();
+    }
+    all
+}
+
+fn tune_played(ev: &[SessionEvent]) -> bool {
+    ev.contains(&SessionEvent::TunePlayed {
+        id: "verse-1".into(),
+    })
+}
+
+#[test]
+fn a_tune_on_the_note_stones_sets_off_its_effects_once() {
+    let mut s = Session::new_game(content_with_tune(""));
+    let mut w = s.enter("meadow-1", load("meadow-1"), "west", &Tuning::default());
+    let ev = play(&mut s, &mut w, &[0, 4, 7]);
+    assert!(!tune_played(&ev), "not the tune yet");
+    assert_eq!(s.save.flag("luma_song.verses"), 0);
+    // the tune may start anywhere in what she plays
+    let ev = play(&mut s, &mut w, &[4, 7, 12]);
+    assert!(tune_played(&ev));
+    assert_eq!(s.save.flag("luma_song.verses"), 1);
+    // playing it again does nothing, also after coming back
+    let ev = play(&mut s, &mut w, &[4, 7, 12]);
+    assert!(!tune_played(&ev));
+    let mut w = s.enter("meadow-1", load("meadow-1"), "west", &Tuning::default());
+    play(&mut s, &mut w, &[4, 7, 12]);
+    assert_eq!(s.save.flag("luma_song.verses"), 1);
+}
+
+#[test]
+fn a_tune_counts_only_on_its_map_and_while_its_condition_holds() {
+    let mut s = Session::new_game(content_with_tune("flag knows_song"));
+    let mut w = s.enter("tauwinkel", load("tauwinkel"), "west", &Tuning::default());
+    s.save.set_flag("knows_song", 1);
+    assert!(
+        !tune_played(&play(&mut s, &mut w, &[4, 7, 12])),
+        "other map"
+    );
+    s.save.set_flag("knows_song", 0);
+    let mut w = s.enter("meadow-1", load("meadow-1"), "west", &Tuning::default());
+    let ev = play(&mut s, &mut w, &[4, 7, 12]);
+    assert!(!tune_played(&ev), "condition does not hold");
+    assert_eq!(s.save.flag("luma_song.verses"), 0);
+    // it is not used up: once the condition holds, playing it counts
+    s.save.set_flag("knows_song", 1);
+    assert!(tune_played(&play(&mut s, &mut w, &[4, 7, 12])));
+    assert_eq!(s.save.flag("luma_song.verses"), 1);
+}
+
+// ---------------------------------------------------------------- Night tea (M2.5.6)
+
+#[test]
+fn night_tea_heals_and_makes_eloras_light_reach_further_for_a_while() {
+    use elora_adventure::data::{Effect, ItemDef, ItemKind, Text};
+    let mut c = Content::builtin();
+    c.items.insert(
+        "night_tea".into(),
+        ItemDef {
+            id: "night_tea".into(),
+            name: Text::default(),
+            desc: Text::default(),
+            price: 18,
+            kind: ItemKind::Consumable {
+                effect: Effect::Glow(2),
+            },
+        },
+    );
+    let mut s = Session::new_game(c);
+    let mut w = s.enter("meadow-1", load("meadow-1"), "west", &Tuning::default());
+    step(&mut s, &mut w, PlayerInput::default(), false);
+    assert!((s.light_reach() - 1.0).abs() < 1e-6);
+    let full = s.save.max_health(&s.content);
+    s.save.health = full - 3;
+    s.save.inventory.insert("night_tea".into(), 1);
+    s.use_item(&mut w, "night_tea").unwrap();
+    assert_eq!(s.save.health, full - 1, "heals 2");
+    assert_eq!(w.character(s.player).unwrap().health, full - 1);
+    assert!((s.light_reach() - 2.0).abs() < 1e-6, "twice as far");
+    // it lasts across a map change and fades out at the end
+    for _ in 0..20 * 50 {
+        step(&mut s, &mut w, PlayerInput::default(), false);
+    }
+    let mut w = s.enter("tauwinkel", load("tauwinkel"), "west", &Tuning::default());
+    assert!((s.light_reach() - 2.0).abs() < 1e-6);
+    let mut last = 2.0;
+    for _ in 0..10 * 50 {
+        step(&mut s, &mut w, PlayerInput::default(), false);
+        assert!(s.light_reach() <= last, "never brighter again");
+        last = s.light_reach();
+    }
+    assert!((s.light_reach() - 1.0).abs() < 1e-6, "over after 30 s");
+}
+
 // ---------------------------------------------------------------- Climax (M2.5.5)
 
 /// `meadow-1` without enemies, with the zones of “Protect Luma”: Elora starts inside
@@ -828,6 +967,7 @@ fn climax_map() -> elora_map::Map {
 
 fn climax_start() -> (Session, World) {
     let mut s = Session::new_game(Content::builtin());
+    s.save.set_flag(elora_adventure::session::LUMA_SINGS, 1);
     let w = s.enter("meadow-1", climax_map(), "west", &Tuning::default());
     (s, w)
 }
@@ -853,6 +993,23 @@ fn climax_run(
         }
     }
     all
+}
+
+#[test]
+fn climax_waits_until_luma_is_ready_to_sing() {
+    let (mut s, mut w) = climax_start();
+    s.save.set_flag(elora_adventure::session::LUMA_SINGS, 0);
+    step(&mut s, &mut w, PlayerInput::default(), false);
+    assert!(
+        s.climax.is_none(),
+        "Elora has not talked to Luma at the ruins yet"
+    );
+    s.save.set_flag(elora_adventure::session::LUMA_SINGS, 1);
+    step(&mut s, &mut w, PlayerInput::default(), false);
+    assert!(
+        s.climax.is_some(),
+        "standing in the zone is enough afterwards"
+    );
 }
 
 #[test]
@@ -939,6 +1096,43 @@ fn lit_lanterns_protect_luma_through_three_verses_then_he_flees() {
     // walking into the zone again does not start it again
     climax_run(&mut s, &mut w, 10, false, |_, _| false);
     assert!(s.climax.is_none());
+}
+
+#[test]
+fn withered_one_is_heard_when_he_appears_moves_on_and_flees() {
+    use elora_sim::{CreatureAct, Event};
+    let (mut s, mut w) = climax_start();
+    let mut heard = Vec::new();
+    for _ in 0..140 * 50 {
+        w.lanterns[0].lit_until = w.tick + 100;
+        step(&mut s, &mut w, PlayerInput::default(), false);
+        let him = w.creature_kind("withered");
+        heard.extend(w.events.iter().filter_map(|e| {
+            match *e {
+                Event::CreatureAct { id, act, .. }
+                    if w.creatures
+                        .iter()
+                        .any(|c| c.id == id && Some(c.kind) == him) =>
+                {
+                    Some(act)
+                }
+                _ => None,
+            }
+        }));
+        if s.climax.is_none() {
+            break;
+        }
+    }
+    // he appears, moves on after the first and the second verse, and flees after the third
+    assert_eq!(
+        heard,
+        [
+            CreatureAct::Wake,
+            CreatureAct::Dive,
+            CreatureAct::Dive,
+            CreatureAct::Flee
+        ]
+    );
 }
 
 #[test]

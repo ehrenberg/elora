@@ -123,6 +123,48 @@ def luma(variant='A', pose='schwach'):
     return s
 
 
+# ── Glimmer and the grey stone (M2.5.6) ─────────────────────────────────
+
+def glimmer(fright=False):
+    """Glimmer the glow-worm (M2.5.6, in the style of the drafts above): a small, timid
+    segmented larva with a big round head and a glowing tail; lights up when frightened."""
+    glow = 0.55 if fright else 0.35
+    s = glow_circle(-58, -22, 34 if fright else 26, GLOW, glow)
+    # body: four segments from the tail (left) to the head (right)
+    for i, (x, r) in enumerate(((-58, 15), (-36, 17), (-12, 18), (12, 19))):
+        fill = GLOW if i == 0 else '#9fd47a'
+        s += f'<ellipse cx="{x}" cy="{-r}" rx="{r + 3}" ry="{r}" fill="{fill}" {st(3)}/>'
+        if i:
+            s += f'<path d="M {x - 6},{-2 * r + 6} q 6,4 12,0" fill="none" stroke="#6fa04a" stroke-width="2.5"/>'
+    for x in (-40, -14, 10):
+        s += f'<path d="M {x},-2 l -3,6 M {x + 8},-2 l 3,6" stroke="{OUT}" stroke-width="3" stroke-linecap="round"/>'
+    s += sparkle(-62, -26, 6)
+    # head with big eyes and feelers
+    s += f'<circle cx="42" cy="-36" r="26" fill="#c5e88a" {st(3.5)}/>'
+    for side, x in ((-1, 34), (1, 52)):
+        s += f'<path d="M {x},-58 Q {x + side * 4},-82 {x + side * 12 + 6},-84" fill="none" stroke="{OUT}" stroke-width="3"/>'
+        s += f'<circle cx="{x + side * 12 + 6}" cy="-84" r="4.5" fill="{GLOW}" {st(2)}/>'
+    for x in (36, 54):
+        s += f'<ellipse cx="{x}" cy="-40" rx="6.5" ry="9" fill="#ffffff" {st(2)}/>'
+        s += f'<circle cx="{x + 1.5}" cy="-39" r="3.5" fill="{OUT}"/>'
+    s += ('<path d="M 40,-24 q 5,4 10,0" fill="none" stroke="#2b2b2b" stroke-width="2.5" stroke-linecap="round"/>'
+          if not fright else '<ellipse cx="45" cy="-23" rx="4" ry="5" fill="#2b2b2b"/>')
+    s += '<ellipse cx="26" cy="-30" rx="5" ry="3" fill="#ef9fc0" opacity="0.7"/>'
+    return s
+
+
+def grey_trail_stone():
+    """Trail of the Withered One in the gorge: a rock that has lost its starlight (grey, dull),
+    next to it a hollow in the dust where he sat (stone variant of the ice trail of chapter 4)."""
+    s = f'<ellipse cx="10" cy="-5" rx="86" ry="12" fill="{GREY}" opacity="0.8"/>'
+    s += (f'<path d="M -64,-6 Q -70,-46 -36,-60 Q -4,-70 12,-44 Q 22,-24 16,-6 Z" fill="{GREY_LIGHT}" {st(3.5)}/>'
+          f'<path d="M -40,-52 l 8,14 l -6,10 M -10,-58 l -4,16" fill="none" stroke="{GREY_DARK}" stroke-width="2.5"/>')
+    s += f'<path d="M 30,-6 Q 54,-22 80,-6 Z" fill="{GREY_DARK}" opacity="0.6"/>'
+    for k in range(3):
+        s += f'<ellipse cx="{96 + k * 34}" cy="-3" rx="9" ry="3.5" fill="{GREY_DARK}" opacity="0.7"/>'
+    return s
+
+
 # ── The Withered One ────────────────────────────────────────────────────
 
 def withered_one(variant='A', pose='saugt'):

@@ -14,7 +14,8 @@ use elora_sim::Vec2;
 
 use super::mapgen::{
     Grid, T, animate, at, big, chest, climb_vault, collectible, corner, creature, decor, edge_exit,
-    finish, jerk_gate, npc, o, plant, pull_vault, sign, stomp_vault, thorn_decor,
+    finish, flap_pillar, flap_pillar_decor, jerk_gate, npc, o, plant, pull_vault, sign,
+    stomp_vault, thorn_decor,
 };
 use super::release;
 
@@ -199,8 +200,17 @@ pub fn meadow_3() -> Map {
     // opens after chapter 4
     g.fill((186, 199), (8, 21), '%');
     g.fill((192, 194), (15, 20), '.');
+    // gliding spot: only the strengthened star cape reaches the chest (R2-M2.5, M2.5.8)
+    let flap = flap_pillar(
+        &mut g,
+        "meadow3-flap",
+        64,
+        30,
+        &[("gleam_drops", 50), ("healing_potion", 1)],
+    );
     let mut m = g.map("Blütenwiesen 3");
     m.adventure.objects = vec![
+        flap,
         edge_exit("path-meadow-2", 0, h, "meadow-2", "east"),
         o("west", at(5, 30, 28.0), ObjectKind::Spawn),
         sign("sign-roots", 22, 30),
@@ -241,6 +251,7 @@ pub fn meadow_3() -> Map {
             },
         ),
         o("gorge", at(189, 26, 28.0), ObjectKind::Spawn),
+        sign("sign-gorge", 186, 26),
         o("east", at(214, 24, 28.0), ObjectKind::Spawn),
         edge_exit("path-arena", w - 2, h, "meadow-arena", "west"),
     ];
@@ -269,6 +280,7 @@ pub fn meadow_3() -> Map {
     thorn_decor(&mut m, 60, 61, 72);
     thorn_decor(&mut m, 60, 101, 108);
     thorn_decor(&mut m, 60, 141, 156);
+    m.decor_back.extend(flap_pillar_decor(64, 30));
     let mut map = finish(m, &release::THEMES[0]);
     animate(&mut map, &[]);
     map

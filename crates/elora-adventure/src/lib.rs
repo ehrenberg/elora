@@ -78,6 +78,61 @@ mod tests {
         assert!(Content::load(&src).is_err());
     }
 
+    /// The bundled quests plus one tune (`[[tune]]` in `quests.toml`).
+    fn load_with_tune(tune: &str) -> Result<Content, data::ContentError> {
+        let builtin = data::Sources::builtin();
+        let quests = format!("{}\n[[tune]]\n{tune}\n", builtin.quests);
+        Content::load(&data::Sources {
+            quests: &quests,
+            ..builtin
+        })
+    }
+
+    #[test]
+    fn tunes_are_read_from_the_quest_file() {
+        let c = load_with_tune(
+            "id = \"verse\"\nmap = \"gorge-1\"\nnotes = [\"e\", \"g\", \"c2\"]\n\
+             if = \"quest well done\"\ndo = [\"flag luma_song.verses +1\"]",
+        )
+        .unwrap();
+        let tune = c.tunes.last().unwrap();
+        assert_eq!(tune.pitches(), Some(vec![4, 7, 12]));
+        assert_eq!((tune.id.as_str(), tune.map.as_str()), ("verse", "gorge-1"));
+    }
+
+    #[test]
+    fn broken_tunes_are_rejected() {
+        let tune = |map: &str, notes: &str, cond: &str, action: &str| {
+            format!(
+                "id = \"verse\"\nmap = \"{map}\"\nnotes = [{notes}]\nif = \"{cond}\"\n\
+                 do = [\"{action}\"]"
+            )
+        };
+        let (map, notes, cond, action) =
+            ("gorge-1", "\"e\", \"g\"", "quest well done", "flag x +1");
+        assert!(load_with_tune(&tune(map, notes, cond, action)).is_ok());
+        let long = vec!["\"c\""; session::NOTES_KEPT + 1].join(", ");
+        for (broken, why) in [
+            (tune("nowhere-1", notes, cond, action), "of no area"),
+            (tune(map, "", cond, action), "no notes"),
+            (tune(map, "\"e\", \"h\"", cond, action), "unknown note `h`"),
+            (tune(map, &long, cond, action), "longer than"),
+            (tune(map, notes, "quest nope done", action), "unknown quest"),
+            (tune(map, notes, cond, "give nothing 1"), "unknown item"),
+            (
+                format!(
+                    "{}\n[[tune]]\n{}",
+                    tune(map, notes, cond, action),
+                    tune(map, notes, cond, action)
+                ),
+                "duplicated",
+            ),
+        ] {
+            let e = load_with_tune(&broken).unwrap_err().to_string();
+            assert!(e.contains(why), "{why}: {e}");
+        }
+    }
+
     #[test]
     fn broken_temperature_bars_are_rejected() {
         let builtin = data::Sources::builtin();

@@ -6,9 +6,9 @@
 id = "lotte"
 owner = "lotte"
 discount = [{ affection = 5, pct = 10 }, { affection = 10, pct = 20 }]
-stock = ["healing_potion", "dew_potion", "sand_boots", "lucky_pendant", "straw_hat", "herbal_tea"]
-# only once Elora can use them (E-354)
-stock_if = { dew_potion = "ability hook-jerk", sand_boots = "not quest glutsand new", herbal_tea = "quest frostspitzen done" }
+stock = ["healing_potion", "dew_potion", "sand_boots", "lucky_pendant", "straw_hat", "herbal_tea", "night_tea"]
+# only once Elora can use them (E-354); night tea once she has been in the gorge (D-M25-03)
+stock_if = { dew_potion = "ability hook-jerk", sand_boots = "not quest glutsand new", herbal_tea = "quest frostspitzen done", night_tea = "not quest sternschlucht new and not quest sternschlucht step departure" }
 
 # Sirup the caravan leader (R2-M2.3, E-324)
 [[shop]]

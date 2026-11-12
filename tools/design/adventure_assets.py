@@ -22,7 +22,8 @@ from chapter3_drafts import (dune_worm, spark_moth, watering_spot, palma, ruin_s
                                 sand_crab, sand_serpent, sirup, stone_tablet, water_skin)
 from chapter4_drafts import (icicle_enemy, bat, flocke, frost_ghost, grey_trail_ice,  # noqa: E402
                                 climber, kristella, seal, snow_boulder)
-from chapter5_drafts import dark_mirror, echo, grey_shadow, shadow_moth, stone_goblin, withered_one  # noqa: E402
+from chapter5_drafts import (dark_mirror, echo, glimmer, grey_shadow, grey_trail_stone, luma, shadow_moth,  # noqa: E402
+                             stone_goblin, withered_one)  # noqa: E402
 
 
 def straw_dummy():
@@ -149,6 +150,10 @@ CHARACTERS = {
     'wicke': (0.85, climber('c8a0e8', '9a70c0', '#5fc8e8')),
     'kristella': (1.0, kristella('ruhig', False)),
     'grey_spot': (1 / 0.36 * 0.5, grey_trail_ice()),
+    # Chapter 5 (R2-M2.5): Luma (draft B, E-369), Glimmer, the grey stone of the gorge
+    'luma': (0.95, luma('B', 'schwach')),
+    'glimmer': (0.8, glimmer()),
+    'grey_stone': (1 / 0.36 * 0.5, grey_trail_stone()),
 }
 
 

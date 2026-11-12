@@ -333,6 +333,16 @@ impl Effects {
         }
     }
 
+    /// A tune is complete (M2.5.6): a little chord of glowing notes rises from `pos`, with
+    /// sparkle.
+    pub fn tune_sparkle(&mut self, pos: Vec2) {
+        for drift in [-1.0, 0.0, 1.0] {
+            let from = pos + Vec2::new(drift * 14.0, -24.0);
+            self.notes.push((from, 0.0, drift));
+        }
+        self.burst(pos, GLITTER, &SPAWN_GLITTER);
+    }
+
     /// A chest opens: a golden glow and stars rising out of it.
     pub fn chest_sparkle(&mut self, pos: Vec2) {
         self.flashes.push(Flash {
@@ -402,6 +412,10 @@ impl Effects {
             }
             if bits & (events::WALL_JUMP | events::HOOK_JERK) != 0 {
                 self.burst(c.pos(), SMOKE, &GROUND_JUMP);
+            }
+            // flap of the strengthened star cape (A-52): a little stardust
+            if bits & events::GLIDE_FLAP != 0 {
+                self.burst(c.pos(), GLITTER, &PICKUP_GLITTER);
             }
             if bits & events::AIR_JUMP != 0 {
                 for k in 0..8 {

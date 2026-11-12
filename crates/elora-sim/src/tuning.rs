@@ -220,6 +220,11 @@ pub struct Tuning {
     pub note_light_time: u32,
     /// A-51: a touched star lantern stays lit this long (ms, R2-M2.5 climax)
     pub lantern_time: u32,
+    /// A-52: strengthened star cape: one flap upwards per flight once the double jump is used
+    /// up (units/tick, 0 = no flap)
+    pub glide_flap: f32,
+    /// A-53: strengthened star cape: factor on A-47 and A-48 while gliding (1 = unchanged)
+    pub glide_updraft: f32,
 }
 
 impl Default for Tuning {
@@ -326,6 +331,8 @@ impl Default for Tuning {
             updraft_push: 0.62,
             note_light_time: 6000,
             lantern_time: 12_000,
+            glide_flap: 0.0,
+            glide_updraft: 1.0,
         }
     }
 }

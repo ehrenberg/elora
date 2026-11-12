@@ -1,0 +1,10 @@
+# Grey stone in the dark heights (R2-M2.5): this is where the Withered One sat down
+speaker = "grey-stone-2"
+
+[[start]]
+node = "text"
+
+[[node]]
+id = "text"
+text = { de = "Noch eine graue Stelle. Auf dem Stein liegt ein einzelner, vertrockneter Zweig. Er ist ganz leicht.", en = "Another grey patch. A single dried-up twig lies on the stone. It weighs almost nothing." }
+do = ["flag withered_one.twig = 1"]

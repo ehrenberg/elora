@@ -2,6 +2,10 @@
 speaker = "tueftel"
 
 [[start]]
+if = "quest sternschlucht step spark"
+node = "spark5"
+
+[[start]]
 if = "quest frostspitzen step spark"
 node = "spark4"
 
@@ -89,6 +93,15 @@ do = ["ability stomp", "flag springs_freed = 3", "flag freed.ember_spring = 1", 
 id = "spark4"
 text = { de = "Blau! Eisblau! Und so kühl, dass meine Brille beschlägt. Gib mal deine Steigkrallen … *klirr* … *zisch* … So! Jetzt halten sie doppelt so lange, und wenn du an der Wand nach oben drückst, ziehst du dich sogar ein Stück hinauf. Kletterwände überall im Tauland – jetzt gehören sie dir!", en = "Blue! Ice blue! And so cool my glasses fog up. Give me your climbing claws … *clink* … *hiss* … There! Now they hold twice as long, and if you push up against the wall you even pull yourself up a bit. Climbing walls all over the Tauland – now they're yours!" }
 do = ["flag ice_grip.strong = 1", "flag springs_freed = 4", "flag freed.frost_spring = 1", "flag party = 1", "affection tueftel +1"]
+
+[[node]]
+id = "spark5"
+text = { de = "Violett! Das ist … das ist ja Traumfarbe! Gib mal deinen Umhang … nein, warte … ja! *zisch* … *sirr* … So! Jetzt steigt er in Aufwinden doppelt so hoch, und du kannst im Gleiten einmal kurz nach oben flattern. Probier's an den alten Stellen aus – in den Wiesen, im Wald, überall gibt es jetzt Wege nach oben!", en = "Violet! That's … that's dream colour! Give me your cape … no, wait … yes! *hiss* … *whirr* … There! Now it rises twice as high in updrafts, and while gliding you can flap upwards once. Try it at the old places – in the meadows, in the forest, there are ways up everywhere now!" }
+do = ["flag glide.strong = 1", "flag springs_freed = 5", "flag freed.star_spring = 1", "flag party = 1", "affection tueftel +1"]
+
+[[bark]]
+if = "flag glide.strong"
+text = { de = "Gleiten, Version zwei. Version drei: Rakete. Vielleicht.", en = "Gliding, version two. Version three: rocket. Maybe." }
 
 [[bark]]
 if = "flag ice_grip.strong"

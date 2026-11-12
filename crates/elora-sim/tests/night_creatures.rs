@@ -3,7 +3,7 @@
 mod support;
 
 use elora_sim::creature::{echo, goblin, mirror, moth};
-use elora_sim::{Abilities, Behavior, Event, PlayerInput, Tile, Vec2, World};
+use elora_sim::{Abilities, Behavior, CreatureAct, Event, PlayerInput, Tile, Vec2, World};
 use support::{FLOOR, adventure_arena, creature, idle, input, kind, run, spawn_vulnerable};
 
 const W: usize = 70;
@@ -122,6 +122,52 @@ fn moth_flees_from_light() {
     assert_eq!(creature(&w, id).mode, moth::FLEE);
     run(&mut w, idle(), 80);
     assert!(creature(&w, id).pos.distance(lamp) > 150.0);
+}
+
+/// The acts of creature `id` among `events`.
+fn acts(events: &[Event], id: u32) -> Vec<CreatureAct> {
+    events
+        .iter()
+        .filter_map(|e| match *e {
+            Event::CreatureAct { id: i, act, .. } if i == id => Some(act),
+            _ => None,
+        })
+        .collect()
+}
+
+#[test]
+fn moth_calls_once_when_it_attacks_and_when_it_flees() {
+    // attack in the dark: one call for the whole attack, not one per tick
+    let mut w = world(|_| {});
+    spawn_vulnerable(&mut w, standing(30), Abilities::NONE);
+    let id = w
+        .add_creature(MOTH, elora(&w) + Vec2::new(-200.0, -120.0))
+        .unwrap();
+    let events = run(&mut w, idle(), 60);
+    assert_eq!(acts(&events, id), [CreatureAct::Dive]);
+
+    // put into the light: it squeaks and flees
+    let mut w = world(|_| {});
+    spawn_vulnerable(&mut w, standing(5), Abilities::NONE);
+    let lamp = Vec2::new(40.0 * 32.0, 15.0 * 32.0);
+    w.lights = vec![(lamp, 150.0)];
+    let id = w.add_creature(MOTH, lamp + Vec2::new(40.0, 0.0)).unwrap();
+    let events = run(&mut w, idle(), 80);
+    assert_eq!(acts(&events, id), [CreatureAct::Flee]);
+}
+
+#[test]
+fn moth_at_the_edge_of_the_light_does_not_call_all_the_time() {
+    let mut w = world(|_| {});
+    spawn_vulnerable(&mut w, standing(30), Abilities::NONE);
+    // Elora stands in the dark right next to a lamp: the moth is torn between both
+    w.lights = vec![(elora(&w) + Vec2::new(-190.0, -40.0), 150.0)];
+    let id = w
+        .add_creature(MOTH, elora(&w) + Vec2::new(-300.0, -160.0))
+        .unwrap();
+    let events = run(&mut w, idle(), 300);
+    let calls = acts(&events, id).len();
+    assert!(calls <= 4, "at most one call per 1.5 s: {calls}");
 }
 
 // ---------------------------------------------------------------- Stone goblin

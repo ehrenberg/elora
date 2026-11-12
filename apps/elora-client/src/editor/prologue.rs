@@ -128,6 +128,17 @@ pub fn tauwinkel() -> Map {
         chest("chest-1", 83, 41, &[("gleam_drops", 20)]),
         sign("sign-well", 102, 38),
         o("well", at(110, 38, 40.0), ObjectKind::SavePoint),
+        // Glimmer moved to the well after chapter 5 (R2-M2.5)
+        o(
+            "glimmer-village",
+            at(113, 38, 28.0),
+            ObjectKind::Npc {
+                character: "glimmer-village".into(),
+                dialog: "glimmer".into(),
+                facing: -1,
+                walk: 0.0,
+            },
+        ),
         npc("oma", 123, 38, -1, 0.0),
         npc("tueftel", 158, 38, 1, 32.0),
         sign("sign-hook", 184, 38),

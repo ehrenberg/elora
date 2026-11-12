@@ -286,6 +286,9 @@ pub enum CreatureAct {
     Core,
     /// Blizzard in the hall begins (Kristella, R2-M2.4): the session sets the weather.
     Storm,
+    /// Turns away and flees (R2-M2.5): a shadow moth from the light, the Withered One after
+    /// Luma's song.
+    Flee,
 }
 
 impl Event {

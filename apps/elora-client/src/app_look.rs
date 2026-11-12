@@ -120,7 +120,9 @@ impl App {
         #[allow(clippy::cast_precision_loss)]
         let screen = elora_sim::Vec2::new(w as f32, h as f32);
         let per_px = camera.units_per_pixel(screen).max(0.0001);
-        let elora = elora.map(|pos| (pos, elora_map::lights::elora_radius(), 1.0));
+        // a night tea makes her own light reach further for a while (M2.5.6)
+        let reach = session.map_or(1.0, elora_adventure::Session::light_reach);
+        let elora = elora.map(|pos| (pos, elora_map::lights::elora_radius() * reach, 1.0));
         let lights: Vec<elora_render::Light> = elora
             .into_iter()
             .chain(

@@ -12,7 +12,7 @@ use elora_sim::Vec2;
 
 use super::mapgen::{
     Grid, T, animate, at, big, chest, climb_vault, corner, creature, decor, edge_exit, finish,
-    jerk_gate, npc, o, plant, pull_vault, sign, zone,
+    flap_pillar, flap_pillar_decor, jerk_gate, npc, o, plant, pull_vault, sign, zone,
 };
 use super::release::{self, Theme};
 
@@ -163,6 +163,14 @@ pub fn desert_2() -> Map {
         40,
         &[("gleam_drops", 60), ("ember_stone", 2)],
     );
+    // gliding spot: only the strengthened star cape reaches the chest (R2-M2.5, M2.5.8)
+    let flap = flap_pillar(
+        &mut g,
+        "desert2-flap",
+        180,
+        40,
+        &[("gleam_drops", 70), ("healing_potion", 1)],
+    );
     let mut m = g.map("Karawanenlager");
     let blossom = |n: usize, tx: usize| {
         o(
@@ -177,6 +185,7 @@ pub fn desert_2() -> Map {
         )
     };
     m.adventure.objects = vec![
+        flap,
         edge_exit("path-dunes", 0, h, "desert-1", "east"),
         o("west", at(5, 40, 28.0), ObjectKind::Spawn),
         o("camp", at(47, 40, 40.0), ObjectKind::SavePoint),
@@ -234,6 +243,7 @@ pub fn desert_2() -> Map {
             (212.0, 40),
         ],
     );
+    m.decor_back.extend(flap_pillar_decor(180, 40));
     desert(m)
 }
 

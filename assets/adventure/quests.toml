@@ -1,5 +1,6 @@
 # Quests (A1.4, E-249 to E-251). Conditions and effects: docs/handbook/adventure-content.md
 # goal.type = talk | reach | defeat | collect | bring | flag | manual
+# Tunes for the note stones of a map (R2-M2.5): [[tune]] with id, map, notes, optional if, do
 # Prologue (A1.9, docs/release-2/prolog.md)
 
 [[quest]]
@@ -221,19 +222,137 @@ id = "party"
 text = { de = "Mit Oma Pfütze am Brunnen feiern", en = "Celebrate with Oma Pfütze at the well" }
 goal = { type = "talk", who = "oma" }
 
-# Chapter 5 – announcement, continued with R2-M2.5
+# Chapter 5 – Sternschlucht (R2-M2.5, docs/release-2/m2-5-content.md)
 [[quest]]
 id = "sternschlucht"
 kind = "main"
 giver = "oma"
 name = { de = "Das Lied der Sterne", en = "The Song of the Stars" }
 desc = { de = "Kristella sah den Grauen nach Osten ziehen, zur Sternschlucht. Dort wohnt Luma, die Sternenweberin. Sie kennt alle Lieder.", en = "Kristella saw the grey one head east, to the Sternschlucht. Luma the star weaver lives there. She knows every song." }
-reward = { xp = 100 }
+reward = { xp = 500, gleam_drops = 200 }
+next = "finale"
 
 [[quest.step]]
 id = "departure"
-text = { de = "In die Sternschlucht aufbrechen (bald)", en = "Set out for the Sternschlucht (soon)" }
+text = { de = "Den Felsspalt am Ostende der Blütenwiesen finden", en = "Find the crack in the rocks at the east end of the Blütenwiesen" }
+goal = { type = "reach", map = "gorge-1" }
+
+[[quest.step]]
+id = "luma"
+text = { de = "Im Dunkeln nach der Sternenweberin suchen", en = "Look for the star weaver in the dark" }
+goal = { type = "talk", who = "luma" }
+
+[[quest.step]]
+id = "threads"
+text = { de = "Drei Lichtfäden für Luma sammeln", en = "Collect three light threads for Luma" }
+goal = { type = "collect", item = "light_thread", count = 3 }
+
+[[quest.step]]
+id = "cape"
+text = { de = "Luma die Lichtfäden bringen", en = "Bring Luma the light threads" }
+goal = { type = "bring", item = "light_thread", count = 3, to = "luma" }
+
+[[quest.step]]
+id = "heights"
+text = { de = "Mit dem Sternenumhang hinauf in die dunklen Höhen", en = "Up into the dark heights with the star cape" }
+goal = { type = "reach", map = "gorge-3" }
+
+[[quest.step]]
+id = "ruins"
+text = { de = "Die Ruinen der Sternquelle finden", en = "Find the ruins of the Star Spring" }
+goal = { type = "reach", map = "gorge-spring" }
+
+[[quest.step]]
+id = "protect"
+text = { de = "Luma beschützen, bis ihr Lied zu Ende ist", en = "Protect Luma until her song is finished" }
+goal = { type = "flag", flag = "luma_protected" }
+map = "gorge-spring"
+
+[[quest.step]]
+id = "spark"
+text = { de = "Tüftel den Sternenfunken bringen", en = "Bring Tüftel the star spark" }
+goal = { type = "bring", item = "spring_spark", count = 1, to = "tueftel" }
+
+[[quest.step]]
+id = "party"
+text = { de = "Mit Oma Pfütze am Brunnen feiern", en = "Celebrate with Oma Pfütze at the well" }
+goal = { type = "talk", who = "oma" }
+
+# Finale – announcement, continued with R2-M2.6
+[[quest]]
+id = "finale"
+kind = "main"
+giver = "oma"
+name = { de = "Der alte Brunnen", en = "The Old Well" }
+desc = { de = "Fast alles im Tauland ist wieder bunt – nur der alte Brunnen in Tauwinkel bleibt grau. Luma sagt, der Graue habe ein Brunnenlied gesummt, als er ging.", en = "Almost everything in the Tauland is colourful again – only the old well in Tauwinkel stays grey. Luma says the grey one hummed a well song as he left." }
+reward = { xp = 100 }
+
+[[quest.step]]
+id = "well"
+text = { de = "Dem alten Brunnenlied nachgehen (bald)", en = "Follow the old well song (soon)" }
 goal = { type = "manual" }
+
+# side quests in chapter 5 (E-368)
+[[quest]]
+id = "star_fragments"
+kind = "side"
+giver = "luma"
+name = { de = "Sternsplitter", en = "Star Fragments" }
+desc = { de = "Als der Graue aus der Sternquelle trank, hat er acht Sternsplitter verstreut – an Stellen, die man nur fliegend erreicht.", en = "When the grey one drank from the Star Spring he scattered eight star fragments – in places you can only reach by flying." }
+reward = { xp = 150, points = 1, items = [{ item = "star_shawl", count = 1 }] }
+
+[[quest.step]]
+id = "collect"
+text = { de = "Acht Sternsplitter in der Sternschlucht finden", en = "Find eight star fragments in the Sternschlucht" }
+goal = { type = "collect", item = "star_fragment", count = 8 }
+
+[[quest.step]]
+id = "bring"
+text = { de = "Luma die Sternsplitter bringen", en = "Bring Luma the star fragments" }
+goal = { type = "bring", item = "star_fragment", count = 8, to = "luma" }
+map = "gorge-spring"
+
+[[quest]]
+id = "luma_song"
+kind = "side"
+giver = "luma"
+name = { de = "Lumas Lied", en = "Luma's Song" }
+desc = { de = "Luma hat die Strophen ihres Liedes vergessen. Sie stehen noch auf den Notentafeln der Schlucht – gespielt werden sie auf den Notensteinen.", en = "Luma has forgotten the verses of her song. They are still written on the note tablets of the gorge – and played on the note stones." }
+reward = { xp = 120, items = [{ item = "song_pendant", count = 1 }] }
+
+[[quest.step]]
+id = "find"
+text = { de = "Die drei Strophen von Lumas Lied auf den Notensteinen spielen", en = "Play the three verses of Luma's song on the note stones" }
+goal = { type = "flag", flag = "luma_song.verses", value = 3 }
+
+[[quest.step]]
+id = "sing"
+text = { de = "Luma ihr Lied vorspielen", en = "Play Luma her song" }
+goal = { type = "talk", who = "luma" }
+map = "gorge-spring"
+
+# The verses of Luma's song (D-M25-02): one per map, shown on its note tablet in the colours
+# of the note stones
+[[tune]]
+id = "verse-1"
+map = "gorge-1"
+notes = ["e", "g", "c2"]
+if = "quest luma_song active"
+do = ["flag luma_song.verses +1"]
+
+[[tune]]
+id = "verse-2"
+map = "gorge-2"
+notes = ["c", "e", "g"]
+if = "quest luma_song active"
+do = ["flag luma_song.verses +1"]
+
+[[tune]]
+id = "verse-3"
+map = "gorge-3"
+notes = ["g", "e", "c"]
+if = "quest luma_song active"
+do = ["flag luma_song.verses +1"]
 
 # side quests in chapter 4 (D-M24-08, D-M24-09)
 [[quest]]

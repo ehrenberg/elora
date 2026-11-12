@@ -1,0 +1,18 @@
+# Signpost (E-273, R2-M2.5)
+speaker = "signpost"
+
+[[start]]
+if = "ability glide"
+node = "text"
+
+[[start]]
+node = "later"
+
+[[node]]
+id = "text"
+text = { de = "{taste:jump} in der Luft halten: gleiten. Aufwinde tragen dich nach oben.", en = "Hold {taste:jump} in the air: glide. Updrafts carry you upwards." }
+
+# before Elora can use it (E-354)
+[[node]]
+id = "later"
+text = { de = "Hier geht es nur fliegend weiter. Vielleicht weiß die Sternenweberin Rat.", en = "From here the only way on is by flying. Maybe the star weaver can help." }

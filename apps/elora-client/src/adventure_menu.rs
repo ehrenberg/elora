@@ -122,6 +122,7 @@ pub fn bonus_text(lang: &Lang, b: Bonus) -> String {
         Bonus::LaserDelayPct(v) => ("bonus.laser_delay_pct", format!("{v:+}")),
         Bonus::HeatPct(v) => ("bonus.heat_pct", format!("{v:+}")),
         Bonus::ColdPct(v) => ("bonus.cold_pct", format!("{v:+}")),
+        Bonus::LanternPct(v) => ("bonus.lantern_pct", format!("{v:+}")),
     };
     lang.f(key, &[("n", &n)])
 }
@@ -153,6 +154,7 @@ pub fn item_icon(
                 elora_adventure::data::Effect::Dew(_) => Color::hex(0x5aaee8),
                 elora_adventure::data::Effect::Cool(_) => Color::hex(0x7fd99a),
                 elora_adventure::data::Effect::Warm(_) => Color::hex(0xe8a35a),
+                elora_adventure::data::Effect::Glow(_) => Color::hex(0xa77be0),
             };
             batch.fill_rect(
                 c + Vec2::new(-3.5, -13.5) * k,

@@ -1,6 +1,6 @@
 # R2-M2.5 – Chapter 5 content (draft, M2.5.6)
 
-Status: **draft – waiting for approval** · Basis: [`m2-5-plan.md`](m2-5-plan.md), [`world-book.md`](world-book.md) §4.5 and §5, E-362 to E-369
+Status: **approved (E-377), built in** · Basis: [`m2-5-plan.md`](m2-5-plan.md), [`world-book.md`](world-book.md) §4.5 and §5, E-362 to E-369
 
 As for chapter 4 (E-346), the **German texts are up for approval**; the English ones are added when
 building them in. Conditions and effects use the notation of the content files
@@ -152,7 +152,10 @@ Lotte sells it after Elora has been in the gorge once; needs the new effect `glo
 → `flag glide.strong = 1`, `take spring_spark 1`, `quest sternschlucht next`
 
 **D-M25-04 Stronger gliding:** “once a short flap upwards while gliding” plus double lift in
-updrafts (proposal); the tech belongs to M2.5.8.
+updrafts (proposal). The tech is built (M2.5.8) behind the flag `glide.strong` with the values
+A-52 (flap 8 units/tick, about two tiles, once per flight) and A-53 (updraft × 1.5 while gliding,
+about twice as high out of an updraft) – to try out in the sandbox: F1 → tuning “Abilities & enemies” →
+“Strengthened star cape” (with gliding switched on under “Abilities (adventure)”).
 
 ### Oma Pfütze
 - **Task** (start of the chapter, after the chapter 4 celebration, already in the game): „Geh nach Osten, Liebes, zur Sternschlucht …“
@@ -186,9 +189,11 @@ character `grey_trail_stone`; in the climax he appears for the first time (M2.5.
 
 ## 8. New tech for the content
 
-- Session: **tune check** – playing the tune of a note tablet on the note stones of its map counts a
-  flag up once (for “Luma's Song”).
-- Effect **`glow`** for consumables (Elora's light reach, D-M25-03).
-- Pendant bonus **lantern time** (`lantern_pct`) for the song pendant.
+- ✅ Session: **tune check** – playing the tune of a note tablet on the note stones of its map counts a
+  flag up once (for “Luma's Song”): `[[tune]]` in `quests.toml` with `map`, `notes`, optional `if`
+  and `do` (see [`../handbook/adventure-content.md`](../handbook/adventure-content.md)); the three
+  verses are entered once D-M25-02 is decided.
+- ✅ Effect **`glow`** for consumables (Elora's light reach, D-M25-03): twice as far for 30 s.
+- ✅ Pendant bonus **lantern time** (`lantern_pct`) for the song pendant.
 - Register the dialogue files; characters Luma, Glimmer, grey stone as graphics from the drafts
   (Glimmer is new: small glow-worm, drawn in the style of the chapter 5 drafts).

@@ -292,6 +292,69 @@ fn no_glide_while_air_jump_unused() {
     assert!(!core(&w).gliding);
 }
 
+// ---------------------------------------------------------------- Strengthened star cape
+
+/// Elora with the star cape, gliding after jump and double jump; `flap` is A-52.
+fn gliding(flap: f32) -> World {
+    let mut w = world(|_| {});
+    w.tuning.glide_flap = flap;
+    spawn(&mut w, standing(30, FLOOR), with(Ability::Glide));
+    run(&mut w, PlayerInput::default(), 5);
+    run(&mut w, input(0, true, false), 1);
+    run(&mut w, input(0, false, false), 5);
+    run(&mut w, input(0, true, false), 40);
+    assert!(core(&w).gliding);
+    w
+}
+
+/// Lets go of jump and presses it again.
+fn press_jump_again(w: &mut World) {
+    run(w, input(0, false, false), 1);
+    run(w, input(0, true, false), 1);
+}
+
+#[test]
+fn strong_cape_flaps_upwards_once_per_flight() {
+    let mut w = gliding(8.0);
+    press_jump_again(&mut w);
+    let c = core(&w);
+    assert!(c.vel.y < -6.0, "flaps upwards: {}", c.vel.y);
+    assert!(c.triggered_events & events::GLIDE_FLAP != 0);
+    // holding on, she glides again as soon as she falls
+    run(&mut w, input(0, true, false), 30);
+    assert!(core(&w).gliding);
+    // only one flap per flight
+    press_jump_again(&mut w);
+    let c = core(&w);
+    assert!(c.vel.y > 0.0, "no second flap: {}", c.vel.y);
+    assert_eq!(c.triggered_events & events::GLIDE_FLAP, 0);
+    // back on the ground the flap is ready again
+    run(&mut w, PlayerInput::default(), 200);
+    assert!(core(&w).is_grounded(&w.collision));
+    run(&mut w, input(0, true, false), 1);
+    run(&mut w, input(0, false, false), 5);
+    run(&mut w, input(0, true, false), 40);
+    press_jump_again(&mut w);
+    assert!(core(&w).vel.y < -6.0);
+}
+
+#[test]
+fn no_flap_without_the_strengthened_cape_or_without_the_cape() {
+    let mut w = gliding(0.0);
+    press_jump_again(&mut w);
+    assert!(core(&w).vel.y > 0.0, "the plain cape does not flap");
+    // the value alone does nothing without the gliding ability
+    let mut w = world(|_| {});
+    w.tuning.glide_flap = 8.0;
+    spawn(&mut w, standing(30, FLOOR), Abilities::NONE);
+    run(&mut w, PlayerInput::default(), 5);
+    run(&mut w, input(0, true, false), 1);
+    run(&mut w, input(0, false, false), 5);
+    run(&mut w, input(0, true, false), 25);
+    press_jump_again(&mut w);
+    assert!(core(&w).vel.y > 0.0);
+}
+
 #[test]
 fn down_on_platform_still_drops_through_with_stomp() {
     let mut w = world(|t| (20..26).for_each(|x| set(t, x, 20, Tile::Platform)));
@@ -497,4 +560,61 @@ fn strong_grip_pulls_elora_up_the_wall() {
         end >= start - 1.0,
         "cannot get up without the boost: {start} → {end}"
     );
+}
+
+// ---------------------------------------------------------------- Flap pillar (M2.5.8)
+
+/// Height of the flap pillar of the map generator (`flap_pillar` in
+/// `apps/elora-client/src/editor/mapgen.rs`): its top edge lies this many rows above the
+/// ground.
+const FLAP_PILLAR: usize = 11;
+
+/// Free-standing unhookable stone arch (columns 30–32, top edge `FLAP_PILLAR` rows above the
+/// floor, a passage four rows high underneath); Elora with every ability starts at column 25 and tries: ground jump (held for
+/// `hold` ticks), air jump at `air`, from `glide` on holds jump (gliding), lets go and presses
+/// again at `flap`, walks right from `right`. `true` if she stands on top of the pillar.
+fn flap_pillar_try(flap_value: f32, hold: u32, air: u32, flap: u32, right: u32) -> bool {
+    let top = FLOOR - FLAP_PILLAR;
+    let mut w = world(|t| {
+        for x in 30..33 {
+            for y in top..FLOOR - 4 {
+                set(t, x, y, Tile::Unhookable);
+            }
+        }
+    });
+    w.tuning.glide_flap = flap_value;
+    spawn(&mut w, standing(25, FLOOR), Abilities::ALL);
+    run(&mut w, PlayerInput::default(), 5);
+    for t in 0..140u32 {
+        let c = core(&w);
+        if c.is_grounded(&w.collision)
+            && c.pos.y < top as f32 * 32.0
+            && (30.0 * 32.0..33.0 * 32.0).contains(&c.pos.x)
+        {
+            return true;
+        }
+        let jump = t < hold || (t >= air && t < flap) || t > flap;
+        w.step(&[input(i8::from(t >= right), jump, false)]);
+    }
+    false
+}
+
+/// The flap pillar (gliding spots in chapters 1–4, M2.5.8): only the strengthened star cape
+/// (A-52, one flap upwards per flight) gets Elora on top; jump, air jump, gliding and every
+/// other ability do not.
+#[test]
+fn flap_pillar_needs_the_strengthened_star_cape() {
+    let reach = |flap_value: f32| {
+        (1..16).step_by(2).any(|hold| {
+            (hold + 2..hold + 30).step_by(2).any(|air| {
+                (air + 2..air + 40).step_by(3).any(|flap| {
+                    (0..60)
+                        .step_by(6)
+                        .any(|right| flap_pillar_try(flap_value, hold, air, flap, right))
+                })
+            })
+        })
+    };
+    assert!(!reach(0.0), "reachable without the strengthened star cape");
+    assert!(reach(8.0), "not reachable with the strengthened star cape");
 }
