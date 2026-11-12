@@ -1,6 +1,11 @@
 # Bumblebear after the fight (R2-M2.1, E-298): was only confused
 speaker = "bumblebee"
 
+# Finale (R2-M2.6, E-383): line 1 of the well song, in the order of the chapters
+[[start]]
+if = "quest finale active and flag well_song.lines = 0"
+node = "song_line"
+
 [[start]]
 if = "flag bumblebee.talked"
 node = "later"
@@ -47,6 +52,16 @@ do = ["flag bumblebee.talked = 1", "flag freed.blossom_spring = 1"]
 [[node]]
 id = "later"
 text = { de = "Bsss … ich passe jetzt wieder gut auf die Quelle auf.", en = "Bzzz … I'm taking good care of the spring again now." }
+
+# Finale (R2-M2.6, E-383)
+[[node]]
+id = "song_line"
+text = { de = "*(brummt nachdenklich)* Ein Lied am Brunnen? Brumm … Ich war klein, ganz klein. Da hat eine Stimme gesungen: ‚… da hütet einer still das Licht.‘ Brumm. Mehr weiß ich nicht.", en = "*(hums thoughtfully)* A song at the well? Bzzz … I was small, very small. A voice sang: ‘… someone quietly keeps the light.’ Bzzz. That's all I know." }
+do = ["flag well_song.bumblebee = 1", "flag well_song.lines +1"]
+
+[[bark]]
+if = "flag well_song.bumblebee and not quest finale done"
+text = { de = "… da hütet einer still das Licht.", en = "… someone quietly keeps the light." }
 
 [[bark]]
 text = { de = "Bsss … danke, Kleine.", en = "Bzzz … thank you, little one." }

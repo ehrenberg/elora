@@ -1,6 +1,6 @@
 # R2-M2.6 – Finale: The Old Well – implementation plan
 
-Status: **draft – waiting for approval** (core decisions D-M26-01 to D-M26-10 below) · Basis:
+Status: **approved** (E-380, spring trials E-381) – in progress · Basis:
 [`world-book.md`](world-book.md) §2, §4.6 and §5, [`m2-5-plan.md`](m2-5-plan.md),
 [`story-drafts.md`](story-drafts.md) (“the last boss fight is a reawakening”), E-210 to E-214
 
@@ -13,10 +13,12 @@ of the sixth spring, the **Origin Spring**. There is no fight to defeat him: Elo
 ability she has learned to bring him the five colours back, and finally plays him the well song
 that nobody sang for him. He becomes the guardian of the Origin Spring again, the well opens, the
 village celebrates with all guardians, and Oma Pfütze finally remembers the whole song.
-Afterwards the adventure continues as free play.
+Afterwards the adventure continues as free play, and Born offers the **spring trials**: every
+section of the adventure again, harder and timed, for bronze, silver and gold.
 
 **Acceptance:** play through the finale once (about 30–45 minutes, world book §8), saving and
-continuing in between; the ending, the credits and free play afterwards work.
+continuing in between; the ending, the credits and free play afterwards work; a few spring
+trials played with their medals.
 
 ## What the story has prepared
 
@@ -32,9 +34,12 @@ continuing in between; the ending, the credits and free play afterwards work.
   schläft, …“ – and that her mother sang it at the well. Quest `finale` (“The Old Well”) has one
   placeholder step.
 
-## Core decisions (proposals for approval)
+## Core decisions
 
-| # | Question | Proposal | Alternative |
+Approved on 2026-11-12: **E-380** – the proposals of D-M26-01 to D-M26-08 and D-M26-10;
+**E-381** – D-M26-09 differently: the spring trials are **part of M2.6** (section below).
+
+| # | Question | Proposal (approved unless noted) | Alternative |
 |---|---|---|---|
 | D-M26-01 | How does the well open? | **Gather the song:** each guardian remembers **one line** of the well song (Bumblebear, Root Warden, Sand Serpent, Kristella, Luma); with all five lines Oma sings the song at the well and the lid lifts by itself. A short journey back through all areas (world map, fast travel at spring stones if present) | **Klonk and Tüftel** open the lid with a tool – quicker (no journey), but the guardians play no part |
 | D-M26-02 | Origin Cave | **Three maps:** `well-shaft` (the climb down, mixed abilities, dark → lighter), `origin-cave` (five **colour veins**, one per ability and spring), `origin-heart` (the finale) | One big map with all of it |
@@ -44,8 +49,8 @@ continuing in between; the ending, the credits and free play afterwards work.
 | D-M26-06 | Failure | No game over: if the grey waves fill the heart, Elora wakes at the spring stone in front of it; colours already given back **stay** | Restart all rounds |
 | D-M26-07 | His new form and name | Drafts in M2.6.0: a tall clear drop with a crown of five coloured streams; name: **Born** (old word for spring and well) | Keeps no name (“the guardian of the Origin Spring”) |
 | D-M26-08 | Ending | Scripted ending scene (the intro technique): water and colour rise up the well, the five guardians come to the well square, Oma sings the whole song with everyone; victory screen with title of honour **„Quellenhüterin“**, then the **credits**; afterwards Elora stands at the well – free play | Victory screen and credits only |
-| D-M26-09 | Free play afterwards | The village stays celebrating (Born at the open well, guardians visit now and then), all side quests stay open, the save shows “Finale done”; the **spring trials** (world book §8) become a **milestone of their own** after Release 2's story | Spring trials inside M2.6 |
-| D-M26-10 | Reward of the Origin Spring | **No new ability**; Born gives a **dew crown** (hat: +1 health, all spring colours as a glow) and every guardian gives a small keepsake in the celebration | A sixth ability (larger, changes the base game, E-226) |
+| D-M26-09 | Free play afterwards | The village stays celebrating (Born at the open well, guardians visit now and then), all side quests stay open, the save shows “Finale done”; the **spring trials** (world book §8) become a **milestone of their own** after Release 2's story – **not chosen:** the owner took the alternative (E-381) | **Spring trials inside M2.6 – chosen** (E-381) |
+| D-M26-10 | Reward of the Origin Spring | **No new ability**; Born gives a **dew crown** (hat: +1 health, all spring colours as a glow); **no keepsakes** from the guardians (E-383) | A sixth ability (larger, changes the base game, E-226) |
 
 Texts (dialogues, the five lines of the well song, the ending) follow as a content draft
 `m2-6-content.md` for approval once the core decisions are made (as for chapters 4 and 5,
@@ -72,7 +77,7 @@ the owner decides.
 
 | # | Step | Content | Check |
 |---|---|---|---|
-| M2.6.0 | Drafts | Born (two variants), the Withered One curled up and in his colour stages, colour drops (five), the Origin Cave (well shaft, colour veins, heart before/after), the open well and the Origin Spring, dew crown, the ending scene (key pictures) | Your selection |
+| M2.6.0 ✅ (E-382, Born variant B) | Drafts | Born (two variants), the Withered One curled up and in his colour stages, colour drops (five), the Origin Cave (well shaft, colour veins, heart before/after), the open well and the Origin Spring, dew crown, the ending scene (key pictures) | Your selection |
 | M2.6.1 | Way to the well | Depending on D-M26-01: guardians remember their lines (dialogues after their chapter), Oma sings at the well, the lid opens (decor `well-sealed` → `well-open`), entrance to `well-shaft` | Tests |
 | M2.6.2 | Colour drops | Collectible colour drops that **float behind Elora** while carried (companion), are dropped by a hit and fly back to their place; delivering one at a zone counts it | Tests + sandbox |
 | M2.6.3 | Finale tech | `session/finale.rs` from the climax module: five rounds with grey waves and shadows, a drop per round at an ability spot, cave changes per colour (decor and light by flag), stage 2 with five note stones and the well song tune, failure back to the spring stone (colours stay) | Tests + sandbox |
@@ -81,7 +86,30 @@ the owner decides.
 | M2.6.6 | Ending | Ending scene (keyframes), victory screen „Quellenhüterin“, credits, back to the well square in free play | Your look |
 | M2.6.7 | Village after the finale | Born at the well, guardians visiting, calls, the celebration stays; save marked “finale done” | Tests |
 | M2.6.8 | Music and sounds | Music for the cave and the finale, an ending theme (CC0, presented for listening); sounds for colour drops, grey waves, the opening well, Born | Your listening test |
-| M2.6.9 | Acceptance | Play through the finale, save, continue; ending and free play | Your acceptance |
+| M2.6.9 | Trial tech | Trial mode in the session: start a section map in its harder version (extra enemies from map objects marked `trial`, enemy health and damage × factor), timer from entering to the exit, best time and medal in the save game, back to Born with the result; no healing changes (E-381) | Tests |
+| M2.6.10 | Trials content | Born's trial menu (all section maps of the five areas plus `well-shaft` and `origin-cave`, only those Elora has visited), extra enemies per map, medal limits computed from path length and running speed (a tool that measures the main path per map) | Tests + sandbox |
+| M2.6.11 | Acceptance | Play through the finale, save, continue; ending and free play; some trials with medals, limits adjusted | Your acceptance |
+
+## Spring trials (E-381)
+
+- **Where:** after the finale, Born at the open well in Tauwinkel offers the trials (a menu like
+  the shops: list of trials with best time and medal).
+- **Which:** one trial per **section map** of the five areas (Blütenwiesen to Sternschlucht, not
+  the guardian arenas – no guardian fights) plus `well-shaft` and `origin-cave`; a trial is
+  listed once Elora has been on that map.
+- **Harder:** the same map with **more enemies** (extra spawn objects marked for trials) and
+  **stronger enemies** (more health, more damage); healing stays as it is.
+- **One run:** the harder version is timed from the entrance to the exit of the map; dying or
+  leaving ends the run without a time.
+- **Rating:** the **best time** is saved; **bronze, silver, gold** for fixed limits, computed from
+  the main path length and Elora's running speed (values proposed per map, adjusted at the
+  acceptance).
+- **Elora** plays with her own level, equipment and skills; the trial does not change the save
+  game except best times and medals.
+- **Afterwards** Elora is back with Born, who shows the result. **Rewards:** medals only.
+
+Open (to be asked when building M2.6.9/M2.6.10): exact factors for stronger enemies, how many
+extra enemies, the medal formula, whether a trial uses its map's weather and darkness.
 
 ## Course of the finale (proposal)
 
@@ -116,8 +144,7 @@ the owner decides.
 - **Save game:** flag `finale.done`; the world map shows the Origin Spring; free play needs no
   new state.
 
-## Open for approval
+## Approved
 
-- The core decisions D-M26-01 to D-M26-10 (proposal or alternative).
-- The steps and order above, the course of the finale.
-- Map names `well-shaft`, `origin-cave`, `origin-heart` (English ids, E-358).
+- Core decisions (E-380, E-381), the steps and order, the course of the finale and the map names
+  `well-shaft`, `origin-cave`, `origin-heart` (2026-11-12).

@@ -1108,7 +1108,7 @@ fn lit_lanterns_protect_luma_through_three_verses_then_he_flees() {
     let (mut s, mut w) = climax_start();
     let mut phases = Vec::new();
     let kind = w.creature_kind("withered").unwrap();
-    climax_run(&mut s, &mut w, 140 * 50, true, |s, _| {
+    let events = climax_run(&mut s, &mut w, 140 * 50, true, |s, _| {
         if let Some(c) = &s.climax {
             let p = std::mem::discriminant(&c.phase);
             if phases.last() != Some(&p) {
@@ -1131,6 +1131,10 @@ fn lit_lanterns_protect_luma_through_three_verses_then_he_flees() {
     .map(|p| std::mem::discriminant(&p));
     assert_eq!(phases, names);
     assert!(w.creatures.iter().all(|x| x.kind != kind), "he is gone");
+    // once he has fled: the victory screen of the map's area (E-384; the test map lies in the
+    // Blütenwiesen, in the game it is the Sternschlucht)
+    let area = s.content.area_of("meadow-1").unwrap().id.clone();
+    assert!(events.contains(&SessionEvent::ChapterDone { area }));
     // walking into the zone again does not start it again
     climax_run(&mut s, &mut w, 10, false, |_, _| false);
     assert!(s.climax.is_none());

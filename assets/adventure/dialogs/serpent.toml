@@ -1,6 +1,15 @@
 # Sand Serpent after the fight (R2-M2.3, E-316)
 speaker = "serpent"
 
+# Finale (R2-M2.6, E-383): line 3 of the well song, in the order of the chapters
+[[start]]
+if = "quest finale active and flag well_song.lines = 2"
+node = "song_line"
+
+[[start]]
+if = "quest finale active and flag well_song.lines < 2"
+node = "song_early"
+
 [[start]]
 if = "flag serpent.talked"
 node = "later"
@@ -21,6 +30,20 @@ do = ["flag serpent.talked = 1", "flag freed.ember_spring = 1", "flag withered_o
 [[node]]
 id = "later"
 text = { de = "Sssso warm … Die Quelle summt wieder. Danke.", en = "Ssso warm … The spring is humming again. Thank you." }
+
+# Finale (R2-M2.6, E-383)
+[[node]]
+id = "song_line"
+text = { de = "*(rollt sich zusammen)* Sssie haben ihn nicht gehört. ‚Doch hören konnten sssie ihn nicht.‘ Ich habe ihn auch nicht gehört. Ich lag in der Sonne und dachte, die Wärme kommt von allein.", en = "*(coils up)* They did not hear him. ‘Yet they could not hear him.’ I did not hear him either. I lay in the sun and thought the warmth came by itself." }
+do = ["flag well_song.serpent = 1", "flag well_song.lines +1"]
+
+[[node]]
+id = "song_early"
+text = { de = "Ein Lied? Ich weiß nur ein Stück aus der Mitte – ohne den Anfang finde ich es nicht. Frag zuerst den Wurzelwächter.", en = "A song? I only know a piece from the middle – without the beginning I can't find it. Ask the Root Warden first." }
+
+[[bark]]
+if = "flag well_song.serpent and not quest finale done"
+text = { de = "… doch hören konnten sssie ihn nicht.", en = "… yet they could not hear him." }
 
 [[bark]]
 text = { de = "Ssss …", en = "Ssss …" }

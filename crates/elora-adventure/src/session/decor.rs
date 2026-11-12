@@ -11,6 +11,14 @@ pub const SPRINGS_FREED: &str = "springs_freed";
 /// Flag of a festival in the village: decor `…-party` (garlands, lanterns) only hangs then (E-301).
 pub const PARTY: &str = "party";
 
+/// Decor that changes with the story (R2-M2.6): base decor, then (flag, decor) from the latest
+/// stage to the earliest – the first set flag wins.
+const STAGES: &[(&str, &[(&str, &str)])] = &[(
+    // the old well in Tauwinkel: sealed → open after Oma's song → the Origin Spring
+    "well",
+    &[("finale.done", "origin-spring"), ("well.open", "well-open")],
+)];
+
 impl Session {
     /// Rearrange the decor according to the world state (after dialogs that set flags);
     /// `true` if it changed.
@@ -36,6 +44,13 @@ pub(super) fn adapt_decor(map: &mut Map, save: &SaveGame) {
     map.decor_back.retain(keep);
     map.decor_front.retain(keep);
     for d in map.decor_back.iter_mut().chain(map.decor_front.iter_mut()) {
+        if let Art::Builtin(name) = &d.art
+            && let Some((_, stages)) = STAGES.iter().find(|(base, _)| base == name)
+            && let Some((_, art)) = stages.iter().find(|(flag, _)| save.flag(flag) != 0)
+        {
+            d.art = Art::Builtin((*art).into());
+            continue;
+        }
         if let Art::Builtin(name) = &d.art
             && let Some(stem) = name.strip_suffix("-withered")
             && save.flag(&format!("freed.{}", stem.replace('-', "_"))) != 0
@@ -124,5 +139,26 @@ mod tests {
         recolor(&mut m, 5);
         assert_eq!(colourful(&m), 20, "all five springs");
         assert_eq!(m.decor_back[0].art, Art::Builtin("house-oma".into()));
+    }
+
+    /// The old well opens after Oma's song and becomes the Origin Spring after the finale.
+    #[test]
+    fn the_old_well_follows_the_story() {
+        let base = {
+            let mut m = Map::new("t", 4, 4);
+            m.decor_back = vec![Decor::new(Art::Builtin("well".into()), Vec2::ZERO)];
+            m
+        };
+        let mut save = Session::new_game(crate::Content::builtin()).save;
+        let art = |save: &SaveGame| {
+            let mut m = base.clone();
+            adapt_decor(&mut m, save);
+            m.decor_back[0].art.clone()
+        };
+        assert_eq!(art(&save), Art::Builtin("well".into()), "sealed");
+        save.set_flag("well.open", 1);
+        assert_eq!(art(&save), Art::Builtin("well-open".into()));
+        save.set_flag("finale.done", 1);
+        assert_eq!(art(&save), Art::Builtin("origin-spring".into()));
     }
 }
