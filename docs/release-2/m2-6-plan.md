@@ -50,7 +50,7 @@ Approved on 2026-11-12: **E-380** – the proposals of D-M26-01 to D-M26-08 and 
 | D-M26-07 | His new form and name | Drafts in M2.6.0: a tall clear drop with a crown of five coloured streams; name: **Born** (old word for spring and well) | Keeps no name (“the guardian of the Origin Spring”) |
 | D-M26-08 | Ending | Scripted ending scene (the intro technique): water and colour rise up the well, the five guardians come to the well square, Oma sings the whole song with everyone; victory screen with title of honour **„Quellenhüterin“**, then the **credits**; afterwards Elora stands at the well – free play | Victory screen and credits only |
 | D-M26-09 | Free play afterwards | The village stays celebrating (Born at the open well, guardians visit now and then), all side quests stay open, the save shows “Finale done”; the **spring trials** (world book §8) become a **milestone of their own** after Release 2's story – **not chosen:** the owner took the alternative (E-381) | **Spring trials inside M2.6 – chosen** (E-381) |
-| D-M26-10 | Reward of the Origin Spring | **No new ability**; Born gives a **dew crown** (hat: +1 health, all spring colours as a glow) and every guardian gives a small keepsake in the celebration | A sixth ability (larger, changes the base game, E-226) |
+| D-M26-10 | Reward of the Origin Spring | **No new ability**; Born gives a **dew crown** (hat: +1 health, all spring colours as a glow); **no keepsakes** from the guardians (E-383) | A sixth ability (larger, changes the base game, E-226) |
 
 Texts (dialogues, the five lines of the well song, the ending) follow as a content draft
 `m2-6-content.md` for approval once the core decisions are made (as for chapters 4 and 5,

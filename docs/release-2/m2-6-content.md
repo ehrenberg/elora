@@ -1,6 +1,6 @@
 # R2-M2.6 – Finale content (draft, M2.6.4)
 
-Status: **draft – waiting for approval** · Basis: [`m2-6-plan.md`](m2-6-plan.md), [`world-book.md`](world-book.md) §2, §4.6 and §5, E-380 to E-382
+Status: **approved (E-383)** · Basis: [`m2-6-plan.md`](m2-6-plan.md), [`world-book.md`](world-book.md) §2, §4.6 and §5, E-380 to E-382
 
 As for chapters 4 and 5 (E-346, E-377) the **German texts are up for approval**; the English
 ones are added when building them in. Conditions and effects use the notation of the content
@@ -22,12 +22,10 @@ stones, one note per guardian line (D-M26-05).
 | 5 | Kristella (Frostspitzen) | Komm, sing mit ihm, sing ihn wach – |
 | 6 | Luma (Sternschlucht) | dann fließen alle Farben nach. |
 
-**D-M26C-01 Song:** six lines as above (Oma's line plus one per guardian), proposal. The owner
-may change any line; line 1 is already in the game.
+**D-M26C-01 Song:** six lines as above – **approved** (E-383).
 
 **D-M26C-02 Tune:** five notes, one per guardian line, in the spring colours of the note stones
-(green, brown, gold, ice blue, violet), for example `c d e g c2` (proposal: rising, so it sounds
-like waking up).
+(green, brown, gold, ice blue, violet): **`c d e g c2`**, rising like waking up (E-383).
 
 ## 2. Characters
 
@@ -64,8 +62,8 @@ Reward: 800 experience, 300 gleam drops. Afterwards free play; Born offers the t
 | `drop_blossom` … `drop_star` | (carried, not in the bag) | Grüner / Brauner / Goldener / Eisblauer / Violetter Farbtropfen | „Ein Tropfen Farbe, der leise summt. Er will zurück.“ |
 | `dew_crown` | hat | Tau-Krone | +1 health, glows in all spring colours – „Von Born. Sie ist kühl wie ein Morgen am Brunnen.“ |
 
-**D-M26C-03 Keepsakes of the guardians** (D-M26-10, given in the celebration, proposal: decorative
-only, shown in the bag and as decoration in Elora's house):
+**D-M26C-03 Keepsakes of the guardians:** **none** (E-383) – only Born's dew crown. The proposal
+below is not built:
 
 | From | Id | Name (de) | Description (de) |
 |---|---|---|---|
@@ -107,8 +105,7 @@ only, shown in the bag and as decoration in Elora's house):
 >
 > Von jetzt an singen wir es wieder. Jeden Morgen.
 
-→ `quest finale done`; the guardians hand over their keepsakes (D-M26C-03); the dew crown comes
-from Born (below)
+→ `quest finale done`; the dew crown comes from Born (below)
 
 ### The guardians (one line each, after their chapter, while step `song` runs)
 
@@ -121,8 +118,9 @@ repeats the line as a call.
 - **Kristella**: „‚Komm, sing mit ihm, sing ihn wach.‘ – Das ist keine Bitte an ihn, kleiner Tropfen. Das ist eine Bitte an dich.“
 - **Luma** (at the ruins): *(summt)* „‚… dann fließen alle Farben nach.‘ Das ist das Ende. Jetzt hast du alles. Ich webe dir die Melodie in die Erinnerung, damit du sie nicht verlierst.“
 
-**D-M26C-04 Order:** the guardians can be visited in any order (proposal); the line count only
-matters at the end.
+**D-M26C-04 Order:** **fixed** (E-383): from chapter 1 to 5 – a guardian only remembers their line
+once the line before is known (`well_song.lines` = their number − 1); before that they say they
+do not know where the song begins and send Elora to the one before.
 
 ### Pip (when the well opens)
 - „Ich komm mit! Ich kann auch … also … ich kann sehr gut zugucken!“ – Oma: „Nein.“ – Pip: „… Okay.“
@@ -187,8 +185,8 @@ matters at the end.
 - Text: „Born singt wieder – und mit ihm das ganze Tauland.“
 - Title of honour: **„Quellenhüterin“**
 
-## 7. Open for the owner
+## 7. Approved
 
-- **D-M26C-01** the song text, **D-M26C-02** the tune, **D-M26C-03** the keepsakes,
-  **D-M26C-04** the order of the guardians.
-- All dialogue texts above.
+All texts and the choices D-M26C-01 to D-M26C-04 (E-383, 2026-11-12). Still to be written when
+building (short, from the approved style, shown to the owner at the acceptance): the guardians'
+“not yet” line for the fixed order.
