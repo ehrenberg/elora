@@ -107,14 +107,16 @@ goal = { type = "talk", who = "tueftel" }
 | Goal (`goal.type`) | Fields | done when … |
 |---|---|---|
 | `talk` | `who` | a dialog with the character starts |
-| `reach` | `map`, optional `zone` | Elora reaches the map or zone (zones come with A1.5) |
-| `defeat` | `kind`, `count`, optional `map` | that many enemies of the kind are defeated |
+| `reach` | `map`, optional `zone` | Elora reaches the map or zone – or has already been there (`visited:<map>`, `reached:<map>:<zone>`) |
+| `defeat` | `kind`, `count`, optional `map` | that many enemies of the kind are defeated; a guardian (`boss`) counts once it is defeated (`defeated.<kind>`), also before the step – then `count` must be 1 |
 | `collect` | `item`, `count` | Elora owns that many |
 | `bring` | `item`, `count`, `to` | Elora brings them to the character (they are handed over) |
-| `flag` | `flag`, optional `value` (1) | the flag has the value (switch, chest, door …) |
+| `flag` | `flag`, optional `value` (1) | the flag has at least the value (switch, chest, door …) |
 | `manual` | – | a dialog runs `quest <id> advance` |
 
 The quest book shows completed steps and the current one, further ones as “?” (E-251).
+
+**Order of steps (E-379):** players do things out of order. When a step becomes active (and when a save game is loaded) its goal is checked against the save game: items held, flags, maps and quest zones visited, guardians defeated all count, even if they happened before. `talk`, `bring` and ordinary enemies stay events – they can be repeated, so the content check demands that every character of a `talk`/`bring` goal has a dialog with an entry without a condition. A guardian's key loot (the spring spark) goes straight into the bag. Dialog rules of thumb: a dialog that rewards a hand-over checks `has <item>` too; an offer of a side quest must not depend on `quest <x> active` alone (it closes for good when that quest ends); a talk goal is used up by whichever node opens, so step-specific entries come first. Details: [`../release-2/quest-order-audit.md`](../release-2/quest-order-audit.md).
 
 ### Tunes (R2-M2.5, M2.5.6)
 

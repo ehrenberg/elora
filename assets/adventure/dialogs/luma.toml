@@ -6,13 +6,15 @@ speaker = "luma"
 if = "flag luma_protected and not flag luma.spark"
 node = "after_climax"
 
-[[start]]
-if = "quest star_fragments step bring and has star_fragment 8"
-node = "fragments"
-
+# the song before the fragments: talking finishes both quests at once, and only the song
+# sets a flag (E-379)
 [[start]]
 if = "quest luma_song step sing"
 node = "song_complete"
+
+[[start]]
+if = "quest star_fragments step bring and has star_fragment 8"
+node = "fragments"
 
 [[start]]
 if = "flag luma.spark"

@@ -1,24 +1,25 @@
 # Tüftel (A1.9, prologue)
 speaker = "tueftel"
 
+# only with the spark: the reward belongs to handing it over (E-379)
 [[start]]
-if = "quest sternschlucht step spark"
+if = "quest sternschlucht step spark and has spring_spark"
 node = "spark5"
 
 [[start]]
-if = "quest frostspitzen step spark"
+if = "quest frostspitzen step spark and has spring_spark"
 node = "spark4"
 
 [[start]]
-if = "quest glutsand step spark"
+if = "quest glutsand step spark and has spring_spark"
 node = "spark3"
 
 [[start]]
-if = "quest murmelwald step spark"
+if = "quest murmelwald step spark and has spring_spark"
 node = "spark2"
 
 [[start]]
-if = "quest blossom_spring step spark"
+if = "quest blossom_spring step spark and has spring_spark"
 node = "spark"
 
 [[start]]

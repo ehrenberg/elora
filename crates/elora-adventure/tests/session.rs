@@ -207,6 +207,44 @@ fn defeated_boss_sets_a_flag() {
     assert!(s.save.holds(&s.content, "flag defeated.bumblebear"));
 }
 
+/// A guardian's spring spark cannot be left lying around: it goes straight into the bag,
+/// ordinary loot stays in the world (E-379).
+#[test]
+fn guardian_spark_goes_straight_into_the_bag() {
+    let (mut s, mut w) = start();
+    let kind = w.creature_kind("bumblebear").unwrap();
+    let id = w.add_creature(kind, Vec2::new(300.0, 200.0)).unwrap();
+    w.step(&[PlayerInput::default()]);
+    let at = Vec2::new(300.0, 200.0);
+    for (n, item) in ["spring_spark", "amber"].into_iter().enumerate() {
+        w.loot.push(elora_sim::creature::Loot {
+            id: 9000 + u32::try_from(n).unwrap(),
+            item: item.into(),
+            count: 1,
+            pos: at,
+            vel: Vec2::ZERO,
+            age: 0,
+        });
+    }
+    w.events.push(elora_sim::Event::CreatureDeath {
+        id,
+        kind,
+        pos: at,
+        killer: Some(s.player),
+    });
+    let ev = s.tick(&mut w, false);
+    assert_eq!(s.save.count("spring_spark"), 1);
+    assert!(ev.contains(&SessionEvent::Notice(Notice::Item {
+        id: "spring_spark".into(),
+        count: 1
+    })));
+    assert!(
+        w.loot.iter().any(|l| l.item == "amber"),
+        "ordinary loot stays"
+    );
+    assert!(!w.loot.iter().any(|l| l.item == "spring_spark"));
+}
+
 #[test]
 fn unlocks_from_dialogs_reach_the_running_world() {
     let (mut s, mut w) = start();

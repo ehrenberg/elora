@@ -1032,3 +1032,172 @@ fn chapter_five_runs_from_the_gorge_to_the_old_well() {
     let (conv, _) = Conversation::start(&c, &mut g, "glimmer").unwrap();
     assert_eq!(conv.node, "village");
 }
+
+// ---------------------------------------------------------------- Order of quest steps (E-379)
+
+/// Defeat the guardian `kind` on `map` like the session does (event, then the key loot).
+fn defeat_guardian(c: &Content, g: &mut SaveGame, kind_name: &str, map: &str) {
+    g.location.map = map.into();
+    let kind = c
+        .creatures
+        .iter()
+        .position(|k| k.name == kind_name)
+        .unwrap();
+    g.on_event(
+        c,
+        &c.creatures,
+        0,
+        &Event::CreatureDeath {
+            id: 1,
+            kind,
+            pos: Vec2::ZERO,
+            killer: Some(0),
+        },
+    );
+}
+
+/// Playtest 2026-11-12: the Bumblebear was calmed before Wabe was asked – the guardian step
+/// waited for a fight that could never happen again.
+#[test]
+fn bumblebear_defeated_before_its_step_still_counts() {
+    let (c, mut g) = game();
+    g.run(&c, &["quest blossom_spring start".into()]);
+    g.on_reach(&c, "meadow-2", None);
+    assert!(g.holds(&c, "quest blossom_spring step wabe"));
+    // past Wabe straight to the spring, the guardian falls
+    g.on_reach(&c, "meadow-3", None);
+    g.on_reach(&c, "meadow-arena", None);
+    defeat_guardian(&c, &mut g, "bumblebear", "meadow-arena");
+    g.add_item(&c, "spring_spark", 1).unwrap();
+    assert_eq!(g.flag("defeated.bumblebear"), 1);
+    assert!(
+        g.holds(&c, "quest blossom_spring step wabe"),
+        "still at Wabe"
+    );
+    // Wabe: roots, spring and guardian are already done
+    Conversation::start(&c, &mut g, "wabe").unwrap();
+    assert!(g.holds(&c, "quest blossom_spring step spark"));
+    let (conv, _) = Conversation::start(&c, &mut g, "tueftel").unwrap();
+    assert_eq!(conv.node, "spark");
+    assert!(g.holds(&c, "quest blossom_spring step party"));
+}
+
+/// Every step whose goal leaves a trace counts when it was done before the step was active;
+/// the other goals (talk, bring, ordinary enemies) can be repeated (see `check::story`).
+#[test]
+fn every_quest_step_counts_when_done_out_of_order() {
+    use elora_adventure::quest::{Goal, QuestState};
+    let c = Content::builtin();
+    let mut checked = 0;
+    for q in &c.quests {
+        for (i, s) in q.step.iter().enumerate() {
+            let (_, mut g) = game();
+            // the goal happens first – the quest is not even started
+            match &s.goal {
+                Goal::Collect { item, count } => g.add_item(&c, item, *count).unwrap(),
+                Goal::Flag { flag, value } => g.set_flag(flag, *value),
+                Goal::Reach { map, zone } => {
+                    g.on_reach(&c, map, zone.as_deref());
+                }
+                Goal::Defeat { kind, map, .. } if elora_adventure::quest::is_guardian(&c, kind) => {
+                    defeat_guardian(&c, &mut g, kind, map.as_deref().unwrap_or("meadow-1"));
+                }
+                _ => continue,
+            }
+            g.quests.insert(
+                q.id.clone(),
+                QuestState {
+                    status: QuestStatus::Active,
+                    step: i,
+                    progress: 0,
+                },
+            );
+            g.update_quests(&c);
+            let st = g.quest(&q.id).unwrap();
+            assert!(
+                st.status == QuestStatus::Done || st.step > i,
+                "`{}` step `{}` does not count when done early",
+                q.id,
+                s.id
+            );
+            checked += 1;
+        }
+    }
+    assert!(checked >= 30, "only {checked} steps checked");
+}
+
+/// A save game from before the fix: guardian defeated, quest stuck at an earlier step, and
+/// the spring spark never picked up. Loading repairs it.
+#[test]
+fn a_stuck_save_game_repairs_itself_on_load() {
+    use elora_adventure::quest::QuestState;
+    let (c, mut g) = game();
+    g.quests.insert(
+        "blossom_spring".into(),
+        QuestState {
+            status: QuestStatus::Active,
+            step: 4, // guardian
+            progress: 0,
+        },
+    );
+    g.set_flag("defeated.bumblebear", 1);
+    g.defeated.insert("enemy:meadow-arena:bumblebear".into());
+    let s = elora_adventure::Session::new(c.clone(), g);
+    assert!(s.save.holds(&c, "quest blossom_spring step spark"));
+    assert_eq!(s.save.count("spring_spark"), 1, "the lost spark is back");
+    // nothing changes on a sound save game
+    let (_, g) = game();
+    let s = elora_adventure::Session::new(c.clone(), g.clone());
+    assert_eq!(s.save, g);
+}
+
+/// Tüftel only builds when the spark is really there (E-379).
+#[test]
+fn tueftel_needs_the_spark_for_his_reward() {
+    let (c, mut g) = game();
+    g.run(&c, &["quest blossom_spring start".into()]);
+    if let Some(st) = g.quests.get_mut("blossom_spring") {
+        st.step = 5; // spark
+    }
+    let (conv, _) = Conversation::start(&c, &mut g, "tueftel").unwrap();
+    assert_eq!(conv.node, "workshop");
+    assert!(!g.abilities().has(elora_sim::Ability::HookJerk));
+    assert!(g.holds(&c, "quest blossom_spring step spark"));
+}
+
+/// Klonk's crystal quest is not lost when chapter 4 ends before Elora visits him (E-379).
+#[test]
+fn klonk_offers_the_crystals_after_chapter_four_too() {
+    let (c, mut g) = game();
+    for q in ["blossom_spring", "murmelwald", "glutsand", "frostspitzen"] {
+        g.run(
+            &c,
+            &[format!("quest {q} start"), format!("quest {q} finish")],
+        );
+    }
+    g.set_flag("klonk.grenade", 1);
+    g.set_flag("klonk.resin", 1);
+    g.set_flag("klonk.laser", 1);
+    assert!(g.holds(&c, "quest frostspitzen done"));
+    let (conv, _) = Conversation::start(&c, &mut g, "klonk").unwrap();
+    assert_eq!(conv.node, "crystals");
+    assert!(g.holds(&c, "quest clear_crystals active"));
+}
+
+/// The content check rejects step goals that could be missed (E-379).
+#[test]
+fn quest_order_is_checked() {
+    let quests = Sources::builtin().quests.replace(
+        "kind = \"bumblebear\", count = 1",
+        "kind = \"bumblebear\", count = 2",
+    );
+    let quests: &'static str = Box::leak(quests.into_boxed_str());
+    let e = Content::load(&Sources {
+        quests,
+        ..Sources::builtin()
+    })
+    .map(|_| ())
+    .unwrap_err()
+    .to_string();
+    assert!(e.contains("stays defeated"), "{e}");
+}

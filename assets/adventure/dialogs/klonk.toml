@@ -19,7 +19,8 @@ if = "quest clear_crystals step bring and has clear_crystal 8"
 node = "crystals_here"
 
 [[start]]
-if = "quest frostspitzen active and quest clear_crystals new"
+# also after chapter 4, so the side quest cannot be missed (E-379)
+if = "not quest frostspitzen new and quest clear_crystals new"
 node = "crystals"
 
 [[start]]
