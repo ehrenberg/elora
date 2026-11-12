@@ -9,7 +9,7 @@ struct Post {
     // w: saturation (1 = unchanged, 0 = gray)
     params: vec4<f32>,
     // Weather (R2-W1): tint (rgb, share), fog (rgb, density), x: darkening, y: lightning,
-    // z: frost border (cold, E-342)
+    // z: frost border (cold, E-342), w: night darkness (R2-M2.5, M2.5.1)
     tint: vec4<f32>,
     fog: vec4<f32>,
     extra: vec4<f32>,
@@ -18,6 +18,27 @@ struct Post {
 @group(0) @binding(0) var scene: texture_2d<f32>;
 @group(0) @binding(1) var scene_sampler: sampler;
 @group(0) @binding(2) var<uniform> post: Post;
+
+// Lights of the night: count in head.x; per light xy = centre (0..1 of the screen),
+// z = radius in screen heights, w = intensity.
+struct Lights {
+    head: vec4<f32>,
+    items: array<vec4<f32>, 32>,
+};
+
+@group(0) @binding(3) var<uniform> lights: Lights;
+
+// How lit the point is (0..1): soft circles, the brightest light wins.
+fn light_at(uv: vec2<f32>, aspect: f32) -> f32 {
+    var lit = 0.0;
+    let n = u32(lights.head.x);
+    for (var i = 0u; i < n; i = i + 1u) {
+        let l = lights.items[i];
+        let d = length((uv - l.xy) * vec2<f32>(aspect, 1.0)) / max(l.z, 0.0001);
+        lit = max(lit, l.w * (1.0 - smoothstep(0.45, 1.0, d)));
+    }
+    return lit;
+}
 
 struct VertexOut {
     @builtin(position) clip: vec4<f32>,
@@ -62,6 +83,15 @@ fn fs_main(in: VertexOut) -> @location(0) vec4<f32> {
     let fog = clamp(post.fog.a * mix(0.35, 1.0, uv.y), 0.0, 1.0);
     rgb = mix(rgb, post.fog.rgb, fog);
     rgb = min(rgb + vec3<f32>(post.extra.y * 0.55), vec3<f32>(1.0));
+    // Night: dark and a little blue outside the lights
+    let night = post.extra.w;
+    if (night > 0.0) {
+        let lit = light_at(uv, aspect);
+        let shade = night * (1.0 - lit);
+        rgb = mix(rgb, rgb * vec3<f32>(0.6, 0.66, 1.0), night * 0.45);
+        // full night is almost black outside the lights (light falls off softly towards it)
+        rgb = rgb * mix(1.0, 0.025, shade * shade * (3.0 - 2.0 * shade));
+    }
     // Frost border: frost flowers grow in from the edges and corners, the world gets cooler
     let frost = post.extra.z;
     if (frost > 0.0) {

@@ -1,6 +1,6 @@
 //! Behaviour dispatch: one tick per creature, then movement and the collected effects.
 
-use super::{air, diver, ground, grounded, leaper, queen, serpent, turret, warden};
+use super::{air, diver, ground, grounded, leaper, night, queen, serpent, turret, warden};
 use crate::collision::Collision;
 use crate::creature::{Behavior, Creature, CreatureKind, CreatureShot};
 use crate::event::Event;
@@ -21,6 +21,10 @@ pub(super) struct Ctx<'a> {
     pub(super) chars: &'a [(usize, Vec2)],
     /// Creatures currently pulled on by a player (Root Warden tug of war).
     pub(super) tuggers: &'a [u32],
+    /// Light spots of the night (R2-M2.5): centre and radius.
+    pub(super) lights: &'a [(Vec2, f32)],
+    /// Current tick (hits of this tick).
+    pub(super) tick: u64,
     pub(super) shots: &'a mut Vec<CreatureShot>,
     pub(super) events: &'a mut Vec<Event>,
     pub(super) fx: &'a mut Effects,
@@ -31,6 +35,10 @@ pub(super) struct Ctx<'a> {
 pub(super) struct Effects {
     /// Creatures that die without loot (shattered, burst, fell into death tiles).
     pub(super) died: Vec<u32>,
+    /// Creatures defeated without a hit (echo faded in the light): loot for the nearest figure.
+    pub(super) defeated: Vec<u32>,
+    /// Echoes sent out by dark mirrors: mirror id, kind name, position.
+    pub(super) echoes: Vec<(u32, String, Vec2)>,
     /// Helpers of the guardians: owner, kind name, at most this many, position.
     pub(super) summons: Vec<(u32, String, u32, Vec2)>,
     /// Root thrusts (centre on the ground, width, height, damage).
@@ -55,6 +63,8 @@ pub(super) enum Step {
 impl World {
     pub(super) fn tick_behavior(&mut self, chars: &[(usize, Vec2)]) {
         let tuggers = self.tuggers();
+        let lights = self.light_spots();
+        let tick = self.tick;
         let Self {
             creatures,
             creature_kinds,
@@ -85,6 +95,8 @@ impl World {
                 collision,
                 chars,
                 tuggers: &tuggers,
+                lights: &lights,
+                tick,
                 shots: creature_shots,
                 events,
                 fx: &mut fx,
@@ -99,12 +111,8 @@ impl World {
             let death = collision.move_box_platforms(&mut pos, &mut vel, size, 0.0, !diving)
                 && !diving
                 && !follower;
-            if matches!(kind.behavior, Behavior::Walker { .. }) && wanted_x != 0.0 && vel.x == 0.0 {
-                c.facing = -c.facing;
-            }
-            // snow chunk bursts against the wall
-            if matches!(kind.behavior, Behavior::Roller { .. }) && wanted_x != 0.0 && vel.x == 0.0 {
-                fx.died.push(c.id);
+            if wanted_x != 0.0 && vel.x == 0.0 {
+                bumped(kind, c, &mut fx, events);
             }
             c.pos = pos;
             c.vel = vel;
@@ -118,6 +126,17 @@ impl World {
                 self.kill_creature(i, None, false);
             }
         }
+        for id in fx.defeated {
+            if let Some(i) = self.creature_index(id) {
+                let at = self.creatures[i].pos;
+                let by = chars
+                    .iter()
+                    .min_by(|a, b| a.1.distance(at).total_cmp(&b.1.distance(at)))
+                    .map(|&(slot, _)| slot);
+                self.kill_creature(i, by, true);
+            }
+        }
+        self.mirror_echoes(fx.echoes);
         self.root_spikes(&fx.spikes, chars);
         self.root_walls(&fx.walls, chars);
         self.quicksand_patches(&fx.sands);
@@ -217,5 +236,74 @@ fn dispatch(cx: &mut Ctx) -> Step {
             drop_damage,
             glow_ms,
         } => air::flyer(cx, speed, sight, hover, drop_ms, drop_damage, glow_ms),
+        Behavior::Moth {
+            sight,
+            speed,
+            flutter,
+        } => night::moth(cx, sight, speed, flutter),
+        Behavior::Goblin {
+            sight,
+            wake_ms,
+            speed,
+            daze_ms,
+        } => night::goblin(cx, sight, wake_ms, speed, daze_ms),
+        Behavior::Mirror {
+            sight,
+            ref spawn,
+            rest_ms,
+        } => night::mirror(cx, sight, spawn, rest_ms),
+        Behavior::Echo { delay_ms, fade_ms } => night::echo(cx, delay_ms, fade_ms),
+        Behavior::Shade { speed, fade_ms } => night::shade(cx, speed, fade_ms),
+        Behavior::Puppet => Step::Hold,
+    }
+}
+
+impl World {
+    /// Dark mirrors (R2-M2.5): send out their echoes, and rest once their echo is gone.
+    fn mirror_echoes(&mut self, sent: Vec<(u32, String, Vec2)>) {
+        for (mirror, name, pos) in sent {
+            let echo = self
+                .creature_kind(&name)
+                .and_then(|kind| self.add_creature(kind, pos));
+            if let Some(m) = self.creatures.iter_mut().find(|c| c.id == mirror) {
+                m.count = echo.unwrap_or(0);
+                if echo.is_none() {
+                    m.mode = crate::creature::mirror::REST;
+                    m.timer = 0;
+                }
+            }
+            if let Some(id) = echo {
+                self.events.push(Event::CreatureAct {
+                    id,
+                    pos,
+                    act: crate::event::CreatureAct::Wake,
+                });
+            }
+        }
+        let alive: Vec<u32> = self.creatures.iter().map(|c| c.id).collect();
+        for m in &mut self.creatures {
+            if matches!(
+                self.creature_kinds[m.kind].behavior,
+                Behavior::Mirror { .. }
+            ) && m.mode == crate::creature::mirror::OUT
+                && !alive.contains(&m.count)
+            {
+                m.mode = crate::creature::mirror::REST;
+                m.timer = 0;
+            }
+        }
+    }
+}
+
+/// A creature that wanted to move sideways stopped at a wall: walkers turn, snow chunks burst,
+/// rolling stone goblins are dazed.
+fn bumped(kind: &CreatureKind, c: &mut Creature, fx: &mut Effects, events: &mut Vec<Event>) {
+    match kind.behavior {
+        Behavior::Walker { .. } => c.facing = -c.facing,
+        Behavior::Roller { .. } => fx.died.push(c.id),
+        Behavior::Goblin { daze_ms, .. } if c.mode == crate::creature::goblin::ROLL => {
+            night::daze(c, daze_ms, events);
+        }
+        _ => {}
     }
 }

@@ -129,6 +129,15 @@ Only in the adventure and in the spring fight (E-223). Starting values for playt
 | A-40 | Interval between snowballs | **350 ms** | | D-M24-06 |
 | A-41 | Rest after an avalanche | **8000 ms** | Before the same slope goes off again | D-M24-06 |
 | A-42 | Pulling up on the climbing wall | **0** (strengthened **1.6** units/tick) | After Tüftel's work with the spring spark of the frost spring (flag `eisgriff.stark`): pressing towards the wall pulls Elora up, ice grip cling duration A-06 doubled | D-M24-03 |
+| A-43 | Drifting speed of the star islands | **1.2** units/tick | Back and forth between the island zone and `<id>-to`, slower at both ends | R2-M2.5, E-364 |
+| A-44 | Sinking island: sinking speed | **0.8** units/tick | While someone stands on it (`sink` in the id) | R2-M2.5 |
+| A-45 | Sinking island: rising speed | **0.5** units/tick | When nobody stands on it any more | R2-M2.5 |
+| A-46 | Sinking island: deepest point | **160** units | Below its path | R2-M2.5 |
+| A-47 | Updraft lift while gliding | **0.85** units/tick² (playtest, previously 1.1) | Beats gravity (0.5): gliding Elora rises | R2-M2.5, E-364 |
+| A-48 | Updraft: fastest rise while gliding | **5** units/tick (playtest, previously 7) | Without gliding half of it | R2-M2.5 |
+| A-49 | Updraft lift without gliding | **0.62** units/tick² (playtest, previously 0.25 = only braking) | Elora rises slowly without gliding too | R2-M2.5 |
+| A-50 | Note stone and star bridges stay lit | **6000 ms** | After touching the stone; stone and bridges flicker in the last 1.5 s | R2-M2.5, E-364 |
+| A-51 | Star lantern stays lit | **12000 ms** | After touching it; flickers in the last 1.5 s; its light (170 units) dissolves grey shadows | R2-M2.5, E-362 |
 
 ## F. Rules from follow-up decisions
 

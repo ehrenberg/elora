@@ -23,8 +23,11 @@ fn file_in_config(name: &str) -> PathBuf {
 
 /// Logs to stderr and to [`LOG_FILE`] (overwritten on every start).
 pub fn init_logging() {
-    let filter = tracing_subscriber::EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| "info,wgpu_core=warn,wgpu_hal=warn".into());
+    // the PulseAudio client reports every closed connection as an error, also the probe
+    // connections when the audio output is opened (E-375)
+    let filter = tracing_subscriber::EnvFilter::try_from_default_env().unwrap_or_else(|_| {
+        "info,wgpu_core=warn,wgpu_hal=warn,pulseaudio=warn,pulseaudio::client::reactor=off".into()
+    });
     let builder = tracing_subscriber::fmt()
         .with_env_filter(filter)
         .with_ansi(false);

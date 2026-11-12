@@ -170,6 +170,8 @@ pub struct Collision {
     pub wind: f32,
     /// Wetness of the ground (0..1, R2-W1): reduces the grip.
     pub wet: f32,
+    /// Floating islands and updrafts (R2-M2.5, M2.5.2, adventure only).
+    pub movers: crate::island::Movers,
 }
 
 impl Collision {
@@ -190,6 +192,7 @@ impl Collision {
             hook_wilt: None,
             wind: 0.0,
             wet: 0.0,
+            movers: crate::island::Movers::default(),
         }
     }
 
@@ -287,6 +290,9 @@ impl Collision {
     fn lands_on_platform(&self, x: f32, half_w: f32, prev_bottom: f32, new_bottom: f32) -> bool {
         if new_bottom <= prev_bottom {
             return false;
+        }
+        if self.movers.lands(x, half_w, prev_bottom, new_bottom) {
+            return true;
         }
         let ty = round_to_int(new_bottom).div_euclid(TILE_SIZE);
         if round_to_int(prev_bottom).div_euclid(TILE_SIZE) >= ty {

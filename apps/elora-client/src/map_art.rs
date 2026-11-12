@@ -82,6 +82,12 @@ struct Specials {
     belt_arrow: Mesh,
     /// Hook flower fresh and wilted (R2-M2.1).
     hook_point: [Mesh; 2],
+    /// Star island drifting and sinking (R2-M2.5, M2.5.2).
+    island: [Mesh; 2],
+    /// Note stone dark and lit (M2.5.3).
+    note_stone: [Mesh; 2],
+    /// Star lantern dark and lit (M2.5.5).
+    lantern: [Mesh; 2],
 }
 
 /// All built-in map graphics.
@@ -171,6 +177,18 @@ impl MapArt {
             include_bytes!("../../../assets/map/tiles/hookpoint.svg"),
             "hookpoint",
         );
+        let island = svg(
+            include_bytes!("../../../assets/map/tiles/star-island.svg"),
+            "star-island",
+        );
+        let note = svg(
+            include_bytes!("../../../assets/map/tiles/note-stone.svg"),
+            "note-stone",
+        );
+        let lantern = svg(
+            include_bytes!("../../../assets/map/tiles/star-lantern.svg"),
+            "star-lantern",
+        );
         let specials = Specials {
             spikes: part(&death, "up", &file("death")),
             planks: ["mid", "left", "right", "single"].map(|p| part(&plank, p, &file("platform"))),
@@ -179,6 +197,9 @@ impl MapArt {
             belt: part(&belt, "base", &file("conveyor")),
             belt_arrow: part(&belt, "arrow", &file("conveyor")),
             hook_point: ["fresh", "wilted"].map(|p| part(&hook, p, &file("hookpoint"))),
+            island: ["drift", "sink"].map(|p| part(&island, p, &file("star-island"))),
+            note_stone: ["dark", "lit"].map(|p| part(&note, p, &file("note-stone"))),
+            lantern: ["dark", "lit"].map(|p| part(&lantern, p, &file("star-lantern"))),
         };
         let builtin = DECOR_FILES
             .iter()
@@ -640,6 +661,163 @@ pub fn draw_hook_point(batch: &mut ShapeBatch, art: &MapArt, min: Vec2, active: 
     let mesh = &art.specials.hook_point[usize::from(!active)];
     batch.draw_mesh(mesh, &t, &Tint::default());
 }
+
+/// Width of the star island graphic (units).
+const ISLAND_ART_WIDTH: f32 = 180.0;
+
+/// Vertical scale of the star island graphic for an island of width `w`.
+fn island_scale(w: f32) -> (f32, f32) {
+    let sx = w / ISLAND_ART_WIDTH;
+    (sx, sx.clamp(0.6, 1.3))
+}
+
+/// Where the glowing star crystal hangs below an island (its light, M2.5.2).
+pub fn island_crystal(min: Vec2, size: Vec2) -> Vec2 {
+    min + Vec2::new(size.x / 2.0, 66.0 * island_scale(size.x).1)
+}
+
+/// Star island (M2.5.2): `min` = top-left corner of the island (walkable surface), stretched to
+/// its width; thin islands keep a little depth.
+pub fn draw_island(batch: &mut ShapeBatch, art: &MapArt, min: Vec2, size: Vec2, sinks: bool) {
+    let (sx, sy) = island_scale(size.x);
+    let t = Affine::translate(min + Vec2::new(size.x / 2.0, 0.0)).then(Affine::scale(sx, sy));
+    batch.draw_mesh(
+        &art.specials.island[usize::from(sinks)],
+        &t,
+        &Tint::default(),
+    );
+}
+
+/// Size of a note stone in the world (its graphic is about 60 × 84).
+const NOTE_STONE_SCALE: f32 = 0.6;
+
+/// Note stone (M2.5.3) standing at the bottom centre of its touch area; `light` 0..1 (lit,
+/// fading, flickering before it goes out).
+pub fn draw_note_stone(batch: &mut ShapeBatch, art: &MapArt, min: Vec2, size: Vec2, light: f32) {
+    let foot = min + Vec2::new(size.x / 2.0, size.y);
+    if light > 0.0 {
+        let centre = foot - Vec2::new(0.0, 40.0 * NOTE_STONE_SCALE);
+        let mut glow = STARLIGHT;
+        glow.0[3] = 0.3 * light;
+        batch.fill_circle(centre, 46.0 * NOTE_STONE_SCALE, glow);
+        glow.0[3] = 0.25 * light;
+        batch.fill_circle(centre, 30.0 * NOTE_STONE_SCALE, glow);
+    }
+    let t = Affine::translate(foot).then(Affine::scale(NOTE_STONE_SCALE, NOTE_STONE_SCALE));
+    let mesh = &art.specials.note_stone[usize::from(light > 0.5)];
+    batch.draw_mesh(mesh, &t, &Tint::default());
+}
+
+/// Height of the star lantern drawing (`assets/map/tiles/star-lantern.svg`, units).
+const LANTERN_HEIGHT: f32 = 140.0;
+
+/// Star lantern (M2.5.5) filling the height of its touch area, standing at its bottom centre;
+/// `light` 0..1 (lit, fading, flickering before it goes out).
+pub fn draw_lantern(batch: &mut ShapeBatch, art: &MapArt, min: Vec2, size: Vec2, light: f32) {
+    let foot = min + Vec2::new(size.x / 2.0, size.y);
+    let scale = size.y / LANTERN_HEIGHT;
+    if light > 0.0 {
+        let centre = foot - Vec2::new(0.0, 100.0 * scale);
+        let mut glow = STARLIGHT;
+        glow.0[3] = 0.25 * light;
+        batch.fill_circle(centre, 70.0 * scale, glow);
+        glow.0[3] = 0.3 * light;
+        batch.fill_circle(centre, 36.0 * scale, glow);
+    }
+    let t = Affine::translate(foot).then(Affine::scale(scale, scale));
+    let mesh = &art.specials.lantern[usize::from(light > 0.5)];
+    batch.draw_mesh(mesh, &t, &Tint::default());
+}
+
+/// Star bridge (M2.5.3): glowing translucent plank with sparkles along the top edge of its
+/// area; `light` 0..1 (fading in, flickering before it goes out).
+pub fn draw_star_bridge(batch: &mut ShapeBatch, min: Vec2, size: Vec2, light: f32, time: f32) {
+    if light <= 0.0 {
+        return;
+    }
+    let max = Vec2::new(min.x + size.x, min.y + 14.0);
+    let mut glow = STARLIGHT;
+    glow.0[3] = 0.25 * light;
+    batch.fill_rounded_rect(
+        min - Vec2::new(8.0, 10.0),
+        max + Vec2::new(8.0, 12.0),
+        16.0,
+        glow,
+    );
+    let mut edge = OUTLINE;
+    edge.0[3] = 0.8 * light;
+    batch.fill_rounded_rect(
+        min - Vec2::new(1.5, 1.5),
+        max + Vec2::new(1.5, 1.5),
+        8.5,
+        edge,
+    );
+    let mut plank = STARLIGHT;
+    plank.0[3] = 0.85 * light;
+    batch.fill_rounded_rect(min, max, 7.0, plank);
+    let mut x = min.x + 20.0;
+    while x < max.x - 10.0 {
+        let twinkle = 0.6 + 0.4 * (time * 3.0 + x * 0.05).sin();
+        let star = Color([1.0, 1.0, 1.0, light * twinkle]);
+        let r = 6.5 * twinkle;
+        let c = Vec2::new(x, min.y + 7.0);
+        batch.fill_polygon(
+            &[
+                c + Vec2::new(0.0, -r),
+                c + Vec2::new(r * 0.3, -r * 0.3),
+                c + Vec2::new(r, 0.0),
+                c + Vec2::new(r * 0.3, r * 0.3),
+                c + Vec2::new(0.0, r),
+                c + Vec2::new(-r * 0.3, r * 0.3),
+                c + Vec2::new(-r, 0.0),
+                c + Vec2::new(-r * 0.3, -r * 0.3),
+            ],
+            star,
+        );
+        x += 40.0;
+    }
+}
+
+const STARLIGHT: Color = Color::hex(0xfff3b0);
+
+/// Updraft (M2.5.2): a light violet column with arcs drifting upwards.
+pub fn draw_updraft(batch: &mut ShapeBatch, min: Vec2, size: Vec2, time: f32) {
+    let max = min + size;
+    batch.fill_rect_vgradient(min, max, UPDRAFT_TOP, UPDRAFT_BOTTOM);
+    let gap = 56.0;
+    let columns = (size.x / 64.0).ceil().max(1.0);
+    let step = size.x / columns;
+    let half_width = (step * 0.3).min(22.0);
+    let mut y = max.y - (time * 70.0) % gap;
+    let mut odd = false;
+    while y > min.y + 8.0 {
+        // fade in at the bottom and out at the top
+        let height = ((y - min.y) / size.y).clamp(0.0, 1.0);
+        let mut color = UPDRAFT_ARC;
+        color.0[3] = (height * (1.0 - height) * 4.0).min(1.0) * 0.55;
+        let mut column = 0.0;
+        while column < columns {
+            let centre = min.x + step * (column + 0.5) + if odd { 6.0 } else { -6.0 };
+            let arc: Vec<Vec2> = (0..=8)
+                .map(|i| {
+                    let along = i as f32 / 8.0;
+                    Vec2::new(
+                        centre - half_width + 2.0 * half_width * along,
+                        y - (along * std::f32::consts::PI).sin() * half_width * 0.8,
+                    )
+                })
+                .collect();
+            batch.stroke_polyline(&arc, 3.0, color);
+            column += 1.0;
+        }
+        y -= gap;
+        odd = !odd;
+    }
+}
+
+const UPDRAFT_TOP: Color = Color([0.85, 0.78, 0.97, 0.0]);
+const UPDRAFT_BOTTOM: Color = Color([0.85, 0.78, 0.97, 0.16]);
+const UPDRAFT_ARC: Color = Color([0.65, 0.48, 0.88, 1.0]);
 
 /// Effect of the animations on a decoration object.
 #[derive(Debug, Clone, Copy)]

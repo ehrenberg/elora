@@ -107,7 +107,39 @@ pub fn story(c: &Content) -> Result<(), String> {
 
 /// Heat and cold bar (`[temperature]` in `worldmap.toml`): times, factors, zone prefixes and
 /// weather keys; an area is hot or cold, not both.
+/// Map sections of the world map (R2-WM): a path inside 0..1, maps of the own area, each map
+/// once.
+fn sections(c: &Content) -> Result<(), String> {
+    let mut seen = std::collections::BTreeSet::new();
+    for a in &c.areas {
+        for s in &a.sections {
+            let at = format!("worldmap.toml area `{}`, section `{}`", a.id, s.map);
+            if !s.map.starts_with(&a.maps) {
+                return Err(format!("{at}: map does not belong to the area"));
+            }
+            if s.path.is_empty() || s.path.iter().flatten().any(|v| !(0.0..=1.0).contains(v)) {
+                return Err(format!("{at}: path empty or outside 0..1"));
+            }
+            if !seen.insert(s.map.as_str()) {
+                return Err(format!("{at}: map has two sections"));
+            }
+        }
+    }
+    Ok(())
+}
+
 fn temperature(c: &Content) -> Result<(), String> {
+    if let Some(a) = c.areas.iter().find(|a| {
+        std::iter::once(&a.darkness)
+            .chain(a.map_darkness.values())
+            .any(|d| !(0.0..=1.0).contains(d))
+    }) {
+        return Err(format!(
+            "worldmap.toml area `{}`: darkness must be 0 to 1",
+            a.id
+        ));
+    }
+    sections(c)?;
     let t = &c.temperature;
     for (name, bar) in [("heat", &t.heat), ("cold", &t.cold)] {
         let at = format!("worldmap.toml [temperature.{name}]");
@@ -332,10 +364,45 @@ pub fn map_objects(c: &Content, map: &elora_map::Map) -> Vec<String> {
             K::Door { open_if, .. } => push(cond(c, open_if, &at)),
             K::Collectible { item: i } => push(item(i)),
             K::HealPlant { heal } if *heal <= 0 => push(Err(format!("{at}: does not heal"))),
+            // note stones (M2.5.3): the pitch comes from the id
+            K::Zone { .. }
+                if o.id.starts_with(elora_map::islands::NOTE)
+                    && !o.id.contains(elora_map::islands::BRIDGE)
+                    && elora_sim::notes::pitch(&o.id).is_none() =>
+            {
+                push(Err(format!(
+                    "{at}: note stone without pitch (`note-<c d e f g a b>[2]…`)"
+                )));
+            }
             _ => {}
         }
     }
+    errors.extend(climax_zones(map));
     errors
+}
+
+/// Climax “Protect Luma” (M2.5.5): a map with `climax-start` needs Luma's place, at least one
+/// shadow spawn zone and the Withered One's first place.
+fn climax_zones(map: &elora_map::Map) -> Vec<String> {
+    use crate::session::climax as z;
+    let has = |id: &str| {
+        map.adventure
+            .objects
+            .iter()
+            .any(|o| o.id.starts_with(id) && matches!(o.kind, elora_map::ObjectKind::Zone { .. }))
+    };
+    if !has(z::START_ZONE) {
+        return Vec::new();
+    }
+    [
+        (z::LUMA_ZONE, "Luma's place"),
+        (z::SPAWN_ZONE, "a zone for the grey shadows"),
+        ("withered-1", "the Withered One's first place"),
+    ]
+    .into_iter()
+    .filter(|(id, _)| !has(id))
+    .map(|(id, what)| format!("map `{}`: climax without {what} (zone `{id}…`)", map.name))
+    .collect()
 }
 
 /// Check transitions between maps: target map and target entrance must exist.

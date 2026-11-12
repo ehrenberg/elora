@@ -225,6 +225,63 @@ pub enum Behavior {
         /// Retreat time after a touch.
         flee_ms: u32,
     },
+    /// Shadow moth (R2-M2.5, E-365): flutters around its start point in a small swarm, attacks
+    /// Elora with `speed` while she is in sight **and in the dark**, and flees from light (lamps,
+    /// glowing mushrooms, lit note stones; Elora's own light does not count).
+    Moth {
+        /// Sight range (world units).
+        sight: f32,
+        /// Flight speed (world units per tick).
+        speed: f32,
+        /// Radius of the fluttering around the start point (world units).
+        flutter: f32,
+    },
+    /// Stone goblin (R2-M2.5, E-365): lies there as a harmless, invulnerable rock until Elora is
+    /// closer than `sight`, wakes up for `wake_ms` and rolls at her with `speed`. A hit, a stomp
+    /// or a wall stops it: dazed for `daze_ms` – **vulnerable while rolling and dazed** – then it
+    /// becomes a rock again.
+    Goblin {
+        /// Wakes up when Elora is closer than this (world units).
+        sight: f32,
+        /// Waking up (trembling) before it rolls.
+        wake_ms: u32,
+        /// Rolling speed (world units per tick).
+        speed: f32,
+        /// Dazed after being stopped.
+        daze_ms: u32,
+    },
+    /// Dark mirror (R2-M2.5, E-365): stands there, cannot be defeated and is harmless; once
+    /// Elora is in sight it sends out one `spawn` (the echo) and waits until it is gone, then
+    /// rests for `rest_ms`.
+    Mirror {
+        /// Sight range (world units).
+        sight: f32,
+        /// Kind of the figure it sends out.
+        spawn: String,
+        /// Rest after its echo is gone.
+        rest_ms: u32,
+    },
+    /// Echo (R2-M2.5, E-365): sent out by a dark mirror, walks Elora's path `delay_ms` behind
+    /// her, through everything. Touching it hurts; weapons pass through it – **light makes it
+    /// fade** within `fade_ms` (counts as defeated).
+    Echo {
+        /// Delay behind Elora.
+        delay_ms: u32,
+        /// In the light this long until it is gone.
+        fade_ms: u32,
+    },
+    /// Grey shadow of the Withered One (R2-M2.5, E-362): drifts through everything towards its
+    /// [`Creature::goal`] (Luma) with `speed` (times [`Creature::count`] percent when set);
+    /// light dissolves it within `fade_ms`. Hammer and grenades push it back, nothing hurts it.
+    Shade {
+        /// Drift speed (world units per tick).
+        speed: f32,
+        /// In the light this long until it is gone.
+        fade_ms: u32,
+    },
+    /// Figure moved by a script (R2-M2.5: the Withered One): does nothing by itself, cannot be
+    /// hurt or hooked and does not hurt; the session sets position, facing and mode.
+    Puppet,
     /// Guardian of Frostspitzen (Ice Queen Kristella, R2-M2.4, E-341): floats above the
     /// hall and sends frost waves across the floor (fresh frost hurts, whoever hangs on the
     /// wall or jumps stays unharmed); after `waves` waves she sinks down exhausted –
@@ -497,6 +554,55 @@ pub mod queen {
     pub const RISE: u8 = 4;
 }
 
+/// State of the shadow moth (in [`Creature::mode`]).
+pub mod moth {
+    /// Flutters around the start point.
+    pub const FLUTTER: u8 = 0;
+    /// Attacks Elora in the dark.
+    pub const ATTACK: u8 = 1;
+    /// Flees from the light: harmless.
+    pub const FLEE: u8 = 2;
+}
+
+/// State of the stone goblin (in [`Creature::mode`]).
+pub mod goblin {
+    /// Looks like a rock: harmless and invulnerable.
+    pub const ROCK: u8 = 0;
+    /// Wakes up and trembles: harmless.
+    pub const WAKE: u8 = 1;
+    /// Rolls at Elora.
+    pub const ROLL: u8 = 2;
+    /// Stopped and dazed (the time runs in [`super::Creature::stun`]).
+    pub const DAZED: u8 = 3;
+}
+
+/// State of the echo (in [`Creature::mode`]).
+pub mod echo {
+    /// Steps out of the mirror and walks Elora's path.
+    pub const FOLLOW: u8 = 0;
+    /// Fades in the light: harmless.
+    pub const FADE: u8 = 1;
+}
+
+/// State of a grey shadow (in [`Creature::mode`]).
+pub mod shade {
+    /// Drifts towards its goal.
+    pub const DRIFT: u8 = 0;
+    /// Dissolves in the light.
+    pub const FADE: u8 = 1;
+}
+
+/// State of the dark mirror (in [`Creature::mode`]); the id of its echo is in
+/// [`Creature::count`].
+pub mod mirror {
+    /// An echo waits in it.
+    pub const READY: u8 = 0;
+    /// Its echo is out.
+    pub const OUT: u8 = 1;
+    /// Rests after its echo is gone.
+    pub const REST: u8 = 2;
+}
+
 /// State of the frost ghost (in [`Creature::mode`]).
 pub mod ghost {
     /// Chases Elora (through walls).
@@ -563,6 +669,8 @@ pub struct Creature {
     pub wall_timer: u32,
     /// Hits since the last opening (Sand Serpent: dives after `open_hits`).
     pub hits: u32,
+    /// Elora's recent positions, oldest first (echo, R2-M2.5).
+    pub trail: std::collections::VecDeque<Vec2>,
 }
 
 impl Creature {
@@ -572,10 +680,14 @@ impl Creature {
             Behavior::Diver(_) => self.mode == diver::STUNNED,
             Behavior::Burrower { .. } => self.mode == burrow::OUT,
             Behavior::Warden(_) => self.mode == warden::OPEN,
-            Behavior::Follower { .. } => false,
+            Behavior::Follower { .. }
+            | Behavior::Echo { .. }
+            | Behavior::Mirror { .. }
+            | Behavior::Puppet => false,
             Behavior::Leaper { .. } => self.mode == leaper::LEAP,
             Behavior::Serpent(_) => matches!(self.mode, serpent::LEAP | serpent::STUNNED),
             Behavior::Queen(_) => self.mode == queen::TIRED,
+            Behavior::Goblin { .. } => matches!(self.mode, goblin::ROLL | goblin::DAZED),
             _ => true,
         }
     }
@@ -586,13 +698,19 @@ impl Creature {
             Behavior::Diver(_) => self.mode != diver::STUNNED,
             Behavior::Burrower { .. } => self.mode == burrow::OUT,
             Behavior::Warden(_) => !matches!(self.mode, warden::OPEN | warden::SLEEP),
-            Behavior::Follower { .. } => false,
+            Behavior::Follower { .. }
+            | Behavior::Mirror { .. }
+            | Behavior::Shade { .. }
+            | Behavior::Puppet => false,
             Behavior::Leaper { .. } => self.mode == leaper::LEAP,
             Behavior::Serpent(_) => self.mode == serpent::LEAP,
             Behavior::Icicle { .. } => self.mode == icicle::FALL,
             Behavior::Bat { .. } => self.mode != bat::HANG,
             Behavior::Ghost { .. } => self.mode == ghost::CHASE,
             Behavior::Queen(_) => !matches!(self.mode, queen::TIRED | queen::SLEEP),
+            Behavior::Moth { .. } => self.mode != moth::FLEE,
+            Behavior::Goblin { .. } => self.mode == goblin::ROLL,
+            Behavior::Echo { .. } => self.mode == echo::FOLLOW,
             _ => true,
         }
     }
@@ -612,7 +730,12 @@ impl Creature {
             Behavior::Follower { .. }
             | Behavior::Icicle { .. }
             | Behavior::Roller { .. }
-            | Behavior::Ghost { .. } => false,
+            | Behavior::Ghost { .. }
+            | Behavior::Echo { .. }
+            | Behavior::Mirror { .. }
+            | Behavior::Shade { .. }
+            | Behavior::Puppet => false,
+            Behavior::Goblin { .. } => self.mode != goblin::ROCK,
             Behavior::Leaper { .. } => self.mode == leaper::LEAP,
             Behavior::Serpent(_) => matches!(self.mode, serpent::LEAP | serpent::STUNNED),
             _ => true,

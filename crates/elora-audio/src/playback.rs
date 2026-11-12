@@ -43,6 +43,66 @@ fn to_data(samples: &[f32]) -> StaticSoundData {
     }
 }
 
+/// Opens the audio output (E-375). Linux: the `PulseAudio` server's default sink (`PipeWire`
+/// serves it too, without `pipewire-alsa`), then every ALSA output device in turn, the default
+/// one first. The device is passed explicitly, so kira does not poll for the default device
+/// (with `PulseAudio` that would open a new connection every 500 ms); the sound server moves
+/// the stream when the user switches outputs. Other systems: kira's default device.
+/// `None` when nothing opens; the game then stays silent.
+fn open_output() -> Option<AudioManager<DefaultBackend>> {
+    #[cfg(target_os = "linux")]
+    {
+        for (host, device) in linux_outputs() {
+            let name = device.to_string();
+            let settings = AudioManagerSettings {
+                backend_settings: kira::backend::cpal::CpalBackendSettings {
+                    device: Some(device),
+                    config: None,
+                },
+                ..AudioManagerSettings::default()
+            };
+            match AudioManager::<DefaultBackend>::new(settings) {
+                Ok(m) => {
+                    tracing::info!("Audio output: {host} `{name}`");
+                    return Some(m);
+                }
+                Err(e) => tracing::warn!("Audio output {host} `{name}` failed: {e}"),
+            }
+        }
+        tracing::warn!("No audio device, game stays silent");
+        None
+    }
+    #[cfg(not(target_os = "linux"))]
+    match AudioManager::<DefaultBackend>::new(AudioManagerSettings::default()) {
+        Ok(m) => Some(m),
+        Err(e) => {
+            tracing::warn!("No audio device, game stays silent: {e}");
+            None
+        }
+    }
+}
+
+/// Output devices to try on Linux in this order: the `PulseAudio` default sink, then the
+/// ALSA default device and all other ALSA output devices.
+#[cfg(target_os = "linux")]
+fn linux_outputs() -> Vec<(&'static str, kira::backend::cpal::cpal::Device)> {
+    use kira::backend::cpal::cpal::{self, HostId, traits::HostTrait};
+    let mut devices = Vec::new();
+    if cpal::available_hosts().contains(&HostId::PulseAudio)
+        && let Ok(host) = cpal::host_from_id(HostId::PulseAudio)
+        && let Some(device) = host.default_output_device()
+    {
+        devices.push(("PulseAudio", device));
+    }
+    if let Ok(host) = cpal::host_from_id(HostId::Alsa) {
+        devices.extend(host.default_output_device().map(|d| ("ALSA", d)));
+        if let Ok(all) = host.output_devices() {
+            devices.extend(all.map(|d| ("ALSA", d)));
+        }
+    }
+    devices
+}
+
 /// Amplitude 0..1 → decibels for kira.
 fn decibels(amplitude: f32) -> Decibels {
     if amplitude <= 0.001 {
@@ -56,13 +116,7 @@ impl Audio {
     /// Creates all sounds of the bank and opens the audio device. Without a device
     /// the game stays muted (warning in the log).
     pub fn new(bank: &Bank) -> Self {
-        let manager = match AudioManager::<DefaultBackend>::new(AudioManagerSettings::default()) {
-            Ok(m) => Some(m),
-            Err(e) => {
-                tracing::warn!("No audio device, game stays silent: {e}");
-                None
-            }
-        };
+        let manager = open_output();
         let sounds = bank
             .sounds
             .iter()

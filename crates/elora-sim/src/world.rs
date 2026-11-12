@@ -87,9 +87,26 @@ pub struct World {
     pub weather: Option<crate::weather::WeatherEnv>,
     /// Lightning state of the thunderstorm (R2-W1).
     pub lightning: crate::weather::Lightning,
+    /// Light sources of a dark map (R2-M2.5, M2.5.1): centre and radius in world units; empty =
+    /// not dark. Set by the session; creatures of the night avoid light.
+    pub lights: Vec<(Vec2, f32)>,
+    /// Floating star islands (R2-M2.5, M2.5.2); set by the session via [`World::set_islands`].
+    pub islands: Vec<crate::Island>,
+    /// Note stones (R2-M2.5, M2.5.3); set via [`World::set_notes`].
+    pub note_stones: Vec<crate::NoteStone>,
+    /// Star bridges lit by the note stones.
+    pub bridges: Vec<crate::StarBridge>,
+    /// Star lanterns (R2-M2.5, M2.5.5).
+    pub lanterns: Vec<crate::notes::Lantern>,
 }
 
 impl World {
+    /// Is `pos` inside one of the light sources of the map, near a lit note stone or an active
+    /// star bridge? (M2.5.1, M2.5.3; always `false` on maps without lights.)
+    pub fn is_lit(&self, pos: Vec2) -> bool {
+        self.lights.iter().any(|&(c, r)| c.distance(pos) <= r) || self.note_light(pos)
+    }
+
     /// Empty world at tick 0 on the given map, with friendly fire and pickups on.
     pub fn new(tuning: Tuning, collision: Collision) -> Self {
         Self {
@@ -118,6 +135,11 @@ impl World {
             loot: Vec::new(),
             next_id: 1,
             weather: None,
+            lights: Vec::new(),
+            islands: Vec::new(),
+            note_stones: Vec::new(),
+            bridges: Vec::new(),
+            lanterns: Vec::new(),
             lightning: crate::weather::Lightning::default(),
         }
     }
@@ -244,6 +266,8 @@ impl World {
         self.update_hook_wilt();
         self.tick_weather();
         self.tick_terrain();
+        self.tick_notes();
+        self.tick_islands();
         self.tick_characters();
         self.tick_flags_physics();
         self.tick_characters_deferred();

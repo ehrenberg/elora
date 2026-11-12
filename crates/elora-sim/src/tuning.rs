@@ -201,9 +201,29 @@ pub struct Tuning {
     /// A-42: pulling up on the climbing wall (units/tick, 0 = sliding only); the session sets
     /// it after the spring spark of the frost spring (D-M24-03)
     pub grip_climb: f32,
+    /// A-43: drifting speed of the star islands (units/tick, R2-M2.5)
+    pub island_speed: f32,
+    /// A-44: sinking island: sinks this fast while someone stands on it (units/tick)
+    pub island_sink_speed: f32,
+    /// A-45: sinking island: rises this fast again (units/tick)
+    pub island_rise_speed: f32,
+    /// A-46: sinking island: sinks at most this deep (units)
+    pub island_sink_depth: f32,
+    /// A-47: updraft lifts a gliding character (units/tick²)
+    pub updraft_lift: f32,
+    /// A-48: updraft: highest rising speed while gliding (units/tick)
+    pub updraft_rise_speed: f32,
+    /// A-49: updraft lifts a character that does not glide (units/tick², rises at most half as
+    /// fast as A-48)
+    pub updraft_push: f32,
+    /// A-50: a touched note stone and its star bridges stay lit this long (ms, R2-M2.5)
+    pub note_light_time: u32,
+    /// A-51: a touched star lantern stays lit this long (ms, R2-M2.5 climax)
+    pub lantern_time: u32,
 }
 
 impl Default for Tuning {
+    #[allow(clippy::too_many_lines)] // one line per value
     fn default() -> Self {
         Self {
             ground_control_speed: 10.5,
@@ -297,6 +317,15 @@ impl Default for Tuning {
             avalanche_gap: 350,
             avalanche_rest: 8000,
             grip_climb: 0.0,
+            island_speed: 1.2,
+            island_sink_speed: 0.8,
+            island_rise_speed: 0.5,
+            island_sink_depth: 160.0,
+            updraft_lift: 0.85,
+            updraft_rise_speed: 5.0,
+            updraft_push: 0.62,
+            note_light_time: 6000,
+            lantern_time: 12_000,
         }
     }
 }

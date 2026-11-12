@@ -163,6 +163,15 @@ impl CharacterCore {
         feet.into_iter()
             .filter(|t| stands(*t))
             .max_by_key(|t| rank(*t))
+            .or_else(|| {
+                // floating island (M2.5.2): like a platform
+                (!self.drop_through
+                    && col
+                        .movers
+                        .island_under(self.pos.x, PHYS_SIZE / 2.0, bottom)
+                        .is_some())
+                .then_some(Tile::Platform)
+            })
     }
 
     /// Are the feet stuck in quicksand (E-318)?
@@ -720,11 +729,23 @@ impl CharacterCore {
             && self.grip == 0
             && input.jump
             && self.jumped & 2 != 0
-            && self.vel.y > 0.0;
+            && (self.vel.y > 0.0 || col.movers.in_updraft(self.pos));
         if self.gliding {
             self.vel.y = self.vel.y.min(tuning.glide_fall_speed);
             if !was_gliding {
                 self.triggered_events |= events::GLIDE;
+            }
+        }
+        // updraft (M2.5.2): lifts everyone, gliding characters faster and higher
+        if !grounded && col.movers.in_updraft(self.pos) {
+            let (lift, top) = if self.gliding {
+                (tuning.updraft_lift, tuning.updraft_rise_speed)
+            } else {
+                (tuning.updraft_push, tuning.updraft_rise_speed * 0.5)
+            };
+            // never brake a jump that is already faster upwards
+            if self.vel.y > -top {
+                self.vel.y = (self.vel.y - lift).max(-top);
             }
         }
     }

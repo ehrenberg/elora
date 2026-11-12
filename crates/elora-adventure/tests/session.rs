@@ -660,3 +660,325 @@ fn kristellas_storm_fills_the_hall_until_she_is_calmed() {
     s.tick(&mut w, false);
     assert!(s.map.weather.is_clear());
 }
+
+/// Night in the Sternschlucht (R2-M2.5, M2.5.1): the area is dark, glowing decoration lights it.
+#[test]
+fn night_maps_are_dark_and_glowing_decoration_lights_them() {
+    let mut map = load("meadow-1");
+    let spawn = map.adventure.object("west").unwrap().pos;
+    map.decor_back.push(elora_map::Decor::new(
+        elora_map::Art::Builtin("lantern".into()),
+        spawn + Vec2::new(64.0, 0.0),
+    ));
+    let mut s = Session::new_game(Content::builtin());
+    let w = s.enter("gorge-1", map.clone(), "west", &Tuning::default());
+    assert!(s.darkness() > 0.5, "the Sternschlucht is night");
+    assert!(w.is_lit(spawn + Vec2::new(64.0, 0.0)));
+    assert!(!w.is_lit(spawn + Vec2::new(2000.0, 0.0)));
+    // a day map has no lights at all
+    let w = s.enter("meadow-1", map.clone(), "west", &Tuning::default());
+    assert!(s.darkness() == 0.0 && w.lights.is_empty());
+    // a single map can be darker than its area
+    let mut content = Content::builtin();
+    let gorge = content
+        .areas
+        .iter_mut()
+        .find(|a| a.id == "sternschlucht")
+        .unwrap();
+    gorge.map_darkness.insert("gorge-3".into(), 1.0);
+    let mut s = Session::new_game(content);
+    s.enter("gorge-1", map.clone(), "west", &Tuning::default());
+    assert!((s.darkness() - 0.9).abs() < 1e-6);
+    s.enter("gorge-3", map, "west", &Tuning::default());
+    assert!((s.darkness() - 1.0).abs() < 1e-6);
+}
+
+/// Star islands and updrafts (R2-M2.5, M2.5.2) come from the zones of the map.
+#[test]
+fn island_and_updraft_zones_become_part_of_the_world() {
+    let mut map = load("meadow-1");
+    let spawn = map.adventure.object("west").unwrap().pos;
+    for (id, at) in [
+        ("island-sink-a", spawn + Vec2::new(200.0, -64.0)),
+        ("island-sink-a-to", spawn + Vec2::new(400.0, -64.0)),
+        ("updraft-a", spawn + Vec2::new(600.0, -300.0)),
+    ] {
+        map.adventure.objects.push(elora_map::Object {
+            id: id.into(),
+            pos: at,
+            kind: elora_map::ObjectKind::Zone {
+                size: Vec2::new(128.0, 32.0),
+            },
+        });
+    }
+    let mut s = Session::new_game(Content::builtin());
+    let w = s.enter("meadow-1", map, "west", &Tuning::default());
+    assert_eq!(w.islands.len(), 1);
+    assert!(w.islands[0].sinks);
+    assert_eq!(w.islands[0].end, spawn + Vec2::new(400.0, -64.0));
+    assert_eq!(w.collision.movers.updrafts.len(), 1);
+}
+
+/// The session remembers the notes Elora plays (R2-M2.5, M2.5.3) for Luma's song.
+#[test]
+fn played_notes_are_remembered_for_lumas_song() {
+    let map = load("meadow-1");
+    let mut s = Session::new_game(Content::builtin());
+    let mut w = s.enter("meadow-1", map.clone(), "west", &Tuning::default());
+    for note in [0, 4, 7, 4, 12] {
+        w.events.push(elora_sim::Event::Note {
+            player: s.player,
+            note,
+            pos: Vec2::ZERO,
+        });
+        s.tick(&mut w, false);
+        w.events.clear();
+    }
+    assert!(s.played(&[7, 4, 12]));
+    assert!(!s.played(&[0, 4, 7]), "only the last notes count");
+    // another figure's notes do not count, a new map starts afresh
+    w.events.push(elora_sim::Event::Note {
+        player: s.player + 1,
+        note: 2,
+        pos: Vec2::ZERO,
+    });
+    s.tick(&mut w, false);
+    assert!(s.played(&[4, 12]));
+    s.enter("meadow-1", map, "west", &Tuning::default());
+    assert!(s.notes.is_empty());
+}
+
+/// World map (R2-WM, E-370): Elora's section and her place along it.
+#[test]
+fn map_spot_follows_elora_along_her_section() {
+    let map = load("meadow-1");
+    let mut s = Session::new_game(Content::builtin());
+    let mut w = s.enter("meadow-1", map.clone(), "west", &Tuning::default());
+    let start = s.map_spot(&w).expect("on the world map");
+    assert_eq!(
+        (start.area.as_str(), start.map.as_str()),
+        ("bluetenwiesen", "meadow-1")
+    );
+    assert!(
+        start.along < 0.2,
+        "enters from the side of Tauwinkel: {}",
+        start.along
+    );
+    let section = s.content.areas[1].section("meadow-1").unwrap().clone();
+    let first = section.path[0];
+    assert!((start.point[0] - first[0]).abs() < 0.05 && (start.point[1] - first[1]).abs() < 0.05);
+    // further right in the map = further along the path
+    let far = Vec2::new(map.width as f32 * 32.0 - 100.0, 100.0);
+    w.character_mut(s.player).unwrap().core.pos = far;
+    let end = s.map_spot(&w).unwrap();
+    assert!(end.along > 0.9);
+    let last = section.path[section.path.len() - 1];
+    assert!((end.point[0] - last[0]).abs() < 0.03 && (end.point[1] - last[1]).abs() < 0.03);
+}
+
+#[test]
+fn every_adventure_map_with_a_file_has_a_section() {
+    let c = Content::builtin();
+    let dir = concat!(env!("CARGO_MANIFEST_DIR"), "/../../maps/adventure");
+    for e in std::fs::read_dir(dir).unwrap() {
+        let name = e
+            .unwrap()
+            .path()
+            .file_stem()
+            .unwrap()
+            .to_string_lossy()
+            .into_owned();
+        let area = c
+            .area_of(&name)
+            .unwrap_or_else(|| panic!("{name}: no area"));
+        assert!(
+            area.section(&name).is_some(),
+            "{name}: no section on the world map"
+        );
+    }
+}
+
+// ---------------------------------------------------------------- Climax (M2.5.5)
+
+/// `meadow-1` without enemies, with the zones of “Protect Luma”: Elora starts inside
+/// `climax-start`, Luma stands in the middle, shadows come from the right, a lantern next to
+/// Luma.
+fn climax_map() -> elora_map::Map {
+    let mut map = load("meadow-1");
+    map.adventure
+        .objects
+        .retain(|o| !matches!(o.kind, elora_map::ObjectKind::Creature { .. }));
+    let zone = |id: &str, x: f32, y: f32, w: f32, h: f32| elora_map::Object {
+        id: id.into(),
+        pos: Vec2::new(x * 32.0, y * 32.0),
+        kind: elora_map::ObjectKind::Zone {
+            size: Vec2::new(w * 32.0, h * 32.0),
+        },
+    };
+    map.adventure.objects.extend([
+        zone("climax-start", 0.0, 10.0, 12.0, 12.0),
+        zone("climax-luma", 40.0, 19.0, 2.0, 2.0),
+        zone("shade-spawn-1", 70.0, 10.0, 10.0, 4.0),
+        zone("withered-1", 60.0, 8.0, 2.0, 3.0),
+        zone("withered-2", 20.0, 8.0, 2.0, 3.0),
+        zone("lantern-1", 41.0, 19.0, 1.0, 2.0),
+    ]);
+    map
+}
+
+fn climax_start() -> (Session, World) {
+    let mut s = Session::new_game(Content::builtin());
+    let w = s.enter("meadow-1", climax_map(), "west", &Tuning::default());
+    (s, w)
+}
+
+/// Steps until `done` holds (at most `ticks`); the lantern burns while `lantern` is set.
+fn climax_run(
+    s: &mut Session,
+    w: &mut World,
+    ticks: u32,
+    lantern: bool,
+    mut done: impl FnMut(&Session, &[SessionEvent]) -> bool,
+) -> Vec<SessionEvent> {
+    let mut all = Vec::new();
+    for _ in 0..ticks {
+        if lantern {
+            w.lanterns[0].lit_until = w.tick + 100;
+        }
+        let ev = step(s, w, PlayerInput::default(), false);
+        let stop = done(s, &ev);
+        all.extend(ev);
+        if stop {
+            break;
+        }
+    }
+    all
+}
+
+#[test]
+fn climax_starts_in_its_zone_with_the_withered_one() {
+    let (mut s, mut w) = climax_start();
+    assert!(s.climax.is_none());
+    step(&mut s, &mut w, PlayerInput::default(), false);
+    let c = s.climax.as_ref().expect("Elora stands in climax-start");
+    assert_eq!((c.verse, c.light), (0, 1.0));
+    assert_eq!(c.luma, Vec2::new(41.0 * 32.0, 20.0 * 32.0));
+    let withered = w.creature_kind("withered").unwrap();
+    assert!(w.creatures.iter().any(|x| x.kind == withered));
+    // shadows come and drift towards Luma
+    climax_run(&mut s, &mut w, 200, true, |_, _| false);
+    let shade = w.creature_kind("grey_shade").unwrap();
+    assert!(
+        w.creatures
+            .iter()
+            .any(|x| x.kind == shade && x.goal == c_luma(&s))
+    );
+}
+
+fn c_luma(s: &Session) -> Vec2 {
+    s.climax.as_ref().unwrap().luma
+}
+
+#[test]
+fn shadows_on_luma_put_her_light_out_and_send_elora_back_without_loss() {
+    let (mut s, mut w) = climax_start();
+    s.save.gleam_drops = 40;
+    s.save.gleam_since_save = 40;
+    let mut dimmed = false;
+    let ev = climax_run(&mut s, &mut w, 60 * 50, false, |s, ev| {
+        if let Some(c) = &s.climax
+            && c.light < 1.0
+        {
+            dimmed = true;
+        }
+        ev.iter().any(|e| matches!(e, SessionEvent::Died { .. }))
+    });
+    assert!(dimmed, "Luma's light went down shadow by shadow");
+    assert!(ev.contains(&SessionEvent::Died { lost: 0 }));
+    assert!(s.dead && s.climax.is_none());
+    assert_eq!(s.save.gleam_drops, 40, "no loss (E-362)");
+    assert_eq!(s.save.flag(elora_adventure::session::LUMA_PROTECTED), 0);
+    let shade = w.creature_kind("grey_shade").unwrap();
+    assert!(w.creatures.iter().all(|x| x.kind != shade), "shadows gone");
+    // back at the spring stone the climax is ready again
+    let loc = s.save.location.clone();
+    let mut w = s.enter(&loc.map, climax_map(), &loc.spawn, &Tuning::default());
+    step(&mut s, &mut w, PlayerInput::default(), false);
+    assert!(s.climax.is_some());
+}
+
+#[test]
+fn lit_lanterns_protect_luma_through_three_verses_then_he_flees() {
+    use elora_adventure::session::{ClimaxPhase, LUMA_PROTECTED};
+    let (mut s, mut w) = climax_start();
+    let mut phases = Vec::new();
+    let kind = w.creature_kind("withered").unwrap();
+    climax_run(&mut s, &mut w, 140 * 50, true, |s, _| {
+        if let Some(c) = &s.climax {
+            let p = std::mem::discriminant(&c.phase);
+            if phases.last() != Some(&p) {
+                phases.push(p);
+            }
+        }
+        s.climax.is_none()
+    });
+    assert!(s.climax.is_none(), "over");
+    assert_eq!(s.save.flag(LUMA_PROTECTED), 1);
+    let names = [
+        ClimaxPhase::Song,
+        ClimaxPhase::Moving(0),
+        ClimaxPhase::Song,
+        ClimaxPhase::Moving(0),
+        ClimaxPhase::Song,
+        ClimaxPhase::Looking(0),
+        ClimaxPhase::Fleeing(0),
+    ]
+    .map(|p| std::mem::discriminant(&p));
+    assert_eq!(phases, names);
+    assert!(w.creatures.iter().all(|x| x.kind != kind), "he is gone");
+    // walking into the zone again does not start it again
+    climax_run(&mut s, &mut w, 10, false, |_, _| false);
+    assert!(s.climax.is_none());
+}
+
+#[test]
+fn withered_one_moves_to_his_next_place_between_verses() {
+    use elora_adventure::session::ClimaxPhase;
+    let (mut s, mut w) = climax_start();
+    climax_run(&mut s, &mut w, 60 * 50, true, |s, _| {
+        s.climax
+            .as_ref()
+            .is_some_and(|c| c.verse == 1 && c.phase == ClimaxPhase::Song)
+    });
+    let kind = w.creature_kind("withered").unwrap();
+    let him = w.creatures.iter().find(|x| x.kind == kind).unwrap();
+    let place = Vec2::new(21.0 * 32.0, 9.5 * 32.0);
+    assert!(
+        him.pos.distance(place) < 1.0,
+        "at withered-2: {:?}",
+        him.pos
+    );
+}
+
+#[test]
+fn complete_song_makes_the_verse_faster() {
+    let song_after = |bonus: bool| {
+        let (mut s, mut w) = climax_start();
+        if bonus {
+            s.save.set_flag(elora_adventure::session::LUMA_SONG, 1);
+        }
+        climax_run(&mut s, &mut w, 500, true, |_, _| false);
+        s.climax.as_ref().unwrap().song
+    };
+    let (plain, strong) = (song_after(false), song_after(true));
+    assert!(strong > plain * 1.4, "{plain} → {strong}");
+}
+
+#[test]
+fn leaving_the_map_ends_a_running_climax() {
+    let (mut s, mut w) = climax_start();
+    step(&mut s, &mut w, PlayerInput::default(), false);
+    assert!(s.climax.is_some());
+    s.enter("tauwinkel", load("tauwinkel"), "west", &Tuning::default());
+    assert!(s.climax.is_none());
+}

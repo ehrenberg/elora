@@ -337,6 +337,38 @@ fn map_objects_are_checked_against_content() {
 }
 
 #[test]
+fn climax_needs_lumas_place_shadows_and_the_withered_one() {
+    let c = Content::builtin();
+    let zone = |id: &str| {
+        obj(
+            id,
+            ObjectKind::Zone {
+                size: Vec2::new(64.0, 64.0),
+            },
+        )
+    };
+    let partial = small(
+        "gorge-spring",
+        vec![zone("climax-start"), zone("climax-luma")],
+    );
+    let errors = map_objects(&c, &partial);
+    assert_eq!(errors.len(), 2, "{errors:?}");
+    assert!(errors[0].contains("shade-spawn") && errors[1].contains("withered-1"));
+    let full = small(
+        "gorge-spring",
+        vec![
+            zone("climax-start"),
+            zone("climax-luma"),
+            zone("shade-spawn-left"),
+            zone("withered-1"),
+        ],
+    );
+    assert!(map_objects(&c, &full).is_empty());
+    // without the start zone nothing is required
+    assert!(map_objects(&c, &small("gorge-1", vec![zone("climax-luma")])).is_empty());
+}
+
+#[test]
 fn exits_must_lead_to_existing_entrances() {
     let exit = |map: &str, spawn: &str| {
         obj(

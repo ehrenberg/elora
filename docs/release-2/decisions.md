@@ -170,6 +170,21 @@ Continued from **E-200**. Release 1 (E-001 to E-173) is in the
 | E-359 | 2026-10-08 | Intro narration | Spoken narration (de/en) instead of subtitles, created by the owner with the **speech generation of the Google AI Studio playground** – like the video a **second exception to E-295**, limited to the intro; Tauwinkel music at 35 % underneath |
 | E-360 | 2026-10-08 | Setup screen draft (RF-30) | Draft `docs/release-2/design/setup-screen.png` **accepted**; the screen starts in the **system language** (German if the system is German, otherwise English) |
 | E-361 | 2026-10-14 | Refactoring R2-RF | **Accepted** after the playtest of all chapters (RF-42); phases 1–4 done |
+| E-362 | 2026-10-14 | Chapter 5 climax | **Protect Luma:** the Withered One drains the Star Spring in rounds, Elora keeps his shadows away from Luma until her song is finished; then he flees towards Tauwinkel (no fight) |
+| E-363 | 2026-10-14 | Gliding | From **Luma in the middle of chapter 5** (star cape); the star spark strengthens it afterwards |
+| E-364 | 2026-10-14 | Chapter 5 mechanics | Darkness and light, floating star islands, star bridges from note stones, updrafts |
+| E-365 | 2026-10-14 | Chapter 5 enemies | Shadow moths, stone goblins, echoes |
+| E-366 | 2026-10-14 | End of chapter 5 | A star spark is saved: Tüftel strengthens gliding, `springs_freed = 5`; only the old well stays grey |
+| E-367 | 2026-10-14 | Way to the Sternschlucht | Gorge entrance at the far east of the Blütenwiesen, opens after chapter 4 |
+| E-368 | 2026-10-14 | Chapter 5 side quests | “Star fragments” and “Luma's song” |
+| E-369 | 2026-10-15 | Chapter 5 drafts (M2.5.0) | **Accepted** ([`design/chapter5-drafts.png`](design/chapter5-drafts.png)): **Luma variant B** (moth wings, feelers, woven shawl), **the Withered One variant A** (cracked grey drop with twig arms); everything else as drawn |
+| E-370 | 2026-10-15 | World map: where Elora is (interim task R2-WM) | **Overview + section map:** a painted overview of the Tauland with Elora on the path piece of her map section (roughly where she is inside it), plus a small detail window of the current section drawn from its real tiles (terrain outline, Elora, exits) |
+| E-371 | 2026-10-15 | World map: undiscovered parts | **Clouds/fog:** unvisited sections lie under clouds; areas can be guessed as outlines, their names appear after the first visit |
+| E-372 | 2026-10-15 | World map: markers | **Spring stones (saving), quest goal, springs and guardians, shops and characters** |
+| E-373 | 2026-10-15 | World map: key M | **Own full-screen map** on M (bindable, default M; pauses the game; M or Esc closes); the tab “Map” of the adventure menu shows the same view |
+| E-374 | 2026-10-15 | World map drafts (WM.0) | **Accepted** ([`design/world-map-drafts.png`](design/world-map-drafts.png)): **look A “storybook”** (parchment, muted area colours, dashed borders, brown ink); markers, clouds, path pieces, detail window and full-screen layout as drawn |
+| E-375 | 2026-11-11 | No sound on Linux (player report) | Audio output on Linux uses cpal's **PulseAudio host** (pure Rust, also served by PipeWire through `pipewire-pulse`), so `pipewire-alsa` is no longer needed; ALSA stays the fallback (default device, then every output device in turn); the main menu says once when the game stays silent |
+| E-376 | 2026-11-11 | Windows Defender / SmartScreen blocks Elora (player report) | Short term: README section with the cause (unsigned, new program) and what to do; report false positives to Microsoft per release. **Code signing is decided by the project owner** (open point O-210) |
 
 ## Open points
 
@@ -196,3 +211,4 @@ Recorded for the future:
 
 - [ ] **O-208 Persistent world** – a server with an ongoing world on which player characters keep their progress (small online RPG; needs accounts and server-side storage) – after Release 2
 - [ ] **O-209 Times of day and weather** (weather implemented and accepted with R2-W1, E-329 to E-339; times of day stay open, E-332) – time of day (morning, day, evening, night) and weather (rain, wind, fog, snow, thunderstorm) in the adventure and maps: sky, light, decoration tinting and particles; in the adventure possibly with a gameplay effect (enemies only at night, glowing mushrooms, slippery ground in rain). Basis: times of day in the main menu (E-291), day/night templates in the editor – open, after R2-M2.1
+- [ ] **O-210 Code signing for Windows** (e.g. Azure Trusted Signing, about 10 €/month with identity check; removes the SmartScreen warning over time) – owner decides, see E-376

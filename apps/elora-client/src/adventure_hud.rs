@@ -478,6 +478,106 @@ fn victory_springs(ui: &mut Ui<'_>, v: &VictoryView<'_>, x: f32, dy: f32) {
 
 /// Replace the placeholder `{taste:<aktion>}` with the bound key (signs, E-273),
 /// e.g. `{taste:jump}` → “Space”.
+/// Starlight of Luma's song bar (M2.5.5).
+const SONG: Color = Color::hex(0xfff1a8);
+/// Number of stars that show Luma's light.
+const LIGHT_STARS: usize = 5;
+
+/// Luma's song during the climax (M2.5.5) at the top centre: the verse, a bar over all three
+/// verses (grey and flickering while a shadow stopped the song) and Luma's light as stars.
+pub fn song_bar(
+    ui: &mut Ui<'_>,
+    lang: &Lang,
+    climax: &elora_adventure::session::Climax,
+    paused: bool,
+    time: f32,
+    screen: Vec2,
+) {
+    let s = ui.s;
+    let w = (screen.x * 0.5).min(520.0 * s);
+    let bar = Rect::new((screen.x - w) / 2.0, 54.0 * s, w, 16.0 * s);
+    let verse = (climax.verse + 1).min(elora_adventure::session::VERSES);
+    ui.label(
+        &lang.f(
+            "adventure.luma_song",
+            &[
+                ("n", &verse.to_string()),
+                ("max", &elora_adventure::session::VERSES.to_string()),
+            ],
+        ),
+        Vec2::new(screen.x / 2.0, bar.min.y - 12.0 * s),
+        14.0,
+        WHITE,
+        Align::Center,
+    );
+    let pad = Vec2::new(3.0 * s, 3.0 * s);
+    ui.batch
+        .fill_rounded_rect(bar.min - pad, bar.max + pad, 11.0 * s, PANEL);
+    ui.batch
+        .fill_rounded_rect(bar.min, bar.max, 8.0 * s, Color::rgba(1.0, 1.0, 1.0, 0.15));
+    let f = climax.total();
+    if f > 0.0 {
+        let fill = if paused {
+            Color::rgba(0.7, 0.7, 0.75, 0.55 + 0.25 * (time * 20.0).sin())
+        } else {
+            SONG
+        };
+        ui.batch.fill_rounded_rect(
+            bar.min,
+            Vec2::new(bar.min.x + w * f, bar.max.y),
+            8.0 * s,
+            fill,
+        );
+    }
+    // verse marks
+    for k in 1..elora_adventure::session::VERSES {
+        let x = bar.min.x + w * f32::from(k) / f32::from(elora_adventure::session::VERSES);
+        ui.batch.fill_rect(
+            Vec2::new(x - 1.0 * s, bar.min.y),
+            Vec2::new(x + 1.0 * s, bar.max.y),
+            PANEL,
+        );
+    }
+    // Luma's light: one star per fifth
+    let lit = (0..LIGHT_STARS)
+        .filter(|&k| (k as f32 + 0.5) < climax.light * LIGHT_STARS as f32)
+        .count();
+    let y = bar.max.y + 16.0 * s;
+    ui.label(
+        lang.t("adventure.luma_light"),
+        Vec2::new(screen.x / 2.0 - 8.0 * s, y),
+        12.0,
+        WHITE_DIM,
+        Align::Right,
+    );
+    for k in 0..LIGHT_STARS {
+        let at = Vec2::new(screen.x / 2.0 + (8.0 + 16.0 * k as f32) * s, y);
+        let color = if k < lit {
+            SONG
+        } else {
+            Color::rgba(1.0, 1.0, 1.0, 0.2)
+        };
+        star(ui, at, 6.0 * s, color);
+    }
+}
+
+/// Four-pointed star (sparkle) at `at`.
+fn star(ui: &mut Ui<'_>, at: Vec2, r: f32, color: Color) {
+    ui.batch.fill_polygon(
+        &[
+            at + Vec2::new(0.0, -r),
+            at + Vec2::new(r * 0.3, -r * 0.3),
+            at + Vec2::new(r, 0.0),
+            at + Vec2::new(r * 0.3, r * 0.3),
+            at + Vec2::new(0.0, r),
+            at + Vec2::new(-r * 0.3, r * 0.3),
+            at + Vec2::new(-r, 0.0),
+            at + Vec2::new(-r * 0.3, -r * 0.3),
+        ],
+        color,
+    );
+}
+
 /// Health bar of a guardian at the top centre with name (R2-M2.1); `frac` 0..1.
 pub fn boss_bar(ui: &mut Ui<'_>, name: &str, frac: f32, screen: Vec2) {
     let s = ui.s;
@@ -910,6 +1010,10 @@ mod tests {
         status(&mut ui, &art, &lang, "de", &c, &save, screen);
         heat_bar(&mut ui, 0.7, false, 1.0);
         cold_bar(&mut ui, 0.4, true, 1.0);
+        // Luma's song in the climax (M2.5.5): second verse, a shadow just reached her
+        let mut climax = elora_adventure::session::Climax::default();
+        (climax.verse, climax.song, climax.light) = (1, 0.4, 0.6);
+        song_bar(&mut ui, &lang, &climax, false, 1.0, screen);
         bubble(&mut ui, "Hallo, Elora!", Vec2::new(300.0, 200.0));
         prompt(&mut ui, "E", "Sprechen", Vec2::new(600.0, 200.0));
         ui.end();

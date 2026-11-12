@@ -162,7 +162,7 @@ pub fn panel(ui: &mut egui::Ui, cx: &mut Context<'_>) -> Option<Action> {
                 if cx.cursor_grabbed {
                     ui.label("Press F1 twice to free the mouse for the panel");
                 } else {
-                    ui.label("Click into the game to keep playing; F1 closes the panel");
+                    ui.label("F1 closes the panel and returns to the game");
                 }
                 ui.separator();
                 action = network(ui, cx);
@@ -790,6 +790,7 @@ fn weather(ui: &mut egui::Ui, s: &mut Sandbox) {
             }
             ui.add(egui::Slider::new(&mut w.intensity, 0.0..=1.0).text("Intensity"));
             ui.add(egui::Slider::new(&mut w.wind, -1.0..=1.0).text("Wind"));
+            ui.add(egui::Slider::new(&mut s.night_preview, 0.0..=1.0).text("Night (preview)"));
         });
 }
 
@@ -856,6 +857,9 @@ fn tuning(ui: &mut egui::Ui, t: &mut Tuning) {
     });
     section(ui, "Abilities & enemies (A-01 to A-15)", false, |ui| {
         ability_values(ui, t, &d);
+    });
+    section(ui, "Star islands & updrafts (A-43 to A-49)", false, |ui| {
+        islands(ui, t, &d);
     });
     section(ui, "Weapons (T-18 to T-27)", false, |ui| {
         weapons(ui, t, &d);
@@ -1185,6 +1189,58 @@ fn ability_values(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
         &mut t.glide_control_speed,
         0.5..=20.0,
         d.glide_control_speed,
+    );
+}
+
+fn islands(ui: &mut egui::Ui, t: &mut Tuning, d: &Tuning) {
+    slider(
+        ui,
+        "Island speed",
+        &mut t.island_speed,
+        0.0..=6.0,
+        d.island_speed,
+    );
+    slider(
+        ui,
+        "Sinking speed",
+        &mut t.island_sink_speed,
+        0.0..=4.0,
+        d.island_sink_speed,
+    );
+    slider(
+        ui,
+        "Rising speed",
+        &mut t.island_rise_speed,
+        0.0..=4.0,
+        d.island_rise_speed,
+    );
+    slider(
+        ui,
+        "Sinking depth",
+        &mut t.island_sink_depth,
+        0.0..=640.0,
+        d.island_sink_depth,
+    );
+    slider(
+        ui,
+        "Updraft lift",
+        &mut t.updraft_lift,
+        0.0..=4.0,
+        d.updraft_lift,
+    );
+    slider(
+        ui,
+        "Updraft max. rise",
+        &mut t.updraft_rise_speed,
+        0.0..=20.0,
+        d.updraft_rise_speed,
+    );
+    slider(
+        ui,
+        "Updraft lift (no glide)",
+        &mut t.updraft_push,
+        0.0..=1.0,
+        d.updraft_push,
     );
 }
 

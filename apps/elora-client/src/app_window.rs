@@ -63,7 +63,13 @@ impl ApplicationHandler for App {
             || self.screen == Screen::Editor
             || self.net.show_host
             || self.net.key_warning.is_some();
-        let to_gui = !self.cursor_grabbed && egui_visible;
+        // F1 always belongs to the game: a widget focused by a click must not swallow it
+        let f1 = matches!(
+            &event,
+            WindowEvent::KeyboardInput { event, .. }
+                if event.physical_key == winit::keyboard::PhysicalKey::Code(winit::keyboard::KeyCode::F1)
+        );
+        let to_gui = !self.cursor_grabbed && egui_visible && !f1;
         if to_gui
             && let Some(gfx) = &mut self.gfx
             && gfx.gui.on_window_event(&gfx.window, &event)

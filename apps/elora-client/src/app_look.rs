@@ -6,6 +6,57 @@ use elora_sim::{Collision, Event};
 
 use crate::{App, draw, figure, skins};
 
+/// Radius of Luma's light at full strength in the climax (M2.5.5).
+const LUMA_GLOW: f32 = 160.0;
+/// Extra darkness while a grey shadow has stopped Luma's song.
+const CLIMAX_DIM: f32 = 0.08;
+
+/// Faint glow of the star islands in the dark (M2.5.2).
+const ISLAND_GLOW: f32 = 0.55;
+/// Glow of a shadow moth's eyes in the dark (M2.5.4, units).
+const MOTH_EYES: f32 = 22.0;
+/// Light around a flying note of a note stone (M2.5.3, units).
+const NOTE_GLOW_RADIUS: f32 = 40.0;
+
+/// Light in the dark besides the decoration (drawing only): star islands glow faintly from
+/// their star crystals (M2.5.2), lit note stones and star bridges shine (M2.5.3), so do lit star
+/// lanterns (M2.5.5). Centre, radius and intensity.
+fn glows(world: &elora_sim::World) -> Vec<(elora_sim::Vec2, f32, f32)> {
+    let mut out: Vec<_> = world
+        .islands
+        .iter()
+        .map(|island| {
+            let at = crate::map_art::island_crystal(island.pos, island.size);
+            (at, island.size.x * 0.5 + 40.0, ISLAND_GLOW)
+        })
+        .collect();
+    // the eyes of the shadow moths glow in the dark (M2.5.4)
+    for c in &world.creatures {
+        if world.creature_kinds[c.kind].name == "shadow_moth" {
+            out.push((c.pos, MOTH_EYES, 0.7));
+        }
+    }
+    let tick = world.tick;
+    for stone in world.note_stones.iter().filter(|s| s.lit(tick)) {
+        out.push((stone.centre(), elora_sim::notes::STONE_LIGHT, 1.0));
+    }
+    for lantern in world.lanterns.iter().filter(|l| l.lit(tick)) {
+        out.push((lantern.centre(), elora_sim::notes::LANTERN_LIGHT, 1.0));
+    }
+    for bridge in world.bridges.iter().filter(|b| b.active(tick)) {
+        let mut x = bridge.at.x;
+        while x <= bridge.at.x + bridge.size.x {
+            out.push((
+                elora_sim::Vec2::new(x, bridge.at.y),
+                elora_sim::notes::BRIDGE_LIGHT * 1.4,
+                0.8,
+            ));
+            x += elora_sim::notes::BRIDGE_LIGHT;
+        }
+    }
+    out
+}
+
 /// Saturation of the adventure world by number of freed springs (E-328): pale, then vivid.
 const SATURATION_BY_SPRINGS: [f32; 6] = [0.62, 0.74, 0.84, 0.92, 0.97, 1.0];
 
@@ -13,7 +64,13 @@ impl App {
     /// Post-processing of the world for this frame: heat shimmer in the desert (E-320, stronger in
     /// the blazing sun and with the heat) and colour that returns with the springs
     /// (E-328, more colourful per freed spring; the change glides over a few seconds).
-    pub(crate) fn world_look(&mut self, dt: f32, tick: u64) {
+    pub(crate) fn world_look(
+        &mut self,
+        dt: f32,
+        tick: u64,
+        camera: &Camera,
+        elora: Option<elora_sim::Vec2>,
+    ) {
         let session = self.adventure.as_ref().map(|a| &a.session);
         let haze = session
             .filter(|s| s.hot())
@@ -36,6 +93,63 @@ impl App {
             gfx.renderer.set_frost(frost);
             gfx.renderer.set_grade(self.weather.grade());
         }
+        self.night(camera, elora);
+    }
+
+    /// Night of dark areas (R2-M2.5, M2.5.1): darkness of the area (or the debug preview),
+    /// Elora's light and the glowing decoration in view. `elora` is her drawn (interpolated)
+    /// position, so the light moves exactly with her and the camera.
+    fn night(&mut self, camera: &Camera, elora: Option<elora_sim::Vec2>) {
+        let session = self.adventure.as_ref().map(|a| &a.session);
+        // climax (M2.5.5): Luma shines with her light; a shadow on her dims the arena
+        let climax = session.and_then(|s| s.climax.as_ref());
+        let dimmed = climax.is_some_and(|c| c.paused(self.sandbox.world.tick));
+        let luma = climax.map(|c| (c.luma, LUMA_GLOW * (0.4 + 0.6 * c.light), 0.9));
+        let darkness = (session
+            .map_or(0.0, elora_adventure::Session::darkness)
+            .max(self.sandbox.night_preview)
+            + if dimmed { CLIMAX_DIM } else { 0.0 })
+        .min(1.0)
+            * self.settings.graphics.night.factor();
+        let Some(gfx) = &mut self.gfx else { return };
+        if darkness <= 0.0 {
+            gfx.renderer.set_darkness(0.0, &[]);
+            return;
+        }
+        let (w, h) = gfx.renderer.size();
+        #[allow(clippy::cast_precision_loss)]
+        let screen = elora_sim::Vec2::new(w as f32, h as f32);
+        let per_px = camera.units_per_pixel(screen).max(0.0001);
+        let elora = elora.map(|pos| (pos, elora_map::lights::elora_radius(), 1.0));
+        let lights: Vec<elora_render::Light> = elora
+            .into_iter()
+            .chain(
+                elora_map::lights::map_lights(&self.sandbox.map)
+                    .into_iter()
+                    .map(|(p, r)| (p, r, 1.0)),
+            )
+            .chain(glows(&self.sandbox.world))
+            .chain(luma)
+            // notes flying off note stones glow too (M2.5.3)
+            .chain(
+                self.effects
+                    .glowing_notes()
+                    .into_iter()
+                    .map(|p| (p, NOTE_GLOW_RADIUS, 0.9)),
+            )
+            .map(|(pos, r, intensity)| elora_render::Light {
+                pos: camera.world_to_screen(pos, screen),
+                radius: r / per_px,
+                intensity,
+            })
+            .filter(|l| {
+                l.pos.x > -l.radius
+                    && l.pos.y > -l.radius
+                    && l.pos.x < screen.x + l.radius
+                    && l.pos.y < screen.y + l.radius
+            })
+            .collect();
+        gfx.renderer.set_darkness(darkness, &lights);
     }
 
     /// Weather of the map (online: sent along by the server) – rendering only (R2-W1).

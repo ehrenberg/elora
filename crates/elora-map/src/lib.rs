@@ -8,6 +8,8 @@
 pub mod adventure;
 mod ascii;
 mod binary;
+pub mod islands;
+pub mod lights;
 pub mod look;
 pub mod rename;
 
@@ -144,7 +146,8 @@ impl Map {
         Collision::new(self.width, self.height, self.tiles.clone())
     }
 
-    /// World with spawn points, pickups and dummies of this map (without players).
+    /// World with spawn points, pickups, dummies, star islands, updrafts, note stones, star
+    /// bridges and star lanterns of this map (without players).
     pub fn world(&self, tuning: Tuning) -> World {
         let mut world = World::new(tuning, self.collision());
         for e in &self.entities {
@@ -165,6 +168,11 @@ impl Map {
                 EntityKind::FlagBlue => world.flag_stands[1] = Some(pos),
             }
         }
+        // star islands and updrafts from the zones (adventure maps only, M2.5.2)
+        world.set_islands(islands::map_islands(self), islands::map_updrafts(self));
+        let (stones, bridges) = islands::map_notes(self);
+        world.set_notes(stones, bridges);
+        world.set_lanterns(islands::map_lanterns(self));
         world
     }
 

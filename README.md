@@ -142,7 +142,8 @@ To back up, just copy these folders.
 |---|---|
 | The game does not start | Look at `crash.txt` and `elora.log` in the settings folder (see above) – they tell why. On Windows the report opens in Notepad. Make sure the whole ZIP is extracted. |
 | “No suitable graphics adapter” | Update your graphics driver. On Linux install the Vulkan driver (e.g. `vulkan-radeon`, `vulkan-intel` or `nvidia-utils`). If needed, force OpenGL: `WGPU_BACKEND=gl ./elora` |
-| No sound | Elora also starts without audio output – then it is silent. On Linux with PipeWire, `pipewire-alsa` usually helps. |
+| No sound | Elora also starts without audio output – then it is silent and says so in the main menu. On Linux Elora plays through PulseAudio or PipeWire (`pipewire-pulse`) and falls back to ALSA; if it stays silent, install `pipewire-pulse` or `pipewire-alsa` and send us `elora.log`. |
+| Windows says “Windows protected your PC” or Defender blocks `elora.exe` | Elora is new and not signed yet, so SmartScreen does not know it. Check that the ZIP comes from the [releases page](https://github.com/ehrenberg/elora/releases), then choose “More info” → “Run anyway”. If Defender reports a threat, it is a false positive – please tell us the name of the threat. On company computers the IT department may have to allow it. |
 | My server does not show up in the internet list | Open UDP port 8303 in your router and firewall; “Show on the internet” must be on. Behind DS-Lite only players with IPv6 can reach you. |
 | Warning “server key changed” | The server was set up again – or someone is impersonating it. Only trust it if you know the reason. |
 | The mouse cannot be captured | click into the game area; some Wayland desktops only confine the mouse instead of locking it |

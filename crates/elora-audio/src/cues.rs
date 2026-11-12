@@ -134,13 +134,27 @@ pub enum Sound {
     Freeze,
     /// Kristella's frost breath: the wave begins.
     FrostWave,
+    /// A note stone sounds (R2-M2.5, M2.5.3), pitched to its note.
+    NoteStone,
     /// A chest opens (playtest: chests need feedback).
     ChestOpen,
+    /// A stone goblin stirs and rolls (R2-M2.5, M2.5.9).
+    StoneRumble,
+    /// A stone goblin hits a wall or lands.
+    StoneThud,
+    /// An echo steps out of its mirror, glassy.
+    EchoShimmer,
+    /// A star lantern lights up.
+    LanternOn,
+    /// A star lantern goes out.
+    LanternOut,
+    /// A grey shadow dissolves in the light.
+    ShadeDissolve,
 }
 
 impl Sound {
     /// All sounds in declaration order.
-    pub const ALL: [Self; 64] = [
+    pub const ALL: [Self; 71] = [
         Self::HammerFire,
         Self::HammerHit,
         Self::GrenadeFire,
@@ -204,7 +218,14 @@ impl Sound {
         Self::BatScreech,
         Self::Freeze,
         Self::FrostWave,
+        Self::NoteStone,
         Self::ChestOpen,
+        Self::StoneRumble,
+        Self::StoneThud,
+        Self::EchoShimmer,
+        Self::LanternOn,
+        Self::LanternOut,
+        Self::ShadeDissolve,
     ];
 
     /// Key in `sounds.toml` (`snake_case`).
@@ -273,7 +294,14 @@ impl Sound {
             Self::BatScreech => "bat_screech",
             Self::Freeze => "freeze",
             Self::FrostWave => "frost_wave",
+            Self::NoteStone => "note_stone",
             Self::ChestOpen => "chest_open",
+            Self::StoneRumble => "stone_rumble",
+            Self::StoneThud => "stone_thud",
+            Self::EchoShimmer => "echo_shimmer",
+            Self::LanternOn => "lantern_on",
+            Self::LanternOut => "lantern_out",
+            Self::ShadeDissolve => "shade_dissolve",
         }
     }
 
@@ -333,6 +361,7 @@ pub struct Listener {
 const PAIN_LONG_FROM: i32 = 3;
 
 /// Sounds for a simulation event; `pos_of` returns the position of a character.
+#[allow(clippy::too_many_lines)] // one arm per event
 pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>) -> Vec<Cue> {
     let at_player = |sound, player| pos_of(player).map(|p| Cue::at(sound, p));
     match *e {
@@ -394,6 +423,19 @@ pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>)
         Event::FlagReturn { .. } => vec![Cue::global(Sound::FlagReturn)],
         Event::FlagCapture { .. } => vec![Cue::global(Sound::FlagCapture)],
         Event::TileBroken { .. } | Event::TileSet { .. } => Vec::new(),
+        // star lantern (M2.5.5)
+        Event::Lantern { pos, lit } => vec![Cue::at(
+            if lit {
+                Sound::LanternOn
+            } else {
+                Sound::LanternOut
+            },
+            pos,
+        )],
+        // note stone (M2.5.3): a bell, pitched to its note
+        Event::Note { note, pos, .. } => {
+            vec![Cue::at(Sound::NoteStone, pos).pitched(2f32.powf(f32::from(note) / 12.0))]
+        }
         // thin ice (R2-M2.4): cracks, breaks (own sounds follow with M2.4.8)
         Event::IceCrack { tx, ty, broken } => {
             let pos = Vec2::new(
@@ -503,6 +545,21 @@ pub fn for_creature(e: &Event, kind: &str) -> Option<Vec<Cue>> {
             _ => None,
         },
         ("sand_crab", &Event::CreatureHit { pos, damage: 0, .. }) => one(Sound::ShellClack, pos),
+        // Sternschlucht (R2-M2.5, M2.5.9)
+        ("stone_goblin", &Event::CreatureAct { act, pos, .. }) => match act {
+            Warn => one(Sound::StoneRumble, pos),
+            Wake => Some(vec![Cue::at(Sound::StoneRumble, pos).pitched(1.3)]),
+            Land => one(Sound::StoneThud, pos),
+            _ => None,
+        },
+        ("stone_goblin", &Event::CreatureHit { pos, damage: 0, .. }) => {
+            Some(vec![Cue::at(Sound::ShellClack, pos).pitched(0.7)])
+        }
+        ("echo", &Event::CreatureAct { act: Wake, pos, .. }) => one(Sound::EchoShimmer, pos),
+        ("echo", &Event::CreatureDeath { pos, .. }) => {
+            Some(vec![Cue::at(Sound::EchoShimmer, pos).pitched(1.5)])
+        }
+        ("grey_shade", &Event::CreatureDeath { pos, .. }) => one(Sound::ShadeDissolve, pos),
         _ => None,
     }
 }

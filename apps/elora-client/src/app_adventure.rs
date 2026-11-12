@@ -84,6 +84,8 @@ pub struct AdventureMode {
     pub menu: Option<crate::adventure_menu::MenuState>,
     /// The selection in the menu is kept between openings.
     menu_memory: crate::adventure_menu::MenuState,
+    /// Full-screen world map open (key M, E-373).
+    pub world_map: bool,
     /// Conversation text appears gradually (E-286): shown characters, total length, node.
     reveal: f32,
     reveal_total: usize,
@@ -142,6 +144,8 @@ impl App {
 
     /// Start (`new`) or continue the adventure in slot `slot`.
     pub(crate) fn start_adventure(&mut self, slot: usize, new: bool) {
+        self.atlas
+            .get_or_insert_with(|| crate::world_map::Atlas::load(load_map));
         let content = Content::builtin();
         let session = if new {
             Session::new_game(content)
@@ -173,6 +177,7 @@ impl App {
             zone_center: Vec2::ZERO,
             menu: None,
             menu_memory: crate::adventure_menu::MenuState::default(),
+            world_map: false,
             reveal: 0.0,
             reveal_total: 0,
             reveal_key: (String::new(), String::new()),
@@ -248,6 +253,8 @@ impl App {
 
     /// Test game from the editor (E-269): test state, unsaved map, no save slot.
     pub(crate) fn start_adventure_test(&mut self) {
+        self.atlas
+            .get_or_insert_with(|| crate::world_map::Atlas::load(load_map));
         let Some(editor) = &self.editor else { return };
         let content = editor.content().cloned().unwrap_or_else(Content::builtin);
         let id = if editor.adventure_id.is_empty() {
@@ -287,6 +294,7 @@ impl App {
             zone_center: Vec2::ZERO,
             menu: None,
             menu_memory: crate::adventure_menu::MenuState::default(),
+            world_map: false,
             reveal: 0.0,
             reveal_total: 0,
             reveal_key: (String::new(), String::new()),
@@ -312,7 +320,11 @@ impl App {
     /// Is the game paused (conversation or exhaustion)?
     pub(crate) fn adventure_halted(&self) -> bool {
         self.adventure.as_ref().is_some_and(|a| {
-            a.conversation.is_some() || a.dead.is_some() || a.menu.is_some() || a.victory.is_some()
+            a.conversation.is_some()
+                || a.dead.is_some()
+                || a.menu.is_some()
+                || a.victory.is_some()
+                || a.world_map
         })
     }
 
@@ -357,6 +369,28 @@ impl App {
                 }
             }
             self.after_dialog();
+        }
+    }
+
+    /// M: open or close the full-screen world map (E-373); not during conversations, menus and
+    /// the victory screen.
+    pub(crate) fn toggle_world_map(&mut self) {
+        let Some(a) = &mut self.adventure else { return };
+        if a.world_map {
+            a.world_map = false;
+            self.ui_cues
+                .push(elora_audio::Cue::global(elora_audio::Sound::UiClose));
+            self.after_dialog();
+        } else if a.conversation.is_none()
+            && a.dead.is_none()
+            && a.menu.is_none()
+            && a.victory.is_none()
+        {
+            a.world_map = true;
+            self.ui_cues
+                .push(elora_audio::Cue::global(elora_audio::Sound::UiOpen));
+            self.controls.release_all();
+            self.set_cursor_grab(false);
         }
     }
 
@@ -640,6 +674,17 @@ impl App {
             }
             return;
         }
+        // world map: M (bound key) or Esc closes
+        if self.adventure.as_ref().is_some_and(|a| a.world_map) {
+            let m = self
+                .settings
+                .bindings
+                .trigger(crate::bindings::GameAction::Map);
+            if code == K::Escape || crate::bindings::Trigger::Key(code) == m {
+                self.toggle_world_map();
+            }
+            return;
+        }
         // adventure menu, shop, smithy: Tab (bound key) or Esc closes
         if self.adventure.as_ref().is_some_and(|a| a.menu.is_some()) {
             let tab = self
@@ -893,7 +938,6 @@ impl App {
             )
         };
         let world = &self.sandbox.world;
-        let session = &a.session;
         let mut ui = Ui {
             batch: &mut self.hud_batch,
             font: self.hud.font(),
@@ -909,38 +953,40 @@ impl App {
             code,
             screen,
         };
-        let secs = world.tick as f32 / elora_sim::TICKS_PER_SECOND as f32;
-        if a.conversation.is_none() && a.dead.is_none() && a.menu.is_none() {
-            status_bars(&mut ui, &refs, session, secs);
-        }
-        // health bar of an awake guardian (R2-M2.1)
-        if a.conversation.is_none() && a.menu.is_none() {
-            boss_health(&mut ui, &refs, world);
-        }
-        // shouts above the characters
-        let npcs = session.npcs(world);
-        for (npc, text, _) in &a.barks {
-            if let Some(n) = npcs.iter().find(|n| &n.id == npc) {
-                let p = to_screen(n.pos - Vec2::new(0.0, 44.0));
-                crate::adventure_hud::bubble(&mut ui, text, p);
-            }
-        }
-        // action key hint
-        if a.conversation.is_none() && a.dead.is_none() {
-            action_hint(&mut ui, &refs, session, world, &to_screen);
-        }
+        world_hud(&mut ui, &refs, a, world, &to_screen);
         // conversation (E-222)
         let chosen = conversation(&mut ui, &refs, a, &mut self.ui_cues, dt);
         let session = &a.session;
+        // world map (R2-WM): in the menu tab and full-screen on M
+        let tint = crate::skins::tint(
+            self.net.skin,
+            elora_sim::Team::None,
+            false,
+            crate::draw::team_color,
+        );
+        let view = self
+            .atlas
+            .as_ref()
+            .filter(|_| a.menu.is_some() || a.world_map)
+            .map(|atlas| {
+                let looks = MapLooks {
+                    art: &self.world_map_art,
+                    lang: &self.lang,
+                    code,
+                    figure: &self.figure_art,
+                    tint: &tint,
+                    time: self.figures.time(),
+                };
+                map_view(atlas, session, world, &looks)
+            });
+        if a.world_map
+            && let Some(v) = &view
+        {
+            full_map(&mut ui, v, screen);
+        }
         // adventure menu
         let mut menu_cmd = None;
         if let Some(st) = &mut a.menu {
-            let tint = crate::skins::tint(
-                self.net.skin,
-                elora_sim::Team::None,
-                false,
-                crate::draw::team_color,
-            );
             let data = crate::adventure_menu::MenuData {
                 lang: &self.lang,
                 code,
@@ -950,6 +996,7 @@ impl App {
                 figure: &self.figure_art,
                 tint: &tint,
                 screen,
+                world: view.as_ref(),
             };
             menu_cmd = crate::adventure_menu::draw(&mut ui, &data, st);
         }
@@ -1247,4 +1294,115 @@ pub fn play_time(lang: &Lang, secs: u64) -> String {
         "adventure.time",
         &[("h", &(secs / 3600)), ("m", &((secs / 60) % 60))],
     )
+}
+
+/// Full-screen world map (key M, E-373): dark backdrop, title, the map and how to close it.
+pub(crate) fn full_map(ui: &mut Ui<'_>, v: &crate::world_map::View<'_>, screen: Vec2) {
+    let s = ui.s;
+    ui.batch.fill_rect(
+        Vec2::ZERO,
+        screen,
+        elora_render::Color::rgba(0.118, 0.165, 0.212, 0.88),
+    );
+    let pad = 28.0 * s;
+    ui.label(
+        v.lang.t("adventure.map_title"),
+        Vec2::new(pad, pad * 0.6),
+        18.0,
+        elora_render::Color::hex(0xffffff),
+        elora_render::Align::Left,
+    );
+    ui.label(
+        v.lang.t("adventure.map_close"),
+        Vec2::new(screen.x - pad, pad * 0.75),
+        11.0,
+        elora_render::Color::hex(0xcfd8e0),
+        elora_render::Align::Right,
+    );
+    let area = crate::ui::Rect::new(pad, pad * 2.2, screen.x - 2.0 * pad, screen.y - pad * 3.2);
+    crate::world_map::draw(ui, area, v);
+}
+
+/// Graphics and language for [`map_view`].
+struct MapLooks<'a> {
+    art: &'a crate::world_map::WorldMapArt,
+    lang: &'a crate::lang::Lang,
+    code: &'a str,
+    figure: &'a crate::figure::FigureArt,
+    tint: &'a elora_render::Tint,
+    time: f32,
+}
+
+/// The world map of the running adventure (R2-WM): Elora's place, the quest goal, the current
+/// map.
+fn map_view<'a>(
+    atlas: &'a crate::world_map::Atlas,
+    session: &'a Session,
+    world: &'a elora_sim::World,
+    looks: &MapLooks<'a>,
+) -> crate::world_map::View<'a> {
+    crate::world_map::View {
+        art: looks.art,
+        atlas,
+        content: &session.content,
+        save: &session.save,
+        lang: looks.lang,
+        code: looks.code,
+        figure: looks.figure,
+        tint: looks.tint,
+        spot: session.map_spot(world),
+        goal: elora_adventure::world_map::quest_goal(
+            &session.content,
+            &session.save,
+            &atlas.refs(),
+            &session.map_name,
+        ),
+        here: world
+            .character(session.player)
+            .map(|c| (session.map_name.as_str(), &session.map, c.core.pos)),
+        time: looks.time,
+    }
+}
+
+/// The HUD in the world: status bars, an awake guardian's health, shouts above the characters
+/// and the action key hint.
+fn world_hud(
+    ui: &mut Ui<'_>,
+    refs: &HudRefs<'_>,
+    a: &AdventureMode,
+    world: &elora_sim::World,
+    to_screen: &dyn Fn(Vec2) -> Vec2,
+) {
+    let session = &a.session;
+    let secs = world.tick as f32 / elora_sim::TICKS_PER_SECOND as f32;
+    if a.conversation.is_none() && a.dead.is_none() && a.menu.is_none() {
+        status_bars(ui, refs, session, secs);
+    }
+    // health bar of an awake guardian (R2-M2.1), or Luma's song in the climax (M2.5.5)
+    if a.conversation.is_none() && a.menu.is_none() {
+        if let Some(c) = &session.climax {
+            crate::adventure_hud::song_bar(
+                ui,
+                refs.lang,
+                c,
+                c.paused(world.tick),
+                secs,
+                refs.screen,
+            );
+        } else {
+            boss_health(ui, refs, world);
+        }
+    }
+    // shouts above the characters
+    let npcs = session.npcs(world);
+    for (npc, text, _) in &a.barks {
+        if let Some(n) = npcs.iter().find(|n| &n.id == npc) {
+            let p = to_screen(n.pos - Vec2::new(0.0, 44.0));
+            crate::adventure_hud::bubble(ui, text, p);
+        }
+    }
+    // action key hint
+    if a.conversation.is_none() && a.dead.is_none() {
+        action_hint(ui, refs, session, world, to_screen);
+    }
 }

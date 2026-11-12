@@ -1,0 +1,16 @@
+# Light sources of the night (R2-M2.5, M2.5.1): radius in world units (32 = one tile).
+# Only matters where an area of the adventure is dark (`darkness` in worldmap.toml).
+
+# Elora's own small light: she always sees about six tiles around her.
+elora = 192
+
+[decor]
+glow_mushrooms = 150
+lantern = 170
+party-lantern-party = 150
+party-lantern-yellow-party = 150
+fireplace = 210
+# chapter 5 (M2.5.7)
+crystal_star = 150
+light_threads = 110
+star-spring-freed = 220

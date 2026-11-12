@@ -44,6 +44,8 @@ pub struct Sandbox {
     watcher: Option<MapWatcher>,
     /// Result of the last hot reload (error text for an invalid map).
     pub reload_error: Option<String>,
+    /// Night to try out on any map (debug panel, M2.5.1): 0 = off.
+    pub night_preview: f32,
     /// Running input recording (M1.6).
     pub recording: Option<Recording>,
     /// Events since the last fetch (for effects).
@@ -81,6 +83,7 @@ impl Sandbox {
             accumulator: Duration::ZERO,
             watcher,
             reload_error: None,
+            night_preview: 0.0,
             recording: None,
             pending_events: Vec::new(),
             prev_creatures: std::collections::HashMap::new(),
@@ -516,6 +519,7 @@ impl Sandbox {
         }
         scene.add_shots(&self.world, alpha, 1.0, |_| true);
         scene.add_creatures(&self.world, &self.prev_creatures, alpha);
+        scene.add_islands(&self.world, alpha);
         scene.add_pickups(&self.world);
         scene.add_flags(&self.world);
         scene
@@ -542,6 +546,8 @@ pub fn creature_kinds() -> Vec<elora_sim::CreatureKind> {
 fn fresh_world(map: &Map, tuning: Tuning) -> (World, usize) {
     let mut world = map.world(tuning);
     world.creature_kinds = creature_kinds();
+    // glowing decoration: the creatures of the night react to it (M2.5.4)
+    world.lights = elora_map::lights::map_lights(map);
     let player = world.join();
     if let Some(pos) = world.best_spawn() {
         world.spawn_character(player, pos);

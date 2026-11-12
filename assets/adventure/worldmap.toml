@@ -52,6 +52,12 @@ weather = [
     { kind = "rain", weight = 1, intensity = [0.3, 0.6] },
 ]
 
+# map sections on the world map (R2-WM, E-370): polyline 0..1, from the side towards
+# Tauwinkel (left end of the map) outwards; a single point = arena or village
+[[area.section]]
+map = "tauwinkel"
+path = [[0.5, 0.56]]
+
 [[area]]
 id = "bluetenwiesen"
 name = { de = "Blütenwiesen", en = "Blütenwiesen" }
@@ -74,6 +80,24 @@ weather = [
     { kind = "blossoms", weight = 3, intensity = [0.4, 0.8], wind = [0.2, 0.7] },
     { kind = "rain", weight = 1, intensity = [0.3, 0.6] },
 ]
+
+# map sections on the world map (R2-WM, E-370): polyline 0..1, from the side towards
+# Tauwinkel (left end of the map) outwards; a single point = arena or village
+[[area.section]]
+map = "meadow-1"
+path = [[0.294, 0.686], [0.277, 0.697], [0.259, 0.687]]
+
+[[area.section]]
+map = "meadow-2"
+path = [[0.259, 0.687], [0.248, 0.715], [0.230, 0.726]]
+
+[[area.section]]
+map = "meadow-3"
+path = [[0.230, 0.726], [0.213, 0.736], [0.195, 0.727]]
+
+[[area.section]]
+map = "meadow-arena"
+path = [[0.176, 0.739]]
 
 [[area]]
 id = "murmelwald"
@@ -100,6 +124,24 @@ weather = [
     { kind = "leaves", weight = 3, intensity = [0.4, 0.8], wind = [-0.6, 0.6] },
 ]
 
+# map sections on the world map (R2-WM, E-370): polyline 0..1, from the side towards
+# Tauwinkel (left end of the map) outwards; a single point = arena or village
+[[area.section]]
+map = "forest-1"
+path = [[0.233, 0.360], [0.216, 0.346], [0.206, 0.318]]
+
+[[area.section]]
+map = "forest-2"
+path = [[0.206, 0.318], [0.188, 0.325], [0.171, 0.313]]
+
+[[area.section]]
+map = "forest-3"
+path = [[0.171, 0.313], [0.154, 0.300], [0.143, 0.271]]
+
+[[area.section]]
+map = "forest-arena"
+path = [[0.125, 0.257]]
+
 [[area]]
 id = "glutsandwueste"
 name = { de = "Glutsandwüste", en = "Glutsandwüste" }
@@ -124,6 +166,24 @@ weather = [
     { kind = "sandstorm", weight = 1, intensity = [0.4, 0.7], wind = [0.3, 0.8] },
 ]
 
+# map sections on the world map (R2-WM, E-370): polyline 0..1, from the side towards
+# Tauwinkel (left end of the map) outwards; a single point = arena or village
+[[area.section]]
+map = "desert-1"
+path = [[0.500, 0.286], [0.500, 0.252], [0.511, 0.224]]
+
+[[area.section]]
+map = "desert-2"
+path = [[0.511, 0.224], [0.500, 0.196], [0.500, 0.161]]
+
+[[area.section]]
+map = "desert-3"
+path = [[0.500, 0.161], [0.500, 0.127], [0.511, 0.099]]
+
+[[area.section]]
+map = "desert-arena"
+path = [[0.511, 0.061]]
+
 [[area]]
 id = "frostspitzen"
 name = { de = "Frostspitzen", en = "Frostspitzen" }
@@ -147,9 +207,47 @@ weather = [
     { kind = "clear", weight = 2 },
 ]
 
+# map sections on the world map (R2-WM, E-370): polyline 0..1, from the side towards
+# Tauwinkel (left end of the map) outwards; a single point = arena or village
+[[area.section]]
+map = "frost-1"
+path = [[0.767, 0.343], [0.785, 0.330], [0.803, 0.336]]
+
+[[area.section]]
+map = "frost-2"
+path = [[0.803, 0.336], [0.812, 0.307], [0.829, 0.292]]
+
+[[area.section]]
+map = "frost-3"
+path = [[0.829, 0.292], [0.846, 0.279], [0.865, 0.286]]
+
+[[area.section]]
+map = "frost-arena"
+path = [[0.883, 0.271]]
+
 [[area]]
 id = "sternschlucht"
 name = { de = "Sternschlucht", en = "Sternschlucht" }
 pos = [0.8, 0.74]
 color = "#a77be0"
 maps = "gorge-"
+# night (R2-M2.5, M2.5.1): dark outside the lights of assets/map/lights.toml; single maps can
+# override it, e.g. map_darkness = { "gorge-3" = 1.0 }
+darkness = 0.9
+
+# chapter 5 maps (M2.5.7): into the gorge from the west, the ruins in the east
+[[area.section]]
+map = "gorge-1"
+path = [[0.745, 0.700], [0.765, 0.715], [0.780, 0.725]]
+
+[[area.section]]
+map = "gorge-2"
+path = [[0.780, 0.725], [0.795, 0.738], [0.810, 0.745]]
+
+[[area.section]]
+map = "gorge-3"
+path = [[0.810, 0.745], [0.828, 0.756], [0.845, 0.766]]
+
+[[area.section]]
+map = "gorge-spring"
+path = [[0.858, 0.775]]

@@ -5,12 +5,17 @@
 //! Pure logic: loading the maps and writing the save games is done by the caller
 //! ([`SessionEvent::Travel`], [`SessionEvent::Save`]).
 
+pub(crate) mod climax;
 mod decor;
 mod followers;
 mod objects;
 mod quests;
 mod temperature;
 mod weather;
+mod world_map;
+
+pub use climax::{Climax, LUMA_PROTECTED, LUMA_SONG, Phase as ClimaxPhase, VERSES, withered};
+pub use world_map::MapSpot;
 
 pub use decor::{PARTY, SPRINGS_FREED};
 pub use weather::weather_env;
@@ -128,6 +133,9 @@ pub struct NpcView {
     pub facing: i8,
 }
 
+/// How many of the last played notes the session keeps (M2.5.3).
+pub const NOTES_KEPT: usize = 16;
+
 /// The running adventure.
 #[derive(Debug, Clone)]
 #[allow(clippy::struct_excessive_bools)] // independent states of the session
@@ -142,6 +150,9 @@ pub struct Session {
     pub map: Map,
     /// Hook tip in the last tick (pull hook checks the whole flight path).
     last_hook: Option<Vec2>,
+    /// The last notes Elora played on note stones on this map, oldest first (M2.5.3; at most
+    /// [`NOTES_KEPT`]).
+    pub notes: Vec<u8>,
     /// Elora has been standing in glow mushrooms for this many ticks (colourful daze after 1.2 s).
     in_mushrooms: u32,
     /// Heat bar 0..1 (E-320); only in hot areas.
@@ -164,6 +175,8 @@ pub struct Session {
     gloomy: bool,
     /// Avalanche slopes of the map (R2-M2.4).
     avalanches: crate::avalanche::Avalanches,
+    /// Running climax “Protect Luma” (R2-M2.5, M2.5.5).
+    pub climax: Option<Climax>,
     /// Character id of Elora in the world.
     pub player: usize,
     /// Enemy id of the world → object id of the map.
@@ -230,6 +243,7 @@ impl Session {
             base_weather: elora_map::Weather::CLEAR,
             gloomy: false,
             avalanches: crate::avalanche::Avalanches::default(),
+            climax: None,
             followers: BTreeMap::new(),
             in_mushrooms: 0,
             heat: 0.0,
@@ -238,6 +252,7 @@ impl Session {
             cold: 0.0,
             frozen: false,
             last_hook: None,
+            notes: Vec::new(),
             pending: Vec::new(),
             dead: false,
         }
@@ -284,6 +299,8 @@ impl Session {
         adapt_decor(&mut map, &self.save);
         self.base_weather = map.weather;
         self.avalanches = crate::avalanche::Avalanches::default();
+        self.climax = None;
+        self.notes.clear();
         self.gloomy = c.area_of(name).is_some_and(|a| self.gloomy(a));
         map.weather = self.pick_weather(name);
         let tuning = self.save.tuning(c, base);
@@ -291,6 +308,12 @@ impl Session {
         world.creature_kinds.clone_from(&c.creatures);
         world.adventure = true;
         world.weather = weather_env(map.weather);
+        // night: the glowing decoration lights the dark (M2.5.1)
+        if c.area_of(name)
+            .is_some_and(|a| a.darkness > 0.0 || a.map_darkness.values().any(|d| *d > 0.0))
+        {
+            world.lights = elora_map::lights::map_lights(&map);
+        }
 
         let objects = &map.adventure.objects;
         let pos = objects
@@ -487,6 +510,12 @@ impl Session {
         out.extend(n.into_iter().map(SessionEvent::Notice));
     }
 
+    /// Did Elora just play `tune` on the note stones (the last notes, in this order)? For
+    /// Luma's song (M2.5.3, content in M2.5.6).
+    pub fn played(&self, tune: &[u8]) -> bool {
+        !tune.is_empty() && self.notes.ends_with(tune)
+    }
+
     /// After every world tick; `interact` = action key pressed in this tick.
     pub fn tick(&mut self, world: &mut World, interact: bool) -> Vec<SessionEvent> {
         let mut out = std::mem::take(&mut self.pending);
@@ -500,6 +529,17 @@ impl Session {
             self.save.play_time_secs += 1;
         }
         let me = self.player;
+        // note stones (M2.5.3): remember the tune for Luma's song
+        for e in &world.events {
+            if let elora_sim::Event::Note { player, note, .. } = *e
+                && player == me
+            {
+                self.notes.push(note);
+                if self.notes.len() > NOTES_KEPT {
+                    self.notes.remove(0);
+                }
+            }
+        }
         if self.world_events(world, &mut out) {
             return out;
         }
@@ -558,6 +598,11 @@ impl Session {
         self.avalanches.tick(&self.map, world, Some(pos));
         out.extend(self.touch(world, pos));
         out.extend(self.areas(pos));
+        self.maybe_start_climax(world);
+        self.tick_climax(world, &mut out);
+        if self.dead {
+            return out;
+        }
         out.extend(self.barks(pos));
         if interact && let Some((id, _)) = self.interactable(pos) {
             out.extend(self.interact(world, &id));

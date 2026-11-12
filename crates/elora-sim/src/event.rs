@@ -188,6 +188,22 @@ pub enum Event {
         /// Broken through (now ice water).
         broken: bool,
     },
+    /// A note stone was touched (R2-M2.5, M2.5.3): it sounds and lights its star bridges.
+    Note {
+        /// Player slot that touched it.
+        player: usize,
+        /// Pitch in semitones above c.
+        note: u8,
+        /// Centre of the stone.
+        pos: Vec2,
+    },
+    /// A star lantern lights up (`lit`) or a grey shadow puts it out (R2-M2.5, M2.5.5).
+    Lantern {
+        /// Centre of the lantern.
+        pos: Vec2,
+        /// Lit up (otherwise put out).
+        lit: bool,
+    },
     /// A tile was temporarily placed or reset (root wall, R2-M2.2).
     TileSet {
         /// Tile column.

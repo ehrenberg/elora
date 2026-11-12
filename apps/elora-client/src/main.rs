@@ -56,6 +56,7 @@ mod startup;
 mod tuning_file;
 mod ui;
 mod weather;
+mod world_map;
 
 use std::collections::{BTreeMap, VecDeque};
 use std::path::{Path, PathBuf};
@@ -240,6 +241,10 @@ struct App {
     figure_art: figure::FigureArt,
     item_art: items::ItemArt,
     creature_art: creatures::CreatureArt,
+    /// World map graphics (R2-WM).
+    world_map_art: world_map::WorldMapArt,
+    /// All adventure maps for the world map (loaded with the first adventure).
+    atlas: Option<world_map::Atlas>,
     map_view: map_view::MapView,
     /// Empty skin table for the sandbox.
     no_skins: BTreeMap<usize, elora_protocol::Skin>,

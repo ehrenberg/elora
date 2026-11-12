@@ -49,6 +49,27 @@ const ARMOR: Color = Color::hex(0xe0b85a);
 const SPAWN: Color = Color::rgba(1.0, 1.0, 1.0, 0.35);
 
 /// Draws map, pickups, figures, projectiles, lasers, effects and crosshair.
+/// Updrafts and star islands (M2.5.2), behind the figures.
+fn islands(batch: &mut ShapeBatch, scene: &Scene, art: &crate::map_art::MapArt, time: f32) {
+    for &(min, size) in &scene.updrafts {
+        crate::map_art::draw_updraft(batch, min, size, time);
+    }
+    for &(min, size, sinks) in &scene.islands {
+        crate::map_art::draw_island(batch, art, min, size, sinks);
+    }
+    // note stones and their star bridges (M2.5.3)
+    for &(min, size, light) in &scene.bridges {
+        crate::map_art::draw_star_bridge(batch, min, size, light, time);
+    }
+    for &(min, size, light) in &scene.note_stones {
+        crate::map_art::draw_note_stone(batch, art, min, size, light);
+    }
+    // star lanterns of the climax (M2.5.5)
+    for &(min, size, light) in &scene.lanterns {
+        crate::map_art::draw_lantern(batch, art, min, size, light);
+    }
+}
+
 pub fn scene(
     batch: &mut ShapeBatch,
     scene: &Scene,
@@ -82,6 +103,7 @@ pub fn scene(
     if let Some(map) = map {
         ground_shadows(batch, map, scene);
     }
+    islands(batch, scene, &map_view.art, time);
     // weather behind the figures: particles of the back layer, splashes (R2-W1)
     weather.draw_back(batch);
     spawns_and_pickups(batch, scene, items, time);
@@ -455,6 +477,166 @@ mod tests {
         let svg = batch.debug_svg(tl, tl + camera.size, BACKGROUND);
         std::fs::write(
             concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/world.svg"),
+            svg,
+        )
+        .unwrap();
+    }
+    /// Small test map of the Sternschlucht mechanics over a spike pit: star islands, an updraft
+    /// (M2.5.2), note stones and a star bridge (M2.5.3), creatures of the night (M2.5.4) and star
+    /// lanterns (M2.5.5). For trying them out:
+    /// `cargo test -p elora-client --bin elora gorge_demo_map -- --ignored` writes
+    /// `target/gorge-demo.emap`.
+    #[test]
+    #[ignore = "only writes a file for trying it out"]
+    fn gorge_demo_map() {
+        let (w, h) = (64, 30);
+        let rows: Vec<String> = (0..h)
+            .map(|y| {
+                (0..w)
+                    .map(|x| match (x, y) {
+                        (4, 21) => 'S',
+                        (0 | 63, _) | (_, 0 | 29) | (1..=11 | 52..=62, 22..) | (52..=62, 12) => '#',
+                        (12..=51, 28) => '^',
+                        _ => '.',
+                    })
+                    .collect()
+            })
+            .collect();
+        let refs: Vec<&str> = rows.iter().map(String::as_str).collect();
+        let mut map = elora_map::Map::from_rows("gorge-demo", &refs).unwrap();
+        let ts = 32.0;
+        let zone = |id: &str, x: f32, y: f32, w: f32, h: f32| elora_map::Object {
+            id: id.into(),
+            pos: Vec2::new(x * ts, y * ts),
+            kind: elora_map::ObjectKind::Zone {
+                size: Vec2::new(w * ts, h * ts),
+            },
+        };
+        map.adventure.objects = vec![
+            zone("island-fixed", 13.0, 22.0, 4.0, 1.0),
+            zone("island-drift", 19.0, 21.0, 5.0, 1.0),
+            zone("island-drift-to", 29.0, 21.0, 5.0, 1.0),
+            zone("island-sink", 36.0, 22.0, 4.0, 1.0),
+            zone("updraft-1", 43.0, 8.0, 4.0, 19.0),
+            zone("note-e-1", 8.0, 20.0, 2.0, 2.0),
+            zone("note-e-1-bridge", 12.0, 25.0, 40.0, 0.5),
+            zone("note-g-1", 56.0, 20.0, 2.0, 2.0),
+            zone("note-c2-1", 58.0, 10.0, 2.0, 2.0),
+            // star lanterns of the climax (M2.5.5): one at the start, one on the high ledge
+            zone("lantern-start", 6.0, 20.0, 1.0, 2.0),
+            zone("lantern-ledge", 54.0, 10.0, 1.0, 2.0),
+        ];
+        // creatures of the night (M2.5.4): moths at the top of the updraft, a stone goblin on
+        // the right, an echo mirror on the high ledge; a lantern gives them light to avoid
+        let enemy = |id: &str, kind: &str, x: f32, y: f32| elora_map::Object {
+            id: id.into(),
+            pos: Vec2::new(x * ts, y * ts),
+            kind: elora_map::ObjectKind::Creature {
+                kind: kind.into(),
+                persistent: false,
+            },
+        };
+        map.adventure.objects.extend([
+            enemy("moth-1", "shadow_moth", 47.0, 5.0),
+            enemy("moth-2", "shadow_moth", 49.0, 6.0),
+            enemy("moth-3", "shadow_moth", 48.0, 4.0),
+            enemy("goblin-1", "stone_goblin", 59.0, 22.0 - 15.0 / ts),
+            enemy("mirror-1", "echo_mirror", 61.0, 12.0 - 15.0 / ts),
+        ]);
+        map.decor_back.push(elora_map::Decor::new(
+            elora_map::Art::Builtin("lantern".into()),
+            Vec2::new(54.0 * ts, 22.0 * ts),
+        ));
+        let path = std::path::Path::new(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../target/gorge-demo.emap"
+        ));
+        map.save(path).unwrap();
+        // loads again and runs for 20 s with all creatures
+        let back = elora_map::Map::load(path).unwrap();
+        let mut world = back.world(Tuning::default());
+        world.creature_kinds = crate::sandbox::creature_kinds();
+        world.lights = elora_map::lights::map_lights(&back);
+        let me = world.join();
+        world.spawn_character(me, world.best_spawn().unwrap());
+        for o in &back.adventure.objects {
+            if let elora_map::ObjectKind::Creature { kind, .. } = &o.kind {
+                let k = world.creature_kind(kind).unwrap();
+                world.add_creature(k, o.pos).unwrap();
+            }
+        }
+        for _ in 0..1000 {
+            world.step(&[]);
+        }
+        assert!(world.creatures.len() >= 5);
+        assert_eq!(world.lanterns.len(), 2);
+    }
+
+    /// Star islands and an updraft (M2.5.2) for visual inspection:
+    /// `cargo test -p elora-client --bin elora islands_sheet -- --ignored`, then
+    /// `cargo xtask svg-preview target/islands.svg target/islands.png 1200`.
+    #[test]
+    #[ignore = "only writes a file for visual inspection"]
+    fn islands_sheet() {
+        let art = crate::map_art::MapArt::load();
+        let mut batch = ShapeBatch::default();
+        batch.fill_rect(Vec2::ZERO, Vec2::new(1200.0, 500.0), Color::hex(0x2f3778));
+        crate::map_art::draw_updraft(
+            &mut batch,
+            Vec2::new(860.0, 40.0),
+            Vec2::new(128.0, 420.0),
+            0.3,
+        );
+        for (x, y, w, sinks) in [
+            (60.0, 300.0, 96.0, false),
+            (240.0, 260.0, 160.0, false),
+            (480.0, 320.0, 256.0, true),
+        ] {
+            crate::map_art::draw_island(
+                &mut batch,
+                &art,
+                Vec2::new(x, y),
+                Vec2::new(w, 32.0),
+                sinks,
+            );
+            // walkable surface
+            batch.stroke_line(
+                Vec2::new(x, y),
+                Vec2::new(x + w, y),
+                1.0,
+                Color::hex(0xff0000),
+            );
+        }
+        // note stones dark, lit and flickering, a star bridge
+        for (x, light) in [(80.0, 0.0), (180.0, 1.0), (280.0, 0.35)] {
+            crate::map_art::draw_note_stone(
+                &mut batch,
+                &art,
+                Vec2::new(x, 400.0),
+                Vec2::new(64.0, 64.0),
+                light,
+            );
+        }
+        crate::map_art::draw_star_bridge(
+            &mut batch,
+            Vec2::new(380.0, 440.0),
+            Vec2::new(400.0, 16.0),
+            1.0,
+            0.3,
+        );
+        // star lanterns dark and lit (M2.5.5)
+        for (x, light) in [(1040.0, 0.0), (1120.0, 1.0)] {
+            crate::map_art::draw_lantern(
+                &mut batch,
+                &art,
+                Vec2::new(x, 400.0),
+                Vec2::new(32.0, 64.0),
+                light,
+            );
+        }
+        let svg = batch.debug_svg(Vec2::ZERO, Vec2::new(1200.0, 500.0), BACKGROUND);
+        std::fs::write(
+            concat!(env!("CARGO_MANIFEST_DIR"), "/../../target/islands.svg"),
             svg,
         )
         .unwrap();

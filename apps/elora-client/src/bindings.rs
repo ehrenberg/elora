@@ -47,13 +47,15 @@ pub enum GameAction {
     Interact,
     /// Drink a healing potion (E-265).
     QuickHeal,
+    /// World map (adventure, R2-WM, E-373).
+    Map,
     Kill,
     VoteYes,
     VoteNo,
 }
 
 impl GameAction {
-    pub const ALL: [Self; 21] = [
+    pub const ALL: [Self; 22] = [
         Self::Left,
         Self::Right,
         Self::Jump,
@@ -72,6 +74,7 @@ impl GameAction {
         Self::Emote,
         Self::Interact,
         Self::QuickHeal,
+        Self::Map,
         Self::Kill,
         Self::VoteYes,
         Self::VoteNo,
@@ -98,6 +101,7 @@ impl GameAction {
             Self::Emote => "emote",
             Self::Interact => "interact",
             Self::QuickHeal => "quick_heal",
+            Self::Map => "map",
             Self::Kill => "kill",
             Self::VoteYes => "vote_yes",
             Self::VoteNo => "vote_no",
@@ -108,7 +112,7 @@ impl GameAction {
         Self::ALL.into_iter().find(|a| a.name() == name)
     }
 
-    /// Default binding (E-043, E-051, E-078, E-091, E-141, E-226, E-253, E-265).
+    /// Default binding (E-043, E-051, E-078, E-091, E-141, E-226, E-253, E-265, E-373).
     fn default_trigger(self) -> Trigger {
         use KeyCode as K;
         match self {
@@ -130,6 +134,7 @@ impl GameAction {
             Self::Emote => Trigger::Key(K::ControlLeft),
             Self::Interact => Trigger::Key(K::KeyE),
             Self::QuickHeal => Trigger::Key(K::KeyQ),
+            Self::Map => Trigger::Key(K::KeyM),
             Self::Kill => Trigger::Key(K::KeyK),
             Self::VoteYes => Trigger::Key(K::F3),
             Self::VoteNo => Trigger::Key(K::F4),

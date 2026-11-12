@@ -67,7 +67,8 @@ impl App {
         } else {
             None
         };
-        self.world_look(dt, info.tick);
+        let elora = scene.local().map(elora_client::scene::SceneChar::pos);
+        self.world_look(dt, info.tick, &camera, elora);
         if !self.present(&camera, screen, &info) {
             return;
         }

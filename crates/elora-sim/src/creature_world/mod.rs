@@ -11,6 +11,7 @@ mod diver;
 mod effects;
 mod ground;
 mod leaper;
+mod night;
 mod queen;
 mod serpent;
 mod turret;
@@ -51,7 +52,7 @@ fn sign(v: f32) -> i8 {
 /// Is there something solid (or a platform) below the point?
 fn floor_at(col: &Collision, p: Vec2) -> bool {
     let t = col.tile_at(p);
-    t.is_solid() || t == Tile::Platform
+    t.is_solid() || t == Tile::Platform || col.movers.island_at(p)
 }
 
 /// Arcing throw from `from` to `to`: horizontal with `speed`, vertical such that the
@@ -128,6 +129,7 @@ impl World {
             tug: 0,
             wall_timer: 0,
             hits: 0,
+            trail: std::collections::VecDeque::new(),
         });
         Some(id)
     }
@@ -343,6 +345,12 @@ impl World {
         ) {
             c.vel += force;
         }
+        // grey shadows are only pushed back, never hurt (E-362)
+        let damage = if matches!(kind.behavior, Behavior::Shade { .. }) {
+            0
+        } else {
+            damage
+        };
         c.health -= damage;
         c.hits = c.hits.saturating_add(1);
         c.hit_tick = Some(tick);
@@ -354,6 +362,13 @@ impl World {
         });
         if c.health <= 0 {
             self.kill_creature(i, from, true);
+        }
+    }
+
+    /// Removes a creature without loot and without a winner (dissolved, burst).
+    pub fn remove_creature(&mut self, id: u32) {
+        if let Some(i) = self.creature_index(id) {
+            self.kill_creature(i, None, false);
         }
     }
 

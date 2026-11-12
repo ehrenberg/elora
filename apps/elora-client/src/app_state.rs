@@ -43,6 +43,14 @@ impl App {
             net.sandbox_mode = Some(r.cfg.mode);
             net.sandbox_instagib = r.cfg.instagib;
         }
+        let sounds = sound::Sounds::new(settings.audio);
+        let lang = lang::Lang::new(settings.language);
+        // shown once in the main menu: a silent game is otherwise easy to miss (E-375)
+        let status = if sounds.has_device() {
+            String::new()
+        } else {
+            lang.t("settings.no_device").to_owned()
+        };
         Self {
             gfx: None,
             sandbox,
@@ -55,7 +63,7 @@ impl App {
             hud_batch: ShapeBatch::default(),
             hud: hud::Hud::new(),
             emotes: emotes::Emotes::new(),
-            sounds: sound::Sounds::new(settings.audio),
+            sounds,
             chat_heard: None,
             ui_cues: Vec::new(),
             owned_weapons: [false; 3],
@@ -67,6 +75,8 @@ impl App {
             figure_art: figure::FigureArt::load(),
             item_art: items::ItemArt::load(),
             creature_art: creatures::CreatureArt::load(),
+            world_map_art: crate::world_map::WorldMapArt::load(),
+            atlas: None,
             map_view: map_view::MapView::default(),
             no_skins: BTreeMap::new(),
             last_frame: Instant::now(),
@@ -74,12 +84,12 @@ impl App {
             frame_times: VecDeque::new(),
             cursor_grabbed: false,
             show_panel: false,
-            status: String::new(),
+            status,
             error: None,
             chat_input: game_ui::ChatInput::default(),
             scoreboard: false,
             killfeed: VecDeque::new(),
-            lang: lang::Lang::new(settings.language),
+            lang,
             settings,
             screen: Screen::Menu,
             editor: None,

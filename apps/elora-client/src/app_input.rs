@@ -72,6 +72,12 @@ impl App {
             KeyCode::F1 => {
                 // panel open: mouse free for operating it; closed: back into the game
                 self.show_panel = !self.show_panel;
+                if !self.show_panel
+                    && let Some(gfx) = &self.gfx
+                {
+                    // no widget keeps the keyboard (movement keys belong to the game again)
+                    gfx.gui.ctx.memory_mut(egui::Memory::stop_text_input);
+                }
                 self.set_cursor_grab(!self.show_panel && !self.menu.paused);
             }
             KeyCode::KeyR if unbound && !online && self.adventure.is_none() => {
@@ -147,7 +153,12 @@ impl App {
             self.menu_mouse_button(button, state);
         } else if self.cursor_grabbed {
             self.trigger(Trigger::Mouse(button), state.is_pressed());
-        } else if state.is_pressed() && !self.gfx.as_ref().is_some_and(|g| g.gui.wants_pointer()) {
+        } else if state.is_pressed()
+            && !self.show_panel
+            && !self.gfx.as_ref().is_some_and(|g| g.gui.wants_pointer())
+        {
+            // while the debug panel is open the mouse stays free for it (combo boxes, sliders);
+            // F1 closes it and returns to the game
             self.set_cursor_grab(true);
         }
     }
@@ -196,6 +207,12 @@ impl App {
             GameAction::Scoreboard if self.adventure.is_some() => {
                 if down {
                     self.toggle_adventure_menu();
+                }
+            }
+            // world map (R2-WM, E-373)
+            GameAction::Map if self.adventure.is_some() => {
+                if down {
+                    self.toggle_world_map();
                 }
             }
             // scoreboard while held (E-078)

@@ -22,6 +22,7 @@ from chapter3_drafts import (dune_worm, spark_moth, watering_spot, palma, ruin_s
                                 sand_crab, sand_serpent, sirup, stone_tablet, water_skin)
 from chapter4_drafts import (icicle_enemy, bat, flocke, frost_ghost, grey_trail_ice,  # noqa: E402
                                 climber, kristella, seal, snow_boulder)
+from chapter5_drafts import dark_mirror, echo, grey_shadow, shadow_moth, stone_goblin, withered_one  # noqa: E402
 
 
 def straw_dummy():
@@ -92,6 +93,25 @@ CREATURES = {
     # Warden (female): m0 sleeps (calm), idle floats, m2 frost breath, m3 exhausted (creature::queen)
     'kristella': (110, 0.36, {'idle': kristella('schwebend', False), 'm0': kristella('ruhig', False),
                               'm2': kristella('hauch', False), 'm3': kristella('erschoepft', False)}),
+    # Chapter 5 (R2-M2.5): shadow moth with two wing beats (idle / air, the client alternates);
+    # stone goblin m0 rock, m1 awake, m2 rolling (the client rotates it), m3 dazed
+    # (creature::goblin); echo; its dark mirror: idle with an echo waiting in it, m1/m2 empty
+    # (creature::mirror)
+    'shadow_moth': (20, 0.4, {'idle': f'<g transform="translate(0,8)">{shadow_moth(0)}</g>',
+                              'air': f'<g transform="translate(0,8)">{shadow_moth(1)}</g>'}),
+    'stone_goblin': (30, 0.5, {'idle': stone_goblin('wach'), 'm0': stone_goblin('fels'),
+                               'm1': stone_goblin('wach'), 'm2': stone_goblin('rollt'),
+                               'm3': stone_goblin('wach')}),
+    # (the echo is Elora's size: scale 0.36 like assets/elora/elora.svg; the mirror about 64 high)
+    'echo': (28, 0.36, {'idle': echo()}),
+    'echo_mirror': (28, 0.36, {'idle': f'<g transform="scale(2.2)">{dark_mirror(True)}</g>',
+                               'm1': f'<g transform="scale(2.2)">{dark_mirror(False)}</g>',
+                               'm2': f'<g transform="scale(2.2)">{dark_mirror(False)}</g>'}),
+    # climax “Protect Luma” (M2.5.5): grey shadow (the client lets it fade in the light); the
+    # Withered One (draft A, E-369) m0 drains, m1 looks at Elora, m2 flees (session::withered)
+    'grey_shade': (28, 0.5, {'idle': grey_shadow()}),
+    'withered': (90, 0.36, {'idle': withered_one('A', 'saugt'), 'm0': withered_one('A', 'saugt'),
+                            'm1': withered_one('A', 'blickt'), 'm2': withered_one('A', 'flieht')}),
 }
 
 

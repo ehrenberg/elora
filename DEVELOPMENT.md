@@ -50,13 +50,13 @@ Check: `vulkaninfo --summary` (package `vulkan-tools`) should show the graphics 
 
 ### 3. Sound
 
-Audio output goes through ALSA (`alsa-lib`, present on desktop installations; with PipeWire also `pipewire-alsa`):
+Audio output goes to the PulseAudio server (also served by PipeWire through `pipewire-pulse`), with ALSA as the fallback (E-375). Building needs `alsa-lib`:
 
 ```sh
-sudo pacman -S --needed alsa-lib pipewire-alsa
+sudo pacman -S --needed alsa-lib pipewire-pulse
 ```
 
-Without an audio device the game still starts – muted, with a notice in the panel under *Ton* (sound).
+Without an audio device the game still starts – muted, with a notice in the main menu and in the settings under *Sound*. `elora.log` names the output that was opened (`Audio output: PulseAudio …`) or every one that failed.
 
 ### 4. Building
 

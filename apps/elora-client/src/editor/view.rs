@@ -97,6 +97,7 @@ pub fn draw(
         map_view.draw_quicksand(batch, map, camera, look_time);
     }
     if editor.visible.entities {
+        islands(batch, map, &map_view.art, time, editor.zoom);
         entities(batch, editor, items, time);
     }
     if editor.visible.layers.decor_front {
@@ -148,6 +149,40 @@ pub fn draw(
             if let Some(clip) = &editor.clipboard {
                 stamp(batch, clip, x, y, editor.zoom);
             }
+        }
+    }
+}
+
+/// Star islands, updrafts, note stones and star bridges of the zones (M2.5.2, M2.5.3): the
+/// island at its place, its path as a line to the end, where its surface is outlined.
+fn islands(
+    batch: &mut ShapeBatch,
+    map: &elora_map::Map,
+    art: &crate::map_art::MapArt,
+    time: f32,
+    zoom: f32,
+) {
+    for (at, size) in elora_map::islands::map_updrafts(map) {
+        crate::map_art::draw_updraft(batch, at, size, time);
+    }
+    // note stones and (pale) their star bridges (M2.5.3)
+    let (stones, bridges) = elora_map::islands::map_notes(map);
+    for b in bridges {
+        crate::map_art::draw_star_bridge(batch, b.at, b.size, 0.35, time);
+    }
+    for s in stones {
+        crate::map_art::draw_note_stone(batch, art, s.at, s.size, 0.0);
+    }
+    // star lanterns (M2.5.5)
+    for l in elora_map::islands::map_lanterns(map) {
+        crate::map_art::draw_lantern(batch, art, l.at, l.size, 0.0);
+    }
+    for i in elora_map::islands::map_islands(map) {
+        crate::map_art::draw_island(batch, art, i.start, i.size, i.sinks);
+        if i.end != i.start {
+            let half = Vec2::new(i.size.x / 2.0, 0.0);
+            batch.stroke_line(i.start + half, i.end + half, 2.0 * zoom, HOVER);
+            batch.stroke_line(i.end, i.end + Vec2::new(i.size.x, 0.0), 3.0 * zoom, HOVER);
         }
     }
 }

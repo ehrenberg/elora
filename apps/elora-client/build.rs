@@ -41,6 +41,7 @@ const LISTS: [(&str, &str, &str); 6] = [
 ];
 
 fn main() {
+    windows_resource("Elora");
     let assets = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../assets");
     let mut out = String::new();
     for (folder, name, doc) in LISTS {
@@ -67,4 +68,21 @@ fn main() {
     }
     let target = Path::new(&std::env::var("OUT_DIR").expect("OUT_DIR")).join("asset_files.rs");
     std::fs::write(target, out).expect("asset_files.rs writable");
+}
+
+/// Icon and version information in the `.exe` (E-376): unsigned programs without them are
+/// flagged more often by Windows Defender. Only for Windows targets.
+fn windows_resource(description: &str) {
+    if std::env::var("CARGO_CFG_TARGET_OS").as_deref() != Ok("windows") {
+        return;
+    }
+    let icon = Path::new(env!("CARGO_MANIFEST_DIR")).join("../../assets/icon/elora.ico");
+    println!("cargo:rerun-if-changed={}", icon.display());
+    let mut res = winresource::WindowsResource::new();
+    res.set_icon(icon.to_str().expect("icon path is UTF-8"))
+        .set("ProductName", "Elora")
+        .set("FileDescription", description)
+        .set("CompanyName", "Elora project")
+        .set("LegalCopyright", "GPL-3.0-only");
+    res.compile().expect("Windows resource");
 }

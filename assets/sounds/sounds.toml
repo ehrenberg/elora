@@ -442,3 +442,156 @@ attack = 0.15
 sustain = 0.3
 decay = 0.5
 volume = 0.35
+
+[note_stone]           # note stone: soft bell (c), pitched to the note of the stone (R2-M2.5)
+volume = 0.45
+[[note_stone.layer]]
+wave = "sine"
+freq = 523
+attack = 0.005
+sustain = 0.05
+decay = 1.1
+[[note_stone.layer]]
+wave = "sine"
+freq = 1046
+attack = 0.005
+sustain = 0.02
+decay = 0.5
+volume = 0.35
+[[note_stone.layer]]
+wave = "triangle"
+freq = 1569
+sustain = 0.01
+decay = 0.25
+volume = 0.15
+
+# Sternschlucht (R2-M2.5, M2.5.9) ------------------------------------------------------------
+
+[stone_rumble]         # stone goblin stirs and rolls: low grinding gravel
+volume = 0.45
+[[stone_rumble.layer]]
+wave = "noise"
+freq = 600
+attack = 0.03
+sustain = 0.25
+decay = 0.3
+lowpass = 900
+[[stone_rumble.layer]]
+wave = "triangle"
+freq = 70
+slide = 0.3
+vibrato = 0.2
+vibrato_hz = 14
+attack = 0.02
+sustain = 0.25
+decay = 0.3
+volume = 0.6
+
+[stone_thud]           # stone goblin bumps into a wall: dull knock with a little gravel
+volume = 0.5
+[[stone_thud.layer]]
+wave = "sine"
+freq = 110
+slide = -0.6
+sustain = 0.03
+decay = 0.18
+[[stone_thud.layer]]
+wave = "noise"
+freq = 1500
+sustain = 0.02
+decay = 0.12
+lowpass = 2500
+volume = 0.5
+
+[echo_shimmer]         # an echo steps out of the dark mirror: glassy, slightly detuned shimmer
+volume = 0.35
+[[echo_shimmer.layer]]
+wave = "sine"
+freq = 880
+slide = 0.25
+vibrato = 0.03
+vibrato_hz = 11
+attack = 0.08
+sustain = 0.12
+decay = 0.35
+[[echo_shimmer.layer]]
+wave = "sine"
+freq = 893
+slide = 0.25
+attack = 0.08
+sustain = 0.12
+decay = 0.35
+delay = 0.04
+volume = 0.7
+[[echo_shimmer.layer]]
+wave = "noise"
+freq = 8000
+attack = 0.05
+sustain = 0.05
+decay = 0.2
+highpass = 6000
+volume = 0.25
+
+[lantern_on]           # star lantern lights up: soft whoosh and a bright two-note chime
+volume = 0.4
+[[lantern_on.layer]]
+wave = "noise"
+freq = 4000
+attack = 0.06
+sustain = 0.04
+decay = 0.15
+highpass = 2000
+lowpass = 8000
+volume = 0.4
+[[lantern_on.layer]]
+wave = "sine"
+freq = 784
+attack = 0.005
+sustain = 0.04
+decay = 0.6
+delay = 0.04
+[[lantern_on.layer]]
+wave = "sine"
+freq = 1175
+attack = 0.005
+sustain = 0.04
+decay = 0.7
+delay = 0.12
+volume = 0.6
+
+[lantern_out]          # star lantern goes out: low falling tone, a puff
+volume = 0.35
+[[lantern_out.layer]]
+wave = "sine"
+freq = 392
+slide = -0.5
+sustain = 0.05
+decay = 0.4
+[[lantern_out.layer]]
+wave = "noise"
+freq = 1200
+attack = 0.01
+sustain = 0.03
+decay = 0.18
+lowpass = 1800
+volume = 0.5
+
+[shade_dissolve]       # grey shadow dissolves in the light: airy rising sigh
+volume = 0.3
+[[shade_dissolve.layer]]
+wave = "noise"
+freq = 2500
+attack = 0.05
+sustain = 0.1
+decay = 0.35
+highpass = 1200
+lowpass = 5000
+lowpass_sweep = 0.8
+[[shade_dissolve.layer]]
+wave = "sine"
+freq = 330
+slide = 0.8
+attack = 0.04
+sustain = 0.08
+decay = 0.3
+volume = 0.4

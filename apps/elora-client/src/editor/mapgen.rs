@@ -9,7 +9,8 @@
 //! - Adventure objects: [`o`], [`npc`], [`sign`], [`creature`], [`chest`], [`plant`],
 //!   [`collectible`], [`edge_exit`], [`zone`].
 //! - Decoration: [`decor`], [`decor_px`], [`big`], [`thorn_decor`], [`animate`].
-//! - Finishing: [`finish`] (author, preset, automatic decoration of a theme) and [`mirror`].
+//! - Finishing: [`finish`] / [`finish_with`] (author, preset, automatic decoration of a theme) and
+//!   [`mirror`].
 //! - Test scaffolding for the shipped maps: [`shipped`], [`assert_current`], [`write_maps`],
 //!   [`write_sheet`].
 //!
@@ -458,13 +459,18 @@ pub(super) fn mirror(m: &mut Map) {
 /// Finish a generated map: author, preset „Day“ and the automatic decoration of `theme` (large
 /// decoration only on continuous ground); the map's own decoration stays behind the automatic one.
 pub(super) fn finish(map: Map, theme: &Theme) -> Map {
+    finish_with(map, theme, Preset::Day)
+}
+
+/// Like [`finish`] with another sky preset (night maps of chapter 5).
+pub(super) fn finish_with(map: Map, theme: &Theme, preset: Preset) -> Map {
     let mut editor = Editor::new(None, std::path::PathBuf::from("maps"));
     let (back, front) = (map.decor_back.clone(), map.decor_front.clone());
     editor.map = map;
     editor.map.author = Some("Elora-Team".into());
     editor.map.decor_back.clear();
     editor.map.decor_front.clear();
-    editor.apply_preset(Preset::Day, Instant::now());
+    editor.apply_preset(preset, Instant::now());
     release::place(theme, &mut editor.map);
     // large decoration only on continuous ground (not on hook rocks and ledges)
     let auto = std::mem::take(&mut editor.map.decor_back);

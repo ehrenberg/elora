@@ -17,11 +17,12 @@ pub mod script;
 pub mod session;
 pub mod state;
 pub mod stats;
+pub mod world_map;
 
 pub use data::{Content, GLEAM_DROPS};
 pub use dialog::{Conversation, Turn};
 pub use quest::Outcome;
-pub use session::{Session, SessionEvent};
+pub use session::{MapSpot, Session, SessionEvent};
 pub use state::{Location, Notice, Refusal, SaveGame};
 pub use stats::Stats;
 
@@ -35,10 +36,21 @@ mod tests {
         assert!(c.items.len() >= 10);
         assert_eq!(c.skills.len(), 16, "E-242: 16 nodes");
         assert_eq!(c.upgrades.len(), 9, "3 weapons × 3 levels");
+        // dark mirrors send out existing kinds (R2-M2.5)
+        for k in &c.creatures {
+            if let elora_sim::Behavior::Mirror { spawn, .. } = &k.behavior {
+                assert!(
+                    c.creatures.iter().any(|o| &o.name == spawn),
+                    "{}: unknown kind `{spawn}`",
+                    k.name
+                );
+            }
+        }
         assert_eq!(
             c.creatures.len(),
-            21,
-            "up to chapter 4 with terrain, enemies and Kristella"
+            27,
+            "up to chapter 5 with terrain, enemies, Kristella, the creatures of the night and the \
+             climax figures"
         );
     }
 
