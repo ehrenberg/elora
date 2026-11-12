@@ -9,6 +9,8 @@ use kira::sound::static_sound::{StaticSoundData, StaticSoundSettings};
 use kira::sound::streaming::{StreamingSoundData, StreamingSoundHandle};
 use kira::{AudioManager, AudioManagerSettings, Decibels, DefaultBackend, Frame, Panning, Tween};
 
+#[cfg(target_os = "linux")]
+use crate::OUTPUT_BUFFER_FRAMES;
 use crate::{AudioSettings, Bank, Cue, SAMPLE_RATE, Sound, spatial};
 
 /// Playback with kira.
@@ -52,18 +54,23 @@ fn to_data(samples: &[f32]) -> StaticSoundData {
 fn open_output() -> Option<AudioManager<DefaultBackend>> {
     #[cfg(target_os = "linux")]
     {
+        use kira::backend::cpal::cpal::traits::DeviceTrait;
         for (host, device) in linux_outputs() {
             let name = device.to_string();
+            let config = device
+                .default_output_config()
+                .ok()
+                .map(|c| stream_config(host, c.config()));
             let settings = AudioManagerSettings {
                 backend_settings: kira::backend::cpal::CpalBackendSettings {
                     device: Some(device),
-                    config: None,
+                    config,
                 },
                 ..AudioManagerSettings::default()
             };
             match AudioManager::<DefaultBackend>::new(settings) {
                 Ok(m) => {
-                    tracing::info!("Audio output: {host} `{name}`");
+                    tracing::info!("Audio output: {host} `{name}`, buffer {config:?}");
                     return Some(m);
                 }
                 Err(e) => tracing::warn!("Audio output {host} `{name}` failed: {e}"),
@@ -82,6 +89,30 @@ fn open_output() -> Option<AudioManager<DefaultBackend>> {
     }
 }
 
+/// Stream configuration for an output of `host` (E-378). `PulseAudio` gets a fixed buffer of
+/// [`OUTPUT_BUFFER_FRAMES`]: without one, cpal leaves the buffer to the server, which picks a
+/// target length of 2 s, so every sound was heard about 2 s after its event. ALSA keeps its
+/// default (≈ 35 ms through `pipewire-alsa`; a fixed period there fails with I/O errors).
+#[cfg(target_os = "linux")]
+fn stream_config(
+    host: &str,
+    default: kira::backend::cpal::cpal::StreamConfig,
+) -> kira::backend::cpal::cpal::StreamConfig {
+    use kira::backend::cpal::cpal::{BufferSize, StreamConfig};
+    if host == PULSE_AUDIO {
+        StreamConfig {
+            buffer_size: BufferSize::Fixed(OUTPUT_BUFFER_FRAMES),
+            ..default
+        }
+    } else {
+        default
+    }
+}
+
+/// Host name of cpal's `PulseAudio` host in [`linux_outputs`].
+#[cfg(target_os = "linux")]
+const PULSE_AUDIO: &str = "PulseAudio";
+
 /// Output devices to try on Linux in this order: the `PulseAudio` default sink, then the
 /// ALSA default device and all other ALSA output devices.
 #[cfg(target_os = "linux")]
@@ -92,7 +123,7 @@ fn linux_outputs() -> Vec<(&'static str, kira::backend::cpal::cpal::Device)> {
         && let Ok(host) = cpal::host_from_id(HostId::PulseAudio)
         && let Some(device) = host.default_output_device()
     {
-        devices.push(("PulseAudio", device));
+        devices.push((PULSE_AUDIO, device));
     }
     if let Ok(host) = cpal::host_from_id(HostId::Alsa) {
         devices.extend(host.default_output_device().map(|d| ("ALSA", d)));
@@ -332,6 +363,40 @@ impl Audio {
         if let Err(e) = manager.play(sound) {
             tracing::debug!("Sound `{}` not played: {e}", cue.sound.name());
         }
+    }
+}
+
+#[cfg(all(test, target_os = "linux"))]
+mod latency_tests {
+    use kira::backend::cpal::cpal::{BufferSize, StreamConfig};
+
+    use super::*;
+
+    fn default_config() -> StreamConfig {
+        StreamConfig {
+            channels: 2,
+            sample_rate: 48_000,
+            buffer_size: BufferSize::Default,
+        }
+    }
+
+    #[test]
+    fn pulse_audio_output_requests_a_short_buffer() {
+        // E-378: without a fixed size the server buffers 2 s, so sounds came late
+        let config = stream_config(PULSE_AUDIO, default_config());
+        let BufferSize::Fixed(frames) = config.buffer_size else {
+            panic!("PulseAudio output without a fixed buffer: {config:?}");
+        };
+        // the server holds two callbacks' worth: keep that well under a noticeable 50 ms
+        let latency_ms = 2.0 * f64::from(frames) / f64::from(config.sample_rate) * 1000.0;
+        assert!(latency_ms <= 50.0, "buffer latency {latency_ms:.1} ms");
+        assert_eq!((config.channels, config.sample_rate), (2, 48_000));
+    }
+
+    #[test]
+    fn alsa_output_keeps_its_default_buffer() {
+        let config = stream_config("ALSA", default_config());
+        assert_eq!(config.buffer_size, BufferSize::Default);
     }
 }
 

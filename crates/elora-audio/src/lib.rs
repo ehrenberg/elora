@@ -26,6 +26,12 @@ pub use playback::Audio;
 pub use cues::{Cue, Listener, Sound};
 pub use synth::{Layer, SAMPLE_RATE, SoundDef, Wave};
 
+/// Frames per audio callback requested from the output on Linux's `PulseAudio` host (E-378).
+/// The server buffers two of them, so a new sound reaches the speaker after about
+/// 2 × 512 / 48 000 Hz ≈ 21 ms (measured ≈ 32 ms end to end) instead of the 2 s the server
+/// picks without a request. Measure with `cargo run -p elora-audio --example output_latency`.
+pub const OUTPUT_BUFFER_FRAMES: u32 = 512;
+
 /// The game's sound parameters (embedded).
 pub const SOUNDS_TOML: &str = include_str!("../../../assets/sounds/sounds.toml");
 

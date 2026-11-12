@@ -27,3 +27,7 @@ playback = ["dep:kira", "dep:cpal"]
 
 [lints]
 workspace = true
+
+[[example]]
+name = "output_latency"
+required-features = ["playback"]
