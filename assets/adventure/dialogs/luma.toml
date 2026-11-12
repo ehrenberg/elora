@@ -2,6 +2,15 @@
 # the star cape, at the ruins of the Star Spring (characters `luma` and `luma-ruins`)
 speaker = "luma"
 
+# Finale (R2-M2.6, E-383): line 5 of the well song, in the order of the chapters
+[[start]]
+if = "quest finale active and flag well_song.lines = 4"
+node = "song_line"
+
+[[start]]
+if = "quest finale active and flag well_song.lines < 4"
+node = "song_early"
+
 [[start]]
 if = "flag luma_protected and not flag luma.spark"
 node = "after_climax"
@@ -164,6 +173,20 @@ tone = "curious"
 if = "quest star_fragments new"
 text = { de = "Du wolltest mich noch um zwei Dinge bitten.", en = "You wanted to ask me for two more things." }
 next = "side"
+
+# Finale (R2-M2.6, E-383)
+[[node]]
+id = "song_line"
+text = { de = "*(summt)* ‚… dann fließen alle Farben nach.‘ Das ist das Ende. Jetzt hast du alles. Ich webe dir die Melodie in die Erinnerung, damit du sie nicht verlierst.", en = "*(hums)* ‘… and all the colours will follow.’ That is the end. Now you have it all. I shall weave the melody into your memory so you do not lose it." }
+do = ["flag well_song.luma = 1", "flag well_song.lines +1"]
+
+[[node]]
+id = "song_early"
+text = { de = "Ein Lied? Ich weiß nur ein Stück aus der Mitte – ohne den Anfang finde ich es nicht. Frag zuerst Kristella.", en = "A song? I only know a piece from the middle – without the beginning I can't find it. Ask Kristella first." }
+
+[[bark]]
+if = "flag well_song.luma and not quest finale done"
+text = { de = "… dann fließen alle Farben nach.", en = "… and all the colours will follow." }
 
 [[bark]]
 if = "flag luma_protected"

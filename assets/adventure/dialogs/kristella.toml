@@ -1,6 +1,15 @@
 # Ice Queen Kristella after the fight (R2-M2.4, E-341)
 speaker = "kristella"
 
+# Finale (R2-M2.6, E-383): line 4 of the well song, in the order of the chapters
+[[start]]
+if = "quest finale active and flag well_song.lines = 3"
+node = "song_line"
+
+[[start]]
+if = "quest finale active and flag well_song.lines < 3"
+node = "song_early"
+
 [[start]]
 if = "flag kristella.talked"
 node = "later"
@@ -26,3 +35,17 @@ do = ["flag kristella.talked = 1", "flag freed.frost_spring = 1", "flag withered
 [[node]]
 id = "later"
 text = { de = "Geh nur, kleiner Tropfen. Und wenn du ihn findest … hör ihm zu.", en = "Go on, little drop. And if you find him … listen to him." }
+
+# Finale (R2-M2.6, E-383)
+[[node]]
+id = "song_line"
+text = { de = "‚Komm, sing mit ihm, sing ihn wach.‘ – Das ist keine Bitte an ihn, kleiner Tropfen. Das ist eine Bitte an dich.", en = "‘Come, sing with him, sing him awake.’ – That is not a request to him, little drop. It is a request to you." }
+do = ["flag well_song.kristella = 1", "flag well_song.lines +1"]
+
+[[node]]
+id = "song_early"
+text = { de = "Ein Lied? Ich weiß nur ein Stück aus der Mitte – ohne den Anfang finde ich es nicht. Frag zuerst die Sandschlange.", en = "A song? I only know a piece from the middle – without the beginning I can't find it. Ask the Sand Serpent first." }
+
+[[bark]]
+if = "flag well_song.kristella and not quest finale done"
+text = { de = "Komm, sing mit ihm, sing ihn wach …", en = "Come, sing with him, sing him awake …" }

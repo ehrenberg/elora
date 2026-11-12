@@ -2,8 +2,20 @@
 speaker = "oma"
 
 [[start]]
+if = "quest finale step well"
+node = "the_song"
+
+[[start]]
+if = "quest finale active and flag well_song.oma and flag well_song.lines < 5"
+node = "song_on_the_way"
+
+[[start]]
+if = "quest finale active and flag well_song.lines < 5"
+node = "song_start"
+
+[[start]]
 if = "quest finale active"
-node = "party5_song"
+node = "before_descent"
 
 [[start]]
 if = "quest sternschlucht step party"
@@ -285,6 +297,84 @@ next = "party5_song"
 [[node]]
 id = "party5_song"
 text = { de = "Ein Brunnenlied, hat Luma gesagt? Warte … *(summt)* … „Tief unten, wo das Wasser schläft, …“ – wie ging es weiter? Ich weiß es nicht mehr. Aber ich weiß, dass meine Mutter es gesungen hat. Genau hier.", en = "A well song, Luma said? Wait … *(hums)* … “Deep down, where the water sleeps, …” – how did it go on? I don't remember. But I know my mother sang it. Right here." }
+
+# Finale (R2-M2.6, E-383): the well song
+[[node]]
+id = "song_start"
+text = { de = "Ein Brunnenlied … Weißt du, Liebes, die Wächter sind alt. Älter als ich. Älter als Tauwinkel. Wenn jemand dieses Lied noch kennt, dann sie. Frag sie – jeden einzelnen. Und bring mir, was sie noch wissen.", en = "A well song … You know, dear, the guardians are old. Older than me. Older than Tauwinkel. If anyone still knows that song, it's them. Ask them – every single one. And bring me what they still remember." }
+do = ["flag well_song.oma = 1"]
+
+[[node.choice]]
+tone = "friendly"
+text = { de = "Ich frage sie alle.", en = "I'll ask them all." }
+
+[[node.choice]]
+tone = "curious"
+text = { de = "Warum ist der Brunnen überhaupt zu?", en = "Why is the well closed anyway?" }
+next = "why_closed"
+
+[[node]]
+id = "why_closed"
+text = { de = "Das war schon immer so. Die Gründer haben einen Deckel draufgemacht. Warum … das hat mir nie jemand erzählt. Komisch, nicht?", en = "It's always been like that. The founders put a lid on it. Why … nobody ever told me. Strange, isn't it?" }
+
+[[node]]
+id = "song_on_the_way"
+text = { de = "Wie viele Zeilen hast du schon? *(zählt an den Fingern)* … Es fehlen noch welche. Die Wächter wohnen weit, aber du hast ja jetzt Flügel. Fast.", en = "How many lines do you have? *(counts on her fingers)* … Some are still missing. The guardians live far away, but you've got wings now. Almost." }
+
+[[node]]
+id = "the_song"
+text = { de = "Alle Zeilen … Komm, stell dich neben mich.", en = "All the lines … Come, stand next to me." }
+next = "the_song_sung"
+
+[[node]]
+id = "the_song_sung"
+text = { de = "*(singt)* „Tief unten, wo das Wasser schläft, da hütet einer still das Licht. Er gab den Quellen ihren Tau, doch hören konnten sie ihn nicht. Komm, sing mit ihm, sing ihn wach – dann fließen alle Farben nach.“", en = "*(sings)* “Deep down, where the water sleeps, someone quietly keeps the light. He gave the springs their dew, yet they could not hear him. Come, sing with him, sing him awake – and all the colours will follow.”" }
+next = "the_song_echo"
+
+[[node]]
+id = "the_song_echo"
+text = { de = "… Hörst du das? Der Brunnen. Er singt zurück.", en = "… Do you hear that? The well. It's singing back." }
+do = ["flag well.open = 1"]
+
+[[node.choice]]
+tone = "curious"
+text = { de = "Da unten ist er, oder?", en = "He's down there, isn't he?" }
+next = "down_there"
+
+[[node.choice]]
+tone = "friendly"
+text = { de = "Ich hole ihn.", en = "I'll fetch him." }
+next = "visit"
+
+[[node]]
+id = "down_there"
+text = { de = "Ja. Ich glaube, er war schon immer da. Und wir haben einen Deckel auf ihn gelegt.", en = "Yes. I think he has always been there. And we put a lid on him." }
+next = "pip_comes"
+
+[[node]]
+id = "visit"
+text = { de = "Nicht holen, Liebes. Besuchen. Und nimm das Lied mit.", en = "Not fetch, dear. Visit. And take the song with you." }
+next = "pip_comes"
+
+[[node]]
+id = "pip_comes"
+speaker = "pip"
+text = { de = "Ich komm mit! Ich kann auch … also … ich kann sehr gut zugucken!", en = "I'm coming too! I can also … well … I'm very good at watching!" }
+next = "pip_no"
+
+[[node]]
+id = "pip_no"
+text = { de = "Nein.", en = "No." }
+next = "pip_okay"
+
+[[node]]
+id = "pip_okay"
+speaker = "pip"
+text = { de = "… Okay.", en = "… Okay." }
+
+[[node]]
+id = "before_descent"
+text = { de = "Pass auf dich auf, Kind. Und sag ihm … sag ihm, dass wir ihn vergessen haben. Nicht, weil er uns egal war.", en = "Take care, child. And tell him … tell him that we forgot him. Not because we didn't care." }
 
 [[bark]]
 if = "flag party"

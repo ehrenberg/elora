@@ -1,6 +1,15 @@
 # Root Warden after the fight (R2-M2.2, E-307)
 speaker = "warden"
 
+# Finale (R2-M2.6, E-383): line 2 of the well song, in the order of the chapters
+[[start]]
+if = "quest finale active and flag well_song.lines = 1"
+node = "song_line"
+
+[[start]]
+if = "quest finale active and flag well_song.lines < 1"
+node = "song_early"
+
 [[start]]
 if = "flag warden.talked"
 node = "later"
@@ -46,6 +55,20 @@ do = ["flag warden.talked = 1", "flag freed.moss_spring = 1"]
 [[node]]
 id = "later"
 text = { de = "Hrrrm … die Wurzeln … flüstern wieder … Gutes.", en = "Hrrrm … the roots … whisper … good things again." }
+
+# Finale (R2-M2.6, E-383)
+[[node]]
+id = "song_line"
+text = { de = "Ich erinnere mich. Ich erinnere mich an alles, das ist meine Aufgabe. ‚Er gab den Quellen ihren Tau.‘ Wir alle haben unseren Tau von ihm. Wir haben es vergessen. Ich nicht – aber ich habe es niemandem gesagt. Das tut mir leid.", en = "I remember. I remember everything, that is my task. ‘He gave the springs their dew.’ We all have our dew from him. We forgot it. I did not – but I told no one. I am sorry." }
+do = ["flag well_song.warden = 1", "flag well_song.lines +1"]
+
+[[node]]
+id = "song_early"
+text = { de = "Ein Lied? Ich weiß nur ein Stück aus der Mitte – ohne den Anfang finde ich es nicht. Frag zuerst die Hummel.", en = "A song? I only know a piece from the middle – without the beginning I can't find it. Ask the Bumblebear first." }
+
+[[bark]]
+if = "flag well_song.warden and not quest finale done"
+text = { de = "Er gab den Quellen ihren Tau …", en = "He gave the springs their dew …" }
 
 [[bark]]
 text = { de = "Hrrrm …", en = "Hrrrm …" }

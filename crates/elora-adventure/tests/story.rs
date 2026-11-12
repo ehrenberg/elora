@@ -1023,7 +1023,10 @@ fn chapter_five_runs_from_the_gorge_to_the_old_well() {
     assert!(g.holds(&c, "quest sternschlucht done"));
     assert!(g.holds(&c, "quest finale active"));
     let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
-    assert_eq!(conv.node, "party5_song");
+    assert_eq!(
+        conv.node, "song_start",
+        "the finale begins with the well song"
+    );
     // village after chapter 5
     assert!(bark(&c, &g, "pip").unwrap().de.contains("FLIEGEN"));
     assert!(bark(&c, &g, "lotte").unwrap().de.contains("Nachttee"));
@@ -1200,4 +1203,51 @@ fn quest_order_is_checked() {
     .unwrap_err()
     .to_string();
     assert!(e.contains("stays defeated"), "{e}");
+}
+
+/// Finale (R2-M2.6, M2.6.1, E-383): the guardians remember the well song line by line in the
+/// order of the chapters; with all five lines Oma sings and the well opens.
+#[test]
+fn the_guardians_give_the_well_song_in_order_and_the_well_opens() {
+    let (c, mut g) = game();
+    g.run(&c, &["quest finale start".into()]);
+    assert!(
+        g.holds(&c, "quest finale step song"),
+        "first: the Bumblebear"
+    );
+    let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
+    assert_eq!(conv.node, "song_start");
+    // too early: the Root Warden needs the Bumblebear's line first
+    let (conv, _) = Conversation::start(&c, &mut g, "warden").unwrap();
+    assert_eq!(conv.node, "song_early");
+    assert!(text(&c, &conv).contains("die Hummel"));
+    assert_eq!(g.flag("well_song.lines"), 0);
+    for (n, who) in (1i64..).zip(["bumblebee", "warden", "serpent", "kristella", "luma"]) {
+        let (conv, _) = Conversation::start(&c, &mut g, who).unwrap();
+        assert_eq!(conv.node, "song_line", "{who}");
+        assert_eq!(g.flag("well_song.lines"), n);
+        // asked again: no second line
+        let (conv, _) = Conversation::start(&c, &mut g, who).unwrap();
+        assert_ne!(conv.node, "song_line", "{who} again");
+        assert_eq!(g.flag("well_song.lines"), n);
+        if n < 5 {
+            let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
+            assert_eq!(conv.node, "song_on_the_way");
+        }
+    }
+    assert!(g.holds(&c, "quest finale step well"));
+    let (mut conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
+    assert_eq!(conv.node, "the_song");
+    conv.advance(&c, &mut g);
+    assert!(text(&c, &conv).contains("Tief unten, wo das Wasser schläft"));
+    conv.advance(&c, &mut g);
+    assert_eq!(conv.node, "the_song_echo");
+    assert_eq!(g.flag("well.open"), 1);
+    conv.choose(&c, &mut g, 1);
+    assert_eq!(conv.node, "visit");
+    conv.advance(&c, &mut g);
+    assert_eq!(conv.node, "pip_comes");
+    assert!(g.holds(&c, "quest finale step shaft"));
+    let (conv, _) = Conversation::start(&c, &mut g, "oma").unwrap();
+    assert_eq!(conv.node, "before_descent");
 }

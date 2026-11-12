@@ -285,11 +285,48 @@ kind = "main"
 giver = "oma"
 name = { de = "Der alte Brunnen", en = "The Old Well" }
 desc = { de = "Fast alles im Tauland ist wieder bunt – nur der alte Brunnen in Tauwinkel bleibt grau. Luma sagt, der Graue habe ein Brunnenlied gesummt, als er ging.", en = "Almost everything in the Tauland is colourful again – only the old well in Tauwinkel stays grey. Luma says the grey one hummed a well song as he left." }
-reward = { xp = 100 }
+reward = { xp = 800, gleam_drops = 300 }
+
+# the guardians remember the well song line by line, in the order of the chapters (E-383): one
+# step per guardian, so the world map points to the next one
+[[quest.step]]
+id = "song"
+text = { de = "Die Wächter nach dem alten Brunnenlied fragen", en = "Ask the guardians about the old well song" }
+goal = { type = "flag", flag = "well_song.lines", value = 1 }
+map = "meadow-arena"
+
+[[quest.step]]
+id = "song-2"
+text = { de = "Die Wächter nach dem alten Brunnenlied fragen", en = "Ask the guardians about the old well song" }
+goal = { type = "flag", flag = "well_song.lines", value = 2 }
+map = "forest-arena"
+
+[[quest.step]]
+id = "song-3"
+text = { de = "Die Wächter nach dem alten Brunnenlied fragen", en = "Ask the guardians about the old well song" }
+goal = { type = "flag", flag = "well_song.lines", value = 3 }
+map = "desert-arena"
+
+[[quest.step]]
+id = "song-4"
+text = { de = "Die Wächter nach dem alten Brunnenlied fragen", en = "Ask the guardians about the old well song" }
+goal = { type = "flag", flag = "well_song.lines", value = 4 }
+map = "frost-arena"
+
+[[quest.step]]
+id = "song-5"
+text = { de = "Die Wächter nach dem alten Brunnenlied fragen", en = "Ask the guardians about the old well song" }
+goal = { type = "flag", flag = "well_song.lines", value = 5 }
+map = "gorge-spring"
 
 [[quest.step]]
 id = "well"
-text = { de = "Dem alten Brunnenlied nachgehen (bald)", en = "Follow the old well song (soon)" }
+text = { de = "Oma das Brunnenlied bringen", en = "Bring Oma the well song" }
+goal = { type = "talk", who = "oma" }
+
+[[quest.step]]
+id = "shaft"
+text = { de = "In den Brunnen hinabsteigen (bald)", en = "Climb down into the well (soon)" }
 goal = { type = "manual" }
 
 # side quests in chapter 5 (E-368)

@@ -201,6 +201,34 @@ def well_open():
     return s
 
 
+def well_unsealed():
+    """Decor `well-open` (D-M26-01): after Oma's song the lid lies beside the well, light from below."""
+    s = well(False)
+    # the open shaft covers the lid, a soft glow rises
+    s += glow_circle(0, -70, 56, ORIGIN, 0.35)
+    s += f'<path d="M -52,-46 Q 0,-74 52,-46 Q 0,-36 -52,-46 Z" fill="{NIGHT}" {st(3)}/>'
+    s += f'<path d="M -30,-50 Q 0,-58 30,-50" fill="none" stroke="{WATER_DARK}" stroke-width="3" opacity="0.8"/>'
+    # the lid (with its iron bands) leans against the wall on the right
+    s += (f'<g transform="translate(70,0) rotate(-74)"><rect x="0" y="-12" width="96" height="12" rx="4" fill="#c9955c" {st(3)}/>'
+          f'<path d="M 26,-12 V 0 M 70,-12 V 0" stroke="#5a5a5a" stroke-width="4"/></g>')
+    return s
+
+
+# decoration of the finale for the maps (assets/map/decor/), origin bottom centre
+DECOR = {
+    'well-open': (well_unsealed, '-100 -180 220 182'),
+    'origin-spring': (well_open, '-110 -230 220 232'),
+}
+
+
+def export_decor():
+    for name, (art, vb) in DECOR.items():
+        with open(f'assets/map/decor/{name}.svg', 'w') as f:
+            f.write(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="{vb}">\n'
+                    f'  <!-- Finale: {name} (R2-M2.6, aus tools/design/finale_drafts.py). Ursprung unten in der Mitte. -->\n'
+                    f'  {art()}\n</svg>\n')
+
+
 # ── The Origin Cave ─────────────────────────────────────────────────────
 
 def cave_shaft(x, y, w, h):
@@ -405,3 +433,4 @@ def sheet():
 if __name__ == '__main__':
     os.makedirs('docs/release-2/design', exist_ok=True)
     open('docs/release-2/design/finale-drafts.svg', 'w').write(sheet())
+    export_decor()
