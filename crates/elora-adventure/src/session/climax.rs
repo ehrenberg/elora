@@ -14,7 +14,7 @@
 
 use elora_map::ObjectKind;
 use elora_sim::tuning::ms_to_ticks;
-use elora_sim::{Vec2, World};
+use elora_sim::{CreatureAct, Event, Vec2, World};
 
 use super::{Session, SessionEvent};
 
@@ -155,6 +155,7 @@ impl Session {
         let withered = world
             .creature_kind("withered")
             .and_then(|k| world.add_creature(k, place));
+        withered_act(world, withered, CreatureAct::Wake);
         self.climax = Some(Climax {
             verse: 0,
             song: 0.0,
@@ -197,6 +198,7 @@ impl Session {
                     face_withered(world, c.withered, facing, withered::LOOK);
                 }
                 c.phase = if t >= ms_to_ticks(LOOK_MS) {
+                    withered_act(world, c.withered, CreatureAct::Flee);
                     Phase::Fleeing(0)
                 } else {
                     Phase::Looking(t + 1)
@@ -293,6 +295,7 @@ impl Session {
                 let outs = self.save.update_quests(&self.content);
                 out.extend(super::quests::outcomes(outs));
             } else {
+                withered_act(world, c.withered, CreatureAct::Dive);
                 c.phase = Phase::Moving(0);
                 c.next_shade = ms_to_ticks(SPAWN_MS[usize::from(c.verse)]);
             }
@@ -338,6 +341,15 @@ fn clear_shades(world: &mut World) {
         .collect();
     for id in ids {
         remove(world, id);
+    }
+}
+
+/// Reports what the Withered One does as a world event (sounds): [`CreatureAct::Wake`] when he
+/// appears, [`CreatureAct::Dive`] when he moves on, [`CreatureAct::Flee`] when he flees.
+fn withered_act(world: &mut World, id: Option<u32>, act: CreatureAct) {
+    if let Some(w) = world.creatures.iter().find(|c| Some(c.id) == id) {
+        let (id, pos) = (w.id, w.pos);
+        world.events.push(Event::CreatureAct { id, pos, act });
     }
 }
 

@@ -19,12 +19,18 @@ fn nearest_light(lights: &[(Vec2, f32)], p: Vec2) -> Option<Vec2> {
         .min_by(|a, b| a.distance(p).total_cmp(&b.distance(p)))
 }
 
+/// A moth that has just called (attack flutter, squeak in the light) stays quiet this long, so
+/// one torn between Elora and a lamp does not call every other tick.
+const MOTH_CALL_GAP_MS: u32 = 1500;
+
 /// Flutters, attacks in the dark, flees from light
 /// ([`Behavior::Moth`](crate::creature::Behavior::Moth)).
 pub(super) fn moth(cx: &mut Ctx, sight: f32, speed: f32, flutter: f32) -> Step {
     use crate::creature::moth::{ATTACK, FLEE, FLUTTER};
     let c = &mut *cx.creature;
+    let mode_before = c.mode;
     c.timer = c.timer.wrapping_add(1);
+    c.count = c.count.saturating_sub(1);
     // every moth of the swarm flutters on its own figure
     let phase = c.timer as f32 * 0.05 + c.id as f32 * 1.7;
     let wobble = Vec2::new((phase * 1.3).sin(), (phase * 2.1).cos() * 0.6) * flutter;
@@ -50,6 +56,23 @@ pub(super) fn moth(cx: &mut Ctx, sight: f32, speed: f32, flutter: f32) -> Step {
         let to = c.home + wobble - c.pos;
         to.normalize() * speed * 0.5 * (to.length() / 40.0).min(1.0)
     };
+    // heard when it starts an attack or flees (sounds)
+    let call = match c.mode {
+        ATTACK => Some(CreatureAct::Dive),
+        FLEE => Some(CreatureAct::Flee),
+        _ => None,
+    };
+    if c.mode != mode_before
+        && c.count == 0
+        && let Some(act) = call
+    {
+        c.count = ms_to_ticks(MOTH_CALL_GAP_MS);
+        cx.events.push(Event::CreatureAct {
+            id: c.id,
+            pos: c.pos,
+            act,
+        });
+    }
     c.vel = c.vel * 0.85 + want * 0.15;
     // never fly into the light on purpose
     if !in_light && lit(cx.lights, c.pos + c.vel * 6.0) {

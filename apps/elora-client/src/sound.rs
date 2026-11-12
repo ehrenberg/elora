@@ -24,17 +24,61 @@ fn load_music(dir: &str, name: &str) -> Option<Arc<[u8]>> {
     })
 }
 
+/// What can be heard of a figure, as seen in one frame; a sound plays when something sets in.
+#[derive(Debug, Clone, Copy, PartialEq)]
+struct Seen {
+    /// Event bits of its last tick.
+    bits: u16,
+    hook: HookState,
+    /// Stuck in quicksand (E-318).
+    sand: bool,
+    /// Frozen by a frost ghost (R2-M2.4).
+    frozen: bool,
+    /// Inside an updraft (R2-M2.5).
+    updraft: bool,
+}
+
+impl Seen {
+    fn of(c: &SceneChar, updrafts: &[(Vec2, Vec2)]) -> Self {
+        let core = &c.ch.core;
+        let p = c.pos();
+        Self {
+            bits: core.triggered_events,
+            hook: core.hook_state,
+            sand: core.sand_ticks > 0,
+            frozen: core.frozen > 0,
+            updraft: updrafts.iter().any(|&(min, size)| {
+                (min.x..min.x + size.x).contains(&p.x) && (min.y..min.y + size.y).contains(&p.y)
+            }),
+        }
+    }
+
+    /// Sounds for everything that has set in since `last`, at the figure's place `pos`.
+    fn cues_since(self, last: Self, pos: Vec2) -> Vec<Cue> {
+        let mut cues = cues::for_character(pos, self.bits & !last.bits, last.hook, self.hook);
+        let onsets = [
+            (self.sand, last.sand, Sound::Quicksand),
+            (self.frozen, last.frozen, Sound::Freeze),
+            (self.updraft, last.updraft, Sound::Updraft),
+        ];
+        cues.extend(
+            onsets
+                .into_iter()
+                .filter(|&(now, before, _)| now && !before)
+                .map(|(_, _, sound)| Cue::at(sound, pos)),
+        );
+        cues
+    }
+}
+
 #[derive(Debug)]
 pub struct Sounds {
     audio: Audio,
     pub settings: AudioSettings,
-    /// Last seen bits and hook state per slot.
-    /// Per figure: event bits, hook state and whether it is stuck in quicksand (last frame).
-    last: HashMap<usize, (u16, HookState, bool)>,
+    /// Every figure as it was in the last frame, by slot.
+    last: HashMap<usize, Seen>,
     /// Kind of each enemy in the scene (for sounds when it has already disappeared).
     kinds: HashMap<u32, String>,
-    /// Figures that were frozen in the last frame (frost ghost).
-    frozen: Vec<usize>,
     /// Loaded music tracks, packed (E-121, E-285); `None`: missing or unreadable.
     tracks: HashMap<String, Option<Arc<[u8]>>>,
     /// Track currently playing.
@@ -102,7 +146,6 @@ impl Sounds {
             settings,
             last: HashMap::new(),
             kinds: HashMap::new(),
-            frozen: Vec::new(),
             tracks: HashMap::new(),
             playing: None,
             ambience: HashMap::new(),
@@ -301,36 +344,11 @@ impl Sounds {
         self.last
             .retain(|slot, _| scene.chars.iter().any(|c| c.slot == *slot));
         for c in &scene.chars {
-            let bits = c.ch.core.triggered_events;
-            let hook = c.ch.core.hook_state;
-            let sand = c.ch.core.sand_ticks > 0;
-            let (last_bits, last_hook, last_sand) = self
-                .last
-                .get(&c.slot)
-                .copied()
-                .unwrap_or((bits, hook, sand));
-            cues.extend(cues::for_character(
-                c.pos(),
-                bits & !last_bits,
-                last_hook,
-                hook,
-            ));
-            // into the quicksand (E-318)
-            if sand && !last_sand {
-                cues.push(Cue::at(Sound::Quicksand, c.pos()));
-            }
-            // frozen (frost ghost, R2-M2.4)
-            if c.ch.core.frozen > 0 && !self.frozen.contains(&c.slot) {
-                cues.push(Cue::at(Sound::Freeze, c.pos()));
-            }
-            self.last.insert(c.slot, (bits, hook, sand));
+            let seen = Seen::of(c, &scene.updrafts);
+            // a figure seen for the first time makes no sound for what it already does
+            let last = self.last.insert(c.slot, seen).unwrap_or(seen);
+            cues.extend(seen.cues_since(last, c.pos()));
         }
-        self.frozen = scene
-            .chars
-            .iter()
-            .filter(|c| c.ch.core.frozen > 0)
-            .map(|c| c.slot)
-            .collect();
         cues.extend(
             landings
                 .iter()
@@ -384,6 +402,42 @@ mod tests {
                 assert!((0.0..=1.0).contains(&l), "{kind:?}: {l}");
             }
         }
+    }
+
+    #[test]
+    fn a_figure_is_heard_when_something_sets_in_not_while_it_lasts() {
+        let quiet = Seen {
+            bits: 0,
+            hook: HookState::Idle,
+            sand: false,
+            frozen: false,
+            updraft: false,
+        };
+        let pos = Vec2::new(3.0, 4.0);
+        let sounds = |now: Seen, last: Seen| -> Vec<Sound> {
+            now.cues_since(last, pos).iter().map(|c| c.sound).collect()
+        };
+        let rising = Seen {
+            updraft: true,
+            ..quiet
+        };
+        assert_eq!(sounds(rising, quiet), [Sound::Updraft], "into the updraft");
+        assert!(sounds(rising, rising).is_empty(), "still inside");
+        assert!(sounds(quiet, rising).is_empty(), "out again");
+        let stuck = Seen {
+            sand: true,
+            frozen: true,
+            ..quiet
+        };
+        assert_eq!(sounds(stuck, quiet), [Sound::Quicksand, Sound::Freeze]);
+        // the star cape: the glide bit of the tick, once
+        let gliding = Seen {
+            bits: elora_sim::character::events::GLIDE,
+            ..quiet
+        };
+        assert_eq!(sounds(gliding, quiet), [Sound::CapeUnfurl]);
+        assert!(sounds(gliding, gliding).is_empty());
+        assert_eq!(gliding.cues_since(quiet, pos)[0].pos, Some(pos));
     }
 
     #[test]

@@ -942,6 +942,43 @@ fn lit_lanterns_protect_luma_through_three_verses_then_he_flees() {
 }
 
 #[test]
+fn withered_one_is_heard_when_he_appears_moves_on_and_flees() {
+    use elora_sim::{CreatureAct, Event};
+    let (mut s, mut w) = climax_start();
+    let mut heard = Vec::new();
+    for _ in 0..140 * 50 {
+        w.lanterns[0].lit_until = w.tick + 100;
+        step(&mut s, &mut w, PlayerInput::default(), false);
+        let him = w.creature_kind("withered");
+        heard.extend(w.events.iter().filter_map(|e| {
+            match *e {
+                Event::CreatureAct { id, act, .. }
+                    if w.creatures
+                        .iter()
+                        .any(|c| c.id == id && Some(c.kind) == him) =>
+                {
+                    Some(act)
+                }
+                _ => None,
+            }
+        }));
+        if s.climax.is_none() {
+            break;
+        }
+    }
+    // he appears, moves on after the first and the second verse, and flees after the third
+    assert_eq!(
+        heard,
+        [
+            CreatureAct::Wake,
+            CreatureAct::Dive,
+            CreatureAct::Dive,
+            CreatureAct::Flee
+        ]
+    );
+}
+
+#[test]
 fn withered_one_moves_to_his_next_place_between_verses() {
     use elora_adventure::session::ClimaxPhase;
     let (mut s, mut w) = climax_start();

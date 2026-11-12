@@ -595,3 +595,182 @@ attack = 0.04
 sustain = 0.08
 decay = 0.3
 volume = 0.4
+
+[moth_flutter]         # shadow moth attacks (pitched up: flees from light): papery wing beats, a thin squeak
+volume = 0.3
+[[moth_flutter.layer]]
+wave = "noise"
+freq = 5000
+sustain = 0.008
+decay = 0.03
+highpass = 1500
+lowpass = 6500
+[[moth_flutter.layer]]
+wave = "noise"
+freq = 5000
+sustain = 0.008
+decay = 0.03
+highpass = 1500
+lowpass = 6500
+delay = 0.045
+seed = 2
+volume = 0.9
+[[moth_flutter.layer]]
+wave = "noise"
+freq = 5000
+sustain = 0.008
+decay = 0.03
+highpass = 1500
+lowpass = 6500
+delay = 0.09
+seed = 3
+[[moth_flutter.layer]]
+wave = "noise"
+freq = 5000
+sustain = 0.008
+decay = 0.03
+highpass = 1500
+lowpass = 6500
+delay = 0.135
+seed = 4
+volume = 0.8
+[[moth_flutter.layer]]
+wave = "noise"
+freq = 5000
+sustain = 0.008
+decay = 0.04
+highpass = 1500
+lowpass = 6500
+delay = 0.18
+seed = 5
+volume = 0.6
+[[moth_flutter.layer]]
+wave = "sine"
+freq = 2400
+slide = 1.2
+attack = 0.01
+sustain = 0.03
+decay = 0.12
+delay = 0.02
+volume = 0.25
+
+[updraft]              # into an updraft: air swells and rises
+volume = 0.35
+[[updraft.layer]]
+wave = "noise"
+freq = 3000
+attack = 0.25
+sustain = 0.2
+decay = 0.55
+highpass = 250
+lowpass = 500
+lowpass_sweep = 3.5
+[[updraft.layer]]
+wave = "sine"
+freq = 196
+slide = 0.7
+vibrato = 0.02
+vibrato_hz = 5
+attack = 0.2
+sustain = 0.15
+decay = 0.5
+volume = 0.3
+
+[cape_unfurl]          # the star cape unfolds: soft cloth whoosh with two tiny stars
+volume = 0.3
+[[cape_unfurl.layer]]
+wave = "noise"
+freq = 3500
+attack = 0.04
+sustain = 0.05
+decay = 0.2
+highpass = 500
+lowpass = 3500
+lowpass_sweep = 0.3
+[[cape_unfurl.layer]]
+wave = "sine"
+freq = 1568
+attack = 0.005
+sustain = 0.02
+decay = 0.3
+delay = 0.06
+volume = 0.3
+[[cape_unfurl.layer]]
+wave = "sine"
+freq = 2093
+attack = 0.005
+sustain = 0.02
+decay = 0.35
+delay = 0.13
+volume = 0.22
+
+[withered_sigh]        # the Withered One sighs: a low falling minor third with breath – sad, not threatening
+volume = 0.4
+[[withered_sigh.layer]]
+wave = "sine"
+freq = 233
+slide = -0.3
+vibrato = 0.015
+vibrato_hz = 4
+attack = 0.15
+sustain = 0.3
+decay = 0.9
+[[withered_sigh.layer]]
+wave = "triangle"
+freq = 196
+slide = -0.3
+attack = 0.2
+sustain = 0.25
+decay = 0.9
+delay = 0.25
+volume = 0.6
+[[withered_sigh.layer]]
+wave = "noise"
+freq = 1800
+attack = 0.2
+sustain = 0.2
+decay = 0.8
+highpass = 300
+lowpass = 1100
+lowpass_sweep = 0.6
+volume = 0.35
+
+[withered_drift]       # the Withered One drifts to another place: hollow wind, a dry rustle of twigs
+volume = 0.35
+[[withered_drift.layer]]
+wave = "noise"
+freq = 1500
+attack = 0.4
+sustain = 0.3
+decay = 0.8
+lowpass = 420
+lowpass_sweep = 1.6
+resonance = 0.55
+[[withered_drift.layer]]
+wave = "triangle"
+freq = 98
+slide = 0.25
+vibrato = 0.04
+vibrato_hz = 3
+attack = 0.3
+sustain = 0.3
+decay = 0.8
+volume = 0.45
+[[withered_drift.layer]]
+wave = "noise"
+freq = 6000
+sustain = 0.01
+decay = 0.05
+highpass = 3000
+delay = 0.35
+seed = 7
+volume = 0.2
+[[withered_drift.layer]]
+wave = "noise"
+freq = 6000
+sustain = 0.01
+decay = 0.05
+highpass = 3000
+delay = 0.62
+seed = 8
+volume = 0.15

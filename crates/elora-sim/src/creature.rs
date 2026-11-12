@@ -554,7 +554,8 @@ pub mod queen {
     pub const RISE: u8 = 4;
 }
 
-/// State of the shadow moth (in [`Creature::mode`]).
+/// State of the shadow moth (in [`Creature::mode`]); the ticks until it may call again are in
+/// [`Creature::count`].
 pub mod moth {
     /// Flutters around the start point.
     pub const FLUTTER: u8 = 0;

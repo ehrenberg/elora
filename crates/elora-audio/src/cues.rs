@@ -150,11 +150,21 @@ pub enum Sound {
     LanternOut,
     /// A grey shadow dissolves in the light.
     ShadeDissolve,
+    /// A shadow moth flutters: it attacks, or (pitched up) flees from the light.
+    MothFlutter,
+    /// A character gets into an updraft: rising air.
+    Updraft,
+    /// The star cape unfolds: gliding begins.
+    CapeUnfurl,
+    /// The Withered One sighs: he appears, and once more before he flees.
+    WitheredSigh,
+    /// The Withered One drifts to another place.
+    WitheredDrift,
 }
 
 impl Sound {
     /// All sounds in declaration order.
-    pub const ALL: [Self; 71] = [
+    pub const ALL: [Self; 76] = [
         Self::HammerFire,
         Self::HammerHit,
         Self::GrenadeFire,
@@ -226,6 +236,11 @@ impl Sound {
         Self::LanternOn,
         Self::LanternOut,
         Self::ShadeDissolve,
+        Self::MothFlutter,
+        Self::Updraft,
+        Self::CapeUnfurl,
+        Self::WitheredSigh,
+        Self::WitheredDrift,
     ];
 
     /// Key in `sounds.toml` (`snake_case`).
@@ -302,6 +317,11 @@ impl Sound {
             Self::LanternOn => "lantern_on",
             Self::LanternOut => "lantern_out",
             Self::ShadeDissolve => "shade_dissolve",
+            Self::MothFlutter => "moth_flutter",
+            Self::Updraft => "updraft",
+            Self::CapeUnfurl => "cape_unfurl",
+            Self::WitheredSigh => "withered_sigh",
+            Self::WitheredDrift => "withered_drift",
         }
     }
 
@@ -473,8 +493,9 @@ pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>)
                 CreatureAct::Warn => Sound::RootRumble,
                 CreatureAct::Strike => Sound::RootStrike,
                 CreatureAct::Core => Sound::CorePull,
-                // the storm is heard via the ambience track (weather)
-                CreatureAct::Storm => return Vec::new(),
+                // the storm is heard via the ambience track (weather); fleeing only for the
+                // kinds that have a sound for it ([`for_creature`])
+                CreatureAct::Storm | CreatureAct::Flee => return Vec::new(),
             },
             pos,
         )],
@@ -488,7 +509,7 @@ pub fn for_event(e: &Event, l: Listener, pos_of: impl Fn(usize) -> Option<Vec2>)
 /// Own sounds of the desert enemies (R2-M2.3) per kind (`kind`, name from `creatures.toml`);
 /// `None`: the general mapping from [`for_event`] applies.
 pub fn for_creature(e: &Event, kind: &str) -> Option<Vec<Cue>> {
-    use CreatureAct::{Burrow, Emerge, Land, Wake, Warn};
+    use CreatureAct::{Burrow, Dive, Emerge, Flee, Land, Wake, Warn};
     let one = |sound, pos| Some(vec![Cue::at(sound, pos)]);
     match (kind, e) {
         ("dune_worm", &Event::CreatureAct { act, pos, .. }) => match act {
@@ -527,14 +548,7 @@ pub fn for_creature(e: &Event, kind: &str) -> Option<Vec<Cue>> {
         ("snowball_seal", &Event::CreatureFire { pos, .. }) => {
             Some(vec![Cue::at(Sound::SnowCrunch, pos).pitched(1.3)])
         }
-        (
-            "bat",
-            &Event::CreatureAct {
-                act: CreatureAct::Dive,
-                pos,
-                ..
-            },
-        ) => one(Sound::BatScreech, pos),
+        ("bat", &Event::CreatureAct { act: Dive, pos, .. }) => one(Sound::BatScreech, pos),
         ("kristella", &Event::CreatureAct { act, pos, .. }) => match act {
             Wake => Some(vec![
                 Cue::at(Sound::BossWake, pos),
@@ -560,8 +574,35 @@ pub fn for_creature(e: &Event, kind: &str) -> Option<Vec<Cue>> {
             Some(vec![Cue::at(Sound::EchoShimmer, pos).pitched(1.5)])
         }
         ("grey_shade", &Event::CreatureDeath { pos, .. }) => one(Sound::ShadeDissolve, pos),
+        // every moth of a swarm a little different; the squeak in the light is the flutter, higher
+        ("shadow_moth", &Event::CreatureAct { id, act, pos }) => {
+            let flutter = Cue::at(Sound::MothFlutter, pos);
+            match act {
+                Dive => Some(vec![flutter.pitched(swarm_pitch(id))]),
+                Flee => Some(vec![flutter.pitched(swarm_pitch(id) * MOTH_FLEE_PITCH)]),
+                _ => None,
+            }
+        }
+        // the Withered One (climax): appears, moves on between the verses, flees
+        ("withered", &Event::CreatureAct { act, pos, .. }) => match act {
+            Wake => one(Sound::WitheredSigh, pos),
+            Dive => one(Sound::WitheredDrift, pos),
+            Flee => Some(vec![
+                Cue::at(Sound::WitheredSigh, pos).pitched(0.8),
+                Cue::at(Sound::WitheredDrift, pos).pitched(0.8),
+            ]),
+            _ => None,
+        },
         _ => None,
     }
+}
+
+/// A fleeing shadow moth sounds this much higher than an attacking one.
+const MOTH_FLEE_PITCH: f32 = 1.5;
+
+/// Pitch of one creature of a swarm (0.9 to 1.1 by its id), so a swarm does not sound like one.
+fn swarm_pitch(id: u32) -> f32 {
+    0.9 + (id % 5) as f32 * 0.05
 }
 
 /// Sounds from the state of a character: jumps and hook (bits of the last tick)
@@ -575,6 +616,7 @@ pub fn for_character(pos: Vec2, triggered: u16, prev_hook: HookState, hook: Hook
         (bits::HOOK_ATTACH_PLAYER, Sound::HookAttachPlayer),
         (bits::HOOK_HIT_UNHOOKABLE, Sound::HookNoAttach),
         (bits::HOOK_JERK, Sound::HookJerk),
+        (bits::GLIDE, Sound::CapeUnfurl),
     ];
     for (bit, sound) in table {
         if triggered & bit != 0 {
@@ -686,6 +728,51 @@ mod tests {
         let cues = for_character(p, 0, HookState::Idle, HookState::Flying);
         assert_eq!(cues[0].sound, Sound::HookFire);
         assert!(for_character(p, 0, HookState::Flying, HookState::Flying).is_empty());
+    }
+
+    #[test]
+    fn night_creatures_have_their_own_sounds() {
+        let pos = Vec2::new(10.0, 20.0);
+        let act = |id, act| Event::CreatureAct { id, pos, act };
+        let cues = |e: &Event, kind: &str| for_creature(e, kind).unwrap_or_default();
+        let sounds = |e: &Event, kind: &str| -> Vec<Sound> {
+            cues(e, kind).iter().map(|c| c.sound).collect()
+        };
+        // shadow moth: flutters when it attacks, higher when it flees; the swarm is not in unison
+        let attack = cues(&act(1, CreatureAct::Dive), "shadow_moth");
+        let flee = cues(&act(1, CreatureAct::Flee), "shadow_moth");
+        assert_eq!(attack[0].sound, Sound::MothFlutter);
+        assert_eq!(flee[0].sound, Sound::MothFlutter);
+        assert!(flee[0].pitch > attack[0].pitch * 1.3);
+        let other = cues(&act(2, CreatureAct::Dive), "shadow_moth");
+        assert!((other[0].pitch - attack[0].pitch).abs() > 0.01);
+        for id in 0..20 {
+            let p = cues(&act(id, CreatureAct::Dive), "shadow_moth")[0].pitch;
+            assert!((0.9..=1.1).contains(&p), "{id}: {p}");
+        }
+        // the Withered One
+        assert_eq!(
+            sounds(&act(1, CreatureAct::Wake), "withered"),
+            [Sound::WitheredSigh]
+        );
+        assert_eq!(
+            sounds(&act(1, CreatureAct::Dive), "withered"),
+            [Sound::WitheredDrift]
+        );
+        assert_eq!(
+            sounds(&act(1, CreatureAct::Flee), "withered"),
+            [Sound::WitheredSigh, Sound::WitheredDrift]
+        );
+        // nobody else is heard fleeing
+        assert_eq!(for_creature(&act(1, CreatureAct::Flee), "bat"), None);
+        let l = Listener::default();
+        assert!(for_event(&act(1, CreatureAct::Flee), l, |_| None).is_empty());
+    }
+
+    #[test]
+    fn the_star_cape_is_heard_when_gliding_starts() {
+        let cues = for_character(Vec2::ZERO, bits::GLIDE, HookState::Idle, HookState::Idle);
+        assert_eq!(cues, [Cue::at(Sound::CapeUnfurl, Vec2::ZERO)]);
     }
 
     #[test]

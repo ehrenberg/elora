@@ -128,9 +128,13 @@ and signs are marked in the generator and follow once the content (M2.5.6) is ap
 sections for all four maps. The dark ruins decoration `star-spring-withered` stands in the basin;
 the freed spring follows with M2.5.8.
 
-**Status M2.5.9 (sounds, first part):** procedural sounds instead of the placeholders for stone
-goblins (`stone_rumble`, `stone_thud`), echoes (`echo_shimmer`), star lanterns (`lantern_on`,
-`lantern_out`) and dissolving grey shadows (`shade_dissolve`); listen with
+**Status M2.5.9 (sounds):** procedural sounds instead of the placeholders for stone goblins
+(`stone_rumble`, `stone_thud`), echoes (`echo_shimmer`), star lanterns (`lantern_on`,
+`lantern_out`) and dissolving grey shadows (`shade_dissolve`). Second part: shadow moths
+(`moth_flutter` when a moth starts an attack, the same higher when it flees from light; every
+moth of a swarm slightly different, at most one call per 1.5 s), updrafts (`updraft` when a
+figure gets into one), the star cape (`cape_unfurl` when gliding starts) and the Withered One
+(`withered_sigh` when he appears, `withered_drift` when he moves on between the verses, both
+lower when he flees; he looks at Elora in silence). Listen with
 `cargo xtask sound-preview <name>`. Still open: music for the gorge and the climax (CC0, to be
-chosen together), sounds for moths, updrafts, the star cape and the Withered One (they need new
-events), the note stone bell stays as it is unless the listening test says otherwise.
+chosen together); the note stone bell stays as it is unless the listening test says otherwise.
