@@ -128,26 +128,30 @@ impl StarBridge {
     }
 }
 
-/// Parses the pitch of a note stone id `note-<pitch>…`: `c d e f g a b`, followed by `2` for the
-/// octave above (e.g. `note-e-1`, `note-c2`).
-pub fn pitch(id: &str) -> Option<u8> {
-    let rest = id.strip_prefix("note-")?;
-    let mut chars = rest.chars();
-    let base = match chars.next()? {
-        'c' => 0,
-        'd' => 2,
-        'e' => 4,
-        'f' => 5,
-        'g' => 7,
-        'a' => 9,
-        'b' => 11,
+/// Pitch of a note by its name, in semitones above c: `c d e f g a b`, followed by `2` for the
+/// octave above (e.g. `e`, `c2`).
+pub fn pitch_of(name: &str) -> Option<u8> {
+    let (letter, octave) = match name.strip_suffix('2') {
+        Some(letter) => (letter, 12),
+        None => (name, 0),
+    };
+    let base = match letter {
+        "c" => 0,
+        "d" => 2,
+        "e" => 4,
+        "f" => 5,
+        "g" => 7,
+        "a" => 9,
+        "b" => 11,
         _ => return None,
     };
-    match chars.next() {
-        None | Some('-') => Some(base),
-        Some('2') if matches!(chars.next(), None | Some('-')) => Some(base + 12),
-        _ => None,
-    }
+    Some(base + octave)
+}
+
+/// Parses the pitch of a note stone id `note-<pitch>…` (e.g. `note-e-1`, `note-c2`), see
+/// [`pitch_of`].
+pub fn pitch(id: &str) -> Option<u8> {
+    pitch_of(id.strip_prefix("note-")?.split('-').next()?)
 }
 
 impl crate::World {
@@ -315,6 +319,12 @@ mod tests {
         assert_eq!(pitch("note-g2-x"), Some(19));
         assert_eq!(pitch("note-h"), None);
         assert_eq!(pitch("note-cx"), None);
+        assert_eq!(pitch("note-"), None);
+        assert_eq!(pitch("stone-c"), None);
+        assert_eq!(pitch_of("g"), Some(7));
+        assert_eq!(pitch_of("c2"), Some(12));
+        assert_eq!(pitch_of("2"), None);
+        assert_eq!(pitch_of("c22"), None);
         assert_eq!(pitch("notes"), None);
     }
 }

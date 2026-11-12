@@ -102,7 +102,46 @@ pub fn story(c: &Content) -> Result<(), String> {
     }
     dialogs(c)?;
     quests(c)?;
+    tunes(c)?;
     temperature(c)
+}
+
+/// Tunes (`[[tune]]` in `quests.toml`): unique ids, a map of an area, notes that exist and fit
+/// into what the session remembers, valid condition and effects.
+fn tunes(c: &Content) -> Result<(), String> {
+    let mut ids = BTreeSet::new();
+    for t in &c.tunes {
+        let at = format!("quests.toml tune `{}`", t.id);
+        if !ids.insert(t.id.as_str()) {
+            return Err(format!("{at}: duplicated"));
+        }
+        if c.area_of(&t.map).is_none() {
+            return Err(format!("{at}: map `{}` is of no area", t.map));
+        }
+        if t.notes.is_empty() {
+            return Err(format!("{at}: no notes"));
+        }
+        if t.notes.len() > crate::session::NOTES_KEPT {
+            return Err(format!(
+                "{at}: longer than {} notes",
+                crate::session::NOTES_KEPT
+            ));
+        }
+        if let Some(n) = t
+            .notes
+            .iter()
+            .find(|n| elora_sim::notes::pitch_of(n).is_none())
+        {
+            return Err(format!(
+                "{at}: unknown note `{n}` (`c d e f g a b`, `2` for the octave above)"
+            ));
+        }
+        if let Some(src) = &t.cond {
+            cond(c, src, &at)?;
+        }
+        actions(c, &t.actions, &at)?;
+    }
+    Ok(())
 }
 
 /// Heat and cold bar (`[temperature]` in `worldmap.toml`): times, factors, zone prefixes and
@@ -378,7 +417,34 @@ pub fn map_objects(c: &Content, map: &elora_map::Map) -> Vec<String> {
         }
     }
     errors.extend(climax_zones(map));
+    errors.extend(tune_stones(c, map));
     errors
+}
+
+/// Tunes of the map (M2.5.6): every note needs a note stone with its pitch.
+fn tune_stones(c: &Content, map: &elora_map::Map) -> Vec<String> {
+    let (stones, _) = elora_map::islands::map_notes(map);
+    c.tunes
+        .iter()
+        .filter(|t| t.map == map.name)
+        .flat_map(|t| {
+            let missing: BTreeSet<&str> = t
+                .notes
+                .iter()
+                .filter(|n| {
+                    elora_sim::notes::pitch_of(n)
+                        .is_some_and(|p| !stones.iter().any(|s| s.note == p))
+                })
+                .map(String::as_str)
+                .collect();
+            missing.into_iter().map(move |n| {
+                format!(
+                    "map `{}`: tune `{}` needs a note stone `note-{n}…` (`{n}`)",
+                    t.map, t.id
+                )
+            })
+        })
+        .collect()
 }
 
 /// Climax “Protect Luma” (M2.5.5): a map with `climax-start` needs Luma's place, at least one

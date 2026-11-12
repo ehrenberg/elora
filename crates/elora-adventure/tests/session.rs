@@ -798,6 +798,125 @@ fn every_adventure_map_with_a_file_has_a_section() {
     }
 }
 
+// ---------------------------------------------------------------- Tunes (M2.5.6)
+
+/// The bundled content plus one tune on `meadow-1`: e g c2 counts `luma_song.verses` up.
+fn content_with_tune(cond: &str) -> Content {
+    let mut c = Content::builtin();
+    c.tunes.push(elora_adventure::quest::TuneDef {
+        id: "verse-1".into(),
+        map: "meadow-1".into(),
+        notes: vec!["e".into(), "g".into(), "c2".into()],
+        cond: (!cond.is_empty()).then(|| cond.to_owned()),
+        actions: vec!["flag luma_song.verses +1".into()],
+    });
+    c
+}
+
+/// Elora touches note stones with these pitches, one per tick.
+fn play(s: &mut Session, w: &mut World, notes: &[u8]) -> Vec<SessionEvent> {
+    let mut all = Vec::new();
+    for &note in notes {
+        w.events.push(elora_sim::Event::Note {
+            player: s.player,
+            note,
+            pos: Vec2::ZERO,
+        });
+        all.extend(s.tick(w, false));
+        w.events.clear();
+    }
+    all
+}
+
+fn tune_played(ev: &[SessionEvent]) -> bool {
+    ev.contains(&SessionEvent::TunePlayed {
+        id: "verse-1".into(),
+    })
+}
+
+#[test]
+fn a_tune_on_the_note_stones_sets_off_its_effects_once() {
+    let mut s = Session::new_game(content_with_tune(""));
+    let mut w = s.enter("meadow-1", load("meadow-1"), "west", &Tuning::default());
+    let ev = play(&mut s, &mut w, &[0, 4, 7]);
+    assert!(!tune_played(&ev), "not the tune yet");
+    assert_eq!(s.save.flag("luma_song.verses"), 0);
+    // the tune may start anywhere in what she plays
+    let ev = play(&mut s, &mut w, &[4, 7, 12]);
+    assert!(tune_played(&ev));
+    assert_eq!(s.save.flag("luma_song.verses"), 1);
+    // playing it again does nothing, also after coming back
+    let ev = play(&mut s, &mut w, &[4, 7, 12]);
+    assert!(!tune_played(&ev));
+    let mut w = s.enter("meadow-1", load("meadow-1"), "west", &Tuning::default());
+    play(&mut s, &mut w, &[4, 7, 12]);
+    assert_eq!(s.save.flag("luma_song.verses"), 1);
+}
+
+#[test]
+fn a_tune_counts_only_on_its_map_and_while_its_condition_holds() {
+    let mut s = Session::new_game(content_with_tune("flag knows_song"));
+    let mut w = s.enter("tauwinkel", load("tauwinkel"), "west", &Tuning::default());
+    s.save.set_flag("knows_song", 1);
+    assert!(
+        !tune_played(&play(&mut s, &mut w, &[4, 7, 12])),
+        "other map"
+    );
+    s.save.set_flag("knows_song", 0);
+    let mut w = s.enter("meadow-1", load("meadow-1"), "west", &Tuning::default());
+    let ev = play(&mut s, &mut w, &[4, 7, 12]);
+    assert!(!tune_played(&ev), "condition does not hold");
+    assert_eq!(s.save.flag("luma_song.verses"), 0);
+    // it is not used up: once the condition holds, playing it counts
+    s.save.set_flag("knows_song", 1);
+    assert!(tune_played(&play(&mut s, &mut w, &[4, 7, 12])));
+    assert_eq!(s.save.flag("luma_song.verses"), 1);
+}
+
+// ---------------------------------------------------------------- Night tea (M2.5.6)
+
+#[test]
+fn night_tea_heals_and_makes_eloras_light_reach_further_for_a_while() {
+    use elora_adventure::data::{Effect, ItemDef, ItemKind, Text};
+    let mut c = Content::builtin();
+    c.items.insert(
+        "night_tea".into(),
+        ItemDef {
+            id: "night_tea".into(),
+            name: Text::default(),
+            desc: Text::default(),
+            price: 18,
+            kind: ItemKind::Consumable {
+                effect: Effect::Glow(2),
+            },
+        },
+    );
+    let mut s = Session::new_game(c);
+    let mut w = s.enter("meadow-1", load("meadow-1"), "west", &Tuning::default());
+    step(&mut s, &mut w, PlayerInput::default(), false);
+    assert!((s.light_reach() - 1.0).abs() < 1e-6);
+    let full = s.save.max_health(&s.content);
+    s.save.health = full - 3;
+    s.save.inventory.insert("night_tea".into(), 1);
+    s.use_item(&mut w, "night_tea").unwrap();
+    assert_eq!(s.save.health, full - 1, "heals 2");
+    assert_eq!(w.character(s.player).unwrap().health, full - 1);
+    assert!((s.light_reach() - 2.0).abs() < 1e-6, "twice as far");
+    // it lasts across a map change and fades out at the end
+    for _ in 0..20 * 50 {
+        step(&mut s, &mut w, PlayerInput::default(), false);
+    }
+    let mut w = s.enter("tauwinkel", load("tauwinkel"), "west", &Tuning::default());
+    assert!((s.light_reach() - 2.0).abs() < 1e-6);
+    let mut last = 2.0;
+    for _ in 0..10 * 50 {
+        step(&mut s, &mut w, PlayerInput::default(), false);
+        assert!(s.light_reach() <= last, "never brighter again");
+        last = s.light_reach();
+    }
+    assert!((s.light_reach() - 1.0).abs() < 1e-6, "over after 30 s");
+}
+
 // ---------------------------------------------------------------- Climax (M2.5.5)
 
 /// `meadow-1` without enemies, with the zones of “Protect Luma”: Elora starts inside

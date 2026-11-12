@@ -108,6 +108,40 @@ pub struct Reward {
     pub points: u32,
 }
 
+/// A tune (`[[tune]]` in `quests.toml`, R2-M2.5): playing its notes in order on the note stones
+/// of its map sets off its effects – once per save game.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TuneDef {
+    /// Tune id.
+    pub id: String,
+    /// Map whose note stones play it.
+    pub map: String,
+    /// The notes in order, by name: `c d e f g a b`, a `2` right after it for the octave above
+    /// (like the note stone zones `note-<pitch>…`).
+    pub notes: Vec<String>,
+    /// The tune only counts while this condition holds (it is not used up before).
+    #[serde(default, rename = "if")]
+    pub cond: Option<String>,
+    /// Effects when it is played for the first time.
+    #[serde(default, rename = "do")]
+    pub actions: Vec<String>,
+}
+
+impl TuneDef {
+    /// The notes as pitches (semitones above c); `None` if a name is not a note.
+    pub fn pitches(&self) -> Option<Vec<u8>> {
+        self.notes
+            .iter()
+            .map(|n| elora_sim::notes::pitch_of(n))
+            .collect()
+    }
+
+    /// Flag of the save game that remembers that the tune was played.
+    pub fn flag(&self) -> String {
+        format!("tune:{}:{}", self.map, self.id)
+    }
+}
+
 /// A quest (`quests.toml`).
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct QuestDef {

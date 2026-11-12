@@ -186,9 +186,11 @@ character `grey_trail_stone`; in the climax he appears for the first time (M2.5.
 
 ## 8. New tech for the content
 
-- Session: **tune check** – playing the tune of a note tablet on the note stones of its map counts a
-  flag up once (for “Luma's Song”).
-- Effect **`glow`** for consumables (Elora's light reach, D-M25-03).
-- Pendant bonus **lantern time** (`lantern_pct`) for the song pendant.
+- ✅ Session: **tune check** – playing the tune of a note tablet on the note stones of its map counts a
+  flag up once (for “Luma's Song”): `[[tune]]` in `quests.toml` with `map`, `notes`, optional `if`
+  and `do` (see [`../handbook/adventure-content.md`](../handbook/adventure-content.md)); the three
+  verses are entered once D-M25-02 is decided.
+- ✅ Effect **`glow`** for consumables (Elora's light reach, D-M25-03): twice as far for 30 s.
+- ✅ Pendant bonus **lantern time** (`lantern_pct`) for the song pendant.
 - Register the dialogue files; characters Luma, Glimmer, grey stone as graphics from the drafts
   (Glimmer is new: small glow-worm, drawn in the style of the chapter 5 drafts).

@@ -128,6 +128,13 @@ and signs are marked in the generator and follow once the content (M2.5.6) is ap
 sections for all four maps. The dark ruins decoration `star-spring-withered` stands in the basin;
 the freed spring follows with M2.5.8.
 
+**Status M2.5.6 (tech for the content):** built and tested without the texts, which wait for
+approval: **tunes** (`[[tune]]` in `quests.toml`: a melody on the note stones of a map runs
+effects once, with a sparkle of notes and a fanfare), the consumable effect **`glow`** (night tea:
+Elora's light reaches twice as far for 30 s) and the equipment bonus **`lantern_pct`** (song
+pendant: star lanterns burn longer). Characters, dialogues, quests, items and the three verses
+follow with the approval of [`m2-5-content.md`](m2-5-content.md) (D-M25-01 to D-M25-04).
+
 **Status M2.5.9 (sounds):** procedural sounds instead of the placeholders for stone goblins
 (`stone_rumble`, `stone_thud`), echoes (`echo_shimmer`), star lanterns (`lantern_on`,
 `lantern_out`) and dissolving grey shadows (`shade_dissolve`). Second part: shadow moths

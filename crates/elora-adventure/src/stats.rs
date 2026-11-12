@@ -64,6 +64,8 @@ pub struct Stats {
     pub heat_pct: f32,
     /// Filling of the cold bar in percent.
     pub cold_pct: f32,
+    /// Burning time of star lanterns in percent.
+    pub lantern_pct: f32,
 }
 
 impl Stats {
@@ -98,6 +100,7 @@ impl Stats {
             Bonus::LaserDelayPct(v) => self.laser_delay_pct += v,
             Bonus::HeatPct(v) => self.heat_pct += v,
             Bonus::ColdPct(v) => self.cold_pct += v,
+            Bonus::LanternPct(v) => self.lantern_pct += v,
         }
     }
 
@@ -138,6 +141,11 @@ impl Stats {
         t.grenade_shards = base.grenade_shards + self.grenade_shards.max(0).unsigned_abs();
         t.laser_bounce_num = base.laser_bounce_num + self.laser_bounces.max(0).unsigned_abs();
         t.laser_pierce = base.laser_pierce + self.laser_pierce.max(0).unsigned_abs();
+        #[allow(clippy::cast_sign_loss)] // never below zero
+        let lantern_time = (base.lantern_time as f32 * pct(self.lantern_pct))
+            .round()
+            .max(0.0) as u32;
+        t.lantern_time = lantern_time;
         t
     }
 }
@@ -167,6 +175,7 @@ mod tests {
             Bonus::FireDelayPct(-8.0),
             Bonus::JerkCooldownMs(-2000),
             Bonus::GlideFall(-5.0),
+            Bonus::LanternPct(50.0),
         ] {
             s.add(&b);
         }
@@ -176,6 +185,7 @@ mod tests {
         assert!(t.hammer_fire_delay < base.hammer_fire_delay);
         assert_eq!(t.jerk_cooldown, 100, "never below 100 ms");
         assert!((t.glide_fall_speed - 0.3).abs() < 1e-6);
+        assert_eq!(t.lantern_time, base.lantern_time * 3 / 2);
         // movement feel stays (E-212)
         assert_eq!(t.ground_control_speed, base.ground_control_speed);
         assert_eq!(t.ground_jump_impulse, base.ground_jump_impulse);

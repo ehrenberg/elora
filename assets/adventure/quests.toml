@@ -1,5 +1,6 @@
 # Quests (A1.4, E-249 to E-251). Conditions and effects: docs/handbook/adventure-content.md
 # goal.type = talk | reach | defeat | collect | bring | flag | manual
+# Tunes for the note stones of a map (R2-M2.5): [[tune]] with id, map, notes, optional if, do
 # Prologue (A1.9, docs/release-2/prolog.md)
 
 [[quest]]

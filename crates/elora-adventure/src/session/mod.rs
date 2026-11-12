@@ -8,6 +8,7 @@
 pub(crate) mod climax;
 mod decor;
 mod followers;
+mod night;
 mod objects;
 mod quests;
 mod temperature;
@@ -15,6 +16,7 @@ mod weather;
 mod world_map;
 
 pub use climax::{Climax, LUMA_PROTECTED, LUMA_SONG, Phase as ClimaxPhase, VERSES, withered};
+pub use night::NOTES_KEPT;
 pub use world_map::MapSpot;
 
 pub use decor::{PARTY, SPRINGS_FREED};
@@ -98,6 +100,12 @@ pub enum SessionEvent {
     },
     /// Tiles of the world have changed (door, crumble floor) – update the graphics.
     TilesChanged,
+    /// Elora played a tune on the note stones for the first time (sparkle and sound in the
+    /// client); its effects follow as notices.
+    TunePlayed {
+        /// Tune id.
+        id: String,
+    },
     /// Guardian of a chapter calmed: victory screen for the area `area`.
     ChapterDone {
         /// Area id.
@@ -132,9 +140,6 @@ pub struct NpcView {
     /// Looking direction (-1 = left, 1 = right).
     pub facing: i8,
 }
-
-/// How many of the last played notes the session keeps (M2.5.3).
-pub const NOTES_KEPT: usize = 16;
 
 /// The running adventure.
 #[derive(Debug, Clone)]
@@ -186,7 +191,10 @@ pub struct Session {
     inside: BTreeSet<String>,
     second_chance_used: bool,
     dew_until: u64,
+    /// Elora's light reaches further until this session tick (night tea).
+    glow_until: u64,
     hook_armed: bool,
+    /// Ticks of this session, across all maps.
     ticks: u64,
     /// Current position of the NPCs (walking path), id → position.
     npc_pos: BTreeMap<String, Vec2>,
@@ -236,6 +244,7 @@ impl Session {
             inside: BTreeSet::new(),
             second_chance_used: false,
             dew_until: 0,
+            glow_until: 0,
             hook_armed: true,
             ticks: 0,
             npc_pos: BTreeMap::new(),
@@ -510,12 +519,6 @@ impl Session {
         out.extend(n.into_iter().map(SessionEvent::Notice));
     }
 
-    /// Did Elora just play `tune` on the note stones (the last notes, in this order)? For
-    /// Luma's song (M2.5.3, content in M2.5.6).
-    pub fn played(&self, tune: &[u8]) -> bool {
-        !tune.is_empty() && self.notes.ends_with(tune)
-    }
-
     /// After every world tick; `interact` = action key pressed in this tick.
     pub fn tick(&mut self, world: &mut World, interact: bool) -> Vec<SessionEvent> {
         let mut out = std::mem::take(&mut self.pending);
@@ -529,17 +532,7 @@ impl Session {
             self.save.play_time_secs += 1;
         }
         let me = self.player;
-        // note stones (M2.5.3): remember the tune for Luma's song
-        for e in &world.events {
-            if let elora_sim::Event::Note { player, note, .. } = *e
-                && player == me
-            {
-                self.notes.push(note);
-                if self.notes.len() > NOTES_KEPT {
-                    self.notes.remove(0);
-                }
-            }
-        }
+        self.hear_notes(world, &mut out);
         if self.world_events(world, &mut out) {
             return out;
         }
@@ -794,32 +787,27 @@ impl Session {
     /// # Errors
     /// See [`SaveGame::use_item`].
     pub fn use_item(&mut self, world: &mut World, id: &str) -> Result<(), crate::Refusal> {
+        use crate::data::Effect;
         let effect = self.save.use_item(&self.content, id)?;
         match effect {
-            crate::data::Effect::Heal(_) => {
-                if let Some(ch) = world.character_mut(self.player) {
-                    ch.health = self.save.health;
-                }
-            }
-            crate::data::Effect::Cool(_) => {
+            Effect::Heal(_) => {}
+            Effect::Cool(_) => {
                 self.heat = 0.0;
                 self.overheated = false;
-                if let Some(ch) = world.character_mut(self.player) {
-                    ch.health = self.save.health;
-                    ch.core.overheated = false;
-                }
             }
-            crate::data::Effect::Warm(_) => {
+            Effect::Warm(_) => {
                 self.cold = 0.0;
                 self.frozen = false;
-                if let Some(ch) = world.character_mut(self.player) {
-                    ch.health = self.save.health;
-                    ch.core.overheated = self.overheated;
-                }
             }
-            crate::data::Effect::Dew(secs) => {
+            Effect::Glow(_) => self.start_glow(),
+            Effect::Dew(secs) => {
                 self.dew_until = world.tick + u64::from(secs * elora_sim::TICKS_PER_SECOND);
             }
+        }
+        // bring Elora's new health and the emptied bars into the world
+        if let Some(ch) = world.character_mut(self.player) {
+            ch.health = self.save.health;
+            ch.core.overheated = self.overheated || self.frozen;
         }
         Ok(())
     }

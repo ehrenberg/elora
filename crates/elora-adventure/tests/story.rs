@@ -369,6 +369,33 @@ fn climax_needs_lumas_place_shadows_and_the_withered_one() {
 }
 
 #[test]
+fn a_tune_needs_its_note_stones_on_its_map() {
+    let mut c = Content::builtin();
+    c.tunes.push(elora_adventure::quest::TuneDef {
+        id: "verse-1".into(),
+        map: "gorge-1".into(),
+        notes: vec!["e".into(), "g".into(), "e".into()],
+        cond: None,
+        actions: Vec::new(),
+    });
+    let zone = |id: &str| {
+        obj(
+            id,
+            ObjectKind::Zone {
+                size: Vec2::new(32.0, 32.0),
+            },
+        )
+    };
+    let errors = map_objects(&c, &small("gorge-1", vec![zone("note-e-1")]));
+    assert_eq!(errors.len(), 1, "{errors:?}");
+    assert!(errors[0].contains("tune `verse-1`") && errors[0].contains("`g`"));
+    let stones = vec![zone("note-e-1"), zone("note-g"), zone("note-g-bridge")];
+    assert!(map_objects(&c, &small("gorge-1", stones)).is_empty());
+    // other maps are not concerned
+    assert!(map_objects(&c, &small("gorge-2", Vec::new())).is_empty());
+}
+
+#[test]
 fn exits_must_lead_to_existing_entrances() {
     let exit = |map: &str, spawn: &str| {
         obj(

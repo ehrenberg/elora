@@ -25,6 +25,8 @@ use crate::{App, Screen};
 
 /// How long a shout stays above the character.
 const BARK_SECS: f32 = 3.5;
+/// Pitch of the fanfare for a tune completed on the note stones (brighter than a chapter's).
+const TUNE_PITCH: f32 = 1.25;
 /// Camera look-ahead in the last walked direction (E-266, E-267): 3 tiles, stays when
 /// standing still and only switches to the other direction after walking briefly.
 const LOOKAHEAD: f32 = 96.0;
@@ -536,28 +538,30 @@ impl App {
         })
     }
 
+    /// Shows a notice of the adventure, with a sound for finds and completed quests (R2-M2.1).
+    fn adventure_notice(&mut self, n: &Notice) {
+        use elora_adventure::data::ItemKind;
+        use elora_audio::{Cue, Sound};
+        let sound = match n {
+            Notice::QuestDone(_) => Some(Sound::QuestDone),
+            Notice::Item { id, .. } => self.adventure.as_ref().and_then(|a| {
+                match a.session.content.item(id).map(|i| &i.kind) {
+                    Some(ItemKind::Key) => Some(Sound::Fanfare),
+                    Some(ItemKind::Collectible) => Some(Sound::Collect),
+                    _ => None,
+                }
+            }),
+            _ => None,
+        };
+        self.ui_cues.extend(sound.map(Cue::global));
+        if let Some(t) = self.notice_text(n) {
+            self.notice(t);
+        }
+    }
+
     fn adventure_event(&mut self, e: SessionEvent) {
         match e {
-            SessionEvent::Notice(n) => {
-                // sound for finds and completed quests (R2-M2.1)
-                use elora_adventure::data::ItemKind;
-                use elora_audio::{Cue, Sound};
-                let sound = match &n {
-                    Notice::QuestDone(_) => Some(Sound::QuestDone),
-                    Notice::Item { id, .. } => self.adventure.as_ref().and_then(|a| {
-                        match a.session.content.item(id).map(|i| &i.kind) {
-                            Some(ItemKind::Key) => Some(Sound::Fanfare),
-                            Some(ItemKind::Collectible) => Some(Sound::Collect),
-                            _ => None,
-                        }
-                    }),
-                    _ => None,
-                };
-                self.ui_cues.extend(sound.map(Cue::global));
-                if let Some(t) = self.notice_text(&n) {
-                    self.notice(t);
-                }
-            }
+            SessionEvent::Notice(n) => self.adventure_notice(&n),
             SessionEvent::Talk { dialog, .. } => self.start_dialog(&dialog),
             SessionEvent::Bark { npc, text } => {
                 let code = self.lang_code();
@@ -578,6 +582,18 @@ impl App {
                     elora_audio::Cue::at(elora_audio::Sound::ChestOpen, pos),
                     elora_audio::Cue::at(elora_audio::Sound::Collect, pos).pitched(1.15),
                 ]);
+            }
+            SessionEvent::TunePlayed { .. } => {
+                let elora = self.adventure.as_ref().and_then(|a| {
+                    let ch = self.sandbox.world.character(a.session.player)?;
+                    Some(ch.core.pos)
+                });
+                if let Some(pos) = elora {
+                    self.effects.tune_sparkle(pos);
+                }
+                self.ui_cues.push(
+                    elora_audio::Cue::global(elora_audio::Sound::Fanfare).pitched(TUNE_PITCH),
+                );
             }
             SessionEvent::Locked { .. } => {
                 let t = self.lang.t("adventure.locked").to_owned();
