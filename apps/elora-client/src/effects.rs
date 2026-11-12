@@ -413,6 +413,10 @@ impl Effects {
             if bits & (events::WALL_JUMP | events::HOOK_JERK) != 0 {
                 self.burst(c.pos(), SMOKE, &GROUND_JUMP);
             }
+            // flap of the strengthened star cape (A-52): a little stardust
+            if bits & events::GLIDE_FLAP != 0 {
+                self.burst(c.pos(), GLITTER, &PICKUP_GLITTER);
+            }
             if bits & events::AIR_JUMP != 0 {
                 for k in 0..8 {
                     let a = k as f32 / 8.0 * std::f32::consts::TAU;

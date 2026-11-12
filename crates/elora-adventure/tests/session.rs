@@ -224,6 +224,26 @@ fn unlocks_from_dialogs_reach_the_running_world() {
     assert!(ch.arsenal.has(elora_sim::Weapon::Grenade));
 }
 
+/// The star spark (D-M25-04): Tüftel's work on the star cape applies right away and stays.
+#[test]
+fn strengthened_star_cape_reaches_the_running_world_and_later_ones() {
+    use elora_adventure::state::{STRONG_GLIDE, STRONG_GLIDE_FLAP, STRONG_GLIDE_UPDRAFT};
+    let (mut s, mut w) = start();
+    let base = Tuning::default();
+    assert!(w.tuning.glide_flap.abs() < f32::EPSILON, "no flap yet");
+    assert!((w.tuning.glide_updraft - base.glide_updraft).abs() < f32::EPSILON);
+    let c = s.content.clone();
+    s.save.run(&c, &[format!("flag {STRONG_GLIDE} = 1")]);
+    s.sync_world(&mut w);
+    let strong = |w: &World| {
+        (w.tuning.glide_flap - STRONG_GLIDE_FLAP).abs() < f32::EPSILON
+            && (w.tuning.glide_updraft - STRONG_GLIDE_UPDRAFT).abs() < f32::EPSILON
+    };
+    assert!(strong(&w), "right after Tüftel's work");
+    let w = s.enter("meadow-1", load("meadow-1"), "west", &base);
+    assert!(strong(&w), "and on every map afterwards");
+}
+
 /// Pull hook (R2-M2.2): collectibles on the hook are collected, loot flies to Elora.
 #[test]
 fn pulling_hook_grabs_collectibles_and_loot() {

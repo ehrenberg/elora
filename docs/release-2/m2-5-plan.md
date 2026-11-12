@@ -135,6 +135,14 @@ Elora's light reaches twice as far for 30 s) and the equipment bonus **`lantern_
 pendant: star lanterns burn longer). Characters, dialogues, quests, items and the three verses
 follow with the approval of [`m2-5-content.md`](m2-5-content.md) (D-M25-01 to D-M25-04).
 
+**Status M2.5.8 (spark and village, first part):** the **strengthened star cape** is built as
+proposed in D-M25-04: with the flag `glide.strong` (set by Tüftel's dialogue once the content is
+approved) Elora flaps upwards once per flight (A-52: jump again once the double jump is used up)
+and rises one and a half times as fast in updrafts while gliding (A-53); it applies right after
+the dialogue and on every map. Sound (the cape, higher) and stardust at the flap. Still open:
+gliding spots in chapters 1–4, `springs_freed = 5`, the celebration, the freed spring decoration
+and the village after chapter 5 (they follow with the content).
+
 **Status M2.5.9 (sounds):** procedural sounds instead of the placeholders for stone goblins
 (`stone_rumble`, `stone_thud`), echoes (`echo_shimmer`), star lanterns (`lantern_on`,
 `lantern_out`) and dissolving grey shadows (`shade_dissolve`). Second part: shadow moths

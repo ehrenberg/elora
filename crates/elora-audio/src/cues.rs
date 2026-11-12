@@ -597,6 +597,9 @@ pub fn for_creature(e: &Event, kind: &str) -> Option<Vec<Cue>> {
     }
 }
 
+/// The flap of the strengthened star cape sounds this much higher than its unfolding.
+const CAPE_FLAP_PITCH: f32 = 1.4;
+
 /// A fleeing shadow moth sounds this much higher than an attacking one.
 const MOTH_FLEE_PITCH: f32 = 1.5;
 
@@ -622,6 +625,10 @@ pub fn for_character(pos: Vec2, triggered: u16, prev_hook: HookState, hook: Hook
         if triggered & bit != 0 {
             cues.push(Cue::at(sound, pos));
         }
+    }
+    // the flap of the strengthened star cape (A-52): the cape once more, shorter and higher
+    if triggered & bits::GLIDE_FLAP != 0 {
+        cues.push(Cue::at(Sound::CapeUnfurl, pos).pitched(CAPE_FLAP_PITCH));
     }
     if hook == HookState::Flying && prev_hook != HookState::Flying {
         cues.push(Cue::at(Sound::HookFire, pos));
@@ -773,6 +780,16 @@ mod tests {
     fn the_star_cape_is_heard_when_gliding_starts() {
         let cues = for_character(Vec2::ZERO, bits::GLIDE, HookState::Idle, HookState::Idle);
         assert_eq!(cues, [Cue::at(Sound::CapeUnfurl, Vec2::ZERO)]);
+        // the flap of the strengthened cape: the same cloth, higher
+        let flap = for_character(
+            Vec2::ZERO,
+            bits::GLIDE_FLAP,
+            HookState::Idle,
+            HookState::Idle,
+        );
+        assert_eq!(flap.len(), 1);
+        assert_eq!(flap[0].sound, Sound::CapeUnfurl);
+        assert!(flap[0].pitch > 1.2);
     }
 
     #[test]

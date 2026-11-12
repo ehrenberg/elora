@@ -121,7 +121,13 @@ fn walker_stays_on_its_island() {
 
 /// Jump, double jump, then hold jump inside an updraft over the whole arena.
 fn fall_in_updraft(abilities: Abilities) -> f32 {
+    fall_in_updraft_with(abilities, Tuning::default().glide_updraft)
+}
+
+/// Like [`fall_in_updraft`], with the factor A-53 of the strengthened star cape.
+fn fall_in_updraft_with(abilities: Abilities, glide_updraft: f32) -> f32 {
     let mut w = world(|_| {});
+    w.tuning.glide_updraft = glide_updraft;
     w.set_islands(
         Vec::new(),
         vec![(Vec2::new(0.0, 0.0), Vec2::new(60.0 * 32.0, 27.0 * 32.0))],
@@ -141,6 +147,24 @@ fn updraft_lifts_gliding_elora() {
     let v = fall_in_updraft(Abilities::NONE.with(Ability::Glide));
     assert!(v < -1.0, "rises while gliding: {v}");
     assert!(v >= -Tuning::default().updraft_rise_speed - 0.01);
+}
+
+#[test]
+fn strengthened_cape_rises_faster_in_updrafts_only_while_gliding() {
+    let t = Tuning::default();
+    let glide = Abilities::NONE.with(Ability::Glide);
+    let (plain, strong) = (fall_in_updraft(glide), fall_in_updraft_with(glide, 1.5));
+    assert!(
+        (strong + t.updraft_rise_speed * 1.5).abs() < 0.01,
+        "one and a half times as fast: {strong}"
+    );
+    assert!(strong < plain);
+    // without gliding nothing changes
+    let (a, b) = (
+        fall_in_updraft(Abilities::NONE),
+        fall_in_updraft_with(Abilities::NONE, 1.5),
+    );
+    assert!((a - b).abs() < f32::EPSILON, "{a} vs {b}");
 }
 
 #[test]

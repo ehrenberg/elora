@@ -292,6 +292,69 @@ fn no_glide_while_air_jump_unused() {
     assert!(!core(&w).gliding);
 }
 
+// ---------------------------------------------------------------- Strengthened star cape
+
+/// Elora with the star cape, gliding after jump and double jump; `flap` is A-52.
+fn gliding(flap: f32) -> World {
+    let mut w = world(|_| {});
+    w.tuning.glide_flap = flap;
+    spawn(&mut w, standing(30, FLOOR), with(Ability::Glide));
+    run(&mut w, PlayerInput::default(), 5);
+    run(&mut w, input(0, true, false), 1);
+    run(&mut w, input(0, false, false), 5);
+    run(&mut w, input(0, true, false), 40);
+    assert!(core(&w).gliding);
+    w
+}
+
+/// Lets go of jump and presses it again.
+fn press_jump_again(w: &mut World) {
+    run(w, input(0, false, false), 1);
+    run(w, input(0, true, false), 1);
+}
+
+#[test]
+fn strong_cape_flaps_upwards_once_per_flight() {
+    let mut w = gliding(8.0);
+    press_jump_again(&mut w);
+    let c = core(&w);
+    assert!(c.vel.y < -6.0, "flaps upwards: {}", c.vel.y);
+    assert!(c.triggered_events & events::GLIDE_FLAP != 0);
+    // holding on, she glides again as soon as she falls
+    run(&mut w, input(0, true, false), 30);
+    assert!(core(&w).gliding);
+    // only one flap per flight
+    press_jump_again(&mut w);
+    let c = core(&w);
+    assert!(c.vel.y > 0.0, "no second flap: {}", c.vel.y);
+    assert_eq!(c.triggered_events & events::GLIDE_FLAP, 0);
+    // back on the ground the flap is ready again
+    run(&mut w, PlayerInput::default(), 200);
+    assert!(core(&w).is_grounded(&w.collision));
+    run(&mut w, input(0, true, false), 1);
+    run(&mut w, input(0, false, false), 5);
+    run(&mut w, input(0, true, false), 40);
+    press_jump_again(&mut w);
+    assert!(core(&w).vel.y < -6.0);
+}
+
+#[test]
+fn no_flap_without_the_strengthened_cape_or_without_the_cape() {
+    let mut w = gliding(0.0);
+    press_jump_again(&mut w);
+    assert!(core(&w).vel.y > 0.0, "the plain cape does not flap");
+    // the value alone does nothing without the gliding ability
+    let mut w = world(|_| {});
+    w.tuning.glide_flap = 8.0;
+    spawn(&mut w, standing(30, FLOOR), Abilities::NONE);
+    run(&mut w, PlayerInput::default(), 5);
+    run(&mut w, input(0, true, false), 1);
+    run(&mut w, input(0, false, false), 5);
+    run(&mut w, input(0, true, false), 25);
+    press_jump_again(&mut w);
+    assert!(core(&w).vel.y > 0.0);
+}
+
 #[test]
 fn down_on_platform_still_drops_through_with_stomp() {
     let mut w = world(|t| (20..26).for_each(|x| set(t, x, 20, Tile::Platform)));

@@ -716,10 +716,13 @@ impl Session {
             .player(self.player)
             .map_or(elora_sim::Abilities::NONE, |p| p.abilities);
         world.set_abilities(self.player, self.save.abilities().union(current));
-        // strengthened ice grip (D-M24-03) applies right after Tüftel's work
+        // strengthened ice grip (D-M24-03) and star cape (D-M25-04) apply right after Tüftel's
+        // work
         let t = self.save.tuning(&self.content, &Tuning::default());
         world.tuning.grip_time = t.grip_time;
         world.tuning.grip_climb = t.grip_climb;
+        world.tuning.glide_flap = t.glide_flap;
+        world.tuning.glide_updraft = t.glide_updraft;
         let max_ammo = world.tuning.max_ammo;
         if let Some(ch) = world.character_mut(self.player) {
             ch.arsenal

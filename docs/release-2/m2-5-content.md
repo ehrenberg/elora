@@ -152,7 +152,10 @@ Lotte sells it after Elora has been in the gorge once; needs the new effect `glo
 → `flag glide.strong = 1`, `take spring_spark 1`, `quest sternschlucht next`
 
 **D-M25-04 Stronger gliding:** “once a short flap upwards while gliding” plus double lift in
-updrafts (proposal); the tech belongs to M2.5.8.
+updrafts (proposal). The tech is built (M2.5.8) behind the flag `glide.strong` with the values
+A-52 (flap 8 units/tick, about two tiles, once per flight) and A-53 (updraft × 1.5 while gliding,
+about twice as high out of an updraft) – to try out in the sandbox: F1 → tuning “Abilities & enemies” →
+“Strengthened star cape” (with gliding switched on under “Abilities (adventure)”).
 
 ### Oma Pfütze
 - **Task** (start of the chapter, after the chapter 4 celebration, already in the game): „Geh nach Osten, Liebes, zur Sternschlucht …“

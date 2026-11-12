@@ -41,6 +41,20 @@ pub mod events {
     pub const WALL_JUMP: u16 = 1 << 10;
     /// Glide started (E-229).
     pub const GLIDE: u16 = 1 << 11;
+    /// Flap of the strengthened star cape (A-52).
+    pub const GLIDE_FLAP: u16 = 1 << 12;
+}
+
+/// Bits of [`CharacterCore::jumped`].
+pub mod jumped {
+    /// A jump was performed with the current key press.
+    pub const PRESSED: u8 = 1;
+    /// The air jump is used up (until the ground or a climbing wall).
+    pub const AIR_USED: u8 = 1 << 1;
+    /// The flap of the strengthened star cape is used up (A-52, reset like the air jump).
+    pub const FLAP_USED: u8 = 1 << 2;
+    /// Everything a flight uses up.
+    pub const FLIGHT: u8 = AIR_USED | FLAP_USED;
 }
 
 /// State of the hook.
@@ -77,7 +91,7 @@ pub struct CharacterCore {
     pub hook_tick: u32,
     /// Index of the hooked character in the world.
     pub hooked_player: Option<usize>,
-    /// Bit 0: jump performed with the current key press; bit 1: air jump used up.
+    /// Jump state, see [`jumped`].
     pub jumped: u8,
     /// Walking direction of the last input: -1 left, 0 none, 1 right.
     pub direction: i8,
@@ -258,7 +272,7 @@ impl CharacterCore {
         }
 
         if grounded || in_sand {
-            self.jumped &= !2;
+            self.jumped &= !jumped::FLIGHT;
             self.grip_ticks = 0;
         } else if col.wind != 0.0 {
             // wind pushes in the air (R2-W1, A-29); barely on the ground
@@ -395,7 +409,7 @@ impl CharacterCore {
         self.angle = (target.angle() * 256.0) as i32;
 
         if input.jump {
-            if self.jumped & 1 == 0 {
+            if self.jumped & jumped::PRESSED == 0 {
                 if self.grip != 0 {
                     // wall jump: away from the wall, the double jump is kept
                     self.triggered_events |= events::WALL_JUMP;
@@ -403,22 +417,27 @@ impl CharacterCore {
                         -f32::from(self.grip) * tuning.wall_jump_x,
                         -tuning.wall_jump_y,
                     );
-                    self.jumped |= 1;
+                    self.jumped |= jumped::PRESSED;
                     self.grip = 0;
                     self.grip_ticks = 0;
                 } else if grounded || in_sand {
                     // a jump frees from the quicksand (E-318)
                     self.triggered_events |= events::GROUND_JUMP;
                     self.vel.y = -tuning.ground_jump_impulse;
-                    self.jumped |= 1;
-                } else if self.jumped & 2 == 0 {
+                    self.jumped |= jumped::PRESSED;
+                } else if self.jumped & jumped::AIR_USED == 0 {
                     self.triggered_events |= events::AIR_JUMP;
                     self.vel.y = -tuning.air_jump_impulse;
-                    self.jumped |= 3;
+                    self.jumped |= jumped::PRESSED | jumped::AIR_USED;
+                } else if self.can_flap(tuning) {
+                    // strengthened star cape (A-52): one more, smaller push upwards
+                    self.triggered_events |= events::GLIDE_FLAP;
+                    self.vel.y = -tuning.glide_flap;
+                    self.jumped |= jumped::PRESSED | jumped::FLAP_USED;
                 }
             }
         } else {
-            self.jumped &= !1;
+            self.jumped &= !jumped::PRESSED;
         }
 
         if input.hook {
@@ -715,7 +734,7 @@ impl CharacterCore {
             } else {
                 self.vel.y.min(tuning.grip_slide_speed)
             };
-            self.jumped &= !2;
+            self.jumped &= !jumped::FLIGHT;
             if !was_gripping {
                 self.triggered_events |= events::WALL_GRIP;
             }
@@ -728,7 +747,7 @@ impl CharacterCore {
             && !self.stomping
             && self.grip == 0
             && input.jump
-            && self.jumped & 2 != 0
+            && self.jumped & jumped::AIR_USED != 0
             && (self.vel.y > 0.0 || col.movers.in_updraft(self.pos));
         if self.gliding {
             self.vel.y = self.vel.y.min(tuning.glide_fall_speed);
@@ -739,7 +758,10 @@ impl CharacterCore {
         // updraft (M2.5.2): lifts everyone, gliding characters faster and higher
         if !grounded && col.movers.in_updraft(self.pos) {
             let (lift, top) = if self.gliding {
-                (tuning.updraft_lift, tuning.updraft_rise_speed)
+                (
+                    tuning.updraft_lift * tuning.glide_updraft,
+                    tuning.updraft_rise_speed * tuning.glide_updraft,
+                )
             } else {
                 (tuning.updraft_push, tuning.updraft_rise_speed * 0.5)
             };
@@ -748,6 +770,15 @@ impl CharacterCore {
                 self.vel.y = (self.vel.y - lift).max(-top);
             }
         }
+    }
+
+    /// Is the flap of the strengthened star cape (A-52) available: the cape, the strengthening
+    /// and no flap in this flight yet? (The caller knows that the air jump is used up.)
+    fn can_flap(&self, tuning: &Tuning) -> bool {
+        self.abilities.has(Ability::Glide)
+            && tuning.glide_flap > 0.0
+            && !self.stomping
+            && self.jumped & jumped::FLAP_USED == 0
     }
 
     /// Does the character touch a climbing wall on the side (`side` -1/1)?

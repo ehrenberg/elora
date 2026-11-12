@@ -138,6 +138,8 @@ Only in the adventure and in the spring fight (E-223). Starting values for playt
 | A-49 | Updraft lift without gliding | **0.62** units/tick² (playtest, previously 0.25 = only braking) | Elora rises slowly without gliding too | R2-M2.5 |
 | A-50 | Note stone and star bridges stay lit | **6000 ms** | After touching the stone; stone and bridges flicker in the last 1.5 s | R2-M2.5, E-364 |
 | A-51 | Star lantern stays lit | **12000 ms** | After touching it; flickers in the last 1.5 s; its light (170 units) dissolves grey shadows | R2-M2.5, E-362 |
+| A-52 | Strengthened star cape: flap upwards | **0** (strengthened **8** units/tick ≈ 2 tiles) | After Tüftel's work with the star spark (flag `glide.strong`): once the double jump is used up, pressing jump again pushes Elora up once per flight; ready again on the ground or a climbing wall (proposal D-M25-04) | D-M25-04 |
+| A-53 | Strengthened star cape: updraft factor | **1** (strengthened **1.5**) | Factor on A-47 and A-48 while gliding: Elora rises faster and shoots about twice as high out of an updraft; without gliding unchanged (proposal D-M25-04) | D-M25-04 |
 
 ## F. Rules from follow-up decisions
 

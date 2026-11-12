@@ -13,6 +13,12 @@ use crate::stats::Stats;
 pub const STRONG_GRIP: &str = "ice_grip.strong";
 /// Pulling up on the climbing wall with strengthened ice grip (A-42, units/tick).
 pub const STRONG_GRIP_CLIMB: f32 = 1.6;
+/// Flag after Tüftel's work with the star spark (D-M25-04): the strengthened star cape.
+pub const STRONG_GLIDE: &str = "glide.strong";
+/// Flap upwards with the strengthened star cape (A-52, units/tick).
+pub const STRONG_GLIDE_FLAP: f32 = 8.0;
+/// Factor on the updraft while gliding with the strengthened star cape (A-53).
+pub const STRONG_GLIDE_UPDRAFT: f32 = 1.5;
 
 /// Place in the adventure: map and save point or entrance.
 #[derive(Debug, Clone, PartialEq, Eq, Default, Serialize, Deserialize)]
@@ -273,6 +279,12 @@ impl SaveGame {
         if self.flag(STRONG_GRIP) != 0 {
             t.grip_time = t.grip_time.saturating_mul(2);
             t.grip_climb = STRONG_GRIP_CLIMB;
+        }
+        // Star spark (D-M25-04): the star cape flaps upwards once per flight and rises faster
+        // in updrafts
+        if self.flag(STRONG_GLIDE) != 0 {
+            t.glide_flap = STRONG_GLIDE_FLAP;
+            t.glide_updraft = STRONG_GLIDE_UPDRAFT;
         }
         t
     }
